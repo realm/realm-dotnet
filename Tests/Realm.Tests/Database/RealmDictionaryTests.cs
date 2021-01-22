@@ -972,6 +972,7 @@ namespace Realms.Tests.Database
                 Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
 
                 await RunTestsCore(testData, managedDictionary);
+                await testData.AssertThreadSafeReference(managedDictionary);
             });
         }
 
@@ -1278,6 +1279,15 @@ namespace Realms.Tests.Database
                     Assert.That(changes.Moves, Is.Empty);
 
                     return changes.DeletedIndices[0];
+                }, changes =>
+                {
+                    Assert.That(changes.ModifiedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changes.NewModifiedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changes.InsertedIndices, Is.Empty);
+                    Assert.That(changes.DeletedIndices, Is.Empty);
+                    Assert.That(changes.Moves, Is.Empty);
+
+                    return (changes.ModifiedIndices[0], changes.NewModifiedIndices[0]);
                 });
             }
 
@@ -1290,6 +1300,7 @@ namespace Realms.Tests.Database
                 var callbacks = new List<NotifyCollectionChangedEventArgs>();
                 target.AsRealmCollection().CollectionChanged += HandleCollectionChanged;
 
+                // CollectionChangedEventArgs don't communicate object modifications.
                 await AssertNotificationsCore(target, callbacks, changes =>
                 {
                     Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
@@ -1302,7 +1313,7 @@ namespace Realms.Tests.Database
                     Assert.That(changes.OldItems.Count, Is.EqualTo(1));
 
                     return changes.OldStartingIndex;
-                });
+                }, assertModification: null);
 
                 target.AsRealmCollection().CollectionChanged -= HandleCollectionChanged;
 
@@ -1314,7 +1325,12 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private async Task AssertNotificationsCore<TArgs>(IDictionary<string, T> target, List<TArgs> callbacks, Func<TArgs, int> assertInsertion, Func<TArgs, int> assertDeletion)
+            private async Task AssertNotificationsCore<TArgs>(
+                IDictionary<string, T> target,
+                List<TArgs> callbacks,
+                Func<TArgs, int> assertInsertion,
+                Func<TArgs, int> assertDeletion,
+                Func<TArgs, (int OldIndex, int NewIndex)> assertModification)
             {
                 var newKey = Guid.NewGuid().ToString();
                 WriteIfNecessary(target, () =>
@@ -1341,43 +1357,42 @@ namespace Realms.Tests.Database
                 var deletedIndex = assertDeletion(changes);
                 Assert.That(deletedIndex, Is.EqualTo(insertedIndex));
 
-                //// Test modification of an existing element. This is blocked on https://github.com/realm/realm-core/issues/4318
-                //// var indexToUpdate = -1;
-                //// while (true)
-                //// {
-                ////     indexToUpdate = TestHelpers.Random.Next(0, target.Count);
-                ////     if (!Equals(target.AsRealmCollection()[indexToUpdate].Value, SampleValue))
-                ////     {
-                ////         break;
-                ////     }
-                //// }
-                ////
-                //// var keyToUpdate = target.ElementAt(indexToUpdate).Key;
-                //// WriteIfNecessary(target, () =>
-                //// {
-                ////     target[keyToUpdate] = SampleValue;
-                //// });
-                ////
-                //// target.AsRealmCollection().Realm.Refresh();
-                //// Assert.That(callbacks.Count, Is.EqualTo(3));
-                ////
-                //// changes = callbacks[2];
-                //// Assert.That(changes.ModifiedIndices.Length, Is.EqualTo(1));
-                //// Assert.That(changes.NewModifiedIndices.Length, Is.EqualTo(1));
-                //// Assert.That(changes.InsertedIndices, Is.Empty);
-                //// Assert.That(changes.DeletedIndices, Is.Empty);
-                //// Assert.That(changes.Moves, Is.Empty);
-                ////
-                //// Assert.That(changes.ModifiedIndices[0], Is.EqualTo(indexToUpdate));
-                //// Assert.That(target.ElementAt(changes.NewModifiedIndices[0]).Key, Is.EqualTo(keyToUpdate));
-                //// Assert.That(target.ElementAt(changes.NewModifiedIndices[0]).Value, Is.EqualTo(SampleValue));
-                ////
-                //// Assert.That(target.AsRealmCollection()[changes.NewModifiedIndices[0]].Key, Is.EqualTo(newKey));
-                //// Assert.That(target.AsRealmCollection()[changes.NewModifiedIndices[0]].Value, Is.EqualTo(SampleValue));
+                if (assertModification == null)
+                {
+                    // INotifyCollectionChanged doesn't communicate object modifications, so let's stop the test
+                    // if the caller didn't provide modification assertion callback.
+                    return;
+                }
+
+                var indexToUpdate = -1;
+                while (true)
+                {
+                    indexToUpdate = TestHelpers.Random.Next(0, target.Count);
+                    if (!Equals(target.AsRealmCollection()[indexToUpdate].Value, SampleValue))
+                    {
+                        break;
+                    }
+                }
+
+                var keyToUpdate = target.ElementAt(indexToUpdate).Key;
+                WriteIfNecessary(target, () =>
+                {
+                    target[keyToUpdate] = SampleValue;
+                });
+
+                changes = await EnsureRefreshed(3);
+
+                var (oldIndex, newIndex) = assertModification(changes);
+
+                Assert.That(oldIndex, Is.EqualTo(indexToUpdate));
+                Assert.That(target.ElementAt(newIndex).Key, Is.EqualTo(keyToUpdate));
+                Assert.That(target.ElementAt(newIndex).Value, Is.EqualTo(SampleValue));
+
+                Assert.That(target.AsRealmCollection()[newIndex].Key, Is.EqualTo(keyToUpdate));
+                Assert.That(target.AsRealmCollection()[newIndex].Value, Is.EqualTo(SampleValue));
 
                 async Task<TArgs> EnsureRefreshed(int expectedCallbackCount)
                 {
-                    target.AsRealmCollection().Realm.Refresh();
                     await TestHelpers.WaitForConditionAsync(() => callbacks.Count == expectedCallbackCount);
 
                     Assert.That(callbacks.Count, Is.EqualTo(expectedCallbackCount));
@@ -1435,6 +1450,28 @@ namespace Realms.Tests.Database
                     // We can't freeze unmanaged dictionaries.
                     Assert.Throws<RealmException>(() => target.Freeze());
                 }
+            }
+
+            public async Task AssertThreadSafeReference(IDictionary<string, T> target)
+            {
+                Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
+
+                Seed(target);
+
+                var tsr = ThreadSafeReference.Create(target);
+                var originalThreadId = Environment.CurrentManagedThreadId;
+
+                await Task.Run(() =>
+                {
+                    Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
+
+                    using (var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config))
+                    {
+                        var bgDict = bgRealm.ResolveReference(tsr);
+
+                        Assert.That(bgDict, Is.EquivalentTo(GetReferenceDictionary()));
+                    }
+                });
             }
 
             public void Seed(IDictionary<string, T> target, IEnumerable<(string Key, T Value)> values = null)

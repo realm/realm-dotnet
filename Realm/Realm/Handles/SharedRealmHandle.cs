@@ -114,17 +114,8 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool compact(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_object_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr resolve_object_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_list_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr resolve_list_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_set_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr resolve_set_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, ThreadSafeReference.Type type, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_realm_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
@@ -319,15 +310,7 @@ namespace Realms
                 throw new RealmException("Can only resolve a thread safe reference once.");
             }
 
-            NativeException nativeException;
-            var result = reference.ReferenceType switch
-            {
-                ThreadSafeReference.Type.Object => NativeMethods.resolve_object_reference(this, reference.Handle, out nativeException),
-                ThreadSafeReference.Type.List => NativeMethods.resolve_list_reference(this, reference.Handle, out nativeException),
-                ThreadSafeReference.Type.Query => NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException),
-                ThreadSafeReference.Type.Set => NativeMethods.resolve_set_reference(this, reference.Handle, out nativeException),
-                _ => throw new NotSupportedException(),
-            };
+            var result = NativeMethods.resolve_reference(this, reference.Handle, reference.ReferenceType, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             reference.Handle.Close();

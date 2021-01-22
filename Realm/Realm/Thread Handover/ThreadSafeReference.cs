@@ -126,7 +126,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{TValue}(Dictionary{TValue})"/> on a different thread.</returns>
-        public static Dictionary<string, TValue> Create<TValue>(IDictionary<string, TValue> value) => new Dictionary<string, TValue>(value);
+        public static Dictionary<TValue> Create<TValue>(IDictionary<string, TValue> value) => new Dictionary<TValue>(value);
 
         #endregion
 
@@ -253,7 +253,7 @@ namespace Realms
 
         #endregion
 
-        internal enum Type
+        internal enum Type : byte
         {
             Object,
             List,

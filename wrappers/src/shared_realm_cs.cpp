@@ -71,7 +71,7 @@ public:
 Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
 {
     Realm::Config config;
-    config.schema_mode = SchemaMode::Additive;
+    config.schema_mode = SchemaMode::AdditiveDiscovered;
 
     if (objects_length > 0) {
         config.schema = create_schema(objects, objects_length, properties);
@@ -311,24 +311,32 @@ REALM_EXPORT bool shared_realm_compact(SharedRealm& realm, NativeException::Mars
     });
 }
 
-REALM_EXPORT Object* shared_realm_resolve_object_reference(SharedRealm& realm, ThreadSafeReference& reference, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Object(reference.resolve<Object>(realm));
-    });
-}
+enum class ThreadSafeReferenceType : uint8_t {
+    Object = 0,
+    List,
+    Results,
+    Set,
+    Dictionary
+};
 
-REALM_EXPORT List* shared_realm_resolve_list_reference(SharedRealm& realm, ThreadSafeReference& reference, NativeException::Marshallable& ex)
+REALM_EXPORT void* shared_realm_resolve_reference(SharedRealm& realm, ThreadSafeReference& reference, ThreadSafeReferenceType type, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
-        return new List(reference.resolve<List>(realm));
-    });
-}
-
-REALM_EXPORT Results* shared_realm_resolve_query_reference(SharedRealm& realm, ThreadSafeReference& reference, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Results(reference.resolve<Results>(realm));
+    return handle_errors(ex, [&]()-> void*{
+        switch (type)
+        {
+        case ThreadSafeReferenceType::Object:
+            return new Object(reference.resolve<Object>(realm));
+        case ThreadSafeReferenceType::List:
+            return new List(reference.resolve<List>(realm));
+        case ThreadSafeReferenceType::Results:
+            return new Results(reference.resolve<Results>(realm));
+        case ThreadSafeReferenceType::Set:
+            return new object_store::Set(reference.resolve<object_store::Set>(realm));
+        case ThreadSafeReferenceType::Dictionary:
+            return new object_store::Dictionary(reference.resolve<object_store::Dictionary>(realm));
+        default:
+            REALM_UNREACHABLE();
+        }
     });
 }
 
