@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -869,6 +870,42 @@ namespace Realms.Tests.Database
             var realm = GetRealm(config);
 
             Assert.Throws<RealmInvalidTransactionException>(() => realm.Write(() => { }), "Number of active versions (2) in the Realm exceeded the limit of 1");
+        }
+
+        [Test]
+        public void RealmState_GetsGarbageCollected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                var realm = Realm.GetInstance();
+                var state = stateAccessor.GetValue(realm);
+
+                var realmRef = new WeakReference(realm);
+                var stateRef = new WeakReference(state);
+
+                realm = null;
+                state = null;
+
+                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                var token = cts.Token;
+
+                while (realmRef.IsAlive || stateRef.IsAlive)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    if (token.IsCancellationRequested)
+                    {
+                        Assert.Fail($"Some references are still alive: RealmRef.IsAlive={realmRef.IsAlive}, StateRef.IsAlive={stateRef.IsAlive}");
+                    }
+                }
+
+                Assert.That(realmRef.IsAlive, Is.False);
+                Assert.That(stateRef.IsAlive, Is.False);
+            });
         }
 
         private const int DummyDataSize = 200;

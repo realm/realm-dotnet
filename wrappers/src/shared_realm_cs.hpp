@@ -89,6 +89,8 @@ namespace binding {
         }
     private:
         void* m_managed_state_handle;
+
+        ~CSharpBindingContext();
     };
 }
     
