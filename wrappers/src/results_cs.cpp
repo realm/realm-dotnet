@@ -128,17 +128,17 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         query_parser::KeyPathMapping mapping;
         realm::populate_keypath_mapping(mapping, *realm);
 
-        std::vector<Mixed> vec_args;
+        std::vector<Mixed> mixed_args;
         for (int i = 0; i < args_count; ++i ) {
             if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
-                vec_args.push_back(from_capi(arguments[i]));
+                mixed_args.push_back(from_capi(arguments[i]));
             }
             else {
-                vec_args.push_back(from_capi(arguments[i].link.object, false));
+                mixed_args.push_back(from_capi(arguments[i].link.object, false));
             }
         }
 
-        Query parsed_query = results.get_table()->query(query_string, vec_args , mapping);
+        Query parsed_query = results.get_table()->query(query_string, mixed_args , mapping);
         DescriptorOrdering new_order = results.get_descriptor_ordering();
         if (auto parsed_ordering = parsed_query.get_ordering()) {
             new_order.append(*parsed_ordering);
