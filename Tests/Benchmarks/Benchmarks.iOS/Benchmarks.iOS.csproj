@@ -62,6 +62,8 @@
     <MtouchArch>ARM64</MtouchArch>
     <CodesignKey>iPhone Developer</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchExtraArgs>--nosymbolstrip --nolinkaway</MtouchExtraArgs>
+    <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
@@ -91,7 +93,7 @@
       <Name>Benchmarks</Name>
     </ProjectReference>
   </ItemGroup>
-    <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <NativeReference Include="..\..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
