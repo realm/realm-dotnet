@@ -190,16 +190,17 @@ namespace Realms
 
         public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
         {
-            var nativeArgs = new (PrimitiveValue Value, RealmValue.HandlesToCleanup? Handles)[arguments.Length];
+            var primitiveValues = new PrimitiveValue[arguments.Length];
+            var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
             for (int i = 0; i < arguments.Length; ++i)
             {
-                nativeArgs[i] = arguments[i].ToNative();
+                (primitiveValues[i], handles[i]) = arguments[i].ToNative();
             }
 
-            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, nativeArgs.Select(x => x.Value).ToArray(), nativeArgs.Length, out var ex);
-            foreach (var arg in nativeArgs)
+            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, primitiveValues.Length, out var ex);
+            foreach (var handle in handles)
             {
-                arg.Handles?.Dispose();
+                handle?.Dispose();
             }
 
             ex.ThrowIfNecessary();

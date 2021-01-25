@@ -488,20 +488,6 @@ namespace Realms.Tests
         public IList<IntPropertyObject> Items { get; }
     }
 
-    public struct InfoContainer
-    {
-        public RealmObject Obj;
-        public string QueryString;
-        public RealmValue[] Value;
-
-        public InfoContainer(RealmObject obj, string query, params RealmValue[] args)
-        {
-            Obj = obj;
-            QueryString = query;
-            Value = args;
-        }
-    }
-
     public class BoolPropertyObject : RealmObject
     {
         public bool Bool { get; set; }
