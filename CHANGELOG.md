@@ -1,11 +1,11 @@
-## vNext (TBD)
+## 10.0.0-beta.6 (2021-01-25)
 ------------------
 
 ### Fixed
 * Fixed a regression in 10.0.0-beta.5 that incorrectly stores and retrieves `DateTimeOffset` values. (PR [#2200](https://github.com/realm/realm-dotnet/pull/2200))
 
 ### Enhancements
-* Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
+* None
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
