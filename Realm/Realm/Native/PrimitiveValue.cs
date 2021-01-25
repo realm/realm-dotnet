@@ -24,6 +24,7 @@ using MongoDB.Bson;
 
 namespace Realms.Native
 {
+    // This type is marshalled through C++ wrappers' realm_value_t
     [StructLayout(LayoutKind.Explicit)]
     [DebuggerDisplay("PrimitiveValue({Type})")]
     internal unsafe struct PrimitiveValue
