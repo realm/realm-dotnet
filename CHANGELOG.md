@@ -2,7 +2,7 @@
 ------------------
 
 ### Fixed
-* None
+* Fixed a regression in 10.0.0-beta.5 that incorrectly stores and retrieves `DateTimeOffset` values. (PR [#2200](https://github.com/realm/realm-dotnet/pull/2200))
 
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
@@ -13,8 +13,11 @@
 ### Internal
 * Using Core 10.3.3.
 
-## 10.0.0-beta.5 (2021-01-19)
+## [Don't use!] 10.0.0-beta.5 (2021-01-19)
 ------------------
+
+**This version has a serious regression related to reading and writing date properties. It stores dates in an incorrect format at the database layer, which means that values written in earlier versions will be read incorrectly (typically values very close to `0000-01-01`) and values written with this version will be read incorrectly with future versions.**
+
 ### Breaking Changes
 * Removed `RealmObject.FreezeInPlace`. To freeze a realm object use the `Freeze` extension method. (Issue [#2180](https://github.com/realm/realm-dotnet/issues/2180))
 
