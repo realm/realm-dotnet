@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -68,6 +69,8 @@ namespace Realms.Tests.Database
             new object[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
             new object[] { typeof(PrimaryKeyNullableGuidObject), null, PKType.Guid },
         };
+
+        private readonly IEnumerable<dynamic> _primaryKeyValues = new dynamic[] { "42", 123L, ObjectId.GenerateNewId(), Guid.NewGuid() };
 
         [TestCaseSource(nameof(PKTestCases))]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
@@ -190,6 +193,58 @@ namespace Realms.Tests.Database
             }
 
             return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
+        }
+
+        [Test]
+        public void RealmFind_WhenPKIsIntAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<IntPrimaryKeyWithValueObject>();
+
+        [Test]
+        public void RealmFind_WhenPKIsCharAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyCharObject>();
+
+        [Test]
+        public void RealmFind_WhenPKIsByteAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyByteObject>();
+
+        [Test]
+        public void RealmFind_WhenPKIsInt16AndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyInt16Object>();
+
+        [Test]
+        public void RealmFind_WhenPKIsInt32AndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyInt32Object>();
+
+        [Test]
+        public void RealmFind_WhenPKIsInt64AndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyInt64Object>();
+
+        [Test]
+        public void RealmFind_WhenPKIsStringAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyStringObject>();
+
+        [Test]
+        public void RealmFind_WhenPKIsGuidAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyGuidObject>();
+
+        [Test]
+        public void RealmFind_WhenPKIsObjectIdAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyObjectIdObject>();
+
+        /// <summary>
+        /// In <see cref="RealmFind_IncorrectPKArgument_Throws"/> we're using reflection to check if the primary
+        /// key type and the property type match. Since Realm stores all integral properties as Int64, we
+        /// want to treat the narrower types as "long" to match the value type in <see cref="_primaryKeyValues"/>.
+        /// </summary>
+        private static Type GetDatabaseType(Type toConvert)
+        {
+            var intBackedTypes = new Type[] { typeof(int), typeof(long), typeof(short), typeof(byte), typeof(char) };
+            return intBackedTypes.Contains(toConvert) ? typeof(long) : toConvert;
+        }
+
+        private void RealmFind_IncorrectPKArgument_Throws<T>()
+            where T : RealmObject
+        {
+            var pkInClass = typeof(T).GetProperties().Single(prop => Attribute.IsDefined(prop, typeof(PrimaryKeyAttribute)));
+            var pkType = GetDatabaseType(pkInClass.PropertyType);
+
+            var keysWithIncorrectType = _primaryKeyValues.Where(pk => pk.GetType() != pkType);
+            foreach (var pk in keysWithIncorrectType)
+            {
+                Assert.That(() => _realm.Find<T>(pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+                Assert.That(() => _realm.DynamicApi.Find(typeof(T).Name, pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            }
         }
 
         [Test]
