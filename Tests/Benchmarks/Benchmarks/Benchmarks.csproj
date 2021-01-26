@@ -22,7 +22,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
     <ProjectReference Include="..\PerformanceTests\PerformanceTests.csproj" />
   </ItemGroup>
   <ItemGroup>
