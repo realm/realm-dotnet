@@ -1,3 +1,18 @@
+## vNext (TBD)
+------------------
+
+### Fixed
+* None
+
+### Enhancements
+* Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 10.3.3.
+
 ## 10.0.0-beta.6 (2021-01-25)
 ------------------
 
