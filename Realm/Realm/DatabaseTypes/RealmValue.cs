@@ -900,6 +900,7 @@ namespace Realms
                 RealmValueType.Double => AsDouble() == other.AsDouble(),
                 RealmValueType.Decimal128 => AsDecimal128() == other.AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
+                RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
                 _ => false,
             };
