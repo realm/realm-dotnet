@@ -112,7 +112,7 @@ namespace Realms
             _objectValue = obj;
         }
 
-        internal static RealmValue Null() => new RealmValue(PrimitiveValue.Null());
+        public static RealmValue Null => new RealmValue(PrimitiveValue.Null());
 
         private static RealmValue Bool(bool value) => new RealmValue(PrimitiveValue.Bool(value));
 
@@ -800,31 +800,31 @@ namespace Realms
 
         public static implicit operator RealmValue(Guid val) => Guid(val);
 
-        public static implicit operator RealmValue(char? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(char? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(byte? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(byte? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(short? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(short? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(int? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(int? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(long? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(long? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(float? val) => val == null ? Null() : Float(val.Value);
+        public static implicit operator RealmValue(float? val) => val == null ? Null : Float(val.Value);
 
-        public static implicit operator RealmValue(double? val) => val == null ? Null() : Double(val.Value);
+        public static implicit operator RealmValue(double? val) => val == null ? Null : Double(val.Value);
 
-        public static implicit operator RealmValue(bool? val) => val == null ? Null() : Bool(val.Value);
+        public static implicit operator RealmValue(bool? val) => val == null ? Null : Bool(val.Value);
 
-        public static implicit operator RealmValue(DateTimeOffset? val) => val == null ? Null() : Date(val.Value);
+        public static implicit operator RealmValue(DateTimeOffset? val) => val == null ? Null : Date(val.Value);
 
-        public static implicit operator RealmValue(decimal? val) => val == null ? Null() : Decimal(val.Value);
+        public static implicit operator RealmValue(decimal? val) => val == null ? Null : Decimal(val.Value);
 
-        public static implicit operator RealmValue(Decimal128? val) => val == null ? Null() : Decimal(val.Value);
+        public static implicit operator RealmValue(Decimal128? val) => val == null ? Null : Decimal(val.Value);
 
-        public static implicit operator RealmValue(ObjectId? val) => val == null ? Null() : ObjectId(val.Value);
+        public static implicit operator RealmValue(ObjectId? val) => val == null ? Null : ObjectId(val.Value);
 
-        public static implicit operator RealmValue(Guid? val) => val == null ? Null() : Guid(val.Value);
+        public static implicit operator RealmValue(Guid? val) => val == null ? Null : Guid(val.Value);
 
         public static implicit operator RealmValue(RealmInteger<byte> val) => Int(val);
 
@@ -834,13 +834,13 @@ namespace Realms
 
         public static implicit operator RealmValue(RealmInteger<long> val) => Int(val);
 
-        public static implicit operator RealmValue(RealmInteger<byte>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<byte>? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(RealmInteger<short>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<short>? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(RealmInteger<int>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<int>? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(RealmInteger<long>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<long>? val) => val == null ? Null : Int(val.Value);
 
         public static implicit operator RealmValue(byte[] val) => Data(val);
 

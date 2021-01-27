@@ -397,7 +397,7 @@ namespace Realms.Helpers
                  */
                 if (value is null)
                 {
-                    return Convert<RealmValue, TResult>(RealmValue.Null());
+                    return Convert<RealmValue, TResult>(RealmValue.Null);
                 }
 
                 /* This is another special case where `value` is inheritable from RealmObjectBase. There's
