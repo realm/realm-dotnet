@@ -6,7 +6,7 @@
 
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
-* Added support for value substitution in string based queries. So [`realm.All<T>().Filter("field1 = $0 && field2 = $1", value1, value2)`](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) is now possible
+* Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -63,7 +62,10 @@ namespace Realms
             public static extern IntPtr snapshot(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_filtered_results(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len, PrimitiveValue[] arguments, int args_count, out NativeException ex);
+            public static extern IntPtr get_filtered_results(ResultsHandle results,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
@@ -192,12 +194,12 @@ namespace Realms
         {
             var primitiveValues = new PrimitiveValue[arguments.Length];
             var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
-            for (int i = 0; i < arguments.Length; ++i)
+            for (var i = 0; i < arguments.Length; i++)
             {
                 (primitiveValues[i], handles[i]) = arguments[i].ToNative();
             }
 
-            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, primitiveValues.Length, out var ex);
+            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, (IntPtr)primitiveValues.Length, out var ex);
             foreach (var handle in handles)
             {
                 handle?.Dispose();

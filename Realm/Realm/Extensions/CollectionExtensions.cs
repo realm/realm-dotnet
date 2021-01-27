@@ -160,7 +160,7 @@ namespace Realms
         /// A Queryable collection, obtained by calling <see cref="Realm.All{T}"/>.
         /// </param>
         /// <param name="predicate">The predicate that will be applied.</param>
-        /// <param name="arguments">Comma separated values used for substitution in the predicate.</param>
+        /// <param name="arguments">Values used for substitution in the predicate. Note that all primitive types are accepted as they are implicitly converted to RealmValue.</param>
         /// <returns>A queryable observable collection of objects that match the predicate.</returns>
         /// <remarks>
         /// This method can be used in combination with LINQ filtering, but it is strongly recommended
@@ -174,6 +174,7 @@ namespace Realms
         /// var results1 = realm.All&lt;Foo&gt;("Bar.IntValue > 0");
         /// var results2 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC)");
         /// var results3 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC) DISTINCT(Bar.IntValue)");
+        /// var results4 = realm.All&lt;Foo&gt;("Bar.IntValue > $0 || (Bar.String == $1 &amp;&amp; Bar.Bool == $2)" 5, "small", true");
         /// </code>
         /// </example>
         /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
@@ -182,6 +183,7 @@ namespace Realms
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
         {
+            Argument.NotNull(arguments, nameof(arguments));
             var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return realmResults.GetFilteredResults(predicate, arguments);
         }
