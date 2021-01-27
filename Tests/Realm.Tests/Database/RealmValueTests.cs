@@ -97,6 +97,8 @@ namespace Realms.Tests.Database
 
             Assert.That((float)rv == value);
             Assert.That(rv.As<float>() == value);
+            Assert.That((float?)rv == value);
+            Assert.That(rv.As<float?>() == value);
             Assert.That(rv.AsFloat() == value);
             Assert.That(rv.AsNullableFloat() == value);
         }
@@ -112,6 +114,8 @@ namespace Realms.Tests.Database
 
             Assert.That((double)rv == value);
             Assert.That(rv.As<double>() == value);
+            Assert.That((double?)rv == value);
+            Assert.That(rv.As<double?>() == value);
             Assert.That(rv.AsDouble() == value);
             Assert.That(rv.AsNullableDouble() == value);
         }
@@ -127,6 +131,8 @@ namespace Realms.Tests.Database
 
             Assert.That((Decimal128)rv == value);
             Assert.That(rv.As<Decimal128>() == value);
+            Assert.That((Decimal128?)rv == value);
+            Assert.That(rv.As<Decimal128?>() == value);
             Assert.That(rv.AsDecimal128() == value);
             Assert.That(rv.AsNullableDecimal128() == value);
         }
@@ -142,6 +148,8 @@ namespace Realms.Tests.Database
 
             Assert.That((decimal)rv == value);
             Assert.That(rv.As<decimal>() == value);
+            Assert.That((decimal?)rv == value);
+            Assert.That(rv.As<decimal?>() == value);
             Assert.That(rv.AsDecimal() == value);
             Assert.That(rv.AsNullableDecimal() == value);
         }
@@ -157,6 +165,8 @@ namespace Realms.Tests.Database
 
             Assert.That((DateTimeOffset)rv == value);
             Assert.That(rv.As<DateTimeOffset>() == value);
+            Assert.That((DateTimeOffset?)rv == value);
+            Assert.That(rv.As<DateTimeOffset?>() == value);
             Assert.That(rv.AsDate() == value);
             Assert.That(rv.AsNullableDate() == value);
         }
@@ -172,6 +182,8 @@ namespace Realms.Tests.Database
 
             Assert.That((ObjectId)rv == value);
             Assert.That(rv.As<ObjectId>() == value);
+            Assert.That((ObjectId?)rv == value);
+            Assert.That(rv.As<ObjectId?>() == value);
             Assert.That(rv.AsObjectId() == value);
             Assert.That(rv.AsNullableObjectId() == value);
         }
@@ -187,6 +199,8 @@ namespace Realms.Tests.Database
 
             Assert.That((Guid)rv == value);
             Assert.That(rv.As<Guid>() == value);
+            Assert.That((Guid?)rv == value);
+            Assert.That(rv.As<Guid?>() == value);
             Assert.That(rv.AsGuid() == value);
             Assert.That(rv.AsNullableGuid() == value);
         }
@@ -202,6 +216,8 @@ namespace Realms.Tests.Database
 
             Assert.That((bool)rv == value);
             Assert.That(rv.As<bool>() == value);
+            Assert.That((bool?)rv == value);
+            Assert.That(rv.As<bool?>() == value);
             Assert.That(rv.AsBool() == value);
             Assert.That(rv.AsNullableBool() == value);
         }
@@ -249,12 +265,44 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmValue_Nullable() //TODO to finish
+        public void RealmValue_AsNullable_ReturnsNull()
         {
             RealmValue rv = RealmValue.Null;
 
             Assert.That(rv.AsNullableBool() == null);
-            //All other types
+            Assert.That(rv.AsNullableChar() == null);
+            Assert.That(rv.AsNullableDate() == null);
+            Assert.That(rv.AsNullableDecimal() == null);
+            Assert.That(rv.AsNullableDecimal128() == null);
+            Assert.That(rv.AsNullableDouble() == null);
+            Assert.That(rv.AsNullableFloat() == null);
+            Assert.That(rv.AsNullableGuid() == null);
+            Assert.That(rv.AsNullableObjectId() == null);
+            Assert.That(rv.AsNullableByte() == null);
+            Assert.That(rv.AsNullableByteRealmInteger() == null);
+            Assert.That(rv.AsNullableInt16() == null);
+            Assert.That(rv.AsNullableInt16RealmInteger() == null);
+            Assert.That(rv.AsNullableInt32() == null);
+            Assert.That(rv.AsNullableInt32RealmInteger() == null);
+            Assert.That(rv.AsNullableInt64() == null);
+            Assert.That(rv.AsNullableInt64RealmInteger() == null);
+
+            Assert.That((bool?)rv == null);
+            Assert.That((DateTimeOffset?)rv == null);
+            Assert.That((decimal?)rv == null);
+            Assert.That((Decimal128?)rv == null);
+            Assert.That((double?)rv == null);
+            Assert.That((float?)rv == null);
+            Assert.That((Guid?)rv == null);
+            Assert.That((ObjectId?)rv == null);
+            Assert.That((byte?)rv == null);
+            Assert.That((RealmInteger<byte>?)rv == null);
+            Assert.That((short?)rv == null);
+            Assert.That((RealmInteger<short>?)rv == null);
+            Assert.That((int?)rv == null);
+            Assert.That((RealmInteger<int>?)rv == null);
+            Assert.That((long?)rv == null);
+            Assert.That((RealmInteger<long>?)rv == null);
         }
 
         public static void RunNumericTests(RealmValue rv, long value)
@@ -265,7 +313,9 @@ namespace Realms.Tests.Database
             // 8 - byte
             Assert.That((byte)rv == value);
             Assert.That(rv.As<byte>() == value);
-            Assert.That(rv.AsByte() == value); // TODO For now we use this style to avoid problems with Equals
+            Assert.That((byte?)rv == value);
+            Assert.That(rv.As<byte?>() == value);
+            Assert.That(rv.AsByte() == value); 
             Assert.That(rv.AsNullableByte() == value);
             Assert.That(rv.AsByteRealmInteger() == value);
             Assert.That(rv.AsNullableByteRealmInteger() == value);
@@ -273,6 +323,8 @@ namespace Realms.Tests.Database
             // 16 - short
             Assert.That((short)rv == value);
             Assert.That(rv.As<short>() == value);
+            Assert.That((short?)rv == value);
+            Assert.That(rv.As<short?>() == value);
             Assert.That(rv.AsInt16() == value);
             Assert.That(rv.AsNullableInt16() == value);
             Assert.That(rv.AsInt16RealmInteger() == value);
@@ -281,6 +333,8 @@ namespace Realms.Tests.Database
             // 32 - int
             Assert.That((int)rv == value);
             Assert.That(rv.As<int>() == value);
+            Assert.That((int?)rv == value);
+            Assert.That(rv.As<int?>() == value);
             Assert.That(rv.AsInt32() == value);
             Assert.That(rv.AsNullableInt32() == value);
             Assert.That(rv.AsInt32RealmInteger() == value);
@@ -289,6 +343,8 @@ namespace Realms.Tests.Database
             // 64 - long
             Assert.That((long)rv == value);
             Assert.That(rv.As<long>() == value);
+            Assert.That((long?)rv == value);
+            Assert.That(rv.As<long?>() == value);
             Assert.That(rv.AsInt64() == value);
             Assert.That(rv.AsNullableInt64() == value);
             Assert.That(rv.AsInt64RealmInteger() == value);
