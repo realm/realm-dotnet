@@ -1140,7 +1140,7 @@ namespace Realms.Tests.Database
 
             public void AssertKeys(IDictionary<string, T> target)
             {
-                //Assert.That(target.Keys, Is.EquivalentTo(InitialValues.Select(x => x.Key)));
+                Assert.That(target.Keys, Is.EquivalentTo(InitialValues.Select(x => x.Key)));
             }
 
             public void AssertValues(IDictionary<string, T> target)

@@ -174,16 +174,14 @@ REALM_EXPORT object_store::Dictionary* realm_dictionary_freeze(const object_stor
 REALM_EXPORT Results* realm_dictionary_get_values(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(dictionary.as_results());
+        return new Results(dictionary.get_values());
     });
 }
 
-// TODO: this should use dictionary.get_keys()
 REALM_EXPORT Results* realm_dictionary_get_keys(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        throw std::logic_error("Dictionary::get_keys is not implemented yet");
-        return new Results(dictionary.as_results());
+        return new Results(dictionary.get_keys());
     });
 }
 
