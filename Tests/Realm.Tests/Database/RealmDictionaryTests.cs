@@ -52,37 +52,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(BoolTestValues))]
-        public void RealmDictionary_WhenUnmanaged_Bool(TestCaseData<bool> testData)
+        public void Unmanaged_Bool(TestCaseData<bool> testData)
         {
             RunUnmanagedTests(o => o.BooleanDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableBoolTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableBool(TestCaseData<bool?> testData)
+        public void Unmanaged_NullableBool(TestCaseData<bool?> testData)
         {
             RunUnmanagedTests(o => o.NullableBooleanDictionary, testData);
         }
 
         [TestCaseSource(nameof(BoolTestValues))]
-        public void RealmDictionary_WhenManaged_Bool(TestCaseData<bool> testData)
+        public void Managed_Bool(TestCaseData<bool> testData)
         {
             RunManagedTests(o => o.BooleanDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableBoolTestValues))]
-        public void RealmDictionary_WhenManaged_NullableBool(TestCaseData<bool?> testData)
+        public void Managed_NullableBool(TestCaseData<bool?> testData)
         {
             RunManagedTests(o => o.NullableBooleanDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Bool_EmitsNotifications()
+        public void Managed_Bool_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.BooleanDictionary, BoolTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableBool_EmitsNotifications()
+        public void Managed_NullableBool_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableBooleanDictionary, NullableBoolTestValues().Last());
         }
@@ -113,73 +113,73 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void RealmDictionary_WhenUnmanaged_Byte(TestCaseData<byte> testData)
+        public void Unmanaged_Byte(TestCaseData<byte> testData)
         {
             RunUnmanagedTests(o => o.ByteDictionary, testData);
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void RealmDictionary_WhenUnmanaged_ByteCounter(TestCaseData<byte> testData)
+        public void Unmanaged_ByteCounter(TestCaseData<byte> testData)
         {
             RunUnmanagedTests(o => o.ByteCounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableByte(TestCaseData<byte?> testData)
+        public void Unmanaged_NullableByte(TestCaseData<byte?> testData)
         {
             RunUnmanagedTests(o => o.NullableByteDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableByteCounter(TestCaseData<byte?> testData)
+        public void Unmanaged_NullableByteCounter(TestCaseData<byte?> testData)
         {
             RunUnmanagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void RealmDictionary_WhenManaged_Byte(TestCaseData<byte> testData)
+        public void Managed_Byte(TestCaseData<byte> testData)
         {
             RunManagedTests(o => o.ByteDictionary, testData);
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void RealmDictionary_WhenManaged_ByteCounter(TestCaseData<byte> testData)
+        public void Managed_ByteCounter(TestCaseData<byte> testData)
         {
             RunManagedTests(o => o.ByteCounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void RealmDictionary_WhenManaged_NullableByte(TestCaseData<byte?> testData)
+        public void Managed_NullableByte(TestCaseData<byte?> testData)
         {
             RunManagedTests(o => o.NullableByteDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void RealmDictionary_WhenManaged_NullableByteCounter(TestCaseData<byte?> testData)
+        public void Managed_NullableByteCounter(TestCaseData<byte?> testData)
         {
             RunManagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Byte_EmitsNotifications()
+        public void Managed_Byte_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.ByteDictionary, ByteTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableByte_EmitsNotifications()
+        public void Managed_NullableByte_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableByteDictionary, NullableByteTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_ByteCounter_EmitsNotifications()
+        public void Managed_ByteCounter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.ByteCounterDictionary, ToInteger(ByteTestValues().Last()));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableByteCounter_EmitsNotifications()
+        public void Managed_NullableByteCounter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableByteCounterDictionary, ToInteger(NullableByteTestValues().Last()));
         }
@@ -212,73 +212,73 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Int16(TestCaseData<short> testData)
+        public void Unmanaged_Int16(TestCaseData<short> testData)
         {
             RunUnmanagedTests(o => o.Int16Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Int16Counter(TestCaseData<short> testData)
+        public void Unmanaged_Int16Counter(TestCaseData<short> testData)
         {
             RunUnmanagedTests(o => o.Int16CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableInt16(TestCaseData<short?> testData)
+        public void Unmanaged_NullableInt16(TestCaseData<short?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt16Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableInt16Counter(TestCaseData<short?> testData)
+        public void Unmanaged_NullableInt16Counter(TestCaseData<short?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void RealmDictionary_WhenManaged_Int16(TestCaseData<short> testData)
+        public void Managed_Int16(TestCaseData<short> testData)
         {
             RunManagedTests(o => o.Int16Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void RealmDictionary_WhenManaged_Int16Counter(TestCaseData<short> testData)
+        public void Managed_Int16Counter(TestCaseData<short> testData)
         {
             RunManagedTests(o => o.Int16CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void RealmDictionary_WhenManaged_NullableInt16(TestCaseData<short?> testData)
+        public void Managed_NullableInt16(TestCaseData<short?> testData)
         {
             RunManagedTests(o => o.NullableInt16Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void RealmDictionary_WhenManaged_NullableInt16Counter(TestCaseData<short?> testData)
+        public void Managed_NullableInt16Counter(TestCaseData<short?> testData)
         {
             RunManagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Int16_EmitsNotifications()
+        public void Managed_Int16_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Int16Dictionary, Int16TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableInt16_EmitsNotifications()
+        public void Managed_NullableInt16_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt16Dictionary, NullableInt16TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Int16Counter_EmitsNotifications()
+        public void Managed_Int16Counter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Int16CounterDictionary, ToInteger(Int16TestValues().Last()));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableInt16Counter_EmitsNotifications()
+        public void Managed_NullableInt16Counter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt16CounterDictionary, ToInteger(NullableInt16TestValues().Last()));
         }
@@ -311,73 +311,73 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Int32(TestCaseData<int> testData)
+        public void Unmanaged_Int32(TestCaseData<int> testData)
         {
             RunUnmanagedTests(o => o.Int32Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Int32Counter(TestCaseData<int> testData)
+        public void Unmanaged_Int32Counter(TestCaseData<int> testData)
         {
             RunUnmanagedTests(o => o.Int32CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableInt32(TestCaseData<int?> testData)
+        public void Unmanaged_NullableInt32(TestCaseData<int?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt32Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableInt32Counter(TestCaseData<int?> testData)
+        public void Unmanaged_NullableInt32Counter(TestCaseData<int?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void RealmDictionary_WhenManaged_Int32(TestCaseData<int> testData)
+        public void Managed_Int32(TestCaseData<int> testData)
         {
             RunManagedTests(o => o.Int32Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void RealmDictionary_WhenManaged_Int32Counter(TestCaseData<int> testData)
+        public void Managed_Int32Counter(TestCaseData<int> testData)
         {
             RunManagedTests(o => o.Int32CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void RealmDictionary_WhenManaged_NullableInt32(TestCaseData<int?> testData)
+        public void Managed_NullableInt32(TestCaseData<int?> testData)
         {
             RunManagedTests(o => o.NullableInt32Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void RealmDictionary_WhenManaged_NullableInt32Counter(TestCaseData<int?> testData)
+        public void Managed_NullableInt32Counter(TestCaseData<int?> testData)
         {
             RunManagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Int32_EmitsNotifications()
+        public void Managed_Int32_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Int32Dictionary, Int32TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableInt32_EmitsNotifications()
+        public void Managed_NullableInt32_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt32Dictionary, NullableInt32TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Int32Counter_EmitsNotifications()
+        public void Managed_Int32Counter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Int32CounterDictionary, ToInteger(Int32TestValues().Last()));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableInt32Counter_EmitsNotifications()
+        public void Managed_NullableInt32Counter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt32CounterDictionary, ToInteger(NullableInt32TestValues().Last()));
         }
@@ -410,73 +410,73 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Int64(TestCaseData<long> testData)
+        public void Unmanaged_Int64(TestCaseData<long> testData)
         {
             RunUnmanagedTests(o => o.Int64Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Int64Counter(TestCaseData<long> testData)
+        public void Unmanaged_Int64Counter(TestCaseData<long> testData)
         {
             RunUnmanagedTests(o => o.Int64CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableInt64(TestCaseData<long?> testData)
+        public void Unmanaged_NullableInt64(TestCaseData<long?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt64Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableInt64Counter(TestCaseData<long?> testData)
+        public void Unmanaged_NullableInt64Counter(TestCaseData<long?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void RealmDictionary_WhenManaged_Int64(TestCaseData<long> testData)
+        public void Managed_Int64(TestCaseData<long> testData)
         {
             RunManagedTests(o => o.Int64Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void RealmDictionary_WhenManaged_Int64Counter(TestCaseData<long> testData)
+        public void Managed_Int64Counter(TestCaseData<long> testData)
         {
             RunManagedTests(o => o.Int64CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void RealmDictionary_WhenManaged_NullableInt64(TestCaseData<long?> testData)
+        public void Managed_NullableInt64(TestCaseData<long?> testData)
         {
             RunManagedTests(o => o.NullableInt64Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void RealmDictionary_WhenManaged_NullableInt64Counter(TestCaseData<long?> testData)
+        public void Managed_NullableInt64Counter(TestCaseData<long?> testData)
         {
             RunManagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Int64_EmitsNotifications()
+        public void Managed_Int64_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Int64Dictionary, Int64TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableInt64_EmitsNotifications()
+        public void Managed_NullableInt64_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt64Dictionary, NullableInt64TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Int64Counter_EmitsNotifications()
+        public void Managed_Int64Counter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Int64CounterDictionary, ToInteger(Int64TestValues().Last()));
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableInt64Counter_EmitsNotifications()
+        public void Managed_NullableInt64Counter_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt64CounterDictionary, ToInteger(NullableInt64TestValues().Last()));
         }
@@ -508,37 +508,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(FloatTestValues))]
-        public void RealmDictionary_WhenUnmanaged_Float(TestCaseData<float> testData)
+        public void Unmanaged_Float(TestCaseData<float> testData)
         {
             RunUnmanagedTests(o => o.SingleDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableFloatTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableFloat(TestCaseData<float?> testData)
+        public void Unmanaged_NullableFloat(TestCaseData<float?> testData)
         {
             RunUnmanagedTests(o => o.NullableSingleDictionary, testData);
         }
 
         [TestCaseSource(nameof(FloatTestValues))]
-        public void RealmDictionary_WhenManaged_Float(TestCaseData<float> testData)
+        public void Managed_Float(TestCaseData<float> testData)
         {
             RunManagedTests(o => o.SingleDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableFloatTestValues))]
-        public void RealmDictionary_WhenManaged_NullableFloat(TestCaseData<float?> testData)
+        public void Managed_NullableFloat(TestCaseData<float?> testData)
         {
             RunManagedTests(o => o.NullableSingleDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Float_EmitsNotifications()
+        public void Managed_Float_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.SingleDictionary, FloatTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableFloat_EmitsNotifications()
+        public void Managed_NullableFloat_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableSingleDictionary, NullableFloatTestValues().Last());
         }
@@ -573,37 +573,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(DoubleTestValues))]
-        public void RealmDictionary_WhenUnmanaged_Double(TestCaseData<double> testData)
+        public void Unmanaged_Double(TestCaseData<double> testData)
         {
             RunUnmanagedTests(o => o.DoubleDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableDouble(TestCaseData<double?> testData)
+        public void Unmanaged_NullableDouble(TestCaseData<double?> testData)
         {
             RunUnmanagedTests(o => o.NullableDoubleDictionary, testData);
         }
 
         [TestCaseSource(nameof(DoubleTestValues))]
-        public void RealmDictionary_WhenManaged_Double(TestCaseData<double> testData)
+        public void Managed_Double(TestCaseData<double> testData)
         {
             RunManagedTests(o => o.DoubleDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
-        public void RealmDictionary_WhenManaged_NullableDouble(TestCaseData<double?> testData)
+        public void Managed_NullableDouble(TestCaseData<double?> testData)
         {
             RunManagedTests(o => o.NullableDoubleDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Double_EmitsNotifications()
+        public void Managed_Double_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.DoubleDictionary, DoubleTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableDouble_EmitsNotifications()
+        public void Managed_NullableDouble_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableDoubleDictionary, NullableDoubleTestValues().Last());
         }
@@ -638,37 +638,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(DecimalTestValues))]
-        public void RealmDictionary_WhenUnmanaged_Decimal(TestCaseData<decimal> testData)
+        public void Unmanaged_Decimal(TestCaseData<decimal> testData)
         {
             RunUnmanagedTests(o => o.DecimalDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDecimalTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableDecimal(TestCaseData<decimal?> testData)
+        public void Unmanaged_NullableDecimal(TestCaseData<decimal?> testData)
         {
             RunUnmanagedTests(o => o.NullableDecimalDictionary, testData);
         }
 
         [TestCaseSource(nameof(DecimalTestValues))]
-        public void RealmDictionary_WhenManaged_Decimal(TestCaseData<decimal> testData)
+        public void Managed_Decimal(TestCaseData<decimal> testData)
         {
             RunManagedTests(o => o.DecimalDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDecimalTestValues))]
-        public void RealmDictionary_WhenManaged_NullableDecimal(TestCaseData<decimal?> testData)
+        public void Managed_NullableDecimal(TestCaseData<decimal?> testData)
         {
             RunManagedTests(o => o.NullableDecimalDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Decimal_EmitsNotifications()
+        public void Managed_Decimal_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.DecimalDictionary, DecimalTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableDecimal_EmitsNotifications()
+        public void Managed_NullableDecimal_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableDecimalDictionary, NullableDecimalTestValues().Last());
         }
@@ -703,37 +703,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Decimal128TestValues))]
-        public void RealmDictionary_WhenUnmanaged_Decimal128(TestCaseData<Decimal128> testData)
+        public void Unmanaged_Decimal128(TestCaseData<Decimal128> testData)
         {
             RunUnmanagedTests(o => o.Decimal128Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
+        public void Unmanaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
         {
             RunUnmanagedTests(o => o.NullableDecimal128Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Decimal128TestValues))]
-        public void RealmDictionary_WhenManaged_Decimal128(TestCaseData<Decimal128> testData)
+        public void Managed_Decimal128(TestCaseData<Decimal128> testData)
         {
             RunManagedTests(o => o.Decimal128Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
-        public void RealmDictionary_WhenManaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
+        public void Managed_NullableDecimal128(TestCaseData<Decimal128?> testData)
         {
             RunManagedTests(o => o.NullableDecimal128Dictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Decimal128_EmitsNotifications()
+        public void Managed_Decimal128_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.Decimal128Dictionary, Decimal128TestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableDecimal128_EmitsNotifications()
+        public void Managed_NullableDecimal128_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableDecimal128Dictionary, NullableDecimal128TestValues().Last());
         }
@@ -772,37 +772,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
-        public void RealmDictionary_WhenUnmanaged_ObjectId(TestCaseData<ObjectId> testData)
+        public void Unmanaged_ObjectId(TestCaseData<ObjectId> testData)
         {
             RunUnmanagedTests(o => o.ObjectIdDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableObjectId(TestCaseData<ObjectId?> testData)
+        public void Unmanaged_NullableObjectId(TestCaseData<ObjectId?> testData)
         {
             RunUnmanagedTests(o => o.NullableObjectIdDictionary, testData);
         }
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
-        public void RealmDictionary_WhenManaged_ObjectId(TestCaseData<ObjectId> testData)
+        public void Managed_ObjectId(TestCaseData<ObjectId> testData)
         {
             RunManagedTests(o => o.ObjectIdDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
-        public void RealmDictionary_WhenManaged_NullableObjectId(TestCaseData<ObjectId?> testData)
+        public void Managed_NullableObjectId(TestCaseData<ObjectId?> testData)
         {
             RunManagedTests(o => o.NullableObjectIdDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_ObjectId_EmitsNotifications()
+        public void Managed_ObjectId_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.ObjectIdDictionary, ObjectIdTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableObjectId_EmitsNotifications()
+        public void Managed_NullableObjectId_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableObjectIdDictionary, NullableObjectIdTestValues().Last());
         }
@@ -840,37 +840,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
-        public void RealmDictionary_WhenUnmanaged_DateTimeOffset(TestCaseData<DateTimeOffset> testData)
+        public void Unmanaged_DateTimeOffset(TestCaseData<DateTimeOffset> testData)
         {
             RunUnmanagedTests(o => o.DateTimeOffsetDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
+        public void Unmanaged_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
         {
             RunUnmanagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
         }
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
-        public void RealmDictionary_WhenManaged_DateTimeOffset(TestCaseData<DateTimeOffset> testData)
+        public void Managed_DateTimeOffset(TestCaseData<DateTimeOffset> testData)
         {
             RunManagedTests(o => o.DateTimeOffsetDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
-        public void RealmDictionary_WhenManaged_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
+        public void Managed_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
         {
             RunManagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_DateTimeOffset_EmitsNotifications()
+        public void Managed_DateTimeOffset_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.DateTimeOffsetDictionary, DateTimeOffsetTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableDateTimeOffset_EmitsNotifications()
+        public void Managed_NullableDateTimeOffset_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableDateTimeOffsetDictionary, NullableDateTimeOffsetTestValues().Last());
         }
@@ -904,37 +904,37 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(StringTestValues))]
-        public void RealmDictionary_WhenUnmanaged_String(TestCaseData<string> testData)
+        public void Unmanaged_String(TestCaseData<string> testData)
         {
             RunUnmanagedTests(o => o.StringDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableString(TestCaseData<string> testData)
+        public void Unmanaged_NullableString(TestCaseData<string> testData)
         {
             RunUnmanagedTests(o => o.NullableStringDictionary, testData);
         }
 
         [TestCaseSource(nameof(StringTestValues))]
-        public void RealmDictionary_WhenManaged_String(TestCaseData<string> testData)
+        public void Managed_String(TestCaseData<string> testData)
         {
             RunManagedTests(o => o.StringDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void RealmDictionary_WhenManaged_NullableString(TestCaseData<string> testData)
+        public void Managed_NullableString(TestCaseData<string> testData)
         {
             RunManagedTests(o => o.NullableStringDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_String_EmitsNotifications()
+        public void Managed_String_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.StringDictionary, StringTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableString_EmitsNotifications()
+        public void Managed_NullableString_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableStringDictionary, NullableStringTestValues().Last());
         }
@@ -968,42 +968,68 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(BinaryTestValues))]
-        public void RealmDictionary_WhenUnmanaged_Binary(TestCaseData<byte[]> testData)
+        public void Unmanaged_Binary(TestCaseData<byte[]> testData)
         {
             RunUnmanagedTests(o => o.BinaryDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void RealmDictionary_WhenUnmanaged_NullableBinary(TestCaseData<byte[]> testData)
+        public void Unmanaged_NullableBinary(TestCaseData<byte[]> testData)
         {
             RunUnmanagedTests(o => o.NullableBinaryDictionary, testData);
         }
 
         [TestCaseSource(nameof(BinaryTestValues))]
-        public void RealmDictionary_WhenManaged_Binary(TestCaseData<byte[]> testData)
+        public void Managed_Binary(TestCaseData<byte[]> testData)
         {
             RunManagedTests(o => o.BinaryDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void RealmDictionary_WhenManaged_NullableBinary(TestCaseData<byte[]> testData)
+        public void Managed_NullableBinary(TestCaseData<byte[]> testData)
         {
             RunManagedTests(o => o.NullableBinaryDictionary, testData);
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_Binary_EmitsNotifications()
+        public void Managed_Binary_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.BinaryDictionary, BinaryTestValues().Last());
         }
 
         [Test]
-        public void RealmDictionary_WhenManaged_NullableBinary_EmitsNotifications()
+        public void Managed_NullableBinary_EmitsNotifications()
         {
             RunManagedNotificationsTests(o => o.NullableBinaryDictionary, NullableBinaryTestValues().Last());
         }
 
         #endregion
+
+        [Test]
+        public void CanBeQueried()
+        {
+            var first = new DictionariesObject();
+            first.StringDictionary.Add("a", "b");
+            first.StringDictionary.Add("c", "d");
+
+            var second = new DictionariesObject();
+            second.StringDictionary.Add("ab", "cd");
+
+            _realm.Write(() =>
+            {
+                _realm.Add(first);
+                _realm.Add(second);
+            });
+
+            var equals = _realm.All<DictionariesObject>().Filter($"{nameof(StringDictionary)}.keys == 'a'");
+            Assert.That(equals, Is.EquivalentTo(new[] { first }));
+
+            var valueContains = _realm.All<DictionariesObject>().Filter($"{nameof(StringDictionary)} contains 'd'");
+            Assert.That(valueContains, Is.EquivalentTo(new[] { first, second }));
+
+            var startsWith = _realm.All<DictionariesObject>().Filter($"{nameof(StringDictionary)}.keys beginswith 'f'");
+            Assert.That(startsWith, Is.Empty);
+        }
 
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
