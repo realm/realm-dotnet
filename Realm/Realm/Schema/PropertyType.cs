@@ -75,7 +75,9 @@ namespace Realms.Schema
         /// </summary>
         LinkingObjects = 8,
 
-        //FP TEST
+        /// <summary>
+        /// A property that can contain RealmValue supported types.
+        /// </summary>
         Mixed = 9,
 
         /// <summary>

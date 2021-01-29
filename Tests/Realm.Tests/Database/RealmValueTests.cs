@@ -29,11 +29,9 @@ namespace Realms.Tests.Database
 
         /* What to test:
          *  - Null value can be retrieved (RealmValue can contain null)
-         *  - RealmValue cannot be null
          * - A realmValue can be set and retrieved with the same type from the db
          * - A realm value can change type and it can be retrieved
          * - Need to add RealmValue to the test classes with all Types
-         * - When testing with Null, you need to check it can be converted with all the .AsNullable....
          * 
          * Suggestions from Nikola
          * That looks fine to me - I think you might also want to cover the explicit cast cases as well as some error cases - e.g. trying to cast the value to string
@@ -49,6 +47,11 @@ namespace Realms.Tests.Database
          * - Queries
          * - List of realm values work as expected
          * 
+         *  rv == Realm.Null
+         *  rv.IsNull() ?
+         * 
+         * 
+         * This is what Nikola wanted, but it seems we can't really set the struct to null
          *  foo.rv = null // works
          *  foo.rv == null => return true
          *  foo.rv is null => return false -- this what means that it cannot be null (but contain Null)
@@ -84,6 +87,52 @@ namespace Realms.Tests.Database
         public void RealmValue_WhenUnmanaged_LongTests()
         {
             RunNumericTests(10L, 10);
+        }
+
+        public static void RunNumericTests(RealmValue rv, long value)
+        {
+            Assert.That(rv == value);
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Int));
+
+            // 8 - byte
+            Assert.That((byte)rv == value);
+            Assert.That(rv.As<byte>() == value);
+            Assert.That((byte?)rv == value);
+            Assert.That(rv.As<byte?>() == value);
+            Assert.That(rv.AsByte() == value);
+            Assert.That(rv.AsNullableByte() == value);
+            Assert.That(rv.AsByteRealmInteger() == value);
+            Assert.That(rv.AsNullableByteRealmInteger() == value);
+
+            // 16 - short
+            Assert.That((short)rv == value);
+            Assert.That(rv.As<short>() == value);
+            Assert.That((short?)rv == value);
+            Assert.That(rv.As<short?>() == value);
+            Assert.That(rv.AsInt16() == value);
+            Assert.That(rv.AsNullableInt16() == value);
+            Assert.That(rv.AsInt16RealmInteger() == value);
+            Assert.That(rv.AsNullableInt16RealmInteger() == value);
+
+            // 32 - int
+            Assert.That((int)rv == value);
+            Assert.That(rv.As<int>() == value);
+            Assert.That((int?)rv == value);
+            Assert.That(rv.As<int?>() == value);
+            Assert.That(rv.AsInt32() == value);
+            Assert.That(rv.AsNullableInt32() == value);
+            Assert.That(rv.AsInt32RealmInteger() == value);
+            Assert.That(rv.AsNullableInt32RealmInteger() == value);
+
+            // 64 - long
+            Assert.That((long)rv == value);
+            Assert.That(rv.As<long>() == value);
+            Assert.That((long?)rv == value);
+            Assert.That(rv.As<long?>() == value);
+            Assert.That(rv.AsInt64() == value);
+            Assert.That(rv.AsNullableInt64() == value);
+            Assert.That(rv.AsInt64RealmInteger() == value);
+            Assert.That(rv.AsNullableInt64RealmInteger() == value);
         }
 
         [Test]
@@ -305,69 +354,233 @@ namespace Realms.Tests.Database
             Assert.That((RealmInteger<long>?)rv == null);
         }
 
-        public static void RunNumericTests(RealmValue rv, long value)
+        [Test]
+        public void RealmValue_WhenManaged_IntTest()
         {
-            Assert.That(rv == value);
-            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Int));
+            int value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
 
-            // 8 - byte
-            Assert.That((byte)rv == value);
-            Assert.That(rv.As<byte>() == value);
-            Assert.That((byte?)rv == value);
-            Assert.That(rv.As<byte?>() == value);
-            Assert.That(rv.AsByte() == value); 
-            Assert.That(rv.AsNullableByte() == value);
-            Assert.That(rv.AsByteRealmInteger() == value);
-            Assert.That(rv.AsNullableByteRealmInteger() == value);
-
-            // 16 - short
-            Assert.That((short)rv == value);
-            Assert.That(rv.As<short>() == value);
-            Assert.That((short?)rv == value);
-            Assert.That(rv.As<short?>() == value);
-            Assert.That(rv.AsInt16() == value);
-            Assert.That(rv.AsNullableInt16() == value);
-            Assert.That(rv.AsInt16RealmInteger() == value);
-            Assert.That(rv.AsNullableInt16RealmInteger() == value);
-
-            // 32 - int
-            Assert.That((int)rv == value);
-            Assert.That(rv.As<int>() == value);
-            Assert.That((int?)rv == value);
-            Assert.That(rv.As<int?>() == value);
-            Assert.That(rv.AsInt32() == value);
-            Assert.That(rv.AsNullableInt32() == value);
-            Assert.That(rv.AsInt32RealmInteger() == value);
-            Assert.That(rv.AsNullableInt32RealmInteger() == value);
-
-            // 64 - long
-            Assert.That((long)rv == value);
-            Assert.That(rv.As<long>() == value);
-            Assert.That((long?)rv == value);
-            Assert.That(rv.As<long?>() == value);
-            Assert.That(rv.AsInt64() == value);
-            Assert.That(rv.AsNullableInt64() == value);
-            Assert.That(rv.AsInt64RealmInteger() == value);
-            Assert.That(rv.AsNullableInt64RealmInteger() == value);
+            Assert.That(retrievedObject.RealmValueProperty == value);
         }
 
         [Test]
-        public void RealmValue_WhenManaged()
+        public void RealmValue_WhenManaged_ShortTest()
         {
-            int value = 10;
+            short value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_LongTest()
+        {
+            long value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_CharTest()
+        {
+            char value = 'a';
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_ByteTest()
+        {
+            byte value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_BoolTest()
+        {
+            bool value = true;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_FloatTest()
+        {
+            float value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_DoubleTest()
+        {
+            double value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_Decimal128Test()
+        {
+            Decimal128 value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_DecimalTest()
+        {
+            decimal value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_GuidTest()
+        {
+            Guid value = Guid.NewGuid();
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_ObjectIdTest()
+        {
+            ObjectId value = ObjectId.GenerateNewId();
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_DateTest()
+        {
+            DateTimeOffset value = DateTimeOffset.Now;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        public class RO : RealmObject
+        {
+            [PrimaryKey]
+            public int Id { get; set; }
+
+            public RLink Link { get; set; }
+        }
+
+        public class RLink : RealmObject
+        {
+            public string Name { get; set; }
+        }
+
+        [Test]
+        public void AAAREst()
+        {
+            var rlink = new RLink { Name = "lucio" };
+            var ro = new RO { Id = 1, Link = rlink };
 
             _realm.Write(() =>
             {
-                _realm.Add(new RealmValueObject
-                {
-                    Id = 1,
-                    RealmValue = value
-                });
+                _realm.Add(ro);
             });
 
-            var ob = _realm.Find<RealmValueObject>(1);
+            var retrieved = _realm.Find<RO>(1);
 
-            Assert.That(ob.RealmValue == value);
+            var again = retrieved.Link;
+
+            Assert.That(again.Name == "lucio");
+
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_StringTest()
+        {
+            string value = "abc";
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty == value);
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_DataTest()
+        {
+            byte[] value = new byte[] { 0, 1, 2 };
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty.AsData(), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void RealmValue_WhenManaged_ObjectTest()
+        {
+            Dog value = new Dog { Name = "Fido", Color = "Brown" };
+
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+            var retrievedRv = (Dog)retrievedObject.RealmValueProperty;
+
+            Assert.That(retrievedRv.Name == value.Name);
+            Assert.That(retrievedRv.Color == value.Color);
+        }
+
+        [Test]
+        public void RealmValue_WithRealmInteger_Increments()
+        {
+            int value = 10;
+            var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
+            var retrievedObject = PersistAndFind(rvo);
+
+            Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 10);
+
+            _realm.Write(() =>
+            {
+                retrievedObject.RealmValueProperty.AsInt32RealmInteger().Increment();
+            });
+
+            Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 11);
+
+            _realm.Write(() =>
+            {
+                retrievedObject.RealmValueProperty.AsInt32RealmInteger().Decrement();
+            });
+
+            Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 10);
+        }
+
+        private RealmValueObject PersistAndFind(RealmValueObject rvo)
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(rvo);
+            });
+
+            return _realm.Find<RealmValueObject>(1);
         }
 
         private class RealmValueObject : RealmObject
@@ -375,7 +588,7 @@ namespace Realms.Tests.Database
             [PrimaryKey]
             public int Id { get; set; }
 
-            public RealmValue RealmValue { get; set; }
+            public RealmValue RealmValueProperty { get; set; }
         }
     }
 }
