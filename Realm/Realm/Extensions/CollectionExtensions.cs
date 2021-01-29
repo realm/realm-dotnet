@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Helpers;
 
@@ -35,7 +36,7 @@ namespace Realms
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> which
         /// implements <see cref="INotifyCollectionChanged"/>.
         /// </summary>
-        /// <param name="query">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <param name="query">The <see cref="IQueryable{T}"/> to observe for changes.</param>
         /// <typeparam name="T">Type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
@@ -55,13 +56,13 @@ namespace Realms
         /// <summary>
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
-        /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <param name="results">The <see cref="IQueryable{T}"/> to observe for changes.</param>
         /// <typeparam name="T">Type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
-        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
-        /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
             where T : RealmObjectBase
@@ -73,8 +74,8 @@ namespace Realms
         /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
         /// <see cref="INotifyCollectionChanged"/>.
         /// </summary>
-        /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the objects in the list.</typeparam>
+        /// <param name="list">The <see cref="IList{T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list)
@@ -90,15 +91,15 @@ namespace Realms
         }
 
         /// <summary>
-        /// A convenience method that casts <see cref="IList{T}" /> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
-        /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the objects in the list.</typeparam>
+        /// <param name="list">The <see cref="IList{T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
-        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
-        /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback);
 
@@ -151,6 +152,42 @@ namespace Realms
         }
 
         /// <summary>
+        /// A convenience method that casts <see cref="IDictionary{String, T}"/> to <see cref="IRealmCollection{KeyValuePair}"/> which implements
+        /// <see cref="INotifyCollectionChanged"/>.
+        /// </summary>
+        /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
+        /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
+        public static IRealmCollection<KeyValuePair<string, T>> AsRealmCollection<T>(this IDictionary<string, T> dictionary)
+        {
+            Argument.NotNull(dictionary, nameof(dictionary));
+
+            if (dictionary is RealmDictionary<T> collection)
+            {
+                return collection;
+            }
+
+            throw new ArgumentException($"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+        }
+
+        /// <summary>
+        /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// </summary>
+        /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
+        /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
+        /// </returns>
+        public static IDisposable SubscribeForNotifications<T>(this IDictionary<string, T> dictionary, NotificationCallbackDelegate<KeyValuePair<string, T>> callback)
+        {
+            return dictionary.AsRealmCollection().SubscribeForNotifications(callback);
+        }
+
+        /// <summary>
         /// Apply an NSPredicate-based filter over a collection. It can be used to create
         /// more complex queries, that are currently unsupported by the LINQ provider and
         /// supports SORT and DISTINCT clauses in addition to filtering.
@@ -183,6 +220,52 @@ namespace Realms
         {
             var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return realmResults.GetFilteredResults(predicate);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+        public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
+            => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+        public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
+            => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
+
+        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object> valueGetter)
+        {
+            Argument.NotNull(target, nameof(target));
+
+            if (!skipDefaults || source != null)
+            {
+                target.Clear();
+            }
+
+            var realm = ((IRealmCollection<T>)target).Realm;
+
+            if (source != null)
+            {
+                foreach (var item in source)
+                {
+                    var value = valueGetter(item);
+                    if (value is RealmObject obj && obj != null)
+                    {
+                        realm.Add(obj, update);
+                    }
+                    else if (value is RealmValue val && val.Type == RealmValueType.Object)
+                    {
+                        var wrappedObj = val.AsRealmObject();
+                        if (wrappedObj is RealmObject robj)
+                        {
+                            realm.Add(robj, update);
+                        }
+                    }
+
+                    target.Add(item);
+                }
+            }
         }
     }
 }

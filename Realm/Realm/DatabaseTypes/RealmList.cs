@@ -50,7 +50,7 @@ namespace Realms
             _listHandle = adoptedList;
         }
 
-        internal override CollectionHandleBase CreateHandle() => _listHandle;
+        internal override CollectionHandleBase GetOrCreateHandle() => _listHandle;
 
         ListHandle IRealmList.NativeHandle => _listHandle;
 
@@ -183,6 +183,8 @@ namespace Realms
         }
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmList<T>(realm, (ListHandle)handle, Metadata);
+
+        protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 

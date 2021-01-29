@@ -3,6 +3,7 @@ set(SOURCES
     error_handling.cpp
     list_cs.cpp
     set_cs.cpp
+    dictionary_cs.cpp
     marshalling.cpp
     object_cs.cpp
     query_cs.cpp

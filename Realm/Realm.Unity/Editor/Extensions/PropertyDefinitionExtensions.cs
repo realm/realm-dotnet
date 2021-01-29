@@ -60,6 +60,11 @@ internal static class PropertyDefinitionExtensions
         return property.IsType("ISet`1", "System.Collections.Generic");
     }
 
+    internal static bool IsIDictionary(this PropertyDefinition property)
+    {
+        return property.IsType("IDictionary`2", "System.Collections.Generic");
+    }
+
     internal static bool IsCollection(this PropertyDefinition property, out RealmCollectionType collectionType)
     {
         if (property.IsISet())
@@ -74,18 +79,24 @@ internal static class PropertyDefinitionExtensions
             return true;
         }
 
+        if (property.IsIDictionary())
+        {
+            collectionType = RealmCollectionType.IDictionary;
+            return true;
+        }
+
         collectionType = RealmCollectionType.None;
         return false;
     }
 
     internal static bool IsCollection(this PropertyDefinition property, TypeReference elementType)
     {
-        return (IsIList(property) || IsISet(property)) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().IsSameAs(elementType);
+        return (IsIList(property) || IsISet(property)) && ((GenericInstanceType)property.PropertyType).GenericArguments.Last().IsSameAs(elementType);
     }
 
     internal static bool IsCollection(this PropertyDefinition property, System.Type elementType)
     {
-        return property.IsCollection(out _) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().FullName == elementType.FullName;
+        return property.IsCollection(out _) && ((GenericInstanceType)property.PropertyType).GenericArguments.Last().FullName == elementType.FullName;
     }
 
     internal static bool IsIQueryable(this PropertyDefinition property)

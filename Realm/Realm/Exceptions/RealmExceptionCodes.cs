@@ -41,6 +41,7 @@ namespace Realms.Exceptions
         RealmDuplicatePrimaryKeyValue = 23,
         RealmClosed = 24,
         ObjectManagedByAnotherRealm = 25,
+        KeyAlreadyExists = 26,
 
         RealmDotNetExceptionDuringMigration = 30,
 
