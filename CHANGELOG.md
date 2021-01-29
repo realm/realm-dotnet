@@ -6,7 +6,11 @@
 
 ### Enhancements
 * Add support for the `Guid` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
-* Add support for dictionaries. Currently only string keys are supported, while the value type may be any of the supported types (the primitive types or custom types that inherit from RealmObject/EmbeddedObject). Lists, sets, or other dictionaries may not be used as the value type. To add a dictionary to your model, define a getter-only property of type `IDictionary<string, T>`:
+* Add support for dictionaries. Currently only string keys are supported, while the value
+  type may be any of the supported types (the primitive types or custom types that inherit
+  from RealmObject/EmbeddedObject). Lists, sets, or other dictionaries may not be used as
+  the value type. To add a dictionary to your model, define a getter-only property of type
+  `IDictionary<string, T>`:
 
   ```csharp
   public class MyObject : RealmObject
