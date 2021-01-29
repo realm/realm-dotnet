@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -412,64 +414,256 @@ namespace Realms.Tests.Database
             Assert.That(query.ToArray().All(i => i.Int >= 5));
         }
 
-        [Test]
-        public void Bool_StringBasedQuery() => Generic_StringBasedQuery<BoolPropertyObject>();
+        public struct StringQueryTestData
+        {
+            public string PropertyName;
+            public RealmValue MatchingValue;
+            public RealmValue NonMatchingValue;
+
+            private delegate object Converter(RealmValue value);
+
+            public StringQueryTestData(string propertyName, RealmValue matchingValue, RealmValue nonMatchingValue)
+            {
+                PropertyName = propertyName;
+                MatchingValue = matchingValue;
+                NonMatchingValue = nonMatchingValue;
+            }
+
+            public (object? MatchingValue, object? NonMatchingValue) ConvertBoxedValueToCorrectType(Type targetType)
+            {
+                if (targetType == null)
+                {
+                    return (null, null);
+                }
+
+                // boxed value types can't be casted to Decimal128
+                if (PropertyName == "Decimal128Property")
+                {
+                    return (TryToConvert(MatchingValue, (value) => value.AsDecimal128()), TryToConvert(NonMatchingValue, (value) => value.AsDecimal128()));
+                }
+                else
+                {
+                    return (TryToConvert(MatchingValue.AsAny(), targetType), TryToConvert(NonMatchingValue.AsAny(), targetType));
+                }
+            }
+
+            private static object? TryToConvert(RealmValue value, Converter converter)
+            {
+                try
+                {
+                    return converter(value);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            private static object? TryToConvert(object value, Type targetType)
+            {
+                try
+                {
+                    return Convert.ChangeType(value, targetType);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases()
+        {
+            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 'b');
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 0x4);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 5, 4);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 34, 42);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 74L, 23L);
+            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 3.0f, 2.0f);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 4.0, 2.0);
+            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, false);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2020, 8, 2, 0, 0, 0, TimeSpan.Zero));
+            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 0.9999999999999999999999999999, 0.3333333333333333333333333333);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new Decimal128(666.42300000003));
+            yield return new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5ffffffffffff22222222222"));
+            yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0ffffffb-dddd-4444-aaaa-70000000000e"));
+            yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello world", "no salute");
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 });
+        }
+
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases_NumbericValues_ImplicitConvertion_Matches()
+        {
+            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'a', 97);
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, 6);
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0xf, 15.0f);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 55, 55.0f);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 66, 66.0);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 19, 19.0f);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 77L, 77);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 82L, 82m);
+            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 88.8f, 88.8);
+            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 49f, 49);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 106.0, 106m);
+            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 1);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 1m, 1f);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 5m, 5.0);
+        }
+
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases_NumbericValues_ImplicitConvertion_Mismatches()
+        {
+            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 2555);
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 542359);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 5, 35L);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 34, 563.0f);
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 74L, 7435);
+            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 3.0f, 21.0);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 4.0, 'c');
+            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 298);
+        }
+
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases_NumbericValues_NoImplicitConvertion_Mismatches()
+        {
+            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 109.9, 109.9f);
+        }
+
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases_MismatchingValueTypes_ToThrow()
+        {
+            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', "who are you");
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 2, "no one is here");
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 3, "go away");
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 32L, "again you?");
+            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 4.0f, "I said go");
+            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 5.0, "I'm getting angry");
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, "I give up");
+            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, "enough");
+            yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), 5);
+            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 7m, new byte[] { 0x1, 0x2, 0x3 });
+            yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new byte[] { 0x3, 0x2, 0x1 });
+            yield return new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), "hello world");
+            yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), 'v');
+            yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello you3", 13m);
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, 34L);
+        }
+
+        [TestCaseSource(nameof(StringQueryTestCases))]
+        public void QueryFilter_WithArguments_ShouldReturnMatchingValues(StringQueryTestData data)
+        {
+            var pi = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(pi.PropertyType);
+
+            _realm.Write(() =>
+            {
+                var matchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                pi.SetValue(matchingObj, castedValues.MatchingVal);
+
+                var nonMatchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                pi.SetValue(nonMatchingObj, castedValues.NonMatchingVal);
+            });
+
+            var matches = _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.MatchingValue);
+            var foundVal = pi.GetValue(matches.Single());
+            Assert.AreEqual(foundVal, castedValues.MatchingVal);
+        }
+
+        [TestCaseSource(nameof(StringQueryTestCases_NumbericValues_ImplicitConvertion_Matches))]
+        public void QueryFilter_WithImplicitlyConvertibleNumericArguments_ShouldMatch(StringQueryTestData data)
+        {
+            QueryFilter_matchCounter_internal(data, 1);
+        }
+
+        [TestCaseSource(nameof(StringQueryTestCases_NumbericValues_ImplicitConvertion_Mismatches))]
+        public void QueryFilter_WithImplicitlyConvertibleNumericArguments_ShouldNotMatch(StringQueryTestData data)
+        {
+            QueryFilter_matchCounter_internal(data, 0);
+        }
+
+        [TestCaseSource(nameof(StringQueryTestCases_NumbericValues_NoImplicitConvertion_Mismatches))]
+        public void QueryFilter_WithNonImplicitlyConvertibleArguments_ShouldMismatch(StringQueryTestData data)
+        {
+            QueryFilter_matchCounter_internal(data, 0);
+        }
+
+        private void QueryFilter_matchCounter_internal(StringQueryTestData data, int matchingCount)
+        {
+            var pi = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(pi.PropertyType);
+            _realm.Write(() =>
+            {
+                var matchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                pi.SetValue(matchingObj, castedValues.MatchingVal);
+            });
+
+            var matches = _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue);
+            Assert.AreEqual(matches.Count(), matchingCount);
+
+            // this method always assumes no more than 1 match, given the structure of StringQueryTestData
+            if (matchingCount == 1)
+            {
+                Assert.AreEqual(pi.GetValue(matches.Single()), castedValues.MatchingVal);
+            }
+        }
+
+        [TestCaseSource(nameof(StringQueryTestCases_MismatchingValueTypes_ToThrow))]
+        public void QueryFilter_WithWrongArguments_ShouldThrow(StringQueryTestData data)
+        {
+            var pi = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(pi.PropertyType);
+            _realm.Write(() =>
+            {
+                var matchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                pi.SetValue(matchingObj, castedValues.MatchingVal);
+            });
+
+            Assert.Throws<RealmException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue), $"Unsupported comparison between type {pi.PropertyType.Name} and type {data.NonMatchingValue.GetType().Name}");
+        }
 
         [Test]
-        public void Char_StringBasedQuery() => Generic_StringBasedQuery<CharPropertyObject>();
+        public void QueryFilter_WithArgumentsObject_ShouldMatch()
+        {
+            var matchingObj = new PrimaryKeyInt32Object { Int32Property = 42 };
+            var nonMatchingObj = new PrimaryKeyInt32Object { Int32Property = 4 };
+            _realm.Write(() =>
+            {
+                _realm.Add(new ObjectPropertyObject { Object = matchingObj });
+                _realm.Add(new ObjectPropertyObject { Object = nonMatchingObj });
+            });
+
+            var matches = _realm.All<ObjectPropertyObject>().Filter("Object = $0", matchingObj);
+            var foundObj = matches.Single();
+            Assert.AreEqual(matchingObj, foundObj.Object);
+        }
 
         [Test]
-        public void SingleByte_StringBasedQuery() => Generic_StringBasedQuery<SingleBytePropertyObject>();
-
-        [Test]
-        public void Int16_StringBasedQuery() => Generic_StringBasedQuery<Int16PropertyObject>();
-
-        [Test]
-        public void Int_StringBasedQuery() => Generic_StringBasedQuery<IntPropertyObject>();
-
-        [Test]
-        public void Int64_StringBasedQuery() => Generic_StringBasedQuery<Int64PropertyObject>();
-
-        [Test]
-        public void Float_StringBasedQuery() => Generic_StringBasedQuery<FloatPropertyObject>();
-
-        [Test]
-        public void Double_StringBasedQuery() => Generic_StringBasedQuery<DoublePropertyObject>();
-
-        [Test]
-        public void Date_StringBasedQuery() => Generic_StringBasedQuery<DatePropertyObject>();
-
-        [Test]
-        public void Decimal_StringBasedQuery() => Generic_StringBasedQuery<DecimalPropertyObject>();
-
-        [Test]
-        public void ObjectId_StringBasedQuery() => Generic_StringBasedQuery<ObjectIdPropertyObject>();
-
-        [Test]
-        public void Guid_StringBasedQuery() => Generic_StringBasedQuery<GuidPropertyObject>();
-
-        [Test]
-        public void Byte_StringBasedQuery() => Generic_StringBasedQuery<BytePropertyObject>();
-
-        [Test]
-        public void String_StringBasedQuery() => Generic_StringBasedQuery<StringPropertyObject>();
-
-        [Test]
-        public void Object_StringBasedQuery() => Generic_StringBasedQuery<ObjectPropertyObject>();
-
-        [Test]
-        public void MultipleValues_StringBasedQuery() => Generic_StringBasedQuery<MultiPropertyObject>();
-
-        [Test]
-        public void InMemoryObject_StringBasedQuery_ShouldFindNone()
+        public void QueryFilter_WithArgumentsInMemoryObjects_ShouldThrow()
         {
             _realm.Write(() =>
             {
-                _realm.Add(new ObjectPropertyObject { Object = new IntPropertyObject { Int = 5 } });
+                _realm.Add(new ObjectPropertyObject { Object = new PrimaryKeyInt32Object { Int32Property = 42 } });
             });
 
-            var query = _realm.All<ObjectPropertyObject>().Filter("Object = $0", new IntPropertyObject { Int = 5 });
-            Assert.That(query.Count, Is.EqualTo(0));
+            Assert.Throws<RealmException>(() => _realm.All<ObjectPropertyObject>().Filter("Object = $0", new PrimaryKeyInt32Object { Int32Property = 42 }), "**put your message here!**");
+        }
+
+        [Test]
+        public void QueryFilter_WithNullArguments_ShouldThrow()
+        {
+            Assert.Throws<ArgumentNullException>(() => _realm.All<Dog>().Filter("Name = $0", null));
+        }
+
+        [Test]
+        public void QueryFilter_WithMultipleArguments_ShouldMatch()
+        {
+            var matchingObj = new MultiPropertyObject { String = "hello pp", Int = 9, Float = 21.0f, Char = 'p' };
+            var nonMatchingObj = new MultiPropertyObject { String = "no salute", Int = 0, Float = 1.0f, Char = 'h' };
+            _realm.Write(() =>
+            {
+                _realm.Add(matchingObj);
+                _realm.Add(nonMatchingObj);
+            });
+
+            var matches = _realm.All<MultiPropertyObject>().Filter("Int == $0 && Float == $1 && Char == $2 && String == $3", 9, 21.0f, 'p', "hello pp");
+            var foundObj = matches.Single();
+            Assert.AreEqual(foundObj, matchingObj);
         }
 
         [Test]
@@ -1038,74 +1232,6 @@ namespace Realms.Tests.Database
         private class B : RealmObject
         {
             public IntPropertyObject C { get; set; }
-        }
-
-        public struct InfoContainer
-        {
-            public RealmObject Obj;
-            public string QueryString;
-            public RealmValue[] Value;
-
-            public InfoContainer(RealmObject obj, string query, params RealmValue[] args)
-            {
-                Obj = obj;
-                QueryString = query;
-                Value = args;
-            }
-        }
-
-        private static InfoContainer[] InitArray()
-        {
-            var intProp = new IntPropertyObject { Int = 42 };
-
-            return new InfoContainer[]
-            {
-                new InfoContainer(new BoolPropertyObject { Bool = true }, "Bool == $0", true),
-                new InfoContainer(new CharPropertyObject { Char = 'c' }, "Char == $0", 'c'),
-                new InfoContainer(new SingleBytePropertyObject { Byte = 0x5 }, "Byte == $0", 0x5),
-                new InfoContainer(new Int16PropertyObject { Short = 6 }, "Short == $0", 6),
-                new InfoContainer(new IntPropertyObject { Int = 5 }, "Int == $0", 5),
-                new InfoContainer(new Int64PropertyObject { Long = 5L }, "Long == $0", 5L),
-                new InfoContainer(new FloatPropertyObject { Float = 5.0f }, "Float == $0", 5.0f),
-                new InfoContainer(new DoublePropertyObject { Double = 5.0 }, "Double == $0", 5.0),
-                new InfoContainer(new DatePropertyObject { Date = new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }, "Date == $0", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero)),
-                new InfoContainer(new DecimalPropertyObject { Decimal = new Decimal128(564.42343424323) }, "Decimal == $0", new Decimal128(564.42343424323)),
-                new InfoContainer(new ObjectIdPropertyObject { Id = new ObjectId("5f64cd9f1691c361b2451d96") }, "Id == $0", new ObjectId("5f64cd9f1691c361b2451d96")),
-                new InfoContainer(new GuidPropertyObject { Id = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e") }, "Id == $0", new Guid("0f8fad5b-d9cb-469f-a165-70867728950e")),
-                new InfoContainer(new BytePropertyObject { Data = new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 } }, "Data == $0", new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }),
-                new InfoContainer(new StringPropertyObject { String = "hello world" }, "String == $0", "hello world"),
-                new InfoContainer(new ObjectPropertyObject { Object = intProp }, "Object == $0", intProp),
-                new InfoContainer(new MultiPropertyObject { String = "hello pp", Int = 9, Float = 21.0f, Char = 'p' }, "Int == $0 && Float == $1 && Char == $2 && String == $3", 9, 21.0f, 'p', "hello pp")
-            };
-        }
-
-        private void Generic_StringBasedQuery<T>()
-            where T : RealmObject
-        {
-            var listToStringQuery = InitArray();
-
-            if (listToStringQuery.Length < 1)
-            {
-                Assert.Fail("listToStringQuery is empty. Nothing to test.");
-            }
-
-            InfoContainer foundObj = listToStringQuery[0];
-            _realm.Write(() =>
-            {
-                for (int i = 0; i < listToStringQuery.Length; ++i)
-                {
-                    var currObj = listToStringQuery[i];
-                    if (typeof(T) == currObj.Obj.GetType())
-                    {
-                        foundObj = currObj;
-                    }
-
-                    _realm.Add(currObj.Obj);
-                }
-            });
-
-            var query = _realm.All<T>().Filter(foundObj.QueryString, foundObj.Value);
-            Assert.That(query.Single().Equals(foundObj.Obj));
         }
     }
 }
