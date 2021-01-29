@@ -18,13 +18,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms;
 
 namespace AssemblyToProcess
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RealmListWithSetter : RealmObject
     {
         public IList<Person> People { get; set; }
@@ -32,14 +30,33 @@ namespace AssemblyToProcess
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class RealmSetWithSetter : RealmObject
+    {
+        public ISet<Person> People { get; set; }
+
+        public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
+    }
+
+    public class RealmDictionaryWithSetter : RealmObject
+    {
+        public IDictionary<string, Person> People { get; set; }
+
+        public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
+    }
+
+    public class RealmDictionaryWithNonStringKey : RealmObject
+    {
+        public IDictionary<int, Person> People { get; }
+
+        public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
+    }
+
     public class EmbeddedWithPrimaryKey : EmbeddedObject
     {
         [PrimaryKey]
         public int NotAllowed { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IndexedProperties : RealmObject
     {
         // These should be allowed:
@@ -65,7 +82,6 @@ namespace AssemblyToProcess
         public float SingleProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RequiredProperties : RealmObject
     {
         // These should be allowed:
@@ -139,7 +155,6 @@ namespace AssemblyToProcess
         public IList<Person> ListProperty { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyProperties : RealmObject
     {
         // These should be allowed:
@@ -163,7 +178,6 @@ namespace AssemblyToProcess
     }
 
     // This class has no default constructor which is necessary for Realm.CreateObject<>()
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DefaultConstructorMissing : RealmObject
     {
         public DefaultConstructorMissing(int parameter)
@@ -174,7 +188,6 @@ namespace AssemblyToProcess
     }
 
     // This class has no persisted properties. 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NoPersistedProperties : RealmObject
     {
         public int PublicField;
@@ -184,7 +197,6 @@ namespace AssemblyToProcess
     }
 
     // This class has realm attributes applied on non-persisted properties
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IncorrectAttributes : RealmObject
     {
         [PrimaryKey]
@@ -203,7 +215,6 @@ namespace AssemblyToProcess
         public string PersistedProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NotSupportedProperties : RealmObject
     {
         public DateTime DateTimeProperty { get; set; }
@@ -223,7 +234,6 @@ namespace AssemblyToProcess
         }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class InvalidBacklinkRelationships : RealmObject
     {
         public int Id { get; set; }

@@ -23,36 +23,52 @@ namespace Realms
 {
     internal abstract class CollectionHandleBase : NotifiableObjectHandleBase
     {
+        protected delegate IntPtr SnapshotDelegate(out NativeException ex);
+
         public abstract bool IsValid { get; }
+
+        public bool CanSnapshot => SnapshotCore != null;
+
+        protected virtual SnapshotDelegate SnapshotCore => null;
 
         protected CollectionHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
-        {
-            GetValueAtIndexCore((IntPtr)index, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-
-            if (result.Type != RealmValueType.Object)
-            {
-                return new RealmValue(result);
-            }
-
-            var objectHandle = result.AsObject(Root);
-            return new RealmValue(realm.MakeObject(metadata, objectHandle));
-        }
-
-        protected abstract void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException);
-
         public abstract int Count();
 
-        public abstract ResultsHandle Snapshot();
+        public ResultsHandle Snapshot()
+        {
+            if (CanSnapshot)
+            {
+                var ptr = SnapshotCore(out var ex);
+                ex.ThrowIfNecessary();
+                return new ResultsHandle(Root ?? this, ptr);
+            }
+
+            throw new NotSupportedException("Snapshotting this collection is not supported.");
+        }
 
         public abstract ResultsHandle GetFilteredResults(string query, RealmValue[] arguments);
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
+
+        protected RealmValue ToRealmValue(PrimitiveValue primitive, RealmObjectBase.Metadata metadata, Realm realm)
+        {
+            if (primitive.Type != RealmValueType.Object)
+            {
+                return new RealmValue(primitive);
+            }
+
+            var objectHandle = primitive.AsObject(Root);
+            if (metadata == null)
+            {
+                throw new NotImplementedException("Mixed objects are not supported yet.");
+            }
+
+            return new RealmValue(realm.MakeObject(metadata, objectHandle));
+        }
     }
 }

@@ -178,7 +178,7 @@ static inline ObjectId from_capi(realm_object_id_t oid)
 static inline realm_uuid_t to_capi(UUID uuid)
 {
     const auto& bytes = uuid.to_bytes();
-    realm_uuid_t result;
+    realm_uuid_t result{};
     for (int i = 0; i < 16; i++)
     {
         result.bytes[i] = bytes[i];
@@ -261,6 +261,16 @@ static inline std::string to_string(PropertyType type)
     return to_string(to_capi(type));
 }
 
+static inline Mixed from_capi(Object* obj, bool isMixedColumn)
+{
+    if (!isMixedColumn)
+    {
+        return Mixed{ obj->obj().get_key() };
+    }
+
+    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
+}
+
 static inline Mixed from_capi(realm_value_t val)
 {
     switch (val.type) {
@@ -287,20 +297,9 @@ static inline Mixed from_capi(realm_value_t val)
     case realm_value_type::RLM_TYPE_UUID:
         return Mixed{ from_capi(val.uuid) };
     case realm_value_type::RLM_TYPE_LINK:
-        REALM_TERMINATE("Can't use from_capi on values containing links.");
+        return from_capi(val.link.object, true);
     }
     REALM_TERMINATE("Invalid realm_value_t");
-}
-
-static inline Mixed from_capi(Object* obj, bool isMixedColumn)
-{
-    if (!isMixedColumn)
-    {
-        return Mixed{ obj->obj().get_key() };
-    }
-
-    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
-
 }
 
 static inline realm_value_t to_capi(Object* obj)
@@ -313,7 +312,7 @@ static inline realm_value_t to_capi(Object* obj)
 
 static inline realm_value_t to_capi(Mixed value)
 {
-    realm_value_t val;
+    realm_value_t val{};
     if (value.is_null()) {
         val.type = realm_value_type::RLM_TYPE_NULL;
     }

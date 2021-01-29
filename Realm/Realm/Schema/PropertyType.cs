@@ -111,9 +111,14 @@ namespace Realms.Schema
         Set = 256,
 
         /// <summary>
+        /// A collection of key-value pairs where the key is string. Can be combined with other values.
+        /// </summary>
+        Dictionary = 512,
+
+        /// <summary>
         /// Metadata flags.
         /// </summary>
-        Flags = Nullable | Array | Set,
+        Flags = Nullable | Array | Set | Dictionary,
 
         /// <summary>
         /// A shorthand for PropertyType.Int | PropertyType.Nullable.

@@ -98,6 +98,11 @@ public:
         : std::runtime_error(util::format("List type mismatch: attempted to add a value of type '%1' to a list that expects '%2'", actual_type, property_type)) {}
 };
 
+class KeyAlreadyExistsException : public std::runtime_error {
+public:
+    KeyAlreadyExistsException(std::string key) : std::runtime_error(util::format("An item with the key '%1' has already been added.", key)) {}
+};
+
 REALM_EXPORT NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);

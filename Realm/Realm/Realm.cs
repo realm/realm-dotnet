@@ -1156,7 +1156,6 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> resolved for the current thread or <c>null</c>
         /// if the object has been deleted after the reference was created.
         /// </returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
             where T : RealmObjectBase
         {
@@ -1167,6 +1166,7 @@ namespace Realms
 
             if (!objectHandle.IsValid)
             {
+                objectHandle.Dispose();
                 return null;
             }
 
@@ -1183,7 +1183,6 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
         /// if the list's parent object has been deleted after the reference was created.
         /// </returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The List instance will own its handle.")]
         public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference)
         {
             Argument.NotNull(reference, nameof(reference));
@@ -1192,6 +1191,7 @@ namespace Realms
             var listHandle = new ListHandle(SharedRealmHandle, listPtr);
             if (!listHandle.IsValid)
             {
+                listHandle.Dispose();
                 return null;
             }
 
@@ -1203,12 +1203,11 @@ namespace Realms
         /// but resolved for the current Realm for this thread.
         /// </summary>
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="ISet{T}"/> to resolve in this <see cref="Realm"/>.</param>
-        /// <typeparam name="T">The type of the objects, contained in the collection.</typeparam>
+        /// <typeparam name="T">The type of the elements, contained in the collection.</typeparam>
         /// <returns>
         /// A thread-confined instance of the original <see cref="ISet{T}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
         /// </returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Set instance will own its handle.")]
         public ISet<T> ResolveReference<T>(ThreadSafeReference.Set<T> reference)
         {
             Argument.NotNull(reference, nameof(reference));
@@ -1217,10 +1216,36 @@ namespace Realms
             var setHandle = new SetHandle(SharedRealmHandle, setPtr);
             if (!setHandle.IsValid)
             {
+                setHandle.Dispose();
                 return null;
             }
 
             return new RealmSet<T>(this, setHandle, reference.Metadata);
+        }
+
+        /// <summary>
+        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.Dictionary{TValue}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IDictionary{String, TValue}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
+        /// <returns>
+        /// A thread-confined instance of the original <see cref="IDictionary{String, TValue}"/> resolved for the current thread or <c>null</c>
+        /// if the set's parent object has been deleted after the reference was created.
+        /// </returns>
+        public IDictionary<string, TValue> ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
+        {
+            Argument.NotNull(reference, nameof(reference));
+
+            var dictionaryPtr = SharedRealmHandle.ResolveReference(reference);
+            var dictionaryHandle = new DictionaryHandle(SharedRealmHandle, dictionaryPtr);
+            if (!dictionaryHandle.IsValid)
+            {
+                dictionaryHandle.Dispose();
+                return null;
+            }
+
+            return new RealmDictionary<TValue>(this, dictionaryHandle, reference.Metadata);
         }
 
         /// <summary>

@@ -132,7 +132,7 @@ namespace Realms
         internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
         {
             Realm = realm;
-            Handle = new Lazy<CollectionHandleBase>(CreateHandle);
+            Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
         }
 
@@ -141,7 +141,7 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        internal abstract CollectionHandleBase CreateHandle();
+        internal abstract CollectionHandleBase GetOrCreateHandle();
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
@@ -154,14 +154,8 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                return Handle.Value.GetValueAtIndex(index, Metadata, Realm).As<T>();
+                return GetValueAtIndex(index);
             }
-        }
-
-        public RealmCollectionBase<T> Snapshot()
-        {
-            var handle = Handle.Value.Snapshot();
-            return new RealmResults<T>(Realm, handle, Metadata);
         }
 
         internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
@@ -187,6 +181,8 @@ namespace Realms
 
             return new NotificationToken(this, callback);
         }
+
+        protected abstract T GetValueAtIndex(int index);
 
         private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
         {
@@ -450,12 +446,17 @@ namespace Realms
         public class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
+            private readonly bool _shouldDisposeHandle;
             private int _index;
 
             internal Enumerator(RealmCollectionBase<T> parent)
             {
                 _index = -1;
-                _enumerating = parent.Snapshot();
+                _enumerating = parent.Handle.Value.CanSnapshot ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
+
+                // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
+                // parent collection after iterating it.
+                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot;
             }
 
             public T Current => _enumerating[_index];
@@ -481,7 +482,10 @@ namespace Realms
 
             public void Dispose()
             {
-                _enumerating.Handle.Value.Close();
+                if (_shouldDisposeHandle)
+                {
+                    _enumerating.Handle.Value.Close();
+                }
             }
         }
     }

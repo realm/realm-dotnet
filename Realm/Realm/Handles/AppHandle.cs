@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -182,7 +181,7 @@ namespace Realms.Sync
             // var sdkVersion = typeof(AppHandle).GetTypeInfo().Assembly.GetName().Version.ToString(3);
 
             // TODO: temporarily add -beta.X suffix to the SDK
-            var sdkVersion = "10.0.0-beta.6";
+            var sdkVersion = "10.0.0-beta.7";
 
             NativeMethods.initialize(
                 platform, (IntPtr)platform.Length,

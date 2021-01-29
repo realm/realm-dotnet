@@ -71,6 +71,15 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT object_store::Dictionary* object_get_dictionary(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_get(object);
+
+            return new object_store::Dictionary(object.realm(), object.obj(), get_column_key(object, property_ndx));
+        });
+    }
+
     REALM_EXPORT void object_get_value(const Object& object, size_t property_ndx, realm_value_t* value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
