@@ -24,7 +24,9 @@ param(
 
     [string]$Toolchain = 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake',
 
-    [Switch]$Incremental
+    [Switch]$Incremental,
+
+    [Switch]$EnableLTO
 )
 
 Push-Location $PSScriptRoot
@@ -50,9 +52,13 @@ if ($Target -eq 'WindowsStore') {
     $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='8.1'", "-DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION='8.1'"
 }
 
+if ($EnableLTO) {
+    $cmakeArgs += "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
+}
+
 function triplet([string]$target, [string]$platform) {
     $arch = $platform.ToLower()
-    if ($arch -eq 'win32') { 
+    if ($arch -eq 'win32') {
         $arch = 'x86'
     }
 
@@ -73,7 +79,7 @@ foreach ($platform in $Platforms) {
     if (-Not $Incremental) {
         & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -DVCPKG_TARGET_TRIPLET="$(triplet -target $Target -platform $platform)"
     }
-    
+
     & $cmake --build . --target install --config $Configuration
     Pop-Location
 }
