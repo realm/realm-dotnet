@@ -572,22 +572,6 @@ namespace Realms.Tests
         public int Int { get; set; }
     }
 
-    public class ObjectPropertyObject : RealmObject
-    {
-        public PrimaryKeyInt32Object Object { get; set; }
-    }
-
-    public class MultiPropertyObject : RealmObject
-    {
-        public string String { get; set; }
-
-        public int Int { get; set; }
-
-        public float Float { get; set; }
-
-        public char Char { get; set; }
-    }
-
     public class RecursiveBacklinksObject : RealmObject
     {
         public int Id { get; set; }

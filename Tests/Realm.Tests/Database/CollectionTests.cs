@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -491,7 +489,7 @@ namespace Realms.Tests.Database
             yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 });
         }
 
-        public static IEnumerable<StringQueryTestData> StringQueryTestCases_NumbericValues_ImplicitConvertion_Matches()
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases_NumericValues_ImplicitConvertion_Matches()
         {
             yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'a', 97);
             yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, 6);
@@ -565,7 +563,7 @@ namespace Realms.Tests.Database
             Assert.AreEqual(foundVal, castedValues.MatchingVal);
         }
 
-        [TestCaseSource(nameof(StringQueryTestCases_NumbericValues_ImplicitConvertion_Matches))]
+        [TestCaseSource(nameof(StringQueryTestCases_NumericValues_ImplicitConvertion_Matches))]
         public void QueryFilter_WithImplicitlyConvertibleNumericArguments_ShouldMatch(StringQueryTestData data)
         {
             QueryFilter_matchCounter_internal(data, 1);
@@ -618,30 +616,46 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void QueryFilter_WithArgumentsObject_ShouldMatch()
+        public void QueryFilter_WithArgumentsObjectList_ShouldMatch()
         {
-            var matchingObj = new PrimaryKeyInt32Object { Int32Property = 42 };
-            var nonMatchingObj = new PrimaryKeyInt32Object { Int32Property = 4 };
-            _realm.Write(() =>
-            {
-                _realm.Add(new ObjectPropertyObject { Object = matchingObj });
-                _realm.Add(new ObjectPropertyObject { Object = nonMatchingObj });
-            });
-
-            var matches = _realm.All<ObjectPropertyObject>().Filter("Object = $0", matchingObj);
-            var foundObj = matches.Single();
-            Assert.AreEqual(matchingObj, foundObj.Object);
+            Internal_QueryFilter_OnObjects(true);
         }
 
         [Test]
-        public void QueryFilter_WithArgumentsInMemoryObjects_ShouldThrow()
+        public void QueryFilter_WithArgumentsObject_ShouldMatch()
+        {
+            Internal_QueryFilter_OnObjects(false);
+        }
+
+        private void Internal_QueryFilter_OnObjects(bool queryList)
+        {
+            var dog1 = new Dog { Name = "Fido", Color = "black", Vaccinated = true };
+            var dog2 = new Dog { Name = "Pluto", Color = "white", Vaccinated = true };
+            var dog3 = new Dog { Name = "Pippo", Color = "brown", Vaccinated = false };
+            var dog4 = new Dog { Name = "JustDog", Color = "pink", Vaccinated = false };
+            var marioOwner = new Owner { Name = "Mario", TopDog = dog1, Dogs = { dog1, dog2, dog3 } };
+            var luigiOwner = new Owner { Name = "Luigi", TopDog = dog4, Dogs = { dog4 } };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(marioOwner);
+                _realm.Add(luigiOwner);
+            });
+
+            var matches = queryList ? _realm.All<Owner>().Filter("ANY Dogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
+            var foundOwner = matches.Single();
+            Assert.AreEqual(marioOwner, foundOwner);
+        }
+
+        [Test]
+        public void QueryFilter_WithArgumentsUnmanagedObjects_ShouldThrow()
         {
             _realm.Write(() =>
             {
-                _realm.Add(new ObjectPropertyObject { Object = new PrimaryKeyInt32Object { Int32Property = 42 } });
+                _realm.Add(new Owner { TopDog = new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true } });
             });
 
-            Assert.Throws<RealmException>(() => _realm.All<ObjectPropertyObject>().Filter("Object = $0", new PrimaryKeyInt32Object { Int32Property = 42 }), "**put your message here!**");
+            Assert.Throws<RealmException>(() => _realm.All<Owner>().Filter("TopDog = $0", new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true }), "**put your message here!**");
         }
 
         [Test]
@@ -653,15 +667,15 @@ namespace Realms.Tests.Database
         [Test]
         public void QueryFilter_WithMultipleArguments_ShouldMatch()
         {
-            var matchingObj = new MultiPropertyObject { String = "hello pp", Int = 9, Float = 21.0f, Char = 'p' };
-            var nonMatchingObj = new MultiPropertyObject { String = "no salute", Int = 0, Float = 1.0f, Char = 'h' };
+            var matchingObj = new AllTypesObject { RequiredStringProperty = "hello pp", Int32Property = 9, SingleProperty = 21.0f, CharProperty = 'p' };
+            var nonMatchingObj = new AllTypesObject { RequiredStringProperty = "no salute", Int32Property = 0, SingleProperty = 1.0f, CharProperty = 'h' };
             _realm.Write(() =>
             {
                 _realm.Add(matchingObj);
                 _realm.Add(nonMatchingObj);
             });
 
-            var matches = _realm.All<MultiPropertyObject>().Filter("Int == $0 && Float == $1 && Char == $2 && String == $3", 9, 21.0f, 'p', "hello pp");
+            var matches = _realm.All<AllTypesObject>().Filter("Int32Property == $0 && SingleProperty == $1 && CharProperty == $2 && RequiredStringProperty == $3", 9, 21.0f, 'p', "hello pp");
             var foundObj = matches.Single();
             Assert.AreEqual(foundObj, matchingObj);
         }
