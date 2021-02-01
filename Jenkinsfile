@@ -9,6 +9,7 @@ def WindowsPlatforms = [ 'Win32', 'x64' ]
 def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
 String versionSuffix = ''
+boolean enableLTO = true
 
 stage('Checkout') {
   rlmNode('docker') {
@@ -28,6 +29,9 @@ stage('Checkout') {
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
+
+      // TODO: uncomment this
+      // enableLTO = false
     }
     // TODO: temporary add a beta.X suffix for v10 releases
     // Also update in AppHandle.cs
@@ -41,12 +45,20 @@ stage('Checkout') {
 }
 
 stage('Build wrappers') {
+  def bashExtraArgs = ''
+  def psExtraArgs = ''
+
+  if (enableLTO) {
+    bashExtraArgs = '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
+    psExtraArgs = '-EnableLTO'
+  }
+
   def jobs = [
     'iOS': {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "./build-ios.sh --configuration=${configuration}"
+          sh "./build-ios.sh --configuration=${configuration} ${bashExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: 'ios-wrappers'
       }
@@ -55,7 +67,7 @@ stage('Build wrappers') {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode"
+          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode ${bashExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: 'macos-wrappers'
       }
@@ -64,7 +76,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh")
+          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh ${bashExtraArgs}")
         }
         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
       }
@@ -77,7 +89,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}")
+          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi} ${bashExtraArgs}")
         }
         stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
       }
@@ -90,7 +102,7 @@ stage('Build wrappers') {
       rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
+          powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform} ${psExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
         if (shouldPublishPackage()) {
