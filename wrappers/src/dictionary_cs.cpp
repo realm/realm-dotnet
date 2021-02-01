@@ -57,7 +57,7 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
         auto mixed_value = dictionary.try_get_any(from_capi(key.string));
         if (mixed_value)
         {
-            *value = to_capi(mixed_value.value());
+            *value = to_capi(dictionary, mixed_value.value());
             return true;
         }
 
@@ -74,7 +74,7 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
 
         auto pair = dictionary.get_pair(ndx);
         *key = to_capi(Mixed(pair.first));
-        *value = to_capi(pair.second);
+        *value = to_capi(dictionary, pair.second);
     });
 }
 

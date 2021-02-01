@@ -50,7 +50,17 @@ namespace Realms
             set
             {
                 EnsureKeyNotNull(key);
-                _dictionaryHandle.Set(key, Operator.Convert<TValue, RealmValue>(value));
+                var realmValue = Operator.Convert<TValue, RealmValue>(value);
+
+                if (_isEmbedded)
+                {
+                    throw new NotImplementedException();
+                    //Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.SetEmbedded(index));
+                    //return;
+                }
+
+                AddToRealmIfNecessary(realmValue);
+                _dictionaryHandle.Set(key, realmValue);
             }
         }
 
@@ -81,7 +91,17 @@ namespace Realms
         public void Add(string key, TValue value)
         {
             EnsureKeyNotNull(key);
-            _dictionaryHandle.Add(key, Operator.Convert<TValue, RealmValue>(value));
+            var realmValue = Operator.Convert<TValue, RealmValue>(value);
+
+            if (_isEmbedded)
+            {
+                throw new NotImplementedException();
+                //Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.SetEmbedded(index));
+                //return;
+            }
+
+            AddToRealmIfNecessary(realmValue);
+            _dictionaryHandle.Add(key, realmValue);
         }
 
         public void Add(KeyValuePair<string, TValue> item) => Add(item.Key, item.Value);
@@ -97,7 +117,22 @@ namespace Realms
 
         public bool Remove(string key) => key != null && _dictionaryHandle.Remove(key);
 
-        public bool Remove(KeyValuePair<string, TValue> item) => item.Key != null && _dictionaryHandle.Remove(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
+        public bool Remove(KeyValuePair<string, TValue> item)
+        {
+            if (item.Key == null)
+            {
+                return false;
+            }
+
+            var realmValue = Operator.Convert<TValue, RealmValue>(item.Value);
+
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            {
+                return false;
+            }
+
+            return _dictionaryHandle.Remove(item.Key, realmValue);
+        }
 
         public bool TryGetValue(string key, out TValue value)
         {

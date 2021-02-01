@@ -387,6 +387,26 @@ static inline realm_value_t to_capi(Mixed value)
     return val;
 }
 
+inline realm_value_t to_capi(object_store::Dictionary& dictionary, Mixed val)
+{
+    if (val.is_null()) {
+        return to_capi(std::move(val));
+    }
+
+    switch (val.get_type()) {
+    case type_Link:
+        if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
+            return to_capi(new Object(dictionary.get_realm(), ObjLink(dictionary.get_object_schema().table_key, val.get<ObjKey>())));
+        }
+
+        REALM_UNREACHABLE();
+    case type_TypedLink:
+        return to_capi(new Object(dictionary.get_realm(), val.get_link()));
+    default:
+        return to_capi(std::move(val));
+    }
+}
+
 struct StringValue
 {
     const char* value;

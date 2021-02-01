@@ -1005,6 +1005,40 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        #region Objects
+
+        public static IEnumerable<TestCaseData<IntPropertyObject>> ObjectTestValues()
+        {
+            yield return new TestCaseData<IntPropertyObject>(null);
+            yield return new TestCaseData<IntPropertyObject>(null, ("123", new IntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("123", new IntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("null", null));
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("null1", null), ("null2", null));
+
+            var sameObject = new IntPropertyObject();
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("a", sameObject), ("b", null), ("c", sameObject));
+        }
+
+        [TestCaseSource(nameof(ObjectTestValues))]
+        public void RealmDictionary_WhenUnmanaged_Object(TestCaseData<IntPropertyObject> testData)
+        {
+            RunUnmanagedTests(o => o.ObjectDictionary, testData);
+        }
+
+        [TestCaseSource(nameof(ObjectTestValues))]
+        public void RealmDictionary_WhenManaged_Object(TestCaseData<IntPropertyObject> testData)
+        {
+            RunManagedTests(o => o.ObjectDictionary, testData);
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Object_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.ObjectDictionary, ObjectTestValues().Last());
+        }
+
+        #endregion
+
         [Test]
         public void CanBeQueried()
         {
