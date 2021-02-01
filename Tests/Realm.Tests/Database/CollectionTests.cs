@@ -472,7 +472,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        public static IEnumerable<StringQueryTestData> StringQueryTestCases()
+        public static IEnumerable<StringQueryTestData> StringQueryTestCases_GeneralCases()
         {
             yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 'b');
             yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 0x4);
@@ -545,23 +545,23 @@ namespace Realms.Tests.Database
             yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, 34L);
         }
 
-        [TestCaseSource(nameof(StringQueryTestCases))]
-        public void QueryFilter_WithArguments_ShouldReturnMatchingValues(StringQueryTestData data)
+        [TestCaseSource(nameof(StringQueryTestCases_GeneralCases))]
+        public void QueryFilter_WithArguments_ShouldMatch(StringQueryTestData data)
         {
-            var pi = typeof(AllTypesObject).GetProperty(data.PropertyName);
-            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(pi.PropertyType);
+            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(propInfo.PropertyType);
 
             _realm.Write(() =>
             {
                 var matchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
-                pi.SetValue(matchingObj, castedValues.MatchingVal);
+                propInfo.SetValue(matchingObj, castedValues.MatchingVal);
 
                 var nonMatchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
-                pi.SetValue(nonMatchingObj, castedValues.NonMatchingVal);
+                propInfo.SetValue(nonMatchingObj, castedValues.NonMatchingVal);
             });
 
             var matches = _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.MatchingValue);
-            var foundVal = pi.GetValue(matches.Single());
+            var foundVal = propInfo.GetValue(matches.Single());
             Assert.AreEqual(foundVal, castedValues.MatchingVal);
         }
 
@@ -578,19 +578,19 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(StringQueryTestCases_NumbericValues_NoImplicitConvertion_Mismatches))]
-        public void QueryFilter_WithNonImplicitlyConvertibleArguments_ShouldMismatch(StringQueryTestData data)
+        public void QueryFilter_WithNonImplicitlyConvertibleArguments_ShouldNotMatch(StringQueryTestData data)
         {
             QueryFilter_matchCounter_internal(data, 0);
         }
 
         private void QueryFilter_matchCounter_internal(StringQueryTestData data, int matchingCount)
         {
-            var pi = typeof(AllTypesObject).GetProperty(data.PropertyName);
-            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(pi.PropertyType);
+            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(propInfo.PropertyType);
             _realm.Write(() =>
             {
                 var matchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
-                pi.SetValue(matchingObj, castedValues.MatchingVal);
+                propInfo.SetValue(matchingObj, castedValues.MatchingVal);
             });
 
             var matches = _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue);
@@ -599,22 +599,22 @@ namespace Realms.Tests.Database
             // this method always assumes no more than 1 match, given the structure of StringQueryTestData
             if (matchingCount == 1)
             {
-                Assert.AreEqual(pi.GetValue(matches.Single()), castedValues.MatchingVal);
+                Assert.AreEqual(propInfo.GetValue(matches.Single()), castedValues.MatchingVal);
             }
         }
 
         [TestCaseSource(nameof(StringQueryTestCases_MismatchingValueTypes_ToThrow))]
         public void QueryFilter_WithWrongArguments_ShouldThrow(StringQueryTestData data)
         {
-            var pi = typeof(AllTypesObject).GetProperty(data.PropertyName);
-            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(pi.PropertyType);
+            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            (object? MatchingVal, object? NonMatchingVal) castedValues = data.ConvertBoxedValueToCorrectType(propInfo.PropertyType);
             _realm.Write(() =>
             {
                 var matchingObj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
-                pi.SetValue(matchingObj, castedValues.MatchingVal);
+                propInfo.SetValue(matchingObj, castedValues.MatchingVal);
             });
 
-            Assert.Throws<RealmException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue), $"Unsupported comparison between type {pi.PropertyType.Name} and type {data.NonMatchingValue.GetType().Name}");
+            Assert.Throws<RealmException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue), $"Unsupported comparison between type {propInfo.PropertyType.Name} and type {data.NonMatchingValue.GetType().Name}");
         }
 
         [Test]
