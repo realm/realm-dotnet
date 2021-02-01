@@ -13,7 +13,6 @@ set(SOURCES
     scheduler_cs.cpp
     schema_cs.cpp
     shared_realm_cs.cpp
-    table_cs.cpp
     app_cs.cpp
     async_open_task_cs.cpp
     mongo_collection_cs.cpp

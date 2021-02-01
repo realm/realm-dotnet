@@ -51,7 +51,7 @@ namespace Realms
         }
 
         internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata)
-            : this(realm, metadata.Table.CreateResults(realm.SharedRealmHandle), metadata)
+            : this(realm, realm.SharedRealmHandle.CreateResults(metadata.TableKey), metadata)
         {
         }
 

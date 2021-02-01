@@ -69,7 +69,7 @@ namespace Realms
             public static extern IntPtr get_backlinks(ObjectHandle objectHandle, IntPtr property_index, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks_for_type", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle, TableHandle source_table, IntPtr source_property_index, out NativeException nativeException);
+            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle, TableKey table_key, IntPtr source_property_index, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
@@ -260,9 +260,9 @@ namespace Realms
             return new ResultsHandle(this, resultsPtr);
         }
 
-        public ResultsHandle GetBacklinksForType(TableHandle table, IntPtr propertyIndex)
+        public ResultsHandle GetBacklinksForType(TableKey tableKey, IntPtr propertyIndex)
         {
-            var resultsPtr = NativeMethods.get_backlinks_for_type(this, table, propertyIndex, out var nativeException);
+            var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ResultsHandle(this, resultsPtr);
