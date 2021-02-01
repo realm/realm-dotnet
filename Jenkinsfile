@@ -49,7 +49,7 @@ stage('Build wrappers') {
   def psExtraArgs = ''
 
   if (enableLTO) {
-    extraCMakeArgs = '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
+    bashExtraArgs = '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
     psExtraArgs = '-EnableLTO'
   }
 
