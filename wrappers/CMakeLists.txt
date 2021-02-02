@@ -20,15 +20,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 if(ANDROID)
-  # Optimize for size vs. performance for Android. The has the following implications:
-  # - Replace `-O2` with `-Oz`.
-  # - Clang LTO does not support `-Oz` so keep using `-O2` for that.
-  # - Add `-ffunction-sections` and `-fdata-sections`. This requires that `-Wl,-gc-sections` are used when creating
-  #   the final .so file.
-  # - `-fstrict-aliasing` is inherited from NDK r10e.
-  # - `-fomit-frame-pointer` is inherited from NDK r10e.
-  #
-  # On some architectures char is unsigned by default. Make it signed
+  # On Android LTO builds produce larger binaries, so turn them off
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
   if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
     STRING(REGEX REPLACE "-O[0-9z]" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
   else()
