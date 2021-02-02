@@ -1,114 +1,4 @@
-## vNext (TBD)
-------------------
-
-### Fixed
-* None
-
-### Enhancements
-* Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Core 10.3.3.
-
-## 10.0.0-beta.6 (2021-01-25)
-------------------
-
-### Fixed
-* Fixed a regression in 10.0.0-beta.5 that incorrectly stores and retrieves `DateTimeOffset` values. (PR [#2200](https://github.com/realm/realm-dotnet/pull/2200))
-
-### Enhancements
-* None
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Core 10.3.3.
-
-## [Don't use!] 10.0.0-beta.5 (2021-01-19)
-------------------
-
-**This version has a serious regression related to reading and writing date properties. It stores dates in an incorrect format at the database layer, which means that values written in earlier versions will be read incorrectly (typically values very close to `0000-01-01`) and values written with this version will be read incorrectly with future versions.**
-
-### Breaking Changes
-* Removed `RealmObject.FreezeInPlace`. To freeze a realm object use the `Freeze` extension method. (Issue [#2180](https://github.com/realm/realm-dotnet/issues/2180))
-
-### Fixed
-* Worked around an issue with the .NET Native compiler (used in UWP projects) that would result in the following exception being thrown in Release: `Incompatible MarshalAs detected in parameter named 'value'. Please refer to MCG's warning message for more information.`. (Issue [#2169](https://github.com/realm/realm-dotnet/issues/2169))
-* Fixed a bug that could cause a deadlock in a multiprocess scenario where multiple processes share the same Realm file and listen for notifications from the file. (Core upgrade)
-* Fixed an issue where Sync connections would fail on Windows due to `SSL server certificate rejected`. (Core upgrade)
-* Fixed an issue with deleting and recreating objects with embedded objects. (Core upgrade)
-* Fix a race condition which would lead to "uncaught exception in notifier thread: N5realm15InvalidTableRefE: transaction_ended" and a crash when the source Realm was closed or invalidated at a very specific time during the first run of a collection notifier (Core upgrade)
-
-### Enhancements
-* Replaced the implementation of the string query parser (the one used for [`realm.All().Filter("some-string-query")`](https://docs.mongodb.com/realm-sdks/dotnet/10.0.0-beta.3/reference/Realms.CollectionExtensions.html#Realms_CollectionExtensions_Filter__1_System_Linq_IQueryable___0__System_String_)). This results in ~5% reduction of the size of the native binary while keeping the query execution times on par with the old parser. (PR [#2185](https://github.com/realm/realm-dotnet/pull/2185), Core upgrade)
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Core 10.3.3.
-* Migrated to bison parser.
-
-## 10.0.0-beta.3 (2020-12-10)
-------------------
-
-### Breaking Changes
-* `Credentials.Google(string)` now has an additional argument of type `GoogleCredentialType`. The available types are `IdToken`
-and `AuthCode` and specify  what type of credential the passed string represents.
-
-### Fixed
-* Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
-  The issue manifests itself when different classes have persisted properties with the same name and could result in
-  the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`. This could only happen when using the
-  dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other
-  than .NET Core 3.x/.NET 5.
-* Fixed an issue that would cause deadlocks on Windows systems when 3 or more processes were listening for notifications on the same Realm file. (Core upgrade)
-* Fixed a bug that would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence
-and potentially consistency errors as a result if they experienced conflict resolution between cycles of Create-Erase-Create for
-objects with the same primary key. (Core upgrade)
-* Fixed a bug that could lead to a crash when refreshing the user's custom data. (Core upgrade)
-* Fixed a bug that could cause an assertion `n != realm::npos` when integrating changesets from the server. (Core upgrade)
-
-### Enhancements
-* Added support of OpenID Connect credential for the Google authentication provider. (Issue [#2108](https://github.com/realm/realm-dotnet/issues/2108))
-* Optimized the internal code that handles conversions between types. This should result in a minor performance increase
-for most data operations that should be most noticeable on Ahead-of-Time compiled platforms, such as iOS/UWP. Due to the
-nature of the change, it's possible that conversions that previously happened automatically when working with dynamic objects
-no longer do. If you encounter a `NotSupportedException` with the message `No conversion exists from *type A* to *type B*`
-and believe this is a bug, please open a Github Issue. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Core 10.3.0.
-* Submit Analytics to S3/Segment in addition to Mixpanel.
-* Analytics now also reports if Sync functionality is in use.
-* SDK is now also tested against .NET 5.
-* This release uses monorepo releases that bundle Core, Sync, and OS.
-* Replaced Expressions-based Operator with T4. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
-
-## 10.0.0-beta.2 (2020-11-04)
-------------------
-
-### Fixed
-* Fix crash in case insensitive query on indexed string columns when nothing matches (Core upgrade)
-
-### Enhancements
-* Added an extra compile-time check to detect erroneous List<T> declarations and suggest IList<T> for collection properties in Realm objects. (Issue [#2083](https://github.com/realm/realm-dotnet/pull/2083))
-* Added overloads for `Realm.Write` and `Realm.WriteAsync` that can return a value. (Issue [#2081](https://github.com/realm/realm-dotnet/issues/2081))
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Sync 10.1.0 and Core 10.1.0.
-
-## 10.0.0-beta.1 (2020-10-19)
+## 10.0.1 (2021-02-02)
 ------------------
 
 ### Breaking Changes
@@ -125,6 +15,7 @@ and believe this is a bug, please open a Github Issue. (PR [#2149](https://githu
 * Bumped the minimum target for Xamarin.iOS apps to iOS 9.
 * Bumped the minimum API level for Xamarin.Android apps to 16 (Android 4.1).
 * Renamed `FullSyncConfiguration` to `SyncConfiguration`.
+* Removed `RealmObject.FreezeInPlace`. To freeze a realm object use the `Freeze` extension method. (Issue [#2180](https://github.com/realm/realm-dotnet/issues/2180))
 
 ### Enhancements
 * Added support for syncing to MongoDB instead of Realm Object Server. Applications must be created at [realm.mongodb.com](https://realm.mongodb.com).
@@ -215,12 +106,38 @@ and believe this is a bug, please open a Github Issue. (PR [#2149](https://githu
     ```
 
 * The memory mapping scheme for Realm files has changed to better support opening very large files.
+* Replaced the implementation of the string query parser (the one used for [`realm.All().Filter("some-string-query")`](https://docs.mongodb.com/realm-sdks/dotnet/10.0.0-beta.3/reference/Realms.CollectionExtensions.html#Realms_CollectionExtensions_Filter__1_System_Linq_IQueryable___0__System_String_)). This results in ~5% reduction of the size of the native binary while keeping the query execution times on par with the old parser. (PR [#2185](https://github.com/realm/realm-dotnet/pull/2185), Core upgrade)
+* Optimized the internal code that handles conversions between types. This should result in a minor performance increase
+for most data operations that should be most noticeable on Ahead-of-Time compiled platforms, such as iOS/UWP. Due to the
+nature of the change, it's possible that conversions that previously happened automatically when working with dynamic objects
+no longer do. If you encounter a `NotSupportedException` with the message `No conversion exists from *type A* to *type B*`
+and believe this is a bug, please open a Github Issue. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
+* Added an extra compile-time check to detect erroneous List<T> declarations and suggest IList<T> for collection properties in Realm objects. (Issue [#2083](https://github.com/realm/realm-dotnet/pull/2083))
+* Added overloads for `Realm.Write` and `Realm.WriteAsync` that can return a value. (Issue [#2081](https://github.com/realm/realm-dotnet/issues/2081))
+
+### Fixed
+* Worked around an issue with the .NET Native compiler (used in UWP projects) that would result in the following exception being thrown in Release: `Incompatible MarshalAs detected in parameter named 'value'. Please refer to MCG's warning message for more information.`. (Issue [#2169](https://github.com/realm/realm-dotnet/issues/2169))
+* Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
+  The issue manifests itself when different classes have persisted properties with the same name and could result in
+  the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`. This could only happen when using the
+  dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other
+  than .NET Core 3.x/.NET 5.
+* Fixed a bug that could cause a deadlock in a multiprocess scenario where multiple processes share the same Realm file and listen for notifications from the file. (Core upgrade)
+* Fixed an issue with deleting and recreating objects with embedded objects. (Core upgrade)
+* Fix a race condition which would lead to "uncaught exception in notifier thread: N5realm15InvalidTableRefE: transaction_ended" and a crash when the source Realm was closed or invalidated at a very specific time during the first run of a collection notifier (Core upgrade)
+* Fix crash in case insensitive query on indexed string columns when nothing matches (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Sync 10.0.0 and Core 10.0.0.
+* Using Core 10.3.3.
+* Migrated to bison parser.
+* Submit Analytics to S3/Segment in addition to Mixpanel.
+* Analytics now also reports if Sync functionality is in use.
+* SDK is now also tested against .NET 5.
+* This release uses monorepo releases that bundle Core, Sync, and OS.
+* Replaced Expressions-based Operator with T4. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
 
 ## 5.1.2 (2020-10-20)
 ------------------
