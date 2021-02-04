@@ -448,7 +448,37 @@ namespace Realms.Tests.Database
             var boxed = val.AsAny();
             if (boxed != null && boxed.GetType() != targetType)
             {
-                boxed = Convert.ChangeType(boxed, targetType);
+                try
+                {
+                    boxed = Convert.ChangeType(boxed, targetType);
+                }
+                catch (System.InvalidCastException e)
+                {
+                    if (e.Message.Contains("RealmInteger"))
+                    {
+                        var innerType = targetType.GenericTypeArguments.Single();
+                        if (innerType == typeof(int))
+                        {
+                            boxed = (RealmInteger<int>)val;
+                        }
+                        else if (innerType == typeof(long))
+                        {
+                            boxed = (RealmInteger<long>)val;
+                        }
+                        else if (innerType == typeof(byte))
+                        {
+                            boxed = (RealmInteger<byte>)val;
+                        }
+                        else if (innerType == typeof(short))
+                        {
+                            boxed = (RealmInteger<short>)val;
+                        }
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
 
             return boxed;
@@ -471,6 +501,10 @@ namespace Realms.Tests.Database
             yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0ffffffb-dddd-4444-aaaa-70000000000e"));
             yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello world", "no salute");
             yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 });
+            yield return new StringQueryTestData(nameof(AllTypesObject.ByteCounterProperty), new RealmInteger<byte>(0x6), new RealmInteger<byte>(0x8));
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int16CounterProperty), new RealmInteger<short>(2), new RealmInteger<short>(7));
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int32CounterProperty), new RealmInteger<int>(10), new RealmInteger<int>(24));
+            yield return new StringQueryTestData(nameof(AllTypesObject.Int64CounterProperty), new RealmInteger<long>(5L), new RealmInteger<long>(22L));
         }
 
         public static IEnumerable<StringQueryNumericData> StringQuery_NumericValues()

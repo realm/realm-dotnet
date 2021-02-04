@@ -85,6 +85,14 @@ namespace Realms.Tests
         public ObjectId? NullableObjectIdProperty { get; set; }
 
         public Guid? NullableGuidProperty { get; set; }
+
+        public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        public RealmInteger<long> Int64CounterProperty { get; set; }
     }
 
     public class DecimalsObject : RealmObject
