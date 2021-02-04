@@ -47,6 +47,7 @@ namespace RealmWeaver
         internal const string DecimalTypeName = "System.Decimal";
         internal const string Decimal128TypeName = "MongoDB.Bson.Decimal128";
         internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
+        internal const string DateTimeTypeName = "System.DateTime";
         internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
         internal const string GuidTypeName = "System.Guid";
         internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
@@ -59,9 +60,11 @@ namespace RealmWeaver
         internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
         internal const string NullableDecimalTypeName = "System.Nullable`1<System.Decimal>";
         internal const string NullableDecimal128TypeName = "System.Nullable`1<MongoDB.Bson.Decimal128>";
+        internal const string NullableDateTimeTypeName = "System.Nullable`1<System.DateTime>";
         internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
         internal const string NullableGuidTypeName = "System.Nullable`1<System.Guid>";
+        internal const string GenericListTypeName = "System.Collections.Generic.List`1";
 
         private static readonly HashSet<string> _primitiveValueTypes = new HashSet<string>
         {
@@ -164,7 +167,7 @@ namespace RealmWeaver
         public WeaveModuleResult Execute()
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            //// System.Diagnostics.Debugger.Launch();
+            System.Diagnostics.Debugger.Launch();
 
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
@@ -413,6 +416,8 @@ Analytics payload
                                             concreteListConstructor);
                         break;
                     case RealmCollectionType.ISet:
+                        WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is of type ISet which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+
                         var concreteSetConstructor = _references.System_Collections_Generic_HashSetOfT_Constructor.MakeHostInstanceGeneric(elementType);
 
                         // weaves set getter which also sets backing to List<T>, forcing it to accept us setting it post-init
@@ -426,6 +431,8 @@ Analytics payload
                                             concreteSetConstructor);
                         break;
                     case RealmCollectionType.IDictionary:
+                        WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is of type IDictionary which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+
                         var keyType = genericArguments.First();
                         if (keyType != _references.Types.String)
                         {
@@ -481,7 +488,7 @@ Analytics payload
 
                 ReplaceBacklinksGetter(prop, backingField, columnName, elementType);
             }
-            else if (prop.PropertyType.GetElementType().FullName == "System.Collections.Generic.List`1")
+            else if (prop.PropertyType.GetElementType().FullName == GenericListTypeName)
             {
                 var genericType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single().Name;
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is declared as List<{genericType}> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<{genericType}>, otherwise annotate the property with the [Ignored] attribute.");
@@ -490,13 +497,17 @@ Analytics payload
             {
                 return WeavePropertyResult.Skipped();
             }
-            else if (prop.PropertyType.FullName == "System.DateTime")
+            else if (prop.IsDateTime())
             {
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a DateTime which is not supported - use DateTimeOffset instead.");
             }
-            else if (prop.PropertyType.FullName == "System.Nullable`1<System.DateTime>")
+            else if (prop.IsNullableDateTime())
             {
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a DateTime? which is not supported - use DateTimeOffset? instead.");
+            }
+            else if (prop.IsGuid())
+            {
+                WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is of type Guid which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
             }
             else
             {
