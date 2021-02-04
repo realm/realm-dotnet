@@ -476,7 +476,7 @@ namespace Realms.Tests.Database
                     }
                     else
                     {
-                        throw;
+                        throw e;
                     }
                 }
             }
