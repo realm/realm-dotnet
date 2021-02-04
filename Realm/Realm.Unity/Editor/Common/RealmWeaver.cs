@@ -167,7 +167,7 @@ namespace RealmWeaver
         public WeaveModuleResult Execute()
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            System.Diagnostics.Debugger.Launch();
+            //// System.Diagnostics.Debugger.Launch();
 
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
@@ -380,6 +380,11 @@ Analytics payload
                     return WeavePropertyResult.Skipped();
                 }
 
+                if (prop.IsGuid())
+                {
+                    _logger.Warning($"{type.Name}.{prop.Name} is of type Guid which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+                }
+
                 var setter = isPrimaryKey ? _references.RealmObject_SetValueUnique : _references.RealmObject_SetValue;
 
                 ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
@@ -416,7 +421,7 @@ Analytics payload
                                             concreteListConstructor);
                         break;
                     case RealmCollectionType.ISet:
-                        WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is of type ISet which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+                        _logger.Warning($"{type.Name}.{prop.Name} is of type ISet which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
 
                         var concreteSetConstructor = _references.System_Collections_Generic_HashSetOfT_Constructor.MakeHostInstanceGeneric(elementType);
 
@@ -431,7 +436,7 @@ Analytics payload
                                             concreteSetConstructor);
                         break;
                     case RealmCollectionType.IDictionary:
-                        WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is of type IDictionary which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+                        _logger.Warning($"{type.Name}.{prop.Name} is of type IDictionary which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
 
                         var keyType = genericArguments.First();
                         if (keyType != _references.Types.String)
@@ -504,10 +509,6 @@ Analytics payload
             else if (prop.IsNullableDateTime())
             {
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a DateTime? which is not supported - use DateTimeOffset? instead.");
-            }
-            else if (prop.IsGuid())
-            {
-                WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is of type Guid which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
             }
             else
             {
