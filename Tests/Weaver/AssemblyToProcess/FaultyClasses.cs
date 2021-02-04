@@ -54,9 +54,6 @@ namespace AssemblyToProcess
         public bool BooleanProperty { get; set; }
 
         [Indexed]
-        public Guid GuidProperty { get; set; }
-
-        [Indexed]
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
         // This should cause an error:
