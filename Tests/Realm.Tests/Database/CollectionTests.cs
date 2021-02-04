@@ -690,8 +690,19 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void QueryFilter_WithNullArguments_ShouldThrow()
+        public void QueryFilter_WithNullArguments()
         {
+            var nullableObjMatch = new AllTypesObject { RequiredStringProperty = "hello", NullableInt32Property = null };
+            var nullableObjNoMatch = new AllTypesObject { RequiredStringProperty = "world", NullableInt32Property = 42 };
+            _realm.Write(() =>
+            {
+                _realm.Add(nullableObjMatch);
+                _realm.Add(nullableObjNoMatch);
+            });
+
+            var matches = _realm.All<AllTypesObject>().Filter("NullableInt32Property = $0", (int?)null);
+            Assert.AreEqual(matches.Single(), nullableObjMatch);
+
             RealmValue[] argumentsArray = null;
             Assert.Throws<ArgumentNullException>(() => _realm.All<Dog>().Filter("Name = $0", argumentsArray));
         }
