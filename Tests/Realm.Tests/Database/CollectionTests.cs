@@ -415,14 +415,14 @@ namespace Realms.Tests.Database
         public struct StringQueryNumericData
         {
             public string PropertyName;
-            public RealmValue ValueToAddToDB;
+            public RealmValue ValueToAddToRealm;
             public RealmValue ValueToQueryFor;
             public bool ExpectedMatch;
 
             public StringQueryNumericData(string propertyName, RealmValue valueToAddToDB, RealmValue valueToQueryFor, bool expectedMatch)
             {
                 PropertyName = propertyName;
-                ValueToAddToDB = valueToAddToDB;
+                ValueToAddToRealm = valueToAddToDB;
                 ValueToQueryFor = valueToQueryFor;
                 ExpectedMatch = expectedMatch;
             }
@@ -583,7 +583,7 @@ namespace Realms.Tests.Database
         public void QueryFilter_WithNumericArguments(StringQueryNumericData data)
         {
             var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
-            var boxedMatch = BoxValue(data.ValueToAddToDB, propInfo.PropertyType);
+            var boxedMatch = BoxValue(data.ValueToAddToRealm, propInfo.PropertyType);
 
             _realm.Write(() =>
             {
@@ -627,7 +627,8 @@ namespace Realms.Tests.Database
             });
 
             var matches = _realm.All<ObjectWithEmbeddedProperties>().Filter("AllTypesObject = $0", embeddedAllTypesMatch);
-            Assert.AreEqual(propInfoEmbeddedAllTypes.GetValue(matches.Single().AllTypesObject), boxedMatch);
+            var foundObj = propInfoEmbeddedAllTypes.GetValue(matches.Single().AllTypesObject);
+            Assert.AreEqual(foundObj, boxedMatch);
         }
 
         [TestCaseSource(nameof(StringQuery_MismatchingTypes_ToThrow))]
@@ -674,8 +675,7 @@ namespace Realms.Tests.Database
             IList<Dog> list = new List<Dog>();
             list.Add(dog1);
             var matches = queryList ? _realm.All<Owner>().Filter("ANY Dogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
-            var foundOwner = matches.Single();
-            Assert.AreEqual(marioOwner, foundOwner);
+            Assert.AreEqual(marioOwner, matches.Single());
         }
 
         [Test]
@@ -719,8 +719,7 @@ namespace Realms.Tests.Database
             });
 
             var matches = _realm.All<AllTypesObject>().Filter("Int32Property == $0 && SingleProperty == $1 && CharProperty == $2 && RequiredStringProperty == $3", 9, 21.0f, 'p', "hello pp");
-            var foundObj = matches.Single();
-            Assert.AreEqual(foundObj, matchingObj);
+            Assert.AreEqual(matches.Single(), matchingObj);
         }
 
         [Test]
