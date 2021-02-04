@@ -663,6 +663,12 @@ namespace Realms.Tests
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
+        public ObjectId ObjectIdProperty { get; set; }
+
+        public Guid GuidProperty { get; set; }
+
+        public byte[] ByteArrayProperty { get; set; }
+
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
