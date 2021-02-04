@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
@@ -426,6 +427,8 @@ namespace Realms.Tests.Database
                 ValueToQueryFor = valueToQueryFor;
                 ExpectedMatch = expectedMatch;
             }
+
+            public override string ToString() => $"{PropertyName}: '{ValueToAddToRealm}' should{(ExpectedMatch ? string.Empty : " NOT")} match '{ValueToQueryFor}': {ExpectedMatch}";
         }
 
         public struct StringQueryTestData
@@ -441,44 +444,22 @@ namespace Realms.Tests.Database
                 NonMatchingValue = nonMatchingValue;
             }
 
+            public override string ToString() => $"{PropertyName}, match: '{MatchingValue}' non-match: '{NonMatchingValue}'";
         }
 
-        public static object BoxValue(RealmValue val, Type targetType)
+        private static object BoxValue(RealmValue val, Type targetType)
         {
             var boxed = val.AsAny();
+            if (boxed != null && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(RealmInteger<>))
+            {
+                var wrappedType = targetType.GetGenericArguments().Single();
+                boxed = Convert.ChangeType(boxed, wrappedType);
+                return Activator.CreateInstance(targetType, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { boxed }, null);
+            }
+
             if (boxed != null && boxed.GetType() != targetType)
             {
-                try
-                {
-                    boxed = Convert.ChangeType(boxed, targetType);
-                }
-                catch (System.InvalidCastException e)
-                {
-                    if (e.Message.Contains("RealmInteger"))
-                    {
-                        var innerType = targetType.GenericTypeArguments.Single();
-                        if (innerType == typeof(int))
-                        {
-                            boxed = (RealmInteger<int>)val;
-                        }
-                        else if (innerType == typeof(long))
-                        {
-                            boxed = (RealmInteger<long>)val;
-                        }
-                        else if (innerType == typeof(byte))
-                        {
-                            boxed = (RealmInteger<byte>)val;
-                        }
-                        else if (innerType == typeof(short))
-                        {
-                            boxed = (RealmInteger<short>)val;
-                        }
-                    }
-                    else
-                    {
-                        throw e;
-                    }
-                }
+                return Convert.ChangeType(boxed, targetType);
             }
 
             return boxed;
