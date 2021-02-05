@@ -104,19 +104,9 @@ internal static class PropertyDefinitionExtensions
         return property.IsType("IQueryable`1", "System.Linq");
     }
 
-    internal static bool IsDateTime(this PropertyDefinition property)
-    {
-        return property.PropertyType.FullName == DateTimeTypeName;
-    }
-
     internal static bool IsDateTimeOffset(this PropertyDefinition property)
     {
         return property.PropertyType.FullName == DateTimeOffsetTypeName;
-    }
-
-    internal static bool IsNullableDateTime(this PropertyDefinition property)
-    {
-        return property.PropertyType.FullName == NullableDateTimeTypeName;
     }
 
     internal static bool IsNullable(this PropertyDefinition property)
