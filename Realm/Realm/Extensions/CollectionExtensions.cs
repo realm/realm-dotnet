@@ -211,7 +211,7 @@ namespace Realms
         /// var results1 = realm.All&lt;Foo&gt;("Bar.IntValue > 0");
         /// var results2 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC)");
         /// var results3 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC) DISTINCT(Bar.IntValue)");
-        /// var results4 = realm.All&lt;Foo&gt;("Bar.IntValue > $0 || (Bar.String == $1 &amp;&amp; Bar.Bool == $2)" 5, "small", true");
+        /// var results4 = realm.All&lt;Foo&gt;("Bar.IntValue > $0 || (Bar.String == $1 &amp;&amp; Bar.Bool == $2)", 5, "small", true);
         /// </code>
         /// </example>
         /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
