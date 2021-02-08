@@ -29,6 +29,7 @@
 
 ### Internal
 * Using Core 10.3.3.
+* Updated to dotnetcore 3.1.
 
 ## 10.0.0-beta.6 (2021-01-25)
 
