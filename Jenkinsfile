@@ -320,9 +320,9 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp2.0'),
-    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
-    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp3.1'),
+    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
+    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
     '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
     '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
     '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
@@ -330,7 +330,7 @@ stage('Test') {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
         dir('Tests/Weaver/Realm.Fody.Tests') {
-          bat "dotnet run -f netcoreapp2.0 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
+          bat "dotnet run -f netcoreapp3.1 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
           reportTests 'TestResults.Weaver.xml'
         }
       }
@@ -448,8 +448,8 @@ boolean shouldPublishPackage() {
 def String DetermineDockerImg(String targetFramework) {
   String dockerImg = 'breakBuildIfNotSet'
   switch(targetFramework) {
-    case 'netcoreapp2.0':
-      dockerImg = 'mcr.microsoft.com/dotnet/core/sdk:2.1'
+    case 'netcoreapp3.1':
+      dockerImg = 'mcr.microsoft.com/dotnet/sdk:3.1'
     break
     case 'net5.0':
       dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
