@@ -138,7 +138,7 @@ namespace Realms
         {
             if (key != null && _dictionaryHandle.TryGet(key, Metadata, Realm, out var realmValue))
             {
-                value = Operator.Convert<RealmValue, TValue>(realmValue);
+                value = realmValue.As<TValue>();
                 return true;
             }
 

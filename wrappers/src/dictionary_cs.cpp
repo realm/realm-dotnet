@@ -96,9 +96,9 @@ REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictio
 {
     return handle_errors(ex, [&]() {
         auto dict_key = from_capi(key.string);
+        auto dict_value = dictionary.try_get_any(dict_key);
 
-        auto mixed_value = dictionary.try_get_any(dict_key);
-        if (mixed_value && mixed_value == from_capi(value))
+        if (dict_value && are_equal(value, dict_value.value()))
         {
             dictionary.erase(dict_key);
             return true;
