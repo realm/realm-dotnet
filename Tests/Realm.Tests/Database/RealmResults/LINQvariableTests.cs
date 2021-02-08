@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
@@ -169,57 +168,6 @@ namespace Realms.Tests.Database
             Assert.That(nullNonMatches.Count(), Is.EqualTo(2));
             Assert.That(nullNonMatches.ElementAt(0).NullableObjectIdProperty, Is.Not.Null);
             Assert.That(nullNonMatches.ElementAt(1).NullableObjectIdProperty, Is.Not.Null);
-        }
-
-        [Test]
-        public void Guid_Equals()
-        {
-            var id = Guid.NewGuid();
-            _realm.Write(() =>
-            {
-                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, GuidProperty = id });
-                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, GuidProperty = Guid.NewGuid() });
-                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, GuidProperty = Guid.NewGuid() });
-            });
-
-            var matches = _realm.All<AllTypesObject>().Where(o => o.GuidProperty == id);
-            Assert.That(matches.Count(), Is.EqualTo(1));
-            Assert.That(matches.Single().GuidProperty, Is.EqualTo(id));
-
-            var nonMatches = _realm.All<AllTypesObject>().Where(o => o.GuidProperty != id);
-            Assert.That(nonMatches.Count(), Is.EqualTo(2));
-            Assert.That(nonMatches.ElementAt(0).GuidProperty, Is.Not.EqualTo(id));
-            Assert.That(nonMatches.ElementAt(1).GuidProperty, Is.Not.EqualTo(id));
-        }
-
-        [Test]
-        public void NullableGuid_Equals()
-        {
-            var id = Guid.NewGuid();
-            _realm.Write(() =>
-            {
-                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, NullableGuidProperty = id });
-                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, NullableGuidProperty = Guid.NewGuid() });
-                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, NullableGuidProperty = null });
-            });
-
-            var idMatches = _realm.All<AllTypesObject>().Where(o => o.NullableGuidProperty == id);
-            Assert.That(idMatches.Count(), Is.EqualTo(1));
-            Assert.That(idMatches.Single().NullableGuidProperty, Is.EqualTo(id));
-
-            var idNonMatches = _realm.All<AllTypesObject>().Where(o => o.NullableGuidProperty != id);
-            Assert.That(idNonMatches.Count(), Is.EqualTo(2));
-            Assert.That(idNonMatches.ElementAt(0).NullableGuidProperty, Is.Not.EqualTo(id));
-            Assert.That(idNonMatches.ElementAt(1).NullableGuidProperty, Is.Not.EqualTo(id));
-
-            var nullMatches = _realm.All<AllTypesObject>().Where(o => o.NullableGuidProperty == null);
-            Assert.That(nullMatches.Count(), Is.EqualTo(1));
-            Assert.That(nullMatches.Single().NullableGuidProperty, Is.Null);
-
-            var nullNonMatches = _realm.All<AllTypesObject>().Where(o => o.NullableGuidProperty != null);
-            Assert.That(nullNonMatches.Count(), Is.EqualTo(2));
-            Assert.That(nullNonMatches.ElementAt(0).NullableGuidProperty, Is.Not.Null);
-            Assert.That(nullNonMatches.ElementAt(1).NullableGuidProperty, Is.Not.Null);
         }
 
         // The following test cases exercise both Convert and Member RHS expressions

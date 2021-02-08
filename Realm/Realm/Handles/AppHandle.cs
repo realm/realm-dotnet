@@ -35,7 +35,6 @@ namespace Realms.Sync
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void LogMessageCallback(IntPtr managed_handler, byte* message_buf, IntPtr message_len, LogLevel logLevel);
@@ -140,7 +139,6 @@ namespace Realms.Sync
             }
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
         static unsafe AppHandle()

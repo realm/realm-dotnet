@@ -12,6 +12,7 @@
 
 ### Internal
 * Using Core 10.3.3.
+* Fixes the analytics version being sent.
 
 ## 10.0.1 (2021-02-02)
 ------------------

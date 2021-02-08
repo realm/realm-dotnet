@@ -52,8 +52,6 @@ namespace AssemblyToProcess
 
         public ObjectId ObjectIdProperty { get; set; }
 
-        public Guid GuidProperty { get; set; }
-
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
@@ -93,8 +91,6 @@ namespace AssemblyToProcess
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
 
         public ObjectId? NullableObjectIdProperty { get; set; }
-
-        public Guid? NullableGuidProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -126,8 +122,6 @@ namespace AssemblyToProcess
 
         public IList<ObjectId> ObjectIdList { get; }
 
-        public IList<Guid> GuidList { get; }
-
         public IList<char?> NullableCharList { get; }
 
         public IList<byte?> NullableByteList { get; }
@@ -152,8 +146,6 @@ namespace AssemblyToProcess
 
         public IList<ObjectId?> NullableObjectIdList { get; }
 
-        public IList<Guid?> NullableGuidList { get; }
-
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 
         public IList<RealmInteger<short>> Int16CounterList { get; }
@@ -172,76 +164,6 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    public class SetsObject : RealmObject
-    {
-        public ISet<char> CharSet { get; }
-
-        public ISet<byte> ByteSet { get; }
-
-        public ISet<short> Int16Set { get; }
-
-        public ISet<int> Int32Set { get; }
-
-        public ISet<long> Int64Set { get; }
-
-        public ISet<float> SingleSet { get; }
-
-        public ISet<double> DoubleSet { get; }
-
-        public ISet<bool> BooleanSet { get; }
-
-        public ISet<string> StringSet { get; }
-
-        public ISet<DateTimeOffset> DateTimeOffsetSet { get; }
-
-        public ISet<decimal> DecimalSet { get; }
-
-        public ISet<Decimal128> Decimal128Set { get; }
-
-        public ISet<ObjectId> ObjectIdSet { get; }
-
-        public ISet<char?> NullableCharSet { get; }
-
-        public ISet<byte?> NullableByteSet { get; }
-
-        public ISet<short?> NullableInt16Set { get; }
-
-        public ISet<int?> NullableInt32Set { get; }
-
-        public ISet<long?> NullableInt64Set { get; }
-
-        public ISet<float?> NullableSingleSet { get; }
-
-        public ISet<double?> NullableDoubleSet { get; }
-
-        public ISet<bool?> NullableBooleanSet { get; }
-
-        public ISet<DateTimeOffset?> NullableDateTimeOffsetSet { get; }
-
-        public ISet<decimal?> NullableDecimalSet { get; }
-
-        public ISet<Decimal128?> NullableDecimal128Set { get; }
-
-        public ISet<ObjectId?> NullableObjectIdSet { get; }
-
-        public ISet<RealmInteger<byte>> ByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>> Int16CounterSet { get; }
-
-        public ISet<RealmInteger<int>> Int32CounterSet { get; }
-
-        public ISet<RealmInteger<long>> Int64CounterSet { get; }
-
-        public ISet<RealmInteger<byte>?> NullableByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>?> NullableInt16CounterSet { get; }
-
-        public ISet<RealmInteger<int>?> NullableInt32CounterSet { get; }
-
-        public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
-    }
-
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class MixOfCollectionsObject : RealmObject
     {
         [PrimaryKey]
@@ -252,12 +174,6 @@ namespace AssemblyToProcess
         public IList<AllTypesObject> ObjectList { get; }
 
         public IList<EmbeddedAllTypesObject> EmbeddedList { get; }
-
-        public ISet<int> IntegersSet { get; }
-
-        public ISet<AllTypesObject> ObjectSet { get; }
-
-        public ISet<EmbeddedAllTypesObject> EmbeddedSet { get; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -310,13 +226,6 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    public class PrimaryKeyGuidObject : RealmObject
-    {
-        [PrimaryKey]
-        public Guid GuidProperty { get; set; }
-    }
-
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
@@ -356,13 +265,6 @@ namespace AssemblyToProcess
     {
         [PrimaryKey]
         public ObjectId? ObjectIdProperty { get; set; }
-    }
-
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    public class PrimaryKeyNullableGuidObject : RealmObject
-    {
-        [PrimaryKey]
-        public Guid? GuidProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -416,8 +318,6 @@ namespace AssemblyToProcess
 
         public ObjectId ObjectIdProperty { get; set; }
 
-        public Guid GuidProperty { get; set; }
-
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
@@ -457,7 +357,5 @@ namespace AssemblyToProcess
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
 
         public ObjectId? NullableObjectIdProperty { get; set; }
-
-        public Guid? NullableGuidProperty { get; set; }
     }
 }
