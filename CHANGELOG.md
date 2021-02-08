@@ -33,6 +33,8 @@
 * Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
 * Using Core 11.x.y. (it's in flux)
 * Enabled LTO builds for all platforms except Android. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
+* Using Core 10.3.3.
+* Updated to dotnetcore 3.1.
 
 ## 10.1.0 (2021-02-09)
 
