@@ -1,3 +1,18 @@
+## vNext
+------------------
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 10.5.0.
+
 ## 10.1.0 (2021-02-09)
 ------------------
 
