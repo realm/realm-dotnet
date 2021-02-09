@@ -370,7 +370,9 @@ def NetCoreTest(String nodeName, String targetFramework) {
               // see https://stackoverflow.com/a/53782505
               sh """
                 # see https://github.com/dotnet/sdk/issues/11108
-                cd /usr/share/dotnet/sdk/$(dotnet --version)/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets && mv Microsoft.WinFx.props Microsoft.WinFX.props && mv Microsoft.WinFx.targets Microsoft.WinFX.targets
+                ABS_PATH_TO_FIX=/usr/share/dotnet/sdk/$(dotnet --version)/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets
+                mv $ABS_PATH_TO_FIX/Microsoft.WinFx.props Microsoft.WinFX.props && mv $ABS_PATH_TO_FIX/Microsoft.WinFx.targets Microsoft.WinFX.targets
+
                 export HOME=/tmp
                 ${script}
               """
