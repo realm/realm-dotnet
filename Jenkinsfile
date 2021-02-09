@@ -38,7 +38,7 @@ stage('Checkout') {
 stage('Build wrappers') {
   def jobs = [
     'iOS': {
-      rlmNode('cph && macos') {
+      rlmNode('osx') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "./build-ios.sh --configuration=${configuration}"
