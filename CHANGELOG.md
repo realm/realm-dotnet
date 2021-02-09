@@ -2,16 +2,21 @@
 ------------------
 
 ### Enhancements
-* None
+* Sync client now logs error messages received from server rather than just the size of the error message. (Core upgrade)
+* Errors returned from the server when sync WebSockets get closed are now captured and surfaced as a SyncError. (Core upgrade)
+* Dramatically improved performance of sequential reads on a query without a filter. (Core upgrade)
 
 ### Fixed
-* None
+* Fix an issue when using a frozen query across threads with different transaction versions which resulted in being able to access objects from a future version in the frozen collection. (Core upgrade)
+* Fixed an issue where creating an object after file format upgrade may fail with assertion "Assertion failed: lo() <= std::numeric_limits<uint32_t>::max()" (Core upgrade)
+* Fixed an issue where getting an element from a query result without a filter would give incorrect results if a new object was created at index zero in the source Table. (Core upgrade)
+* Fixed an issue where during synchronization the app would crash with `Assertion failed: ref + size <= next->first`. (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.3.3.
+* Using Core 10.5.0.
 * Fixes the analytics version being sent.
 
 ## 10.0.1 (2021-02-02)
