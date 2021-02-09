@@ -368,14 +368,14 @@ def NetCoreTest(String nodeName, String targetFramework) {
 
               script += " --baasurl http://mongodb-realm:9090 --baasappid ${appId.trim()}"
               // see https://stackoverflow.com/a/53782505
-              sh """
+              sh '''
                 # see https://github.com/dotnet/sdk/issues/11108
                 ABS_PATH_TO_FIX=/usr/share/dotnet/sdk/$(dotnet --version)/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets
                 mv $ABS_PATH_TO_FIX/Microsoft.WinFx.props Microsoft.WinFX.props && mv $ABS_PATH_TO_FIX/Microsoft.WinFx.targets Microsoft.WinFX.targets
 
                 export HOME=/tmp
                 ${script}
-              """
+              '''
             }
           }
         } else {
