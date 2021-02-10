@@ -373,8 +373,8 @@ def NetCoreTest(String nodeName, String targetFramework) {
                 // Renaming the folders in questions fixes the issue. More info can be found at https://github.com/dotnet/sdk/issues/11108
                 sh '''
                   ABS_PATH_TO_FIX=/usr/share/dotnet/sdk/$(dotnet --version)/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets
-                  mv $ABS_PATH_TO_FIX/Microsoft.WinFx.props Microsoft.WinFX.props
-                  mv $ABS_PATH_TO_FIX/Microsoft.WinFx.targets Microsoft.WinFX.targets
+                  mv $ABS_PATH_TO_FIX/Microsoft.WinFx.props $ABS_PATH_TO_FIX/Microsoft.WinFX.props
+                  mv $ABS_PATH_TO_FIX/Microsoft.WinFx.targets $ABS_PATH_TO_FIX/Microsoft.WinFX.targets
                 '''
               }
 
