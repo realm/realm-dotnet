@@ -29,7 +29,7 @@
 
 ### Internal
 * Using Core 10.3.3.
-* Updated to dotnetcore 3.1.
+* Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
 
 ## 10.0.0-beta.6 (2021-01-25)
 
