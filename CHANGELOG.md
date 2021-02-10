@@ -1,3 +1,20 @@
+## 5.1.3 (TBD)
+------------------
+
+### Fixed
+* If you make a case insensitive query on an indexed string column, it may fail in a way that results in a "No such key" exception. (Core upgrade)
+* Fix crash in case insensitive query on indexed string columns when nothing matches. (Core upgrade)
+* Files upgraded on 32-bit devices could end up being inconsistent resulting in "Key not found" exception to be thown. (Core upgrade)
+* Fixed an issue where creating an object after file format upgrade may fail with assertion `Assertion failed: lo() <= std::numeric_limits<uint32_t>::max()`. (Core upgrade)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 5.0.0 or later.
+
+### Internal
+* Using Sync 5.0.32 and Core 6.2.3.
+* Updated the QuickJournal example to latest Realm and Xamarin.Forms versions. (PR [#2057](https://github.com/realm/realm-dotnet/pull/2057))
+
 ## 5.1.2 (2020-10-19)
 ------------------
 
