@@ -113,7 +113,7 @@ stage('Build wrappers') {
       rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
+          powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform} ${psExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
         if (shouldPublishPackage()) {
