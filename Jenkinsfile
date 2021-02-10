@@ -29,9 +29,7 @@ stage('Checkout') {
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
-
-      // TODO: uncomment this
-      // enableLTO = false
+      enableLTO = false
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
