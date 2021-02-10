@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
 using System.Reflection;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
