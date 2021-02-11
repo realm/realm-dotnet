@@ -27,7 +27,6 @@ namespace Realms.Sync
         private static class EmailNativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern void register_user(AppHandle app,
@@ -66,7 +65,6 @@ namespace Realms.Sync
                 IntPtr tcs_ptr, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
         public readonly EmailPasswordApi EmailPassword;
