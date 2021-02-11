@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,23 +19,13 @@
 namespace Realms
 {
     /// <summary>
-    /// An interface representing a thread confined object.
+    /// Represents a database object (object/collection/query) that has metadata.
     /// </summary>
-    internal interface IThreadConfined : IMetadataObject
+    internal interface IMetadataObject
     {
         /// <summary>
-        /// Gets a value indicating whether the object is managed.
+        /// Gets a value representing the object's metadata.
         /// </summary>
-        bool IsManaged { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the object is still valid (i.e. its Realm isn't closed and the object isn't deleted).
-        /// </summary>
-        bool IsValid { get; }
-
-        /// <summary>
-        /// Gets a value representing the native handle for that object.
-        /// </summary>
-        IThreadConfinedHandle Handle { get; }
+        RealmObjectBase.Metadata Metadata { get; }
     }
 }

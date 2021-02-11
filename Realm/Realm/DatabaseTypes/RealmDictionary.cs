@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
+using Realms.Dynamic;
 using Realms.Helpers;
 
 namespace Realms
@@ -31,7 +32,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider
+    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider, IRealmCollectionBase<DictionaryHandle>
     {
         private readonly DictionaryHandle _dictionaryHandle;
 
@@ -82,6 +83,8 @@ namespace Realms
             }
         }
 
+        DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
+
         internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
         {
@@ -108,10 +111,7 @@ namespace Realms
 
         public bool ContainsKey(string key) => key != null && _dictionaryHandle.ContainsKey(key);
 
-        public DynamicMetaObject GetMetaObject(Expression parameter)
-        {
-            throw new NotImplementedException();
-        }
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmDictionary(expression, this);
 
         public override int IndexOf(KeyValuePair<string, TValue> value) => throw new NotSupportedException();
 

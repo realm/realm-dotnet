@@ -146,7 +146,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        Metadata IThreadConfined.Metadata => ObjectMetadata;
+        Metadata IMetadataObject.Metadata => ObjectMetadata;
 
         /// <inheritdoc/>
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;

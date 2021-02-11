@@ -1643,6 +1643,46 @@ namespace Realms
             }
 
             /// <summary>
+            /// Creates an embedded object and adds it to the specified dictionary. This also assigns correct ownership of the newly created embedded object.
+            /// </summary>
+            /// <param name="dictionary">The dictionary to which the object will be added.</param>
+            /// <param name="key">The key for which the object will be added.</param>
+            /// <returns>The newly created object, after it has been added to the dictionary.</returns>
+            /// <remarks>
+            /// Dictionaries containing embedded objects cannot directly add objects as that would require constructing an unowned embedded object, which is not possible. This is why
+            /// <see cref="AddEmbeddedObjectToDictionary"/> and <see cref="SetEmbeddedObjectInDictionary"/> have to be used instead of
+            /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
+            /// </remarks>
+            /// <seealso cref="SetEmbeddedObjectInDictionary"/>
+            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
+            public dynamic AddEmbeddedObjectToDictionary(IRealmCollection<KeyValuePair<string, EmbeddedObject>> dictionary, string key)
+            {
+                Argument.NotNull(key, nameof(key));
+
+                return PerformEmbeddedDictionaryOperation(dictionary, handle => handle.SetEmbedded(key));
+            }
+
+            /// <summary>
+            /// Creates an embedded object and sets it in the specified dictionary for the specified key. This also assigns correct ownership of the newly created embedded object.
+            /// </summary>
+            /// <param name="dictionary">The dictionary in which the object will be set.</param>
+            /// <param name="key">The key for which the object will be set.</param>
+            /// <returns>The newly created object, after it has been assigned to the specified key in the dictionary.</returns>
+            /// <remarks>
+            /// Dictionaries containing embedded objects cannot directly add objects as that would require constructing an unowned embedded object, which is not possible. This is why
+            /// <see cref="AddEmbeddedObjectToDictionary"/> and <see cref="SetEmbeddedObjectInDictionary"/> have to be used instead of
+            /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
+            /// </remarks>
+            /// <seealso cref="AddEmbeddedObjectToDictionary"/>
+            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
+            public dynamic SetEmbeddedObjectInDictionary(IRealmCollection<KeyValuePair<string, EmbeddedObject>> dictionary, string key)
+            {
+                Argument.NotNull(key, nameof(key));
+
+                return PerformEmbeddedDictionaryOperation(dictionary, handle => handle.SetEmbedded(key));
+            }
+
+            /// <summary>
             /// Get a view of all the objects of a particular type.
             /// </summary>
             /// <param name="className">The type of the objects as defined in the schema.</param>
@@ -1747,7 +1787,7 @@ namespace Realms
 
                 Argument.NotNull(list, nameof(list));
 
-                if (!(list is IRealmList realmList))
+                if (!(list is IRealmCollectionBase<ListHandle> realmList))
                 {
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
@@ -1755,6 +1795,25 @@ namespace Realms
                 var obj = realmList.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
+                obj.OnManaged();
+
+                return obj;
+            }
+
+            private dynamic PerformEmbeddedDictionaryOperation(IRealmCollection<KeyValuePair<string, EmbeddedObject>> dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            {
+                _realm.ThrowIfDisposed();
+
+                Argument.NotNull(dictionary, nameof(dictionary));
+
+                if (!(dictionary is IRealmCollectionBase<DictionaryHandle> realmDict))
+                {
+                    throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
+                }
+
+                var obj = realmDict.Metadata.Helper.CreateInstance();
+
+                obj.SetOwner(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata);
                 obj.OnManaged();
 
                 return obj;
