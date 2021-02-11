@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.18362</TargetFrameworks>
-    <TargetFrameworks>net461;netcoreapp2.0;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
-    <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
     <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
     <RootNamespace>Realms.Tests</RootNamespace>
