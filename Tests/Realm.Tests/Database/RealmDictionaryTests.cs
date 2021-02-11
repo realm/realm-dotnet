@@ -23,6 +23,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -1010,13 +1011,13 @@ namespace Realms.Tests.Database
         public static IEnumerable<TestCaseData<IntPropertyObject>> ObjectTestValues()
         {
             yield return new TestCaseData<IntPropertyObject>(null);
-            yield return new TestCaseData<IntPropertyObject>(null, ("123", new IntPropertyObject { Int = 1 }));
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("123", new IntPropertyObject { Int = 1 }));
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("null", null));
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, null, ("123", new IntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("123", new IntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("null", null));
+            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("null1", null), ("null2", null));
 
             var sameObject = new IntPropertyObject();
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject(), ("a", sameObject), ("b", null), ("c", sameObject));
+            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("a", sameObject), ("b", null), ("c", sameObject));
         }
 
         [TestCaseSource(nameof(ObjectTestValues))]
@@ -1153,19 +1154,33 @@ namespace Realms.Tests.Database
 
         public class TestCaseData<T>
         {
+            private readonly Func<T, T> _cloneFunc;
+            private readonly Func<T, T, bool> _equalityFunc;
+
             public T SampleValue { get; }
 
-            public (string Key, T Value)[] InitialValues { get; }
+            private (string Key, T Value)[] _initialValues;
+
+            public (string Key, T Value)[] InitialValues => _initialValues.Select(kvp => (kvp.Key, _cloneFunc(kvp.Value))).ToArray();
 
             public TestCaseData(T sampleValue, params (string Key, T Value)[] initialValues)
+                : this(x => x, null, sampleValue, initialValues)
             {
+            }
+
+            public TestCaseData(Func<T, T> cloneFunc, Func<T, T, bool> equalityFunc, T sampleValue, params (string Key, T Value)[] initialValues)
+            {
+                _cloneFunc = cloneFunc;
+                _equalityFunc = equalityFunc;
+
                 SampleValue = sampleValue;
-                InitialValues = initialValues.ToArray();
+
+                _initialValues = initialValues.ToArray();
             }
 
             public override string ToString()
             {
-                return string.Join(", ", InitialValues.Select(kvp => $"{kvp.Key}-{kvp.Value}"));
+                return string.Join(", ", _initialValues.Select(kvp => $"{kvp.Key}-{kvp.Value}"));
             }
 
             public void AssertCount(IDictionary<string, T> target)
@@ -1173,7 +1188,7 @@ namespace Realms.Tests.Database
                 var reference = GetReferenceDictionary();
 
                 Assert.That(target.Count, Is.EqualTo(reference.Count));
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, IsEquivalentTo(reference));
             }
 
             public void AssertContainsKey(IDictionary<string, T> target)
@@ -1190,7 +1205,7 @@ namespace Realms.Tests.Database
             {
                 foreach (var (key, value) in InitialValues)
                 {
-                    Assert.That(target[key], Is.EqualTo(value));
+                    Assert.That(target[key], IsEqualTo(value));
                 }
 
                 T val;
@@ -1205,7 +1220,7 @@ namespace Realms.Tests.Database
 
             public void AssertValues(IDictionary<string, T> target)
             {
-                Assert.That(target.Values, Is.EquivalentTo(InitialValues.Select(x => x.Value)));
+                Assert.That(target.Values, IsEquivalentTo(InitialValues.Select(x => x.Value)));
             }
 
             public void AssertTryGetValue(IDictionary<string, T> target)
@@ -1214,7 +1229,7 @@ namespace Realms.Tests.Database
                 {
                     var hasKey = target.TryGetValue(key, out var storedValue);
                     Assert.That(hasKey, Is.True);
-                    Assert.That(storedValue, Is.EqualTo(value));
+                    Assert.That(storedValue, IsEqualTo(value));
                 }
             }
 
@@ -1233,7 +1248,7 @@ namespace Realms.Tests.Database
                 expectedCount++;
 
                 Assert.That(target.Count, Is.EqualTo(expectedCount));
-                Assert.That(target[key1], Is.EqualTo(value1));
+                Assert.That(target[key1], IsEqualTo(value1));
 
                 var key2 = Guid.NewGuid().ToString();
                 var value2 = target.First().Value;
@@ -1245,7 +1260,7 @@ namespace Realms.Tests.Database
                 expectedCount++;
 
                 Assert.That(target.Count, Is.EqualTo(expectedCount));
-                Assert.That(target[key2], Is.EqualTo(value2));
+                Assert.That(target[key2], IsEqualTo(value2));
 
                 Assert.Throws<ArgumentException>(() =>
                 {
@@ -1338,7 +1353,7 @@ namespace Realms.Tests.Database
                     });
 
                     Assert.That(target.ContainsKey(key));
-                    Assert.That(target[key], Is.EqualTo(SampleValue));
+                    Assert.That(target[key], IsEqualTo(SampleValue));
                     Assert.That(target.Count, Is.EqualTo(expectedCount));
                 }
 
@@ -1351,7 +1366,7 @@ namespace Realms.Tests.Database
                 expectedCount++;
 
                 Assert.That(target.ContainsKey(newKey));
-                Assert.That(target[newKey], Is.EqualTo(SampleValue));
+                Assert.That(target[newKey], IsEqualTo(SampleValue));
                 Assert.That(target.Count, Is.EqualTo(expectedCount));
             }
 
@@ -1362,7 +1377,7 @@ namespace Realms.Tests.Database
                 foreach (var kvp in target)
                 {
                     Assert.That(referenceDict.ContainsKey(kvp.Key));
-                    Assert.That(referenceDict[kvp.Key], Is.EqualTo(kvp.Value));
+                    Assert.That(referenceDict[kvp.Key], IsEqualTo(kvp.Value));
 
                     referenceDict.Remove(kvp.Key);
                 }
@@ -1471,10 +1486,10 @@ namespace Realms.Tests.Database
                 var insertedIndex = assertInsertion(changes);
 
                 Assert.That(target.ElementAt(insertedIndex).Key, Is.EqualTo(newKey));
-                Assert.That(target.ElementAt(insertedIndex).Value, Is.EqualTo(SampleValue));
+                Assert.That(target.ElementAt(insertedIndex).Value, IsEqualTo(SampleValue));
 
                 Assert.That(target.AsRealmCollection()[insertedIndex].Key, Is.EqualTo(newKey));
-                Assert.That(target.AsRealmCollection()[insertedIndex].Value, Is.EqualTo(SampleValue));
+                Assert.That(target.AsRealmCollection()[insertedIndex].Value, IsEqualTo(SampleValue));
 
                 WriteIfNecessary(target, () =>
                 {
@@ -1510,10 +1525,10 @@ namespace Realms.Tests.Database
 
                 Assert.That(oldIndex, Is.EqualTo(result.Index));
                 Assert.That(target.ElementAt(newIndex).Key, Is.EqualTo(keyToUpdate));
-                Assert.That(target.ElementAt(newIndex).Value, Is.EqualTo(SampleValue));
+                Assert.That(target.ElementAt(newIndex).Value, IsEqualTo(SampleValue));
 
                 Assert.That(target.AsRealmCollection()[newIndex].Key, Is.EqualTo(keyToUpdate));
-                Assert.That(target.AsRealmCollection()[newIndex].Value, Is.EqualTo(SampleValue));
+                Assert.That(target.AsRealmCollection()[newIndex].Value, IsEqualTo(SampleValue));
 
                 async Task<TArgs> EnsureRefreshed(int expectedCallbackCount)
                 {
@@ -1534,7 +1549,7 @@ namespace Realms.Tests.Database
                     var frozenDict = target.Freeze();
                     var referenceDict = GetReferenceDictionary();
 
-                    Assert.That(frozenDict, Is.EquivalentTo(referenceDict));
+                    Assert.That(frozenDict, IsEquivalentTo(referenceDict));
                     Assert.That(frozenDict, Is.TypeOf<RealmDictionary<T>>());
 
                     var frozenCollection = frozenDict.AsRealmCollection();
@@ -1552,7 +1567,7 @@ namespace Realms.Tests.Database
                     await Task.Run(() =>
                     {
                         // Ensure the frozen collection can be passed between threads
-                        Assert.That(frozenDict, Is.EquivalentTo(referenceDict));
+                        Assert.That(frozenDict, IsEquivalentTo(referenceDict));
                     });
 
                     var newKey = Guid.NewGuid().ToString();
@@ -1595,7 +1610,7 @@ namespace Realms.Tests.Database
                     {
                         var bgDict = bgRealm.ResolveReference(tsr);
 
-                        Assert.That(bgDict, Is.EquivalentTo(GetReferenceDictionary()));
+                        Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
                     }
                 });
             }
@@ -1628,6 +1643,36 @@ namespace Realms.Tests.Database
                         target.Add(key, value);
                     }
                 });
+            }
+
+            private EqualConstraint IsEqualTo(T other)
+            {
+                if (_equalityFunc == null)
+                {
+                    return Is.EqualTo(other);
+                }
+
+                return Is.EqualTo(other).Using<T>(_equalityFunc);
+            }
+
+            private CollectionItemsEqualConstraint IsEquivalentTo(IDictionary<string, T> dict)
+            {
+                if (_equalityFunc == null)
+                {
+                    return Is.EquivalentTo(dict);
+                }
+
+                return Is.EquivalentTo(dict).Using<KeyValuePair<string, T>>((first, second) => first.Key == second.Key && _equalityFunc(first.Value, second.Value));
+            }
+
+            private CollectionItemsEqualConstraint IsEquivalentTo(IEnumerable<T> other)
+            {
+                if (_equalityFunc == null)
+                {
+                    return Is.EquivalentTo(other);
+                }
+
+                return Is.EquivalentTo(other).Using<T>(_equalityFunc);
             }
 
             private static void WriteIfNecessary(IDictionary<string, T> collection, Action writeAction)

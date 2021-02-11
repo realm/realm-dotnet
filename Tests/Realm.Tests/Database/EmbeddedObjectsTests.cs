@@ -387,7 +387,7 @@ namespace Realms.Tests.Database
                     parent.RecursiveObject.Children.Add(parent.RecursiveObject.Child);
                 });
             });
-            Assert.That(ex.Message, Is.EqualTo("Can't add, set, or insert an embedded object that is already managed."));
+            Assert.That(ex.Message, Is.EqualTo("Can't add to the collection an embedded object that is already managed."));
         }
 
         [Test]
