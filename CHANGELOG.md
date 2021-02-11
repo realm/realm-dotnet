@@ -1,3 +1,18 @@
+## vNext
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 11.x.y. (it's in flux)
+* Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
+
 ## 10.5.0 (TBD)
 
 ### Fixed
