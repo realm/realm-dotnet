@@ -70,7 +70,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_value(const Object& object, size_t property_ndx, realm_value_t* value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_value(const Object& object, size_t property_ndx, realm_value_t* value, TableKey& table_key, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_get(object);
@@ -80,6 +80,7 @@ extern "C" {
                 const Obj link_obj = object.obj().get_linked_object(prop.column_key);
                 if (link_obj) {
                     *value = to_capi(new Object(object.realm(), link_obj));
+                    table_key = link_obj.get_table()->get_key();
                 }
                 else {
                     value->type = realm_value_type::RLM_TYPE_NULL;
@@ -89,6 +90,7 @@ extern "C" {
                 auto val = object.obj().get_any(prop.column_key);
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
                     *value = to_capi(new Object(object.realm(), val.get<ObjLink>()));
+                    table_key = val.get<ObjLink>().get_table_key();
                 }
                 else {
                     *value = to_capi(std::move(val));
