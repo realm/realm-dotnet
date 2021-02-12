@@ -41,6 +41,8 @@ namespace Realms.Tests.Database
             public IList<DynamicSubTask> SubTasks { get; }
 
             public IList<DynamicSubSubTask> SubSubTasks { get; }
+
+            public IDictionary<string, DynamicSubTask> SubTasksDictionary { get; }
         }
 
         private class DynamicSubTask : EmbeddedObject
@@ -141,6 +143,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void DictionaryAdd_WhenEmbedded_Throws()
+        {
+            var ex = Assert.Throws<NotSupportedException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var parent = _realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
+                    parent.SubTasksDictionary.Add("foo", new DynamicSubTask());
+                });
+            });
+
+            Assert.That(ex.Message, Does.Contain($"{nameof(_realm.DynamicApi)}.{nameof(_realm.DynamicApi.AddEmbeddedObjectToDictionary)}"));
+        }
+
+        [Test]
         public void ListInsert_WhenEmbedded_Throws()
         {
             var ex = Assert.Throws<NotSupportedException>(() =>
@@ -168,6 +185,21 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(ex.Message, Does.Contain($"{nameof(_realm.DynamicApi)}.{nameof(_realm.DynamicApi.SetEmbeddedObjectInList)}"));
+        }
+
+        [Test]
+        public void DictionarySet_WhenEmbedded_Throws()
+        {
+            var ex = Assert.Throws<NotSupportedException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var parent = _realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
+                    parent.SubTasksDictionary["foo"] = new DynamicSubTask();
+                });
+            });
+
+            Assert.That(ex.Message, Does.Contain($"{nameof(_realm.DynamicApi)}.{nameof(_realm.DynamicApi.SetEmbeddedObjectInDictionary)}"));
         }
 
         [Test]
@@ -203,6 +235,34 @@ namespace Realms.Tests.Database
 
             Assert.That(addedParent.SubTasks[0].SubSubTasks.Count, Is.EqualTo(1));
             Assert.That(addedParent.SubTasks[0].SubSubTasks[0].Summary, Is.EqualTo("This is subtask level 2"));
+        }
+
+        [Test]
+        public void RealmAddEmbeddedObjectToDictionary()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            _realm.Write(() =>
+            {
+                var parent = _realm.DynamicApi.CreateObject(nameof(DynamicTask), id);
+
+                var subTask = _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "foo");
+                subTask.Summary = "This is subtask level 1";
+            });
+
+            dynamic addedParent = _realm.DynamicApi.Find(nameof(DynamicTask), id);
+            Assert.That(addedParent.SubTasksDictionary, Is.Not.Null);
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(1));
+            Assert.That(addedParent.SubTasksDictionary["foo"].Summary, Is.EqualTo("This is subtask level 1"));
+
+            _realm.Write(() =>
+            {
+                var secondSubTask = _realm.DynamicApi.AddEmbeddedObjectToDictionary(addedParent.SubTasksDictionary, "bar");
+                secondSubTask.Summary = "This is a second subtask level 1";
+            });
+
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(2));
+            Assert.That(addedParent.SubTasksDictionary["bar"].Summary, Is.EqualTo("This is a second subtask level 1"));
         }
 
         [Test]
@@ -277,6 +337,42 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmSetEmbeddedObjectInDictionary()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            _realm.Write(() =>
+            {
+                var parent = _realm.DynamicApi.CreateObject(nameof(DynamicTask), id);
+
+                var task0 = _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "a");
+                var task1 = _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "b");
+                var task2 = _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "c");
+
+                task0.Summary = "initial at a";
+                task1.Summary = "initial at b";
+                task2.Summary = "initial at c";
+            });
+
+            dynamic addedParent = _realm.DynamicApi.Find(nameof(DynamicTask), id);
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(3));
+            Assert.That(addedParent.SubTasksDictionary["a"].Summary, Is.EqualTo("initial at a"));
+            Assert.That(addedParent.SubTasksDictionary["b"].Summary, Is.EqualTo("initial at b"));
+            Assert.That(addedParent.SubTasksDictionary["c"].Summary, Is.EqualTo("initial at c"));
+
+            _realm.Write(() =>
+            {
+                var newAt1 = _realm.DynamicApi.SetEmbeddedObjectInDictionary(addedParent.SubTasksDictionary, "b");
+                newAt1.Summary = "new at b";
+            });
+
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(3));
+            Assert.That(addedParent.SubTasksDictionary["a"].Summary, Is.EqualTo("initial at a"));
+            Assert.That(addedParent.SubTasksDictionary["b"].Summary, Is.EqualTo("new at b"));
+            Assert.That(addedParent.SubTasksDictionary["c"].Summary, Is.EqualTo("initial at c"));
+        }
+
+        [Test]
         public void RealmSetEmbeddedObjectInList_WhenOutOfBounds_Throws()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -296,6 +392,20 @@ namespace Realms.Tests.Database
                     _realm.DynamicApi.SetEmbeddedObjectInList(parent.SubTasks, -1);
                 });
             });
+        }
+
+        [Test]
+        public void RealmAddEmbeddedObjectInDictionary_WhenDuplicateKeys_Throws()
+        {
+            Assert.Throws<ArgumentException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var parent = _realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
+                    _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "foo");
+                    _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "foo");
+                });
+            }, $"An item with the key 'foo' has already been added.");
         }
 
         [Test]
@@ -383,6 +493,42 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(addedParent.SubTasks.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Dictionary_Remove()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            dynamic second = null;
+
+            _realm.Write(() =>
+            {
+                var parent = _realm.DynamicApi.CreateObject(nameof(DynamicTask), id);
+                var first = _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "first");
+                second = _realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "second");
+
+                first.Summary = "first";
+                second.Summary = "second";
+            });
+
+            dynamic addedParent = _realm.DynamicApi.Find(nameof(DynamicTask), id);
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(2));
+
+            _realm.Write(() =>
+            {
+                addedParent.SubTasksDictionary.Remove("second");
+            });
+
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(1));
+            Assert.That(addedParent.SubTasksDictionary["first"].Summary, Is.EqualTo("first"));
+
+            _realm.Write(() =>
+            {
+                addedParent.SubTasksDictionary.Remove("first");
+            });
+
+            Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(0));
         }
 
         [Test]

@@ -1040,6 +1040,37 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        #region Embedded Objects
+
+        public static IEnumerable<TestCaseData<EmbeddedIntPropertyObject>> EmbeddedObjectTestValues()
+        {
+            yield return new TestCaseData<EmbeddedIntPropertyObject>(null);
+            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, null, ("123", new EmbeddedIntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("123", new EmbeddedIntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("null", null));
+            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("a", new EmbeddedIntPropertyObject { Int = 1 }), ("b", null), ("c", new EmbeddedIntPropertyObject { Int = 2 }));
+        }
+
+        [TestCaseSource(nameof(EmbeddedObjectTestValues))]
+        public void EmbeddedObject_Unmanaged(TestCaseData<EmbeddedIntPropertyObject> testData)
+        {
+            RunUnmanagedTests(o => o.EmbeddedObjectDictionary, testData);
+        }
+
+        [TestCaseSource(nameof(EmbeddedObjectTestValues))]
+        public void EmbeddedObject_Managed(TestCaseData<EmbeddedIntPropertyObject> testData)
+        {
+            RunManagedTests(o => o.EmbeddedObjectDictionary, testData);
+        }
+
+        [Test]
+        public void EmbeddedObject_Notifications()
+        {
+            RunManagedNotificationsTests(o => o.EmbeddedObjectDictionary, EmbeddedObjectTestValues().Last());
+        }
+
+        #endregion
         [Test]
         public void CanBeQueried()
         {

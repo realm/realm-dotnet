@@ -1655,11 +1655,11 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="SetEmbeddedObjectInDictionary"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToDictionary(IRealmCollection<KeyValuePair<string, EmbeddedObject>> dictionary, string key)
+            public dynamic AddEmbeddedObjectToDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
 
-                return PerformEmbeddedDictionaryOperation(dictionary, handle => handle.SetEmbedded(key));
+                return PerformEmbeddedDictionaryOperation(dictionary, handle => handle.AddEmbedded(key));
             }
 
             /// <summary>
@@ -1675,7 +1675,7 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="AddEmbeddedObjectToDictionary"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInDictionary(IRealmCollection<KeyValuePair<string, EmbeddedObject>> dictionary, string key)
+            public dynamic SetEmbeddedObjectInDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
 
@@ -1800,7 +1800,7 @@ namespace Realms
                 return obj;
             }
 
-            private dynamic PerformEmbeddedDictionaryOperation(IRealmCollection<KeyValuePair<string, EmbeddedObject>> dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            private dynamic PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
