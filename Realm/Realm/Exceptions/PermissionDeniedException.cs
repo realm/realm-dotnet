@@ -51,7 +51,7 @@ namespace Realms.Sync.Exceptions
         {
             _originalFilePath = userInfo[OriginalFilePathKey];
             _app = app;
-            HelpLink = "https://realm.io/docs/xamarin/latest/#access-control";
+            HelpLink = "https://docs.mongodb.com/realm/sync/permissions/";
         }
 
         /// <summary>

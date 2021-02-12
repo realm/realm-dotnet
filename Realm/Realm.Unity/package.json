@@ -14,8 +14,7 @@
       "mongodb"
     ],
     "author": {
-      "name": "Realm",
-      "email": "help@realm.io",
-      "url": "https://realm.io"
+      "name": "MongoDB Realm",
+      "url": "https://docs.mongodb.com/realm/dotnet/"
     }
   }

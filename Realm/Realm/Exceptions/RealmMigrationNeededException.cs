@@ -21,12 +21,12 @@ namespace Realms.Exceptions
     /// <summary>
     /// Exception thrown when attempting to open a file whose <see cref="Realms.Schema.RealmSchema"/> differs from your current class declarations.
     /// </summary>
-    /// <seealso href="https://realm.io/docs/xamarin/latest/#migrations">Read more about Migrations.</seealso>
+    /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations/">Read more about Migrations.</seealso>
     public class RealmMigrationNeededException : RealmFileAccessErrorException
     {
         internal RealmMigrationNeededException(string message) : base(message)
         {
-            HelpLink = "https://realm.io/docs/xamarin/latest/#migrations";
+            HelpLink = "https://docs.mongodb.com/realm/dotnet/migrations/";
         }
     }
 }
