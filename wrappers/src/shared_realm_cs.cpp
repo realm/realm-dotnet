@@ -379,9 +379,7 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
         realm->verify_in_write();
 
         const TableRef table = get_table(realm, table_key);
-
         const ObjectSchema& object_schema = *realm->schema().find(table_key);
-
         const Property& primary_key_property = *object_schema.primary_key_property();
 
         if (!primary_key_property.type_is_nullable() && primitive.is_null()) {
@@ -478,8 +476,9 @@ REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm,
 
         const ColKey column_key = object_schema.primary_key_property()->column_key;
         const ObjKey obj_key = table->find_first(column_key, from_capi(primitive));
-        if (!obj_key)
+        if (!obj_key) {
             return nullptr;
+        }
 
         return new Object(realm, object_schema, table->get_object(obj_key));
     });
