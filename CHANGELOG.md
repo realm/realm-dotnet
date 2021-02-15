@@ -648,7 +648,7 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
 - Added a check to verify there are no duplicate object names when creating the schema. ([#1502](https://github.com/realm/realm-dotnet/pull/1502))
 - Added more comprehensive error messages when passing an invalid url scheme to `SyncConfiguration` or `User.LoginAsync`. ([#1501](https://github.com/realm/realm-dotnet/pull/1501))
 - Added more meaningful error information to exceptions thrown by `Realm.GetInstanceAsync`. ([#1503](https://github.com/realm/realm-dotnet/pull/1503))
-- Added a new type - `RealmInteger<T>` to expose Realm-specific API over base integral types. It can be used to implement [counter functionality](https://IDontThinkThisExists) in synced realms. ([#1466](https://github.com/realm/realm-dotnet/pull/1466))
+- Added a new type - `RealmInteger<T>` to expose Realm-specific API over base integral types. It can be used to implement [counter functionality](https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/index.html) in synced realms. ([#1466](https://github.com/realm/realm-dotnet/pull/1466))
 - Added `PermissionCondition.Default` to apply default permissions for existing and new users. ([#1511](https://github.com/realm/realm-dotnet/pull/1511))
 
 ### Bug fixes
