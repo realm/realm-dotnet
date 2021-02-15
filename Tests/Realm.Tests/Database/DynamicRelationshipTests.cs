@@ -37,6 +37,7 @@ namespace Realms.Tests.Database
     {
         private const string BilbosName = "Bilbo Fleabaggins";
         private const string EarlsName = "Earl Yippington III";
+        private const string PipilottasName = "Pipilotta";
 
         private class DynamicDog : RealmObject
         {
@@ -391,7 +392,7 @@ namespace Realms.Tests.Database
             Assert.That(hasBilbo, Is.True);
             Assert.That(bilbo, Is.Not.Null);
 
-            var pipi = TryGetValue(tim.DogsDictionary, "Pipilotta", out bool hasPipi);
+            var pipi = TryGetValue(tim.DogsDictionary, PipilottasName, out bool hasPipi);
             Assert.That(hasPipi, Is.False);
             Assert.That(pipi, Is.Null);
 
@@ -399,7 +400,7 @@ namespace Realms.Tests.Database
             Assert.That(hasBilbosTag, Is.True);
             Assert.That(bilbosTag, Is.EqualTo("great"));
 
-            var pipisTag = TryGetValue(tim.TagsDictionary, "Pipilotta", out bool hasPipisTag);
+            var pipisTag = TryGetValue(tim.TagsDictionary, PipilottasName, out bool hasPipisTag);
             Assert.That(hasPipisTag, Is.False);
             Assert.That(pipisTag, Is.Null);
         }
@@ -425,8 +426,8 @@ namespace Realms.Tests.Database
             var bilbosTag = tim.TagsDictionary[BilbosName];
             Assert.That(bilbosTag, Is.EqualTo("great"));
 
-            Assert.Throws<KeyNotFoundException>(() => _ = tim.DogsDictionary["Pipilotta"]);
-            Assert.Throws<KeyNotFoundException>(() => _ = tim.TagsDictionary["Pipilotta"]);
+            Assert.Throws<KeyNotFoundException>(() => _ = tim.DogsDictionary[PipilottasName]);
+            Assert.Throws<KeyNotFoundException>(() => _ = tim.TagsDictionary[PipilottasName]);
         }
 
         [Test]
@@ -437,7 +438,7 @@ namespace Realms.Tests.Database
             _realm.Write(() =>
             {
                 var pipi = _realm.DynamicApi.CreateObject("DynamicDog", null);
-                pipi.Name = "Pipilotta";
+                pipi.Name = PipilottasName;
                 pipi.Color = "Orange";
 
                 tim.DogsDictionary[pipi.Name] = pipi;
@@ -445,22 +446,22 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.DogsDictionary["Pipilotta"].Name, Is.EqualTo("Pipilotta"));
+            Assert.That(tim.DogsDictionary[PipilottasName].Name, Is.EqualTo(PipilottasName));
 
             Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.TagsDictionary["Pipilotta"], Is.EqualTo("cheerful"));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.EqualTo("cheerful"));
 
             _realm.Write(() =>
             {
-                tim.DogsDictionary["Pipilotta"] = null;
-                tim.TagsDictionary["Pipilotta"] = null;
+                tim.DogsDictionary[PipilottasName] = null;
+                tim.TagsDictionary[PipilottasName] = null;
             });
 
             Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.DogsDictionary["Pipilotta"], Is.Null);
+            Assert.That(tim.DogsDictionary[PipilottasName], Is.Null);
 
             Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.TagsDictionary["Pipilotta"], Is.Null);
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.Null);
         }
 
         [Test]
@@ -471,24 +472,24 @@ namespace Realms.Tests.Database
             _realm.Write(() =>
             {
                 var pipi = _realm.DynamicApi.CreateObject("DynamicDog", null);
-                pipi.Name = "Pipilotta";
+                pipi.Name = PipilottasName;
                 pipi.Color = "Orange";
 
-                tim.DogsDictionary.Add("Pipilotta", pipi);
-                tim.TagsDictionary.Add("Pipilotta", "cheerful");
+                tim.DogsDictionary.Add(PipilottasName, pipi);
+                tim.TagsDictionary.Add(PipilottasName, "cheerful");
             });
 
             Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.DogsDictionary["Pipilotta"].Name, Is.EqualTo("Pipilotta"));
+            Assert.That(tim.DogsDictionary[PipilottasName].Name, Is.EqualTo(PipilottasName));
 
             Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.TagsDictionary["Pipilotta"], Is.EqualTo("cheerful"));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.EqualTo("cheerful"));
 
             Assert.Throws<ArgumentException>(() =>
             {
                 _realm.Write(() =>
                 {
-                    tim.DogsDictionary.Add("Pipilotta", null);
+                    tim.DogsDictionary.Add(PipilottasName, null);
                 });
             }, $"An item with the key 'Pipilotta' has already been added.");
 
@@ -496,15 +497,15 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    tim.TagsDictionary.Add("Pipilotta", null);
+                    tim.TagsDictionary.Add(PipilottasName, null);
                 });
             }, $"An item with the key 'Pipilotta' has already been added.");
 
             Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.DogsDictionary["Pipilotta"], Is.Not.Null);
+            Assert.That(tim.DogsDictionary[PipilottasName], Is.Not.Null);
 
             Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
-            Assert.That(tim.TagsDictionary["Pipilotta"], Is.EqualTo("cheerful"));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.EqualTo("cheerful"));
 
             _realm.Write(() =>
             {
