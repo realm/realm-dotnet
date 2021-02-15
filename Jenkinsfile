@@ -325,7 +325,7 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('macos && net5.0', 'netcoreapp3.1'),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp3.1'),
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
     '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
