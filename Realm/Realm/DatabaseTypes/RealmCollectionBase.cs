@@ -210,7 +210,6 @@ namespace Realms
             return result;
         }
 
-
         private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
         {
             if (_callbacks.Remove(callback) &&
