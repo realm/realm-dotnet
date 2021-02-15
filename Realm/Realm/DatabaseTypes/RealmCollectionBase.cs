@@ -36,7 +36,8 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
-          IThreadConfined
+          IThreadConfined,
+          IMetadataObject
     {
         protected static readonly RealmValueType _argumentType = typeof(T).ToPropertyType(out _).ToRealmValueType();
         protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject();
@@ -103,7 +104,7 @@ namespace Realms
 
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
-        RealmObjectBase.Metadata IThreadConfined.Metadata => Metadata;
+        RealmObjectBase.Metadata IMetadataObject.Metadata => Metadata;
 
         public bool IsManaged => Realm != null;
 
@@ -514,5 +515,18 @@ namespace Realms
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
+    /// </summary>
+    /// <typeparam name="THandle">The type of the handle for the collection.</typeparam>
+    internal interface IRealmCollectionBase<THandle> : IMetadataObject
+        where THandle : CollectionHandleBase
+    {
+        /// <summary>
+        /// Gets the native handle for that collection.
+        /// </summary>
+        THandle NativeHandle { get; }
     }
 }

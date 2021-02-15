@@ -40,7 +40,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmList
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmCollectionBase<ListHandle>
     {
         private readonly ListHandle _listHandle;
 
@@ -51,9 +51,7 @@ namespace Realms
 
         internal override CollectionHandleBase GetOrCreateHandle() => _listHandle;
 
-        ListHandle IRealmList.NativeHandle => _listHandle;
-
-        RealmObjectBase.Metadata IRealmList.Metadata => Metadata;
+        ListHandle IRealmCollectionBase<ListHandle>.NativeHandle => _listHandle;
 
         [IndexerName("Item")]
         public new T this[int index]
@@ -174,21 +172,5 @@ namespace Realms
         protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
-    }
-
-    /// <summary>
-    /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
-    /// </summary>
-    internal interface IRealmList
-    {
-        /// <summary>
-        /// Gets the native handle for that list.
-        /// </summary>
-        ListHandle NativeHandle { get; }
-
-        /// <summary>
-        /// Gets the metadata for the objects contained in the list.
-        /// </summary>
-        RealmObjectBase.Metadata Metadata { get; }
     }
 }
