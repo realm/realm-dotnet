@@ -53,6 +53,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjectStore", "wrappers\cma
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerformanceTests", "Tests\PerformanceTests\PerformanceTests.csproj", "{8BDA672B-C40A-41DE-A114-D9E77452ABAB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Storage", "wrappers\cmake\Windows\Debug-Win32\realm-core\src\realm\Storage.vcxproj", "{F12D7B94-A727-39D0-8261-20451EC28DB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -665,6 +667,34 @@ Global
 		{8BDA672B-C40A-41DE-A114-D9E77452ABAB}.RelWithDebInfo|x64.Build.0 = Release|Any CPU
 		{8BDA672B-C40A-41DE-A114-D9E77452ABAB}.RelWithDebInfo|x86.ActiveCfg = Release|Any CPU
 		{8BDA672B-C40A-41DE-A114-D9E77452ABAB}.RelWithDebInfo|x86.Build.0 = Release|Any CPU
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|ARM.ActiveCfg = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|iPhone.ActiveCfg = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|iPhoneSimulator.ActiveCfg = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|x64.ActiveCfg = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|x86.ActiveCfg = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Debug|x86.Build.0 = Debug|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|Any CPU.ActiveCfg = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|ARM.ActiveCfg = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|iPhone.ActiveCfg = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|iPhoneSimulator.ActiveCfg = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|x64.ActiveCfg = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|x86.ActiveCfg = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.MinSizeRel|x86.Build.0 = MinSizeRel|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|Any CPU.ActiveCfg = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|ARM.ActiveCfg = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|iPhone.ActiveCfg = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|iPhoneSimulator.ActiveCfg = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|x64.ActiveCfg = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|x86.ActiveCfg = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.Release|x86.Build.0 = Release|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|Any CPU.ActiveCfg = RelWithDebInfo|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|ARM.ActiveCfg = RelWithDebInfo|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|iPhone.ActiveCfg = RelWithDebInfo|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|iPhoneSimulator.ActiveCfg = RelWithDebInfo|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|Win32
+		{F12D7B94-A727-39D0-8261-20451EC28DB1}.RelWithDebInfo|x86.Build.0 = RelWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

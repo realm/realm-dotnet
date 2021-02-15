@@ -25,7 +25,6 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
-using Realms.Exceptions;
 using Realms.Helpers;
 
 namespace Realms
@@ -79,11 +78,7 @@ namespace Realms
                     return;
                 }
 
-                if (_argumentType == RealmValueType.Object)
-                {
-                    AddToRealmIfNecessary(realmValue);
-                }
-
+                AddToRealmIfNecessary(realmValue);
                 _listHandle.Set(index, realmValue);
             }
         }
@@ -100,11 +95,7 @@ namespace Realms
                 return;
             }
 
-            if (_argumentType == RealmValueType.Object)
-            {
-                AddToRealmIfNecessary(realmValue);
-            }
-
+            AddToRealmIfNecessary(realmValue);
             _listHandle.Add(realmValue);
         }
 
@@ -135,11 +126,7 @@ namespace Realms
                 return;
             }
 
-            if (_argumentType == RealmValueType.Object)
-            {
-                AddToRealmIfNecessary(realmValue);
-            }
-
+            AddToRealmIfNecessary(realmValue);
             _listHandle.Insert(index, realmValue);
         }
 
@@ -187,26 +174,6 @@ namespace Realms
         protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
-
-        private void AddToRealmIfNecessary(in RealmValue value)
-        {
-            var robj = value.AsRealmObject<RealmObject>();
-            if (!robj.IsManaged)
-            {
-                Realm.Add(robj);
-            }
-        }
-
-        private static EmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
-        {
-            var result = value.AsRealmObject<EmbeddedObject>();
-            if (result.IsManaged)
-            {
-                throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
-            }
-
-            return result;
-        }
     }
 
     /// <summary>

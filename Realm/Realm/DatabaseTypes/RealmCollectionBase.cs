@@ -25,6 +25,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -183,6 +184,31 @@ namespace Realms
         }
 
         protected abstract T GetValueAtIndex(int index);
+
+        protected void AddToRealmIfNecessary(in RealmValue value)
+        {
+            if (value.Type != RealmValueType.Object)
+            {
+                return;
+            }
+
+            var robj = value.AsRealmObject<RealmObject>();
+            if (!robj.IsManaged)
+            {
+                Realm.Add(robj);
+            }
+        }
+
+        protected static EmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
+        {
+            var result = value.AsRealmObject<EmbeddedObject>();
+            if (result.IsManaged)
+            {
+                throw new RealmException("Can't add to the collection an embedded object that is already managed.");
+            }
+
+            return result;
+        }
 
         private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
         {

@@ -60,7 +60,12 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
             throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
 
         if ((results.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), results.get(ndx)));
+            if (auto obj = results.get<Obj>(ndx)) {
+                *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), obj));
+            }
+            else {
+                *value = realm_value_t{};
+            }
         }
         else {
             auto val = results.get_any(ndx);

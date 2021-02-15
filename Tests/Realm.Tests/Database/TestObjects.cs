@@ -320,6 +320,8 @@ namespace Realms.Tests
 
         [Required]
         public IDictionary<string, byte[]> BinaryDictionary { get; }
+
+        public IDictionary<string, IntPropertyObject> ObjectDictionary { get; }
     }
 
     public class CounterObject : RealmObject
