@@ -158,7 +158,7 @@ namespace Realms
             }
 
             var objectHandle = result.AsObject(Root);
-            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle)); //TODO think if we should use a more secure retrieval
+            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));  //TODO Can there be a case in which we don't have RealmObjectBase.Metadata corresponding to a certain tableKey?
         }
 
         public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)

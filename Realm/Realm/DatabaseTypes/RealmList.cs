@@ -79,7 +79,7 @@ namespace Realms
                     return;
                 }
 
-                if (_argumentType == RealmValueType.Object)
+                if (realmValue.Type == RealmValueType.Object)
                 {
                     AddToRealmIfNecessary(realmValue);
                 }
@@ -100,7 +100,7 @@ namespace Realms
                 return;
             }
 
-            if (_argumentType == RealmValueType.Object)
+            if (realmValue.Type == RealmValueType.Object)
             {
                 AddToRealmIfNecessary(realmValue);
             }
@@ -135,7 +135,7 @@ namespace Realms
                 return;
             }
 
-            if (_argumentType == RealmValueType.Object)
+            if (realmValue.Type == RealmValueType.Object)
             {
                 AddToRealmIfNecessary(realmValue);
             }

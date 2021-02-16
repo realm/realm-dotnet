@@ -37,7 +37,6 @@ namespace Realms
           IRealmCollection<T>,
           IThreadConfined
     {
-        protected static readonly RealmValueType _argumentType = typeof(T).ToPropertyType(out _).ToRealmValueType();
         protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject();
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();

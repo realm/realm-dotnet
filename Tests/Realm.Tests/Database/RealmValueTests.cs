@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using MongoDB.Bson;
 using NUnit.Framework;
 
@@ -348,7 +348,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(IsManaged))]
         public void RealmValue_ObjectTests(bool isManaged)
         {
-            Dog value = new Dog { Name = "Fido", Color = "Brown" };
+            var value = new InternalObject { IntProperty = 10, StringProperty = "brown" };
             RealmValue rv = value;
 
             if (isManaged)
@@ -359,9 +359,9 @@ namespace Realms.Tests.Database
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
 
-            Assert.That((RealmObjectBase)rv, Is.EqualTo(value).Using<Dog>(dogComparison));
-            Assert.That(rv.As<RealmObjectBase>(), Is.EqualTo(value).Using<Dog>(dogComparison));
-            Assert.That(rv.AsRealmObject(), Is.EqualTo(value).Using<Dog>(dogComparison));
+            Assert.That((RealmObjectBase)rv, Is.EqualTo(value));
+            Assert.That(rv.As<RealmObjectBase>(), Is.EqualTo(value));
+            Assert.That(rv.AsRealmObject(), Is.EqualTo(value));
             Assert.That(rv != RealmValue.Null);
         }
 
@@ -649,9 +649,6 @@ namespace Realms.Tests.Database
             //Assert.That(rvo.RealmValueList.Count, Is.EqualTo(0));
         }
 
-        private static Func<Dog, Dog, bool> dogComparison =  //TODO Can we do better?
-            (left, right) => left.Name == right.Name && left.Color == right.Color;
-
         private RealmValueObject PersistAndFind(RealmValue rv)
         {
             _realm.Write(() =>
@@ -669,8 +666,20 @@ namespace Realms.Tests.Database
 
             public RealmValue RealmValueProperty { get; set; }
 
-            //public IList<RealmValue> RealmValueList { get; }  //TODO we need set too...
+            public IList<RealmValue> RealmValueList { get; }  //TODO we need set too...
+        }
 
+        private class InternalObject : RealmObject, IEquatable<InternalObject>
+        {
+            public int IntProperty { get; set; }
+
+            public string StringProperty { get; set; }
+
+            public override bool Equals(object obj) => Equals(obj as InternalObject);
+
+            public bool Equals(InternalObject other) => other != null &&
+                       IntProperty == other.IntProperty &&
+                       StringProperty == other.StringProperty;
         }
     }
 }

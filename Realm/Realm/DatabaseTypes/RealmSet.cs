@@ -46,7 +46,7 @@ namespace Realms
         {
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
-            if (_argumentType == RealmValueType.Object)
+            if (realmValue.Type == RealmValueType.Object)
             {
                 var robj = realmValue.AsRealmObject<RealmObject>();
                 if (!robj.IsManaged)
