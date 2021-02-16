@@ -648,7 +648,7 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
 - Added a check to verify there are no duplicate object names when creating the schema. ([#1502](https://github.com/realm/realm-dotnet/pull/1502))
 - Added more comprehensive error messages when passing an invalid url scheme to `SyncConfiguration` or `User.LoginAsync`. ([#1501](https://github.com/realm/realm-dotnet/pull/1501))
 - Added more meaningful error information to exceptions thrown by `Realm.GetInstanceAsync`. ([#1503](https://github.com/realm/realm-dotnet/pull/1503))
-- Added a new type - `RealmInteger<T>` to expose Realm-specific API over base integral types. It can be used to implement [counter functionality](https://realm.io/docs/realm-object-server/#counters) in synced realms. ([#1466](https://github.com/realm/realm-dotnet/pull/1466))
+- Added a new type - `RealmInteger<T>` to expose Realm-specific API over base integral types. It can be used to implement [counter functionality](https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/index.html) in synced realms. ([#1466](https://github.com/realm/realm-dotnet/pull/1466))
 - Added `PermissionCondition.Default` to apply default permissions for existing and new users. ([#1511](https://github.com/realm/realm-dotnet/pull/1511))
 
 ### Bug fixes
@@ -789,7 +789,7 @@ After about a year and a half of hard work, we are proud to call this a 1.0 rele
 
 ### Sync
 Realm Xamarin now works with the Realm Mobile Platform. This means that you can write Xamarin apps that synchronize seamlessly with a Realm Object Server, allowing you to write complex apps with Xamarin that are offline-first and automatically synchronised by adding just a few lines of code.
-You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync).
+You can read about this in the [documentation](https://docs.mongodb.com/realm/sync/get-started/).
 
 ### Windows Desktop
 Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. Some features are not supported on Windows yet. Most notably, sync does not yet work for Windows, but also encryption and notifications across processes are missing. We are working on it and you can expect support soon.
