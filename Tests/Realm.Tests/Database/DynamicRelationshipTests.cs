@@ -35,6 +35,10 @@ namespace Realms.Tests.Database
     [Preserve(AllMembers = true)]
     public class DynamicRelationshipTests : RealmInstanceTest
     {
+        private const string BilbosName = "Bilbo Fleabaggins";
+        private const string EarlsName = "Earl Yippington III";
+        private const string PipilottasName = "Pipilotta";
+
         private class DynamicDog : RealmObject
         {
             public string Name { get; set; }
@@ -56,6 +60,10 @@ namespace Realms.Tests.Database
             public IList<DynamicDog> Dogs { get; }
 
             public IList<string> Tags { get; }
+
+            public IDictionary<string, DynamicDog> DogsDictionary { get; }
+
+            public IDictionary<string, string> TagsDictionary { get; }
         }
 
         private readonly DynamicTestObjectType _mode;
@@ -84,15 +92,19 @@ namespace Realms.Tests.Database
                 o1.Name = "Tim";
 
                 var d1 = _realm.DynamicApi.CreateObject("DynamicDog", null);
-                d1.Name = "Bilbo Fleabaggins";
+                d1.Name = BilbosName;
                 d1.Color = "Black";
                 o1.TopDog = d1;  // set a one-one relationship
                 o1.Dogs.Add(d1);
+                o1.DogsDictionary.Add(d1.Name, d1);
+                o1.TagsDictionary.Add(d1.Name, "great");
 
                 var d2 = _realm.DynamicApi.CreateObject("DynamicDog", null);
-                d2.Name = "Earl Yippington III";
+                d2.Name = EarlsName;
                 d2.Color = "White";
                 o1.Dogs.Add(d2);
+                o1.DogsDictionary.Add(d2.Name, d2);
+                o1.TagsDictionary.Add(d2.Name, "playful");
 
                 // lonely people and dogs
                 var o2 = _realm.DynamicApi.CreateObject("DynamicOwner", null);
@@ -108,7 +120,7 @@ namespace Realms.Tests.Database
         public void TimHasATopDog()
         {
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
-            Assert.That(tim.TopDog.Name, Is.EqualTo("Bilbo Fleabaggins"));
+            Assert.That(tim.TopDog.Name, Is.EqualTo(BilbosName));
         }
 
         [Test]
@@ -123,7 +135,7 @@ namespace Realms.Tests.Database
                 dogNames.Add(dog.Name);
             }
 
-            Assert.That(dogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Earl Yippington III" }));
+            Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
         }
 
         /// <summary>
@@ -140,7 +152,7 @@ namespace Realms.Tests.Database
                 dogNames.Add(dog.Name);
             }
 
-            Assert.That(dogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Earl Yippington III" }));
+            Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
         }
 
         [Test]
@@ -189,7 +201,7 @@ namespace Realms.Tests.Database
             var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
-            Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III"));
+            Assert.That(tim2.Dogs[2].Name, Is.EqualTo(EarlsName));
         }
 
         [Test]
@@ -205,7 +217,7 @@ namespace Realms.Tests.Database
 
             var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
-            Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
+            Assert.That(tim2.Dogs[0].Name, Is.EqualTo(EarlsName));
             using (var trans = _realm.BeginWrite())
             {
                 tim.Dogs.RemoveAt(0);
@@ -235,7 +247,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimLosesBilbo()
         {
-            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == BilbosName);
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
@@ -246,7 +258,7 @@ namespace Realms.Tests.Database
 
             var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
-            Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
+            Assert.That(tim2.Dogs[0].Name, Is.EqualTo(EarlsName));
         }
 
         [Test]
@@ -275,7 +287,7 @@ namespace Realms.Tests.Database
         {
             var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
-            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == BilbosName);
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(1, bilbo));
@@ -299,7 +311,7 @@ namespace Realms.Tests.Database
         {
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.RemoveAt(4));
-            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == BilbosName);
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
@@ -369,6 +381,221 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(tim.Tags, Is.Empty);
+        }
+
+        [Test]
+        public void Dictionary_TryGetValue()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            var bilbo = TryGetValue(tim.DogsDictionary, BilbosName, out bool hasBilbo);
+            Assert.That(hasBilbo, Is.True);
+            Assert.That(bilbo, Is.Not.Null);
+
+            var pipi = TryGetValue(tim.DogsDictionary, PipilottasName, out bool hasPipi);
+            Assert.That(hasPipi, Is.False);
+            Assert.That(pipi, Is.Null);
+
+            var bilbosTag = TryGetValue(tim.TagsDictionary, BilbosName, out bool hasBilbosTag);
+            Assert.That(hasBilbosTag, Is.True);
+            Assert.That(bilbosTag, Is.EqualTo("great"));
+
+            var pipisTag = TryGetValue(tim.TagsDictionary, PipilottasName, out bool hasPipisTag);
+            Assert.That(hasPipisTag, Is.False);
+            Assert.That(pipisTag, Is.Null);
+        }
+
+        [Test]
+        public void Dictionary_Count()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(2));
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Dictionary_Get()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            var bilbo = tim.DogsDictionary[BilbosName];
+            Assert.That(bilbo, Is.Not.Null);
+            Assert.That(bilbo.Name, Is.EqualTo(BilbosName));
+
+            var bilbosTag = tim.TagsDictionary[BilbosName];
+            Assert.That(bilbosTag, Is.EqualTo("great"));
+
+            Assert.Throws<KeyNotFoundException>(() => _ = tim.DogsDictionary[PipilottasName]);
+            Assert.Throws<KeyNotFoundException>(() => _ = tim.TagsDictionary[PipilottasName]);
+        }
+
+        [Test]
+        public void Dictionary_Set()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            _realm.Write(() =>
+            {
+                var pipi = _realm.DynamicApi.CreateObject("DynamicDog", null);
+                pipi.Name = PipilottasName;
+                pipi.Color = "Orange";
+
+                tim.DogsDictionary[pipi.Name] = pipi;
+                tim.TagsDictionary[pipi.Name] = "cheerful";
+            });
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.DogsDictionary[PipilottasName].Name, Is.EqualTo(PipilottasName));
+
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.EqualTo("cheerful"));
+
+            _realm.Write(() =>
+            {
+                tim.DogsDictionary[PipilottasName] = null;
+                tim.TagsDictionary[PipilottasName] = null;
+            });
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.DogsDictionary[PipilottasName], Is.Null);
+
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.Null);
+        }
+
+        [Test]
+        public void Dictionary_Add()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            _realm.Write(() =>
+            {
+                var pipi = _realm.DynamicApi.CreateObject("DynamicDog", null);
+                pipi.Name = PipilottasName;
+                pipi.Color = "Orange";
+
+                tim.DogsDictionary.Add(PipilottasName, pipi);
+                tim.TagsDictionary.Add(PipilottasName, "cheerful");
+            });
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.DogsDictionary[PipilottasName].Name, Is.EqualTo(PipilottasName));
+
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.EqualTo("cheerful"));
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    tim.DogsDictionary.Add(PipilottasName, null);
+                });
+            }, $"An item with the key 'Pipilotta' has already been added.");
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    tim.TagsDictionary.Add(PipilottasName, null);
+                });
+            }, $"An item with the key 'Pipilotta' has already been added.");
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.DogsDictionary[PipilottasName], Is.Not.Null);
+
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(3));
+            Assert.That(tim.TagsDictionary[PipilottasName], Is.EqualTo("cheerful"));
+
+            _realm.Write(() =>
+            {
+                tim.DogsDictionary.Add("Void", null);
+                tim.TagsDictionary.Add("Void", null);
+            });
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(4));
+            Assert.That(tim.DogsDictionary["Void"], Is.Null);
+
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(4));
+            Assert.That(tim.TagsDictionary["Void"], Is.Null);
+        }
+
+        [Test]
+        public void Dictionary_Keys()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            Assert.That(tim.DogsDictionary.Keys, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
+            Assert.That(tim.TagsDictionary.Keys, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
+        }
+
+        [Test]
+        public void Dictionary_Values()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            var dogNames = new List<string>();
+
+            foreach (var dog in tim.DogsDictionary.Values)
+            {
+                dogNames.Add(dog.Name);
+            }
+
+            Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
+            Assert.That(tim.TagsDictionary.Values, Is.EquivalentTo(new[] { "great", "playful" }));
+        }
+
+        [Test]
+        public void Dictionary_Iteration()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var dogNames = new List<string>();
+            var dogColors = new List<string>();
+
+            foreach (var kvp in tim.DogsDictionary)
+            {
+                dogNames.Add(kvp.Key);
+                dogColors.Add(kvp.Value.Color);
+            }
+
+            Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
+            Assert.That(dogColors, Is.EquivalentTo(new[] { "Black", "White" }));
+
+            var tags = new List<string>();
+            dogNames.Clear();
+
+            foreach (var kvp in tim.TagsDictionary)
+            {
+                dogNames.Add(kvp.Key);
+                tags.Add(kvp.Value);
+            }
+
+            Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
+            Assert.That(tags, Is.EquivalentTo(new[] { "great", "playful" }));
+        }
+
+        [Test]
+        public void Dictionary_Remove()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(2));
+
+            _realm.Write(() =>
+            {
+                tim.DogsDictionary.Remove(BilbosName);
+                tim.TagsDictionary.Remove(BilbosName);
+            });
+
+            Assert.That(tim.DogsDictionary.Count, Is.EqualTo(1));
+            Assert.That(tim.TagsDictionary.Count, Is.EqualTo(1));
+        }
+
+        // Suggested https://stackoverflow.com/a/10021436/1649102
+        private static TValue TryGetValue<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey value, out bool found)
+        {
+            TValue result;
+            found = dict.TryGetValue(value, out result);
+            return result;
         }
     }
 }
