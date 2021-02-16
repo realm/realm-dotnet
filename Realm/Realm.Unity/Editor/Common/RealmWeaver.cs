@@ -371,7 +371,7 @@ Analytics payload
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
             }
 
-            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName) || prop.PropertyType.FullName == RealmValueTypeName)
+            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName) || prop.IsMixed())
             {
                 if (prop.SetMethod == null)
                 {
@@ -571,7 +571,7 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            if (prop.PropertyType.FullName != RealmValueTypeName)
+            if (!prop.IsMixed())
             {
                 var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
                 {
@@ -763,7 +763,7 @@ Analytics payload
             il.Append(il.Create(OpCodes.Ldstr, columnName));
             il.Append(il.Create(OpCodes.Ldarg_1));
 
-            if (prop.PropertyType.FullName != RealmValueTypeName)
+            if (!prop.IsMixed())
             {
                 var convertType = prop.PropertyType;
                 if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))

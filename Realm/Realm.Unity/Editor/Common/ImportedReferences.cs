@@ -161,19 +161,11 @@ namespace RealmWeaver
 
         public TypeSystem Types { get; }
 
-        public MethodReference WriteLineMethod { get; private set; }  //TODO FP I'll leave it here just in case we need it for testing
-        //  il.Emit(OpCodes.Ldstr, "Hello World from the WeavenRealmObjectHelper"); //FP Testing
-        //  il.Emit(OpCodes.Call, _references.WriteLineMethod);
-        // Actually this seems it's not working.... but I'll delete it later
-
         protected ImportedReferences(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName)
         {
             Module = module;
             Types = types;
             Framework = frameworkName;
-
-            WriteLineMethod = module.Import(
-                typeof(Console).GetMethod("WriteLine", new[] { typeof(string) }));  //TODO FP for testing
 
             IEnumerableOfT = new TypeReference("System.Collections.Generic", "IEnumerable`1", Module, Module.TypeSystem.CoreLibrary);
             IEnumerableOfT.GenericParameters.Add(new GenericParameter(IEnumerableOfT));
