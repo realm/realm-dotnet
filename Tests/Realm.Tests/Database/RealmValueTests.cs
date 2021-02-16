@@ -27,41 +27,7 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AARealmValueTests : RealmInstanceTest //TODO for testing
     {
-        //TODO FP Most probably we can make the next function generic by using TestCases
-
-        /* What to test:
-         *  - Null value can be retrieved (RealmValue can contain null)
-         * - A realmValue can be set and retrieved with the same type from the db
-         * - A realm value can change type and it can be retrieved
-         * - Need to add RealmValue to the test classes with all Types
-         * 
-         * Suggestions from Nikola
-         * That looks fine to me - I think you might also want to cover the explicit cast cases as well as some error cases - e.g. trying to cast the value to string
-            Some other scenarios you may want to try is:
-            - Once an object is managed, that we can do obj.RealmValue.AsInt32RealmInteger().Increment() and validate that this actually increments the underlying value.
-            - Assigning a value to 5, then to “abc” works.
-            - Taking a reference to the Realm value does not change after replacing it with something else. I.e. var val1 = obj.RealmValue; then obj.RealmValue = "something else" and then verify that val1 is different from obj.RealmValue and that val1 still has its original data.
-            - Ensure that notifications work - i.e. setting a realm value to something else will raise PropertyChanged notifications.
-            - Test dynamic api,
-            - List<RealmValue> should work, but not RealmValue = List<abc>
-         * 
-         * Later:
-         * - Queries
-         * - List of realm values work as expected
-         * 
-         *  rv == Realm.Null
-         *  rv.IsNull() ?
-         * 
-         * 
-         * This is what Nikola wanted, but it seems we can't really set the struct to null
-         *  foo.rv = null // works
-         *  foo.rv == null => return true
-         *  foo.rv is null => return false -- this what means that it cannot be null (but contain Null)
-         *  foo.rv = null same as foo.rv = RealmValue.Null()
-         */
-
         static private bool[] IsManaged = new bool[] { true, false };
-
 
         [TestCaseSource(nameof(IsManaged))]
         public void RealmValue_CharTests(bool isManaged)

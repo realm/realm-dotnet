@@ -251,7 +251,7 @@ extern "C" {
             verify_can_set(object);
 
             auto col_key = get_column_key(object, property_ndx);
-            return object.obj().add_int(col_key, value).get<int64_t>(col_key);
+            return object.obj().add_int(col_key, value).get_any(col_key).get_int();
         });
     }
 
