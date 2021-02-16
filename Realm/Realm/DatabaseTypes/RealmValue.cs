@@ -902,6 +902,7 @@ namespace Realms
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
+                RealmValueType.Null => Type == RealmValueType.Null,
                 _ => false,
             };
         }
