@@ -618,6 +618,11 @@ namespace Realms
         /// <returns>The underlying value converted to <typeparamref name="T"/>.</returns>
         public T As<T>()
         {
+            if (typeof(T) == typeof(RealmValue))
+            {
+                return (T)(object)this;
+            }
+
             if (Type == RealmValueType.Int)
             {
                 return Operator.Convert<long, T>(AsInt64());

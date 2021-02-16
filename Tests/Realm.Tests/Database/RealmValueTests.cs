@@ -607,46 +607,46 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_ListTests()
         {
-            //var rvo = new RealmValueObject();
+            var rvo = new RealmValueObject();
 
-            //var guid = Guid.NewGuid();
-            //var dog = new Dog() { Name = "doggo", Color = "brown" };
+            var guid = Guid.NewGuid();
+            var intObject = new InternalObject { IntProperty = 10, StringProperty = "brown" };
 
-            //_realm.Write(() =>
-            //{
-            //    _realm.Add(rvo);
-            //    rvo.RealmValueList.Add(1);
-            //    rvo.RealmValueList.Add("abc");
-            //    rvo.RealmValueList.Add(guid);
-            //    //rvo.RealmValueList.Add(dog);
-            //});
+            _realm.Write(() =>
+            {
+                _realm.Add(rvo);
+                rvo.RealmValueList.Add(1);
+                rvo.RealmValueList.Add("abc");
+                rvo.RealmValueList.Add(guid);
+                rvo.RealmValueList.Add(intObject);
+            });
 
-            //Assert.That(rvo.RealmValueList.Count, Is.EqualTo(4));
-            //Assert.That(rvo.RealmValueList[0] == 1);
-            //Assert.That(rvo.RealmValueList[1] == "abc");
-            //Assert.That(rvo.RealmValueList[2] == guid);
-            ////Assert.That(rvo.RealmValueList[3], Is.EqualTo(dog).Using<Dog>(dogComparison));
+            Assert.That(rvo.RealmValueList.Count, Is.EqualTo(4));
+            Assert.That(rvo.RealmValueList[0] == 1);
+            Assert.That(rvo.RealmValueList[1] == "abc");
+            Assert.That(rvo.RealmValueList[2] == guid);
+            Assert.That(rvo.RealmValueList[3], Is.EqualTo(intObject));
 
-            //Assert.That(rvo.RealmValueList.Contains(1));
-            //Assert.That(rvo.RealmValueList.Contains("abc"));
-            //Assert.That(rvo.RealmValueList.Contains(guid));
+            Assert.That(rvo.RealmValueList.Contains(1));
+            Assert.That(rvo.RealmValueList.Contains("abc"));
+            Assert.That(rvo.RealmValueList.Contains(guid));
 
-            //_realm.Write(() =>
-            //{
-            //    rvo.RealmValueList.Remove("abc");
-            //});
+            _realm.Write(() =>
+            {
+                rvo.RealmValueList.Remove("abc");
+            });
 
-            //Assert.That(rvo.RealmValueList.Count, Is.EqualTo(3));
-            //Assert.That(rvo.RealmValueList[0] == 1);
-            //Assert.That(rvo.RealmValueList[1] == guid);
-            ////Assert.That(rvo.RealmValueList[2], Is.EqualTo(dog).Using<Dog>(dogComparison));
+            Assert.That(rvo.RealmValueList.Count, Is.EqualTo(3));
+            Assert.That(rvo.RealmValueList[0] == 1);
+            Assert.That(rvo.RealmValueList[1] == guid);
+            Assert.That(rvo.RealmValueList[2], Is.EqualTo(intObject));
 
-            //_realm.Write(() =>
-            //{
-            //    rvo.RealmValueList.Clear();
-            //});
+            _realm.Write(() =>
+            {
+                rvo.RealmValueList.Clear();
+            });
 
-            //Assert.That(rvo.RealmValueList.Count, Is.EqualTo(0));
+            Assert.That(rvo.RealmValueList.Count, Is.EqualTo(0));
         }
 
         private RealmValueObject PersistAndFind(RealmValue rv)
