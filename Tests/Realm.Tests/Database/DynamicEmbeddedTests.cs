@@ -240,6 +240,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmAddEmbeddedObjectToDictionary()
         {
+            TestHelpers.IgnoreOnAOT("Indexing dynamic dictionaries is not supported on AOT platforms.");
+
             var id = Guid.NewGuid().ToString();
 
             _realm.Write(() =>
@@ -339,6 +341,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSetEmbeddedObjectInDictionary()
         {
+            TestHelpers.IgnoreOnAOT("Indexing dynamic dictionaries is not supported on AOT platforms.");
+
             var id = Guid.NewGuid().ToString();
 
             _realm.Write(() =>
@@ -356,6 +360,7 @@ namespace Realms.Tests.Database
 
             dynamic addedParent = _realm.DynamicApi.Find(nameof(DynamicTask), id);
             Assert.That(addedParent.SubTasksDictionary.Count, Is.EqualTo(3));
+
             Assert.That(addedParent.SubTasksDictionary["a"].Summary, Is.EqualTo("initial at a"));
             Assert.That(addedParent.SubTasksDictionary["b"].Summary, Is.EqualTo("initial at b"));
             Assert.That(addedParent.SubTasksDictionary["c"].Summary, Is.EqualTo("initial at c"));
@@ -498,6 +503,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_Remove()
         {
+            TestHelpers.IgnoreOnAOT("Indexing dynamic dictionaries is not supported on AOT platforms.");
+
             var id = Guid.NewGuid().ToString();
 
             dynamic second = null;
