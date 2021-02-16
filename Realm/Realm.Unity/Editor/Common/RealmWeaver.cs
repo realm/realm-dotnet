@@ -371,7 +371,7 @@ Analytics payload
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
             }
 
-            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName))
+            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName) || prop.PropertyType.FullName == RealmValueTypeName)
             {
                 if (prop.SetMethod == null)
                 {
@@ -388,22 +388,13 @@ Analytics payload
                 ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
                 ReplaceSetter(prop, backingField, columnName, setter);
             }
-            else if (prop.PropertyType.FullName == RealmValueTypeName)
-            {
-                if (prop.SetMethod == null)
-                {
-                    return WeavePropertyResult.Skipped();
-                }
-
-                ReplaceGetterRealmValue(prop, columnName, _references.RealmObject_GetValue);
-                ReplaceSetterRealmValue(prop, backingField, columnName, _references.RealmObject_SetValue);
-            }
             else if (prop.IsCollection(out var collectionType))
             {
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
                 if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_primitiveValueTypes.Contains(elementType.FullName))
+                    !_primitiveValueTypes.Contains(elementType.FullName) &&
+                    !(elementType.FullName == RealmValueTypeName))
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                 }
@@ -535,85 +526,6 @@ Analytics payload
             return WeavePropertyResult.Success(prop, backingField, isPrimaryKey, isIndexed);
         }
 
-        //TODO FP needs to be merged with the general function (also for setter)
-        // The only difference should be the casting to and from realmValue
-        private void ReplaceGetterRealmValue(PropertyDefinition prop, string columnName, MethodReference getValueReference) //TODO FP This is to simplify things for now
-        {
-            var start = prop.GetMethod.Body.Instructions.First();
-            var il = prop.GetMethod.Body.GetILProcessor();
-
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
-            il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
-            il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
-            il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
-
-            il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
-
-            var convertType = prop.PropertyType;
-            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
-            {
-                convertType = _references.RealmObjectBase;
-            }
-
-            // Removed the conversion to RealmValuePart
-
-            // This only happens when we have a relationship - explicitly cast.
-            if (convertType != prop.PropertyType)
-            {
-                il.InsertBefore(start, il.Create(OpCodes.Castclass, prop.PropertyType));
-            }
-
-            il.InsertBefore(start, il.Create(OpCodes.Ret));
-        }
-
-        private void ReplaceSetterRealmValue(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)
-        {
-            if (setValueReference == null)
-            {
-                throw new ArgumentNullException(nameof(setValueReference));
-            }
-
-            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
-            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
-            var il = prop.SetMethod.Body.GetILProcessor();
-            prop.SetMethod.Body.Instructions.Clear();
-            prop.SetMethod.Body.Variables.Clear();
-
-            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in.
-            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
-            // the property such that PropertyChanged.Fody won't touch it.
-            if (_references.PropertyChanged_DoNotNotifyAttribute_Constructor != null)
-            {
-                prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
-            }
-
-            var managedSetStart = il.Create(OpCodes.Ldarg_0);
-
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
-            il.Append(il.Create(OpCodes.Brtrue_S, managedSetStart));
-
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Stfld, backingField));
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldstr, prop.Name));
-            il.Append(il.Create(OpCodes.Call, _references.RealmObject_RaisePropertyChanged));
-            il.Append(il.Create(OpCodes.Ret));
-
-            il.Append(managedSetStart);
-            il.Append(il.Create(OpCodes.Ldstr, columnName));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-
-            //Removed the conversion to RealmValuePart
-
-            il.Append(il.Create(OpCodes.Call, setValueReference));
-            il.Append(il.Create(OpCodes.Ret));
-        }
-
-
         private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
         {
             //// A synthesized property getter looks like this:
@@ -659,13 +571,16 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
+            if (prop.PropertyType.FullName != RealmValueTypeName)
             {
-                Parameters = { new ParameterDefinition(_references.RealmValue) },
-                HasThis = false
-            };
+                var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(_references.RealmValue) },
+                    HasThis = false
+                };
 
-            il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+                il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+            }
 
             // This only happens when we have a relationship - explicitly cast.
             if (convertType != prop.PropertyType)
@@ -848,19 +763,22 @@ Analytics payload
             il.Append(il.Create(OpCodes.Ldstr, columnName));
             il.Append(il.Create(OpCodes.Ldarg_1));
 
-            var convertType = prop.PropertyType;
-            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
+            if (prop.PropertyType.FullName != RealmValueTypeName)
             {
-                convertType = _references.RealmObjectBase;
+                var convertType = prop.PropertyType;
+                if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
+                {
+                    convertType = _references.RealmObjectBase;
+                }
+
+                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(convertType) },
+                    HasThis = false
+                };
+
+                il.Append(il.Create(OpCodes.Call, convertMethod));
             }
-
-            var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
-            {
-                Parameters = { new ParameterDefinition(convertType) },
-                HasThis = false
-            };
-
-            il.Append(il.Create(OpCodes.Call, convertMethod));
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
             il.Append(il.Create(OpCodes.Ret));
