@@ -44,10 +44,30 @@ REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, rea
     });
 }
 
+REALM_EXPORT Object* realm_dictionary_add_embedded(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        auto dict_key = from_capi(key.string);
+        if (dictionary.contains(dict_key))
+        {
+            throw KeyAlreadyExistsException(dict_key);
+        }
+
+        return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(dict_key));
+    });
+}
+
 REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         dictionary.insert(from_capi(key.string), from_capi(value));
+    });
+}
+
+REALM_EXPORT Object* realm_dictionary_set_embedded(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(from_capi(key.string)));
     });
 }
 
@@ -57,7 +77,7 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
         auto mixed_value = dictionary.try_get_any(from_capi(key.string));
         if (mixed_value)
         {
-            *value = to_capi(mixed_value.value());
+            *value = to_capi(dictionary, mixed_value.value());
             return true;
         }
 
@@ -74,7 +94,7 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
 
         auto pair = dictionary.get_pair(ndx);
         *key = to_capi(Mixed(pair.first));
-        *value = to_capi(pair.second);
+        *value = to_capi(dictionary, pair.second);
     });
 }
 
@@ -96,9 +116,9 @@ REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictio
 {
     return handle_errors(ex, [&]() {
         auto dict_key = from_capi(key.string);
+        auto dict_value = dictionary.try_get_any(dict_key);
 
-        auto mixed_value = dictionary.try_get_any(dict_key);
-        if (mixed_value && mixed_value == from_capi(value))
+        if (dict_value && are_equal(value, dict_value.value()))
         {
             dictionary.erase(dict_key);
             return true;

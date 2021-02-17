@@ -130,15 +130,32 @@ namespace Realms.Tests
             }
         }
 
-        public static bool IgnoreOnWindows(string message)
+        public static bool IsAOTTarget
+        {
+            get
+            {
+#if __IOS__
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static void IgnoreOnWindows(string message)
         {
             if (IsWindows)
             {
                 Assert.Ignore(message);
-                return true;
             }
+        }
 
-            return false;
+        public static void IgnoreOnAOT(string message)
+        {
+            if (IsAOTTarget)
+            {
+                Assert.Ignore(message);
+            }
         }
 
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());

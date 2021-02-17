@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>8.0</LangVersion>
     <Title>Realm</Title>
-    <ReleaseNotes>https://realm.io/docs/dotnet/latest/api/CHANGELOG.html</ReleaseNotes>
+    <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>

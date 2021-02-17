@@ -25,7 +25,7 @@ namespace Realms.Exceptions
     {
         internal RealmClassLacksPrimaryKeyException(string message) : base(message)
         {
-            HelpLink = "https://realm.io/docs/xamarin/latest/#primarykey-properties";
+            HelpLink = "https://docs.mongodb.com/realm/dotnet/objects/#primary-key";
         }
     }
 }

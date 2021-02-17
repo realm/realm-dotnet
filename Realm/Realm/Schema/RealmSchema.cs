@@ -213,7 +213,7 @@ namespace Realms.Schema
                 if (Count == 0)
                 {
                     throw new InvalidOperationException(
-                        "No RealmObjects. Has linker stripped them? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
+                        "No RealmObjects. Has linker stripped them? See https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/#linker-stripped-schema");
                 }
 
                 return new RealmSchema(this);

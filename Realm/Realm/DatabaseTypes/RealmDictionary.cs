@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
+using Realms.Dynamic;
 using Realms.Helpers;
 
 namespace Realms
@@ -31,7 +32,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider
+    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider, IRealmCollectionBase<DictionaryHandle>
     {
         private readonly DictionaryHandle _dictionaryHandle;
 
@@ -50,7 +51,16 @@ namespace Realms
             set
             {
                 EnsureKeyNotNull(key);
-                _dictionaryHandle.Set(key, Operator.Convert<TValue, RealmValue>(value));
+                var realmValue = Operator.Convert<TValue, RealmValue>(value);
+
+                if (_isEmbedded)
+                {
+                    Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.SetEmbedded(key));
+                    return;
+                }
+
+                AddToRealmIfNecessary(realmValue);
+                _dictionaryHandle.Set(key, realmValue);
             }
         }
 
@@ -72,6 +82,8 @@ namespace Realms
             }
         }
 
+        DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
+
         internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
         {
@@ -81,29 +93,50 @@ namespace Realms
         public void Add(string key, TValue value)
         {
             EnsureKeyNotNull(key);
-            _dictionaryHandle.Add(key, Operator.Convert<TValue, RealmValue>(value));
+            var realmValue = Operator.Convert<TValue, RealmValue>(value);
+
+            if (_isEmbedded)
+            {
+                Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.AddEmbedded(key));
+                return;
+            }
+
+            AddToRealmIfNecessary(realmValue);
+            _dictionaryHandle.Add(key, realmValue);
         }
 
         public void Add(KeyValuePair<string, TValue> item) => Add(item.Key, item.Value);
 
         public bool ContainsKey(string key) => key != null && _dictionaryHandle.ContainsKey(key);
 
-        public DynamicMetaObject GetMetaObject(Expression parameter)
-        {
-            throw new NotImplementedException();
-        }
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmDictionary(expression, this);
 
         public override int IndexOf(KeyValuePair<string, TValue> value) => throw new NotSupportedException();
 
         public bool Remove(string key) => key != null && _dictionaryHandle.Remove(key);
 
-        public bool Remove(KeyValuePair<string, TValue> item) => item.Key != null && _dictionaryHandle.Remove(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
+        public bool Remove(KeyValuePair<string, TValue> item)
+        {
+            if (item.Key == null)
+            {
+                return false;
+            }
+
+            var realmValue = Operator.Convert<TValue, RealmValue>(item.Value);
+
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            {
+                return false;
+            }
+
+            return _dictionaryHandle.Remove(item.Key, realmValue);
+        }
 
         public bool TryGetValue(string key, out TValue value)
         {
             if (key != null && _dictionaryHandle.TryGet(key, Metadata, Realm, out var realmValue))
             {
-                value = Operator.Convert<RealmValue, TValue>(realmValue);
+                value = realmValue.As<TValue>();
                 return true;
             }
 
