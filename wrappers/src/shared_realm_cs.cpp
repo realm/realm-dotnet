@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-#include "shared_realm_cs.hpp"
 #include "error_handling.hpp"
-#include "realm_export_decls.hpp"
 #include "marshalling.hpp"
+#include "realm_export_decls.hpp"
+#include "shared_realm_cs.hpp"
 
+#include <realm.hpp>
 #include <realm/object-store/object_store.hpp>
 #include <realm/object-store/binding_context.hpp>
-#include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/object-store/sync/async_open_task.hpp>
@@ -103,6 +103,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 }
 
 extern "C" {
+
+typedef uint32_t realm_table_key;
 
 REALM_EXPORT void shared_realm_install_callbacks(decltype(s_realm_changed) realm_changed, decltype(s_get_native_schema) get_schema, decltype(s_open_realm_callback) open_callback, decltype(s_on_binding_context_destructed) on_binding_context_destructed)
 {
@@ -247,11 +249,11 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm& realm, NativeException::
     });
 }
 
-REALM_EXPORT TableRef* shared_realm_get_table(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
+REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor object_type(object_type_buf, object_type_len);
-        return new TableRef(ObjectStore::table_for_object_type(realm->read_group(), object_type));
+        return ObjectStore::table_for_object_type(realm->read_group(), object_type)->get_key().value;
     });
 }
 
@@ -362,23 +364,22 @@ REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, si
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableRef& table, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableKey table_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         realm->verify_in_write();
 
-        return new Object(realm, table->create_object());
+        return new Object(realm, get_table(realm, table_key)->create_object());
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm, TableRef& table, realm_value_t primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm, TableKey table_key, realm_value_t primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         realm->verify_in_write();
-        realm->read_group();
-        const StringData object_name(ObjectStore::object_type_for_table_name(table->get_name()));
-        const ObjectSchema& object_schema = *realm->schema().find(object_name);
 
+        const TableRef table = get_table(realm, table_key);
+        const ObjectSchema& object_schema = *realm->schema().find(table_key);
         const Property& primary_key_property = *object_schema.primary_key_property();
 
         if (!primary_key_property.type_is_nullable() && primitive.is_null()) {
@@ -449,6 +450,47 @@ REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeEx
     return handle_errors(ex, [&]() {
         auto frozen_realm = realm->freeze();
         return new SharedRealm{ frozen_realm };
+    });
+}
+
+REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm, TableKey table_key, realm_value_t primitive, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> Object* {
+        realm->verify_thread();
+
+        const TableRef table = get_table(realm, table_key);
+        const ObjectSchema& object_schema = *realm->schema().find(table_key); 
+        if (object_schema.primary_key.empty()) {
+            const std::string name(ObjectStore::object_type_for_table_name(table->get_name()));
+            throw MissingPrimaryKeyException(name);
+        }
+
+        const Property& primary_key_property = *object_schema.primary_key_property();
+        if (!primary_key_property.type_is_nullable() && primitive.is_null()) {
+            return nullptr;
+        }
+
+        if (!primitive.is_null() && to_capi(primary_key_property.type) != primitive.type) {
+            throw PropertyTypeMismatchException(object_schema.name, primary_key_property.name, to_string(primary_key_property.type), to_string(primitive.type));
+        }
+
+        const ColKey column_key = object_schema.primary_key_property()->column_key;
+        const ObjKey obj_key = table->find_first(column_key, from_capi(primitive));
+        if (!obj_key) {
+            return nullptr;
+        }
+
+        return new Object(realm, object_schema, table->get_object(obj_key));
+    });
+}
+
+REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey table_key, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        realm->verify_thread();
+
+        const TableRef table = get_table(realm, table_key);
+        return new Results(realm, table);
     });
 }
 

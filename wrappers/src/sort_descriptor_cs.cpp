@@ -16,13 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm.hpp>
-#include "marshalling.hpp"
 #include "error_handling.hpp"
+#include "marshalling.hpp"
 #include "realm_export_decls.hpp"
+#include "shared_realm_cs.hpp"
+
+#include <realm.hpp>
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/schema.hpp>
-
 
 using namespace realm;
 using namespace realm::binding;
@@ -34,14 +35,13 @@ REALM_EXPORT void sort_descriptor_destroy(DescriptorOrdering* descriptor)
     delete descriptor;
 }
 
-REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableRef& table, SharedRealm& realm, size_t* property_chain, size_t properties_count, bool ascending, NativeException::Marshallable& ex)
+REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableKey table_key, SharedRealm& realm, size_t* property_chain, size_t properties_count, bool ascending, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         std::vector<ColKey> column_keys;
         column_keys.reserve(properties_count);
 
-        const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
-        const std::vector<Property>* properties = &realm->schema().find(object_name)->persisted_properties;
+        const std::vector<Property>* properties = &realm->schema().find(table_key)->persisted_properties;
 
         for (size_t i = 0; i < properties_count; ++i) {
             const Property& property = properties->at(property_chain[i]);

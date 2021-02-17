@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "object_cs.hpp"
-#include "timestamp_helpers.hpp"
-#include "notifications_cs.hpp"
 #include "error_handling.hpp"
 #include "marshalling.hpp"
+#include "notifications_cs.hpp"
+#include "object_cs.hpp"
 #include "realm_export_decls.hpp"
+#include "timestamp_helpers.hpp"
 
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
@@ -29,16 +29,6 @@
 
 using namespace realm;
 using namespace realm::binding;
-
-template <typename T>
-inline void object_set(Object& object, size_t property_ndx, const T& value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        verify_can_set(object);
-
-        object.obj().set<T>(get_column_key(object, property_ndx), value);
-    });
-}
 
 extern "C" {
     REALM_EXPORT bool object_get_is_valid(const Object& object, NativeException::Marshallable& ex)
@@ -163,12 +153,14 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT Results* object_get_backlinks_for_type(Object& object, TableRef& source_table, size_t source_property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT Results* object_get_backlinks_for_type(Object& object, TableKey table_key, size_t source_property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             verify_can_get(object);
 
-            const ObjectSchema& source_object_schema = *object.realm()->schema().find(ObjectStore::object_type_for_table_name(source_table->get_name()));
+            const TableRef source_table = get_table(object.realm(), table_key);
+
+            const ObjectSchema& source_object_schema = *object.realm()->schema().find(table_key);
             const Property& source_property = source_object_schema.persisted_properties[source_property_ndx];
 
             if (source_property.object_type != object.get_object_schema().name) {

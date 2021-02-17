@@ -202,7 +202,7 @@ namespace Realms
         private State _state;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
-        internal readonly Dictionary<string, RealmObjectBase.Metadata> Metadata;
+        internal readonly RealmMetadata Metadata;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm instance.
@@ -271,7 +271,7 @@ namespace Realms
             _state.AddRealm(this);
 
             SharedRealmHandle = sharedRealmHandle;
-            Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
+            Metadata = new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
             Schema = schema;
             IsFrozen = SharedRealmHandle.IsFrozen;
             DynamicApi = new Dynamic(this);
@@ -279,7 +279,7 @@ namespace Realms
 
         private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
-            var tableHandle = SharedRealmHandle.GetTable(schema.Name);
+            var tableKey = SharedRealmHandle.GetTableKey(schema.Name);
             Weaving.IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.IsDynamic)
@@ -309,7 +309,7 @@ namespace Realms
                 initPropertyMap[prop.Name] = (IntPtr)index;
             }
 
-            return new RealmObjectBase.Metadata(tableHandle, helper, initPropertyMap, schema);
+            return new RealmObjectBase.Metadata(tableKey, helper, initPropertyMap, schema);
         }
 
         /// <summary>
@@ -480,17 +480,6 @@ namespace Realms
             return ret;
         }
 
-        internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectKey objectKey)
-        {
-            var objectHandle = metadata.Table.Get(SharedRealmHandle, objectKey);
-            if (objectHandle != null)
-            {
-                return MakeObject(metadata, objectHandle);
-            }
-
-            return null;
-        }
-
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>
@@ -610,12 +599,12 @@ namespace Realms
             if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var primaryKey))
             {
                 var pkProperty = metadata.Schema.PrimaryKeyProperty.Value;
-                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.Table, objectName, update, out isNew);
+                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.TableKey, objectName, update, out isNew);
             }
             else
             {
                 isNew = true; // Objects without PK are always new
-                objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
+                objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
             obj.SetOwner(this, objectHandle, metadata);
@@ -1134,7 +1123,7 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
-            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
+            if (SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
             }
@@ -1340,7 +1329,7 @@ namespace Realms
 
             foreach (var metadata in Metadata.Values)
             {
-                using var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle);
+                using var resultsHandle = SharedRealmHandle.CreateResults(metadata.TableKey);
                 resultsHandle.Clear(SharedRealmHandle);
             }
         }
@@ -1388,6 +1377,36 @@ namespace Realms
         }
 
         #endregion Transactions
+
+        internal class RealmMetadata
+        {
+            private readonly Dictionary<string, RealmObjectBase.Metadata> stringToRealmObjectMetadataDict;
+            private readonly Dictionary<TableKey, RealmObjectBase.Metadata> tableKeyToRealmObjectMetadataDict;
+
+            public IEnumerable<RealmObjectBase.Metadata> Values => stringToRealmObjectMetadataDict.Values;
+
+            public RealmMetadata(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            {
+                stringToRealmObjectMetadataDict = new Dictionary<string, RealmObjectBase.Metadata>();
+                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, RealmObjectBase.Metadata>();
+
+                foreach (var objectMetadata in objectsMetadata)
+                {
+                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
+                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
+                }
+            }
+
+            public bool TryGetValue(string objectType, out RealmObjectBase.Metadata metadata) =>
+                stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata);
+
+            public bool TryGetValue(TableKey tablekey, out RealmObjectBase.Metadata metadata) =>
+                tableKeyToRealmObjectMetadataDict.TryGetValue(tablekey, out metadata);
+
+            public RealmObjectBase.Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
+
+            public RealmObjectBase.Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
+        }
 
         internal class State : IDisposable
         {
@@ -1531,11 +1550,11 @@ namespace Realms
                 var pkProperty = metadata.Schema.PrimaryKeyProperty;
                 if (pkProperty.HasValue)
                 {
-                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
+                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _);
                 }
                 else
                 {
-                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.Table);
+                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
                 }
 
                 result.SetOwner(_realm, objectHandle, metadata);
@@ -1773,7 +1792,7 @@ namespace Realms
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
+                if (_realm.SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
                 {
                     return _realm.MakeObject(metadata, objectHandle);
                 }

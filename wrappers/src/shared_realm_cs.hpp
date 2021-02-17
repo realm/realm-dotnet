@@ -19,16 +19,16 @@
 #ifndef SHARED_REALM_CS_HPP
 #define SHARED_REALM_CS_HPP
 
-#include <realm/object-store/shared_realm.hpp>
+#include "marshalling.hpp"
 #include "schema_cs.hpp"
+#include "sync_session_cs.hpp"
+
+#include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
-#include "marshalling.hpp"
-
-#include "sync_session_cs.hpp"
-#include <realm/sync/config.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
+#include <realm/sync/config.hpp>
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
@@ -74,6 +74,11 @@ struct SyncConfiguration
 
     SyncSessionStopPolicy session_stop_policy;
 };
+
+inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)
+{
+    return realm->read_group().get_table(table_key);
+}
 
 namespace realm {
 namespace binding {

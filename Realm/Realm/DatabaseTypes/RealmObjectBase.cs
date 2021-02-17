@@ -30,6 +30,7 @@ using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -255,7 +256,7 @@ namespace Realms
             Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
             Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
 
-            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
+            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, relatedMeta.PropertyIndices[property]);
             if (relatedMeta.Schema.IsEmbedded)
             {
                 return new RealmResults<EmbeddedObject>(Realm, resultsHandle, relatedMeta);
@@ -435,7 +436,7 @@ namespace Realms
 
         internal class Metadata
         {
-            internal readonly TableHandle Table;
+            internal readonly TableKey TableKey;
 
             internal readonly IRealmObjectHelper Helper;
 
@@ -443,9 +444,9 @@ namespace Realms
 
             internal readonly ObjectSchema Schema;
 
-            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
+            public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
             {
-                Table = table;
+                TableKey = tableKey;
                 Helper = helper;
                 PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
                 Schema = schema;
