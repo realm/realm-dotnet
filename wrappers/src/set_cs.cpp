@@ -61,7 +61,7 @@ REALM_EXPORT bool realm_set_add_value(object_store::Set& set, realm_value_t valu
     });
 }
 
-REALM_EXPORT void realm_set_get_value(object_store::Set& set, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_set_get_value(object_store::Set& set, size_t ndx, realm_value_t* value, TableKey& table_key, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = set.size();
@@ -69,11 +69,14 @@ REALM_EXPORT void realm_set_get_value(object_store::Set& set, size_t ndx, realm_
             throw IndexOutOfRangeException("Get from RealmSet", ndx, count);
 
         if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            *value = to_capi(new Object(set.get_realm(), set.get_object_schema(), set.get(ndx)));
+            const Obj obj = set.get(ndx);
+            table_key = obj.get_table()->get_key();
+            *value = to_capi(new Object(set.get_realm(), set.get_object_schema(), obj));
         }
         else {
             auto val = set.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
+                table_key = val.get<ObjLink>().get_table_key();
                 *value = to_capi(new Object(set.get_realm(), val.get<ObjLink>()));
             }
             else {

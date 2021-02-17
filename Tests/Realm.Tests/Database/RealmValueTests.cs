@@ -625,7 +625,7 @@ namespace Realms.Tests.Database
             Assert.That(rvo.RealmValueList[0] == 1);
             Assert.That(rvo.RealmValueList[1] == "abc");
             Assert.That(rvo.RealmValueList[2] == guid);
-            Assert.That(rvo.RealmValueList[3], Is.EqualTo(intObject));
+            Assert.That(rvo.RealmValueList[3].As<RealmObjectBase>(), Is.EqualTo(intObject));
 
             Assert.That(rvo.RealmValueList.Contains(1));
             Assert.That(rvo.RealmValueList.Contains("abc"));
@@ -639,7 +639,7 @@ namespace Realms.Tests.Database
             Assert.That(rvo.RealmValueList.Count, Is.EqualTo(3));
             Assert.That(rvo.RealmValueList[0] == 1);
             Assert.That(rvo.RealmValueList[1] == guid);
-            Assert.That(rvo.RealmValueList[2], Is.EqualTo(intObject));
+            Assert.That(rvo.RealmValueList[2].As<RealmObjectBase>(), Is.EqualTo(intObject));
 
             _realm.Write(() =>
             {

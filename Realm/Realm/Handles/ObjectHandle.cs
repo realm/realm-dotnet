@@ -158,7 +158,7 @@ namespace Realms
             }
 
             var objectHandle = result.AsObject(Root);
-            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));  //TODO Can there be a case in which we don't have RealmObjectBase.Metadata corresponding to a certain tableKey?
+            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));  //If sync is used, and we have a mixed property, it could be we don't have the object class in the schema, so we should return a dynamic object.
         }
 
         public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)

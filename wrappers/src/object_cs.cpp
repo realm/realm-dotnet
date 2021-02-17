@@ -79,8 +79,8 @@ extern "C" {
             if ((prop.type & ~PropertyType::Flags) == PropertyType::Object) {
                 const Obj link_obj = object.obj().get_linked_object(prop.column_key);
                 if (link_obj) {
-                    *value = to_capi(new Object(object.realm(), link_obj));
                     table_key = link_obj.get_table()->get_key();
+                    *value = to_capi(new Object(object.realm(), link_obj));
                 }
                 else {
                     value->type = realm_value_type::RLM_TYPE_NULL;
@@ -89,8 +89,8 @@ extern "C" {
             else {
                 auto val = object.obj().get_any(prop.column_key);
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
-                    *value = to_capi(new Object(object.realm(), val.get<ObjLink>()));
                     table_key = val.get<ObjLink>().get_table_key();
+                    *value = to_capi(new Object(object.realm(), val.get<ObjLink>()));
                 }
                 else {
                     *value = to_capi(std::move(val));

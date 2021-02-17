@@ -591,7 +591,7 @@ namespace Realms
         {
             try
             {
-                var val = rh.GetValueAtIndex(index, _metadata, _realm);
+                var val = rh.GetValueAtIndex(index, _realm);
                 return Expression.Constant(val.AsRealmObject());
             }
             catch (ArgumentOutOfRangeException ex)

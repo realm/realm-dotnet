@@ -128,7 +128,7 @@ REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeExc
     });
 }
 
-REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, TableKey& table_key, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list.size();
@@ -136,11 +136,14 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
 
         if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), list.get(ndx)));
+            const Obj obj = list.get(ndx);
+            table_key = obj.get_table()->get_key();
+            *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), obj));
         }
         else {
             auto val = list.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
+                table_key = val.get<ObjLink>().get_table_key();
                 *value = to_capi(new Object(list.get_realm(), val.get<ObjLink>()));
             }
             else {

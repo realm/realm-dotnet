@@ -92,7 +92,7 @@ namespace Realms
 
         internal override CollectionHandleBase GetOrCreateHandle() => _setHandle;
 
-        protected override T GetValueAtIndex(int index) => _setHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
+        protected override T GetValueAtIndex(int index) => _setHandle.GetValueAtIndex(index, Realm).As<T>();
 
         #region Set methods
 

@@ -55,7 +55,7 @@ namespace Realms
 
         public abstract void Clear();
 
-        protected RealmValue ToRealmValue(PrimitiveValue primitive, RealmObjectBase.Metadata metadata, Realm realm)
+        protected RealmValue ToRealmValue(PrimitiveValue primitive, TableKey tableKey, Realm realm)
         {
             if (primitive.Type != RealmValueType.Object)
             {
@@ -63,12 +63,7 @@ namespace Realms
             }
 
             var objectHandle = primitive.AsObject(Root);
-            if (metadata == null)
-            {
-                throw new NotImplementedException("Mixed objects are not supported yet.");
-            }
-
-            return new RealmValue(realm.MakeObject(metadata, objectHandle));
+            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
         }
     }
 }

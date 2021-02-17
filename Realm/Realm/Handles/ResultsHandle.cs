@@ -37,7 +37,7 @@ namespace Realms
             public static extern void destroy(IntPtr resultsHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_value(ResultsHandle results, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
+            public static extern void get_value(ResultsHandle results, IntPtr link_ndx, out PrimitiveValue value, out TableKey table_key, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr count(ResultsHandle results, out NativeException ex);
@@ -111,11 +111,11 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        public RealmValue GetValueAtIndex(int index, Realm realm)
         {
-            NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
+            NativeMethods.get_value(this, (IntPtr)index, out var result, out var tableKey, out var ex);
             ex.ThrowIfNecessary();
-            return ToRealmValue(result, metadata, realm);
+            return ToRealmValue(result, tableKey, realm);
         }
 
         public override int Count()

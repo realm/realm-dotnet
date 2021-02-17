@@ -50,7 +50,7 @@ REALM_EXPORT bool results_is_same_internal_results(Results* lhs, Results* rhs, N
     });
 }
 
-REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
+REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t* value, TableKey& table_key, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         results.get_realm()->verify_thread();
@@ -61,6 +61,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
 
         if ((results.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             if (auto obj = results.get<Obj>(ndx)) {
+                table_key = obj.get_table()->get_key();
                 *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), obj));
             }
             else {
@@ -70,6 +71,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
         else {
             auto val = results.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
+                table_key = val.get<ObjLink>().get_table_key();
                 *value = to_capi(new Object(results.get_realm(), val.get<ObjLink>()));
             }
             else {
