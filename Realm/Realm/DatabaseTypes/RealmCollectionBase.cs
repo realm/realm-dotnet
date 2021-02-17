@@ -25,6 +25,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -35,10 +36,11 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
-          IThreadConfined
+          IThreadConfined,
+          IMetadataObject
     {
         protected static readonly RealmValueType _argumentType = typeof(T).ToPropertyType(out _).ToRealmValueType();
-        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject();
+        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject() || (typeof(T).IsClosedGeneric(typeof(KeyValuePair<,>), out var typeArgs) && typeArgs.Last().IsEmbeddedObject());
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
@@ -102,7 +104,7 @@ namespace Realms
 
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
-        RealmObjectBase.Metadata IThreadConfined.Metadata => Metadata;
+        RealmObjectBase.Metadata IMetadataObject.Metadata => Metadata;
 
         public bool IsManaged => Realm != null;
 
@@ -183,6 +185,31 @@ namespace Realms
         }
 
         protected abstract T GetValueAtIndex(int index);
+
+        protected void AddToRealmIfNecessary(in RealmValue value)
+        {
+            if (value.Type != RealmValueType.Object)
+            {
+                return;
+            }
+
+            var robj = value.AsRealmObject<RealmObject>();
+            if (!robj.IsManaged)
+            {
+                Realm.Add(robj);
+            }
+        }
+
+        protected static EmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
+        {
+            var result = value.AsRealmObject<EmbeddedObject>();
+            if (result.IsManaged)
+            {
+                throw new RealmException("Can't add to the collection an embedded object that is already managed.");
+            }
+
+            return result;
+        }
 
         private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
         {
@@ -488,5 +515,18 @@ namespace Realms
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
+    /// </summary>
+    /// <typeparam name="THandle">The type of the handle for the collection.</typeparam>
+    internal interface IRealmCollectionBase<THandle> : IMetadataObject
+        where THandle : CollectionHandleBase
+    {
+        /// <summary>
+        /// Gets the native handle for that collection.
+        /// </summary>
+        THandle NativeHandle { get; }
     }
 }

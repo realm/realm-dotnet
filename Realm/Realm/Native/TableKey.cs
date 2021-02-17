@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,27 +22,18 @@ using System.Runtime.InteropServices;
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct ObjectKey : IEquatable<ObjectKey>
+    internal struct TableKey : IEquatable<TableKey>
     {
-        private Int64 value;
+        private UInt32 value;
 
-        public bool Equals(ObjectKey other) => value.Equals(other.value);
+        public bool Equals(TableKey other) => value.Equals(other.value);
 
-        public override bool Equals(object obj)
-        {
-            switch (obj)
-            {
-                case ObjectKey other:
-                    return value.Equals(other.value);
-                default:
-                    return false;
-            }
-        }
+        public override bool Equals(object obj) => obj is TableKey other && Equals(other);
 
         public override int GetHashCode() => value.GetHashCode();
 
-        public static bool operator ==(ObjectKey left, ObjectKey right) => left.value == right.value;
+        public static bool operator ==(TableKey left, TableKey right) => left.value == right.value;
 
-        public static bool operator !=(ObjectKey left, ObjectKey right) => left.value != right.value;
+        public static bool operator !=(TableKey left, TableKey right) => left.value != right.value;
     }
 }

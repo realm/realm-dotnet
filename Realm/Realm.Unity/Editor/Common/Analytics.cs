@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.Versioning;
 using System.Text;
 using Mono.Cecil;
@@ -117,7 +118,7 @@ namespace RealmWeaver
                     .Replace("%SYNC_ENABLED%", _isSyncEnabled.ToString())
 
                     // Version of weaver is expected to match that of the library.
-                    .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
+                    .Replace("%REALM_VERSION%", Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)

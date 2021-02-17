@@ -377,6 +377,11 @@ Analytics payload
                     return WeavePropertyResult.Skipped();
                 }
 
+                if (prop.IsGuid())
+                {
+                    _logger.Warning($"{type.Name}.{prop.Name} is of type Guid which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+                }
+
                 var setter = isPrimaryKey ? _references.RealmObject_SetValueUnique : _references.RealmObject_SetValue;
 
                 ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
@@ -413,6 +418,8 @@ Analytics payload
                                             concreteListConstructor);
                         break;
                     case RealmCollectionType.ISet:
+                        _logger.Warning($"{type.Name}.{prop.Name} is of type ISet which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+
                         var concreteSetConstructor = _references.System_Collections_Generic_HashSetOfT_Constructor.MakeHostInstanceGeneric(elementType);
 
                         // weaves set getter which also sets backing to List<T>, forcing it to accept us setting it post-init
@@ -426,6 +433,8 @@ Analytics payload
                                             concreteSetConstructor);
                         break;
                     case RealmCollectionType.IDictionary:
+                        _logger.Warning($"{type.Name}.{prop.Name} is of type IDictionary which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
+
                         var keyType = genericArguments.First();
                         if (keyType != _references.Types.String)
                         {

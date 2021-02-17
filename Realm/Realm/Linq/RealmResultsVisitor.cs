@@ -121,7 +121,7 @@ namespace Realms
             }
 
             var propertyChain = TraverseSort(body);
-            _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, propertyChain, ascending);
+            _sortDescriptor.AddClause(_realm.SharedRealmHandle, _metadata.TableKey, propertyChain, ascending);
         }
 
         private IntPtr[] TraverseSort(MemberExpression expression)

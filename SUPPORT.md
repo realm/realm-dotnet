@@ -4,7 +4,7 @@ The Realm team is here to help you with your Realm-related issues!
 
 ## Documentation
 
-Before asking questions, please familiarize yourself with our [Xamarin (.NET)](https://realm.io/docs/xamarin/latest/) documentation. We also have a number of [Tech Notes](https://realm.io/docs/tech-notes/) which cover various topics that may be of interest.
+Before asking questions, please familiarize yourself with our [.NET SDK](https://docs.mongodb.com/realm/dotnet/) documentation.
 
 ## Stack Overflow
 

@@ -388,6 +388,33 @@ static inline realm_value_t to_capi(Mixed value)
     return val;
 }
 
+inline realm_value_t to_capi(object_store::Dictionary& dictionary, Mixed val)
+{
+    if (val.is_null()) {
+        return to_capi(std::move(val));
+    }
+
+    switch (val.get_type()) {
+    case type_Link:
+        if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
+            return to_capi(new Object(dictionary.get_realm(), ObjLink(dictionary.get_object_schema().table_key, val.get<ObjKey>())));
+        }
+
+        REALM_UNREACHABLE();
+    case type_TypedLink:
+        return to_capi(new Object(dictionary.get_realm(), val.get_link()));
+    default:
+        return to_capi(std::move(val));
+    }
+}
+
+static inline bool are_equal(realm_value_t realm_value, Mixed mixed_value)
+{
+    // from_capi returns TypedLink for objects, but the mixed_value may contain just Link - let's ensure that we're comparing apples to apples
+    return (mixed_value.is_type(realm::DataType::Type::Link) && realm_value.type == realm_value_type::RLM_TYPE_LINK && mixed_value == from_capi(realm_value.link.object, false)) ||
+        mixed_value == from_capi(realm_value);
+}
+
 struct StringValue
 {
     const char* value;

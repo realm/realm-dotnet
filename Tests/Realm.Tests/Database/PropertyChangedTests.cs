@@ -241,10 +241,7 @@ namespace Realms.Tests.Database
         [Test]
         public void MultipleManagedObjects()
         {
-            if (TestHelpers.IgnoreOnWindows("ExternalCommitHelper hangs on Windows in this test. Reenable when we have proper condvar."))
-            {
-                return;
-            }
+            TestHelpers.IgnoreOnWindows("ExternalCommitHelper hangs on Windows in this test. Reenable when we have proper condvar.");
 
             var firstNotifiedPropertyNames = new List<string>();
             var secondNotifiedPropertyNames = new List<string>();

@@ -68,6 +68,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_value(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_embedded(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_contains_key", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool contains_key(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
@@ -223,6 +229,30 @@ namespace Realms
             handles?.Dispose();
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
+        }
+
+        public ObjectHandle AddEmbedded(string key)
+        {
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.add_embedded(this, primitiveKey, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root, result);
+        }
+
+        public ObjectHandle SetEmbedded(string key)
+        {
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.set_embedded(this, primitiveKey, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root, result);
         }
 
         public unsafe bool ContainsKey(string key)

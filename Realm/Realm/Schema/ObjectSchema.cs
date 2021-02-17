@@ -175,7 +175,7 @@ namespace Realms.Schema
                 if (Count == 0)
                 {
                     throw new InvalidOperationException(
-                        $"No properties in {Name}, has linker stripped it? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
+                        $"No properties in {Name}, has linker stripped it? See https://thereIsntSuchDocYet");
                 }
 
                 return new ObjectSchema(Name, this.ToDictionary(p => p.Name))

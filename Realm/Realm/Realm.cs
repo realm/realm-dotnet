@@ -202,7 +202,7 @@ namespace Realms
         private State _state;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
-        internal readonly Dictionary<string, RealmObjectBase.Metadata> Metadata;
+        internal readonly RealmMetadata Metadata;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm instance.
@@ -271,7 +271,7 @@ namespace Realms
             _state.AddRealm(this);
 
             SharedRealmHandle = sharedRealmHandle;
-            Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
+            Metadata = new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
             Schema = schema;
             IsFrozen = SharedRealmHandle.IsFrozen;
             DynamicApi = new Dynamic(this);
@@ -279,7 +279,7 @@ namespace Realms
 
         private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
-            var tableHandle = SharedRealmHandle.GetTable(schema.Name);
+            var tableKey = SharedRealmHandle.GetTableKey(schema.Name);
             Weaving.IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.IsDynamic)
@@ -309,7 +309,7 @@ namespace Realms
                 initPropertyMap[prop.Name] = (IntPtr)index;
             }
 
-            return new RealmObjectBase.Metadata(tableHandle, helper, initPropertyMap, schema);
+            return new RealmObjectBase.Metadata(tableKey, helper, initPropertyMap, schema);
         }
 
         /// <summary>
@@ -480,17 +480,6 @@ namespace Realms
             return ret;
         }
 
-        internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectKey objectKey)
-        {
-            var objectHandle = metadata.Table.Get(SharedRealmHandle, objectKey);
-            if (objectHandle != null)
-            {
-                return MakeObject(metadata, objectHandle);
-            }
-
-            return null;
-        }
-
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>
@@ -610,12 +599,12 @@ namespace Realms
             if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var primaryKey))
             {
                 var pkProperty = metadata.Schema.PrimaryKeyProperty.Value;
-                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.Table, objectName, update, out isNew);
+                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.TableKey, objectName, update, out isNew);
             }
             else
             {
                 isNew = true; // Objects without PK are always new
-                objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
+                objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
             obj.SetOwner(this, objectHandle, metadata);
@@ -1134,7 +1123,7 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
-            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
+            if (SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
             }
@@ -1340,7 +1329,7 @@ namespace Realms
 
             foreach (var metadata in Metadata.Values)
             {
-                using var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle);
+                using var resultsHandle = SharedRealmHandle.CreateResults(metadata.TableKey);
                 resultsHandle.Clear(SharedRealmHandle);
             }
         }
@@ -1388,6 +1377,36 @@ namespace Realms
         }
 
         #endregion Transactions
+
+        internal class RealmMetadata
+        {
+            private readonly Dictionary<string, RealmObjectBase.Metadata> stringToRealmObjectMetadataDict;
+            private readonly Dictionary<TableKey, RealmObjectBase.Metadata> tableKeyToRealmObjectMetadataDict;
+
+            public IEnumerable<RealmObjectBase.Metadata> Values => stringToRealmObjectMetadataDict.Values;
+
+            public RealmMetadata(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            {
+                stringToRealmObjectMetadataDict = new Dictionary<string, RealmObjectBase.Metadata>();
+                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, RealmObjectBase.Metadata>();
+
+                foreach (var objectMetadata in objectsMetadata)
+                {
+                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
+                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
+                }
+            }
+
+            public bool TryGetValue(string objectType, out RealmObjectBase.Metadata metadata) =>
+                stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata);
+
+            public bool TryGetValue(TableKey tablekey, out RealmObjectBase.Metadata metadata) =>
+                tableKeyToRealmObjectMetadataDict.TryGetValue(tablekey, out metadata);
+
+            public RealmObjectBase.Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
+
+            public RealmObjectBase.Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
+        }
 
         internal class State : IDisposable
         {
@@ -1531,11 +1550,11 @@ namespace Realms
                 var pkProperty = metadata.Schema.PrimaryKeyProperty;
                 if (pkProperty.HasValue)
                 {
-                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
+                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _);
                 }
                 else
                 {
-                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.Table);
+                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
                 }
 
                 result.SetOwner(_realm, objectHandle, metadata);
@@ -1643,6 +1662,46 @@ namespace Realms
             }
 
             /// <summary>
+            /// Creates an embedded object and adds it to the specified dictionary. This also assigns correct ownership of the newly created embedded object.
+            /// </summary>
+            /// <param name="dictionary">The dictionary to which the object will be added.</param>
+            /// <param name="key">The key for which the object will be added.</param>
+            /// <returns>The newly created object, after it has been added to the dictionary.</returns>
+            /// <remarks>
+            /// Dictionaries containing embedded objects cannot directly add objects as that would require constructing an unowned embedded object, which is not possible. This is why
+            /// <see cref="AddEmbeddedObjectToDictionary"/> and <see cref="SetEmbeddedObjectInDictionary"/> have to be used instead of
+            /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
+            /// </remarks>
+            /// <seealso cref="SetEmbeddedObjectInDictionary"/>
+            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
+            public dynamic AddEmbeddedObjectToDictionary(object dictionary, string key)
+            {
+                Argument.NotNull(key, nameof(key));
+
+                return PerformEmbeddedDictionaryOperation(dictionary, handle => handle.AddEmbedded(key));
+            }
+
+            /// <summary>
+            /// Creates an embedded object and sets it in the specified dictionary for the specified key. This also assigns correct ownership of the newly created embedded object.
+            /// </summary>
+            /// <param name="dictionary">The dictionary in which the object will be set.</param>
+            /// <param name="key">The key for which the object will be set.</param>
+            /// <returns>The newly created object, after it has been assigned to the specified key in the dictionary.</returns>
+            /// <remarks>
+            /// Dictionaries containing embedded objects cannot directly add objects as that would require constructing an unowned embedded object, which is not possible. This is why
+            /// <see cref="AddEmbeddedObjectToDictionary"/> and <see cref="SetEmbeddedObjectInDictionary"/> have to be used instead of
+            /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
+            /// </remarks>
+            /// <seealso cref="AddEmbeddedObjectToDictionary"/>
+            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
+            public dynamic SetEmbeddedObjectInDictionary(object dictionary, string key)
+            {
+                Argument.NotNull(key, nameof(key));
+
+                return PerformEmbeddedDictionaryOperation(dictionary, handle => handle.SetEmbedded(key));
+            }
+
+            /// <summary>
             /// Get a view of all the objects of a particular type.
             /// </summary>
             /// <param name="className">The type of the objects as defined in the schema.</param>
@@ -1733,7 +1792,7 @@ namespace Realms
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
+                if (_realm.SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
                 {
                     return _realm.MakeObject(metadata, objectHandle);
                 }
@@ -1747,7 +1806,7 @@ namespace Realms
 
                 Argument.NotNull(list, nameof(list));
 
-                if (!(list is IRealmList realmList))
+                if (!(list is IRealmCollectionBase<ListHandle> realmList))
                 {
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
@@ -1755,6 +1814,25 @@ namespace Realms
                 var obj = realmList.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
+                obj.OnManaged();
+
+                return obj;
+            }
+
+            private dynamic PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            {
+                _realm.ThrowIfDisposed();
+
+                Argument.NotNull(dictionary, nameof(dictionary));
+
+                if (!(dictionary is IRealmCollectionBase<DictionaryHandle> realmDict))
+                {
+                    throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
+                }
+
+                var obj = realmDict.Metadata.Helper.CreateInstance();
+
+                obj.SetOwner(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata);
                 obj.OnManaged();
 
                 return obj;

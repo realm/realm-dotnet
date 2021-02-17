@@ -25,7 +25,6 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
-using Realms.Exceptions;
 using Realms.Helpers;
 
 namespace Realms
@@ -41,7 +40,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmList
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmCollectionBase<ListHandle>
     {
         private readonly ListHandle _listHandle;
 
@@ -52,9 +51,7 @@ namespace Realms
 
         internal override CollectionHandleBase GetOrCreateHandle() => _listHandle;
 
-        ListHandle IRealmList.NativeHandle => _listHandle;
-
-        RealmObjectBase.Metadata IRealmList.Metadata => Metadata;
+        ListHandle IRealmCollectionBase<ListHandle>.NativeHandle => _listHandle;
 
         [IndexerName("Item")]
         public new T this[int index]
@@ -79,11 +76,7 @@ namespace Realms
                     return;
                 }
 
-                if (_argumentType == RealmValueType.Object)
-                {
-                    AddToRealmIfNecessary(realmValue);
-                }
-
+                AddToRealmIfNecessary(realmValue);
                 _listHandle.Set(index, realmValue);
             }
         }
@@ -100,11 +93,7 @@ namespace Realms
                 return;
             }
 
-            if (_argumentType == RealmValueType.Object)
-            {
-                AddToRealmIfNecessary(realmValue);
-            }
-
+            AddToRealmIfNecessary(realmValue);
             _listHandle.Add(realmValue);
         }
 
@@ -135,11 +124,7 @@ namespace Realms
                 return;
             }
 
-            if (_argumentType == RealmValueType.Object)
-            {
-                AddToRealmIfNecessary(realmValue);
-            }
-
+            AddToRealmIfNecessary(realmValue);
             _listHandle.Insert(index, realmValue);
         }
 
@@ -187,41 +172,5 @@ namespace Realms
         protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
-
-        private void AddToRealmIfNecessary(in RealmValue value)
-        {
-            var robj = value.AsRealmObject<RealmObject>();
-            if (!robj.IsManaged)
-            {
-                Realm.Add(robj);
-            }
-        }
-
-        private static EmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
-        {
-            var result = value.AsRealmObject<EmbeddedObject>();
-            if (result.IsManaged)
-            {
-                throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
-            }
-
-            return result;
-        }
-    }
-
-    /// <summary>
-    /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
-    /// </summary>
-    internal interface IRealmList
-    {
-        /// <summary>
-        /// Gets the native handle for that list.
-        /// </summary>
-        ListHandle NativeHandle { get; }
-
-        /// <summary>
-        /// Gets the metadata for the objects contained in the list.
-        /// </summary>
-        RealmObjectBase.Metadata Metadata { get; }
     }
 }

@@ -34,7 +34,7 @@ namespace Realms.Helpers
             {
                 throw new NotSupportedException(MissingContextErrorMessage)
                 {
-                    HelpLink = "https://realm.io/docs/dotnet/latest/#threading"
+                    HelpLink = "https://docs.mongodb.com/realm/dotnet/threading/"
                 };
             }
         }

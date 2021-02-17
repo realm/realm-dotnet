@@ -13,7 +13,6 @@ set(SOURCES
     scheduler_cs.cpp
     schema_cs.cpp
     shared_realm_cs.cpp
-    table_cs.cpp
     app_cs.cpp
     async_open_task_cs.cpp
     mongo_collection_cs.cpp
@@ -49,6 +48,11 @@ set_target_properties(realm-wrappers PROPERTIES
   MACOSX_FRAMEWORK_SHORT_VERSION_STRING "10.0.0"
   MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
 )
+
+if (ANDROID)
+    target_link_options(realm-wrappers PRIVATE LINKER:-gc-sections)
+endif()
+
 target_link_libraries(realm-wrappers Realm::ObjectStore Realm::QueryParser)
 
 if(CMAKE_GENERATOR_PLATFORM)

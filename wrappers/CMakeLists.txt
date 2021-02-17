@@ -19,6 +19,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
+if(ANDROID)
+  # On Android LTO builds produce larger binaries, so turn them off
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
+  if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+    STRING(REGEX REPLACE "-O[0-9z]" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+  else()
+    STRING(REGEX REPLACE "-O[0-9z]" "-Oz" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+  endif()
+endif()
+
 option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
 if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
     set(REALM_BUILD_LIB_ONLY ON)
@@ -54,13 +65,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
 
-  if(WINDOWS_STORE)
-    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /nodefaultlib:vccorlib /nodefaultlib:msvcrt vccorlib.lib msvcrt.lib")
-  else()
-    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /nodefaultlib:libucrtd.lib /defaultlib:ucrtd.lib")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /nodefaultlib:libucrt.lib /defaultlib:ucrt.lib")
-
+  if(NOT WINDOWS_STORE)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   endif()
 endif()
