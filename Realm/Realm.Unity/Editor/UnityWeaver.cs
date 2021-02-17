@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Mono.Cecil.Cil;
 using UnityEditor;
 using UnityEditor.Build;
@@ -32,70 +30,85 @@ using UnityEditor.Compilation;
 
 namespace RealmWeaver
 {
+    // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
     public class UnityWeaver : IPostBuildPlayerScriptDLLs
     {
         public int callbackOrder => 0;
 
-        [UsedImplicitly]
         [InitializeOnLoadMethod]
-        private static void Initialize()
+        public static void Initialize()
         {
-            CompilationPipeline.assemblyCompilationFinished -= CompilationComplete;
+            var logger = new UnityLogger();
+            logger.Info("Loaded weaver!");
+
             CompilationPipeline.assemblyCompilationFinished += CompilationComplete;
-            _ = WeaveExistingAssemblies();
+            WeaveAllAssemblies();
         }
 
-        private static async Task WeaveExistingAssemblies()
+        private static void WeaveAllAssemblies()
         {
-            // When the weaver loads for the first time, it's likely that scripts
-            // have already been compiled, which means that starting the game immediately
-            // will result in Unity running unwoven code. Call WeaveAssembly for each one
-            // just in case.
+            var logger = new UnityLogger();
+
+            EditorApplication.LockReloadAssemblies();
+            bool didChangeAnyAssembly = false;
+
             try
             {
-                // Sleep for a second to give the editor time to load. Without it, we get errors
-                // in the console similar to "Unity extensions are not yet initialized..."
-                await Task.Delay(1000);
-
                 var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player);
                 foreach (var assembly in playerAssemblies)
                 {
-                    await WeaveAssembly(assembly.outputPath);
+                    if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences))
+                    {
+                        continue;
+                    }
+
+                    string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
+                    if (sourceFilePath == null)
+                    {
+                        continue;
+                    }
+
+                    AssetDatabase.ImportAsset(sourceFilePath, ImportAssetOptions.ForceUpdate);
+                    didChangeAnyAssembly = true;
                 }
             }
-            catch
+            finally
             {
+                EditorApplication.UnlockReloadAssemblies();
+                if (didChangeAnyAssembly)
+                {
+                    AssetDatabase.Refresh();
+                }
             }
         }
 
         private static void CompilationComplete(string assemblyPath, CompilerMessage[] compilerMessages)
         {
-            _ = WeaveAssembly(assemblyPath);
+            WeaveAssembly(assemblyPath);
         }
 
-        private static async Task WeaveAssembly(string assemblyPath)
+        private static bool WeaveAssembly(string assemblyPath)
         {
             if (string.IsNullOrEmpty(assemblyPath))
             {
-                return;
+                return false;
             }
-
-            // Yield to give the editor opportunity to load its extensions. Without it, on startup we
-            // get errors in the console similar to "Unity extensions are not yet initialized..."
-            await Task.Yield();
 
             var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
                                   .FirstOrDefault(p => p.outputPath == assemblyPath);
 
             if (assembly == null)
             {
-                return;
+                return false;
             }
 
-            WeaveAssemblyCore(assemblyPath, assembly.allReferences);
+            var logger = new UnityLogger();
+            logger.Info("WeaveSingle: " + assemblyPath);
+
+            return WeaveAssemblyCore(assemblyPath, assembly.allReferences);
         }
 
-        private static void WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references)
         {
             var logger = new UnityLogger();
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
@@ -108,7 +121,7 @@ namespace RealmWeaver
                 var resolutionResult = WeaverAssemblyResolver.Resolve(assemblyPath, references);
                 if (resolutionResult == null)
                 {
-                    return;
+                    return false;
                 }
 
                 using (resolutionResult)
@@ -123,6 +136,7 @@ namespace RealmWeaver
                     {
                         resolutionResult.SaveModuleUpdates();
                         logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
+                        return true;
                     }
                 }
             }
@@ -130,6 +144,8 @@ namespace RealmWeaver
             {
                 logger.Warning($"[{name}] Weaving failed: {ex.StackTrace}");
             }
+
+            return false;
         }
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
