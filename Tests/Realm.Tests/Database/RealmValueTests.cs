@@ -666,7 +666,7 @@ namespace Realms.Tests.Database
 
             public RealmValue RealmValueProperty { get; set; }
 
-            public IList<RealmValue> RealmValueList { get; }  //TODO we need set too...
+            public IList<RealmValue> RealmValueList { get; }  //TODO we need dcitionaries too...
         }
 
         private class InternalObject : RealmObject, IEquatable<InternalObject>

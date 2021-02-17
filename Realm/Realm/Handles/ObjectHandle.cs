@@ -38,7 +38,7 @@ namespace Realms
             public static extern void destroy(IntPtr objectHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_value(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out TableKey table_key, out NativeException ex);  //TODO maybe we should return the primitive value..?
+            public static extern void get_value(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out TableKey table_key, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
