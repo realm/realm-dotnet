@@ -18,19 +18,23 @@
 
 using System;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Realms.Dynamic
 {
     internal class MetaRealmDictionary : DynamicMetaObject
     {
+        private bool _isEmbedded;
+
         internal MetaRealmDictionary(Expression expression, object value) : base(expression, BindingRestrictions.Empty, value)
         {
+            _isEmbedded = value.GetType().IsClosedGeneric(typeof(RealmDictionary<>), out var valueType) && valueType.Single().IsEmbeddedObject();
         }
 
         public override DynamicMetaObject BindSetIndex(SetIndexBinder binder, DynamicMetaObject[] indexes, DynamicMetaObject value)
         {
-            if (Value is IRealmCollection<EmbeddedObject>)
+            if (_isEmbedded)
             {
                 throw new NotSupportedException("Can't set embedded objects directly. Instead use Realm.DynamicApi.SetEmbeddedObjectInDictionary.");
             }
@@ -40,7 +44,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
         {
-            if (Value is IRealmCollection<EmbeddedObject>)
+            if (_isEmbedded)
             {
                 switch (binder.Name)
                 {

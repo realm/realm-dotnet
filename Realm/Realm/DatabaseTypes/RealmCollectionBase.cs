@@ -40,7 +40,7 @@ namespace Realms
           IMetadataObject
     {
         protected static readonly RealmValueType _argumentType = typeof(T).ToPropertyType(out _).ToRealmValueType();
-        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject();
+        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject() || (typeof(T).IsClosedGeneric(typeof(KeyValuePair<,>), out var typeArgs) && typeArgs.Last().IsEmbeddedObject());
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 

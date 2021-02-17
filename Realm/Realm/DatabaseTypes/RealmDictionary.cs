@@ -55,9 +55,8 @@ namespace Realms
 
                 if (_isEmbedded)
                 {
-                    throw new NotImplementedException();
-                    //Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.SetEmbedded(index));
-                    //return;
+                    Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.SetEmbedded(key));
+                    return;
                 }
 
                 AddToRealmIfNecessary(realmValue);
@@ -98,9 +97,8 @@ namespace Realms
 
             if (_isEmbedded)
             {
-                throw new NotImplementedException();
-                //Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.SetEmbedded(index));
-                //return;
+                Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.AddEmbedded(key));
+                return;
             }
 
             AddToRealmIfNecessary(realmValue);

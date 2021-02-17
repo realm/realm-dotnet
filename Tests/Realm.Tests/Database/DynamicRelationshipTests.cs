@@ -386,6 +386,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_TryGetValue()
         {
+            TestHelpers.IgnoreOnAOT("byref delegate is not implemented in the dynamic runtime on Mono AOT.");
+
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
 
             var bilbo = TryGetValue(tim.DogsDictionary, BilbosName, out bool hasBilbo);
@@ -417,6 +419,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_Get()
         {
+            TestHelpers.IgnoreOnAOT("Indexing dynamic dictionaries is not supported on AOT platforms.");
+
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
 
             var bilbo = tim.DogsDictionary[BilbosName];
@@ -433,6 +437,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_Set()
         {
+            TestHelpers.IgnoreOnAOT("Indexing dynamic dictionaries is not supported on AOT platforms.");
+
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
 
             _realm.Write(() =>
@@ -467,6 +473,8 @@ namespace Realms.Tests.Database
         [Test]
         public void Dictionary_Add()
         {
+            TestHelpers.IgnoreOnAOT("Indexing dynamic dictionaries is not supported on AOT platforms.");
+
             var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
 
             _realm.Write(() =>

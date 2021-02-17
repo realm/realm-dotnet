@@ -322,6 +322,8 @@ namespace Realms.Tests
         public IDictionary<string, byte[]> BinaryDictionary { get; }
 
         public IDictionary<string, IntPropertyObject> ObjectDictionary { get; }
+
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
     }
 
     public class CounterObject : RealmObject
@@ -574,6 +576,11 @@ namespace Realms.Tests
         public int Int { get; set; }
     }
 
+    public class EmbeddedIntPropertyObject : RealmObject
+    {
+        public int Int { get; set; }
+    }
+
     public class RecursiveBacklinksObject : RealmObject
     {
         public int Id { get; set; }
@@ -637,6 +644,8 @@ namespace Realms.Tests
         public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
 
         public EmbeddedLevel1 RecursiveObject { get; set; }
+
+        public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
     }
 
     public class EmbeddedAllTypesObject : EmbeddedObject
