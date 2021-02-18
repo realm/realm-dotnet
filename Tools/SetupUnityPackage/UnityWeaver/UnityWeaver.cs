@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Mono.Cecil.Cil;
 using UnityEditor;
 using UnityEditor.Build;
@@ -55,33 +56,63 @@ namespace RealmWeaver
 
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences);
             };
+
+            WeaveAssembliesOnEditorLaunch();
         }
 
         [MenuItem("Realm/Weave Assemblies")]
-        public static void WeaveAllAssemblies()
+        public static async void WeaveAllAssembliesMenuItem()
         {
-            EditorApplication.LockReloadAssemblies();
+            var assembliesWoven = await WeaveAllAssemblies();
+            UnityLogger.Instance.Info($"Weaving completed. {assembliesWoven} assemblies needed weaving.");
+        }
+
+        private static void WeaveAssembliesOnEditorLaunch()
+        {
+            // This code is susceptible to the year 2038 problem. Refactor before 2037!
+            const string AutomaticWeavePrefKey = "realm_last_automatic_weave";
+            var lastAutomaticWeave = EditorPrefs.GetInt(AutomaticWeavePrefKey, 0);
+            var timeSinceLastWeave = (DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(lastAutomaticWeave)).TotalSeconds;
+            if (timeSinceLastWeave > EditorApplication.timeSinceStartup)
+            {
+                // We haven't executed the automatic weaver in this editor session
+                _ = WeaveAllAssemblies();
+                EditorPrefs.SetInt(AutomaticWeavePrefKey, (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            }
+        }
+
+        private static async Task<int> WeaveAllAssemblies()
+        {
             var assembliesWoven = 0;
 
             try
             {
-                var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player);
-                foreach (var assembly in playerAssemblies)
-                {
-                    if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences))
-                    {
-                        continue;
-                    }
+                EditorApplication.LockReloadAssemblies();
 
-                    string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
-                    if (sourceFilePath == null)
+                var weavingTasks = CompilationPipeline.GetAssemblies(AssembliesType.Player)
+                    .Select(assembly => Task.Run(() =>
                     {
-                        continue;
-                    }
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences))
+                        {
+                            return false;
+                        }
 
-                    AssetDatabase.ImportAsset(sourceFilePath, ImportAssetOptions.ForceUpdate);
-                    assembliesWoven++;
-                }
+                        string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
+                        if (sourceFilePath == null)
+                        {
+                            return false;
+                        }
+
+                        AssetDatabase.ImportAsset(sourceFilePath, ImportAssetOptions.ForceUpdate);
+                        return true;
+                    }));
+
+                var weaveResults = await Task.WhenAll(weavingTasks);
+                assembliesWoven = weaveResults.Count(r => r);
+            }
+            catch (Exception ex)
+            {
+                UnityLogger.Instance.Error($"Failed to weave assemblies: {ex}");
             }
             finally
             {
@@ -90,14 +121,13 @@ namespace RealmWeaver
                 {
                     AssetDatabase.Refresh();
                 }
-
-                UnityEngine.Debug.Log($"Weaving completed. {assembliesWoven} assemblies needed weaving.");
             }
+
+            return assembliesWoven;
         }
 
         private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references)
         {
-            var logger = new UnityLogger();
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
             try
@@ -115,21 +145,21 @@ namespace RealmWeaver
                 {
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
                     // using NETStandard2, so we just hardcode this.
-                    var weaver = new Weaver(resolutionResult.Module, logger, new FrameworkName(".NETStandard,Version=v2.0"));
+                    var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, new FrameworkName(".NETStandard,Version=v2.0"));
                     var results = weaver.Execute();
 
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
                     {
                         resolutionResult.SaveModuleUpdates();
-                        logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
+                        UnityLogger.Instance.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
                         return true;
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.Warning($"[{name}] Weaving failed: {ex.StackTrace}");
+                UnityLogger.Instance.Warning($"[{name}] Weaving failed: {ex.StackTrace}");
             }
 
             return false;
@@ -171,6 +201,8 @@ namespace RealmWeaver
 
         private class UnityLogger : ILogger
         {
+            public static UnityLogger Instance { get; } = new UnityLogger();
+
             public void Debug(string message)
             {
                 System.Diagnostics.Debug.WriteLine(message);
