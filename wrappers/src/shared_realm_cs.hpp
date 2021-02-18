@@ -50,6 +50,8 @@ struct Configuration
     bool read_only;
     
     bool in_memory;
+
+    bool additive_discovered;
     
     bool delete_if_migration_needed;
     

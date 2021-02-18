@@ -70,8 +70,8 @@ public:
 
 Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
 {
-    Realm::Config config;
-    config.schema_mode = SchemaMode::AdditiveDiscovered;
+    Realm::Config config;    
+    config.schema_mode = configuration.additive_discovered ? SchemaMode::AdditiveDiscovered : SchemaMode::AdditiveExplicit;
 
     if (objects_length > 0) {
         config.schema = create_schema(objects, objects_length, properties);

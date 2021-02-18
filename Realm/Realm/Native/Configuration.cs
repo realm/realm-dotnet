@@ -51,6 +51,9 @@ namespace Realms.Native
         internal bool in_memory;
 
         [MarshalAs(UnmanagedType.U1)]
+        internal bool additive_discovered;
+
+        [MarshalAs(UnmanagedType.U1)]
         internal bool delete_if_migration_needed;
 
         internal ulong schema_version;

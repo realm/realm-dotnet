@@ -123,6 +123,7 @@ namespace Realms.Sync
         internal override Realm CreateRealm(RealmSchema schema)
         {
             var configuration = CreateConfiguration();
+            configuration.additive_discovered = ObjectClasses.Length == 0;
 
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
@@ -137,6 +138,7 @@ namespace Realms.Sync
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             var configuration = CreateConfiguration();
+            configuration.additive_discovered = ObjectClasses.Length == 0;
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
