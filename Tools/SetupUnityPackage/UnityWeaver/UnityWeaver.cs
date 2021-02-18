@@ -94,21 +94,25 @@ namespace RealmWeaver
                     {
                         if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences))
                         {
-                            return false;
+                            return null;
                         }
 
                         string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
                         if (sourceFilePath == null)
                         {
-                            return false;
+                            return null;
                         }
 
-                        AssetDatabase.ImportAsset(sourceFilePath, ImportAssetOptions.ForceUpdate);
-                        return true;
+                        return sourceFilePath;
                     }));
 
                 var weaveResults = await Task.WhenAll(weavingTasks);
-                assembliesWoven = weaveResults.Count(r => r);
+
+                foreach (var result in weaveResults.Where(r => r != null))
+                {
+                    AssetDatabase.ImportAsset(result, ImportAssetOptions.ForceUpdate);
+                    assembliesWoven++;
+                }
             }
             catch (Exception ex)
             {
