@@ -38,19 +38,30 @@ namespace RealmWeaver
         [InitializeOnLoadMethod]
         public static void Initialize()
         {
-            var logger = new UnityLogger();
-            logger.Info("Loaded weaver!");
+            CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
+            {
+                if (string.IsNullOrEmpty(assemblyPath))
+                {
+                    return;
+                }
 
-            CompilationPipeline.assemblyCompilationFinished += CompilationComplete;
-            WeaveAllAssemblies();
+                var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
+                                      .FirstOrDefault(p => p.outputPath == assemblyPath);
+
+                if (assembly == null)
+                {
+                    return;
+                }
+
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences);
+            };
         }
 
-        private static void WeaveAllAssemblies()
+        [MenuItem("Realm/Weave Assemblies")]
+        public static void WeaveAllAssemblies()
         {
-            var logger = new UnityLogger();
-
             EditorApplication.LockReloadAssemblies();
-            bool didChangeAnyAssembly = false;
+            var assembliesWoven = 0;
 
             try
             {
@@ -69,43 +80,19 @@ namespace RealmWeaver
                     }
 
                     AssetDatabase.ImportAsset(sourceFilePath, ImportAssetOptions.ForceUpdate);
-                    didChangeAnyAssembly = true;
+                    assembliesWoven++;
                 }
             }
             finally
             {
                 EditorApplication.UnlockReloadAssemblies();
-                if (didChangeAnyAssembly)
+                if (assembliesWoven > 0)
                 {
                     AssetDatabase.Refresh();
                 }
+
+                UnityEngine.Debug.Log($"Weaving completed. {assembliesWoven} assemblies needed weaving.");
             }
-        }
-
-        private static void CompilationComplete(string assemblyPath, CompilerMessage[] compilerMessages)
-        {
-            WeaveAssembly(assemblyPath);
-        }
-
-        private static bool WeaveAssembly(string assemblyPath)
-        {
-            if (string.IsNullOrEmpty(assemblyPath))
-            {
-                return false;
-            }
-
-            var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
-                                  .FirstOrDefault(p => p.outputPath == assemblyPath);
-
-            if (assembly == null)
-            {
-                return false;
-            }
-
-            var logger = new UnityLogger();
-            logger.Info("WeaveSingle: " + assemblyPath);
-
-            return WeaveAssemblyCore(assemblyPath, assembly.allReferences);
         }
 
         private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references)
