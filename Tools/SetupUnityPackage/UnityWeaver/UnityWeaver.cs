@@ -36,7 +36,7 @@ namespace RealmWeaver
     {
         public int callbackOrder => 0;
 
-        [InitializeOnLoadMethod]
+        //[InitializeOnLoadMethod]
         public static void Initialize()
         {
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
