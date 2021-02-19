@@ -138,7 +138,7 @@ namespace Realms.Sync
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             var configuration = CreateConfiguration();
-            configuration.additive_discovered = ObjectClasses.Length == 0;
+            configuration.additive_discovered = ObjectClasses == null ? true : false;
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
