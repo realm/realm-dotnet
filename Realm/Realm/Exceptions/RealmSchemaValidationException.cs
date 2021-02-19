@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception thrown when you're trying to use <see cref="Realm.Add{T}(T, bool)"/> but the object is already managed by a
-    /// different <see cref="Realm"/>.
+    /// Exception thrown when the current schema doesn't respect Realm's set of rule. The details in the message helps to understand what the broken rule is.
+    /// More general info about Realm's schema can be found <see href="https://docs.mongodb.com/realm/dotnet/realms/#std-label-dotnet-realm-schema">here</see>.
     /// </summary>
     public class RealmSchemaValidationException : RealmException
     {
