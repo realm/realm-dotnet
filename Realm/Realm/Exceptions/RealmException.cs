@@ -104,6 +104,9 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.RealmClosed:
                     return new RealmClosedException(message);
 
+                case RealmExceptionCodes.RealmSchemaValidation:
+                    return new RealmSchemaValidationException(message);
+
                 case RealmExceptionCodes.NotNullableProperty:
                 case RealmExceptionCodes.PropertyMismatch:
                     return new RealmException(message);

@@ -273,7 +273,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Adding_OrphanEmbeddedObj()
+        public void EmbeddedObject_WhenAdditiveExplicit_ShouldThrow()
         {
             var conf = new SyncConfiguration("foo-bar", GetFakeUser())
             {
@@ -281,7 +281,7 @@ namespace Realms.Tests.Sync
                 ObjectClasses = new[] { typeof(EmbeddedLevel3) }
             };
 
-            Assert.Throws<RealmMigrationNeededException>(() => Realm.GetInstance(conf));
+            Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf));
         }
 
         private const int DummyDataSize = 100;
