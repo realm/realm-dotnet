@@ -36,7 +36,7 @@ namespace RealmWeaver
     {
         public int callbackOrder => 0;
 
-        //[InitializeOnLoadMethod]
+        [InitializeOnLoadMethod]
         public static void Initialize()
         {
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
@@ -163,7 +163,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Warning($"[{name}] Weaving failed: {ex.StackTrace}");
+                UnityLogger.Instance.Warning($"[{name}] Weaving failed: {ex}");
             }
 
             return false;
