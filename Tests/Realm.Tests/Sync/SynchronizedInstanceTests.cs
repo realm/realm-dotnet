@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -269,6 +270,18 @@ namespace Realms.Tests.Sync
 
                 Assert.That(File.Exists(realmPath), Is.False);
             });
+        }
+
+        [Test]
+        public void Adding_OrphanEmbeddedObj()
+        {
+            var conf = new SyncConfiguration("foo-bar", GetFakeUser())
+            {
+                SessionStopPolicy = SessionStopPolicy.Immediately,
+                ObjectClasses = new[] { typeof(EmbeddedLevel3) }
+            };
+
+            Assert.Throws<RealmMigrationNeededException>(() => Realm.GetInstance(conf));
         }
 
         private const int DummyDataSize = 100;

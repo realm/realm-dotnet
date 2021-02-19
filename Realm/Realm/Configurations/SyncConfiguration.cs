@@ -123,7 +123,7 @@ namespace Realms.Sync
         internal override Realm CreateRealm(RealmSchema schema)
         {
             var configuration = CreateConfiguration();
-            configuration.additive_discovered = ObjectClasses.Length == 0;
+            configuration.additive_discovered = ObjectClasses == null ? true : false;
 
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
