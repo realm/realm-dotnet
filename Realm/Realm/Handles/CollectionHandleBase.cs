@@ -55,14 +55,14 @@ namespace Realms
 
         public abstract void Clear();
 
-        protected RealmValue ToRealmValue(PrimitiveValue primitive, TableKey tableKey, Realm realm)
+        protected RealmValue ToRealmValue(PrimitiveValue primitive, Realm realm)
         {
             if (primitive.Type != RealmValueType.Object)
             {
                 return new RealmValue(primitive);
             }
 
-            var objectHandle = primitive.AsObject(Root);
+            (var objectHandle, var tableKey) = primitive.AsObject(Root);
             return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
         }
     }

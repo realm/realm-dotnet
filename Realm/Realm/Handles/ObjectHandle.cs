@@ -38,7 +38,7 @@ namespace Realms
             public static extern void destroy(IntPtr objectHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_value(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out TableKey table_key, out NativeException ex);
+            public static extern void get_value(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
@@ -149,7 +149,7 @@ namespace Realms
         public RealmValue GetValue(string propertyName, RealmObjectBase.Metadata metadata, Realm realm)
         {
             var propertyIndex = metadata.PropertyIndices[propertyName];
-            NativeMethods.get_value(this, propertyIndex, out var result, out var tableKey, out var nativeException);
+            NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             if (result.Type != RealmValueType.Object)
@@ -157,7 +157,7 @@ namespace Realms
                 return new RealmValue(result, this, propertyIndex);
             }
 
-            var objectHandle = result.AsObject(Root);
+            (var objectHandle, var tableKey) = result.AsObject(Root);
             return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));  //If sync is used, and we have a mixed property, it could be we don't have the object class in the schema, so we should return a dynamic object.
         }
 
@@ -198,7 +198,7 @@ namespace Realms
 
         public void SetValueUnique(IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.get_value(this, propertyIndex, out var result, out var tableKey, out var nativeException);
+            NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
             var currentValue = new RealmValue(result, this, propertyIndex);
 

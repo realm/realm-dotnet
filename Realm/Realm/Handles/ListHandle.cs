@@ -47,7 +47,7 @@ namespace Realms
             public static extern IntPtr insert_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_value", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_value(ListHandle listHandle, IntPtr link_ndx, out PrimitiveValue value, out TableKey table_key, out NativeException ex);
+            public static extern void get_value(ListHandle listHandle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_value(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
@@ -114,9 +114,9 @@ namespace Realms
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
-            NativeMethods.get_value(this, (IntPtr)index, out var result, out var tableKey, out var ex);
+            NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
-            return ToRealmValue(result, tableKey, realm);
+            return ToRealmValue(result, realm);
         }
 
         public unsafe void Add(in RealmValue value)

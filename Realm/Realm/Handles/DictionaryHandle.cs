@@ -56,11 +56,11 @@ namespace Realms
             public static extern IntPtr freeze(DictionaryHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_at_index", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_at_index(DictionaryHandle handle, IntPtr index, out PrimitiveValue key, out PrimitiveValue value, out TableKey tableKey, out NativeException ex);
+            public static extern void get_at_index(DictionaryHandle handle, IntPtr index, out PrimitiveValue key, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_try_get", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool try_get_value(DictionaryHandle handle, PrimitiveValue key, out PrimitiveValue value, out TableKey table_key, out NativeException ex);
+            public static extern bool try_get_value(DictionaryHandle handle, PrimitiveValue key, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_set", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_value(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
@@ -168,7 +168,7 @@ namespace Realms
         {
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
-            var containsValue = NativeMethods.try_get_value(this, primitiveKey, out var result, out var tableKey, out var nativeException);
+            var containsValue = NativeMethods.try_get_value(this, primitiveKey, out var result, out var nativeException);
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
@@ -184,7 +184,7 @@ namespace Realms
             }
             else
             {
-                value = ToRealmValue(result, tableKey, realm);
+                value = ToRealmValue(result, realm);
             }
 
             return true;
@@ -192,9 +192,9 @@ namespace Realms
 
         public KeyValuePair<string, TValue> GetValueAtIndex<TValue>(int index, Realm realm)
         {
-            NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var tableKey, out var ex);
+            NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var ex);
             ex.ThrowIfNecessary();
-            var value = ToRealmValue(primitiveValue, tableKey, realm);
+            var value = ToRealmValue(primitiveValue, realm);
             return new KeyValuePair<string, TValue>(key.AsString(), value.As<TValue>());
         }
 

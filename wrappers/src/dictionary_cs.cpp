@@ -71,23 +71,14 @@ REALM_EXPORT Object* realm_dictionary_set_embedded(object_store::Dictionary& dic
     });
 }
 
-REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, TableKey& table_key, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         auto string_key = from_capi(key.string);
-        auto mixed_value_optional = dictionary.try_get_any(from_capi(key.string));
-        if (mixed_value_optional)
+        auto mixed_value = dictionary.try_get_any(from_capi(key.string));
+        if (mixed_value)
         {
-            auto mixed_value = mixed_value_optional.value();
-            *value = to_capi(dictionary, mixed_value);
-
-            if (value->type == realm_value_type::RLM_TYPE_LINK) {
-                table_key = dictionary.get_object_schema().table_key;
-            }
-            else if (!mixed_value.is_null() && mixed_value.get_type() == type_TypedLink) {
-                table_key = mixed_value.get<ObjLink>().get_table_key();
-            }
-
+            *value = to_capi(dictionary, mixed_value.value());
             return true;
         }
 
@@ -95,7 +86,7 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
     });
 }
 
-REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictionary, size_t ndx, realm_value_t* key, realm_value_t* value, TableKey& table_key, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictionary, size_t ndx, realm_value_t* key, realm_value_t* value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = dictionary.size();
@@ -103,18 +94,8 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
             throw IndexOutOfRangeException("Get from RealmDictionary", ndx, count);
 
         auto pair = dictionary.get_pair(ndx);
-        auto string_key = pair.first;
-        auto mixed_value = pair.second;
-        *key = to_capi(Mixed(string_key));
-        *value = to_capi(dictionary, mixed_value);
-
-        if (value->type == realm_value_type::RLM_TYPE_LINK) {
-            table_key = dictionary.get_object_schema().table_key;
-        }
-        else if (!mixed_value.is_null() && mixed_value.get_type() == type_TypedLink) {
-            table_key = mixed_value.get<ObjLink>().get_table_key();
-        }
-
+        *key = to_capi(Mixed(pair.first));
+        *value = to_capi(dictionary, pair.second);
     });
 }
 

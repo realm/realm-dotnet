@@ -253,7 +253,9 @@ namespace Realms.Native
             return bytes;
         }
 
-        public ObjectHandle AsObject(RealmHandle root) => new ObjectHandle(root, link_value.object_ptr);
+        public (ObjectHandle Handle, TableKey TableKey) AsObject(RealmHandle root) => (new ObjectHandle(root, link_value.object_ptr), link_value.table_key);  
+        //Should we just have the tableKey inside the object handle?
+        //If we do so then we need to modify a lot of methods in native that return just the object handle
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct StringValue
@@ -273,6 +275,7 @@ namespace Realms.Native
         private struct LinkValue
         {
             public IntPtr object_ptr;
+            public TableKey table_key;
         }
 
         [StructLayout(LayoutKind.Sequential)]

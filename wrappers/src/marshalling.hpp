@@ -64,6 +64,7 @@ typedef struct realm_decimal128 {
 
 typedef struct realm_link {
     Object* object;
+    TableKey table_key;
 } realm_link_t;
 
 typedef struct realm_object_id {
@@ -306,6 +307,7 @@ static inline realm_value_t to_capi(Object* obj)
     realm_value_t val{};
     val.type = realm_value_type::RLM_TYPE_LINK;
     val.link.object = obj;
+    val.link.table_key = obj->get_object_schema().table_key;
     return val;
 }
 
