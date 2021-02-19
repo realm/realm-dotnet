@@ -620,7 +620,7 @@ namespace Realms
         {
             if (typeof(T) == typeof(RealmValue))
             {
-                return (T)(object)this;
+                return Operator.Convert<RealmValue, T>(this);
             }
 
             if (Type == RealmValueType.Int)

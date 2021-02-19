@@ -64,7 +64,7 @@ namespace RealmWeaver
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
         internal const string NullableGuidTypeName = "System.Nullable`1<System.Guid>";
 
-        private static readonly HashSet<string> _primitiveValueTypes = new HashSet<string>
+        private static readonly HashSet<string> _realmValueTypes = new HashSet<string>
         {
             CharTypeName,
             SingleTypeName,
@@ -101,7 +101,8 @@ namespace RealmWeaver
             $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
             $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
             ByteArrayTypeName,
-            StringTypeName
+            StringTypeName,
+            RealmValueTypeName,
         };
 
         private static readonly IEnumerable<string> _primaryKeyTypes = new[]
@@ -371,7 +372,7 @@ Analytics payload
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
             }
 
-            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName) || prop.IsMixed())
+            if (_realmValueTypes.Contains(prop.PropertyType.FullName))
             {
                 if (prop.SetMethod == null)
                 {
@@ -393,7 +394,7 @@ Analytics payload
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
                 if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_primitiveValueTypes.Contains(elementType.FullName) &&
+                    !_realmValueTypes.Contains(elementType.FullName) &&
                     !(elementType.FullName == RealmValueTypeName))
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
