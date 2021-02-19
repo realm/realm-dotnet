@@ -81,9 +81,8 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
             auto mixed_value = mixed_value_optional.value();
             *value = to_capi(dictionary, mixed_value);
 
-            if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-                const Obj obj = dictionary.get<Obj>(string_key);  //TODO is there an easier way to do this...? We need a dictionary.try_get_object method I think
-                table_key = obj.get_table()->get_key();
+            if (value->type == realm_value_type::RLM_TYPE_LINK) {
+                table_key = dictionary.get_object_schema().table_key;
             }
             else if (!mixed_value.is_null() && mixed_value.get_type() == type_TypedLink) {
                 table_key = mixed_value.get<ObjLink>().get_table_key();
@@ -109,9 +108,8 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
         *key = to_capi(Mixed(string_key));
         *value = to_capi(dictionary, mixed_value);
 
-        if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            const Obj obj = dictionary.get<Obj>(string_key);  //TODO is there an easier way to do this...? We need a dictionaly.get_pair method that returns an obj instead of a mixed
-            table_key = obj.get_table()->get_key();
+        if (value->type == realm_value_type::RLM_TYPE_LINK) {
+            table_key = dictionary.get_object_schema().table_key;
         }
         else if (!mixed_value.is_null() && mixed_value.get_type() == type_TypedLink) {
             table_key = mixed_value.get<ObjLink>().get_table_key();

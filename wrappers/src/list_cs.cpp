@@ -136,9 +136,9 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, T
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
 
         if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            const Obj obj = list.get(ndx);
+            auto obj = list.get(ndx);
             table_key = obj.get_table()->get_key();
-            *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), obj));
+            *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), std::move(obj)));
         }
         else {
             auto val = list.get_any(ndx);

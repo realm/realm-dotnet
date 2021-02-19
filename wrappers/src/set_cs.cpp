@@ -69,9 +69,9 @@ REALM_EXPORT void realm_set_get_value(object_store::Set& set, size_t ndx, realm_
             throw IndexOutOfRangeException("Get from RealmSet", ndx, count);
 
         if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            const Obj obj = set.get(ndx);
+            auto obj = set.get(ndx);
             table_key = obj.get_table()->get_key();
-            *value = to_capi(new Object(set.get_realm(), set.get_object_schema(), obj));
+            *value = to_capi(new Object(set.get_realm(), set.get_object_schema(), std::move(obj)));
         }
         else {
             auto val = set.get_any(ndx);
