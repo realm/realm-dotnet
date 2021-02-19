@@ -281,7 +281,7 @@ namespace Realms.Tests.Sync
                 ObjectClasses = new[] { typeof(EmbeddedLevel3) }
             };
 
-            Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf));
+            Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
         private const int DummyDataSize = 100;
