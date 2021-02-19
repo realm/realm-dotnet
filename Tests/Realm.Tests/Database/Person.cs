@@ -107,5 +107,7 @@ namespace Realms.Tests.Database
         }
 
         public IList<Person> Friends { get; }
+
+        public override string ToString() => $"{FirstName} {LastName}";
     }
 }

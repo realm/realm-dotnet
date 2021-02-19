@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
-using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
@@ -183,15 +182,32 @@ namespace Realms.Tests.Database
                 "If you use an expression other than simple property specifier it throws.");
         }
 
-        [Test, TestExplicit("Blocked on https://github.com/realm/realm-core/issues/3884")]
+        [Test]
         public void OrderBy_WhenCalledConsequently_ReplacesOrdering()
         {
-            // TODO: verify ordering is replaced once https://github.com/realm/realm-core/issues/3884 is resolved
-            _ = _realm.All<Person>().Where(p => p.IsInteresting)
-                .OrderBy(p => p.FirstName).OrderBy(p => p.Latitude).ToList();
+            var queryOrder = _realm.All<Person>()
+                .Where(p => p.IsInteresting)
+                .OrderBy(p => p.FirstName)
+                .OrderBy(p => p.Latitude).ToArray();
 
-            _ = _realm.All<Person>().Where(p => p.IsInteresting)
-                .OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList();
+            var queryOrderDesc = _realm.All<Person>()
+                .Where(p => p.IsInteresting)
+                .OrderByDescending(p => p.FirstName)
+                .OrderBy(p => p.Latitude).ToArray();
+
+            // This is executed by LINQ-to-objects so should be the source of truth.
+            var expectedOrder = _realm.All<Person>()
+                .ToArray()
+                .Where(p => p.IsInteresting)
+                .OrderBy(p => p.FirstName)
+                .OrderBy(p => p.Latitude)
+                .ToArray();
+
+            for (var i = 0; i < expectedOrder.Length; i++)
+            {
+                Assert.That(queryOrder[i], Is.EqualTo(expectedOrder[i]));
+                Assert.That(queryOrderDesc[i], Is.EqualTo(expectedOrder[i]));
+            }
         }
 
         [Test]

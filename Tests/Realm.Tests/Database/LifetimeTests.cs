@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -34,8 +35,6 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
-            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
-
             // Arrange
             var realm = GetWeakRealm();
             Person person = null;
@@ -60,8 +59,6 @@ namespace Realms.Tests.Database
         [Test]
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
-            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
-
             // Arrange
             using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
             var realmThatWillBeFinalized = GetWeakRealm();
@@ -83,14 +80,12 @@ namespace Realms.Tests.Database
         [Test]
         public void TransactionShouldHoldStrongReferenceToRealm()
         {
-            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
-
             TestHelpers.RunAsyncTest(async () =>
             {
                 var realm = GetWeakRealm();
                 var transaction = CreateTransaction();
 
-                await System.Threading.Tasks.Task.Yield();
+                await Task.Yield();
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();

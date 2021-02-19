@@ -142,14 +142,6 @@ namespace Realms.Tests
             }
         }
 
-        public static void IgnoreOnWindows(string message)
-        {
-            if (IsWindows)
-            {
-                Assert.Ignore(message);
-            }
-        }
-
         public static void IgnoreOnAOT(string message)
         {
             if (IsAOTTarget)

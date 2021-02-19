@@ -21,7 +21,6 @@ using System.IO;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
-using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
@@ -188,7 +187,7 @@ namespace Realms.Tests.Database
             Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileNotFoundException>());
         }
 
-        [Test, TestExplicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
+        [Test]
         public void ReadOnlyRealmsWillNotAutoMigrate()
         {
             // Arrange

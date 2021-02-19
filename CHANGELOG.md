@@ -2,6 +2,7 @@
 
 ### Fixed
 * Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`) being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
+* Fixed a bug where applying multiple `OrderBy` clauses on a query would result in the clauses being appended to each other as if they were `.ThenBy` rather than the last clause replacing the preceding ones. (PR [#2255](https://github.com/realm/realm-dotnet/issues/2255))
 
 ### Enhancements
 * Add support for the `Guid` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
