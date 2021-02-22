@@ -394,8 +394,7 @@ Analytics payload
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
                 if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_realmValueTypes.Contains(elementType.FullName) &&
-                    !(elementType.FullName == RealmValueTypeName))
+                    !_realmValueTypes.Contains(elementType.FullName))
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                 }

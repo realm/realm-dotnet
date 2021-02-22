@@ -74,7 +74,6 @@ REALM_EXPORT Object* realm_dictionary_set_embedded(object_store::Dictionary& dic
 REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        auto string_key = from_capi(key.string);
         auto mixed_value = dictionary.try_get_any(from_capi(key.string));
         if (mixed_value)
         {

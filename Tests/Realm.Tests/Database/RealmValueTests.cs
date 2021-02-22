@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 
@@ -27,10 +28,11 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AARealmValueTests : RealmInstanceTest //TODO for testing
     {
+        //TODO we could use "Values" instead of this, like with char...
         static private bool[] IsManaged = new bool[] { true, false };
 
-        [TestCaseSource(nameof(IsManaged))]
-        public void RealmValue_CharTests(bool isManaged)
+        [Test]
+        public void RealmValue_CharTests([Values] bool isManaged)
         {
             RunNumericTests((char)10, 10, isManaged);
         }
@@ -609,37 +611,60 @@ namespace Realms.Tests.Database
         {
             var rvo = new RealmValueObject();
 
-            var guid = Guid.NewGuid();
-            var intObject = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+            var intValue = 5;
+            var stringValue = "abc";
+            var guidValue = Guid.NewGuid();
+            var objectValue = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+
+            _realm.Write(() => _realm.Add(rvo));
+
+            var changeSetList = new List<ChangeSet>();
+            using var token = rvo.RealmValueList.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSetList.Add(changes);
+                }
+            });
 
             _realm.Write(() =>
             {
-                _realm.Add(rvo);
-                rvo.RealmValueList.Add(1);
-                rvo.RealmValueList.Add("abc");
-                rvo.RealmValueList.Add(guid);
-                rvo.RealmValueList.Add(intObject);
+                rvo.RealmValueList.Add(intValue);
+                rvo.RealmValueList.Add(stringValue);
+                rvo.RealmValueList.Add(guidValue);
+                rvo.RealmValueList.Add(objectValue);
             });
 
             Assert.That(rvo.RealmValueList.Count, Is.EqualTo(4));
-            Assert.That(rvo.RealmValueList[0] == 1);
-            Assert.That(rvo.RealmValueList[1] == "abc");
-            Assert.That(rvo.RealmValueList[2] == guid);
-            Assert.That(rvo.RealmValueList[3].As<RealmObjectBase>(), Is.EqualTo(intObject));
+            Assert.That(rvo.RealmValueList[0] == intValue);
+            Assert.That(rvo.RealmValueList[1] == stringValue);
+            Assert.That(rvo.RealmValueList[2] == guidValue);
+            Assert.That(rvo.RealmValueList[3].As<RealmObjectBase>(), Is.EqualTo(objectValue));
 
-            Assert.That(rvo.RealmValueList.Contains(1));
-            Assert.That(rvo.RealmValueList.Contains("abc"));
-            Assert.That(rvo.RealmValueList.Contains(guid));
+            Assert.That(rvo.RealmValueList.Contains(intValue));
+            Assert.That(rvo.RealmValueList.Contains(stringValue));
+            Assert.That(rvo.RealmValueList.Contains(guidValue));
+            Assert.That(rvo.RealmValueList.Contains(objectValue)); //TODO needs to be fixed...
+
+            VerifyNotifications(_realm, changeSetList, () =>
+            {
+                Assert.That(changeSetList[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, rvo.RealmValueList.Count)));
+            });
 
             _realm.Write(() =>
             {
-                rvo.RealmValueList.Remove("abc");
+                rvo.RealmValueList.Remove(stringValue);
             });
 
             Assert.That(rvo.RealmValueList.Count, Is.EqualTo(3));
-            Assert.That(rvo.RealmValueList[0] == 1);
-            Assert.That(rvo.RealmValueList[1] == guid);
-            Assert.That(rvo.RealmValueList[2].As<RealmObjectBase>(), Is.EqualTo(intObject));
+            Assert.That(rvo.RealmValueList[0] == intValue);
+            Assert.That(rvo.RealmValueList[1] == guidValue);
+            Assert.That(rvo.RealmValueList[2].As<RealmObjectBase>(), Is.EqualTo(objectValue));
+
+            VerifyNotifications(_realm, changeSetList, () =>
+            {
+                Assert.That(changeSetList[0].DeletedIndices, Is.EquivalentTo(new[] { 1 }));
+            });
 
             _realm.Write(() =>
             {
@@ -647,6 +672,19 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(rvo.RealmValueList.Count, Is.EqualTo(0));
+
+            VerifyNotifications(_realm, changeSetList, () =>
+            {
+                Assert.That(changeSetList[0].DeletedIndices, Is.EquivalentTo(Enumerable.Range(0,3)));
+            });
+        }
+
+        private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)  //TODO Taken from ListOfPrimitiveTests. Can we put it in a common place...?
+        {
+            realm.Refresh();
+            Assert.That(notifications.Count, Is.EqualTo(1));
+            verifier();
+            notifications.Clear();
         }
 
         private RealmValueObject PersistAndFind(RealmValue rv)
@@ -666,7 +704,11 @@ namespace Realms.Tests.Database
 
             public RealmValue RealmValueProperty { get; set; }
 
-            public IList<RealmValue> RealmValueList { get; }  //TODO we need dcitionaries too...
+            public IList<RealmValue> RealmValueList { get; }
+
+            public ISet<RealmValue> RealmValueSet { get; } //TODO We need to add test for those when Set is ready
+
+            public IDictionary<string, RealmValue> RealmValueDictionary { get; } //TODO add test for this
         }
 
         private class InternalObject : RealmObject, IEquatable<InternalObject>

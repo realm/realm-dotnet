@@ -168,7 +168,7 @@ REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeExcep
                 throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
             }
 
-            if ((list_type & PropertyType::Flags) == PropertyType::Mixed) {
+            if ((list_type & ~PropertyType::Flags) == PropertyType::Mixed) {
                 return list.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
             }
 
