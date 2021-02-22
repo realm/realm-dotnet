@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2021 Realm Inc.
 //
@@ -16,19 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Exceptions
+namespace Realms.Sync
 {
     /// <summary>
-    /// Exception thrown when the schema specified in your C# models don't pass validation for the type of Realm you're trying to open.
-    /// The message contains information about the validation errors and how to correct them.
+    /// To see details of each mode check their mirroring definition <see href="https://github.com/realm/realm-core/blob/0976706c26ce24866e6be6c165b6c6192fb663ed/src/realm/object-store/shared_realm.hpp#L61">in core</see>
     /// </summary>
-    /// <seealso href = "https://docs.mongodb.com/realm/dotnet/realms/#std-label-dotnet-realm-schema" >
-    /// General information about Realm's schema.
-    /// </seealso>
-    public class RealmSchemaValidationException : RealmException
+    internal enum SchemaMode : byte
     {
-        internal RealmSchemaValidationException(string detailMessage) : base(detailMessage)
-        {
-        }
+        // N.B. the values must match their representation in core!
+        AdditiveDiscovered = 4,
+        AdditiveExplicit
     }
 }

@@ -275,11 +275,8 @@ namespace Realms.Tests.Sync
         [Test]
         public void EmbeddedObject_WhenAdditiveExplicit_ShouldThrow()
         {
-            var conf = new SyncConfiguration("foo-bar", GetFakeUser())
-            {
-                SessionStopPolicy = SessionStopPolicy.Immediately,
-                ObjectClasses = new[] { typeof(EmbeddedLevel3) }
-            };
+            var conf = GetFakeConfig();
+            conf.ObjectClasses = new[] { typeof(EmbeddedLevel3) };
 
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }

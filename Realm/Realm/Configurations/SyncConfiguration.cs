@@ -123,9 +123,10 @@ namespace Realms.Sync
         internal override Realm CreateRealm(RealmSchema schema)
         {
             var configuration = CreateConfiguration();
-            configuration.additive_discovered = ObjectClasses == null ? true : false;
+            var syncConfiguration = CreateSyncConfiguration();
+            syncConfiguration.schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit;
 
-            var srHandle = SharedRealmHandle.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
+            var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
             {
                 srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
@@ -138,14 +139,15 @@ namespace Realms.Sync
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             var configuration = CreateConfiguration();
-            configuration.additive_discovered = ObjectClasses == null ? true : false;
+            var syncConfiguration = CreateSyncConfiguration();
+            syncConfiguration.schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit;
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
             ProgressNotificationToken progressToken = null;
             try
             {
-                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey, tcsHandle);
+                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, syncConfiguration, schema, EncryptionKey, tcsHandle);
                 cancellationToken.Register(() =>
                 {
                     if (!handle.IsClosed)
@@ -189,7 +191,7 @@ namespace Realms.Sync
             }
         }
 
-        internal Native.SyncConfiguration ToNative()
+        internal Native.SyncConfiguration CreateSyncConfiguration()
         {
             return new Native.SyncConfiguration
             {
