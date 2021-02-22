@@ -109,10 +109,8 @@ extern "C" {
                 throw NotNullableException(schema.name, prop.name);
             }
 
-            // TODO: replace prop.column_key().get_type() with prop.type
-            if (!value.is_null() && prop.column_key.get_type() != col_type_Mixed &&
-                to_capi(prop.type) != value.type)
-            {
+            if (!value.is_null() && (prop.type & ~PropertyType::Flags) != PropertyType::Mixed &&
+                to_capi(prop.type) != value.type) {
                 auto& schema = object.get_object_schema();
                 throw PropertyTypeMismatchException(
                     schema.name,

@@ -79,14 +79,14 @@ namespace Realms
         public override int IndexOf(T value)
         {
             Argument.NotNull(value, nameof(value));
-            
-            //TODO What to do here...?
-            //if (_argumentType != RealmValueType.Object) 
-            //{
-            //    throw new NotSupportedException("IndexOf on non-object results is not supported.");
-            //}
 
             var obj = value as RealmObjectBase;
+
+            if (obj == null)
+            {
+                throw new NotSupportedException("IndexOf on non-object results is not supported.");
+            }
+
             if (!obj.IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));

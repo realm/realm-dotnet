@@ -417,26 +417,25 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_WithRealmInteger_Increments()
         {
-            //TODO at the moment it's not supported in core
-            //int value = 10;
-            //var rvo = new RealmValueObject { Id = 1, RealmValueProperty = value };
-            //var retrievedObject = PersistAndFind(rvo);
+            // This fails because it's unsupported in Core, for now
+            RealmValue rv = 10;
+            var retrievedObject = PersistAndFind(rv);
 
-            //Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 10);
+            Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 10);
 
-            //_realm.Write(() =>
-            //{
-            //    retrievedObject.RealmValueProperty.AsInt32RealmInteger().Increment();
-            //});
+            _realm.Write(() =>
+            {
+                retrievedObject.RealmValueProperty.AsInt32RealmInteger().Increment();
+            });
 
-            //Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 11);
+            Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 11);
 
-            //_realm.Write(() =>
-            //{
-            //    retrievedObject.RealmValueProperty.AsInt32RealmInteger().Decrement();
-            //});
+            _realm.Write(() =>
+            {
+                retrievedObject.RealmValueProperty.AsInt32RealmInteger().Decrement();
+            });
 
-            //Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 10);
+            Assert.That(retrievedObject.RealmValueProperty.AsInt32() == 10);
         }
 
         [Test]

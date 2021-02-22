@@ -158,7 +158,7 @@ namespace Realms
             }
 
             (var objectHandle, var tableKey) = result.AsObject(Root);
-            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));  //If sync is used, and we have a mixed property, it could be we don't have the object class in the schema, so we should return a dynamic object.
+            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
         }
 
         public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)
