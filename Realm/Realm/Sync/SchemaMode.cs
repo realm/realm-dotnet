@@ -19,7 +19,7 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// To see details of each mode check its mirroring definition in <see href="https://github.com/realm/realm-core/blob/0976706c26ce24866e6be6c165b6c6192fb663ed/src/realm/object-store/shared_realm.hpp#L61"> core</see>.
+    /// To see details of each mode check its mirroring definition in <see href="https://github.com/realm/realm-core/blob/0976706c26ce24866e6be6c165b6c6192fb663ed/src/realm/object-store/shared_realm.hpp#L61">core</see>.
     /// </summary>
     internal enum SchemaMode : byte
     {
