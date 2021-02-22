@@ -122,9 +122,8 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = CreateConfiguration();
-            var syncConfiguration = CreateSyncConfiguration();
-            syncConfiguration.schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit;
+            var configuration = CreateNativeConfiguration();
+            var syncConfiguration = CreateNativeSyncConfiguration();
 
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
@@ -138,9 +137,8 @@ namespace Realms.Sync
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Realm instance will own its handle")]
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
-            var configuration = CreateConfiguration();
-            var syncConfiguration = CreateSyncConfiguration();
-            syncConfiguration.schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit;
+            var configuration = CreateNativeConfiguration();
+            var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
@@ -191,13 +189,14 @@ namespace Realms.Sync
             }
         }
 
-        internal Native.SyncConfiguration CreateSyncConfiguration()
+        internal Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
+                schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
             };
         }
     }

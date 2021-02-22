@@ -125,7 +125,7 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = CreateConfiguration();
+            var configuration = CreateNativeConfiguration();
             configuration.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
             configuration.read_only = IsReadOnly;
 

@@ -150,7 +150,7 @@ namespace Realms
 
         internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
 
-        internal Native.Configuration CreateConfiguration()
+        internal Native.Configuration CreateNativeConfiguration()
         {
             return new Native.Configuration
             {
