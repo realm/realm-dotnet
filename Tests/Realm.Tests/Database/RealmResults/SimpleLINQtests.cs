@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
-using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
@@ -1044,23 +1043,6 @@ namespace Realms.Tests.Database
             Assert.That(query.ElementAt(0).FullName, Is.EqualTo(arr[0].FullName));
             Assert.That(query.ElementAt(1).FullName, Is.EqualTo(arr[1].FullName));
             Assert.That(query.ElementAt(2).FullName, Is.EqualTo(arr[2].FullName));
-        }
-
-        // note that DefaultIfEmpty returns a collection of one item
-        [Test, TestExplicit("Currently broken and hard to implement")]
-        public void DefaultIfEmptyReturnsDefault()
-        {
-            /*
-             * This is comprehensively broken and awkward to fix in our current architecture.
-             * Looking at the test code below, the Count is invoked on a RealmResults and directly
-             * invokes its query handle, which of course has zero elements.
-             * One posible approach is to toggle the RealmResults into a special state where
-             * it acts as a generator for a single null pointer.*
-             */
-            var expectCollectionOfOne = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
-            Assert.That(expectCollectionOfOne.Count(), Is.EqualTo(1));
-            var expectedDef = expectCollectionOfOne.Single();
-            Assert.That(expectedDef, Is.Null);
         }
 
         [Test]

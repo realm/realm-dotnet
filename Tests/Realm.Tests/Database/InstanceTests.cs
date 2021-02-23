@@ -315,21 +315,21 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test, Ignore("Currently doesn't work. Ref #947")]
-        public void Compact_WhenOpenOnSameThread_ShouldReturnFalse()
+        [Test]
+        public void Compact_WhenOpenOnSameThread_ShouldReturnTrue()
         {
-            // TODO: enable when we implement instance caching (#947)
-            // This works because of caching of native instances in ObjectStore.
-            // Technically, we get the same native instance, so Compact goes through.
-            // However, this invalidates the opened realm, but we have no way of communicating that.
-            // That is why, things seem fine until we try to run queries on the opened realm.
-            // Once we handle caching in managed, we should reenable the test.
             using var realm = GetRealm();
 
             var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
-            Assert.That(() => Realm.Compact(), Is.False);
+            Assert.That(() => Realm.Compact(), Is.True);
             var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
-            Assert.That(finalSize, Is.EqualTo(initialSize));
+            Assert.That(finalSize, Is.LessThanOrEqualTo(initialSize));
+
+            // Test that the Realm instance is still valid and we can write to it
+            realm.Write(() =>
+            {
+                realm.Add(new Person());
+            });
         }
 
         [Test]

@@ -248,7 +248,7 @@ namespace Realms.Tests.Database
             Assert.That(items, Is.EqualTo(Enumerable.Range(0, 10)));
         }
 
-        [Test, Ignore("Regression in Core, unignore when https://github.com/realm/realm-core/pull/4122 is merged.")]
+        [Test]
         public void ObjectList_WhenEnumeratingAndRemovingFromRealm_ShouldBeStable()
         {
             var container = new ContainerObject();

@@ -17,40 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
-using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
-        [Test, TestExplicit("Manual test for debugging")]
-        public void SimpleTest()
-        {
-            MakeThreePeople();
-            var allPeople = _realm.All<Person>().Count();
-            Debug.WriteLine($"There are {allPeople} in total");
-
-            var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting select p;
-
-            Debug.WriteLine("Interesting people include:");
-            foreach (var p in interestingPeople)
-            {
-                Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-            }
-
-            var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
-            Debug.WriteLine("People named John:");
-            foreach (var p in johns)
-            {
-                Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-            }
-        }
-
         // Test added to ensure there were no side-effects immedately after a Rollback
         [Test]
         public void CreateObjectAfterRollbackTest()
