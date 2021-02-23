@@ -169,7 +169,7 @@ REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeExcep
             }
 
             if ((list_type & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return list.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+                return list.find_any(value.link.object->obj());
             }
 
             return list.find(value.link.object->obj());
