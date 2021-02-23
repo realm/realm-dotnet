@@ -157,7 +157,7 @@ namespace Realms
                 return new RealmValue(result, this, propertyIndex);
             }
 
-            (var objectHandle, var tableKey) = result.AsObject(Root);
+            var (objectHandle, tableKey) = result.AsObject(Root);
             return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
         }
 

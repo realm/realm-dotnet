@@ -78,7 +78,7 @@ namespace Realms.Schema
         /// <summary>
         /// A property that can contain RealmValue supported types.
         /// </summary>
-        Mixed = 9,
+        RealmValue = 9,
 
         /// <summary>
         /// 96 bit ObjectID property.

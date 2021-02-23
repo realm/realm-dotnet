@@ -62,7 +62,7 @@ namespace Realms
                 return new RealmValue(primitive);
             }
 
-            (var objectHandle, var tableKey) = primitive.AsObject(Root);
+            var (objectHandle, tableKey) = primitive.AsObject(Root);
             return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
         }
     }

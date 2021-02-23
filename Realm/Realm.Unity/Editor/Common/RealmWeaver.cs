@@ -571,7 +571,7 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            if (!prop.IsMixed())
+            if (!prop.IsRealmValue())
             {
                 var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
                 {
@@ -763,7 +763,7 @@ Analytics payload
             il.Append(il.Create(OpCodes.Ldstr, columnName));
             il.Append(il.Create(OpCodes.Ldarg_1));
 
-            if (!prop.IsMixed())
+            if (!prop.IsRealmValue())
             {
                 var convertType = prop.PropertyType;
                 if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
@@ -893,7 +893,7 @@ Analytics payload
                                               property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
                                               property.IsDecimal() ||
                                               property.IsDecimal128() ||
-                                              property.IsMixed() ||
+                                              property.IsRealmValue() ||
                                               property.IsObjectId() ||
                                               property.IsGuid();
 

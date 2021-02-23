@@ -154,7 +154,7 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.FullName == StringTypeName;
     }
 
-    internal static bool IsMixed(this PropertyDefinition property)
+    internal static bool IsRealmValue(this PropertyDefinition property)
     {
         return property.PropertyType.FullName == RealmValueTypeName;
     }
