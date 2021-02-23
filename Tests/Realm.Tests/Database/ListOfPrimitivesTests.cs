@@ -307,7 +307,7 @@ namespace Realms.Tests.Database
             new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c") },
             new Guid?[] { null },
             new Guid?[] { Guid.Empty, Guid.NewGuid() },
-            new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.NewGuid(), null},
+            new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.NewGuid(), null },
         };
 
         public static IEnumerable<object> GuidTestValues()

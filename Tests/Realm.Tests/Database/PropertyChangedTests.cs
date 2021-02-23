@@ -241,11 +241,6 @@ namespace Realms.Tests.Database
         [Test]
         public void MultipleManagedObjects()
         {
-            if (TestHelpers.IgnoreOnWindows("ExternalCommitHelper hangs on Windows in this test. Reenable when we have proper condvar."))
-            {
-                return;
-            }
-
             var firstNotifiedPropertyNames = new List<string>();
             var secondNotifiedPropertyNames = new List<string>();
             var first = new Person();
@@ -408,33 +403,29 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
         {
-            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
-
             TestHelpers.RunAsyncTest(async () =>
             {
                 var notifiedPropertyNames = new List<string>();
                 WeakReference personReference = null;
-                new Action(() =>
+                var person = new Person();
+                _realm.Write(() => _realm.Add(person));
+
+                person.PropertyChanged += (sender, e) =>
                 {
-                    var person = new Person();
-                    _realm.Write(() => _realm.Add(person));
+                    notifiedPropertyNames.Add(e.PropertyName);
+                };
 
-                    person.PropertyChanged += (sender, e) =>
-                    {
-                        notifiedPropertyNames.Add(e.PropertyName);
-                    };
+                personReference = new WeakReference(person);
 
-                    personReference = new WeakReference(person);
+                _realm.Write(() => person.FirstName = "Peter");
 
-                    _realm.Write(() => person.FirstName = "Peter");
-
-                    // Sanity check
-                    _realm.Refresh();
-                    Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
-                })();
+                // Sanity check
+                _realm.Refresh();
+                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
                 notifiedPropertyNames.Clear();
 
+                person = null;
                 while (personReference.IsAlive)
                 {
                     await Task.Yield();
@@ -691,7 +682,7 @@ namespace Realms.Tests.Database
             person.PropertyChanged -= handler;
         }
 
-        [Test, NUnit.Framework.Explicit("After remove + rollback, the object handle is invalid - https://github.com/realm/realm-dotnet/issues/1332")]
+        [Test, Ignore("After remove + rollback, the object handle is invalid - https://github.com/realm/realm-dotnet/issues/1332")]
         public void ManagedObject_WhenSubscribedDuringDeletion_AfterRollback_ShouldReceiveNotifications()
         {
             var notifiedPropertyNames = new List<string>();

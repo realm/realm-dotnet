@@ -243,6 +243,89 @@ namespace Realms.Tests
         public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
     }
 
+    public class DictionariesObject : RealmObject
+    {
+        public IDictionary<string, char> CharDictionary { get; }
+
+        public IDictionary<string, byte> ByteDictionary { get; }
+
+        public IDictionary<string, short> Int16Dictionary { get; }
+
+        public IDictionary<string, int> Int32Dictionary { get; }
+
+        public IDictionary<string, long> Int64Dictionary { get; }
+
+        public IDictionary<string, float> SingleDictionary { get; }
+
+        public IDictionary<string, double> DoubleDictionary { get; }
+
+        public IDictionary<string, bool> BooleanDictionary { get; }
+
+        public IDictionary<string, decimal> DecimalDictionary { get; }
+
+        public IDictionary<string, Decimal128> Decimal128Dictionary { get; }
+
+        public IDictionary<string, ObjectId> ObjectIdDictionary { get; }
+
+        [Required]
+        public IDictionary<string, string> StringDictionary { get; }
+
+        public IDictionary<string, string> NullableStringDictionary { get; }
+
+        public IDictionary<string, byte[]> ByteArrayDictionary { get; }
+
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDictionary { get; }
+
+        public IDictionary<string, char?> NullableCharDictionary { get; }
+
+        public IDictionary<string, byte?> NullableByteDictionary { get; }
+
+        public IDictionary<string, short?> NullableInt16Dictionary { get; }
+
+        public IDictionary<string, int?> NullableInt32Dictionary { get; }
+
+        public IDictionary<string, long?> NullableInt64Dictionary { get; }
+
+        public IDictionary<string, float?> NullableSingleDictionary { get; }
+
+        public IDictionary<string, double?> NullableDoubleDictionary { get; }
+
+        public IDictionary<string, bool?> NullableBooleanDictionary { get; }
+
+        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDictionary { get; }
+
+        public IDictionary<string, decimal?> NullableDecimalDictionary { get; }
+
+        public IDictionary<string, Decimal128?> NullableDecimal128Dictionary { get; }
+
+        public IDictionary<string, ObjectId?> NullableObjectIdDictionary { get; }
+
+        public IDictionary<string, RealmInteger<byte>> ByteCounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<short>> Int16CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<int>> Int32CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<long>> Int64CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDictionary { get; }
+
+        public IDictionary<string, byte[]> NullableBinaryDictionary { get; }
+
+        [Required]
+        public IDictionary<string, byte[]> BinaryDictionary { get; }
+
+        public IDictionary<string, IntPropertyObject> ObjectDictionary { get; }
+
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+    }
+
     public class CounterObject : RealmObject
     {
         [PrimaryKey]
@@ -493,6 +576,11 @@ namespace Realms.Tests
         public int Int { get; set; }
     }
 
+    public class EmbeddedIntPropertyObject : RealmObject
+    {
+        public int Int { get; set; }
+    }
+
     public class RecursiveBacklinksObject : RealmObject
     {
         public int Id { get; set; }
@@ -556,6 +644,8 @@ namespace Realms.Tests
         public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
 
         public EmbeddedLevel1 RecursiveObject { get; set; }
+
+        public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
     }
 
     public class EmbeddedAllTypesObject : EmbeddedObject

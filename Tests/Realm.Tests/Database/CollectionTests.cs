@@ -246,7 +246,7 @@ namespace Realms.Tests.Database
             Assert.That(items, Is.EqualTo(Enumerable.Range(0, 10)));
         }
 
-        [Test, Ignore("Regression in Core, unignore when https://github.com/realm/realm-core/pull/4122 is merged.")]
+        [Test]
         public void ObjectList_WhenEnumeratingAndRemovingFromRealm_ShouldBeStable()
         {
             var container = new ContainerObject();
@@ -611,7 +611,7 @@ namespace Realms.Tests.Database
         {
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("No property 'Foo' on object of type 'A'"));
+                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property: 'Foo'"));
         }
 
         [Test]

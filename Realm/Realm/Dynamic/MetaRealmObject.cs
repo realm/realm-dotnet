@@ -78,78 +78,63 @@ namespace Realms.Dynamic
                 arguments.Add(Expression.Field(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
-                switch (property.Type.UnderlyingType())
+                getter = property.Type.UnderlyingType() switch
                 {
-                    case PropertyType.Int:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<long?>) : GetGetMethod(DummyHandle.GetList<long>);
-                        break;
-                    case PropertyType.Bool:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<bool?>) : GetGetMethod(DummyHandle.GetList<bool>);
-                        break;
-                    case PropertyType.Float:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<float?>) : GetGetMethod(DummyHandle.GetList<float>);
-                        break;
-                    case PropertyType.Double:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<double?>) : GetGetMethod(DummyHandle.GetList<double>);
-                        break;
-                    case PropertyType.String:
-                        getter = GetGetMethod(DummyHandle.GetList<string>);
-                        break;
-                    case PropertyType.Data:
-                        getter = GetGetMethod(DummyHandle.GetList<byte[]>);
-                        break;
-                    case PropertyType.Date:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetList<DateTimeOffset>);
-                        break;
-                    case PropertyType.ObjectId:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<ObjectId?>) : GetGetMethod(DummyHandle.GetList<ObjectId>);
-                        break;
-                    case PropertyType.Decimal:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<Decimal128?>) : GetGetMethod(DummyHandle.GetList<Decimal128>);
-                        break;
-                    case PropertyType.Object:
-                        getter = IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetList<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetList<DynamicRealmObject>);
-                        break;
-                }
+                    PropertyType.Int => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<long?>) : GetGetMethod(DummyHandle.GetList<long>),
+                    PropertyType.Bool => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<bool?>) : GetGetMethod(DummyHandle.GetList<bool>),
+                    PropertyType.Float => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<float?>) : GetGetMethod(DummyHandle.GetList<float>),
+                    PropertyType.Double => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<double?>) : GetGetMethod(DummyHandle.GetList<double>),
+                    PropertyType.String => GetGetMethod(DummyHandle.GetList<string>),
+                    PropertyType.Data => GetGetMethod(DummyHandle.GetList<byte[]>),
+                    PropertyType.Date => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetList<DateTimeOffset>),
+                    PropertyType.ObjectId => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<ObjectId?>) : GetGetMethod(DummyHandle.GetList<ObjectId>),
+                    PropertyType.Decimal => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<Decimal128?>) : GetGetMethod(DummyHandle.GetList<Decimal128>),
+                    PropertyType.Guid => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<Guid?>) : GetGetMethod(DummyHandle.GetList<Guid>),
+                    PropertyType.Object => IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetList<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetList<DynamicRealmObject>),
+                    _ => throw new NotSupportedException($"Unable to get a list of {property.Type.UnderlyingType()}."),
+                };
             }
             else if (property.Type.IsSet())
             {
                 arguments.Add(Expression.Field(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
-                switch (property.Type.UnderlyingType())
+                getter = property.Type.UnderlyingType() switch
                 {
-                    case PropertyType.Int:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<long?>) : GetGetMethod(DummyHandle.GetSet<long>);
-                        break;
-                    case PropertyType.Bool:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<bool?>) : GetGetMethod(DummyHandle.GetSet<bool>);
-                        break;
-                    case PropertyType.Float:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<float?>) : GetGetMethod(DummyHandle.GetSet<float>);
-                        break;
-                    case PropertyType.Double:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<double?>) : GetGetMethod(DummyHandle.GetSet<double>);
-                        break;
-                    case PropertyType.String:
-                        getter = GetGetMethod(DummyHandle.GetSet<string>);
-                        break;
-                    case PropertyType.Data:
-                        getter = GetGetMethod(DummyHandle.GetSet<byte[]>);
-                        break;
-                    case PropertyType.Date:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetSet<DateTimeOffset>);
-                        break;
-                    case PropertyType.Object:
-                        getter = IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetSet<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetSet<DynamicRealmObject>);
-                        break;
-                    case PropertyType.ObjectId:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<ObjectId?>) : GetGetMethod(DummyHandle.GetSet<ObjectId>);
-                        break;
-                    case PropertyType.Decimal:
-                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<Decimal128?>) : GetGetMethod(DummyHandle.GetSet<Decimal128>);
-                        break;
-                }
+                    PropertyType.Int => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<long?>) : GetGetMethod(DummyHandle.GetSet<long>),
+                    PropertyType.Bool => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<bool?>) : GetGetMethod(DummyHandle.GetSet<bool>),
+                    PropertyType.Float => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<float?>) : GetGetMethod(DummyHandle.GetSet<float>),
+                    PropertyType.Double => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<double?>) : GetGetMethod(DummyHandle.GetSet<double>),
+                    PropertyType.String => GetGetMethod(DummyHandle.GetSet<string>),
+                    PropertyType.Data => GetGetMethod(DummyHandle.GetSet<byte[]>),
+                    PropertyType.Date => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetSet<DateTimeOffset>),
+                    PropertyType.Object => IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetSet<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetSet<DynamicRealmObject>),
+                    PropertyType.ObjectId => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<ObjectId?>) : GetGetMethod(DummyHandle.GetSet<ObjectId>),
+                    PropertyType.Decimal => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<Decimal128?>) : GetGetMethod(DummyHandle.GetSet<Decimal128>),
+                    PropertyType.Guid => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<Guid?>) : GetGetMethod(DummyHandle.GetSet<Guid>),
+                    _ => throw new NotSupportedException($"Unable to get a set of {property.Type.UnderlyingType()}."),
+                };
+            }
+            else if (property.Type.IsDictionary())
+            {
+                arguments.Add(Expression.Field(self, RealmObjectRealmField));
+                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
+                getter = property.Type.UnderlyingType() switch
+                {
+                    PropertyType.Int => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<long?>) : GetGetMethod(DummyHandle.GetDictionary<long>),
+                    PropertyType.Bool => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<bool?>) : GetGetMethod(DummyHandle.GetDictionary<bool>),
+                    PropertyType.Float => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<float?>) : GetGetMethod(DummyHandle.GetDictionary<float>),
+                    PropertyType.Double => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<double?>) : GetGetMethod(DummyHandle.GetDictionary<double>),
+                    PropertyType.String => GetGetMethod(DummyHandle.GetDictionary<string>),
+                    PropertyType.Data => GetGetMethod(DummyHandle.GetDictionary<byte[]>),
+                    PropertyType.Date => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetDictionary<DateTimeOffset>),
+                    PropertyType.Object => IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetDictionary<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetDictionary<DynamicRealmObject>),
+                    PropertyType.ObjectId => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<ObjectId?>) : GetGetMethod(DummyHandle.GetDictionary<ObjectId>),
+                    PropertyType.Decimal => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<Decimal128?>) : GetGetMethod(DummyHandle.GetDictionary<Decimal128>),
+                    PropertyType.Guid => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<Guid?>) : GetGetMethod(DummyHandle.GetDictionary<Guid>),
+                    _ => throw new NotSupportedException($"Unable to get a dictionary of {property.Type.UnderlyingType()}."),
+                };
             }
             else
             {
@@ -200,7 +185,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
         {
-            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsArray() || property.Type.IsSet())
+            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsCollection())
             {
                 return base.BindSetMember(binder, value);
             }

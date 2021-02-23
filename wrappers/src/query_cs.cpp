@@ -132,7 +132,7 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
         case realm_value_type::RLM_TYPE_NULL:
             throw std::runtime_error("Comparing null values should be done via query_null_equal. If you get this error, please report it to help@realm.io.");
         case realm_value_type::RLM_TYPE_BOOL:
-            query.equal(std::move(col_key), primitive.boolean);
+            query.equal(std::move(col_key), primitive.boolean());
             break;
         case realm_value_type::RLM_TYPE_INT:
             query.equal(std::move(col_key), primitive.integer);
@@ -173,7 +173,7 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
         case realm_value_type::RLM_TYPE_NULL:
             throw std::runtime_error("Comparing null values should be done via query_null_equal. If you get this error, please report it to help@realm.io.");
         case realm_value_type::RLM_TYPE_BOOL:
-            query.not_equal(std::move(col_key), primitive.boolean);
+            query.not_equal(std::move(col_key), primitive.boolean());
             break;
         case realm_value_type::RLM_TYPE_INT:
             query.not_equal(std::move(col_key), primitive.integer);

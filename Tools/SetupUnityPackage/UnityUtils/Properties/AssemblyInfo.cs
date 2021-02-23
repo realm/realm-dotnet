@@ -23,3 +23,8 @@ using UnityEngine.Scripting;
 // it is referenced by other assemblies.
 // More info at https://docs.unity3d.com/ScriptReference/Scripting.AlwaysLinkAssemblyAttribute.html
 [assembly: AlwaysLinkAssembly]
+
+// With "Low Stripping Level" this assembly attribute is not needed, but
+// as a measure of precaution it's left since issues could arise at medium
+// and high levels of stripping
+[assembly: Preserve]

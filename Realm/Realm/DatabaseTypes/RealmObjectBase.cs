@@ -30,6 +30,7 @@ using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -110,7 +111,7 @@ namespace Realms
         /// and will not update when writes are made to the Realm. Unlike live objects, frozen
         /// objects can be used across threads.
         /// </summary>
-        /// <seealso cref="FreezeInPlace"/>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         public bool IsFrozen => _objectHandle?.IsFrozen == true;
 
         /// <summary>
@@ -133,35 +134,7 @@ namespace Realms
         /// </remarks>
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
-        /// <summary>
-        /// Freezes this object in place. The frozen object can be accessed from any thread.
-        /// <para/>
-        /// Freezing a RealmObjectBase also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
-        /// original object is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
-        /// object will be closed as well.
-        /// <para/>
-        /// Frozen objects can be queried as normal, but trying to mutate it in any way or attempting to register a listener will
-        /// throw a <see cref="RealmFrozenException"/>.
-        /// <para/>
-        /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
-        /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
-        /// </summary>
-        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
-        public void FreezeInPlace()
-        {
-            if (IsFrozen)
-            {
-                return;
-            }
-
-            UnsubscribeFromNotifications();
-            _propertyChanged = null;
-            var oldHandle = _objectHandle;
-            (_realm, _objectHandle) = FreezeImpl();
-            oldHandle.Dispose();
-        }
-
-        internal (Realm FrozenRealm, ObjectHandle FrozenHandle) FreezeImpl()
+        internal RealmObjectBase FreezeImpl()
         {
             if (!IsManaged)
             {
@@ -170,11 +143,11 @@ namespace Realms
 
             var frozenRealm = Realm.Freeze();
             var frozenHandle = _objectHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return (frozenRealm, frozenHandle);
+            return frozenRealm.MakeObject(ObjectMetadata, frozenHandle);
         }
 
         /// <inheritdoc/>
-        Metadata IThreadConfined.Metadata => ObjectMetadata;
+        Metadata IMetadataObject.Metadata => ObjectMetadata;
 
         /// <inheritdoc/>
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
@@ -244,6 +217,14 @@ namespace Realms
             return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
+        protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
+            return _objectHandle.GetDictionary<TValue>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+        }
+
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase
         {
@@ -275,7 +256,7 @@ namespace Realms
             Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
             Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
 
-            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
+            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, relatedMeta.PropertyIndices[property]);
             if (relatedMeta.Schema.IsEmbedded)
             {
                 return new RealmResults<EmbeddedObject>(Realm, resultsHandle, relatedMeta);
@@ -455,7 +436,7 @@ namespace Realms
 
         internal class Metadata
         {
-            internal readonly TableHandle Table;
+            internal readonly TableKey TableKey;
 
             internal readonly IRealmObjectHelper Helper;
 
@@ -463,9 +444,9 @@ namespace Realms
 
             internal readonly ObjectSchema Schema;
 
-            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
+            public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
             {
-                Table = table;
+                TableKey = tableKey;
                 Helper = helper;
                 PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
                 Schema = schema;

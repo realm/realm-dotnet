@@ -203,34 +203,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_Freeze_FreezesInPlace()
-        {
-            var obj = new Owner
-            {
-                Name = "Peter",
-                TopDog = new Dog
-                {
-                    Name = "Doggo"
-                }
-            };
-            _realm.Write(() =>
-            {
-                _realm.Add(obj);
-            });
-
-            Assert.That(obj.IsManaged);
-
-            FreezeInPlace(obj);
-
-            Assert.That(obj.IsManaged);
-            Assert.That(obj.IsValid);
-            Assert.That(obj.IsFrozen);
-            Assert.That(obj.Realm.IsFrozen);
-            Assert.That(obj.Dogs.AsRealmCollection().IsFrozen);
-            Assert.That(obj.TopDog.IsFrozen);
-        }
-
-        [Test]
         public void FrozenObject_GetsGarbageCollected()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -243,8 +215,8 @@ namespace Realms.Tests.Database
                     {
                         _realm.Add(owner);
                     });
-                    owner.FreezeInPlace();
-                    objRef = new WeakReference(owner);
+                    var frozenOwner = owner.Freeze();
+                    objRef = new WeakReference(frozenOwner);
                 })();
 
                 while (objRef.IsAlive)
@@ -260,33 +232,10 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_FreezeInPlace_WhenObjectIsUnmanaged_Throws()
-        {
-            var owner = new Owner();
-            Assert.Throws<RealmException>(() => owner.FreezeInPlace(), "Unmanaged objects cannot be frozen.");
-        }
-
-        [Test]
         public void RealmObject_Freeze_WhenObjectIsUnmanaged_Throws()
         {
             var owner = new Owner();
             Assert.Throws<RealmException>(() => owner.Freeze(), "Unmanaged objects cannot be frozen.");
-        }
-
-        [Test]
-        public void RealmObject_FreezeInPlace_WhenFrozen_DoesNothing()
-        {
-            var obj = new Owner();
-            _realm.Write(() =>
-            {
-                _realm.Add(obj);
-            });
-            FreezeInPlace(obj);
-
-            var frozenRealm = obj.Realm;
-
-            FreezeInPlace(obj);
-            Assert.That(object.ReferenceEquals(frozenRealm, obj.Realm));
         }
 
         [Test]
@@ -330,9 +279,9 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            FreezeInPlace(obj);
+            var frozenObj = obj.Freeze();
 
-            Assert.Throws<RealmFrozenException>(() => obj.PropertyChanged += (_, __) => { }, "It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
+            Assert.Throws<RealmFrozenException>(() => frozenObj.PropertyChanged += (_, __) => { }, "It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
         }
 
         [Test]
@@ -383,17 +332,13 @@ namespace Realms.Tests.Database
         [Test]
         public void FrozenObject_DoesntGetDeleted()
         {
-            var peter = new Owner
+            var frozenPeter = _realm.Write(() =>
             {
-                Name = "Peter"
-            };
-
-            _realm.Write(() =>
-            {
-                _realm.Add(peter);
-            });
-
-            FreezeInPlace(peter);
+                return _realm.Add(new Owner
+                {
+                    Name = "Peter"
+                });
+            }).Freeze();
 
             _realm.Write(() =>
             {
@@ -401,8 +346,8 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(_realm.All<Owner>(), Is.Empty);
-            Assert.That(peter.IsValid);
-            Assert.That(peter.Name, Is.EqualTo("Peter"));
+            Assert.That(frozenPeter.IsValid);
+            Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
         }
 
         [Serializable]

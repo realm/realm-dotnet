@@ -2,6 +2,8 @@ set(SOURCES
     debug.cpp
     error_handling.cpp
     list_cs.cpp
+    set_cs.cpp
+    dictionary_cs.cpp
     marshalling.cpp
     object_cs.cpp
     query_cs.cpp
@@ -11,7 +13,6 @@ set(SOURCES
     scheduler_cs.cpp
     schema_cs.cpp
     shared_realm_cs.cpp
-    table_cs.cpp
     app_cs.cpp
     async_open_task_cs.cpp
     mongo_collection_cs.cpp
@@ -38,6 +39,8 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wno-missing-prototypes)
 endif()
 
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
 set_target_properties(realm-wrappers PROPERTIES
   FRAMEWORK ${BUILD_APPLE_FRAMEWORK}
@@ -45,6 +48,11 @@ set_target_properties(realm-wrappers PROPERTIES
   MACOSX_FRAMEWORK_SHORT_VERSION_STRING "10.0.0"
   MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
 )
+
+if (ANDROID)
+    target_link_options(realm-wrappers PRIVATE LINKER:-gc-sections)
+endif()
+
 target_link_libraries(realm-wrappers Realm::ObjectStore Realm::QueryParser)
 
 if(CMAKE_GENERATOR_PLATFORM)

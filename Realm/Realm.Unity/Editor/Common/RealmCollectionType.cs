@@ -23,5 +23,6 @@ namespace RealmWeaver
         None,
         IList,
         ISet,
+        IDictionary,
     }
 }

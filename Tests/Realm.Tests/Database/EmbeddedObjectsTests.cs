@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -66,9 +67,12 @@ namespace Realms.Tests.Database
                     }
                 }
             };
+            obj.DictionaryOfAllTypesObjects.Add("foo", new EmbeddedAllTypesObject());
 
             Assert.That(obj.AllTypesObject.NullableSingleProperty, Is.EqualTo(1.4f));
             Assert.That(obj.ListOfAllTypesObjects.Count, Is.EqualTo(1));
+            Assert.That(obj.DictionaryOfAllTypesObjects.Count, Is.EqualTo(1));
+            Assert.That(obj.DictionaryOfAllTypesObjects.ContainsKey("foo"));
             Assert.That(obj.RecursiveObject.String, Is.EqualTo("first"));
             Assert.That(obj.RecursiveObject.Child.String, Is.EqualTo("second"));
             Assert.That(obj.RecursiveObject.Child.Child.String, Is.EqualTo("third"));
@@ -186,6 +190,38 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void EmbeddedParent_WithDictionary_CanBeAddedToRealm()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                DictionaryOfAllTypesObjects =
+                {
+                    ["first"] = new EmbeddedAllTypesObject
+                    {
+                        Int32Property = 1
+                    },
+                    ["second"] = new EmbeddedAllTypesObject
+                    {
+                        Int32Property = 2
+                    }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(parent.IsManaged);
+            Assert.That(parent.DictionaryOfAllTypesObjects.AsRealmCollection().IsValid);
+            Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(2));
+            Assert.That(parent.DictionaryOfAllTypesObjects.ContainsKey("first"));
+            Assert.That(parent.DictionaryOfAllTypesObjects.ContainsKey("second"));
+            Assert.That(parent.DictionaryOfAllTypesObjects["first"].Int32Property, Is.EqualTo(1));
+            Assert.That(parent.DictionaryOfAllTypesObjects["second"].Int32Property, Is.EqualTo(2));
+        }
+
+        [Test]
         public void ListOfEmbeddedObjects_CanAddItems()
         {
             var parent = new ObjectWithEmbeddedProperties();
@@ -206,6 +242,30 @@ namespace Realms.Tests.Database
             Assert.That(parent.ListOfAllTypesObjects, Is.SameAs(list));
             Assert.That(list.Count, Is.EqualTo(1));
             Assert.That(list[0].DecimalProperty, Is.EqualTo(123.456M));
+        }
+
+        [Test]
+        public void DictionaryOfEmbeddedObjects_CanAddItems()
+        {
+            var parent = new ObjectWithEmbeddedProperties();
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            var dict = parent.DictionaryOfAllTypesObjects;
+            _realm.Write(() =>
+            {
+                parent.DictionaryOfAllTypesObjects.Add("first", new EmbeddedAllTypesObject
+                {
+                    DecimalProperty = 123.456M
+                });
+            });
+
+            Assert.That(parent.DictionaryOfAllTypesObjects, Is.SameAs(dict));
+            Assert.That(dict.Count, Is.EqualTo(1));
+            Assert.That(dict.ContainsKey("first"));
+            Assert.That(dict["first"].DecimalProperty, Is.EqualTo(123.456M));
         }
 
         [Test]
@@ -292,6 +352,42 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void DictionaryOfEmbeddedObjects_CanSetItems()
+        {
+            var parent = new ObjectWithEmbeddedProperties();
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            var dict = parent.DictionaryOfAllTypesObjects;
+            _realm.Write(() =>
+            {
+                parent.DictionaryOfAllTypesObjects.Add("a", new EmbeddedAllTypesObject
+                {
+                    StringProperty = "first"
+                });
+            });
+
+            Assert.That(dict.Count, Is.EqualTo(1));
+
+            var firstItem = dict["a"];
+            Assert.That(firstItem.StringProperty, Is.EqualTo("first"));
+
+            _realm.Write(() =>
+            {
+                dict["a"] = new EmbeddedAllTypesObject
+                {
+                    StringProperty = "updated"
+                };
+            });
+
+            Assert.That(dict.Count, Is.EqualTo(1));
+            Assert.That(firstItem.IsValid, Is.False);
+            Assert.That(dict["a"].StringProperty, Is.EqualTo("updated"));
+        }
+
+        [Test]
         public void ListOfEmbeddedObjects_WhenItemIsRemoved_GetsDeleted()
         {
             var parent = new ObjectWithEmbeddedProperties
@@ -331,6 +427,49 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(parent.ListOfAllTypesObjects.Count, Is.EqualTo(0));
+            Assert.That(secondItem.IsValid, Is.False);
+        }
+
+        [Test]
+        public void DictionaryOfEmbeddedObjects_WhenItemIsRemoved_GetsDeleted()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                DictionaryOfAllTypesObjects = { ["abc"] = new EmbeddedAllTypesObject() }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(1));
+
+            var firstItem = parent.DictionaryOfAllTypesObjects["abc"];
+
+            _realm.Write(() =>
+            {
+                parent.DictionaryOfAllTypesObjects.Remove("abc");
+            });
+
+            Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(0));
+            Assert.That(firstItem.IsValid, Is.False);
+
+            _realm.Write(() =>
+            {
+                parent.DictionaryOfAllTypesObjects.Add("boo", new EmbeddedAllTypesObject());
+            });
+
+            Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(1));
+
+            var secondItem = parent.DictionaryOfAllTypesObjects["boo"];
+
+            _realm.Write(() =>
+            {
+                parent.DictionaryOfAllTypesObjects.Remove(new KeyValuePair<string, EmbeddedAllTypesObject>("boo", secondItem));
+            });
+
+            Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(0));
             Assert.That(secondItem.IsValid, Is.False);
         }
 
@@ -387,7 +526,7 @@ namespace Realms.Tests.Database
                     parent.RecursiveObject.Children.Add(parent.RecursiveObject.Child);
                 });
             });
-            Assert.That(ex.Message, Is.EqualTo("Can't add, set, or insert an embedded object that is already managed."));
+            Assert.That(ex.Message, Is.EqualTo("Can't add to the collection an embedded object that is already managed."));
         }
 
         [Test]

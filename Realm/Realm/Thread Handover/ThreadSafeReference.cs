@@ -81,11 +81,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> contained in the query.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Query{T})"/> on a different thread.</returns>
-        public static Query<T> Create<T>(IQueryable<T> value)
-            where T : RealmObjectBase
-        {
-            return new Query<T>(value);
-        }
+        public static Query<T> Create<T>(IQueryable<T> value) => new Query<T>(value);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Object{T}"/> class.
@@ -108,10 +104,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(List{T})"/> on a different thread.</returns>
-        public static List<T> Create<T>(IList<T> value)
-        {
-            return new List<T>(value);
-        }
+        public static List<T> Create<T>(IList<T> value) => new List<T>(value);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Set{T}"/> class.
@@ -122,10 +115,18 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of the objects contained in the set.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Set{T})"/> on a different thread.</returns>
-        public static Set<T> Create<T>(ISet<T> value)
-        {
-            return new Set<T>(value);
-        }
+        public static Set<T> Create<T>(ISet<T> value) => new Set<T>(value);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Dictionary{TValue}"/> class.
+        /// </summary>
+        /// <param name="value">
+        /// The thread-confined <see cref="IDictionary{String, TValue}"/> to create a thread-safe reference to. It must be a collection
+        /// that is a managed property of a <see cref="RealmObject"/> or an <see cref="EmbeddedObject"/>.
+        /// </param>
+        /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{TValue}(Dictionary{TValue})"/> on a different thread.</returns>
+        public static Dictionary<TValue> Create<TValue>(IDictionary<string, TValue> value) => new Dictionary<TValue>(value);
 
         #endregion
 
@@ -148,7 +149,6 @@ namespace Realms
         /// </remarks>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> contained in the query.</typeparam>
         public class Query<T> : ThreadSafeReference
-            where T : RealmObjectBase
         {
             internal Query(IQueryable<T> value) : base((RealmResults<T>)value, Type.Query)
             {
@@ -228,14 +228,38 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// A reference to a <see cref="IDictionary{String, TValue}"/> intended to be passed between threads.
+        /// <para/>
+        /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
+        /// <see cref="Realm.ResolveReference{TValue}(Dictionary{TValue})"/>.
+        /// </summary>
+        /// <remarks>
+        /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
+        /// <para/>
+        /// Failing to resolve a <see cref="ThreadSafeReference"/> will result in the source version of the
+        /// Realm being pinned until the reference is deallocated.
+        /// <para/>
+        /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
+        /// will be retained until all references have been resolved or deallocated.
+        /// </remarks>
+        /// <typeparam name="TValue">The type of the dictionary values.</typeparam>
+        public class Dictionary<TValue> : ThreadSafeReference
+        {
+            internal Dictionary(IDictionary<string, TValue> value) : base((RealmDictionary<TValue>)value, Type.Dictionary)
+            {
+            }
+        }
+
         #endregion
 
-        internal enum Type
+        internal enum Type : byte
         {
             Object,
             List,
             Query,
-            Set
+            Set,
+            Dictionary,
         }
     }
 }

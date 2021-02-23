@@ -91,6 +91,8 @@ namespace Realms
             }
         }
 
+        protected override SnapshotDelegate SnapshotCore { get; }
+
         // keep this one even though warned that it is not used. It is in fact used by marshalling
         // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
@@ -101,6 +103,7 @@ namespace Realms
         [Preserve]
         public ResultsHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
+            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
         }
 
         protected override void Unbind()
@@ -108,8 +111,12 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        protected override void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_value(this, index, out result, out nativeException);
+        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        {
+            NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
+            ex.ThrowIfNecessary();
+            return ToRealmValue(result, metadata, realm);
+        }
 
         public override int Count()
         {
@@ -177,14 +184,6 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             return new ThreadSafeReferenceHandle(result);
-        }
-
-        public override ResultsHandle Snapshot()
-        {
-            var ptr = NativeMethods.snapshot(this, out var ex);
-            ex.ThrowIfNecessary();
-
-            return new ResultsHandle(this, ptr);
         }
 
         public override ResultsHandle GetFilteredResults(string query)

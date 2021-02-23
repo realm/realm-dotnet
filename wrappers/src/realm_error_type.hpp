@@ -73,6 +73,8 @@ namespace realm {
         RealmClosed = 24,
         
         ObjectManagedByAnotherRealm = 25,
+
+        KeyAlreadyExists = 26,
      
         RealmDotNetExceptionDuringMigration = 30,
 

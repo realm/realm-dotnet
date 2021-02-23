@@ -29,10 +29,6 @@ namespace Realms.Native
     internal unsafe struct PrimitiveValue
     {
         [FieldOffset(0)]
-        [MarshalAs(UnmanagedType.U1)]
-        private bool bool_value;
-
-        [FieldOffset(0)]
         private long int_value;
 
         [FieldOffset(0)]
@@ -62,6 +58,9 @@ namespace Realms.Native
         private BinaryValue data_value;
 
         [FieldOffset(0)]
+        private TimestampValue timestamp_value;
+
+        [FieldOffset(0)]
         private LinkValue link_value;
 
         [FieldOffset(16)]
@@ -76,7 +75,7 @@ namespace Realms.Native
         public static PrimitiveValue Bool(bool value) => new PrimitiveValue
         {
             Type = RealmValueType.Bool,
-            bool_value = value
+            int_value = value ? 1 : 0,
         };
 
         public static PrimitiveValue NullableBool(bool? value) => value.HasValue ? Bool(value.Value) : Null();
@@ -108,7 +107,7 @@ namespace Realms.Native
         public static PrimitiveValue Date(DateTimeOffset value) => new PrimitiveValue
         {
             Type = RealmValueType.Date,
-            int_value = value.ToUniversalTime().Ticks
+            timestamp_value = new TimestampValue(value.ToUniversalTime().Ticks)
         };
 
         public static PrimitiveValue NullableDate(DateTimeOffset? value) => value.HasValue ? Date(value.Value) : Null();
@@ -202,7 +201,7 @@ namespace Realms.Native
             };
         }
 
-        public bool AsBool() => bool_value;
+        public bool AsBool() => int_value == 1;
 
         public long AsInt() => int_value;
 
@@ -210,7 +209,7 @@ namespace Realms.Native
 
         public double AsDouble() => double_value;
 
-        public DateTimeOffset AsDate() => new DateTimeOffset(int_value, TimeSpan.Zero);
+        public DateTimeOffset AsDate() => new DateTimeOffset(timestamp_value.ToTicks(), TimeSpan.Zero);
 
         public Decimal128 AsDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
@@ -274,6 +273,26 @@ namespace Realms.Native
         private struct LinkValue
         {
             public IntPtr object_ptr;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct TimestampValue
+        {
+            private const long UnixEpochTicks = 621355968000000000;
+            private const long TicksPerSecond = 10000000;
+            private const long NanosecondsPerTick = 100;
+
+            private long seconds;
+            private int nanoseconds;
+
+            public TimestampValue(long ticks)
+            {
+                var unix_ticks = ticks - UnixEpochTicks;
+                seconds = unix_ticks / TicksPerSecond;
+                nanoseconds = (int)((unix_ticks % TicksPerSecond) * NanosecondsPerTick);
+            }
+
+            public long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
         }
     }
 }

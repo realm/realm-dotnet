@@ -77,7 +77,6 @@ typedef struct realm_uuid {
 typedef struct realm_value {
     union {
         int64_t integer;
-        bool boolean;
         realm_string_t string;
         realm_binary_t binary;
         realm_timestamp_t timestamp;
@@ -95,6 +94,10 @@ typedef struct realm_value {
 
     bool is_null() {
         return type == realm_value_type::RLM_TYPE_NULL;
+    }
+
+    bool boolean() {
+        return integer == 1;
     }
 } realm_value_t;
 
@@ -174,7 +177,7 @@ static inline ObjectId from_capi(realm_object_id_t oid)
 static inline realm_uuid_t to_capi(UUID uuid)
 {
     const auto& bytes = uuid.to_bytes();
-    realm_uuid_t result;
+    realm_uuid_t result{};
     for (int i = 0; i < 16; i++)
     {
         result.bytes[i] = bytes[i];
@@ -257,6 +260,16 @@ static inline std::string to_string(PropertyType type)
     return to_string(to_capi(type));
 }
 
+static inline Mixed from_capi(Object* obj, bool isMixedColumn)
+{
+    if (!isMixedColumn)
+    {
+        return Mixed{ obj->obj().get_key() };
+    }
+
+    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
+}
+
 static inline Mixed from_capi(realm_value_t val)
 {
     switch (val.type) {
@@ -265,7 +278,7 @@ static inline Mixed from_capi(realm_value_t val)
     case realm_value_type::RLM_TYPE_INT:
         return Mixed{ val.integer };
     case realm_value_type::RLM_TYPE_BOOL:
-        return Mixed{ val.boolean };
+        return Mixed{ val.boolean() };
     case realm_value_type::RLM_TYPE_STRING:
         return Mixed{ from_capi(val.string) };
     case realm_value_type::RLM_TYPE_BINARY:
@@ -283,20 +296,9 @@ static inline Mixed from_capi(realm_value_t val)
     case realm_value_type::RLM_TYPE_UUID:
         return Mixed{ from_capi(val.uuid) };
     case realm_value_type::RLM_TYPE_LINK:
-        REALM_TERMINATE("Can't use from_capi on values containing links.");
+        return from_capi(val.link.object, true);
     }
     REALM_TERMINATE("Invalid realm_value_t");
-}
-
-static inline Mixed from_capi(Object* obj, bool isMixedColumn)
-{
-    if (!isMixedColumn)
-    {
-        return Mixed{ obj->obj().get_key() };
-    }
-
-    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
-
 }
 
 static inline realm_value_t to_capi(Object* obj)
@@ -309,7 +311,7 @@ static inline realm_value_t to_capi(Object* obj)
 
 static inline realm_value_t to_capi(Mixed value)
 {
-    realm_value_t val;
+    realm_value_t val{};
     if (value.is_null()) {
         val.type = realm_value_type::RLM_TYPE_NULL;
     }
@@ -322,7 +324,7 @@ static inline realm_value_t to_capi(Mixed value)
         }
         case type_Bool: {
             val.type = realm_value_type::RLM_TYPE_BOOL;
-            val.boolean = value.get<bool>();
+            val.integer = value.get<bool>() ? 1 : 0;
             break;
         }
         case type_String: {
@@ -383,6 +385,33 @@ static inline realm_value_t to_capi(Mixed value)
     }
 
     return val;
+}
+
+inline realm_value_t to_capi(object_store::Dictionary& dictionary, Mixed val)
+{
+    if (val.is_null()) {
+        return to_capi(std::move(val));
+    }
+
+    switch (val.get_type()) {
+    case type_Link:
+        if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
+            return to_capi(new Object(dictionary.get_realm(), ObjLink(dictionary.get_object_schema().table_key, val.get<ObjKey>())));
+        }
+
+        REALM_UNREACHABLE();
+    case type_TypedLink:
+        return to_capi(new Object(dictionary.get_realm(), val.get_link()));
+    default:
+        return to_capi(std::move(val));
+    }
+}
+
+static inline bool are_equal(realm_value_t realm_value, Mixed mixed_value)
+{
+    // from_capi returns TypedLink for objects, but the mixed_value may contain just Link - let's ensure that we're comparing apples to apples
+    return (mixed_value.is_type(realm::DataType::Type::Link) && realm_value.type == realm_value_type::RLM_TYPE_LINK && mixed_value == from_capi(realm_value.link.object, false)) ||
+        mixed_value == from_capi(realm_value);
 }
 
 struct StringValue

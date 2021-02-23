@@ -31,12 +31,6 @@ namespace Realms.Tests
 
         protected Realm _realm => _lazyRealm.Value;
 
-        protected void FreezeInPlace(RealmObjectBase obj)
-        {
-            obj.FreezeInPlace();
-            CleanupOnTearDown(obj.Realm);
-        }
-
         protected virtual RealmConfiguration CreateConfiguration(string path) => new RealmConfiguration(path);
 
         protected T Freeze<T>(T obj)

@@ -86,8 +86,6 @@ namespace Realms.Exceptions
                     return new RealmInvalidTransactionException(message);
 
                 case RealmExceptionCodes.RealmFormatUpgradeRequired:
-                    return new RealmException(message);  // rare unrecoverable case for now
-
                 case RealmExceptionCodes.RealmSchemaMismatch:
                     return new RealmMigrationNeededException(message);
 
@@ -127,6 +125,9 @@ namespace Realms.Exceptions
 
                 case RealmExceptionCodes.ObjectManagedByAnotherRealm:
                     return new RealmObjectManagedByAnotherRealmException(message);
+
+                case RealmExceptionCodes.KeyAlreadyExists:
+                    return new ArgumentException(message);
 
                 default:
                     return new Exception(message);

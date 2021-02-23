@@ -425,11 +425,11 @@ namespace Realms.Tests.Sync
                 Assert.That(user.Profile.MaxAge, Is.EqualTo("90"));
                 Assert.That(user.Profile.PictureUrl.AbsoluteUri, Is.EqualTo("https://doe.com/mypicture"));
 
-                // TODO: add other checks once https://github.com/realm/realm-object-store/issues/1123 is implemented.
+                // TODO: add other checks once https://github.com/realm/realm-core/issues/4131 is implemented.
             });
         }
 
-        [Test, NUnit.Framework.Explicit("Requires manually getting a fb token")]
+        [Test, Ignore("Requires manually getting a fb token")]
         public void User_Facebook_LogsInAndReadsDataFromFacebook()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

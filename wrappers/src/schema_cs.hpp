@@ -23,8 +23,7 @@
 #include <realm/object-store/schema.hpp>
 #include <realm/object-store/object_schema.hpp>
 #include <realm/object-store/property.hpp>
-#include <realm/parser/parser.hpp>
-#include <realm/parser/query_builder.hpp>
+#include <realm/parser/query_parser.hpp>
 
 using namespace realm;
 

@@ -9,6 +9,7 @@ def WindowsPlatforms = [ 'Win32', 'x64' ]
 def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
 String versionSuffix = ''
+boolean enableLTO = true
 
 stage('Checkout') {
   rlmNode('docker') {
@@ -28,11 +29,7 @@ stage('Checkout') {
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
-    }
-    // TODO: temporary add a beta.X suffix for v10 releases
-    // Also update in AppHandle.cs
-    else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.4') {
-      versionSuffix = "beta.4"
+      enableLTO = false
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
@@ -41,12 +38,20 @@ stage('Checkout') {
 }
 
 stage('Build wrappers') {
+  def bashExtraArgs = ''
+  def psExtraArgs = ''
+
+  if (enableLTO) {
+    bashExtraArgs = '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
+    psExtraArgs = '-EnableLTO'
+  }
+
   def jobs = [
     'iOS': {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "./build-ios.sh --configuration=${configuration}"
+          sh "./build-ios.sh --configuration=${configuration} ${bashExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: 'ios-wrappers'
       }
@@ -55,7 +60,7 @@ stage('Build wrappers') {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode"
+          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode ${bashExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: 'macos-wrappers'
       }
@@ -64,7 +69,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh")
+          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh ${bashExtraArgs}")
         }
         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
       }
@@ -77,7 +82,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}")
+          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi} ${bashExtraArgs}")
         }
         stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
       }
@@ -90,7 +95,7 @@ stage('Build wrappers') {
       rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
+          powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform} ${psExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
         if (shouldPublishPackage()) {
@@ -106,7 +111,7 @@ stage('Build wrappers') {
       rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
+          powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform} ${psExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
         if (shouldPublishPackage()) {
@@ -320,9 +325,9 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp2.0'),
-    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
-    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp3.1'),
+    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
+    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
     '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
     '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
     '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
@@ -330,7 +335,7 @@ stage('Test') {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
         dir('Tests/Weaver/Realm.Fody.Tests') {
-          bat "dotnet run -f netcoreapp2.0 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
+          bat "dotnet run -f netcoreapp3.1 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
           reportTests 'TestResults.Weaver.xml'
         }
       }
@@ -360,8 +365,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
 
       if (isUnix()) {
         if (nodeName == 'docker') {
-          def test_runner_image = docker.image(DetermineDockerImg(targetFramework))
-          test_runner_image.pull()
+          def test_runner_image = CreateDockerContainer(targetFramework)          
           withRealmCloud(version: '2020-12-04', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
               def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
@@ -445,20 +449,24 @@ boolean shouldPublishPackage() {
   return env.BRANCH_NAME == 'master'
 }
 
-def String DetermineDockerImg(String targetFramework) {
-  String dockerImg = 'breakBuildIfNotSet'
+def CreateDockerContainer(String targetFramework) {
+  def test_runner_image
   switch(targetFramework) {
-    case 'netcoreapp2.0':
-      dockerImg = 'mcr.microsoft.com/dotnet/core/sdk:2.1'
+    case 'netcoreapp3.1':
+      // In .netcore 3.1 using msbuild extras under linux fails because of missing Microsoft.WinFX.props. This is generated by a mismatching lower/upper case for a folder name.
+      // Renaming the folders in questions fixes the issue. This action is achieved through making a custom docker container. More info can be found at https://github.com/dotnet/sdk/issues/11108
+      test_runner_image = docker.build("netcoreapp3.1_custom", "./CustomNetcore31DockerImg")
     break
     case 'net5.0':
       dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
+      test_runner_image = docker.image(dockerImg)
+      test_runner_image.pull()
     break
     default:
       echo ".NET framework ${framework.ToString()} not supported by the pipeline, yet"
     break
   }
-  return dockerImg
+  return test_runner_image
 }
 
 // Required due to JENKINS-27421

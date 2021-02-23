@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm/object-store/object_accessor.hpp>
 #include "shared_realm_cs.hpp"
 #include "error_handling.hpp"
+
+#include <realm/object-store/object_accessor.hpp>
 
 using namespace realm;
 using namespace realm::binding;

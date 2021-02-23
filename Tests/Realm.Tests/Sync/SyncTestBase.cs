@@ -56,12 +56,12 @@ namespace Realms.Tests.Sync
 
         protected override void CustomTearDown()
         {
-            base.CustomTearDown();
-
             foreach (var session in _sessions)
             {
                 session?.CloseHandle();
             }
+
+            base.CustomTearDown();
 
             foreach (var app in _apps)
             {

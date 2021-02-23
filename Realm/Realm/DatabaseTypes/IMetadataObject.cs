@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms
 {
-    internal static class ErrorMessages
+    /// <summary>
+    /// Represents a database object (object/collection/query) that has metadata.
+    /// </summary>
+    internal interface IMetadataObject
     {
-        public const string RealmNotifyErrorNoSubscribers =
-            "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.";
-
-        public static void OutputError(string error)
-        {
-            Console.Error.WriteLine(error);
-        }
+        /// <summary>
+        /// Gets a value representing the object's metadata.
+        /// </summary>
+        RealmObjectBase.Metadata Metadata { get; }
     }
 }
