@@ -85,6 +85,14 @@ namespace Realms.Tests
         public ObjectId? NullableObjectIdProperty { get; set; }
 
         public Guid? NullableGuidProperty { get; set; }
+
+        public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        public RealmInteger<long> Int64CounterProperty { get; set; }
     }
 
     public class DecimalsObject : RealmObject
@@ -673,6 +681,12 @@ namespace Realms.Tests
         public string StringProperty { get; set; }
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public ObjectId ObjectIdProperty { get; set; }
+
+        public Guid GuidProperty { get; set; }
+
+        public byte[] ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
 
