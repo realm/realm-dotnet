@@ -62,8 +62,8 @@ namespace realm {
                 return { RealmErrorType::RealmError, e.what() };
             }
         }
-        catch (const SchemaValidationException& e) { // an ObjectStore exception mapped onto same code as older core
-            return { RealmErrorType::RealmFormatUpgradeRequired, e.what() };
+        catch (const SchemaValidationException& e) {
+            return { RealmErrorType::RealmSchemaValidation, e.what() };
         }
         catch (const MismatchedConfigException& e) {
             return { RealmErrorType::RealmMismatchedConfig, e.what() };

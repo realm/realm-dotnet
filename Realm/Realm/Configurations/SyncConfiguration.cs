@@ -122,9 +122,10 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = CreateConfiguration();
+            var configuration = CreateNativeConfiguration();
+            var syncConfiguration = CreateNativeSyncConfiguration();
 
-            var srHandle = SharedRealmHandle.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
+            var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
             {
                 srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
@@ -136,14 +137,15 @@ namespace Realms.Sync
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Realm instance will own its handle")]
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
-            var configuration = CreateConfiguration();
+            var configuration = CreateNativeConfiguration();
+            var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
             ProgressNotificationToken progressToken = null;
             try
             {
-                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey, tcsHandle);
+                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, syncConfiguration, schema, EncryptionKey, tcsHandle);
                 cancellationToken.Register(() =>
                 {
                     if (!handle.IsClosed)
@@ -187,13 +189,14 @@ namespace Realms.Sync
             }
         }
 
-        internal Native.SyncConfiguration ToNative()
+        internal Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
+                schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
             };
         }
     }

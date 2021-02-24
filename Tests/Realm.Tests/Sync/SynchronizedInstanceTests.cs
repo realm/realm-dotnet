@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -269,6 +270,15 @@ namespace Realms.Tests.Sync
 
                 Assert.That(File.Exists(realmPath), Is.False);
             });
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenAdditiveExplicit_ShouldThrow()
+        {
+            var conf = GetFakeConfig();
+            conf.ObjectClasses = new[] { typeof(EmbeddedLevel3) };
+
+            Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
         private const int DummyDataSize = 100;

@@ -49,5 +49,7 @@ namespace Realms.Sync.Native
         }
 
         internal SessionStopPolicy session_stop_policy;
+
+        internal SchemaMode schema_mode;
     }
 }
