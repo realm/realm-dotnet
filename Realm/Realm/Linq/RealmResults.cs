@@ -80,19 +80,14 @@ namespace Realms
         {
             Argument.NotNull(value, nameof(value));
 
-            var obj = value as RealmObjectBase;
+            var realmValue = Operator.Convert<T, RealmValue>(value);
 
-            if (obj == null)
-            {
-                throw new NotSupportedException("IndexOf on non-object results is not supported.");
-            }
-
-            if (!obj.IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));
             }
 
-            return ResultsHandle.Find(obj.ObjectHandle);
+            return _handle.Find(realmValue);
         }
 
         void ICollection<T>.Add(T item) => throw new NotSupportedException("Adding elements to the Results collection is not supported.");
