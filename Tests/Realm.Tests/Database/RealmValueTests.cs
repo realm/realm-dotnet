@@ -619,6 +619,7 @@ namespace Realms.Tests.Database
             var guidValue = Guid.NewGuid();
             var nullValue = RealmValue.Null;
             var objectValue = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+            var notAddedValue = "notAdded";
 
             _realm.Write(() => _realm.Add(rvo));
 
@@ -652,6 +653,14 @@ namespace Realms.Tests.Database
             Assert.That(rvo.RealmValueList.Contains(guidValue));
             Assert.That(rvo.RealmValueList.Contains(nullValue));
             Assert.That(rvo.RealmValueList.Contains(objectValue));
+            Assert.That(!rvo.RealmValueList.Contains(notAddedValue));
+
+            Assert.That(rvo.RealmValueList.IndexOf(intValue), Is.EqualTo(0));
+            Assert.That(rvo.RealmValueList.IndexOf(stringValue), Is.EqualTo(1));
+            Assert.That(rvo.RealmValueList.IndexOf(guidValue), Is.EqualTo(2));
+            Assert.That(rvo.RealmValueList.IndexOf(nullValue), Is.EqualTo(3));
+            Assert.That(rvo.RealmValueList.IndexOf(objectValue), Is.EqualTo(4));
+            Assert.That(rvo.RealmValueList.IndexOf(notAddedValue), Is.EqualTo(-1));
 
             VerifyNotifications(_realm, changeSetList, () =>
             {
@@ -669,6 +678,12 @@ namespace Realms.Tests.Database
             Assert.That(rvo.RealmValueList[2] == RealmValue.Null);
             Assert.That(rvo.RealmValueList[3].As<RealmObjectBase>(), Is.EqualTo(objectValue));
 
+            Assert.That(rvo.RealmValueList.IndexOf(intValue), Is.EqualTo(0));
+            Assert.That(rvo.RealmValueList.IndexOf(guidValue), Is.EqualTo(1));
+            Assert.That(rvo.RealmValueList.IndexOf(nullValue), Is.EqualTo(2));
+            Assert.That(rvo.RealmValueList.IndexOf(objectValue), Is.EqualTo(3));
+            Assert.That(rvo.RealmValueList.IndexOf(stringValue), Is.EqualTo(-1));
+            Assert.That(rvo.RealmValueList.IndexOf(notAddedValue), Is.EqualTo(-1));
 
             VerifyNotifications(_realm, changeSetList, () =>
             {
