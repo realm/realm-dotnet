@@ -1,5 +1,5 @@
 name: 'build and test'
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build-wrappers-macos:
@@ -12,7 +12,7 @@ jobs:
         submodules: recursive
     - name: 'Check if cache contains wrappers already'
       id: wrapper-cache
-      run: actions/cache@v2
+      uses: actions/cache@v2
       with:
         path: ./wrappers/build/
         key: wrapper-macos-${{hashfiles('./wrappers/**')}}
