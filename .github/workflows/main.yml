@@ -1,0 +1,17 @@
+name: 'build and test'
+on: [push, pull_request]
+
+jobs:
+  build-wrappers-macos:
+    runs-on: macos-latest
+    name: 'Build macOs wrappers'
+    steps:
+    - name: 'Checkout code'
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: 'Build wrappers'
+      #id: compositeMacOs
+      uses: actions/build_macos_wrappers@1
+      with:
+        build-configuration: Release

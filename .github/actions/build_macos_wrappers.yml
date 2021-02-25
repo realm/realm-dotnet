@@ -1,0 +1,20 @@
+name: 'Build macos wrapper'
+description: 'Builds macos wrapper for .net5'
+inputs:
+  build-configuration:
+    description: 'Configuration to build: Release/Debug'
+    required: true
+    default: 'Release'
+runs:
+  using: "composite"
+  steps:
+    - name: 'Check if cache contains wrappers already'
+      id: wrapper-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/
+        key: wrapper-macos-${{hashfiles('./wrappers/**')}}
+    - name: 'Build wrappers'
+      if: 'steps.wrapper-cache.outputs.cache-hit != true'
+      run: REALM_CMAKE_CONFIGURATION=${{ inputs.build-configuration }} ./wrappers/build-macos.sh
+      shell: bash
