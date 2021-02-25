@@ -2,6 +2,8 @@
 
 ### Fixed
 * Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`) being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
+* Fixed a bug where applying multiple `OrderBy` clauses on a query would result in the clauses being appended to each other as if they were `.ThenBy` rather than the last clause replacing the preceding ones. (PR [#2255](https://github.com/realm/realm-dotnet/issues/2255))
+* When explicitly specifying `SyncConfiguration.ObjectTypes`, added a check to validate the schema and ensure all `EmbeddedObject` classes are reachable from a class inheriting from `RealmObject`. More info about this subject can be found [here](https://docs.mongodb.com/realm/dotnet/objects/#provide-a-subset-of-classes-to-your-realm-schema). (PR [#2259](https://github.com/realm/realm-dotnet/pull/2259))
 
 ### Enhancements
 * Add support for the `Guid` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
@@ -23,6 +25,7 @@
   var obj = new MyObject();
   obj.Denominations.Add("quarter", 0.25d);
   ```
+* Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 
 ### Compatibility

@@ -86,8 +86,6 @@ namespace Realms.Exceptions
                     return new RealmInvalidTransactionException(message);
 
                 case RealmExceptionCodes.RealmFormatUpgradeRequired:
-                    return new RealmException(message);  // rare unrecoverable case for now
-
                 case RealmExceptionCodes.RealmSchemaMismatch:
                     return new RealmMigrationNeededException(message);
 
@@ -105,6 +103,9 @@ namespace Realms.Exceptions
 
                 case RealmExceptionCodes.RealmClosed:
                     return new RealmClosedException(message);
+
+                case RealmExceptionCodes.RealmSchemaValidation:
+                    return new RealmSchemaValidationException(message);
 
                 case RealmExceptionCodes.NotNullableProperty:
                 case RealmExceptionCodes.PropertyMismatch:

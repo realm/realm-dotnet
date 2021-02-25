@@ -388,17 +388,6 @@ namespace RealmWeaver
         }
 
         [Test]
-        [Ignore("IList property tests still missing")]
-        public void SetManyRelationship()
-        {
-            // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
-            var pn1 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
-            var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
-            o.IsManaged = true;
-        }
-
-        [Test]
         public void ShouldNotWeaveIgnoredProperties()
         {
             // Arrange

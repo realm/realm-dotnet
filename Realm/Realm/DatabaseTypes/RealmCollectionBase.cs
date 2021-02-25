@@ -159,9 +159,9 @@ namespace Realms
             }
         }
 
-        internal RealmResults<T> GetFilteredResults(string query)
+        internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
         {
-            var handle = Handle.Value.GetFilteredResults(query);
+            var handle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<T>(Realm, handle, Metadata);
         }
 

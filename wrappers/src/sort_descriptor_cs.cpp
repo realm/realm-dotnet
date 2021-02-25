@@ -35,7 +35,7 @@ REALM_EXPORT void sort_descriptor_destroy(DescriptorOrdering* descriptor)
     delete descriptor;
 }
 
-REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableKey table_key, SharedRealm& realm, size_t* property_chain, size_t properties_count, bool ascending, NativeException::Marshallable& ex)
+REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableKey table_key, SharedRealm& realm, size_t* property_chain, size_t properties_count, bool ascending, bool replacing, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         std::vector<ColKey> column_keys;
@@ -52,7 +52,7 @@ REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, Tab
             }
         }
 
-        descriptor.append_sort(SortDescriptor({ column_keys }, { ascending }), SortDescriptor::MergeMode::append);
+        descriptor.append_sort(SortDescriptor({ column_keys }, { ascending }), replacing ? SortDescriptor::MergeMode::replace : SortDescriptor::MergeMode::append);
     });
 }
 

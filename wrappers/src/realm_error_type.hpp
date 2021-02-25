@@ -64,6 +64,8 @@ namespace realm {
 
         RealmSchemaMismatch = 14,
 
+        RealmSchemaValidation = 15,
+
         RealmRowDetached = 21,
 
         RealmTableHasNoPrimaryKey = 22,

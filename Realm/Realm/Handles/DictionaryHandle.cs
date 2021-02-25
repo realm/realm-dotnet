@@ -142,7 +142,7 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query)
+        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
         {
             throw new NotImplementedException("Dictionaries can't be filtered yet.");
         }

@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -215,8 +215,7 @@ namespace Realms.Tests.Sync
             Assert.That(realm.Schema, Is.Empty);
         }
 
-        [Test]
-        [Ignore("doesn't work due to a OS bug")]
+        [Test, Ignore("Doesn't work due to a OS bug")]
         public void InvalidSchemaChange_RaisesClientReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -273,40 +272,13 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
-        public void TestManualClientResync()
+        [Test]
+        public void EmbeddedObject_WhenAdditiveExplicit_ShouldThrow()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var config = await GetIntegrationConfigAsync();
+            var conf = GetFakeConfig();
+            conf.ObjectClasses = new[] { typeof(EmbeddedLevel3) };
 
-                Realm.DeleteRealm(config);
-                using (var realm = await Realm.GetInstanceAsync(config))
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new IntPrimaryKeyWithValueObject());
-                    });
-
-                    await WaitForUploadAsync(realm);
-                }
-
-                // Delete Realm in ROS
-                Debugger.Break();
-
-                Exception ex = null;
-                Session.Error += (s, e) =>
-                {
-                    ex = e.Exception;
-                };
-
-                using (var realm = Realm.GetInstance(config))
-                {
-                    await Task.Delay(100);
-                }
-
-                Assert.That(ex, Is.InstanceOf<ClientResetException>());
-            });
+            Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
         private const int DummyDataSize = 100;

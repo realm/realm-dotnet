@@ -124,7 +124,7 @@ REALM_EXPORT DescriptorOrdering* results_get_descriptor_ordering(Results& result
     });
 }
 
-REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
+REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor query_string(query_buf, query_len);
@@ -133,8 +133,18 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         query_parser::KeyPathMapping mapping;
         realm::populate_keypath_mapping(mapping, *realm);
 
-        query_parser::NoArguments no_args;
-        Query parsed_query = results.get_table()->query(query_string, no_args, mapping);
+        std::vector<Mixed> mixed_args;
+        mixed_args.reserve(args_count);
+        for (int i = 0; i < args_count; ++i) {
+            if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
+                mixed_args.push_back(from_capi(arguments[i]));
+            }
+            else {
+                mixed_args.push_back(from_capi(arguments[i].link.object, true));
+            }
+        }
+
+        Query parsed_query = results.get_table()->query(query_string, mixed_args , mapping);
         DescriptorOrdering new_order = results.get_descriptor_ordering();
         if (auto parsed_ordering = parsed_query.get_ordering()) {
             new_order.append(*parsed_ordering);

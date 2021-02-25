@@ -32,7 +32,15 @@ namespace PerformanceTests
     {
         public static void Main(string[] args)
         {
+            var config = GetCustomConfig()
+                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance));
+            BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
+        }
+
+        public static IConfig GetCustomConfig()
+        {
             var defaultConfig = DefaultConfig.Instance;
+
             var config = new ManualConfig()
                 .AddColumnProvider(defaultConfig.GetColumnProviders().ToArray())
                 .AddLogger(defaultConfig.GetLoggers().ToArray())
@@ -42,11 +50,10 @@ namespace PerformanceTests
                 .WithSummaryStyle(defaultConfig.SummaryStyle)
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
-                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
                 .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
 
-            BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
+            return config;
         }
     }
 }

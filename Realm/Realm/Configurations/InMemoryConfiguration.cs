@@ -49,7 +49,7 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = CreateConfiguration();
+            var configuration = CreateNativeConfiguration();
             configuration.in_memory = true;
 
             var srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);

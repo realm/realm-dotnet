@@ -49,7 +49,7 @@ namespace Realms
             throw new NotSupportedException("Snapshotting this collection is not supported.");
         }
 
-        public abstract ResultsHandle GetFilteredResults(string query);
+        public abstract ResultsHandle GetFilteredResults(string query, RealmValue[] arguments);
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 

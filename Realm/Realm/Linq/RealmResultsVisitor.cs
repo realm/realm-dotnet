@@ -113,7 +113,7 @@ namespace Realms
             }
         }
 
-        private void AddSort(LambdaExpression lambda, bool ascending)
+        private void AddSort(LambdaExpression lambda, bool isAscending, bool isReplacing)
         {
             if (!(lambda.Body is MemberExpression body))
             {
@@ -121,7 +121,34 @@ namespace Realms
             }
 
             var propertyChain = TraverseSort(body);
-            _sortDescriptor.AddClause(_realm.SharedRealmHandle, _metadata.TableKey, propertyChain, ascending);
+            _sortDescriptor.AddClause(_realm.SharedRealmHandle, _metadata.TableKey, propertyChain, isAscending, isReplacing);
+        }
+
+        private bool IsSortClause(string methodName, out bool isAscending, out bool isReplacing)
+        {
+            switch (methodName)
+            {
+                case nameof(Queryable.OrderBy):
+                    isAscending = true;
+                    isReplacing = true;
+                    return true;
+                case nameof(Queryable.ThenBy):
+                    isAscending = true;
+                    isReplacing = false;
+                    return true;
+                case nameof(Queryable.OrderByDescending):
+                    isAscending = false;
+                    isReplacing = true;
+                    return true;
+                case nameof(Queryable.ThenByDescending):
+                    isAscending = false;
+                    isReplacing = false;
+                    return true;
+                default:
+                    isAscending = false;
+                    isReplacing = false;
+                    return false;
+            }
         }
 
         private IntPtr[] TraverseSort(MemberExpression expression)
@@ -164,17 +191,10 @@ namespace Realms
                     return node;
                 }
 
-                if (node.Method.Name == nameof(Queryable.OrderBy) || node.Method.Name == nameof(Queryable.ThenBy))
+                if (IsSortClause(node.Method.Name, out var isAscending, out var isReplacing))
                 {
                     Visit(node.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), true);
-                    return node;
-                }
-
-                if (node.Method.Name == nameof(Queryable.OrderByDescending) || node.Method.Name == nameof(Queryable.ThenByDescending))
-                {
-                    Visit(node.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), false);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), isAscending, isReplacing);
                     return node;
                 }
 

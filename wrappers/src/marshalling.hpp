@@ -75,6 +75,7 @@ typedef struct realm_uuid {
     uint8_t bytes[16];
 } realm_uuid_t;
 
+// This struct is used to marshall C#'s type PrimitiveValue
 typedef struct realm_value {
     union {
         int64_t integer;

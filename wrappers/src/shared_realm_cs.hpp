@@ -73,6 +73,8 @@ struct SyncConfiguration
     size_t url_len;
 
     SyncSessionStopPolicy session_stop_policy;
+
+    SchemaMode schema_mode;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

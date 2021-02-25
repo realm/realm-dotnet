@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Benchmarks.View.MainPage"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             ios:Page.UseSafeArea="true">
+    <ScrollView>
+        <StackLayout>
+            <Frame BackgroundColor="#2196F3" Padding="24" CornerRadius="0">
+                <Label Text="Benchmarks" HorizontalTextAlignment="Center" TextColor="White" FontSize="36"/>
+            </Frame>
+            <Button Text="Run Benchmarks"
+                Command="{Binding RunBenchmarksCommand}" />
+            <ActivityIndicator IsRunning="{Binding IsRunning}"/>
+            <StackLayout BindableLayout.ItemsSource="{Binding BenchmarkResults}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Orientation="Vertical">
+                            <Label Padding="10,0" Text="{Binding Name}" TextColor="#2196F3" FontSize="Large"/>
+                            <ScrollView Orientation="Horizontal">
+                                <Label Padding="10,0,10,10" TextType="Html" Text="{Binding HtmlResult}"/>
+                            </ScrollView>
+                        </StackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
