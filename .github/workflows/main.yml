@@ -12,6 +12,6 @@ jobs:
         submodules: recursive
     - name: 'Build wrappers'
       #id: compositeMacOs
-      uses: actions/build_macos_wrappers@1
+      uses: ./.github/actions/build_macos_wrappers
       with:
         build-configuration: Release
