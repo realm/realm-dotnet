@@ -10,8 +10,14 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: 'Check if cache contains wrappers already'
+      id: wrapper-cache
+      run: actions/cache@v2
+      with:
+        path: ./wrappers/build/
+        key: wrapper-macos-${{hashfiles('./wrappers/**')}}
     - name: 'Build wrappers'
-      #id: compositeMacOs
+      if: 'steps.wrapper-cache.outputs.cache-hit != true'
       uses: ./.github/actions/build_macos_wrappers
       with:
         build-configuration: Release
