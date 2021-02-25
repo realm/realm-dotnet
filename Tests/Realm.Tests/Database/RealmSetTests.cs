@@ -876,8 +876,6 @@ namespace Realms.Tests.Database
             var managedSet = accessor(testObject);
             Assert.That(set, Is.Not.SameAs(managedSet));
 
-            CollectionAssert.AreEquivalent(managedSet, testData.GetReferenceSet());
-
             // Now we're testing set operations on RealmSet/HashSet
             testData.AssertCount(managedSet);
             testData.AssertExceptWith(managedSet);
@@ -891,18 +889,18 @@ namespace Realms.Tests.Database
             testData.AssertUnionWith(managedSet);
 
             // Now we're testing set operations on RealmSet/RealmSet
-            //var othertestObject = _realm.Write(() => _realm.Add(new SetsObject()));
-            //var otherSet = accessor(othertestObject);
+            var otherTestObject = _realm.Write(() => _realm.Add(new SetsObject()));
+            var otherSet = accessor(otherTestObject);
 
-            //testData.AssertExceptWith(managedSet, otherSet);
-            //testData.AssertIntersectWith(managedSet, otherSet);
-            //testData.AssertIsProperSubsetOf(managedSet, otherSet);
-            //testData.AssertIsProperSupersetOf(managedSet, otherSet);
-            //testData.AssertIsSubsetOf(managedSet, otherSet);
-            //testData.AssertIsSupersetOf(managedSet, otherSet);
-            //testData.AssertOverlaps(managedSet, otherSet);
-            //testData.AssertSymmetricExceptWith(managedSet, otherSet);
-            //testData.AssertUnionWith(managedSet, otherSet);
+            testData.AssertExceptWith(managedSet, otherSet);
+            testData.AssertIntersectWith(managedSet, otherSet);
+            testData.AssertIsProperSubsetOf(managedSet, otherSet);
+            testData.AssertIsProperSupersetOf(managedSet, otherSet);
+            testData.AssertIsSubsetOf(managedSet, otherSet);
+            testData.AssertIsSupersetOf(managedSet, otherSet);
+            testData.AssertOverlaps(managedSet, otherSet);
+            testData.AssertSymmetricExceptWith(managedSet, otherSet);
+            testData.AssertUnionWith(managedSet, otherSet);
         }
 
         private static TestCaseData<RealmInteger<T>> ToInteger<T>(TestCaseData<T> data)
@@ -937,7 +935,7 @@ namespace Realms.Tests.Database
             public void AssertCount(ISet<T> target)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+                var reference = new HashSet<T>(InitialValues);
 
                 Assert.That(target.Count, Is.EqualTo(reference.Count));
                 Assert.That(target, Is.EquivalentTo(reference));
@@ -946,116 +944,102 @@ namespace Realms.Tests.Database
             public void AssertUnionWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.UnionWith(GetOrSeedOtherCollection(otherCollection));
+                    target.UnionWith(otherCollection);
                 });
 
-                reference.UnionWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.UnionWith)));
             }
 
             public void AssertExceptWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.ExceptWith(GetOrSeedOtherCollection(otherCollection));
+                    target.ExceptWith(otherCollection);
                 });
 
-                reference.ExceptWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.ExceptWith)));
             }
 
             public void AssertIntersectWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.IntersectWith(GetOrSeedOtherCollection(otherCollection));
+                    target.IntersectWith(otherCollection);
                 });
 
-                reference.IntersectWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.IntersectWith)));
             }
 
             public void AssertIsProperSubsetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsProperSubsetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsProperSubsetOf(OtherCollection);
+                var result = target.IsProperSubsetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSubsetOf)));
             }
 
             public void AssertIsProperSupersetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsProperSupersetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsProperSupersetOf(OtherCollection);
+                var result = target.IsProperSupersetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSupersetOf)));
             }
 
             public void AssertIsSubsetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsSubsetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsSubsetOf(OtherCollection);
+                var result = target.IsSubsetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSubsetOf)));
             }
 
             public void AssertIsSupersetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsSupersetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsSupersetOf(OtherCollection);
+                var result = target.IsSupersetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSupersetOf)));
             }
 
             public void AssertOverlaps(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.Overlaps(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.Overlaps(OtherCollection);
+                var result = target.Overlaps(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.Overlaps)));
             }
 
             public void AssertSymmetricExceptWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.SymmetricExceptWith(GetOrSeedOtherCollection(otherCollection));
+                    target.SymmetricExceptWith(otherCollection);
                 });
 
-                reference.SymmetricExceptWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.SymmetricExceptWith)));
             }
 
             public void Seed(ICollection<T> target, IEnumerable<T> values = null)
@@ -1070,9 +1054,21 @@ namespace Realms.Tests.Database
                 });
             }
 
-            public ISet<T> GetReferenceSet() => new HashSet<T>(InitialValues);
+            private bool GetExpected(Func<ISet<T>, Func<IEnumerable<T>, bool>> getInvoker)
+            {
+                var reference = new HashSet<T>(InitialValues);
 
-            private IEnumerable<T> GetOrSeedOtherCollection(ICollection<T> target)
+                return getInvoker(reference).Invoke(OtherCollection);
+            }
+
+            private ISet<T> GetExpected(Func<ISet<T>, Action<ICollection<T>>> getInvoker)
+            {
+                var reference = new HashSet<T>(InitialValues);
+                getInvoker(reference).Invoke(OtherCollection);
+                return reference;
+            }
+
+            private ICollection<T> GetOrSeedOtherCollection(ICollection<T> target)
             {
                 if (target == null)
                 {

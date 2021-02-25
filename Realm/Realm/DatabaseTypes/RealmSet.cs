@@ -102,8 +102,8 @@ namespace Realms
 
             if (other is RealmCollectionBase<T> realmCollection)
             {
-                // Call ExceptWith in native
-                throw new NotImplementedException();
+                _setHandle.ExceptWith(realmCollection.Handle.Value);
+                return;
             }
 
             if (Count == 0)
@@ -123,8 +123,8 @@ namespace Realms
 
             if (other is RealmCollectionBase<T> realmCollection)
             {
-                // Call IntersectWith in native
-                throw new NotImplementedException();
+                _setHandle.IntersectWith(realmCollection.Handle.Value);
+                return;
             }
 
             // intersection of anything with empty set is empty set, so return if count is 0
@@ -155,77 +155,14 @@ namespace Realms
             }
         }
 
-        public bool IsSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: false);
-
-        public bool IsProperSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: true);
-
-        public bool IsSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: false);
-
-        public bool IsProperSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: true);
-
-        public bool Overlaps(IEnumerable<T> other)
-        {
-            Argument.NotNull(other, nameof(other));
-
-            if (other is RealmCollectionBase<T> realmCollection)
-            {
-                // Call Overlaps in native
-                throw new NotImplementedException();
-            }
-
-            // Special case - empty set doesn't overlap with anything.
-            if (Count == 0)
-            {
-                return false;
-            }
-
-            foreach (var item in other)
-            {
-                if (Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool SetEquals(IEnumerable<T> other)
-        {
-            Argument.NotNull(other, nameof(other));
-
-            if (other is RealmCollectionBase<T> realmCollection)
-            {
-                // Call Overlaps in native
-                throw new NotImplementedException();
-            }
-
-            var otherSet = GetSet(other);
-            if (otherSet.Count != Count)
-            {
-                return false;
-            }
-
-            foreach (var item in otherSet)
-            {
-                if (!Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We already know that counts are the same
-            return true;
-        }
-
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
             Argument.NotNull(other, nameof(other));
 
             if (other is RealmCollectionBase<T> realmCollection)
             {
-                // Call Overlaps in native
-                throw new NotImplementedException();
+                _setHandle.SymmetricExceptWith(realmCollection.Handle.Value);
+                return;
             }
 
             // We create a new hashset because we're going to be manipulating the in-memory collection
@@ -260,7 +197,7 @@ namespace Realms
 
             if (other is RealmCollectionBase<T> realmCollection)
             {
-                // Call UnionWith in native
+                _setHandle.UnionWith(realmCollection.Handle.Value);
                 return;
             }
 
@@ -270,14 +207,74 @@ namespace Realms
             }
         }
 
+        public bool IsSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: false);
+
+        public bool IsProperSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: true);
+
+        public bool IsSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: false);
+
+        public bool IsProperSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: true);
+
+        public bool Overlaps(IEnumerable<T> other)
+        {
+            Argument.NotNull(other, nameof(other));
+
+            if (other is RealmCollectionBase<T> realmCollection)
+            {
+                return _setHandle.Overlaps(realmCollection.Handle.Value);
+            }
+
+            // Special case - empty set doesn't overlap with anything.
+            if (Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var item in other)
+            {
+                if (Contains(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool SetEquals(IEnumerable<T> other)
+        {
+            Argument.NotNull(other, nameof(other));
+
+            if (other is RealmCollectionBase<T> realmCollection)
+            {
+                return _setHandle.SetEquals(realmCollection.Handle.Value);
+            }
+
+            var otherSet = GetSet(other);
+            if (otherSet.Count != Count)
+            {
+                return false;
+            }
+
+            foreach (var item in otherSet)
+            {
+                if (!Contains(item))
+                {
+                    return false;
+                }
+            }
+
+            // We already know that counts are the same
+            return true;
+        }
+
         private bool IsSubsetCore(IEnumerable<T> other, bool proper)
         {
             Argument.NotNull(other, nameof(other));
 
             if (other is RealmCollectionBase<T> realmCollection)
             {
-                // Call IsSubsetOf in native
-                throw new NotImplementedException();
+                return _setHandle.IsSubsetOf(realmCollection.Handle.Value, proper);
             }
 
             // The empty set is a subset of any set.
@@ -319,8 +316,7 @@ namespace Realms
 
             if (other is RealmCollectionBase<T> realmCollection)
             {
-                // Call IsSupersetOf in native
-                throw new NotImplementedException();
+                return _setHandle.IsSupersetOf(realmCollection.Handle.Value, proper);
             }
 
             var count = Count;
