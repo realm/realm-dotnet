@@ -165,6 +165,16 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
             query.links_to(std::move(col_key), primitive.link.object->obj().get_key());
             break;
         }
+
+        //TODO the following does not work. I should understand why it does not 
+
+        //if (primitive.type == realm_value_type::RLM_TYPE_NULL)
+        //{
+        //    throw std::runtime_error("Comparing null values should be done via query_null_equal. If you get this error, please report it to help@realm.io.");
+        //}
+
+        //auto col_key = get_key_for_prop(query, realm, property_index);
+        //query.equal(std::move(col_key), from_capi(primitive));
     });
 }
 
