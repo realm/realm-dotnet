@@ -777,6 +777,10 @@ namespace Realms
             {
                 action(realm, propertyIndex, (RealmObjectBase)value);
             }
+            else if (columnType == typeof(RealmValue))
+            {
+                action(realm, propertyIndex, (RealmValue)value);
+            }
             else
             {
                 throw new NotImplementedException();

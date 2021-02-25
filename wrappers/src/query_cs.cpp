@@ -158,6 +158,9 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
         case realm_value_type::RLM_TYPE_BINARY:
             query.equal(std::move(col_key), from_capi(primitive.binary));
             break;
+        case realm_value_type::RLM_TYPE_STRING:
+            query.equal(std::move(col_key), from_capi(primitive.string));
+            break;
         case realm_value_type::RLM_TYPE_LINK:
             query.links_to(std::move(col_key), primitive.link.object->obj().get_key());
             break;
