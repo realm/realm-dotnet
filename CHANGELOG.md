@@ -1,9 +1,9 @@
-## vNext
-------------------
 ## vNext (TBD)
+------------------
 
 ### Fixed
 * Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`) being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
+* The Realm notification listener thread could sometimes hit the assertion failure "!skip_version.version" if a write transaction was committed at a very specific time. (Core upgrade)
 
 ### Enhancements
 * None
@@ -15,7 +15,7 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.5.0.
+* Using Core 10.5.3.
 
 ## 10.1.0 (2021-02-09)
 ------------------

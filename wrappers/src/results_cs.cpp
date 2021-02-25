@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm/parser/query_parser.hpp>
-
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
@@ -30,6 +28,8 @@
 #include "schema_cs.hpp"
 #include <realm/object-store/keypath_helpers.hpp>
 #include "realm_export_decls.hpp"
+
+#include <realm/parser/query_parser.hpp>
 
 using namespace realm;
 using namespace realm::binding;
