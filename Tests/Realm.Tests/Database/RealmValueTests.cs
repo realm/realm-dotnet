@@ -629,14 +629,6 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_ListTests()
         {
-            /** We probably need to test collections with all possible realmValueTypes
-             *  How to do it to simplify this and not make a huge and long method?
-             * 
-             *  Could create a container class with all properties and indexes
-             *  And some support functions to create the object and keep it updated with what happens to the list?
-             * 
-             */
-
             var rvo = new RealmValueObject();
 
             var intValue = 5;
@@ -812,27 +804,42 @@ namespace Realms.Tests.Database
         public void AAARealmValue_QueryTests()
         {
             // TODO Can we put this in another method...?
+            
+            /**What to test
+             * 
+             *  - Equivalence between numerical values
+             *  - Equivalence between Where and Filter values
+             *  - Filter on RealmValueType (equal/not-equal)
+             * 
+             * 
+             * 
+             */
+
             var rvo1 = new RealmValueObject { Id = 1, RealmValueProperty = 1 };
             var rvo2 = new RealmValueObject { Id = 2, RealmValueProperty = 1.0 };
             var rvo3 = new RealmValueObject { Id = 3, RealmValueProperty = true };
             var rvo4 = new RealmValueObject { Id = 4, RealmValueProperty = "1" };
             var rvo5 = new RealmValueObject { Id = 5, RealmValueProperty = "abc" };
-            var rvo6 = new RealmValueObject { Id = 7, RealmValueProperty = new InternalObject { IntProperty = 10, StringProperty = "brown" } };
+            var rvo6 = new RealmValueObject { Id = 6, RealmValueProperty = new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
             _realm.Write(() =>
             {
-                _realm.Add(new[] { rvo1, rvo2, rvo3, rvo4, rvo5 });
+                _realm.Add(new[] { rvo1, rvo2, rvo3, rvo4, rvo5, rvo6 });
             });
 
-            //var t1 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type == RealmValueType.Int).ToList();
+            //var f1 = _realm.All<RealmValueObject>().Filter("RealmValueProperty.@type == 'int'").ToList();
 
-            //Assert.That(t1, Is.EquivalentTo(new List<RealmValueObject> { rvo1 }));
+            //Assert.That(f1, Is.EquivalentTo(new List<RealmValueObject> { rvo1 }));
+
+            var t1 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type != RealmValueType.String).ToList();
+
+            Assert.That(t1, Is.EquivalentTo(new List<RealmValueObject> { rvo4, rvo5 }));
 
             // Numeric values are converted when possible
             var n1 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == 1).OrderBy(r => r.Id).ToList();
             var n2 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == 1.0).OrderBy(r => r.Id).ToList();
             var n3 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == true).OrderBy(r => r.Id).ToList();
-            var n4 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == 1.1).OrderBy(r => r.Id).ToList(); //TODO maybe we need a different naming for queries
+            var n4 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == 1.1).OrderBy(r => r.Id).ToList();
 
             Assert.That(n1, Is.EquivalentTo(n2));
             Assert.That(n1, Is.EquivalentTo(n3));
@@ -844,14 +851,6 @@ namespace Realms.Tests.Database
 
             Assert.That(s1, Is.EquivalentTo(new List<RealmValueObject> { rvo4 }));
             Assert.That(s2, Is.EquivalentTo(new List<RealmValueObject> { rvo5 }));
-
-            // The following does not work, will fix later
-            //var q7 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == rvo7).OrderBy(r => r.Id).ToList();
-
-            //Assert.That(q7, Is.EquivalentTo(new List<RealmValueObject> { rvo7 }));
-
-            //TODO we need also to test !=, query on type, maybe filter
-
         }
 
         [Test]

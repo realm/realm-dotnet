@@ -196,7 +196,7 @@ namespace Realms
             var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (!arguments[i].AsRealmObject()?.IsManaged == true)
+                if (arguments[i].Type == RealmValueType.Object && !arguments[i].AsRealmObject().IsManaged)
                 {
                     throw new RealmException("Can't use unmanaged object as argument of Filter");
                 }

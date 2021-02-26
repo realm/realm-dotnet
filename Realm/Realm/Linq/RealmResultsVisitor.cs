@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
+using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
@@ -560,7 +561,7 @@ namespace Realms
                     memberExpression = leftExpression as MemberExpression;
                 }
 
-                var leftName = GetColumnName(memberExpression, node.NodeType);
+                string leftName = null;
 
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
@@ -570,6 +571,21 @@ namespace Realms
                 if (rightValue is RealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase. \nUnable to process '{node.Right}'.");
+                }
+
+                if (CheckIfRealmValueType(memberExpression, out string leftPropName))
+                {
+                    leftName = leftPropName;
+                    rightValue = (RealmValueType)((int)rightValue);  //TODO Need to refactor this
+
+                    if (node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual)
+                    {
+                        throw new NotSupportedException($"Only expressions of type Equal and NotEqual can be used with RealmValueType.");
+                    }
+                }
+                else
+                {
+                    leftName = GetColumnName(memberExpression, node.NodeType);
                 }
 
                 switch (node.NodeType)
@@ -598,6 +614,24 @@ namespace Realms
             }
 
             return node;
+        }
+
+        private bool CheckIfRealmValueType(MemberExpression leftExpression, out string leftName)
+        {
+            leftName = null;
+
+            if (leftExpression.Type != typeof(RealmValueType))
+            {
+                return false;
+            }
+
+            if (leftExpression.Expression is MemberExpression innerExpression)
+            {
+                leftName = GetColumnName(innerExpression, leftExpression.NodeType);
+                return innerExpression.Type == typeof(RealmValue);
+            }
+
+            return false;
         }
 
         private enum OutOfRangeBehavior
@@ -645,6 +679,9 @@ namespace Realms
                 case string stringValue:
                     queryHandle.StringEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
                     break;
+                case RealmValueType realmValueType:
+                    queryHandle.RealmValueTypeEqual(_realm.SharedRealmHandle, propertyIndex, realmValueType);
+                    break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
                     AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueEqual);
@@ -662,6 +699,9 @@ namespace Realms
                     break;
                 case string stringValue:
                     queryHandle.StringNotEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
+                    break;
+                case RealmValueType realmValueType:
+                    queryHandle.RealmValueTypeNotEqual(_realm.SharedRealmHandle, propertyIndex, realmValueType);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
@@ -728,6 +768,21 @@ namespace Realms
                     AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueGreaterEqual);
                     break;
             }
+        }
+
+
+        private void AddQueryEqualToRealmValueType(QueryHandle queryHandle, string columnName, RealmValueType realmValueType, Type columnType)
+        {
+            var propertyIndex = _metadata.PropertyIndices[columnName];
+
+            //TODO To fill!
+
+        }
+
+        private void AddQueryNotEqualToRealmValueType(QueryHandle queryHandle, string columnName, RealmValueType realmValueType, Type columnType)
+        {
+            var propertyIndex = _metadata.PropertyIndices[columnName];
+
         }
 
         private delegate void QueryAction(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value);
