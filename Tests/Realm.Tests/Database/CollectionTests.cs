@@ -667,7 +667,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Owner { TopDog = new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true } });
             });
 
-            Assert.Throws<RealmException>(() => _realm.All<Owner>().Filter("TopDog = $0", new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true }), "**put your message here!**");
+            Assert.Throws<RealmException>(() => _realm.All<Owner>().Filter("TopDog = $0", new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true }));
         }
 
         [Test]

@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms
@@ -195,6 +196,11 @@ namespace Realms
             var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
             {
+                if (!arguments[i].AsRealmObject()?.IsManaged == true)
+                {
+                    throw new RealmException("Can't use unmanaged object as argument of Filter");
+                }
+
                 (primitiveValues[i], handles[i]) = arguments[i].ToNative();
             }
 

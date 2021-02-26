@@ -610,8 +610,33 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmValue_WhenManaged_ObjectGetsPersisted()
+        {
+            var value = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+            RealmValue rv = value;
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new RealmValueObject { RealmValueProperty = rv });
+            });
+
+            var objs = _realm.All<InternalObject>().ToList();
+
+            Assert.That(objs.Count, Is.EqualTo(1));
+            Assert.That(objs[0], Is.EqualTo(value));
+        }
+
+        [Test]
         public void RealmValue_ListTests()
         {
+            /** We probably need to test collections with all possible realmValueTypes
+             *  How to do it to simplify this and not make a huge and long method?
+             * 
+             *  Could create a container class with all properties and indexes
+             *  And some support functions to create the object and keep it updated with what happens to the list?
+             * 
+             */
+
             var rvo = new RealmValueObject();
 
             var intValue = 5;
@@ -799,10 +824,9 @@ namespace Realms.Tests.Database
                 _realm.Add(new[] { rvo1, rvo2, rvo3, rvo4, rvo5 });
             });
 
+            //var t1 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type == RealmValueType.Int).ToList();
 
-            var t1 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type == RealmValueType.Int).ToList();
-
-            Assert.That(t1, Is.EquivalentTo(new List<RealmValueObject> { rvo1 }));
+            //Assert.That(t1, Is.EquivalentTo(new List<RealmValueObject> { rvo1 }));
 
             // Numeric values are converted when possible
             var n1 = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == 1).OrderBy(r => r.Id).ToList();
@@ -855,213 +879,6 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
-        public void ADict_RealmValue()
-        {
-            var rvo = new RealmValueObject();
-
-            var key1 = "k1";
-            var key2 = "k2";
-            var key3 = "k3";
-
-            var val1 = 10;
-            var val2 = "abc";
-            var val3 = new InternalObject { IntProperty = 10, StringProperty = "brown" };
-
-            _realm.Write(() => _realm.Add(rvo));
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueDictionary[key1] = val1;
-                rvo.RealmValueDictionary[key2] = val2;
-                rvo.RealmValueDictionary[key3] = val3;
-            });
-
-            var values = rvo.RealmValueDictionary.Values;
-            var listValues = values.ToList();
-            var resultValues = values as RealmResults<RealmValue>;
-
-            var val1Index = resultValues.IndexOf(val1);
-            var val2Index = resultValues.IndexOf(val2);
-            var val3Index = resultValues.IndexOf(val3); 
-
-            var keys = rvo.RealmValueDictionary.Keys;
-            var listKeys = keys.ToList();
-            var resultKeys = keys as RealmResults<string>;
-
-            var key1Index = resultKeys.IndexOf(key1);
-            var key2Index = resultKeys.IndexOf(key2);
-            var key3Index = resultKeys.IndexOf(key3);
-        }
-
-        [Test]
-        public void ADict_Int()
-        {
-            var rvo = new RealmValueObject();
-
-            var key1 = "k1";
-            var key2 = "k2";
-            var key3 = "k3";
-
-            var val1 = 10;
-            var val2 = 20;
-            var val3 = 30;
-
-            _realm.Write(() => _realm.Add(rvo));
-
-            _realm.Write(() =>
-            {
-                rvo.IntDict[key1] = val1;
-                rvo.IntDict[key2] = val2;
-                rvo.IntDict[key3] = val3;
-            });
-
-            var values = rvo.IntDict.Values;
-            var listValues = values.ToList();
-            var resultValues = values as RealmResults<int>;
-
-            var val1Index = resultValues.IndexOf(val1);
-            var val2Index = resultValues.IndexOf(val2);
-            var val3Index = resultValues.IndexOf(val3);
-
-            var keys = rvo.IntDict.Keys;
-            var listKeys = keys.ToList();
-            var resultKeys = keys as RealmResults<string>;
-
-            var key1Index = resultKeys.IndexOf(key1);
-            var key2Index = resultKeys.IndexOf(key2);
-            var key3Index = resultKeys.IndexOf(key3);
-        }
-
-        [Test]
-        public void ADict_String()
-        {
-            var rvo = new RealmValueObject();
-
-            var key1 = "k1";
-            var key2 = "k2";
-            var key3 = "k3";
-
-            var val1 = "v1";
-            var val2 = "v2";
-            var val3 = "v3";
-
-            _realm.Write(() => _realm.Add(rvo));
-
-            _realm.Write(() =>
-            {
-                rvo.StringDict[key1] = val1;
-                rvo.StringDict[key2] = val2;
-                rvo.StringDict[key3] = val3;
-            });
-
-            var keys = rvo.StringDict.Keys;
-            var listKeys = keys.ToList();
-            var resultKeys = keys as RealmResults<string>;
-
-            var idx = resultKeys.IndexOf(val1);
-            var key1Index = resultKeys.IndexOf(key1);
-            var key2Index = resultKeys.IndexOf(key2);
-            var key3Index = resultKeys.IndexOf(key3);
-
-            var values = rvo.StringDict.Values;
-            var listValues = values.ToList();
-            var resultValues = values as RealmResults<string>;
-
-            var val1Index = resultValues.IndexOf(val1);
-            var val2Index = resultValues.IndexOf(val2);
-            var val3Index = resultValues.IndexOf(val3);
-        }
-
-        [Test]
-        public void ADict_Object()
-        {
-            var rvo = new RealmValueObject();
-
-            var key1 = "k1";
-            var key2 = "k2";
-            var key3 = "k3";
-
-            var val1 = new InternalObject { IntProperty = 10, StringProperty = "browsn" };
-            var val2 = new InternalObject { IntProperty = 20, StringProperty = "broawn" };
-            var val3 = new InternalObject { IntProperty = 30, StringProperty = "brown" };
-
-            _realm.Write(() => _realm.Add(rvo));
-
-            _realm.Write(() =>
-            {
-                rvo.ObjDict[key1] = val1;
-                rvo.ObjDict[key2] = val2;
-                rvo.ObjDict[key3] = val3;
-            });
-
-            var values = rvo.ObjDict.Values;
-            var listValues = values.ToList();
-            var resultValues = values as RealmResults<InternalObject>;
-
-            var val1Index = resultValues.IndexOf(val1);
-            var val2Index = resultValues.IndexOf(val2);
-            var val3Index = resultValues.IndexOf(val3);
-
-            var keys = rvo.ObjDict.Keys;
-            var listKeys = keys.ToList();
-            var resultKeys = keys as RealmResults<string>;
-
-            var key1Index = resultKeys.IndexOf(key1);
-            var key2Index = resultKeys.IndexOf(key2);
-            var key3Index = resultKeys.IndexOf(key3);
-        }
-
-        [Test]
-        public void AList_RealmValue()  //To be removed
-        {
-            var rvo = new RealmValueObject();
-
-            var val1 = 10;
-            var val2 = "abc";
-            var val3 = new InternalObject { IntProperty = 30, StringProperty = "brown" };
-
-            _realm.Write(() => _realm.Add(rvo));
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueList.Add(val1);
-                rvo.RealmValueList.Add(val2);
-                rvo.RealmValueList.Add(val3);
-            });
-
-            var listValues = rvo.RealmValueList.ToList();
-
-            var val1Index = rvo.RealmValueList.IndexOf(val1);
-            var val2Index = rvo.RealmValueList.IndexOf(val2);
-            var val3Index = rvo.RealmValueList.IndexOf(val3);
-        }
-
-        [Test]
-        public void AList_Object()
-        {
-            var rvo = new RealmValueObject();
-
-            var val1 = new InternalObject { IntProperty = 10, StringProperty = "browsn" };
-            var val2 = new InternalObject { IntProperty = 20, StringProperty = "broawn" };
-            var val3 = new InternalObject { IntProperty = 30, StringProperty = "brown" };
-
-            _realm.Write(() => _realm.Add(rvo));
-
-            _realm.Write(() =>
-            {
-                rvo.ObjList.Add(val1);
-                rvo.ObjList.Add(val2);
-                rvo.ObjList.Add(val3);
-            });
-
-            var listValues = rvo.ObjList.ToList();
-
-            var val1Index = rvo.ObjList.IndexOf(val1);
-            var val2Index = rvo.ObjList.IndexOf(val2);
-            var val3Index = rvo.ObjList.IndexOf(val3);
-        }
-
         private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
         {
             realm.Refresh();
@@ -1088,18 +905,7 @@ namespace Realms.Tests.Database
 
             public IList<RealmValue> RealmValueList { get; }
 
-            public IList<InternalObject> ObjList { get; }  //TODO For testing
-
-            public ISet<RealmValue> RealmValueSet { get; } //TODO Need to add test for those when Set is ready
-
             public IDictionary<string, RealmValue> RealmValueDictionary { get; }
-
-            public IDictionary<string, int> IntDict { get; }  //TODO For testing
-
-            public IDictionary<string, string> StringDict { get; }  //TODO For testing
-
-            public IDictionary<string, InternalObject> ObjDict { get; }  //TODO For testing
-
         }
 
         private class InternalObject : RealmObject, IEquatable<InternalObject>
