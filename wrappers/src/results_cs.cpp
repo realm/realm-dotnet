@@ -178,15 +178,8 @@ REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::
 REALM_EXPORT size_t results_find_value(Results& results, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-
-        if (value.type == realm_value_type::RLM_TYPE_LINK) {
-            if (results.get_realm() != value.link.object->realm()) {
-                throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
-            }
-
-            return results.index_of(from_capi(value));  //This works -- Needs to be merged with same statement down here
-
-            //return results.index_of(value.link.object->obj());  //This doesn't work
+        if (value.type == realm_value_type::RLM_TYPE_LINK && results.get_realm() != value.link.object->realm()) {
+            throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
         }
 
         return results.index_of(from_capi(value));
