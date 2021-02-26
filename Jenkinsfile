@@ -455,7 +455,7 @@ def CreateDockerContainer(String targetFramework) {
     case 'netcoreapp3.1':
       // Using a custom docker image for .NET Core 3.1 because the official has incorrect casing for
       // Microsoft.WinFX.props. More info can be found at https://github.com/dotnet/sdk/issues/11108
-      test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore31", extra_args: "-f ./Tests/netcore31.Dockerfile")
+      test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore3.1.406", extra_args: "-f ./Tests/netcore31.Dockerfile")
     break
     case 'net5.0':
       dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
