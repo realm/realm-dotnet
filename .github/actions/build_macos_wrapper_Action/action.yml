@@ -1,0 +1,15 @@
+name: 'Build macos wrapper'
+description: 'Builds macos wrapper for .net5'
+inputs:
+  build-configuration:
+    description: 'Configuration to build: Release/Debug'
+    required: true
+    default: 'Release'
+runs:
+  # using: "composite"
+  # steps:
+    # - name: 'Build wrappers'
+      # run: REALM_CMAKE_CONFIGURATION=${{ inputs.build-configuration }} ./wrappers/build-macos.sh
+      # shell: bash
+  using: 'node12'
+  main: 'index.js'
