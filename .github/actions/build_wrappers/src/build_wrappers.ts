@@ -35,6 +35,7 @@ async function run(): Promise<void>
     
     if (cacheKey === undefined)
     {
+        core.info("No cache was found, the wrappers will be compiled")
         let cmdOutput: [string, string];
         try
         {
@@ -64,6 +65,7 @@ async function run(): Promise<void>
     }
     else
     {
+        core.info("A build of the wrappers was found in cache, skipping building...")
         // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
     }
 }

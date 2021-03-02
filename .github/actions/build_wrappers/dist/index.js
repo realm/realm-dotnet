@@ -63,6 +63,7 @@ function run() {
             cacheKey = yield cache.restoreCache(paths, finalHash);
         }
         if (cacheKey === undefined) {
+            core.info("No cache was found, the wrappers will be compiled");
             let cmdOutput;
             try {
                 cmdOutput = yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh");
@@ -84,6 +85,7 @@ function run() {
             }
         }
         else {
+            core.info("A build of the wrappers was found in cache, skipping building...");
             // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
         }
     });
