@@ -12,4 +12,4 @@ runs:
       # run: REALM_CMAKE_CONFIGURATION=${{ inputs.build-configuration }} ./wrappers/build-macos.sh
       # shell: bash
   using: 'node12'
-  main: 'index.js'
+  main: 'build_macos_wrapper.js'
