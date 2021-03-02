@@ -28,8 +28,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const cache = __importStar(require("@actions/cache"));
 const core = __importStar(require("@actions/core"));
+const cache = __importStar(require("@actions/cache"));
 const folderHash = __importStar(require("folder-hash"));
 const crypto = __importStar(require("crypto"));
 const common_1 = require("./utils/common");
@@ -39,7 +39,7 @@ function run() {
         const hashOptions = {
             files: { include: ["*.dll"] },
         };
-        let finalHash;
+        let finalHash = undefined;
         try {
             finalHash = hash(yield hashFolders(paths, hashOptions));
         }
@@ -50,8 +50,8 @@ function run() {
         // const restoreKeys = [
         //     openingHashSignature
         // ]
-        let cacheKey;
-        if (finalHash !== null) {
+        let cacheKey = undefined;
+        if (finalHash !== undefined) {
             cacheKey = yield cache.restoreCache(paths, finalHash);
         }
         if (cacheKey === undefined) {
@@ -63,12 +63,12 @@ function run() {
                 core.setFailed("Error while building: " + err.message);
                 return;
             }
-            if (cmdOutput[0] != null) {
+            if (cmdOutput[0] !== undefined) {
                 core.setFailed(cmdOutput[0]);
                 return;
             }
             else {
-                if (cmdOutput[1] !== null) {
+                if (cmdOutput[1] !== undefined) {
                     core.info(cmdOutput[1]);
                 }
                 const key = hash(yield hashFolders(paths, hashOptions));
@@ -87,13 +87,13 @@ function hash(str) {
 }
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        let hashes;
+        let hashes = [];
         for (let path of paths) {
             yield folderHash.hashElement(path, hashOptions)
                 .then(hash => { hashes.push(hash.hash); })
                 .catch(err => { "Error creating hash for " + path + ":\n" + err; });
         }
-        return hashes === null || hashes === void 0 ? void 0 : hashes.join("");
+        return hashes.join("");
     });
 }
 run();
