@@ -83,7 +83,7 @@ async function run(): Promise<void>
 // Result: signature-"hashOfStr"
 function hash(str: string)
 {
-    const openingHashSignature = `cache-hash-${process.platform}`;
+    const openingHashSignature = `cache-hash-${process.platform}-`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 
