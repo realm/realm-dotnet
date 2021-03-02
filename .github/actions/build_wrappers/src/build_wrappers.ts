@@ -30,6 +30,7 @@ async function run(): Promise<void>
     let cacheKey: string | undefined = undefined;
     if (finalHash !== undefined)
     {
+        core.debug("hash key for build is: " + finalHash);
         cacheKey = await cache.restoreCache(paths, finalHash);
     }
     
@@ -65,7 +66,7 @@ async function run(): Promise<void>
     }
     else
     {
-        core.info("A build of the wrappers was found in cache, skipping building...")
+        core.info("A build of the wrappers was found in cache with cacheKey: " + cacheKey + "\nskipping building...");
         // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
     }
 }

@@ -60,6 +60,7 @@ function run() {
         // ]
         let cacheKey = undefined;
         if (finalHash !== undefined) {
+            core.debug("hash key for build is: " + finalHash);
             cacheKey = yield cache.restoreCache(paths, finalHash);
         }
         if (cacheKey === undefined) {
@@ -85,7 +86,7 @@ function run() {
             }
         }
         else {
-            core.info("A build of the wrappers was found in cache, skipping building...");
+            core.info("A build of the wrappers was found in cache with cacheKey: " + cacheKey + "\nskipping building...");
             // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
         }
     });

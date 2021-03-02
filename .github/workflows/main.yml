@@ -18,7 +18,7 @@ jobs:
     #     key: wrapper-macos-${{hashfiles('./wrappers/**')}}
     - name: 'Build wrappers'
       # if: 'steps.wrapper-cache.outputs.cache-hit != true'
-      uses: ./.github/actions/build_macos_wrapper_Action
+      uses: ./.github/actions/build_wrappers
       with:
         build-configuration: Release
   build-wrappers-windows:
