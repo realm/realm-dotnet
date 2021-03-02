@@ -100,7 +100,7 @@ function run() {
 }
 // Result: signature-"hashOfStr"
 function hash(str) {
-    const openingHashSignature = `cache-hash-${process.platform}`;
+    const openingHashSignature = `cache-hash-${process.platform}-`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 function hashFolders(paths, hashOptions) {
