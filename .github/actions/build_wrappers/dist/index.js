@@ -60,7 +60,7 @@ function run() {
         // ]
         let cacheKey = undefined;
         if (finalHash !== undefined) {
-            core.debug("hash key for build is: " + finalHash);
+            core.info("hash key for build is: " + finalHash);
             cacheKey = yield cache.restoreCache(paths, finalHash);
         }
         if (cacheKey === undefined) {

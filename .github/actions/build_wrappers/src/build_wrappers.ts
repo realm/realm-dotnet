@@ -30,7 +30,7 @@ async function run(): Promise<void>
     let cacheKey: string | undefined = undefined;
     if (finalHash !== undefined)
     {
-        core.debug("hash key for build is: " + finalHash);
+        core.info("hash key for build is: " + finalHash);
         cacheKey = await cache.restoreCache(paths, finalHash);
     }
     
