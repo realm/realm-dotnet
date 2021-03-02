@@ -46,7 +46,7 @@ namespace realm {
         std::string s_platform_version;
         std::string s_sdk_version;
 
-        void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
+        void (*s_log_message_callback)(void* managed_handler, realm_value_t message, util::Logger::Level level);
         void (*s_user_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
         void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
         void (*s_bson_callback)(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
@@ -82,32 +82,32 @@ namespace realm {
         class SyncLogger : public util::RootLogger {
         public:
             SyncLogger(void* delegate)
-                : m_log_message_delegate(delegate)
+                : managed_delegate(delegate)
             {
             }
 
             void do_log(util::Logger::Level level, std::string message) {
-                s_log_message_callback(m_log_message_delegate, message.c_str(), message.length(), level);
+                s_log_message_callback(managed_delegate, to_capi(Mixed(message)), level);
             }
         private:
-            void* m_log_message_delegate;
+            void* managed_delegate;
         };
 
         class SyncLoggerFactory : public realm::SyncLoggerFactory {
         public:
             SyncLoggerFactory(void* managed_log_handler)
-                : m_managed_log_handler(managed_log_handler)
+                : managed_delegate(managed_log_handler)
             {
             }
 
             std::unique_ptr<util::Logger> make_logger(util::Logger::Level level)
             {
-                auto logger = std::make_unique<SyncLogger>(m_managed_log_handler);
+                auto logger = std::make_unique<SyncLogger>(managed_delegate);
                 logger->set_level_threshold(level);
                 return std::unique_ptr<util::Logger>(logger.release());
             }
         private:
-            void* m_managed_log_handler;
+            void* managed_delegate;
         };
     }
 }
@@ -302,7 +302,7 @@ extern "C" {
     REALM_EXPORT void shared_app_reset_for_testing(SharedApp& app) {
         auto users = app->all_users();
         for (size_t i = 0; i < users.size(); i++) {
-            auto user = users[i];
+            auto &user = users[i];
             user->log_out();
         }
 

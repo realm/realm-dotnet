@@ -21,6 +21,7 @@
 
 #include "marshalling.hpp"
 #include "error_handling.hpp"
+#include "shared_realm_cs.hpp"
 
 using namespace realm;
 
@@ -58,7 +59,7 @@ size_t realm::binding::stringdata_to_csharpstringbuffer(StringData str, uint16_t
     size_t size = Xcode::find_utf16_buf_size(in_begin, in_end);//Figure how much space is actually needed
 
     if (in_begin != in_end) {
-        std::cerr << "BAD UTF8 DATA IN stringdata_tocsharpbuffer :" << str.data() << "\n";
+        realm::binding::log_message(util::format("BAD UTF8 DATA IN stringdata_tocsharpbuffer: %1", str.data()));
         return -1;//bad uft8 data    
     }
     if (size > bufsize)

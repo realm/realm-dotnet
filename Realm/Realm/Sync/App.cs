@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Helpers;
+using Realms.Logging;
 
 namespace Realms.Sync
 {
@@ -159,7 +160,7 @@ namespace Realms.Sync
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
-                log_level = config.LogLevel,
+                log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : RealmConfigurationBase.LogLevel,
             };
 
             if (config.CustomLogger != null)
@@ -167,6 +168,12 @@ namespace Realms.Sync
                 // TODO: should we free this eventually?
                 var logHandle = GCHandle.Alloc(config.CustomLogger);
                 nativeConfig.managed_log_callback = GCHandle.ToIntPtr(logHandle);
+            }
+            else if (RealmConfigurationBase.Logger != null)
+            {
+                // TODO: we should probably reuse a single GCHandle for this.
+                var loggerHandle = GCHandle.Alloc(RealmConfigurationBase.Logger);
+                nativeConfig.managed_log_callback = GCHandle.ToIntPtr(loggerHandle);
             }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);

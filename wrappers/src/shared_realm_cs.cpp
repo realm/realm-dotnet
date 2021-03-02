@@ -28,6 +28,7 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/object-store/sync/async_open_task.hpp>
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -44,6 +45,7 @@ namespace binding {
     void (*s_realm_changed)(void* managed_state_handle);
     void (*s_get_native_schema)(SchemaForMarshaling schema, void* managed_callback);
     void (*s_on_binding_context_destructed)(void* managed_handle);
+    void (*s_log_message)(realm_value_t message, util::Logger::Level level);
 
     CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
 
@@ -55,6 +57,11 @@ namespace binding {
     CSharpBindingContext::~CSharpBindingContext()
     {
         s_on_binding_context_destructed(m_managed_state_handle);
+    }
+
+    void log_message(std::string message, util::Logger::Level level)
+    {
+        s_log_message(to_capi(Mixed(message)), level);
     }
 }
 
@@ -106,12 +113,18 @@ extern "C" {
 
 typedef uint32_t realm_table_key;
 
-REALM_EXPORT void shared_realm_install_callbacks(decltype(s_realm_changed) realm_changed, decltype(s_get_native_schema) get_schema, decltype(s_open_realm_callback) open_callback, decltype(s_on_binding_context_destructed) on_binding_context_destructed)
+REALM_EXPORT void shared_realm_install_callbacks(
+    decltype(s_realm_changed) realm_changed, 
+    decltype(s_get_native_schema) get_schema, 
+    decltype(s_open_realm_callback) open_callback, 
+    decltype(s_on_binding_context_destructed) on_binding_context_destructed,
+    decltype(s_log_message) log_message)
 {
     s_realm_changed = realm_changed;
     s_get_native_schema = get_schema;
     s_open_realm_callback = open_callback;
     s_on_binding_context_destructed = on_binding_context_destructed;
+    s_log_message = log_message;
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -248,6 +261,12 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm& realm, NativeException::
         realm->close();
     });
 }
+
+REALM_EXPORT void shared_realm_close_all_realms()
+{
+    realm::_impl::RealmCoordinator::clear_all_caches();
+}
+
 
 REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
 {

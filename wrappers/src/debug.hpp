@@ -30,10 +30,6 @@
 
 namespace realm {
 
-#if defined(DEBUG) || !defined(NDEBUG)
-void debug_log(std::string message);
-#endif
-
 // https://stackoverflow.com/a/28827188/1649102
 inline void sleep_ms(int milliseconds){ // cross-platform sleep function
 #ifdef WIN32

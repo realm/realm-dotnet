@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Logging;
 
 namespace Realms.Sync.Native
 {

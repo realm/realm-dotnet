@@ -1,5 +1,4 @@
 set(SOURCES
-    debug.cpp
     error_handling.cpp
     list_cs.cpp
     set_cs.cpp
