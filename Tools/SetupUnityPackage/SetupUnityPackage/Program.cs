@@ -13,6 +13,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using RealmWeaver;
 using UnityUtils;
 
 namespace SetupUnityPackage
@@ -109,10 +110,14 @@ namespace SetupUnityPackage
             Console.WriteLine($"Included {_packageMaps[RealmPackageId].Count} files from {RealmPackageId}@{version}");
 
             Console.WriteLine("Inluding UnityUtils");
-
-            var targetPath = Path.Combine(GetUnityPackagePath(), "UnityUtils.dll");
-            File.Copy(GetUnityUtilsPath(), targetPath, overwrite: true);
+            var unityUtilsTargetPath = Path.Combine(GetUnityPackagePath(), "UnityUtils.dll");
+            File.Copy(GetUnityUtilsPath(), unityUtilsTargetPath, overwrite: true);
             Console.WriteLine($"Included 1 file from UnityUtils@{typeof(FileHelper).Assembly.GetName().Version.ToString(3)}");
+
+            Console.WriteLine("Inluding UnityWeaver");
+            var unityWeaverTargetPath = Path.Combine(GetUnityEditorPath(), "UnityWeaver.dll");
+            File.Copy(GetUnityWeaverPath(), unityWeaverTargetPath, overwrite: true);
+            Console.WriteLine($"Included 1 file from UnityWeaver@{typeof(UnityWeaver).Assembly.GetName().Version.ToString(3)}");
 
             if (opts.IncludeDependencies)
             {
@@ -252,6 +257,8 @@ namespace SetupUnityPackage
 
         private static string GetUnityPackagePath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Runtime");
 
+        private static string GetUnityEditorPath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Editor");
+
         private static string GetUnityUtilsPath()
         {
 #if DEBUG
@@ -261,6 +268,17 @@ namespace SetupUnityPackage
 #endif
 
             return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityUtils", "bin", targetFolder, "netstandard2.0", "UnityUtils.dll");
+        }
+
+        private static string GetUnityWeaverPath()
+        {
+#if DEBUG
+            var targetFolder = "Debug";
+#else
+            var targetFolder = "Release";
+#endif
+
+            return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityWeaver", "bin", targetFolder, "netstandard2.0", "UnityWeaver.dll");
         }
 
         private static void UpdatePackageJson(bool includesDependencies)

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Realm\Realm.Fody\Common\*.cs">
+        <Link>Common\%(Filename)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm.Fody\Extensions\*.cs">
+        <Link>Extensions\%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Unity3D.SDK" Version="2020.2.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\..\Realm\Realm.Unity\Editor\Cecil\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\..\Realm\Realm.Unity\Editor\Cecil\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\..\Realm\Realm.Unity\Editor\Cecil\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
