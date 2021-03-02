@@ -29,16 +29,16 @@ namespace RealmWeaver
     public class ResolutionResult : IDisposable
     {
         private readonly WeaverAssemblyResolver _resolver;
-        private readonly FileStream _fileStream;
+        private readonly string _filePath;
         private readonly WriterParameters _writerParameters;
 
         public ModuleDefinition Module { get; }
 
-        public ResolutionResult(ModuleDefinition module, FileStream fileStream, WeaverAssemblyResolver resolver, bool writeSymbols)
+        public ResolutionResult(ModuleDefinition module, string filePath, WeaverAssemblyResolver resolver, bool writeSymbols)
         {
             Module = module;
             _resolver = resolver;
-            _fileStream = fileStream;
+            _filePath = filePath;
 
             _writerParameters = new WriterParameters();
             if (writeSymbols)
@@ -50,13 +50,12 @@ namespace RealmWeaver
 
         public void SaveModuleUpdates()
         {
-            Module.Write(_writerParameters);
+            Module.Write(_filePath, _writerParameters);
         }
 
         public void Dispose()
         {
             Module.Dispose();
-            _fileStream.Dispose();
             _resolver.Dispose();
         }
     }
@@ -88,26 +87,26 @@ namespace RealmWeaver
                 return null;
             }
 
-            var assemblyStream = new FileStream(absolutePath, FileMode.Open, FileAccess.ReadWrite);
             var resolver = new WeaverAssemblyResolver(references);
             var readerParameters = new ReaderParameters
             {
-                ReadingMode = ReadingMode.Immediate,
-                ReadWrite = true,
                 AssemblyResolver = resolver,
-                ReadSymbols = false,
+                InMemory = true,
             };
 
-            var hasDebugInfo = File.Exists(absolutePath.Replace(".dll", ".pdb"));
-            if (hasDebugInfo)
+            var hasDebugInfo = false;
+            var module = ModuleDefinition.ReadModule(absolutePath, readerParameters);
+
+            try
             {
-                readerParameters.ReadSymbols = true;
-                readerParameters.SymbolReaderProvider = new PdbReaderProvider();
+                module.ReadSymbols();
+                hasDebugInfo = true;
+            }
+            catch
+            {
             }
 
-            var module = ModuleDefinition.ReadModule(assemblyStream, readerParameters);
-
-            return new ResolutionResult(module, assemblyStream, resolver, hasDebugInfo);
+            return new ResolutionResult(module, absolutePath, resolver, hasDebugInfo);
         }
 
         private static string GetAbsolutePath(string assemblyPath)

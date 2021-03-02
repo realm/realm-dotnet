@@ -6,6 +6,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetupUnityPackage", "SetupU
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityUtils", "UnityUtils\UnityUtils.csproj", "{D47C5E2C-710D-45C8-8203-9952B54E5634}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityWeaver", "UnityWeaver\UnityWeaver.csproj", "{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{D47C5E2C-710D-45C8-8203-9952B54E5634}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D47C5E2C-710D-45C8-8203-9952B54E5634}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D47C5E2C-710D-45C8-8203-9952B54E5634}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
