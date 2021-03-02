@@ -78,12 +78,14 @@ function run() {
                 core.setFailed(`Error while building: ${err.message}`);
                 return;
             }
-            if (cmdOutput[0] !== undefined) {
+            // stderr from cmd
+            if (cmdOutput[1] !== undefined) {
                 core.setFailed(cmdOutput[0]);
                 return;
             }
             else {
-                if (cmdOutput[1] !== undefined) {
+                // stdout from cmd
+                if (cmdOutput[0] !== undefined) {
                     core.info(cmdOutput[1]);
                 }
                 const key = hash(yield hashFolders(paths, hashOptions));
