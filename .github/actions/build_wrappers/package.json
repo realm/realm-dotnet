@@ -1,0 +1,17 @@
+{
+  "name": "build_macos_wrappers",
+  "version": "1.0.0",
+  "description": "Builds macos wrapper for the .net sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrea Catalini",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/cache": "^1.0.6",
+    "@actions/core": "^1.2.6",
+    "@types/folder-hash": "^3.3.0",
+    "folder-hash": "^4.0.0"
+  }
+}

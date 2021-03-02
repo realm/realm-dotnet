@@ -188,7 +188,6 @@ NDependOut
 *.xam
 Resource.designer.cs
 FodyWeavers.xsd
-.vscode
 Realm/Realm.Unity/Runtime/**/*.dll
 Realm/Realm.Unity/Runtime/**/*.so
 Realm/Realm.Unity/Runtime/**/*.dylib

@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "typescript",
+			"tsconfig": "actions/build_wrappers/tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build",
+			"label": "tsc: build - actions/build_wrappers/tsconfig.json"
+		},
+		{
+			"label": "Pack to distribute build_wrappers action",
+			"type": "shell",
+			"command": "ncc build actions/build_wrappers/build/build_wrappers.js -o actions/build_wrappers/dist",
+			"dependsOn": "tsc: build - actions/build_wrappers/tsconfig.json",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+			"reveal": "always",
+			"panel": "shared"
+			}
+		}
+	]
+}
