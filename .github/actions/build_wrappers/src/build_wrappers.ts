@@ -19,7 +19,7 @@ async function run(): Promise<void>
     }
     catch (error)
     {
-        core.error("hashing failed:" + error);
+        core.error(`Hashing failed: ${error}`);
     }
 
     //TODO see if it could be of use
@@ -30,13 +30,20 @@ async function run(): Promise<void>
     let cacheKey: string | undefined = undefined;
     if (finalHash !== undefined)
     {
-        core.info("hash key for build is: " + finalHash);
-        cacheKey = await cache.restoreCache(paths, finalHash);
+        core.info(`Hash key for build is: ${finalHash}`);
+        try
+        {
+            cacheKey = await cache.restoreCache(paths, finalHash);
+        }
+        catch (err)
+        {
+            core.error(`Impossible to retrieve cache: ${err}`);
+        }
     }
     
     if (cacheKey === undefined)
     {
-        core.info("No cache was found, the wrappers will be compiled")
+        core.info(`No cache was found, the wrappers will be compiled`)
         let cmdOutput: [string, string];
         try
         {
@@ -44,7 +51,7 @@ async function run(): Promise<void>
         }
         catch (err)
         {
-            core.setFailed("Error while building: " + err.message);
+            core.setFailed(`Error while building: ${err.message}`);
             return;
         }
 
@@ -66,7 +73,7 @@ async function run(): Promise<void>
     }
     else
     {
-        core.info("A build of the wrappers was found in cache with cacheKey: " + cacheKey + "\nskipping building...");
+        core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
         // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
     }
 }
@@ -74,7 +81,7 @@ async function run(): Promise<void>
 // Result: signature-"hashOfStr"
 function hash(str: string)
 {
-    const openingHashSignature = ["cache-hash-", process.platform, "-"].join("");
+    const openingHashSignature = `cache-hash-${process.platform}`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 
@@ -85,7 +92,7 @@ async function hashFolders(paths: string[], hashOptions: folderHash.HashElementO
     {
         await folderHash.hashElement(path, hashOptions)
             .then(hash => { hashes.push(hash.hash); })
-            .catch(err => {"Error creating hash for " + path + ":\n" + err});
+            .catch(err => {`Error creating hash for ${path}:\n ${err}`});
     }
     return hashes.join("");
 }

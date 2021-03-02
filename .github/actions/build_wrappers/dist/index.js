@@ -52,7 +52,7 @@ function run() {
             finalHash = hash(yield hashFolders(paths, hashOptions));
         }
         catch (error) {
-            core.error("hashing failed:" + error);
+            core.error(`Hashing failed: ${error}`);
         }
         //TODO see if it could be of use
         // const restoreKeys = [
@@ -60,17 +60,22 @@ function run() {
         // ]
         let cacheKey = undefined;
         if (finalHash !== undefined) {
-            core.info("hash key for build is: " + finalHash);
-            cacheKey = yield cache.restoreCache(paths, finalHash);
+            core.info(`Hash key for build is: ${finalHash}`);
+            try {
+                cacheKey = yield cache.restoreCache(paths, finalHash);
+            }
+            catch (err) {
+                core.error(`Impossible to retrieve cache: ${err}`);
+            }
         }
         if (cacheKey === undefined) {
-            core.info("No cache was found, the wrappers will be compiled");
+            core.info(`No cache was found, the wrappers will be compiled`);
             let cmdOutput;
             try {
                 cmdOutput = yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh");
             }
             catch (err) {
-                core.setFailed("Error while building: " + err.message);
+                core.setFailed(`Error while building: ${err.message}`);
                 return;
             }
             if (cmdOutput[0] !== undefined) {
@@ -86,14 +91,14 @@ function run() {
             }
         }
         else {
-            core.info("A build of the wrappers was found in cache with cacheKey: " + cacheKey + "\nskipping building...");
+            core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
             // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
         }
     });
 }
 // Result: signature-"hashOfStr"
 function hash(str) {
-    const openingHashSignature = ["cache-hash-", process.platform, "-"].join("");
+    const openingHashSignature = `cache-hash-${process.platform}`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 function hashFolders(paths, hashOptions) {
@@ -102,7 +107,7 @@ function hashFolders(paths, hashOptions) {
         for (let path of paths) {
             yield folderHash.hashElement(path, hashOptions)
                 .then(hash => { hashes.push(hash.hash); })
-                .catch(err => { "Error creating hash for " + path + ":\n" + err; });
+                .catch(err => { `Error creating hash for ${path}:\n ${err}`; });
         }
         return hashes.join("");
     });
