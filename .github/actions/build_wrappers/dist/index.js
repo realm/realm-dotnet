@@ -69,7 +69,7 @@ function run() {
             }
         }
         if (cacheKey === undefined) {
-            core.info(`No cache was found, the wrappers will be compiled`);
+            core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
             let cmdOutput;
             try {
                 cmdOutput = yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh");
@@ -79,14 +79,14 @@ function run() {
                 return;
             }
             // stderr from cmd
-            if (cmdOutput[1] !== undefined) {
-                core.setFailed(cmdOutput[0]);
+            if (cmdOutput[1].length > 0) {
+                core.setFailed(cmdOutput[1]);
                 return;
             }
             else {
                 // stdout from cmd
-                if (cmdOutput[0] !== undefined) {
-                    core.info(cmdOutput[1]);
+                if (cmdOutput[0].length > 0) {
+                    core.info(cmdOutput[0]);
                 }
                 const key = hash(yield hashFolders(paths, hashOptions));
                 const cacheId = yield cache.saveCache(paths, key);
