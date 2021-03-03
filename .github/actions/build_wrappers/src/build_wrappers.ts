@@ -43,7 +43,7 @@ async function run(): Promise<void>
     
     if (cacheKey === undefined)
     {
-        core.info(`No cache was found, the wrappers will be compiled`)
+        core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`)
         let cmdOutput: [string, string];
         try
         {
@@ -56,17 +56,17 @@ async function run(): Promise<void>
         }
 
         // stderr from cmd
-        if (cmdOutput[1] !== undefined)
+        if (cmdOutput[1].length > 0)
         {
-            core.setFailed(cmdOutput[0]);
+            core.setFailed(cmdOutput[1]);
             return;
         }
         else
         {
             // stdout from cmd
-            if (cmdOutput[0] !== undefined)
+            if (cmdOutput[0].length > 0)
             {
-                core.info(cmdOutput[1]);
+                core.info(cmdOutput[0]);
             }
 
             const key = hash(await hashFolders(paths, hashOptions));
