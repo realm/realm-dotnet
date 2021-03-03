@@ -71,7 +71,9 @@ function run() {
         if (cacheKey === undefined) {
             core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
             try {
+                core.startGroup(`Build process output`);
                 yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
+                core.endGroup;
             }
             catch (err) {
                 core.setFailed(`Error while building: ${err.message}`);
@@ -139,17 +141,15 @@ function execShellCommand(cmd, outputStream) {
     return new Promise((resolve, reject) => {
         var _a, _b;
         let buildCmd = cp.exec(cmd);
-        outputStream.startGroup(`Child process output`);
         (_a = buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
-            outputStream.info(`stdout: ${data.toString()}`);
+            outputStream.info(data.toString());
         });
         (_b = buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
-            outputStream.error(`stderr: ${data.toString()}`);
+            outputStream.info(data.toString());
         });
         buildCmd.on("exit", (code) => {
             outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
         });
-        outputStream.endGroup();
     });
 }
 exports.execShellCommand = execShellCommand;

@@ -46,7 +46,9 @@ async function run(): Promise<void>
         core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`)
         try
         {
+            core.startGroup(`Build process output`);
             await execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
+            core.endGroup
         }
         catch (err)
         {
