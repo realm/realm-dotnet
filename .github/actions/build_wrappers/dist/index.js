@@ -70,27 +70,15 @@ function run() {
         }
         if (cacheKey === undefined) {
             core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
-            let cmdOutput;
             try {
-                cmdOutput = yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh");
+                yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
             }
             catch (err) {
                 core.setFailed(`Error while building: ${err.message}`);
                 return;
             }
-            // stderr from cmd
-            if (cmdOutput[1].length > 0) {
-                core.setFailed(cmdOutput[1]);
-                return;
-            }
-            else {
-                // stdout from cmd
-                if (cmdOutput[0].length > 0) {
-                    core.info(cmdOutput[0]);
-                }
-                const key = hash(yield hashFolders(paths, hashOptions));
-                const cacheId = yield cache.saveCache(paths, key);
-            }
+            const key = hash(yield hashFolders(paths, hashOptions));
+            const cacheId = yield cache.saveCache(paths, key);
         }
         else {
             core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
@@ -146,20 +134,18 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.execShellCommand = void 0;
-// export interface output {
-//     debug(text: string): void;
-//     info(text: string): void;
-//     warning(text: string): void;
-//     error(text: string): void;
-// }
 const cp = __importStar(__nccwpck_require__(3129));
-function execShellCommand(cmd) {
+function execShellCommand(cmd, outputStream) {
     return new Promise((resolve, reject) => {
-        cp.exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-                throw new Error(error.message);
-            }
-            resolve([stdout, stderr]);
+        let buildCmd = cp.spawn(cmd);
+        buildCmd.stdout.on("data", (data) => {
+            outputStream.info(`stdout: ${data.toString()}`);
+        });
+        buildCmd.stderr.on("data", (data) => {
+            outputStream.error(`stderr: ${data.toString()}`);
+        });
+        buildCmd.on("exit", (code) => {
+            outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
         });
     });
 }
