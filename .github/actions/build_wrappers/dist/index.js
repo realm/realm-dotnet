@@ -160,16 +160,24 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.execShellCommand = void 0;
 const cp = __importStar(__nccwpck_require__(3129));
 function execShellCommand(outputStream, cmd, cmdParams, envVars) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        cp.spawn("", envVars);
-        let buildCmd = cp.spawn(cmd, cmdParams);
-        buildCmd.stdout.on("data", (data) => {
+        let buildCmd;
+        try {
+            if (envVars !== undefined) {
+                buildCmd = cp.spawn(cmd, cmdParams, { env: { REALM_CMAKE_CONFIGURATION: "Release" } });
+            }
+        }
+        catch (err) {
+            outputStream.error(`failed to execute command: ${err.message}`);
+        }
+        (_a = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
             outputStream.info(data.toString());
         });
-        buildCmd.stderr.on("data", (data) => {
+        (_b = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
             outputStream.info(data.toString());
         });
-        buildCmd.on("exit", (code) => {
+        buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.on("exit", (code) => {
             outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
         });
     });
