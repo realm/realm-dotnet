@@ -26,8 +26,10 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class RealmValueTests : RealmInstanceTest
+    public class AAARealmValueTests : RealmInstanceTest  //AAAA Is for testing
     {
+        #region Primitive values
+
         #region TestCaseSources
 
         private static readonly char[] _charValues = new char[] { (char)0, 'a', char.MaxValue, char.MinValue };
@@ -43,9 +45,9 @@ namespace Realms.Tests.Database
         private static readonly DateTimeOffset[] _dateValues = new DateTimeOffset[] { DateTimeOffset.Now, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
         private static readonly Guid[] _guidValues = new Guid[] { Guid.NewGuid(), Guid.Empty };
         private static readonly ObjectId[] _objectIdValues = new ObjectId[] { ObjectId.GenerateNewId(), ObjectId.Empty };
-        private static readonly string[] _stringValues = new string[] { "abc", string.Empty};
-        private static readonly byte[][] _dataValues = new byte[][] { new byte[] { 0, 1, 2 }, new byte[] { } };
-        private static readonly RealmObject[] _objectValues = new RealmObject[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } }; //TODO add new test cases
+        private static readonly string[] _stringValues = new string[] {"a", "abc", string.Empty};
+        private static readonly byte[][] _dataValues = new byte[][] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
+        private static readonly RealmObject[] _objectValues = new RealmObject[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
         public static IEnumerable<object> CharTestCases() => GenerateTestCases(_charValues);
 
@@ -418,8 +420,9 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [Test]
-        public void RealmValue_NullTests([Values] bool isManaged)
+        [TestCase(true)]
+        [TestCase(false)]
+        public void RealmValue_NullTests(bool isManaged)
         {
             RealmValue rv = RealmValue.Null;
 
@@ -659,7 +662,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
 
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(RealmValueObject.RealmValueProperty),
-                nameof(RealmValueObject.RealmValueProperty), 
+                nameof(RealmValueObject.RealmValueProperty),
                 nameof(RealmValueObject.RealmValueProperty) }));
         }
 
@@ -678,6 +681,61 @@ namespace Realms.Tests.Database
 
             Assert.That(objs.Count, Is.EqualTo(1));
             Assert.That(objs[0], Is.EqualTo(value));
+        }
+
+        [Test]
+        public void RealmValue_DynamicTests()
+        {
+            //TODO To implement
+        }
+
+        #endregion
+
+        #region Collections
+
+        public static IEnumerable<ListTestCaseData> ListTestValues()
+        {
+            yield return new ListTestCaseData(
+                (null, RealmValueType.Null),
+                (10, RealmValueType.Int),
+                (true, RealmValueType.Bool),
+                ("abc", RealmValueType.String),
+                (new byte[] { 0, 1, 2 }, RealmValueType.Data),
+                (DateTimeOffset.Now, RealmValueType.Date),
+                (1.5f, RealmValueType.Float),
+                (2.5d, RealmValueType.Double),
+                (5m, RealmValueType.Decimal128),
+                (ObjectId.GenerateNewId(), RealmValueType.ObjectId),
+                (Guid.NewGuid(), RealmValueType.Guid),
+                (new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object));
+        }
+
+        [TestCaseSource(nameof(ListTestValues))]
+        public void RealmValue_WhenUnmanaged_ListTests(ListTestCaseData tcd)
+        {
+            var rvo = new RealmValueObject();
+
+            tcd.Seed(rvo.RealmValueList);
+
+            tcd.AssertCount(rvo.RealmValueList);
+            tcd.AssertContains(rvo.RealmValueList);
+            tcd.AssertType(rvo.RealmValueList);
+            tcd.AssertEquality(rvo.RealmValueList);
+        }
+
+        [TestCaseSource(nameof(ListTestValues))]
+        public void RealmValue_WhenManaged_ListTests(ListTestCaseData tcd)
+        {
+            var rvo = new RealmValueObject();
+
+            _realm.Write(() => { _realm.Add(rvo); });
+
+            tcd.Seed(rvo.RealmValueList);
+
+            tcd.AssertCount(rvo.RealmValueList);
+            tcd.AssertContains(rvo.RealmValueList);
+            tcd.AssertType(rvo.RealmValueList);
+            tcd.AssertEquality(rvo.RealmValueList);
         }
 
         [Test]
@@ -712,26 +770,6 @@ namespace Realms.Tests.Database
                 rvo.RealmValueList.Add(objectValue);
             });
 
-            Assert.That(rvo.RealmValueList.Count, Is.EqualTo(5));
-            Assert.That(rvo.RealmValueList[0] == intValue);
-            Assert.That(rvo.RealmValueList[1] == stringValue);
-            Assert.That(rvo.RealmValueList[2] == guidValue);
-            Assert.That(rvo.RealmValueList[3] == RealmValue.Null);
-            Assert.That(rvo.RealmValueList[4].As<RealmObjectBase>(), Is.EqualTo(objectValue));
-
-            Assert.That(rvo.RealmValueList.Contains(intValue));
-            Assert.That(rvo.RealmValueList.Contains(stringValue));
-            Assert.That(rvo.RealmValueList.Contains(guidValue));
-            Assert.That(rvo.RealmValueList.Contains(nullValue));
-            Assert.That(rvo.RealmValueList.Contains(objectValue));
-            Assert.That(!rvo.RealmValueList.Contains(notAddedValue));
-
-            Assert.That(rvo.RealmValueList.IndexOf(intValue), Is.EqualTo(0));
-            Assert.That(rvo.RealmValueList.IndexOf(stringValue), Is.EqualTo(1));
-            Assert.That(rvo.RealmValueList.IndexOf(guidValue), Is.EqualTo(2));
-            Assert.That(rvo.RealmValueList.IndexOf(nullValue), Is.EqualTo(3));
-            Assert.That(rvo.RealmValueList.IndexOf(objectValue), Is.EqualTo(4));
-            Assert.That(rvo.RealmValueList.IndexOf(notAddedValue), Is.EqualTo(-1));
 
             VerifyNotifications(_realm, changeSetList, () =>
             {
@@ -743,18 +781,6 @@ namespace Realms.Tests.Database
                 rvo.RealmValueList.Remove(stringValue);
             });
 
-            Assert.That(rvo.RealmValueList.Count, Is.EqualTo(4));
-            Assert.That(rvo.RealmValueList[0] == intValue);
-            Assert.That(rvo.RealmValueList[1] == guidValue);
-            Assert.That(rvo.RealmValueList[2] == RealmValue.Null);
-            Assert.That(rvo.RealmValueList[3].As<RealmObjectBase>(), Is.EqualTo(objectValue));
-
-            Assert.That(rvo.RealmValueList.IndexOf(intValue), Is.EqualTo(0));
-            Assert.That(rvo.RealmValueList.IndexOf(guidValue), Is.EqualTo(1));
-            Assert.That(rvo.RealmValueList.IndexOf(nullValue), Is.EqualTo(2));
-            Assert.That(rvo.RealmValueList.IndexOf(objectValue), Is.EqualTo(3));
-            Assert.That(rvo.RealmValueList.IndexOf(stringValue), Is.EqualTo(-1));
-            Assert.That(rvo.RealmValueList.IndexOf(notAddedValue), Is.EqualTo(-1));
 
             VerifyNotifications(_realm, changeSetList, () =>
             {
@@ -907,10 +933,155 @@ namespace Realms.Tests.Database
             Assert.That(s2, Is.EquivalentTo(new List<RealmValueObject> { rvo5 }));
         }
 
-        [Test]
-        public void AAARealmValue_DynamicTests()
-        {
+        #endregion
 
+        public class ListTestCaseData
+        {
+            private List<object> valuesList = new List<object>();
+            private List<RealmValueType> typesList = new List<RealmValueType>();
+
+            //TODO check if we can simplify, the problem is that the operator does not do the conversion from object
+            private static RealmValue CreateRealmValue(object value, RealmValueType realmValueType) => realmValueType switch
+            {
+                RealmValueType.Null => RealmValue.Null,
+                RealmValueType.Int => RealmValue.Create((int)value, realmValueType),
+                RealmValueType.Bool => RealmValue.Create((bool)value, realmValueType),
+                RealmValueType.String => RealmValue.Create((string)value, realmValueType),
+                RealmValueType.Data => RealmValue.Create((byte[])value, realmValueType),
+                RealmValueType.Date => RealmValue.Create((DateTimeOffset)value, realmValueType),
+                RealmValueType.Float => RealmValue.Create((float)value, realmValueType),
+                RealmValueType.Double => RealmValue.Create((double)value, realmValueType),
+                RealmValueType.Decimal128 => RealmValue.Create((decimal)value, realmValueType),
+                RealmValueType.ObjectId => RealmValue.Create((ObjectId)value, realmValueType),
+                RealmValueType.Object => RealmValue.Create((RealmObjectBase)value, realmValueType),
+                RealmValueType.Guid => RealmValue.Create((Guid)value, realmValueType),
+            };
+
+            public ListTestCaseData(params (object Value, RealmValueType Type)[] listData)
+            {
+                foreach (var pair in listData)
+                {
+                    valuesList.Add(pair.Value);
+                    typesList.Add(pair.Type);
+                }
+            }
+
+            public void Seed(IList<RealmValue> list)
+            {
+                WriteIfNecessary(list, () =>
+                {
+                    list.Clear();
+
+                    for (int i = 0; i < valuesList.Count; i++)
+                    {
+                        list.Add(CreateRealmValue(valuesList[i], typesList[i]));
+                    }
+                });
+            }
+
+            public void AssertRemove() { }
+
+            public void AssertCount(IList<RealmValue> list)
+            {
+                Assert.That(list.Count, Is.EqualTo(valuesList.Count));
+            }
+
+            public void AssertContains(IList<RealmValue> list)
+            {
+                for (int i = 0; i < valuesList.Count; i++)
+                {
+                    var rv = CreateRealmValue(valuesList[i], typesList[i]);
+                    Assert.That(list.Contains(rv), Is.True);
+                }
+            }
+
+            public void AssertEquality(IList<RealmValue> list)
+            {
+                for (int i = 0; i < valuesList.Count; i++)
+                {
+                    var rv = CreateRealmValue(valuesList[i], typesList[i]);
+                    CheckEquality(list[i], rv);
+                }
+            }
+
+            public void AssertType(IList<RealmValue> list)
+            {
+                for (int i = 0; i < valuesList.Count; i++)
+                {
+                    Assert.That(list[i].Type, Is.EqualTo(typesList[i]));
+                }
+            }
+
+            public void AssertIndexOf(IList<RealmValue> list)
+            {
+                for (int i = 0; i < valuesList.Count; i++)
+                {
+                    var rv = CreateRealmValue(valuesList[i], typesList[i]);
+                    Assert.That(list.IndexOf(rv), Is.EqualTo(i));
+                }
+            }
+
+            private static void CheckEquality(RealmValue value1, RealmValue value2)
+            {
+                // Necessary in order to check for sequence equality and not reference equality
+                if (value1.Type == RealmValueType.Data && value2.Type == RealmValueType.Data)
+                {
+                    Assert.That(value1.AsData(), Is.EqualTo(value2.AsData()));
+                }
+                else if (value1.Type == RealmValueType.Object && value2.Type == RealmValueType.Object)
+                {
+                    Assert.That(value1.AsRealmObject(), Is.EqualTo(value2.AsRealmObject()));
+                }
+                else
+                {
+                    Assert.That(value1, Is.EqualTo(value2));
+                }
+            }
+
+            private static void WriteIfNecessary(IList<RealmValue> collection, Action writeAction)
+            {
+                Transaction transaction = null;
+                try
+                {
+                    if (collection is RealmList<RealmValue> realmList)
+                    {
+                        transaction = realmList.Realm.BeginWrite();
+                    }
+
+                    writeAction();
+
+                    transaction?.Commit();
+                }
+                catch
+                {
+                    transaction?.Rollback();
+                    throw;
+                }
+            }
+
+            private static TResult WriteIfNecessary<TResult>(IList<RealmValue> collection, Func<TResult> writeFunc)
+            {
+                Transaction transaction = null;
+
+                try
+                {
+                    if (collection is RealmList<RealmValue> realmList)
+                    {
+                        transaction = realmList.Realm.BeginWrite();
+                    }
+
+                    var result = writeFunc();
+
+                    transaction?.Commit();
+
+                    return result;
+                }
+                catch
+                {
+                    transaction?.Rollback();
+                    throw;
+                }
+            }
         }
 
         private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
