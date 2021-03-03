@@ -48,7 +48,7 @@ async function run(): Promise<void>
         try
         {
             core.startGroup(`Build process output`);
-            await execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
+            await execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
             core.endGroup();
         }
         catch (err)

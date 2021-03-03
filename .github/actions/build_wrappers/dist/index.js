@@ -72,7 +72,7 @@ function run() {
             core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
             try {
                 core.startGroup(`Build process output`);
-                yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
+                yield common_1.execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
                 core.endGroup();
             }
             catch (err) {
@@ -147,17 +147,26 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.execShellCommand = void 0;
 const cp = __importStar(__nccwpck_require__(3129));
-function execShellCommand(cmd, outputStream) {
-    return new Promise((resolve, reject) => {
-        var _a, _b;
-        let buildCmd = cp.exec(cmd);
-        (_a = buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
+function execShellCommand(outputStream, cmd, cmdParams, envVars) {
+    return __awaiter(this, void 0, void 0, function* () {
+        cp.spawn("", envVars);
+        let buildCmd = cp.spawn(cmd, cmdParams);
+        buildCmd.stdout.on("data", (data) => {
             outputStream.info(data.toString());
         });
-        (_b = buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
+        buildCmd.stderr.on("data", (data) => {
             outputStream.info(data.toString());
         });
         buildCmd.on("exit", (code) => {

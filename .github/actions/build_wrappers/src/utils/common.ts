@@ -7,18 +7,17 @@ export interface output {
     error(message: string): void;
 }
 
-export function execShellCommand(cmd: string, outputStream: output): Promise<void>
+export async function execShellCommand(outputStream: output, cmd: string, cmdParams?: string[], envVars?: string[]): Promise<void>
 {
-    return new Promise((resolve, reject) => {
-        let buildCmd = cp.exec(cmd);
-        buildCmd.stdout?.on("data", (data) => {
-            outputStream.info(data.toString());
-        });
-        buildCmd.stderr?.on("data", (data) => {
-            outputStream.info(data.toString());
-        });
-        buildCmd.on("exit", (code) =>{
-            outputStream.info(`Child process exited with code ${code?.toString()}`);
-        });
+    cp.spawn("", envVars);
+    let buildCmd = cp.spawn(cmd, cmdParams);
+    buildCmd.stdout.on("data", (data) => {
+        outputStream.info(data.toString());
+    });
+    buildCmd.stderr.on("data", (data) => {
+        outputStream.info(data.toString());
+    });
+    buildCmd.on("exit", (code) =>{
+        outputStream.info(`Child process exited with code ${code?.toString()}`);
     });
 }
