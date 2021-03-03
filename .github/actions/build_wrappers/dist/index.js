@@ -137,16 +137,19 @@ exports.execShellCommand = void 0;
 const cp = __importStar(__nccwpck_require__(3129));
 function execShellCommand(cmd, outputStream) {
     return new Promise((resolve, reject) => {
-        let buildCmd = cp.spawn(cmd);
-        buildCmd.stdout.on("data", (data) => {
+        var _a, _b;
+        let buildCmd = cp.exec(cmd);
+        outputStream.startGroup(`Child process output`);
+        (_a = buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
             outputStream.info(`stdout: ${data.toString()}`);
         });
-        buildCmd.stderr.on("data", (data) => {
+        (_b = buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
             outputStream.error(`stderr: ${data.toString()}`);
         });
         buildCmd.on("exit", (code) => {
             outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
         });
+        outputStream.endGroup();
     });
 }
 exports.execShellCommand = execShellCommand;
