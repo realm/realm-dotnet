@@ -43,12 +43,13 @@ async function run(): Promise<void>
     
     if (cacheKey === undefined)
     {
-        core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`)
+        core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
+
         try
         {
             core.startGroup(`Build process output`);
             await execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
-            core.endGroup
+            core.endGroup();
         }
         catch (err)
         {
@@ -56,14 +57,19 @@ async function run(): Promise<void>
             return;
         }
 
+        core.info(`before key`);
         const key = hash(await hashFolders(paths, hashOptions));
-        await cache.saveCache(paths, key)
-            .then((cacheId) => {
-                core.info(`Cache properly created with id ${cacheId}`);
-            })
-            .catch((error) => {
-                core.error(`The cache could not be saved because ${error.message}`);
-            });
+        core.info(`after key = ${key}`);
+        try
+        {
+            core.info(`before saveCache`);
+            const cacheId = await cache.saveCache(paths, key);
+            core.info(`Cache properly created with id ${cacheId}`);
+        }
+        catch (error)
+        {
+            core.error(`The cache could not be saved because ${error.message}`);
+        }
     }
     else
     {
@@ -84,9 +90,15 @@ async function hashFolders(paths: string[], hashOptions: folderHash.HashElementO
     let hashes: string[] = [];
     for (let path of paths)
     {
-        await folderHash.hashElement(path, hashOptions)
-            .then(hash => { hashes.push(hash.hash); })
-            .catch(err => {`Error creating hash for ${path}:\n ${err}`});
+        try
+        {
+            const hash = await folderHash.hashElement(path, hashOptions);
+            hashes.push(hash.hash);
+        }
+        catch(err)
+        {
+            `Error creating hash for ${path}:\n ${err}`;
+        }
     }
     return hashes.join("");
 }

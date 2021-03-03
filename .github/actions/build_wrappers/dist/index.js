@@ -73,20 +73,23 @@ function run() {
             try {
                 core.startGroup(`Build process output`);
                 yield common_1.execShellCommand("REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh", core);
-                core.endGroup;
+                core.endGroup();
             }
             catch (err) {
                 core.setFailed(`Error while building: ${err.message}`);
                 return;
             }
+            core.info(`before key`);
             const key = hash(yield hashFolders(paths, hashOptions));
-            yield cache.saveCache(paths, key)
-                .then((cacheId) => {
+            core.info(`after key = ${key}`);
+            try {
+                core.info(`before saveCache`);
+                const cacheId = yield cache.saveCache(paths, key);
                 core.info(`Cache properly created with id ${cacheId}`);
-            })
-                .catch((error) => {
+            }
+            catch (error) {
                 core.error(`The cache could not be saved because ${error.message}`);
-            });
+            }
         }
         else {
             core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
@@ -103,9 +106,13 @@ function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let hashes = [];
         for (let path of paths) {
-            yield folderHash.hashElement(path, hashOptions)
-                .then(hash => { hashes.push(hash.hash); })
-                .catch(err => { `Error creating hash for ${path}:\n ${err}`; });
+            try {
+                const hash = yield folderHash.hashElement(path, hashOptions);
+                hashes.push(hash.hash);
+            }
+            catch (err) {
+                `Error creating hash for ${path}:\n ${err}`;
+            }
         }
         return hashes.join("");
     });
