@@ -70,13 +70,19 @@ function run() {
         }
         if (cacheKey === undefined) {
             core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
+            let returnBulidValue;
             try {
                 core.startGroup(`Build process output`);
-                yield common_1.execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
+                returnBulidValue = yield common_1.execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
                 core.endGroup();
             }
             catch (err) {
                 core.setFailed(`Error while building: ${err.message}`);
+                return;
+            }
+            // failure
+            if (returnBulidValue != 0) {
+                core.setFailed(`The build failed for some reasons`);
                 return;
             }
             core.info(`before key`);
@@ -163,13 +169,16 @@ function execShellCommand(outputStream, cmd, cmdParams, envVars) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let buildCmd;
-        try {
-            if (envVars !== undefined) {
-                buildCmd = cp.spawn(cmd, cmdParams, { env: { REALM_CMAKE_CONFIGURATION: "Release" } });
-            }
+        let resultValue = 1;
+        if (envVars !== undefined) {
+            buildCmd = cp.spawn(cmd, cmdParams, {
+                shell: true,
+                env: { REALM_CMAKE_CONFIGURATION: "Release" },
+                detached: false
+            });
         }
-        catch (err) {
-            outputStream.error(`failed to execute command: ${err.message}`);
+        else {
+            buildCmd = cp.spawn(cmd, cmdParams);
         }
         (_a = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
             outputStream.info(data.toString());
@@ -179,7 +188,10 @@ function execShellCommand(outputStream, cmd, cmdParams, envVars) {
         });
         buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.on("exit", (code) => {
             outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
+            resultValue = code === null ? 0 : code;
         });
+        outputStream.info("Right before return from execShellCommand");
+        return resultValue;
     });
 }
 exports.execShellCommand = execShellCommand;

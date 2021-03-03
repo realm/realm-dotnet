@@ -7,20 +7,22 @@ export interface output {
     error(message: string): void;
 }
 
-export async function execShellCommand(outputStream: output, cmd: string, cmdParams?: string[], envVars?: string[]): Promise<void>
+export async function execShellCommand(outputStream: output, cmd: string, cmdParams?: string[], envVars?: string[]): Promise<number>
 {
     let buildCmd: cp.ChildProcess | undefined; 
+    let resultValue = 1;
 
-    try
+    if (envVars !== undefined)
     {
-        if (envVars !== undefined)
-        {
-            buildCmd = cp.spawn(cmd, cmdParams, {env: { REALM_CMAKE_CONFIGURATION: "Release" }});
-        }
+        buildCmd = cp.spawn(cmd, cmdParams, {
+            shell: true,
+            env: { REALM_CMAKE_CONFIGURATION: "Release" },
+            detached: false
+        });
     }
-    catch (err)
+    else
     {
-        outputStream.error(`failed to execute command: ${err.message}`);
+        buildCmd = cp.spawn(cmd, cmdParams);
     }
     
     buildCmd?.stdout?.on("data", (data) => {
@@ -31,5 +33,9 @@ export async function execShellCommand(outputStream: output, cmd: string, cmdPar
     });
     buildCmd?.on("exit", (code) =>{
         outputStream.info(`Child process exited with code ${code?.toString()}`);
+        resultValue = code === null? 0 : code;
     });
+
+    outputStream.info("Right before return from execShellCommand");
+    return resultValue;
 }

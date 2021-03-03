@@ -45,10 +45,11 @@ async function run(): Promise<void>
     {
         core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
 
+        let returnBulidValue: number;
         try
         {
             core.startGroup(`Build process output`);
-            await execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
+            returnBulidValue = await execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
             core.endGroup();
         }
         catch (err)
@@ -57,6 +58,12 @@ async function run(): Promise<void>
             return;
         }
 
+        // failure
+        if (returnBulidValue != 0)
+        {
+            core.setFailed(`The build failed for some reasons`);
+            return;
+        }
         core.info(`before key`);
         const key = hash(await hashFolders(paths, hashOptions));
         core.info(`after key = ${key}`);
