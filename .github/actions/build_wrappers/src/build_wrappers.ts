@@ -57,7 +57,13 @@ async function run(): Promise<void>
         }
 
         const key = hash(await hashFolders(paths, hashOptions));
-        const cacheId = await cache.saveCache(paths, key)
+        await cache.saveCache(paths, key)
+            .then((cacheId) => {
+                core.info(`Cache properly created with id ${cacheId}`);
+            })
+            .catch((error) => {
+                core.error(`The cache could not be saved because ${error.message}`);
+            });
     }
     else
     {

@@ -80,7 +80,13 @@ function run() {
                 return;
             }
             const key = hash(yield hashFolders(paths, hashOptions));
-            const cacheId = yield cache.saveCache(paths, key);
+            yield cache.saveCache(paths, key)
+                .then((cacheId) => {
+                core.info(`Cache properly created with id ${cacheId}`);
+            })
+                .catch((error) => {
+                core.error(`The cache could not be saved because ${error.message}`);
+            });
         }
         else {
             core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
