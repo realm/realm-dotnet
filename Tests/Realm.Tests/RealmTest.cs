@@ -22,6 +22,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Logging;
 
 namespace Realms.Tests
 {
@@ -29,6 +30,8 @@ namespace Realms.Tests
     public abstract class RealmTest
     {
         private readonly List<Realm> _realms = new List<Realm>();
+        private Logger _originalLogger;
+        private LogLevel _originalLogLevel;
 
         private bool _isSetup;
 
@@ -45,6 +48,9 @@ namespace Realms.Tests
         {
             if (!_isSetup)
             {
+                _originalLogger = Logger.Default;
+                _originalLogLevel = Logger.LogLevel;
+
                 if (OverrideDefaultConfig)
                 {
                     RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Guid.NewGuid().ToString());
@@ -70,6 +76,9 @@ namespace Realms.Tests
             if (_isSetup)
             {
                 CustomTearDown();
+
+                Logger.Default = _originalLogger;
+                Logger.LogLevel = _originalLogLevel;
 
                 _isSetup = false;
                 try

@@ -105,6 +105,11 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
+            if (level < LogLevel)
+            {
+                return;
+            }
+
             try
             {
                 LogImpl(level, message);
