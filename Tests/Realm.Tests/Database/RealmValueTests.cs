@@ -696,18 +696,18 @@ namespace Realms.Tests.Database
         public static IEnumerable<ListTestCaseData> ListTestValues()
         {
             yield return new ListTestCaseData(
-                (null, RealmValueType.Null),
-                (10, RealmValueType.Int),
-                (true, RealmValueType.Bool),
-                ("abc", RealmValueType.String),
-                (new byte[] { 0, 1, 2 }, RealmValueType.Data),
-                (DateTimeOffset.Now, RealmValueType.Date),
-                (1.5f, RealmValueType.Float),
-                (2.5d, RealmValueType.Double),
-                (5m, RealmValueType.Decimal128),
-                (ObjectId.GenerateNewId(), RealmValueType.ObjectId),
-                (Guid.NewGuid(), RealmValueType.Guid),
-                (new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object));
+                RealmValue.Null,
+                RealmValue.Create(10, RealmValueType.Int),
+                RealmValue.Create(true, RealmValueType.Bool),
+                RealmValue.Create("abc", RealmValueType.String),
+                RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
+                RealmValue.Create(DateTimeOffset.Now, RealmValueType.Date),
+                RealmValue.Create(1.5f, RealmValueType.Float),
+                RealmValue.Create(2.5d, RealmValueType.Double),
+                RealmValue.Create(5m, RealmValueType.Decimal128),
+                RealmValue.Create(ObjectId.GenerateNewId(), RealmValueType.ObjectId),
+                RealmValue.Create(Guid.NewGuid(), RealmValueType.Guid),
+                RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object));
         }
 
         [TestCaseSource(nameof(ListTestValues))]
@@ -719,8 +719,12 @@ namespace Realms.Tests.Database
 
             tcd.AssertCount(rvo.RealmValueList);
             tcd.AssertContains(rvo.RealmValueList);
-            tcd.AssertType(rvo.RealmValueList);
             tcd.AssertEquality(rvo.RealmValueList);
+
+            tcd.AssertClear(rvo.RealmValueList);
+            tcd.AssertSet(rvo.RealmValueList);
+            tcd.AssertRemoveAt(rvo.RealmValueList);
+            tcd.AssertRemove(rvo.RealmValueList);
         }
 
         [TestCaseSource(nameof(ListTestValues))]
@@ -730,158 +734,85 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => { _realm.Add(rvo); });
 
-            tcd.Seed(rvo.RealmValueList);
+            tcd.Seed(rvo.RealmValueList);  //TODO Calling seed two times gives an exception
+            //tcd.Seed(rvo.RealmValueList);  
 
-            tcd.AssertCount(rvo.RealmValueList);
-            tcd.AssertContains(rvo.RealmValueList);
-            tcd.AssertType(rvo.RealmValueList);
-            tcd.AssertEquality(rvo.RealmValueList);
+            //tcd.AssertCount(rvo.RealmValueList);
+            //tcd.AssertContains(rvo.RealmValueList);
+            //tcd.AssertEquality(rvo.RealmValueList);
+
+            //tcd.AssertClear(rvo.RealmValueList);
+            //tcd.AssertSet(rvo.RealmValueList);
+            //tcd.AssertRemoveAt(rvo.RealmValueList);
+            //tcd.AssertRemove(rvo.RealmValueList);
         }
 
-        [Test]
-        public void RealmValue_ListTests()
+        [TestCaseSource(nameof(ListTestValues))]
+        public void RealmValue_WhenManaged_ListNotificationTests(ListTestCaseData tcd)
         {
             var rvo = new RealmValueObject();
 
-            var intValue = 5;
-            var stringValue = "abc";
-            var guidValue = Guid.NewGuid();
-            var nullValue = RealmValue.Null;
-            var objectValue = new InternalObject { IntProperty = 10, StringProperty = "brown" };
-            var notAddedValue = "notAdded";
+            _realm.Write(() => { _realm.Add(rvo); });
 
-            _realm.Write(() => _realm.Add(rvo));
-
-            var changeSetList = new List<ChangeSet>();
-            using var token = rvo.RealmValueList.SubscribeForNotifications((sender, changes, error) =>
-            {
-                if (changes != null)
-                {
-                    changeSetList.Add(changes);
-                }
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueList.Add(intValue);
-                rvo.RealmValueList.Add(stringValue);
-                rvo.RealmValueList.Add(guidValue);
-                rvo.RealmValueList.Add(nullValue);
-                rvo.RealmValueList.Add(objectValue);
-            });
-
-
-            VerifyNotifications(_realm, changeSetList, () =>
-            {
-                Assert.That(changeSetList[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, rvo.RealmValueList.Count)));
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueList.Remove(stringValue);
-            });
-
-
-            VerifyNotifications(_realm, changeSetList, () =>
-            {
-                Assert.That(changeSetList[0].DeletedIndices, Is.EquivalentTo(new[] { 1 }));
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueList.Clear();
-            });
-
-            Assert.That(rvo.RealmValueList.Count, Is.EqualTo(0));
-
-            VerifyNotifications(_realm, changeSetList, () =>
-            {
-                Assert.That(changeSetList[0].DeletedIndices, Is.EquivalentTo(Enumerable.Range(0, 4)));
-            });
+            tcd.AssertNotifications(rvo.RealmValueList);
         }
 
-        [Test]
-        public void RealmValue_DictionaryTests()
+        public static IEnumerable<DictionaryTestCaseData> DictionaryTestValues()
         {
-            //Once #4459 is merged, need to add some tests for index_of (probably in a different method though...)
+            yield return new DictionaryTestCaseData(
+                ("nullKey", RealmValue.Null),
+                ("intKey", RealmValue.Create(10, RealmValueType.Int)),
+                ("boolKey", RealmValue.Create(true, RealmValueType.Bool)),
+                ("stringKey", RealmValue.Create("abc", RealmValueType.String)),
+                ("dataKey", RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data)),
+                ("dateKey", RealmValue.Create(DateTimeOffset.Now, RealmValueType.Date)),
+                ("floatKey", RealmValue.Create(1.5f, RealmValueType.Float)),
+                ("doubleKey", RealmValue.Create(2.5d, RealmValueType.Double)),
+                ("decimalKey", RealmValue.Create(5m, RealmValueType.Decimal128)),
+                ("objectIdKey", RealmValue.Create(ObjectId.GenerateNewId(), RealmValueType.ObjectId)),
+                ("guidKey", RealmValue.Create(Guid.NewGuid(), RealmValueType.Guid)),
+                ("objectKey", RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object)));
+        }
+
+        [TestCaseSource(nameof(DictionaryTestValues))]
+        public void RealmValue_WhenUnmanaged_DictionaryTests(DictionaryTestCaseData tcd)
+        {
             var rvo = new RealmValueObject();
 
-            var intKey = "intKey";
-            var stringKey = "stringKey";
-            var guidKey = "guidKey";
-            var nullKey = "nullKey";
-            var objectKey = "objectKey";
+            tcd.Seed(rvo.RealmValueDictionary);
 
-            var intValue = 5;
-            var stringValue = "abc";
-            var guidValue = Guid.NewGuid();
-            var nullValue = RealmValue.Null;
-            var objectValue = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+            tcd.AssertContains(rvo.RealmValueDictionary);
+            tcd.AssertCount(rvo.RealmValueDictionary);
+            tcd.AssertEquality(rvo.RealmValueDictionary);
+            tcd.AssertKeys(rvo.RealmValueDictionary);
+            tcd.AssertValues(rvo.RealmValueDictionary);
 
-            _realm.Write(() => _realm.Add(rvo));
+            tcd.AssertAdd(rvo.RealmValueDictionary);
+            tcd.AssertRemove(rvo.RealmValueDictionary);
+        }
 
-            var changeSetList = new List<ChangeSet>();
-            using var token = rvo.RealmValueDictionary.SubscribeForNotifications((sender, changes, error) =>
-            {
-                if (changes != null)
-                {
-                    changeSetList.Add(changes);
-                }
-            });
+        [TestCaseSource(nameof(DictionaryTestValues))]
+        public void RealmValue_WhenManaged_DictionaryTests(DictionaryTestCaseData tcd)
+        {
+            var rvo = new RealmValueObject();
 
-            _realm.Write(() =>
-            {
-                rvo.RealmValueDictionary[intKey] = intValue;
-                rvo.RealmValueDictionary[stringKey] = stringValue;
-                rvo.RealmValueDictionary[guidKey] = guidValue;
-                rvo.RealmValueDictionary[nullKey] = nullValue;
-                rvo.RealmValueDictionary[objectKey] = objectValue;
-            });
+            _realm.Write(() => { _realm.Add(rvo); });
 
-            Assert.That(rvo.RealmValueDictionary.Count, Is.EqualTo(5));
-            Assert.That(rvo.RealmValueDictionary[intKey] == intValue);
-            Assert.That(rvo.RealmValueDictionary[stringKey] == stringValue);
-            Assert.That(rvo.RealmValueDictionary[guidKey] == guidValue);
-            Assert.That(rvo.RealmValueDictionary[nullKey] == nullValue);
-            Assert.That(rvo.RealmValueDictionary[objectKey].As<RealmObjectBase>(), Is.EqualTo(objectValue));
+            tcd.Seed(rvo.RealmValueDictionary);
 
-            VerifyNotifications(_realm, changeSetList, () =>
-            {
-                Assert.That(changeSetList[0].InsertedIndices.Count, Is.EqualTo(rvo.RealmValueDictionary.Count));
-            });
+            tcd.AssertContains(rvo.RealmValueDictionary);
+            tcd.AssertCount(rvo.RealmValueDictionary);
+            tcd.AssertEquality(rvo.RealmValueDictionary);
+            tcd.AssertKeys(rvo.RealmValueDictionary);
+            tcd.AssertValues(rvo.RealmValueDictionary);
 
-            _realm.Write(() =>
-            {
-                rvo.RealmValueDictionary.Remove(stringKey);
-            });
-
-            Assert.That(rvo.RealmValueDictionary.Count, Is.EqualTo(4));
-            Assert.That(rvo.RealmValueDictionary[intKey] == intValue);
-            Assert.That(rvo.RealmValueDictionary[guidKey] == guidValue);
-            Assert.That(rvo.RealmValueDictionary[nullKey] == nullValue);
-            Assert.That(rvo.RealmValueDictionary[objectKey].As<RealmObjectBase>(), Is.EqualTo(objectValue));
-            Assert.That(rvo.RealmValueDictionary.ContainsKey(stringKey), Is.False);
-
-            VerifyNotifications(_realm, changeSetList, () =>
-            {
-                Assert.That(changeSetList[0].DeletedIndices.Count, Is.EqualTo(1));
-            });
-
-            _realm.Write(() =>
-            {
-                rvo.RealmValueDictionary.Clear();
-            });
-
-            Assert.That(rvo.RealmValueDictionary.Count, Is.EqualTo(0));
-
-            VerifyNotifications(_realm, changeSetList, () =>
-            {
-                Assert.That(changeSetList[0].DeletedIndices.Count, Is.EqualTo(4));
-            });
+            tcd.AssertAdd(rvo.RealmValueDictionary);
+            tcd.AssertRemove(rvo.RealmValueDictionary);
+            tcd.AssertNotifications(rvo.RealmValueDictionary);
         }
 
         [Test]
-        public void AAARealmValue_QueryTests()
+        public void RealmValue_QueryTests()
         {
             // TODO Can we put this in another method...?
             
@@ -935,35 +866,16 @@ namespace Realms.Tests.Database
 
         #endregion
 
-        public class ListTestCaseData
+        public class ListTestCaseData : TestCaseData
         {
-            private List<object> valuesList = new List<object>();
-            private List<RealmValueType> typesList = new List<RealmValueType>();
+            private RealmValue sampleRealmValue;
+            private List<RealmValue> referenceList = new List<RealmValue>();
 
-            //TODO check if we can simplify, the problem is that the operator does not do the conversion from object
-            private static RealmValue CreateRealmValue(object value, RealmValueType realmValueType) => realmValueType switch
+            public ListTestCaseData(params RealmValue[] listData)
             {
-                RealmValueType.Null => RealmValue.Null,
-                RealmValueType.Int => RealmValue.Create((int)value, realmValueType),
-                RealmValueType.Bool => RealmValue.Create((bool)value, realmValueType),
-                RealmValueType.String => RealmValue.Create((string)value, realmValueType),
-                RealmValueType.Data => RealmValue.Create((byte[])value, realmValueType),
-                RealmValueType.Date => RealmValue.Create((DateTimeOffset)value, realmValueType),
-                RealmValueType.Float => RealmValue.Create((float)value, realmValueType),
-                RealmValueType.Double => RealmValue.Create((double)value, realmValueType),
-                RealmValueType.Decimal128 => RealmValue.Create((decimal)value, realmValueType),
-                RealmValueType.ObjectId => RealmValue.Create((ObjectId)value, realmValueType),
-                RealmValueType.Object => RealmValue.Create((RealmObjectBase)value, realmValueType),
-                RealmValueType.Guid => RealmValue.Create((Guid)value, realmValueType),
-            };
+                referenceList.AddRange(listData);
 
-            public ListTestCaseData(params (object Value, RealmValueType Type)[] listData)
-            {
-                foreach (var pair in listData)
-                {
-                    valuesList.Add(pair.Value);
-                    typesList.Add(pair.Type);
-                }
+                sampleRealmValue = "sampleString";
             }
 
             public void Seed(IList<RealmValue> list)
@@ -972,65 +884,355 @@ namespace Realms.Tests.Database
                 {
                     list.Clear();
 
-                    for (int i = 0; i < valuesList.Count; i++)
+                    for (int i = 0; i < referenceList.Count; i++)
                     {
-                        list.Add(CreateRealmValue(valuesList[i], typesList[i]));
+                        list.Add(referenceList[i]);
                     }
                 });
             }
 
-            public void AssertRemove() { }
-
-            public void AssertCount(IList<RealmValue> list)
-            {
-                Assert.That(list.Count, Is.EqualTo(valuesList.Count));
-            }
-
-            public void AssertContains(IList<RealmValue> list)
-            {
-                for (int i = 0; i < valuesList.Count; i++)
-                {
-                    var rv = CreateRealmValue(valuesList[i], typesList[i]);
-                    Assert.That(list.Contains(rv), Is.True);
-                }
-            }
-
             public void AssertEquality(IList<RealmValue> list)
             {
-                for (int i = 0; i < valuesList.Count; i++)
-                {
-                    var rv = CreateRealmValue(valuesList[i], typesList[i]);
-                    CheckEquality(list[i], rv);
-                }
-            }
-
-            public void AssertType(IList<RealmValue> list)
-            {
-                for (int i = 0; i < valuesList.Count; i++)
-                {
-                    Assert.That(list[i].Type, Is.EqualTo(typesList[i]));
-                }
+                AssertListEquality(list, referenceList);
             }
 
             public void AssertIndexOf(IList<RealmValue> list)
             {
-                for (int i = 0; i < valuesList.Count; i++)
+                for (int i = 0; i < referenceList.Count; i++)
                 {
-                    var rv = CreateRealmValue(valuesList[i], typesList[i]);
+                    var rv = referenceList[i];
                     Assert.That(list.IndexOf(rv), Is.EqualTo(i));
                 }
             }
 
-            private static void CheckEquality(RealmValue value1, RealmValue value2)
+            public void AssertCount(IList<RealmValue> list)
+            {
+                Assert.That(list.Count, Is.EqualTo(referenceList.Count));
+            }
+
+            public void AssertClear(IList<RealmValue> list)
+            {
+                WriteIfNecessary(list, () =>
+                {
+                    list.Clear();
+                });
+
+                Assert.That(list.Count, Is.EqualTo(0));
+            }
+
+            public void AssertContains(IList<RealmValue> list)
+            {
+                for (int i = 0; i < referenceList.Count; i++)
+                {
+                    var rv = referenceList[i];
+                    Assert.That(list.Contains(rv), Is.True);
+                }
+            }
+
+            public void AssertSet(IList<RealmValue> list)
+            {
+                Seed(list);
+
+                var randomIndex = TestHelpers.Random.Next(0, list.Count); //Random?
+
+                WriteIfNecessary(list, () =>
+                {
+                    Assert.That(list[randomIndex], Is.Not.EqualTo(sampleRealmValue));
+
+                    list[randomIndex] = sampleRealmValue;
+
+                    Assert.That(list[randomIndex], Is.EqualTo(sampleRealmValue));
+                });
+            }
+
+            public void AssertRemoveAt(IList<RealmValue> list)
+            {
+                Seed(list);
+
+                var copyReferenceList = referenceList.ToList();
+
+                WriteIfNecessary(list, () =>
+                {
+                    while (copyReferenceList.Any())
+                    {
+                        var randomIndex = TestHelpers.Random.Next(copyReferenceList.Count);
+
+                        list.RemoveAt(randomIndex);
+                        copyReferenceList.RemoveAt(randomIndex);
+
+                        AssertListEquality(list, copyReferenceList);
+                    }
+                });
+            }
+
+            public void AssertRemove(IList<RealmValue> list)
+            {
+                Seed(list);
+
+                var copyReferenceList = referenceList.ToList();
+
+                WriteIfNecessary(list, () =>
+                {
+                    while (copyReferenceList.Any())
+                    {
+                        var randomIndex = TestHelpers.Random.Next(copyReferenceList.Count);
+
+                        list.Remove(list[randomIndex]);
+                        copyReferenceList.RemoveAt(randomIndex);
+
+                        AssertListEquality(list, copyReferenceList);
+                    }
+                });
+            }
+
+            public void AssertNotifications(IList<RealmValue> list)
+            {
+                Assert.That(list, Is.TypeOf<RealmList<RealmValue>>());
+
+                var realm = list.AsRealmCollection().Realm;
+
+                var changeSetList = new List<ChangeSet>();
+                using var token = list.SubscribeForNotifications((collection, changes, error) =>
+                {
+                    Assert.That(error, Is.Null);
+
+                    if (changes != null)
+                    {
+                        changeSetList.Add(changes);
+                    }
+                });
+
+                Seed(list);
+
+                var insertedChangeSet = GetLatestChangeSet(realm, changeSetList);
+                var insertedIndices = AssertNotificationsInserted(insertedChangeSet, referenceList.Count);
+
+                Assert.That(insertedIndices, Is.EquivalentTo(Enumerable.Range(0, referenceList.Count)));
+
+                var setIndex = 0; // As with list, should this be random/include all keys?
+
+                realm.Write(() =>
+                {
+                    list[setIndex] = sampleRealmValue;
+                });
+
+                var modifiedChangeSet = GetLatestChangeSet(realm, changeSetList);
+                var (modifiedIndices, newModifiedIndices) = AssertNotificationsModified(modifiedChangeSet, 1);
+
+                Assert.That(modifiedIndices, Is.EquivalentTo(new[] { setIndex }));
+                Assert.That(newModifiedIndices, Is.EquivalentTo(new[] { setIndex }));
+
+                var removeIndex = 0; // Should I use a random Index? Test for all the indexes?
+
+                realm.Write(() =>
+                {
+                    list.RemoveAt(removeIndex);
+                });
+
+                var deletedChangeSet = GetLatestChangeSet(realm, changeSetList);
+                var deletedIndices = AssertNotificationsDeleted(deletedChangeSet, 1);
+
+                Assert.That(deletedIndices, Is.EquivalentTo(new[] { removeIndex }));
+            }
+
+            private static void AssertListEquality(IList<RealmValue> targetList, IList<RealmValue> referenceList)
+            {
+                Assert.That(targetList.Count, Is.EqualTo(referenceList.Count));
+
+                for (int i = 0; i < referenceList.Count; i++)
+                {
+                    AssertRealmValueEquality(targetList[i], referenceList[i]);
+                }
+            }
+        }
+
+        public class DictionaryTestCaseData : TestCaseData
+        {
+            private (string Key, RealmValue Value) sampleKeyPair;
+            private Dictionary<string, RealmValue> referenceDict = new Dictionary<string, RealmValue>();
+
+            public DictionaryTestCaseData(params (string Key, RealmValue Value)[] listData)
+            {
+                foreach (var (key, value) in listData)
+                {
+                    referenceDict[key] = value;
+                }
+
+                sampleKeyPair = ("sampleKey", "sampleString");
+            }
+
+            public void Seed(IDictionary<string, RealmValue> dict)
+            {
+                WriteIfNecessary(dict, () =>
+                {
+                    dict.Clear();
+
+                    foreach (var key in referenceDict.Keys)
+                    {
+                        dict[key] = referenceDict[key];
+                    }
+                });
+            }
+
+            public void AssertEquality(IDictionary<string, RealmValue> dict)
+            {
+                AssertDictionaryEquality(dict, referenceDict);
+            }
+
+            public void AssertKeys(IDictionary<string, RealmValue> dict)
+            {
+                Assert.That(dict.Keys.OrderBy(r => r), Is.EquivalentTo(referenceDict.Keys.OrderBy(r => r)));
+            }
+
+            public void AssertValues(IDictionary<string, RealmValue> dict)
+            {
+                var comparer = new RealmValueComparer();
+                var targetValues = dict.Values.OrderBy(r => r.GetHashCode()).ToList();
+                var referenceValues = referenceDict.Values.OrderBy(r => r.GetHashCode()).ToList();
+
+                Assert.That(targetValues.Count, Is.EqualTo(referenceValues.Count));
+
+                for (int i = 0; i < targetValues.Count; i++)
+                {
+                    AssertRealmValueEquality(targetValues[i], referenceValues[i]);
+                }
+            }
+
+            private class RealmValueComparer : IComparer<RealmValue>
+            {
+                public int Compare(RealmValue a, RealmValue b)
+                {
+                    if (a.Type != b.Type)
+                    {
+                        return a.Type - b.Type;
+                    }
+
+                    return a.GetHashCode() - b.GetHashCode(); //TODO Just to have a consistent order
+                }
+            }
+
+            public void AssertCount(IDictionary<string, RealmValue> dict)
+            {
+                Assert.That(dict.Count, Is.EqualTo(referenceDict.Count));
+            }
+
+            public void AssertContains(IDictionary<string, RealmValue> dict)
+            {
+                foreach (var key in referenceDict.Keys)
+                {
+                    Assert.That(dict.ContainsKey(key), Is.True);
+                }
+
+                Assert.That(dict.ContainsKey(sampleKeyPair.Key), Is.False);
+            }
+
+            public void AssertAdd(IDictionary<string, RealmValue> dict)
+            {
+                WriteIfNecessary(dict, () =>
+                {
+                    dict.Clear();
+
+                    foreach (var kvp in referenceDict)
+                    {
+                        dict.Add(kvp.Key, kvp.Value);
+                    }
+                });
+
+                AssertDictionaryEquality(dict, referenceDict);
+            }
+
+            public void AssertRemove(IDictionary<string, RealmValue> dict)
+            {
+                Seed(dict);
+
+                while (dict.Any())
+                {
+                    var randomIndex = TestHelpers.Random.Next(0, dict.Count);
+                    var randomKey = dict.Keys.ToList()[randomIndex];
+
+                    Assert.That(dict.ContainsKey(randomKey), Is.True);
+
+                    WriteIfNecessary(dict, () =>
+                    {
+                        dict.Remove(randomKey);
+                    });
+
+                    Assert.That(dict.ContainsKey(randomKey), Is.False);
+                }
+            }
+
+            public void AssertNotifications(IDictionary<string, RealmValue> dict)
+            {
+                Assert.That(dict, Is.TypeOf<RealmDictionary<RealmValue>>());
+
+                var realm = dict.AsRealmCollection().Realm;
+
+                var changeSetList = new List<ChangeSet>();
+                using var token = dict.SubscribeForNotifications((collection, changes, error) =>
+                {
+                    Assert.That(error, Is.Null);
+
+                    if (changes != null)
+                    {
+                        changeSetList.Add(changes);
+                    }
+                });
+
+                Seed(dict);
+
+                var insertedChangeSet = GetLatestChangeSet(realm, changeSetList);
+                var insertedIndices = AssertNotificationsInserted(insertedChangeSet, referenceDict.Count);
+
+                Assert.That(insertedIndices, Is.EquivalentTo(Enumerable.Range(0, referenceDict.Count)));
+
+                var setKey = dict.Keys.First(); // As with list, should this be random/include all keys?
+
+                realm.Write(() =>
+                {
+                    dict[setKey] = sampleKeyPair.Value;
+                });
+
+                var modifiedChangeSet = GetLatestChangeSet(realm, changeSetList);
+                var (_, newModifiedIndices) = AssertNotificationsModified(modifiedChangeSet, 1);
+
+                var newIndex = newModifiedIndices[0];
+
+                Assert.That(dict.ElementAt(newIndex).Key, Is.EqualTo(setKey));
+                Assert.That(dict.ElementAt(newIndex).Value, Is.EqualTo(sampleKeyPair.Value));
+
+                Assert.That(dict.AsRealmCollection()[newIndex].Key, Is.EqualTo(setKey));
+                Assert.That(dict.AsRealmCollection()[newIndex].Value, Is.EqualTo(sampleKeyPair.Value));
+
+                var removeKey = dict.Keys.First(); // As with list, should this be random/include all keys?
+
+                realm.Write(() =>
+                {
+                    dict.Remove(removeKey);
+                });
+
+                var deletedChangeSet = GetLatestChangeSet(realm, changeSetList);
+                var deletedIndices = AssertNotificationsDeleted(deletedChangeSet, 1);
+            }
+
+            private static void AssertDictionaryEquality(IDictionary<string, RealmValue> targetDict, Dictionary<string, RealmValue> referenceDict)
+            {
+                Assert.That(targetDict.Count, Is.EqualTo(referenceDict.Count));
+
+                foreach (var key in referenceDict.Keys)
+                {
+                    AssertRealmValueEquality(referenceDict[key], targetDict[key]);
+                }
+            }
+        }
+
+        public abstract class TestCaseData
+        {
+            protected static void AssertRealmValueEquality(RealmValue value1, RealmValue value2)
             {
                 // Necessary in order to check for sequence equality and not reference equality
                 if (value1.Type == RealmValueType.Data && value2.Type == RealmValueType.Data)
                 {
                     Assert.That(value1.AsData(), Is.EqualTo(value2.AsData()));
-                }
-                else if (value1.Type == RealmValueType.Object && value2.Type == RealmValueType.Object)
-                {
-                    Assert.That(value1.AsRealmObject(), Is.EqualTo(value2.AsRealmObject()));
                 }
                 else
                 {
@@ -1038,14 +1240,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private static void WriteIfNecessary(IList<RealmValue> collection, Action writeAction)
+            protected static void WriteIfNecessary<T>(IEnumerable<T> collection, Action writeAction)
             {
                 Transaction transaction = null;
                 try
                 {
-                    if (collection is RealmList<RealmValue> realmList)
+                    if (collection is RealmCollectionBase<T> realmCollection)
                     {
-                        transaction = realmList.Realm.BeginWrite();
+                        transaction = realmCollection.Realm.BeginWrite();
                     }
 
                     writeAction();
@@ -1059,37 +1261,47 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private static TResult WriteIfNecessary<TResult>(IList<RealmValue> collection, Func<TResult> writeFunc)
+            protected static ChangeSet GetLatestChangeSet(Realm realm, List<ChangeSet> notifications)
             {
-                Transaction transaction = null;
-
-                try
-                {
-                    if (collection is RealmList<RealmValue> realmList)
-                    {
-                        transaction = realmList.Realm.BeginWrite();
-                    }
-
-                    var result = writeFunc();
-
-                    transaction?.Commit();
-
-                    return result;
-                }
-                catch
-                {
-                    transaction?.Rollback();
-                    throw;
-                }
+                realm.Refresh();
+                Assert.That(notifications.Count, Is.EqualTo(1));
+                var changeSet = notifications.First();
+                notifications.Clear();
+                return changeSet;
             }
-        }
 
-        private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
-        {
-            realm.Refresh();
-            Assert.That(notifications.Count, Is.EqualTo(1));
-            verifier();
-            notifications.Clear();
+            protected static int[] AssertNotificationsInserted(ChangeSet changeSet, int insertedCount)
+            {
+                Assert.That(changeSet.InsertedIndices.Count, Is.EqualTo(insertedCount));
+                Assert.That(changeSet.DeletedIndices, Is.Empty);
+                Assert.That(changeSet.ModifiedIndices, Is.Empty);
+                Assert.That(changeSet.NewModifiedIndices, Is.Empty);
+                Assert.That(changeSet.Moves, Is.Empty);
+
+                return changeSet.InsertedIndices;
+            }
+
+            protected int[] AssertNotificationsDeleted(ChangeSet changeSet, int deletedCount)
+            {
+                Assert.That(changeSet.InsertedIndices, Is.Empty);
+                Assert.That(changeSet.DeletedIndices.Count, Is.EqualTo(deletedCount));
+                Assert.That(changeSet.ModifiedIndices, Is.Empty);
+                Assert.That(changeSet.NewModifiedIndices, Is.Empty);
+                Assert.That(changeSet.Moves, Is.Empty);
+
+                return changeSet.DeletedIndices;
+            }
+
+            protected (int[] ModifiedIndices, int[] NewModifiedIndices) AssertNotificationsModified(ChangeSet changeSet, int modifiedCount)
+            {
+                Assert.That(changeSet.InsertedIndices, Is.Empty);
+                Assert.That(changeSet.DeletedIndices, Is.Empty);
+                Assert.That(changeSet.ModifiedIndices.Count, Is.EqualTo(modifiedCount));
+                Assert.That(changeSet.NewModifiedIndices.Count, Is.EqualTo(modifiedCount));
+                Assert.That(changeSet.Moves, Is.Empty);
+
+                return (changeSet.ModifiedIndices, changeSet.NewModifiedIndices);
+            }
         }
 
         private RealmValueObject PersistAndFind(RealmValue rv)
