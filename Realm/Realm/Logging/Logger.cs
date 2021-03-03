@@ -17,29 +17,97 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Helpers;
+using System.Runtime.InteropServices;
+using System.Text;
+using Realms.Sync;
 
 namespace Realms.Logging
 {
-    public class Logger : ILogger
+    /// <summary>
+    /// A logger that logs messages originating from Realm. The default logger can be replaced by setting <see cref="Default"/>.
+    /// </summary>
+    /// <remarks>
+    /// A few default implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>, but you
+    /// can implement your own.
+    /// </remarks>
+    public abstract class Logger
     {
-        private readonly Action<LogLevel, string> _logFunction;
+        private readonly Lazy<GCHandle> _gcHandle;
 
-        public static ILogger Console { get; } = new ConsoleLogger();
+        /// <summary>
+        /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
+        /// using <see cref="Console.WriteLine()"/> but certain platforms may use different implementations.
+        /// </summary>
+        /// <value>A <see cref="Logger"/> instance that outputs to the platform's console.</value>
+        public static Logger Console { get; internal set; } = new ConsoleLogger();
 
-        public static ILogger Null { get; } = new NullLogger();
+        /// <summary>
+        /// Gets a <see cref="NullLogger"/> that ignores all messages.
+        /// </summary>
+        /// <value>A <see cref="Logger"/> that doesn't output any messages.</value>
+        public static Logger Null { get; } = new NullLogger();
 
-        public Logger(Action<LogLevel, string> logFunction)
+        /// <summary>
+        /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function.
+        /// </summary>
+        /// <param name="logFunction">Function to proxy log calls to.</param>
+        /// <returns>
+        /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
+        /// </returns>
+        public static Logger Function(Action<LogLevel, string> logFunction) => new FunctionLogger(logFunction);
+
+        /// <summary>
+        /// Gets a <see cref="FunctionLogger"/> that proxies Log calls to the supplied function. The message will
+        /// already be formatted with the default message formatting that includes a timestamp.
+        /// </summary>
+        /// <param name="logFunction">Function to proxy log calls to.</param>
+        /// <returns>
+        /// A <see cref="Logger"/> instance that will invoke <paramref name="logFunction"/> for each message.
+        /// </returns>
+        public static Logger Function(Action<string> logFunction) => new FunctionLogger((level, message) => logFunction(FormatLog(level, message)));
+
+        /// <summary>
+        /// Gets or sets the verbosity of log messages.
+        /// </summary>
+        /// <remarks>
+        /// This replaces the deprecated <see cref="AppConfiguration.LogLevel"/>.
+        /// </remarks>
+        /// <value>The log level for Realm-originating messages.</value>
+        public static LogLevel LogLevel { get; set; } = LogLevel.Info;
+
+        /// <summary>
+        /// Gets or sets a custom <see cref="Logger"/> implementation that will be used by
+        /// Realm whenever information must be logged.
+        /// </summary>
+        /// <remarks>
+        /// This is the logger that will be used to log diagnostic messages from Sync. It
+        /// replaces the deprecated <see cref="AppConfiguration.CustomLogger"/>.
+        /// </remarks>
+        /// <value>The logger to be used for Realm-originating messages.</value>
+        public static Logger Default { get; set; } = Console;
+
+        internal GCHandle GCHandle => _gcHandle.Value;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Logger"/> class.
+        /// </summary>
+        protected Logger()
         {
-            Argument.NotNull(logFunction, nameof(logFunction));
-            _logFunction = logFunction;
+            _gcHandle = new Lazy<GCHandle>(() => GCHandle.Alloc(this));
         }
 
+        internal static void LogDefault(LogLevel level, string message) => Default?.Log(level, message);
+
+        /// <summary>
+        /// Log a message at the supplied level.
+        /// </summary>
+        /// <param name="level">The criticality level for the message.</param>
+        /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
             try
             {
-                _logFunction(level, message);
+                LogImpl(level, message);
             }
             catch (Exception ex)
             {
@@ -47,18 +115,57 @@ namespace Realms.Logging
             }
         }
 
+        /// <summary>
+        /// The internal implementation being called from <see cref="Log"/>.
+        /// </summary>
+        /// <param name="level">The criticality level for the message.</param>
+        /// <param name="message">The message to log.</param>
+        protected abstract void LogImpl(LogLevel level, string message);
+
+        internal static string FormatLog(LogLevel level, string message) => $"{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss.fff} {level}: {message}";
+
         private class ConsoleLogger : Logger
         {
-            public ConsoleLogger() : base((level, message) => System.Console.WriteLine($"{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss.fff} {level}: {message}"))
+            protected override void LogImpl(LogLevel level, string message)
             {
+                System.Console.WriteLine(FormatLog(level, message));
             }
+        }
+
+        private class FunctionLogger : Logger
+        {
+            private readonly Action<LogLevel, string> _logFunction;
+
+            public FunctionLogger(Action<LogLevel, string> logFunction)
+            {
+                _logFunction = logFunction;
+            }
+
+            protected override void LogImpl(LogLevel level, string message) => _logFunction(level, message);
         }
 
         private class NullLogger : Logger
         {
-            public NullLogger() : base((_, __) => { })
+            protected override void LogImpl(LogLevel level, string message)
             {
             }
+        }
+
+        internal class InMemoryLogger : Logger
+        {
+            private readonly StringBuilder _builder = new StringBuilder();
+
+            protected override void LogImpl(LogLevel level, string message)
+            {
+                lock (_builder)
+                {
+                    _builder.AppendLine(FormatLog(level, message));
+                }
+            }
+
+            public string GetLog() => _builder.ToString();
+
+            public void Clear() => _builder.Clear();
         }
     }
 }

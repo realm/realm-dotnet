@@ -76,38 +76,38 @@ namespace realm {
 
             util::Logger::Level log_level;
 
-            void* managed_log_handler;
+            void* managed_logger;
         };
 
         class SyncLogger : public util::RootLogger {
         public:
             SyncLogger(void* delegate)
-                : managed_delegate(delegate)
+                : managed_logger(delegate)
             {
             }
 
             void do_log(util::Logger::Level level, std::string message) {
-                s_log_message_callback(managed_delegate, to_capi(Mixed(message)), level);
+                s_log_message_callback(managed_logger, to_capi(Mixed(message)), level);
             }
         private:
-            void* managed_delegate;
+            void* managed_logger;
         };
 
         class SyncLoggerFactory : public realm::SyncLoggerFactory {
         public:
-            SyncLoggerFactory(void* managed_log_handler)
-                : managed_delegate(managed_log_handler)
+            SyncLoggerFactory(void* managed_logger)
+                : managed_logger(managed_logger)
             {
             }
 
             std::unique_ptr<util::Logger> make_logger(util::Logger::Level level)
             {
-                auto logger = std::make_unique<SyncLogger>(managed_delegate);
+                auto logger = std::make_unique<SyncLogger>(managed_logger);
                 logger->set_level_threshold(level);
                 return std::unique_ptr<util::Logger>(logger.release());
             }
         private:
-            void* managed_delegate;
+            void* managed_logger;
         };
     }
 }
@@ -177,8 +177,8 @@ extern "C" {
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
-            if (app_config.managed_log_handler) {
-                sync_client_config.logger_factory = new realm::binding::SyncLoggerFactory(app_config.managed_log_handler);
+            if (app_config.managed_logger) {
+                sync_client_config.logger_factory = new realm::binding::SyncLoggerFactory(app_config.managed_logger);
             }
 
             return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));

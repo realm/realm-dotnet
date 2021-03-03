@@ -20,9 +20,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Logging;
 using Realms.Schema;
-using Realms.Sync;
 
 namespace Realms
 {
@@ -97,26 +95,6 @@ namespace Realms
 
             return Path.GetFullPath(optionalPath);
         }
-
-        /// <summary>
-        /// Gets or sets the verbosity of log messages.
-        /// </summary>
-        /// <remarks>
-        /// This replaces the deprecated <see cref="AppConfiguration.LogLevel"/>.
-        /// </remarks>
-        /// <value>The log level for Realm-originating messages.</value>
-        public static LogLevel LogLevel { get; set; } = LogLevel.Info;
-
-        /// <summary>
-        /// Gets or sets a custom <see cref="ILogger"/> implementation that will be used by
-        /// Realm whenever information must be logged.
-        /// </summary>
-        /// <remarks>
-        /// This is the logger that will be used to log diagnostic messages from Sync. It
-        /// replaces the deprecated <see cref="AppConfiguration.CustomLogger"/>.
-        /// </remarks>
-        /// <value>The logger to be used for Realm-originating messages.</value>
-        public static ILogger Logger { get; set; } = Logging.Logger.Console;
 
         /// <summary>
         /// Gets or sets a number, indicating the version of the schema. Can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.

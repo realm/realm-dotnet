@@ -462,7 +462,7 @@ namespace Realms
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
         private static void LogMessage(PrimitiveValue message, LogLevel level)
         {
-            RealmConfigurationBase.Logger?.Log(level, message.AsString());
+            Logger.LogDefault(level, message.AsString());
         }
 
         public class SchemaMarshaler

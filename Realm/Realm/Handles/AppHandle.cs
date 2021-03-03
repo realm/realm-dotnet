@@ -298,20 +298,8 @@ namespace Realms.Sync
             try
             {
                 var message = messageValue.AsString();
-                var target = GCHandle.FromIntPtr(managedHandler).Target;
-
-                if (target is ILogger logger)
-                {
-                    logger.Log(level, message);
-                }
-                else if (target is Action<string, LogLevel> logCallback)
-                {
-                    logCallback.Invoke(message, level);
-                }
-                else
-                {
-                    throw new NotSupportedException($"Expected ILogger or callback for the native logger, but got {target.GetType().Name}");
-                }
+                var logger = (Logger)GCHandle.FromIntPtr(managedHandler).Target;
+                logger.Log(level, message);
             }
             catch (Exception ex)
             {
