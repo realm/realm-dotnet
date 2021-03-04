@@ -166,32 +166,31 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.execShellCommand = void 0;
 const cp = __importStar(__nccwpck_require__(3129));
 function execShellCommand(outputStream, cmd, cmdParams, envVars) {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        let buildCmd;
-        let resultValue = 1;
-        if (envVars !== undefined) {
-            buildCmd = cp.spawn(cmd, cmdParams, {
-                shell: true,
-                env: { REALM_CMAKE_CONFIGURATION: "Release" },
-                detached: false
+        return new Promise((resolve, reject) => {
+            var _a, _b;
+            let buildCmd;
+            if (envVars !== undefined) {
+                buildCmd = cp.spawn(cmd, cmdParams, {
+                    shell: true,
+                    env: { REALM_CMAKE_CONFIGURATION: "Release" },
+                    detached: false
+                });
+            }
+            else {
+                buildCmd = cp.spawn(cmd, cmdParams);
+            }
+            (_a = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
+                outputStream.info(data.toString());
             });
-        }
-        else {
-            buildCmd = cp.spawn(cmd, cmdParams);
-        }
-        (_a = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
-            outputStream.info(data.toString());
+            (_b = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
+                outputStream.info(data.toString());
+            });
+            buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.on("exit", (code) => {
+                outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
+                code === 0 ? resolve(code) : reject(code);
+            });
         });
-        (_b = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
-            outputStream.info(data.toString());
-        });
-        buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.on("exit", (code) => {
-            outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
-            resultValue = code === null ? 0 : code;
-        });
-        outputStream.info("Right before return from execShellCommand");
-        return resultValue;
     });
 }
 exports.execShellCommand = execShellCommand;

@@ -64,6 +64,7 @@ async function run(): Promise<void>
             core.setFailed(`The build failed for some reasons`);
             return;
         }
+        
         core.info(`before key`);
         const key = hash(await hashFolders(paths, hashOptions));
         core.info(`after key = ${key}`);
