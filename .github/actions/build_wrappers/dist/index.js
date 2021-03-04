@@ -69,7 +69,11 @@ function run() {
             let returnBulidValue;
             try {
                 core.startGroup(`Build process output`);
-                returnBulidValue = yield common_1.execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
+                returnBulidValue = yield common_1.execShellCommand(core, "./wrappers/build-macos.sh", [], {
+                    shell: true,
+                    detached: false,
+                    env: { REALM_CMAKE_CONFIGURATION: "Release" }
+                });
                 core.endGroup();
             }
             catch (err) {
@@ -81,7 +85,13 @@ function run() {
                 return;
             }
             core.info(`before key`);
-            const key = hash(yield hashFolders(paths, hashOptions));
+            let key = "";
+            try {
+                key = hash(yield hashFolders(paths, hashOptions));
+            }
+            catch (err) {
+                `Error creating hash for ${paths.join(",")}:\n ${err.message}`;
+            }
             core.info(`after key = ${key}`);
             try {
                 core.info(`before saveCache`);
@@ -94,7 +104,6 @@ function run() {
         }
         else {
             core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
-            // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
         }
     });
 }
@@ -103,17 +112,13 @@ function hash(str) {
     const openingHashSignature = `cache-${process.platform}-`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
+// Can throw exceptions
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         let hashes = [];
         for (let path of paths) {
-            try {
-                const hash = yield folderHash.hashElement(path, hashOptions);
-                hashes.push(hash.hash);
-            }
-            catch (err) {
-                `Error creating hash for ${path}:\n ${err}`;
-            }
+            const hash = yield folderHash.hashElement(path, hashOptions);
+            hashes.push(hash.hash);
         }
         return hashes.join("");
     });
@@ -160,28 +165,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.execShellCommand = void 0;
 const cp = __importStar(__nccwpck_require__(3129));
-function execShellCommand(outputStream, cmd, cmdParams, envVars) {
+function execShellCommand(outputStream, cmd, cmdParams, options) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
-            var _a, _b;
-            let buildCmd;
-            if (envVars !== undefined) {
-                buildCmd = cp.spawn(cmd, cmdParams, {
-                    shell: true,
-                    env: { REALM_CMAKE_CONFIGURATION: "Release" },
-                    detached: false
-                });
-            }
-            else {
-                buildCmd = cp.spawn(cmd, cmdParams);
-            }
-            (_a = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stdout) === null || _a === void 0 ? void 0 : _a.on("data", (data) => {
+            let buildCmd = cp.spawn(cmd, cmdParams, options);
+            buildCmd.stdout.on("data", (data) => {
                 outputStream.info(data.toString());
             });
-            (_b = buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.stderr) === null || _b === void 0 ? void 0 : _b.on("data", (data) => {
+            buildCmd.stderr.on("data", (data) => {
                 outputStream.info(data.toString());
             });
-            buildCmd === null || buildCmd === void 0 ? void 0 : buildCmd.on("exit", (code) => {
+            buildCmd.on("exit", (code) => {
                 outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
                 code === 0 ? resolve(code) : reject(code);
             });

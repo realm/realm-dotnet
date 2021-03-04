@@ -44,7 +44,11 @@ async function run(): Promise<void>
         try
         {
             core.startGroup(`Build process output`);
-            returnBulidValue = await execShellCommand(core, "./wrappers/build-macos.sh", [], ["REALM_CMAKE_CONFIGURATION=Release"]);
+            returnBulidValue = await execShellCommand(core, "./wrappers/build-macos.sh", [], {
+                shell: true,
+                detached: false,
+                env: { REALM_CMAKE_CONFIGURATION: "Release" }
+            });
             core.endGroup();
         }
         catch (err)
@@ -60,7 +64,17 @@ async function run(): Promise<void>
         }
         
         core.info(`before key`);
-        const key = hash(await hashFolders(paths, hashOptions));
+        
+        let key: string = "";
+        try
+        {
+            key = hash(await hashFolders(paths, hashOptions));
+        }
+        catch (err)
+        {
+            `Error creating hash for ${paths.join(",")}:\n ${err.message}`;
+        }
+
         core.info(`after key = ${key}`);
         try
         {
@@ -76,7 +90,6 @@ async function run(): Promise<void>
     else
     {
         core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
-        // IS IT ALREADY RESTORED IN PLACE??? INVESTIGATE
     }
 }
 
@@ -87,20 +100,14 @@ function hash(str: string)
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 
+// Can throw exceptions
 async function hashFolders(paths: string[], hashOptions: folderHash.HashElementOptions): Promise<string>
 {
     let hashes: string[] = [];
     for (let path of paths)
     {
-        try
-        {
-            const hash = await folderHash.hashElement(path, hashOptions);
-            hashes.push(hash.hash);
-        }
-        catch(err)
-        {
-            `Error creating hash for ${path}:\n ${err}`;
-        }
+        const hash = await folderHash.hashElement(path, hashOptions);
+        hashes.push(hash.hash);
     }
     return hashes.join("");
 }
