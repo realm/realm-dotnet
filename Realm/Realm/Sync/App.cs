@@ -160,6 +160,7 @@ namespace Realms.Sync
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
+#pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
                 log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
             };
 
@@ -169,6 +170,7 @@ namespace Realms.Sync
                 logger._logLevel = nativeConfig.log_level;
                 nativeConfig.managed_logger = GCHandle.ToIntPtr(logger.GCHandle);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
             else if (Logger.Default != null)
             {
                 nativeConfig.managed_logger = GCHandle.ToIntPtr(Logger.Default.GCHandle);

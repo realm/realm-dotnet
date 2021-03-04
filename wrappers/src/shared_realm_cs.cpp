@@ -262,9 +262,11 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm& realm, NativeException::
     });
 }
 
-REALM_EXPORT void shared_realm_close_all_realms()
+REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& ex)
 {
-    realm::_impl::RealmCoordinator::clear_all_caches();
+    handle_errors(ex, [&]() {
+        realm::_impl::RealmCoordinator::clear_all_caches();
+    });
 }
 
 

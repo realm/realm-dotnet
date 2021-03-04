@@ -149,6 +149,9 @@ stage('Package') {
       dir('Realm') {
         msbuild target: 'Pack', properties: props, restore: true
       }
+      dir('Realm.UnityUtils') {
+        msbuild target: 'Pack', properties: props, restore: true
+      }
 
       recordIssues (
         tool: msBuild(),
@@ -190,14 +193,15 @@ stage('Unity Package') {
     unstash 'packages'
 
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
+    def utilsPackagePath = indFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --pack"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utilspath ${utilsPackagePath} --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "realm.unity-${packageVersion}.tgz"
       sh "rm realm.unity-${packageVersion}.tgz"
     }
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --include-dependencies --pack"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utilspath ${utilsPackagePath} --include-dependencies --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "*.tgz"
     }
