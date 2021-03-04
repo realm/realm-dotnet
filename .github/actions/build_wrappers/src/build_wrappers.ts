@@ -22,11 +22,6 @@ async function run(): Promise<void>
         core.error(`Hashing failed: ${error}`);
     }
 
-    //TODO see if it could be of use
-    // const restoreKeys = [
-    //     openingHashSignature
-    // ]
-
     let cacheKey: string | undefined = undefined;
     if (finalHash !== undefined)
     {
@@ -58,7 +53,6 @@ async function run(): Promise<void>
             return;
         }
 
-        // failure
         if (returnBulidValue != 0)
         {
             core.setFailed(`The build failed for some reasons`);
@@ -89,7 +83,7 @@ async function run(): Promise<void>
 // Result: signature-"hashOfStr"
 function hash(str: string)
 {
-    const openingHashSignature = `cache-hash-${process.platform}-`;
+    const openingHashSignature = `cache-${process.platform}-`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 

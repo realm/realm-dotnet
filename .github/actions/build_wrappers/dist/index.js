@@ -54,10 +54,6 @@ function run() {
         catch (error) {
             core.error(`Hashing failed: ${error}`);
         }
-        //TODO see if it could be of use
-        // const restoreKeys = [
-        //     openingHashSignature
-        // ]
         let cacheKey = undefined;
         if (finalHash !== undefined) {
             core.info(`Hash key for build is: ${finalHash}`);
@@ -80,7 +76,6 @@ function run() {
                 core.setFailed(`Error while building: ${err.message}`);
                 return;
             }
-            // failure
             if (returnBulidValue != 0) {
                 core.setFailed(`The build failed for some reasons`);
                 return;
@@ -105,7 +100,7 @@ function run() {
 }
 // Result: signature-"hashOfStr"
 function hash(str) {
-    const openingHashSignature = `cache-hash-${process.platform}-`;
+    const openingHashSignature = `cache-${process.platform}-`;
     return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
 }
 function hashFolders(paths, hashOptions) {
