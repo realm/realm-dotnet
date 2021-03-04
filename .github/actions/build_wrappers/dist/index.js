@@ -40,13 +40,16 @@ const core = __importStar(__nccwpck_require__(4864));
 const cache = __importStar(__nccwpck_require__(5852));
 const folderHash = __importStar(__nccwpck_require__(6016));
 const crypto = __importStar(__nccwpck_require__(6417));
-const common_1 = __nccwpck_require__(6877);
+const utils = __importStar(__nccwpck_require__(6877));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
         const paths = ["./wrappers/build/"];
         const hashOptions = {
             files: { include: ["*.dll"] },
         };
+        const cmdsToParse = core.getInput("cmd-array", { required: true }).split("--");
+        const cmds = utils.parseCmdInputArray(cmdsToParse);
         let finalHash = undefined;
         try {
             finalHash = hash(yield hashFolders(paths, hashOptions));
@@ -66,22 +69,18 @@ function run() {
         }
         if (cacheKey === undefined) {
             core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
-            let returnBulidValue;
             try {
                 core.startGroup(`Build process output`);
-                returnBulidValue = yield common_1.execShellCommand(core, "./wrappers/build-macos.sh", [], {
-                    shell: true,
-                    detached: false,
-                    env: { REALM_CMAKE_CONFIGURATION: "Release" }
-                });
+                for (let cmd of cmds) {
+                    if ((yield utils.execShellCommand(core, cmd)) != 0) {
+                        core.setFailed(`The build failed for some reasons`);
+                        return;
+                    }
+                }
                 core.endGroup();
             }
             catch (err) {
                 core.setFailed(`Error while building: ${err.message}`);
-                return;
-            }
-            if (returnBulidValue != 0) {
-                core.setFailed(`The build failed for some reasons`);
                 return;
             }
             core.info(`before key`);
@@ -163,12 +162,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.execShellCommand = void 0;
+exports.cmdObj = exports.parseCmdInputArray = exports.execShellCommand = void 0;
 const cp = __importStar(__nccwpck_require__(3129));
-function execShellCommand(outputStream, cmd, cmdParams, options) {
+function execShellCommand(outputStream, cmdObj) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
-            let buildCmd = cp.spawn(cmd, cmdParams, options);
+            let buildCmd = cp.spawn(cmdObj.cmd, cmdObj.cmdParams, cmdObj.execOptions);
             buildCmd.stdout.on("data", (data) => {
                 outputStream.info(data.toString());
             });
@@ -183,6 +182,25 @@ function execShellCommand(outputStream, cmd, cmdParams, options) {
     });
 }
 exports.execShellCommand = execShellCommand;
+function parseCmdInputArray(cmds) {
+    let finalCmds = [];
+    //console.debug(`list is:\n ${cmds}`);
+    for (let cmd of cmds) {
+        //console.debug(`the object is:\n ${cmd}`);
+        finalCmds.push(Object.assign(new cmdObj, JSON.parse(cmd)));
+    }
+    return finalCmds;
+}
+exports.parseCmdInputArray = parseCmdInputArray;
+class cmdObj {
+    constructor() {
+        this.cmd = "";
+        this.cmdParams = undefined;
+        this.execOptions = undefined;
+    }
+    ;
+}
+exports.cmdObj = cmdObj;
 
 
 /***/ }),

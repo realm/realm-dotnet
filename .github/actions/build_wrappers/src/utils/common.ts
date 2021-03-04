@@ -7,10 +7,10 @@ export interface output {
     error(message: string): void;
 }
 
-export async function execShellCommand(outputStream: output, cmd: string, cmdParams?: string[], options?: cp.SpawnOptionsWithoutStdio): Promise<number>
+export async function execShellCommand(outputStream: output, cmdObj: cmdObj): Promise<number>
 {
     return new Promise<number>((resolve, reject) => {
-        let buildCmd = cp.spawn(cmd, cmdParams, options); 
+        let buildCmd = cp.spawn(cmdObj.cmd, cmdObj.cmdParams, cmdObj.execOptions); 
         
         buildCmd.stdout.on("data", (data) => {
             outputStream.info(data.toString());
@@ -23,4 +23,34 @@ export async function execShellCommand(outputStream: output, cmd: string, cmdPar
             code === 0 ? resolve(code) : reject(code);
         });
     });
+}
+
+export function parseCmdInputArray(cmds: string[]): cmdObj[]
+{
+    let finalCmds: cmdObj[] = [];
+    //console.debug(`list is:\n ${cmds}`);
+    for (let cmd of cmds)
+    {
+        //console.debug(`the object is:\n ${cmd}`);
+        finalCmds.push( Object.assign(new cmdObj, JSON.parse(cmd)) );
+    }
+
+    return finalCmds;
+}
+
+export class cmdObj
+{
+    public cmd: string = "";
+    public cmdParams?: string[] = undefined;
+    public execOptions?: cp.SpawnOptionsWithoutStdio = undefined;
+
+    constructor(){};
+
+    // constructor(cmd: string, cmdParams?: string[], execOptions?: cp.SpawnOptionsWithoutStdio)
+    // {
+    //     this.cmd = cmd;
+    //     this.cmdParams = cmdParams;
+    //     this.execOptions = execOptions;
+    // }
+
 }

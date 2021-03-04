@@ -2,15 +2,19 @@ import * as core from "@actions/core";
 import * as cache from "@actions/cache";
 import * as folderHash from "folder-hash";
 import * as crypto from "crypto";
-import { execShellCommand } from "./utils/common";
+import * as utils from "./utils/common";
 
 
 async function run(): Promise<void>
 {
+    // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
     const paths = [ "./wrappers/build/" ];
     const hashOptions = {
         files: { include: ["*.dll"] },
     };
+
+    const cmdsToParse = core.getInput("cmd-array", { required: true }).split("--");
+    const cmds: utils.cmdObj[] = utils.parseCmdInputArray(cmdsToParse);
 
     let finalHash: string | undefined = undefined;
     try
@@ -40,26 +44,22 @@ async function run(): Promise<void>
     {
         core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
 
-        let returnBulidValue: number;
         try
         {
             core.startGroup(`Build process output`);
-            returnBulidValue = await execShellCommand(core, "./wrappers/build-macos.sh", [], {
-                shell: true,
-                detached: false,
-                env: { REALM_CMAKE_CONFIGURATION: "Release" }
-            });
+            for (let cmd of cmds)
+            {
+                if (await utils.execShellCommand(core, cmd) != 0)
+                {
+                    core.setFailed(`The build failed for some reasons`);
+                    return;
+                }
+            }
             core.endGroup();
         }
         catch (err)
         {
             core.setFailed(`Error while building: ${err.message}`);
-            return;
-        }
-
-        if (returnBulidValue != 0)
-        {
-            core.setFailed(`The build failed for some reasons`);
             return;
         }
         

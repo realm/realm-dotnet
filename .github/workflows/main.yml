@@ -20,7 +20,7 @@ jobs:
       # if: 'steps.wrapper-cache.outputs.cache-hit != true'
       uses: ./.github/actions/build_wrappers
       with:
-        build-configuration: Release
+        cmd-array: '{"cmd": "./wrappers/build-macos.sh","cmdParams": [], { shell: true, detached: false, env: { REALM_CMAKE_CONFIGURATION: "Release" } }}'
   build-wrappers-windows:
     runs-on: windows-latest
     steps:
@@ -59,15 +59,18 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      - name: Check if cache contains wrappers already
-        id: wrapper-cache
-        uses: actions/cache@v2
+      # - name: Check if cache contains wrappers already
+      #   id: wrapper-cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ./wrappers/build/
+      #     key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+      - name: 'Build wrappers'
+        #if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        #run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
+        uses: ./.github/actions/build_wrappers
         with:
-          path: ./wrappers/build/
-          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
-      - name: Build wrappers
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
+          cmd-array: '{"cmd": "./wrappers/build.sh","cmdParams": [], { shell: true, detached: false, env: { REALM_CMAKE_CONFIGURATION: "Release" } }}'
   # TODO: BUILD AND RUN TESTS
   # execute-tests-macos:
   # execute-tests-:
