@@ -193,7 +193,7 @@ stage('Unity Package') {
     unstash 'packages'
 
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
-    def utilsPackagePath = indFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
+    def utilsPackagePath = findFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
 
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utilspath ${utilsPackagePath} --pack"
     dir('Realm/Realm.Unity') {
