@@ -51,7 +51,7 @@ export function tryParseCmdInputArray(cmds: string, oss: outputStream): cmdObj[]
     }
     catch(error)
     {
-        oss.error(`Error while parsing cmds:${error.message}`);
+        oss.error(`Error while parsing cmds: ${error.message}`);
     }
 
     return finalCmds;

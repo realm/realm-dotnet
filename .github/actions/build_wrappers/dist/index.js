@@ -172,7 +172,7 @@ function tryParseCmdInputArray(cmds, oss) {
         finalCmds = JSON.parse(cmds);
     }
     catch (error) {
-        oss.error(`Error while parsing cmds:${error.message}`);
+        oss.error(`Error while parsing cmds: ${error.message}`);
     }
     return finalCmds;
 }
