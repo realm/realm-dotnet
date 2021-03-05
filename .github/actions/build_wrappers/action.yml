@@ -1,14 +1,9 @@
 name: 'Build macos wrapper'
 description: 'Builds macos wrapper for .net5'
 inputs:
-  cmd-array:
-    description: 'Needed commands to make your build'
+  cmds:
+    description: "Commands that need to be executed. It's a JSON array of object cmdObj => { \"cmd\": \"your-cmd\", \"cmdParams\": [\"str1, ..., strN\"]}"
     required: true
 runs:
-  # using: "composite"
-  # steps:
-    # - name: 'Build wrappers'
-      # run: REALM_CMAKE_CONFIGURATION=${{ inputs.build-configuration }} ./wrappers/build-macos.sh
-      # shell: bash
   using: 'node12'
   main: './dist/index.js'

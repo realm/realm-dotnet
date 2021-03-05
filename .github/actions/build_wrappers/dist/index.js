@@ -38,88 +38,63 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(4864));
 const cache = __importStar(__nccwpck_require__(5852));
-const folderHash = __importStar(__nccwpck_require__(6016));
-const crypto = __importStar(__nccwpck_require__(6417));
 const utils = __importStar(__nccwpck_require__(6877));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
-        const paths = ["./wrappers/build/"];
-        const hashOptions = {
-            files: { include: ["*.dll"] },
-        };
-        const cmdsToParse = core.getInput("cmd-array", { required: true }).split("--");
-        const cmds = utils.parseCmdInputArray(cmdsToParse);
-        let finalHash = undefined;
         try {
-            finalHash = hash(yield hashFolders(paths, hashOptions));
-        }
-        catch (error) {
-            core.error(`Hashing failed: ${error}`);
-        }
-        let cacheKey = undefined;
-        if (finalHash !== undefined) {
-            core.info(`Hash key for build is: ${finalHash}`);
-            try {
-                cacheKey = yield cache.restoreCache(paths, finalHash);
+            // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
+            const paths = ["./wrappers"];
+            // TODO make this operate only on code folders
+            const hashOptions = {
+                files: { include: ["*.dll"] },
+            };
+            const cmdsToParse = core.getInput("cmds", { required: true });
+            const cmds = utils.tryParseCmdInputArray(cmdsToParse, core);
+            if (cmds.length === 0) {
+                core.setFailed(`No commands were supplied, nothing to do.`);
+                return;
             }
-            catch (err) {
-                core.error(`Impossible to retrieve cache: ${err}`);
+            const hash = yield utils.tryGetHash(paths, hashOptions, core);
+            let cacheKey = undefined;
+            if (hash !== undefined) {
+                core.info(`Hash key for ${paths.join("\n")} is: ${hash}`);
+                try {
+                    cacheKey = yield cache.restoreCache(paths, hash);
+                }
+                catch (err) {
+                    core.error(`Impossible to retrieve cache: ${err}`);
+                }
             }
-        }
-        if (cacheKey === undefined) {
-            core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
-            try {
+            else {
+                core.error(`No hash could be calculated, so it can't be searched for a previous cached result and what's going to be calculated/built now can't be cached either.`);
+            }
+            if (cacheKey === undefined) {
+                core.info(`No cache was found, so the command will be executed...`);
                 core.startGroup(`Build process output`);
                 for (let cmd of cmds) {
-                    if ((yield utils.execShellCommand(core, cmd)) != 0) {
-                        core.setFailed(`The build failed for some reasons`);
+                    if ((yield utils.tryExecShellCommand(cmd, core)) != 0) {
+                        core.setFailed(`Executing a command failed. Stopping execution!`);
                         return;
                     }
                 }
                 core.endGroup();
+                if (hash !== undefined) {
+                    try {
+                        const cacheId = yield cache.saveCache(paths, hash);
+                        core.info(`Cache properly created with id ${cacheId}`);
+                    }
+                    catch (error) {
+                        core.error(`The cache could not be saved because ${error.message}`);
+                    }
+                }
             }
-            catch (err) {
-                core.setFailed(`Error while building: ${err.message}`);
-                return;
-            }
-            core.info(`before key`);
-            let key = "";
-            try {
-                key = hash(yield hashFolders(paths, hashOptions));
-            }
-            catch (err) {
-                `Error creating hash for ${paths.join(",")}:\n ${err.message}`;
-            }
-            core.info(`after key = ${key}`);
-            try {
-                core.info(`before saveCache`);
-                const cacheId = yield cache.saveCache(paths, key);
-                core.info(`Cache properly created with id ${cacheId}`);
-            }
-            catch (error) {
-                core.error(`The cache could not be saved because ${error.message}`);
+            else {
+                core.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
             }
         }
-        else {
-            core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
+        catch (error) {
+            core.setFailed(`Something went wrong while retrieving the cache and or building: ${error.message}`);
         }
-    });
-}
-// Result: signature-"hashOfStr"
-function hash(str) {
-    const openingHashSignature = `cache-${process.platform}-`;
-    return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
-}
-// Can throw exceptions
-function hashFolders(paths, hashOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let hashes = [];
-        for (let path of paths) {
-            const hash = yield folderHash.hashElement(path, hashOptions);
-            hashes.push(hash.hash);
-        }
-        return hashes.join("");
     });
 }
 run();
@@ -162,45 +137,73 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.cmdObj = exports.parseCmdInputArray = exports.execShellCommand = void 0;
+exports.tryGetHash = exports.tryParseCmdInputArray = exports.tryExecShellCommand = void 0;
+const folderHash = __importStar(__nccwpck_require__(6016));
+const crypto = __importStar(__nccwpck_require__(6417));
 const cp = __importStar(__nccwpck_require__(3129));
-function execShellCommand(outputStream, cmdObj) {
+// Executes the cmd and returns 0 if success, any other numberic value otherwise.
+function tryExecShellCommand(cmdObj, oss) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
-            let buildCmd = cp.spawn(cmdObj.cmd, cmdObj.cmdParams, cmdObj.execOptions);
-            buildCmd.stdout.on("data", (data) => {
-                outputStream.info(data.toString());
-            });
-            buildCmd.stderr.on("data", (data) => {
-                outputStream.info(data.toString());
-            });
-            buildCmd.on("exit", (code) => {
-                outputStream.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
-                code === 0 ? resolve(code) : reject(code);
-            });
+            try {
+                let buildCmd = cp.spawn(cmdObj.cmd, cmdObj.cmdParams, { "shell": true, "detached": false });
+                buildCmd.stdout.on("data", (data) => {
+                    oss.info(data.toString());
+                });
+                buildCmd.stderr.on("data", (data) => {
+                    oss.info(data.toString());
+                });
+                buildCmd.on("exit", (code) => {
+                    oss.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
+                    code === 0 ? resolve(code) : reject(code);
+                });
+            }
+            catch (error) {
+                oss.error(`Executing command ${cmdObj.cmd} failed: ${error.message}`);
+                reject(-1);
+            }
         });
     });
 }
-exports.execShellCommand = execShellCommand;
-function parseCmdInputArray(cmds) {
+exports.tryExecShellCommand = tryExecShellCommand;
+function tryParseCmdInputArray(cmds, oss) {
     let finalCmds = [];
-    //console.debug(`list is:\n ${cmds}`);
-    for (let cmd of cmds) {
-        //console.debug(`the object is:\n ${cmd}`);
-        finalCmds.push(Object.assign(new cmdObj, JSON.parse(cmd)));
+    try {
+        finalCmds = JSON.parse(cmds);
+    }
+    catch (error) {
+        oss.error(`Error while parsing cmds:${error.message}`);
     }
     return finalCmds;
 }
-exports.parseCmdInputArray = parseCmdInputArray;
-class cmdObj {
-    constructor() {
-        this.cmd = "";
-        this.cmdParams = undefined;
-        this.execOptions = undefined;
-    }
-    ;
+exports.tryParseCmdInputArray = tryParseCmdInputArray;
+// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
+// The final hash is prepend with a constant suffix on each OS platform.
+function tryGetHash(paths, hashOptions, oss) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const openingHashSignature = `cache-${process.platform}-`;
+            const folderHash = yield hashFolders(paths, hashOptions);
+            return openingHashSignature.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
+        }
+        catch (error) {
+            oss.error(`Hashing failed: ${error}`);
+            return undefined;
+        }
+    });
 }
-exports.cmdObj = cmdObj;
+exports.tryGetHash = tryGetHash;
+// Can throw exceptions
+function hashFolders(paths, hashOptions) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let hashes = [];
+        for (let path of paths) {
+            const hash = yield folderHash.hashElement(path, hashOptions);
+            hashes.push(hash.hash);
+        }
+        return hashes.join("");
+    });
+}
 
 
 /***/ }),

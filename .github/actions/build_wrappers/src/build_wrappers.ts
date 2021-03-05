@@ -1,115 +1,84 @@
 import * as core from "@actions/core";
 import * as cache from "@actions/cache";
-import * as folderHash from "folder-hash";
-import * as crypto from "crypto";
 import * as utils from "./utils/common";
 
 
 async function run(): Promise<void>
 {
-    // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
-    const paths = [ "./wrappers/build/" ];
-    const hashOptions = {
-        files: { include: ["*.dll"] },
-    };
-
-    const cmdsToParse = core.getInput("cmd-array", { required: true }).split("--");
-    const cmds: utils.cmdObj[] = utils.parseCmdInputArray(cmdsToParse);
-
-    let finalHash: string | undefined = undefined;
     try
     {
-       finalHash = hash(await hashFolders(paths, hashOptions)); 
-    }
-    catch (error)
-    {
-        core.error(`Hashing failed: ${error}`);
-    }
+        // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
+        const paths = [ "./wrappers" ];
+        // TODO make this operate only on code folders
+        const hashOptions = {
+            files: { include: ["*.dll"] },
+        };
 
-    let cacheKey: string | undefined = undefined;
-    if (finalHash !== undefined)
-    {
-        core.info(`Hash key for build is: ${finalHash}`);
-        try
+        const cmdsToParse = core.getInput("cmds", { required: true });
+        const cmds: utils.cmdObj[] = utils.tryParseCmdInputArray(cmdsToParse, core);
+        if (cmds.length === 0)
         {
-            cacheKey = await cache.restoreCache(paths, finalHash);
+            core.setFailed(`No commands were supplied, nothing to do.`);
+            return;
         }
-        catch (err)
-        {
-            core.error(`Impossible to retrieve cache: ${err}`);
-        }
-    }
-    
-    if (cacheKey === undefined)
-    {
-        core.info(`No cache was found, the wrappers will be compiled. Wait while the compilation is carried out...`);
 
-        try
+        const hash = await utils.tryGetHash(paths, hashOptions, core);
+
+        let cacheKey: string | undefined = undefined;
+        if (hash !== undefined)
         {
+            core.info(`Hash key for ${paths.join("\n")} is: ${hash}`);
+            try
+            {
+                cacheKey = await cache.restoreCache(paths, hash);
+            }
+            catch (err)
+            {
+                core.error(`Impossible to retrieve cache: ${err}`);
+            }
+        }
+        else
+        {
+            core.error(`No hash could be calculated, so it can't be searched for a previous cached result and what's going to be calculated/built now can't be cached either.`);
+        }
+        
+        if (cacheKey === undefined)
+        {
+            core.info(`No cache was found, so the command will be executed...`);
+
             core.startGroup(`Build process output`);
             for (let cmd of cmds)
             {
-                if (await utils.execShellCommand(core, cmd) != 0)
+                if (await utils.tryExecShellCommand(cmd, core) != 0)
                 {
-                    core.setFailed(`The build failed for some reasons`);
+                    core.setFailed(`Executing a command failed. Stopping execution!`);
                     return;
                 }
             }
             core.endGroup();
-        }
-        catch (err)
-        {
-            core.setFailed(`Error while building: ${err.message}`);
-            return;
-        }
-        
-        core.info(`before key`);
-        
-        let key: string = "";
-        try
-        {
-            key = hash(await hashFolders(paths, hashOptions));
-        }
-        catch (err)
-        {
-            `Error creating hash for ${paths.join(",")}:\n ${err.message}`;
-        }
 
-        core.info(`after key = ${key}`);
-        try
-        {
-            core.info(`before saveCache`);
-            const cacheId = await cache.saveCache(paths, key);
-            core.info(`Cache properly created with id ${cacheId}`);
+            if (hash !== undefined)
+            {
+                try
+                {
+                    const cacheId = await cache.saveCache(paths, hash);
+                    core.info(`Cache properly created with id ${cacheId}`);
+                }
+                catch (error)
+                {
+                    core.error(`The cache could not be saved because ${error.message}`);
+                }
+            }
         }
-        catch (error)
+        else
         {
-            core.error(`The cache could not be saved because ${error.message}`);
+            core.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
         }
     }
-    else
+    catch (error)
     {
-        core.info(`A build of the wrappers was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
+        core.setFailed(`Something went wrong while retrieving the cache and or building: ${error.message}`);
     }
-}
-
-// Result: signature-"hashOfStr"
-function hash(str: string)
-{
-    const openingHashSignature = `cache-${process.platform}-`;
-    return openingHashSignature.concat(crypto.createHash("sha256").update(str).digest("base64"));
-}
-
-// Can throw exceptions
-async function hashFolders(paths: string[], hashOptions: folderHash.HashElementOptions): Promise<string>
-{
-    let hashes: string[] = [];
-    for (let path of paths)
-    {
-        const hash = await folderHash.hashElement(path, hashOptions);
-        hashes.push(hash.hash);
-    }
-    return hashes.join("");
 }
 
 run();

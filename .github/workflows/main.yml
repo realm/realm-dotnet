@@ -19,8 +19,16 @@ jobs:
     - name: 'Build wrappers'
       # if: 'steps.wrapper-cache.outputs.cache-hit != true'
       uses: ./.github/actions/build_wrappers
+      env: 
+        REALM_CMAKE_CONFIGURATION: Release
       with:
-        cmd-array: '{"cmd": "./wrappers/build-macos.sh","cmdParams": [], "execOptions": { "shell": true, "detached": false, "env": { "REALM_CMAKE_CONFIGURATION": "Release" } }}'
+        cmds: '>
+        [
+          {
+            "cmd": "./wrappers/build-macos.sh",
+            "cmdParams": []
+          }
+        ]'
   build-wrappers-windows:
     runs-on: windows-latest
     steps:
@@ -70,7 +78,13 @@ jobs:
         #run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
         uses: ./.github/actions/build_wrappers
         with:
-          cmd-array: '{"cmd": "./wrappers/build.sh","cmdParams": [], "execOptions": { "shell": true, "detached": false, "env": { "REALM_CMAKE_CONFIGURATION": "Release" } }}'
+          cmds: '>
+          [
+            {
+              "cmd": "./wrappers/build.sh",
+              "cmdParams": []
+            }
+          ]'
   # TODO: BUILD AND RUN TESTS
   # execute-tests-macos:
   # execute-tests-:
