@@ -1,6 +1,6 @@
 import * as folderHash from "folder-hash";
 import * as crypto from "crypto";
-import * as cp from 'child_process';
+import * as cp from "child_process";
 
 export interface outputStream {
     debug(message: string): void;
@@ -42,24 +42,9 @@ export async function tryExecShellCommand(cmdObj: cmdObj, oss: outputStream): Pr
     });
 }
 
-export function tryParseCmdInputArray(cmds: string, oss: outputStream): cmdObj[]
-{
-    let finalCmds: cmdObj[] = [];
-    try
-    {
-        finalCmds = JSON.parse(cmds);
-    }
-    catch(error)
-    {
-        oss.error(`Error while parsing cmds: ${error.message}`);
-    }
-
-    return finalCmds;
-}
-
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant suffix on each OS platform.
-export async function tryGetHash(paths: string[], hashOptions: folderHash.HashElementOptions, oss: outputStream): Promise<string | undefined>
+// The final hash is prepend with a constant suffix different on each OS platform.
+export async function tryGetHash(paths: string[], oss: outputStream, hashOptions?: folderHash.HashElementOptions): Promise<string | undefined>
 {
     try
     {
@@ -75,7 +60,7 @@ export async function tryGetHash(paths: string[], hashOptions: folderHash.HashEl
 }
 
 // Can throw exceptions
-async function hashFolders(paths: string[], hashOptions: folderHash.HashElementOptions): Promise<string>
+async function hashFolders(paths: string[], hashOptions?: folderHash.HashElementOptions): Promise<string>
 {
     let hashes: string[] = [];
     for (let path of paths)

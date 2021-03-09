@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as cache from "@actions/cache";
 import * as utils from "./utils/common";
+import * as input from "./utils/input_parsing";
 
 
 async function run(): Promise<void>
@@ -8,21 +9,19 @@ async function run(): Promise<void>
     try
     {
         // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
-        const paths = [ "./wrappers" ];
-        // TODO make this operate only on code folders
+        // TODO the exclude folder should be passed from the inputs, since the name could be different than build
         const hashOptions = {
-            files: { include: ["*.dll"] },
+            folders: { exclude: ["build"] },
         };
-
-        const cmdsToParse = core.getInput("cmds", { required: true });
-        const cmds: utils.cmdObj[] = utils.tryParseCmdInputArray(cmdsToParse, core);
+        const paths = input.parsePaths( core.getInput("cachePaths", { required: true }) );
+        const cmds: utils.cmdObj[] = input.tryParseCmdInputArray( core.getInput("cmds", { required: true }) , core);
         if (cmds.length === 0)
         {
             core.setFailed(`No commands were supplied, nothing to do.`);
             return;
         }
 
-        const hash = await utils.tryGetHash(paths, hashOptions, core);
+        const hash = await utils.tryGetHash(paths, core, hashOptions);
 
         let cacheKey: string | undefined = undefined;
         if (hash !== undefined)

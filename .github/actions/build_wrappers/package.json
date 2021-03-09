@@ -4,7 +4,7 @@
   "description": "Builds macos wrapper for the .net sdk",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "author": "Andrea Catalini",
   "license": "ISC",
@@ -13,5 +13,15 @@
     "@actions/core": "^1.2.6",
     "@types/folder-hash": "^3.3.0",
     "folder-hash": "^4.0.0"
+  },
+  "devDependencies": {
+    "@testdeck/mocha": "^0.1.2",
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.1",
+    "@types/sinon": "^9.0.11",
+    "chai": "^4.3.3",
+    "mocha": "^8.3.1",
+    "sinon": "^9.2.4",
+    "ts-node": "^9.1.1"
   }
 }

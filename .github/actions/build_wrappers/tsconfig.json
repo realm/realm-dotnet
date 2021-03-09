@@ -8,5 +8,11 @@
         "strict": true,
         "esModuleInterop": true,
         "sourceMap": false,
-      }
+        "experimentalDecorators": true,
+      },
+      "exclude": [
+        "./tests/",
+        "./node_modules/",
+        "./dist/"
+      ],
 }
