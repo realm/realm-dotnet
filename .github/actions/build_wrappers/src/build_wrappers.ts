@@ -8,7 +8,6 @@ async function run(): Promise<void>
 {
     try
     {
-        // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
         // TODO the exclude folder should be passed from the inputs, since the name could be different than build
         const hashOptions = {
             folders: { exclude: ["build"] },
@@ -45,6 +44,7 @@ async function run(): Promise<void>
         {
             core.info(`No cache was found, so the command will be executed...`);
 
+            // TODO: this folding group doesn't really seem to work, investigate
             core.startGroup(`Build process output`);
             for (let cmd of cmds)
             {

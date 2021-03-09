@@ -30,7 +30,7 @@ export async function tryExecShellCommand(cmdObj: cmdObj, oss: outputStream): Pr
                 oss.info(data.toString());
             });
             buildCmd.on("exit", (code) =>{
-                oss.info(`Child process exited with code ${code?.toString()}`);
+                oss.info(`Child process ${cmdObj.cmd} exited with code ${code?.toString()}`);
                 code === 0 ? resolve(code) : reject(code);
             });
         }
