@@ -43,18 +43,13 @@ const input = __importStar(__nccwpck_require__(4569));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // TODO to make this general purpose, we need to pass this either from a conf file or as input. Same for the next line
-            // TODO the exclude folder should be passed from the inputs, since the name could be different than build
-            const hashOptions = {
-                folders: { exclude: ["build"] },
-            };
             const paths = input.parsePaths(core.getInput("cachePaths", { required: true }));
             const cmds = input.tryParseCmdInputArray(core.getInput("cmds", { required: true }), core);
             if (cmds.length === 0) {
                 core.setFailed(`No commands were supplied, nothing to do.`);
                 return;
             }
-            const hash = yield utils.tryGetHash(paths, core, hashOptions);
+            const hash = yield utils.tryGetHash(paths, core);
             let cacheKey = undefined;
             if (hash !== undefined) {
                 core.info(`Hash key for ${paths.join("\n")} is: ${hash}`);
@@ -70,6 +65,7 @@ function run() {
             }
             if (cacheKey === undefined) {
                 core.info(`No cache was found, so the command will be executed...`);
+                // TODO: this folding group doesn't really seem to work, investigate
                 core.startGroup(`Build process output`);
                 for (let cmd of cmds) {
                     if ((yield utils.tryExecShellCommand(cmd, core)) != 0) {
@@ -154,7 +150,7 @@ function tryExecShellCommand(cmdObj, oss) {
                     oss.info(data.toString());
                 });
                 buildCmd.on("exit", (code) => {
-                    oss.info(`Child process exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
+                    oss.info(`Child process ${cmdObj.cmd} exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
                     code === 0 ? resolve(code) : reject(code);
                 });
             }

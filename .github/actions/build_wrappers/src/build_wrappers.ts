@@ -8,10 +8,6 @@ async function run(): Promise<void>
 {
     try
     {
-        // TODO the exclude folder should be passed from the inputs, since the name could be different than build
-        const hashOptions = {
-            folders: { exclude: ["build"] },
-        };
         const paths = input.parsePaths( core.getInput("cachePaths", { required: true }) );
         const cmds: utils.cmdObj[] = input.tryParseCmdInputArray( core.getInput("cmds", { required: true }) , core);
         if (cmds.length === 0)
@@ -20,7 +16,7 @@ async function run(): Promise<void>
             return;
         }
 
-        const hash = await utils.tryGetHash(paths, core, hashOptions);
+        const hash = await utils.tryGetHash(paths, core);
 
         let cacheKey: string | undefined = undefined;
         if (hash !== undefined)
