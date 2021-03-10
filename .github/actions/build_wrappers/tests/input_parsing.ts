@@ -2,34 +2,19 @@ import { assert } from "chai";
 import "mocha";
 import { suite, test } from '@testdeck/mocha';
 import * as input from "../src/utils/input_parsing";
-import * as utils from "../src/utils/common";
+import * as impl from "./class_implementations";
 import * as path from "path"
-
-class outputStream implements utils.outputStream
-{
-    debug(message: string): void {
-        console.debug(message);
-    }
-    info(message: string): void {
-        console.info(message);
-    }
-    warning(message: string): void {
-        console.warn(message);
-    }
-    error(message: string): void {
-        console.error(message);
-    }
-}
 
 @suite
 class InputParsing 
 {
+    private oss = new impl.outputStream();
+
     @test
     JsonCmds()
     { 
         const cmdJsonObjet = "[ { \"cmd\": \"echo\", \"cmdParams\": [ \"hello \", \">\", \"test\"] }, { \"cmd\": \"echo\", \"cmdParams\": [ \"world\" ] }]"
-        const oss = new outputStream();
-        const parsedCmds = input.tryParseCmdInputArray(cmdJsonObjet, oss);
+        const parsedCmds = input.tryParseCmdInputArray(cmdJsonObjet, this.oss);
 
         assert.notEqual(parsedCmds, undefined);
         assert.equal(parsedCmds.length, 2);
@@ -59,7 +44,6 @@ class InputParsing
         const twoUp = path.resolve(path.join(pwd, "../.."));
         const pathsToParse = `${pwd} ${oneUp} ${twoUp}`;
 
-        const oss = new outputStream();
         const paths = input.parsePaths(pathsToParse);
 
         assert.notEqual(paths, undefined);

@@ -44,7 +44,7 @@ async function run(): Promise<void>
             core.startGroup(`Build process output`);
             for (let cmd of cmds)
             {
-                if (await utils.tryExecShellCommand(cmd, core) != 0)
+                if (await utils.tryExecShellCommand(cmd, core) !== 0)
                 {
                     core.setFailed(`Executing a command failed. Stopping execution!`);
                     return;
