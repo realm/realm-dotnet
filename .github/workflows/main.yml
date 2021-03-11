@@ -57,7 +57,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build wrappers
-        uses: ./.github/actions/build_cache_executor/actions
+        uses: ./.github/actions/build_cache_executor
         with:
           cmds: '[ { "cmd": "./wrappers/build.sh" } ]'
           cachePaths: >

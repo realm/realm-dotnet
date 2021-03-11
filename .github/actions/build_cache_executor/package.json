@@ -1,7 +1,7 @@
 {
-  "name": "build_macos_wrappers",
+  "name": "build_cache_executor",
   "version": "1.0.0",
-  "description": "Builds macos wrapper for the .net sdk",
+  "description": "Builds and caches the resulting artifact",
   "main": "index.js",
   "scripts": {
     "test": "mocha -r ts-node/register 'tests__/**/*.ts'"
