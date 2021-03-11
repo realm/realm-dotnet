@@ -3,25 +3,25 @@
 	"tasks": [
 		{
 			"type": "typescript",
-			"tsconfig": "actions/build_wrappers/tsconfig.json",
+			"tsconfig": "actions/build_cache_executor/tsconfig.json",
 			"problemMatcher": [
 				"$tsc"
 			],
 			"group": "build",
-			"label": "tsc: build - actions/build_wrappers/tsconfig.json"
+			"label": "tsc: build - actions/build_cache_executor/tsconfig.json"
 		},
 		{
-			"label": "Pack to distribute build_wrappers action",
+			"label": "Pack to distribute build_cache_executor action",
 			"type": "shell",
-			"command": "ncc build actions/build_wrappers/build/build_wrappers.js -o actions/build_wrappers/dist",
-			"dependsOn": "tsc: build - actions/build_wrappers/tsconfig.json",
+			"command": "ncc build actions/build_cache_executor/build/actions/build_cache_executor/src/main.js -o actions/build_cache_executor/dist",
+			"dependsOn": "tsc: build - actions/build_cache_executor/tsconfig.json",
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"presentation": {
-			"reveal": "always",
-			"panel": "shared"
+				"reveal": "always",
+				"panel": "shared"
 			}
 		}
 	]

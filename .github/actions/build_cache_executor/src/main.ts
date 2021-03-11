@@ -1,8 +1,9 @@
 import * as core from "@actions/core";
-import * as cache from "@actions/cache";
-import * as utils from "./utils/common";
-import * as input from "./utils/input_parsing";
-import * as actionCore from "./actionCore";
+
+// this will need to change when the code will have its own repo
+import * as utils from "../../../packages/build_cache_executor/src/utils/common";
+import * as input from "../../../packages/build_cache_executor/src/utils/input_parsing";
+import * as actionCore from "../../../packages/build_cache_executor/src/build_cache_executor";
 
 async function run(): Promise<void>
 {

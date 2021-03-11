@@ -1,18 +1,17 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "outDir": "./build",
-        "rootDir": "./src",
-        "strict": true,
-        "esModuleInterop": true,
-        "sourceMap": false,
-        "experimentalDecorators": true,
-      },
-      "exclude": [
-        "./tests/",
-        "./node_modules/",
-        "./dist/"
-      ],
+      "target": "es6",
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "outDir": "./build",
+      "rootDir": "../../",
+      "strict": true,
+      "esModuleInterop": true,
+      "sourceMap": false,
+      "experimentalDecorators": true,
+    },
+    "exclude": [
+      "./node_modules/",
+      "./dist/"
+    ],
 }

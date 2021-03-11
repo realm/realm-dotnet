@@ -4,15 +4,12 @@
   "description": "Builds macos wrapper for the .net sdk",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register 'tests/**/*.ts'"
+    "test": "mocha -r ts-node/register 'tests__/**/*.ts'"
   },
-  "author": "Andrea Catalini",
-  "license": "ISC",
+  "author": "Realm Inc.",
+  "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",
   "dependencies": {
-    "@actions/cache": "^1.0.6",
-    "@actions/core": "^1.2.6",
-    "@types/folder-hash": "^3.3.0",
-    "folder-hash": "^4.0.0"
+    "@actions/core": "^1.2.6"
   },
   "devDependencies": {
     "@testdeck/mocha": "^0.1.2",
