@@ -1,23 +1,16 @@
-name: 'build and test'
+name: build and test
 on: [push]
 
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
-    name: 'Build macOs wrappers'
+    name: Build macOs wrappers
     steps:
-    - name: 'Checkout code'
+    - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
-    # - name: 'Check if cache contains wrappers already'
-    #   id: wrapper-cache
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: ./wrappers/build/
-    #     key: wrapper-macos-${{hashfiles('./wrappers/**')}}
-    - name: 'Build wrappers'
-      # if: 'steps.wrapper-cache.outputs.cache-hit != true'
+    - name: Build wrappers
       uses: ./.github/actions/build_wrappers
       env: 
         REALM_CMAKE_CONFIGURATION: Release
@@ -31,7 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: Check if cache contains wrappers already
         id: wrapper-cache
         uses: actions/cache@v2
@@ -40,10 +33,10 @@ jobs:
           key: wrapper-windows-${{hashfiles('.\wrappers\**')}}
       - name: Get CMake
         # If there is a cache hit, no need to do any of the following steps. Unfortunately there is no way to cancel the rest of the job.
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        if: steps.wrapper-cache.outputs.cache-hit != true
         uses: lukka/get-cmake@latest
       - name: Restore from cache and run vcpkg
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        if: steps.wrapper-cache.outputs.cache-hit != true
         uses: lukka/run-vcpkg@v5
         with:
           # Contains the list of packages and the triplet. If we need more than one triplet, we need to pass it with command line arguments
@@ -54,7 +47,7 @@ jobs:
         env:
           vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
       - name: Build wrappers
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        if: steps.wrapper-cache.outputs.cache-hit != true
         run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
   build-wrappers-linux:
     runs-on: ubuntu-latest
@@ -62,16 +55,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
-      # - name: Check if cache contains wrappers already
-      #   id: wrapper-cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ./wrappers/build/
-      #     key: wrapper-linux-${{hashfiles('./wrappers/**')}}
-      - name: 'Build wrappers'
-        #if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        #run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
+          submodules: recursive
+      - name: Build wrappers
         uses: ./.github/actions/build_wrappers
         with:
           cmds: '[ { "cmd": "./wrappers/build.sh" } ]'
