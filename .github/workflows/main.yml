@@ -11,7 +11,7 @@ jobs:
       with:
         submodules: recursive
     - name: Build wrappers
-      uses: ./.github/actions/build_wrappers
+      uses: ./.github/actions/build_cache_executor/build/actions/build_cache_executor
       env: 
         REALM_CMAKE_CONFIGURATION: Release
       with:
@@ -57,7 +57,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build wrappers
-        uses: ./.github/actions/build_wrappers
+        uses: ./.github/actions/build_cache_executor/build/actions/build_cache_executor
         with:
           cmds: '[ { "cmd": "./wrappers/build.sh" } ]'
           cachePaths: >
