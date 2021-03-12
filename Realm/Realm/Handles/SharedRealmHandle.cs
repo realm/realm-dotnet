@@ -173,6 +173,8 @@ namespace Realms
         {
             NativeCommon.Initialize();
 
+            SynchronizationContextScheduler.Install();
+
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;

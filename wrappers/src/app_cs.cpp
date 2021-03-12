@@ -40,16 +40,21 @@ using namespace app;
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
+using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
+using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
+using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
+using BsonCallbackT = void(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+
 namespace realm {
     namespace binding {
         std::string s_platform;
         std::string s_platform_version;
         std::string s_sdk_version;
 
-        void (*s_log_message_callback)(void* managed_handler, realm_value_t message, util::Logger::Level level);
-        void (*s_user_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
-        void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
-        void (*s_bson_callback)(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+        std::function<void(void* managed_handler, realm_value_t message, util::Logger::Level level)> s_log_message_callback;
+        std::function<void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err)> s_user_callback;
+        std::function<void(void* tcs_ptr, MarshaledAppError err)> s_void_callback;
+        std::function<void(void* tcs_ptr, BsonPayload response, MarshaledAppError err)> s_bson_callback;
 
         struct AppConfiguration
         {
@@ -116,19 +121,19 @@ extern "C" {
     REALM_EXPORT void shared_app_initialize(uint16_t* platform, size_t platform_len,
         uint16_t* platform_version, size_t platform_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
-        decltype(s_user_callback) user_callback,
-        decltype(s_void_callback) void_callback,
-        decltype(s_bson_callback) bson_callback,
-        decltype(s_log_message_callback) log_message_callback)
+        UserCallbackT user_callback,
+        VoidCallbackT void_callback,
+        BsonCallbackT bson_callback,
+        LogMessageCallbackT log_message_callback)
     {
         s_platform = Utf16StringAccessor(platform, platform_len);
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
         s_sdk_version = Utf16StringAccessor(sdk_version, sdk_version_len);
 
-        s_user_callback = user_callback;
-        s_void_callback = void_callback;
-        s_bson_callback = bson_callback;
-        s_log_message_callback = log_message_callback;
+        s_user_callback = wrap_managed_callback(user_callback);
+        s_void_callback = wrap_managed_callback(void_callback);
+        s_bson_callback = wrap_managed_callback(bson_callback);
+        s_log_message_callback = wrap_managed_callback(log_message_callback);
     }
 
     REALM_EXPORT SharedApp* shared_app_create(AppConfiguration app_config, uint8_t* encryption_key, NativeException::Marshallable& ex)

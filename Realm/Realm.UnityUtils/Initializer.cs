@@ -22,7 +22,7 @@ using Realms.Logging;
 
 namespace UnityUtils
 {
-    public static class Initializer
+    internal static class Initializer
     {
         private static int _isInitialized;
 

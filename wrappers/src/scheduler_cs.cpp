@@ -20,7 +20,9 @@
 #include <realm/object-store/util/scheduler.hpp>
 #include "realm_export_decls.hpp"
 #include <thread>
+#include "marshalling.hpp"
 
+using namespace realm::binding;
 using namespace realm::util;
 
 using GetContextT = void*();
@@ -28,13 +30,15 @@ using IsOnContextT = bool(void* context, void* target_context);
 using PostOnContextT = void(void* context, void* user_data);
 using ReleaseContextT = void(void* context);
 
+std::function<void*()> s_get_context;
+std::function<bool(void* context, void* target_context)> s_is_on_context;
+std::function<void(void* context, void* user_data)> s_post_on_context;
+std::function<void(void* context)> s_release_context;
+
 struct SynchronizationContextScheduler : public Scheduler {
 public:
-    SynchronizationContextScheduler(void* context, PostOnContextT* post, ReleaseContextT* release, IsOnContextT* is_on_context)
+    SynchronizationContextScheduler(void* context)
     : m_context(context)
-    , m_post(post)
-    , m_release(release)
-    , m_is_on_context(is_on_context)
     { }
 
     bool can_deliver_notifications() const noexcept override { return true; }
@@ -42,17 +46,13 @@ public:
     bool is_same_as(const Scheduler* other) const noexcept override
     {
         auto o = dynamic_cast<const SynchronizationContextScheduler*>(other);
-        if (o == nullptr || m_is_on_context != o->m_is_on_context) {
-            return false;
-        }
-
-        return m_is_on_context(m_context, o->m_context);
+        return o != nullptr && s_is_on_context(m_context, o->m_context);
     }
 
     bool is_on_thread() const noexcept override
     {
         // comparing against the null context means comparing against the current context
-        return m_is_on_context(m_context, nullptr);
+        return s_is_on_context(m_context, nullptr);
     }
 
     void set_notify_callback(std::function<void()> callback) override
@@ -62,19 +62,15 @@ public:
 
     void notify() override
     {
-        m_post(m_context, new std::function<void()>(m_callback));
+        s_post_on_context(m_context, new std::function<void()>(m_callback));
     }
 
-    ~SynchronizationContextScheduler()
+    ~SynchronizationContextScheduler() override
     {
-        m_release(m_context);
+        s_release_context(m_context);
     }
 private:
     void* m_context;
-
-    PostOnContextT* m_post;
-    ReleaseContextT* m_release;
-    IsOnContextT* m_is_on_context;
 
     std::function<void()> m_callback;
 };
@@ -100,22 +96,31 @@ private:
 
 extern "C" {
 
-REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnContextT* post, ReleaseContextT* release, IsOnContextT* is_on_context)
+REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnContextT* post, ReleaseContextT* release, IsOnContextT* is_on)
 {
-    Scheduler::set_default_factory([=]() -> std::unique_ptr<Scheduler> {
-        void* context = get();
+    s_get_context = wrap_managed_callback(get);
+    s_post_on_context = wrap_managed_callback(post);
+    s_release_context = wrap_managed_callback(release);
+    s_is_on_context = wrap_managed_callback(is_on);
+
+    Scheduler::set_default_factory([]() -> std::unique_ptr<Scheduler> {
+        void* context = s_get_context();
         if (context) {
-            return std::make_unique<SynchronizationContextScheduler>(context, post, release, is_on_context);
+            return std::make_unique<SynchronizationContextScheduler>(context);
         }
 
         return std::make_unique<ThreadScheduler>();
     });
 }
 
-REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr)
+REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr, bool execute_func)
 {
     auto& func = *reinterpret_cast<std::function<void()>*>(function_ptr);
-    func();
+
+    if (execute_func) {
+        func();
+    }
+
     delete& func;
 }
 
