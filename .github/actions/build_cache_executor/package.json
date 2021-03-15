@@ -4,7 +4,7 @@
   "description": "Builds and caches the resulting artifact",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register 'tests__/**/*.ts'",
+    "test": "mocha -r ts-node/register 'tests__/**/*.ts'"
   },
   "author": "Realm Inc.",
   "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",
