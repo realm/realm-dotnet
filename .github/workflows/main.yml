@@ -6,10 +6,10 @@ jobs:
     runs-on: macos-latest
     name: Build macOs wrappers
     steps:
-    # - name: Checkout code
-    #   uses: actions/checkout@v2
-    #   with:
-    #     submodules: recursive
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Build wrappers
       uses: ./.github/actions/build_cache_executor
       env: 
