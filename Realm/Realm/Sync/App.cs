@@ -166,6 +166,7 @@ namespace Realms.Sync
             if (config.CustomLogger != null)
             {
                 var logger = Logger.Function((level, message) => config.CustomLogger(message, level));
+                logger._logLevel = nativeConfig.log_level;
                 nativeConfig.managed_logger = GCHandle.ToIntPtr(logger.GCHandle);
             }
             else if (Logger.Default != null)
