@@ -10,6 +10,7 @@
     <Title>Realm</Title>
     <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
+    <DisableFody>true</DisableFody>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />

@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Logging;
@@ -174,15 +173,14 @@ namespace Realms.Sync
             ////     platformVersion = Environment.OSVersion.VersionString;
             //// }
 
-            var platform = "Realm .NET";
+            var platform = InteropConfig.Platform;
             var platformVersion = RuntimeInformation.OSDescription;
-
-            var sdkVersion = typeof(AppHandle).GetTypeInfo().Assembly.GetName().Version.ToString(3);
+            var sdkVersion = InteropConfig.SDKVersion.ToString(3);
 
             NativeMethods.initialize(
-                platform, (IntPtr)platform.Length,
-                platformVersion, (IntPtr)platformVersion.Length,
-                sdkVersion, (IntPtr)sdkVersion.Length,
+                platform, platform.IntPtrLength(),
+                platformVersion, platformVersion.IntPtrLength(),
+                sdkVersion, sdkVersion.IntPtrLength(),
                 userLogin, taskCallback, bsonCallback, logMessage);
 
             HttpClientTransport.Install();

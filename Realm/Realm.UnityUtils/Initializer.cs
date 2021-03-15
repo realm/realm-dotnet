@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,9 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+using System.Threading;
+using Realms;
+using Realms.Logging;
 
-[assembly: Realms.Explicit]
-[assembly: InternalsVisibleTo("Realm.Tests")]
-[assembly: InternalsVisibleTo("Realm.UnityUtils")]
-[assembly: InternalsVisibleTo("PerformanceTests")]
+namespace UnityUtils
+{
+    public static class Initializer
+    {
+        private static int _isInitialized;
+
+        public static void Initialize()
+        {
+            if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
+            {
+                InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
+                Logger.Default = new UnityLogger();
+            }
+        }
+    }
+}
