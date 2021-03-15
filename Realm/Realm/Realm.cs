@@ -30,6 +30,7 @@ using MongoDB.Bson;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync;
@@ -354,7 +355,7 @@ namespace Realms
         {
             if (Error == null)
             {
-                Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+                Logger.LogDefault(LogLevel.Error, "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
             }
 
             Error?.Invoke(this, new ErrorEventArgs(ex));

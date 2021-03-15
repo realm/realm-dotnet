@@ -99,6 +99,8 @@ namespace binding {
 
         ~CSharpBindingContext();
     };
+
+    void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
 }
     
 }

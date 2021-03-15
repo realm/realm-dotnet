@@ -65,12 +65,12 @@ namespace Realms.Tests.Database
         public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
         {
             using var sw = new StringWriter();
-            var original = Console.Error;
-            Console.SetError(sw);
+            var original = Console.Out;
+            Console.SetOut(sw);
             _realm.NotifyError(new Exception());
 
             Assert.That(sw.ToString(), Does.Contain("exception").And.Contains("Realm.Error"));
-            Console.SetError(original);
+            Console.SetOut(original);
         }
 
         [Test]

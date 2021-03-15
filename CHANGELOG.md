@@ -27,6 +27,13 @@
   ```
 * Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
+* Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
+`Logger.Default`. This replaces `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` which will be removed in a future release. The built-in implementations are:
+  * `Console` - uses the `System.Console` for most projects and `UnityEngine.Debug` for Unity projects.
+  * `Null` - ignores all messages.
+  * `Function` - proxies calls to a supplied function.
+  
+  Custom loggers can derive from the `Logger` class and provide their own implementation for the `Log` method or use `Function` and provide an `Action<string>`. (PR [#2276](https://github.com/realm/realm-dotnet/pull/2276))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
