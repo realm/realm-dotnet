@@ -13,7 +13,7 @@
 		{
 			"label": "Pack to distribute build_cache_executor action",
 			"type": "shell",
-			"command": "ncc build actions/build_cache_executor/build/actions/build_cache_executor/src/main.js -o actions/build_cache_executor/dist",
+			"command": "ncc build actions/build_cache_executor/build/main.js -o actions/build_cache_executor/dist",
 			"dependsOn": "tsc: build - actions/build_cache_executor/tsconfig.json",
 			"group": {
 				"kind": "build",

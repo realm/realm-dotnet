@@ -1,10 +1,5 @@
 import * as core from "@actions/core";
 
-// this will need to change when the code will have its own repo
-// import * as build_cache_executor from "@realm/build_cache_executor/build";
-
-// import * as input from "@realm/build_cache_executor/lib/utils/input_parsing";
-
 import * as utils from "../../../packages/build_cache_executor/build/utils/common";
 import * as input from "../../../packages/build_cache_executor/build/utils/input_parsing";
 import * as actionCore from "../../../packages/build_cache_executor/build/build_cache_executor";
