@@ -91,7 +91,7 @@ namespace Realms.Logging
         // This is only needed for backward compatibility - the App logger sets its own level separately
         // Once that is removed, we should use Logger.LogLevel across the board.
         [Obsolete("Remove when we remove the AppConfiguration.CustomLogger")]
-        internal LogLevel _logLevel = LogLevel;
+        internal LogLevel? _logLevel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Logger"/> class.
@@ -110,7 +110,7 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
-            if (level < _logLevel)
+            if (level < (_logLevel ?? LogLevel))
             {
                 return;
             }
