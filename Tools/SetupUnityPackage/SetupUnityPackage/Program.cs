@@ -235,7 +235,12 @@ namespace SetupUnityPackage
                 foreach (var kvp in fileMap)
                 {
                     var targetPath = Path.Combine(unityPath, kvp.Value);
-                    File.Delete(targetPath);
+
+                    if (File.Exists(targetPath))
+                    {
+                        File.Delete(targetPath);
+                    }
+
                     packageReader.ExtractFile(kvp.Key, targetPath, NullLogger.Instance);
                 }
 
