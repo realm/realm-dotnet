@@ -1,0 +1,37 @@
+{
+  "name": "@realm/build_cache_executor",
+  "version": "1.0.0",
+  "description": "Typescript functionalities to build and cache the artifacts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "mocha -r ts-node/register '__tests__/**/*.ts'",
+    "build": "tsc && ncc build ./build/build_cache_executor.js -o ./lib",
+    "build-types": "npm typescript ./lib/index.js --declaration --allowJs --emitDeclarationOnly --outDir ./lib"
+  },
+  "author": "Realm Inc.",
+  "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",
+  "dependencies": {
+    "@actions/cache": "^1.0.6",
+    "@actions/core": "^1.2.6",
+    "@types/folder-hash": "^3.3.0",
+    "folder-hash": "^4.0.0"
+  },
+  "devDependencies": {
+    "@testdeck/mocha": "^0.1.2",
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.1",
+    "@types/sinon": "^9.0.11",
+    "chai": "^4.3.3",
+    "mocha": "^8.3.1",
+    "sinon": "^9.2.4",
+    "ts-node": "^9.1.1"
+  }
+}
