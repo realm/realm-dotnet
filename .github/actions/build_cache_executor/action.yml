@@ -9,5 +9,4 @@ inputs:
     required: true
 runs:
   using: node12
-  pre: ./dist/index_checkout.js
   main: ./dist/index.js

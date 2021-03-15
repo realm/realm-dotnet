@@ -5,19 +5,9 @@ import * as core from "@actions/core";
 
 // import * as input from "@realm/build_cache_executor/lib/utils/input_parsing";
 
-// import * as utils from "../../../packages/build_cache_executor/src/utils/common";
-// import * as input from "../../../packages/build_cache_executor/src/utils/input_parsing";
-// import * as actionCore from "../../../packages/build_cache_executor/src/build_cache_executor";
-
-// because I can't get an index.d.ts
-// import * as utils from "@realm/build_cache_executor/build/utils/common";
-// import * as input from "@realm/build_cache_executor/build//utils/input_parsing";
-// import * as actionCore from "@realm/build_cache_executor/build//build_cache_executor";
-
-// because of types in lib
-import * as utils from "@realm/build_cache_executor/lib/utils/common";
-import * as input from "@realm/build_cache_executor/lib/utils/input_parsing";
-import * as actionCore from "@realm/build_cache_executor/lib/build_cache_executor";
+import * as utils from "../../../packages/build_cache_executor/build/utils/common";
+import * as input from "../../../packages/build_cache_executor/build/utils/input_parsing";
+import * as actionCore from "../../../packages/build_cache_executor/build/build_cache_executor";
 
 async function run(): Promise<void>
 {
