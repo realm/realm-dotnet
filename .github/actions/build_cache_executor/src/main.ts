@@ -10,7 +10,8 @@ async function run(): Promise<void>
     {
         const paths = input.parsePaths( core.getInput("cachePaths", { required: true }) );
         const cmds: utils.cmdObj[] = input.tryParseCmdInputArray( core.getInput("cmds", { required: true }) , core);
-        const buildResult = await actionCore.actionCore(paths, cmds, utils.tryGetHash, core);
+        const hashPrefix = core.getInput("hashPrefix", { required: false });
+        const buildResult = await actionCore.actionCore(paths, cmds, core, hashPrefix);
         if (buildResult.error !== undefined)
         {
             core.setFailed(`This action is aborted because ${buildResult.error.message}`);

@@ -56,7 +56,7 @@ class CommonUtils
             assert.fail(`It was impossible to calculate the hash for ${oneUp}`);
         }
 
-        // recalculate on purpose to verify consistency
+        // recalculate to verify consistency
         hash = await utils.tryGetHash([pwd], this.oss);
         if (hash !== undefined)
         {
@@ -74,6 +74,13 @@ class CommonUtils
         else
         {
             assert.fail(`It was impossible to re-calculate the hash for ${oneUp}`);
+        }
+
+        // check effectiveness of hash prefix 
+        hash = await utils.tryGetHash([pwd], this.oss, "prefixToMakeADiff");
+        if (hash !== undefined)
+        {
+            assert.equal(hashMap.get(hash), undefined);
         }
     }
 }

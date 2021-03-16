@@ -37,7 +37,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7679));
-const utils = __importStar(__nccwpck_require__(6650));
 const input = __importStar(__nccwpck_require__(4419));
 const actionCore = __importStar(__nccwpck_require__(9231));
 function run() {
@@ -45,7 +44,8 @@ function run() {
         try {
             const paths = input.parsePaths(core.getInput("cachePaths", { required: true }));
             const cmds = input.tryParseCmdInputArray(core.getInput("cmds", { required: true }), core);
-            const buildResult = yield actionCore.actionCore(paths, cmds, utils.tryGetHash, core);
+            const hashPrefix = core.getInput("hashPrefix", { required: false });
+            const buildResult = yield actionCore.actionCore(paths, cmds, core, hashPrefix);
             if (buildResult.error !== undefined) {
                 core.setFailed(`This action is aborted because ${buildResult.error.message}`);
             }
@@ -497,12 +497,12 @@ class resultImpl {
         this.error = error;
     }
 }
-function actionCore(paths, cmds, hashFunc, oss) {
+function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
     return __awaiter(this, void 0, void 0, function* () {
         if (cmds.length === 0) {
             return new resultImpl(undefined, new Error(`No commands were supplied, nothing to do.`));
         }
-        const hash = yield hashFunc(paths, oss);
+        const hash = hashFunc !== undefined ? yield hashFunc(paths, oss, hashPrefix) : yield utils.tryGetHash(paths, oss, hashPrefix);
         let cacheKey = undefined;
         if (hash !== undefined) {
             oss.info(`Hash key for ${paths.join("\n")} is: ${hash}`);
@@ -609,12 +609,12 @@ function tryExecShellCommand(cmdObj, oss) {
 exports.tryExecShellCommand = tryExecShellCommand;
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
 // The final hash is prepend with a constant suffix different on each OS platform.
-function tryGetHash(paths, oss, hashOptions) {
+function tryGetHash(paths, oss, hashPrefix, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const openingHashSignature = `cache-${process.platform}-`;
+            const prefix = hashPrefix !== null && hashPrefix !== void 0 ? hashPrefix : `cache-${process.platform}-`;
             const folderHash = yield hashFolders(paths, hashOptions);
-            return openingHashSignature.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
+            return prefix.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
         }
         catch (error) {
             oss.error(`Hashing failed: ${error}`);
@@ -646,7 +646,7 @@ function hashFolders(paths, hashOptions) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.tryParseCmdInputArray = exports.parsePaths = void 0;
 function parsePaths(str) {
-    return str.split(" ");
+    return str.split("\n");
 }
 exports.parsePaths = parsePaths;
 function tryParseCmdInputArray(cmds, oss) {
@@ -42397,7 +42397,7 @@ __exportStar(__nccwpck_require__(3269), exports);
 __exportStar(__nccwpck_require__(5012), exports);
 __exportStar(__nccwpck_require__(3177), exports);
 __exportStar(__nccwpck_require__(7330), exports);
-__exportStar(__nccwpck_require__(4921), exports);
+__exportStar(__nccwpck_require__(3026), exports);
 __exportStar(__nccwpck_require__(8726), exports);
 __exportStar(__nccwpck_require__(4196), exports);
 __exportStar(__nccwpck_require__(483), exports);
@@ -43322,7 +43322,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 4921:
+/***/ 3026:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -46235,7 +46235,7 @@ function clone (obj) {
 
 var fs = __nccwpck_require__(5747)
 var polyfills = __nccwpck_require__(4285)
-var legacy = __nccwpck_require__(3026)
+var legacy = __nccwpck_require__(2861)
 var clone = __nccwpck_require__(8203)
 
 var util = __nccwpck_require__(1669)
@@ -46610,7 +46610,7 @@ function retry () {
 
 /***/ }),
 
-/***/ 3026:
+/***/ 2861:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 var Stream = __nccwpck_require__(2413).Stream

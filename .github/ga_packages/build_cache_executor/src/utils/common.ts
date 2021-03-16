@@ -15,6 +15,10 @@ export interface cmdObj
     cmdParams?: string[];
 }
 
+export type hashOptions = folderHash.HashElementOptions;
+
+export type hashFunc = (paths: string[], oss: outputStream, hashPrefix?: string, hashOptions?: hashOptions) => Promise<string | undefined>
+
 // Executes the cmd and returns 0 if success, any other numberic value otherwise.
 export async function tryExecShellCommand(cmdObj: cmdObj, oss: outputStream): Promise<number | undefined>
 {
@@ -44,13 +48,13 @@ export async function tryExecShellCommand(cmdObj: cmdObj, oss: outputStream): Pr
 
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
 // The final hash is prepend with a constant suffix different on each OS platform.
-export async function tryGetHash(paths: string[], oss: outputStream, hashOptions?: folderHash.HashElementOptions): Promise<string | undefined>
+export async function tryGetHash(paths: string[], oss: outputStream, hashPrefix?: string, hashOptions?: hashOptions): Promise<string | undefined>
 {
     try
     {
-        const openingHashSignature = `cache-${process.platform}-`;
+        const prefix = hashPrefix ?? `cache-${process.platform}-`;
         const folderHash = await hashFolders(paths, hashOptions);
-        return openingHashSignature.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
+        return prefix.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
     }
     catch (error)
     {
@@ -60,7 +64,7 @@ export async function tryGetHash(paths: string[], oss: outputStream, hashOptions
 }
 
 // Can throw exceptions
-async function hashFolders(paths: string[], hashOptions?: folderHash.HashElementOptions): Promise<string>
+async function hashFolders(paths: string[], hashOptions?: hashOptions): Promise<string>
 {
     let hashes: string[] = [];
     for (let path of paths)

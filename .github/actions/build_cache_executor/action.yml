@@ -7,6 +7,9 @@ inputs:
   cachePaths:
     description: List of space separated paths that the action is going to use as an index to look for cached artifacts.
     required: true
+  hashPrefix:
+    description: "Optional prefix to add to the resulting hash used to search for cached builds"
+    required: false
 runs:
   using: node12
   main: ./dist/index.js

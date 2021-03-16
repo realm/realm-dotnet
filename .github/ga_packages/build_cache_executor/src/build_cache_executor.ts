@@ -22,15 +22,18 @@ class resultImpl implements result
 export async function actionCore(
     paths: string[],
     cmds: utils.cmdObj[],
-    hashFunc: (paths: string[], oss: utils.outputStream) => Promise<string | undefined>,
-    oss: utils.outputStream): Promise<result>
+    oss: utils.outputStream,
+    hashPrefix?: string,
+    hashOptions?: utils.hashOptions,
+    hashFunc?: utils.hashFunc
+): Promise<result>
 {
     if (cmds.length === 0)
     {
         return new resultImpl(undefined, new Error(`No commands were supplied, nothing to do.`));
     }
 
-    const hash = await hashFunc(paths, oss);
+    const hash = hashFunc !== undefined ? await hashFunc(paths, oss, hashPrefix) : await utils.tryGetHash(paths, oss, hashPrefix);
     
     let cacheKey: string | undefined = undefined;
     if (hash !== undefined)
