@@ -1071,6 +1071,7 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+
         [Test]
         public void CanBeQueried()
         {
@@ -1188,7 +1189,9 @@ namespace Realms.Tests.Database
             private readonly Func<T, T> _cloneFunc;
             private readonly Func<T, T, bool> _equalityFunc;
 
-            public T SampleValue { get; }
+            private T _sampleValue;
+
+            public T SampleValue => _cloneFunc(_sampleValue);
 
             private (string Key, T Value)[] _initialValues;
 
@@ -1204,13 +1207,18 @@ namespace Realms.Tests.Database
                 _cloneFunc = cloneFunc;
                 _equalityFunc = equalityFunc;
 
-                SampleValue = sampleValue;
+                _sampleValue = sampleValue;
 
                 _initialValues = initialValues.ToArray();
             }
 
             public override string ToString()
             {
+                if (typeof(T) == typeof(byte[]))
+                {
+                    return string.Join(", ", _initialValues.Select(kvp => $"{kvp.Key}-{TestHelpers.ByteArrayToTestDescription(kvp.Value)}"));
+                }
+
                 return string.Join(", ", _initialValues.Select(kvp => $"{kvp.Key}-{kvp.Value}"));
             }
 
@@ -1282,7 +1290,7 @@ namespace Realms.Tests.Database
                 Assert.That(target[key1], IsEqualTo(value1));
 
                 var key2 = Guid.NewGuid().ToString();
-                var value2 = target.First().Value;
+                var value2 = _cloneFunc(target.First().Value);
                 WriteIfNecessary(target, () =>
                 {
                     target.Add(key2, value2);

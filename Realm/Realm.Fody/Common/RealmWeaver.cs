@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -405,32 +406,21 @@ Analytics payload
                 switch (collectionType)
                 {
                     case RealmCollectionType.IList:
-                        var concreteListConstructor = _references.System_Collections_Generic_ListOfT_Constructor.MakeHostInstanceGeneric(elementType);
-
-                        // weaves list getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-                        if (backingField is FieldDefinition backingListField)
-                        {
-                            backingListField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
-                        }
-
                         ReplaceCollectionGetter(prop, backingField, columnName,
-                                            new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
-                                            concreteListConstructor);
+                                            new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } });
                         break;
                     case RealmCollectionType.ISet:
+                        Debugger.Break();
+
                         _logger.Warning($"{type.Name}.{prop.Name} is of type ISet which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
 
-                        var concreteSetConstructor = _references.System_Collections_Generic_HashSetOfT_Constructor.MakeHostInstanceGeneric(elementType);
-
-                        // weaves set getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-                        if (backingField is FieldDefinition backingSetField)
+                        if (elementType.Resolve().IsEmbeddedObjectInheritor(_references))
                         {
-                            backingSetField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+                            return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.");
                         }
 
                         ReplaceCollectionGetter(prop, backingField, columnName,
-                                            new GenericInstanceMethod(_references.RealmObject_GetSetValue) { GenericArguments = { elementType } },
-                                            concreteSetConstructor);
+                                            new GenericInstanceMethod(_references.RealmObject_GetSetValue) { GenericArguments = { elementType } });
                         break;
                     case RealmCollectionType.IDictionary:
                         _logger.Warning($"{type.Name}.{prop.Name} is of type IDictionary which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
@@ -441,17 +431,8 @@ Analytics payload
                             return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a Dictionary<{keyType.Name}, {elementType.Name}> but only string keys are currently supported by Realm.");
                         }
 
-                        var concreteDictionaryConstructor = _references.System_Collections_Generic_DictionaryOfTKeyTValue_Constructor.MakeHostInstanceGeneric(keyType, elementType);
-
-                        // weaves set getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-                        if (backingField is FieldDefinition backingDictionaryField)
-                        {
-                            backingDictionaryField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
-                        }
-
                         ReplaceCollectionGetter(prop, backingField, columnName,
-                                            new GenericInstanceMethod(_references.RealmObject_GetDictionaryValue) { GenericArguments = { elementType } },
-                                            concreteDictionaryConstructor);
+                                            new GenericInstanceMethod(_references.RealmObject_GetDictionaryValue) { GenericArguments = { elementType } });
                         break;
                 }
             }
@@ -586,8 +567,13 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ret));
         }
 
-        private void ReplaceCollectionGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getCollectionValueReference, MethodReference collectionConstructor)
+        private static void ReplaceCollectionGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getCollectionValueReference)
         {
+            if (backingField is FieldDefinition backingFieldDef)
+            {
+                backingFieldDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+            }
+
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0  // load the this pointer
             ////   1: ldfld <backingField>
@@ -596,10 +582,7 @@ Analytics payload
             ////
             ////  if (<backingField> == null)
             ////  {
-            ////     if (IsManaged)
-            ////           <backingField> = GetCollectionValue<T>(<columnName>);
-            ////     else
-            ////           <backingField> = new Collection<T>();
+            ////     <backingField> = GetCollectionValue<T>(<columnName>);
             ////  }
             ////  // original auto-generated getter starts here
             ////  return <backingField>; // supplied by the generated getter
@@ -612,25 +595,12 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField));
             il.InsertBefore(start, il.Create(OpCodes.Brtrue_S, start));
 
-            // if (IsManaged)
+            // <backingField> is null -> <backingField> = GetCollectionValue<T>(<columnName>)
             il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
-
-            // push in the label then go relative to that - so we can forward-ref the label insert if/else blocks backwards
-            // <backingField> = new Collection<T>()
-            var unmanagedStart = il.Create(OpCodes.Ldarg_0);
-            il.InsertBefore(start, unmanagedStart);
-            il.InsertBefore(start, il.Create(OpCodes.Newobj, collectionConstructor));
+            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+            il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+            il.InsertBefore(start, il.Create(OpCodes.Call, getCollectionValueReference));
             il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
-
-            // if (!IsManaged) <backingField> = GetSetValue(<columnName>)
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Brfalse_S, unmanagedStart));
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Ldstr, columnName));
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Call, getCollectionValueReference));
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Stfld, backingField));
-            il.InsertBefore(unmanagedStart, il.Create(OpCodes.Br_S, start));
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.

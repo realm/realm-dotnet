@@ -22,6 +22,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
 using Realms.Dynamic;
 using Realms.Helpers;
@@ -35,6 +36,9 @@ namespace Realms
     public class RealmSet<T> : RealmCollectionBase<T>, ISet<T>, IDynamicMetaObjectProvider
     {
         private readonly SetHandle _setHandle;
+
+        [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "We need to be on the generic class so that the weaver can use it.")]
+        public static IEqualityComparer<T> Comparer { get; } = typeof(T) == typeof(byte[]) ? (IEqualityComparer<T>)new BinaryEqualityComparer() : EqualityComparer<T>.Default;
 
         internal RealmSet(Realm realm, SetHandle adoptedSet, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
@@ -64,7 +68,7 @@ namespace Realms
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                return false;
             }
 
             return _setHandle.Remove(realmValue);
@@ -78,7 +82,7 @@ namespace Realms
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                return false;
             }
 
             return _setHandle.Contains(realmValue);
@@ -167,7 +171,7 @@ namespace Realms
 
             // We create a new hashset because we're going to be manipulating the in-memory collection
             // as that's cheaper.
-            var otherSet = new HashSet<T>(other);
+            var otherSet = new HashSet<T>(other, Comparer);
 
             // Special case - this is a no-op
             if (otherSet.Count == 0)
@@ -354,16 +358,49 @@ namespace Realms
             return true;
         }
 
-        private static ISet<T> GetSet(IEnumerable<T> enumerable)
+        private static ISet<T> GetSet(IEnumerable<T> collection)
         {
-            if (enumerable is ISet<T> set)
+            if (collection is HashSet<T> set && set.Comparer == Comparer)
             {
                 return set;
             }
 
-            return new HashSet<T>(enumerable);
+            return new HashSet<T>(collection, Comparer);
         }
 
         #endregion
+
+        private class BinaryEqualityComparer : EqualityComparer<byte[]>
+        {
+            public override bool Equals(byte[] x, byte[] y)
+            {
+                if (x == null || y == null)
+                {
+                    return x == y;
+                }
+
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x.Length != y.Length)
+                {
+                    return false;
+                }
+
+                return x.SequenceEqual(y);
+            }
+
+            public override int GetHashCode(byte[] obj)
+            {
+                if (obj == null)
+                {
+                    throw new ArgumentNullException(nameof(obj));
+                }
+
+                return obj.Length;
+            }
+        }
     }
 }

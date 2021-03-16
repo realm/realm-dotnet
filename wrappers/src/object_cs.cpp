@@ -217,6 +217,14 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT int64_t object_get_obj_key(const Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            // ObjKey is incompatible with C, so we return just the value.
+            return object.obj().get_key().value;
+        });
+    }
+
     REALM_EXPORT ThreadSafeReference* object_get_thread_safe_reference(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
