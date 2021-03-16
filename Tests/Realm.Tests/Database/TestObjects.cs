@@ -584,7 +584,7 @@ namespace Realms.Tests
         public int Int { get; set; }
     }
 
-    public class EmbeddedIntPropertyObject : RealmObject
+    public class EmbeddedIntPropertyObject : EmbeddedObject
     {
         public int Int { get; set; }
     }
