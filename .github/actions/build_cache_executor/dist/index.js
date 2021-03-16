@@ -48,7 +48,9 @@ function run() {
             const buildResult = yield actionCore.actionCore(paths, cmds, core, hashPrefix);
             if (buildResult.error !== undefined) {
                 core.setFailed(`This action is aborted because ${buildResult.error.message}`);
+                return;
             }
+            core.setOutput("hashKey", buildResult.result);
         }
         catch (error) {
             core.setFailed(`Something went terribly wrong while retrieving the cache and or building: ${error.message}`);
@@ -536,7 +538,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
         else {
             oss.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
         }
-        return new resultImpl(true, undefined);
+        return new resultImpl(cacheKey, undefined);
     });
 }
 exports.actionCore = actionCore;

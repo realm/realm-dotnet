@@ -15,7 +15,9 @@ async function run(): Promise<void>
         if (buildResult.error !== undefined)
         {
             core.setFailed(`This action is aborted because ${buildResult.error.message}`);
+            return;
         }
+        core.setOutput("hashKey", buildResult.result);
     }
     catch (error)
     {

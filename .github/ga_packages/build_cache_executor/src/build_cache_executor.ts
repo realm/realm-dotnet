@@ -83,5 +83,5 @@ export async function actionCore(
         oss.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
     }
 
-    return new resultImpl(true, undefined);
+    return new resultImpl(cacheKey, undefined);
 }
