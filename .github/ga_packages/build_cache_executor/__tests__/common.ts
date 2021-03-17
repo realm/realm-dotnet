@@ -10,25 +10,6 @@ import * as fs from "fs";
 class CommonUtils
 {
     private oss = new impl.outputStream();
-
-    @test
-    async VerifyShellCommandExecutes()
-    {
-        const fileName = "tempConsole";
-        const fileContent = "hello world";
-        const cmd: utils.cmdObj = { cmd: "echo", cmdParams: [ "-n", fileContent, ">",  fileName] };
-        assert.equal(await utils.tryExecShellCommand(cmd, this.oss), 0);
-        
-        fs.readFile(fileName, "utf8" , (err, data) => {
-            if (err !== null)
-            {
-                assert.fail(err.message);
-            }
-            assert.equal(data, fileContent);
-        });
-
-        fs.unlink(fileName, () => {});
-    }
     
     @test
     async VerifyConsistentHashing()

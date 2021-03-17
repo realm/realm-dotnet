@@ -11,32 +11,6 @@ class InputParsing
     private oss = new impl.outputStream();
 
     @test
-    JsonCmds()
-    { 
-        const cmdJsonObjet = "[ { \"cmd\": \"echo\", \"cmdParams\": [ \"hello \", \">\", \"test\"] }, { \"cmd\": \"echo\", \"cmdParams\": [ \"world\" ] }]"
-        const parsedCmds = input.tryParseCmdInputArray(cmdJsonObjet, this.oss);
-
-        assert.notEqual(parsedCmds, undefined);
-        assert.equal(parsedCmds.length, 2);
-        assert.equal(parsedCmds[0].cmd, "echo");
-        assert.notEqual(parsedCmds[0].cmdParams, undefined);
-        assert.equal(parsedCmds[0].cmdParams?.length, 3);
-        if (parsedCmds[0].cmdParams !== undefined)
-        {
-            assert.equal(parsedCmds[0].cmdParams[0], "hello ");
-            assert.equal(parsedCmds[0].cmdParams[1], ">");
-            assert.equal(parsedCmds[0].cmdParams[2], "test");
-        }
-        assert.equal(parsedCmds[1].cmd, "echo");
-        assert.notEqual(parsedCmds[1].cmdParams, undefined);
-        assert.equal(parsedCmds[1].cmdParams?.length, 1);
-        if (parsedCmds[1].cmdParams !== undefined)
-        {
-            assert.equal(parsedCmds[1].cmdParams[0], "world");
-        }
-    }
-
-    @test
     Paths()
     {
         const pwd = __dirname
@@ -51,6 +25,14 @@ class InputParsing
         assert.equal(paths[0], pwd);
         assert.equal(paths[1], oneUp);
         assert.equal(paths[2], twoUp);
+    }
+
+    @test
+    Cmd()
+    {
+        const unparsedCmds = "echo 1\necho 2\necho3";
+        const cmds = input.parseCmds(unparsedCmds);
+        assert.equal(cmds.length, 3);        
     }
 }
 

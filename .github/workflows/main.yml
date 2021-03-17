@@ -15,6 +15,7 @@ jobs:
       env: 
         REALM_CMAKE_CONFIGURATION: Release
       with:
-        cmds: '[ { "cmd": "./wrappers/build-macos.sh" } ]'
+        cmds: |
+          ./wrappers/build-macos.sh
         cachePaths: |
           ./wrappers

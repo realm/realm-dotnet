@@ -37,13 +37,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7679));
-const input = __importStar(__nccwpck_require__(4419));
 const actionCore = __importStar(__nccwpck_require__(9231));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const paths = input.parsePaths(core.getInput("cachePaths", { required: true }));
-            const cmds = input.tryParseCmdInputArray(core.getInput("cmds", { required: true }), core);
+            const paths = core.getInput("cachePaths", { required: true });
+            const cmds = core.getInput("cmds", { required: true });
             const hashPrefix = core.getInput("hashPrefix", { required: false });
             const buildResult = yield actionCore.actionCore(paths, cmds, core, hashPrefix);
             if (buildResult.error !== undefined) {
@@ -492,46 +491,72 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.actionCore = void 0;
 const cache = __importStar(__nccwpck_require__(8147));
+const exec = __importStar(__nccwpck_require__(159));
 const utils = __importStar(__nccwpck_require__(6650));
+const input = __importStar(__nccwpck_require__(4419));
 class resultImpl {
     constructor(result, error) {
         this.result = result;
         this.error = error;
     }
 }
+/**
+ * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, an hash is calculated over paths and the result is used as key in the dictionary of the cache.
+ * The function can throw exceptions.
+ * @param paths New line separated paths that need to be cached after the build (same paths used to create a hash)
+ * @param cmds New line separated  cmds to build
+ * @param oss Where to print the output messages
+ * @param hashPrefix Prefix added in front of the hash that is going to be used as key in the cache dictionary
+ * @param hashOptions Extra options for the default hash function
+ * @param hashFunc Custom hash function if the default doesn't fullfil the user's needs
+ * @returns CacheKey necessary to recover the cached build later on. If the function fails, undefined is returned together with an Error explaining the reason.
+ */
 function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (cmds.length === 0) {
+        if (cmds.length === 0 || paths.length === 0) {
             return new resultImpl(undefined, new Error(`No commands were supplied, nothing to do.`));
         }
-        const hash = hashFunc !== undefined ? yield hashFunc(paths, oss, hashPrefix) : yield utils.tryGetHash(paths, oss, hashPrefix);
+        const parsedPaths = input.parsePaths(paths);
+        const parsedCmds = input.parseCmds(cmds);
+        let hash;
+        try {
+            hash = hashFunc !== undefined ? yield hashFunc(parsedPaths, oss, hashPrefix) : yield utils.tryGetHash(parsedPaths, oss, hashPrefix);
+        }
+        catch (err) {
+            throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
+        }
         let cacheKey = undefined;
         if (hash !== undefined) {
-            oss.info(`Hash key for ${paths.join("\n")} is: ${hash}`);
+            oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hash}`);
             try {
-                cacheKey = yield cache.restoreCache(paths, hash);
+                cacheKey = yield cache.restoreCache(parsedPaths, hash);
             }
             catch (err) {
-                oss.error(`Impossible to retrieve cache: ${err}`);
+                oss.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
             }
         }
         else {
-            oss.error(`No hash could be calculated, so it can't be searched for a previous cached result and what's going to be built now can't be cached either.`);
+            return new resultImpl(undefined, new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`));
         }
         if (cacheKey === undefined) {
             oss.info(`No cache was found, so the command will be executed...`);
-            for (let cmd of cmds) {
-                if ((yield utils.tryExecShellCommand(cmd, oss)) !== 0) {
-                    return new resultImpl(undefined, new Error(`Executing a command failed. Stopping execution!`));
+            try {
+                for (let cmd of parsedCmds) {
+                    if ((yield exec.exec(cmd)) !== 0) {
+                        return new resultImpl(undefined, new Error(`Executing a command ${cmd} failed. Stopping execution!`));
+                    }
                 }
+            }
+            catch (err) {
+                throw new Error(`Something went terribly wrong while executing a shell command: ${err.message}`);
             }
             if (hash !== undefined) {
                 try {
-                    const cacheId = yield cache.saveCache(paths, hash);
+                    const cacheId = yield cache.saveCache(parsedPaths, hash);
                     oss.info(`Cache properly created with id ${cacheId}`);
                 }
                 catch (error) {
-                    oss.error(`The cache could not be saved because ${error.message}`);
+                    return new resultImpl(undefined, new Error(`The cache could not be saved because ${error.message}`));
                 }
             }
         }
@@ -580,35 +605,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.tryGetHash = exports.tryExecShellCommand = void 0;
+exports.tryGetHash = void 0;
 const folderHash = __importStar(__nccwpck_require__(8204));
 const crypto = __importStar(__nccwpck_require__(6417));
-const cp = __importStar(__nccwpck_require__(3129));
-// Executes the cmd and returns 0 if success, any other numberic value otherwise.
-function tryExecShellCommand(cmdObj, oss) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            try {
-                let buildCmd = cp.spawn(cmdObj.cmd, cmdObj.cmdParams, { "shell": true, "detached": false });
-                buildCmd.stdout.on("data", (data) => {
-                    oss.info(data.toString());
-                });
-                buildCmd.stderr.on("data", (data) => {
-                    oss.info(data.toString());
-                });
-                buildCmd.on("exit", (code) => {
-                    oss.info(`Child process ${cmdObj.cmd} exited with code ${code === null || code === void 0 ? void 0 : code.toString()}`);
-                    code === 0 ? resolve(code) : reject(code);
-                });
-            }
-            catch (error) {
-                oss.error(`Executing command ${cmdObj.cmd} failed: ${error.message}`);
-                reject(-1);
-            }
-        });
-    });
-}
-exports.tryExecShellCommand = tryExecShellCommand;
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
 // The final hash is prepend with a constant suffix different on each OS platform.
 function tryGetHash(paths, oss, hashPrefix, hashOptions) {
@@ -646,22 +645,28 @@ function hashFolders(paths, hashOptions) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.tryParseCmdInputArray = exports.parsePaths = void 0;
+exports.parseCmds = exports.parsePaths = void 0;
 function parsePaths(str) {
     return str.split("\n");
 }
 exports.parsePaths = parsePaths;
-function tryParseCmdInputArray(cmds, oss) {
-    let finalCmds = [];
-    try {
-        finalCmds = JSON.parse(cmds);
-    }
-    catch (error) {
-        oss.error(`Error while parsing cmds: ${error.message}`);
-    }
-    return finalCmds;
+function parseCmds(str) {
+    return str.split("\n");
 }
-exports.tryParseCmdInputArray = tryParseCmdInputArray;
+exports.parseCmds = parseCmds;
+// export function tryParseCmdInputArray(cmds: string, oss: outputStream): cmdObj[]
+// {
+//     let finalCmds: cmdObj[] = [];
+//     try
+//     {
+//         finalCmds = JSON.parse(cmds);
+//     }
+//     catch(error)
+//     {
+//         oss.error(`Error while parsing cmds: ${error.message}`);
+//     }
+//     return finalCmds;
+// }
 
 
 /***/ }),
@@ -45921,9 +45926,11 @@ function prep(fs) {
     }
 
     return fs.promises.readdir(folderPath, { withFileTypes: true }).then(files => {
-      const children = files.sort().map(child => {
-        return hashElementPromise(child, folderPath, options);
-      });
+      const children = files
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(child => {
+          return hashElementPromise(child, folderPath, options);
+        });
 
       return Promise.all(children).then(children => {
         if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;

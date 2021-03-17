@@ -8,9 +8,10 @@ async function run(): Promise<void>
 {
     try
     {
-        const paths = input.parsePaths( core.getInput("cachePaths", { required: true }) );
-        const cmds: utils.cmdObj[] = input.tryParseCmdInputArray( core.getInput("cmds", { required: true }) , core);
+        const paths = core.getInput("cachePaths", { required: true });
+        const cmds = core.getInput("cmds", { required: true });
         const hashPrefix = core.getInput("hashPrefix", { required: false });
+        
         const buildResult = await actionCore.actionCore(paths, cmds, core, hashPrefix);
         if (buildResult.error !== undefined)
         {
