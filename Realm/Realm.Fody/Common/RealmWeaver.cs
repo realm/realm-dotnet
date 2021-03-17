@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -410,8 +409,6 @@ Analytics payload
                                             new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } });
                         break;
                     case RealmCollectionType.ISet:
-                        Debugger.Break();
-
                         _logger.Warning($"{type.Name}.{prop.Name} is of type ISet which is not officially supported yet. Some functionality may not exist yet or there may be bugs/known issues that can result in undefined behavior, including data loss. Official support for the datatype will come in a future Realm release.");
 
                         if (elementType.Resolve().IsEmbeddedObjectInheritor(_references))
