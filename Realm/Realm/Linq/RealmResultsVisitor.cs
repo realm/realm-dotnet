@@ -561,8 +561,6 @@ namespace Realms
                     memberExpression = leftExpression as MemberExpression;
                 }
 
-                string leftName = null;
-
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
@@ -573,10 +571,11 @@ namespace Realms
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase. \nUnable to process '{node.Right}'.");
                 }
 
-                if (CheckIfRealmValueType(memberExpression, out string leftPropName))
+                string leftName = null;
+
+                if (IsRealmValueTypeExpression(memberExpression, out leftName))
                 {
-                    leftName = leftPropName;
-                    rightValue = (RealmValueType)((int)rightValue);  //TODO Need to refactor this
+                    rightValue = (RealmValueType)(int)rightValue;
 
                     if (node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual)
                     {
@@ -614,24 +613,6 @@ namespace Realms
             }
 
             return node;
-        }
-
-        private bool CheckIfRealmValueType(MemberExpression leftExpression, out string leftName)
-        {
-            leftName = null;
-
-            if (leftExpression.Type != typeof(RealmValueType))
-            {
-                return false;
-            }
-
-            if (leftExpression.Expression is MemberExpression innerExpression)
-            {
-                leftName = GetColumnName(innerExpression, leftExpression.NodeType);
-                return innerExpression.Type == typeof(RealmValue);
-            }
-
-            return false;
         }
 
         private enum OutOfRangeBehavior
@@ -674,6 +655,7 @@ namespace Realms
             switch (value)
             {
                 case null:
+                case RealmValue rv when rv.Type == RealmValueType.Null:
                     queryHandle.NullEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
@@ -695,6 +677,7 @@ namespace Realms
             switch (value)
             {
                 case null:
+                case RealmValue rv when rv.Type == RealmValueType.Null:
                     queryHandle.NullNotEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
@@ -768,21 +751,6 @@ namespace Realms
                     AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueGreaterEqual);
                     break;
             }
-        }
-
-
-        private void AddQueryEqualToRealmValueType(QueryHandle queryHandle, string columnName, RealmValueType realmValueType, Type columnType)
-        {
-            var propertyIndex = _metadata.PropertyIndices[columnName];
-
-            //TODO To fill!
-
-        }
-
-        private void AddQueryNotEqualToRealmValueType(QueryHandle queryHandle, string columnName, RealmValueType realmValueType, Type columnType)
-        {
-            var propertyIndex = _metadata.PropertyIndices[columnName];
-
         }
 
         private delegate void QueryAction(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value);
@@ -896,6 +864,24 @@ namespace Realms
             }
 
             return name;
+        }
+
+        private bool IsRealmValueTypeExpression(MemberExpression memberExpression, out string leftName)
+        {
+            leftName = null;
+
+            if (memberExpression.Type != typeof(RealmValueType))
+            {
+                return false;
+            }
+
+            if (memberExpression.Expression is MemberExpression innerExpression)
+            {
+                leftName = GetColumnName(innerExpression, memberExpression.NodeType);
+                return innerExpression.Type == typeof(RealmValue);
+            }
+
+            return false;
         }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
