@@ -196,12 +196,13 @@ namespace Realms
             var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
             {
-                if (arguments[i].Type == RealmValueType.Object && !arguments[i].AsRealmObject().IsManaged)
+                var argument = arguments[i];
+                if (argument.Type == RealmValueType.Object && !argument.AsRealmObject().IsManaged)
                 {
                     throw new RealmException("Can't use unmanaged object as argument of Filter");
                 }
 
-                (primitiveValues[i], handles[i]) = arguments[i].ToNative();
+                (primitiveValues[i], handles[i]) = argument.ToNative();
             }
 
             var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, (IntPtr)primitiveValues.Length, out var ex);

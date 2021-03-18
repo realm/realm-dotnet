@@ -870,7 +870,7 @@ namespace Realms
         {
             leftName = null;
 
-            if (memberExpression.Type != typeof(RealmValueType))
+            if (memberExpression?.Type != typeof(RealmValueType))
             {
                 return false;
             }
