@@ -198,12 +198,20 @@ namespace Realms.Dynamic
             var self = GetLimitedSelf();
             var valueExpression = value.Expression;
 
-            valueExpression = Expression.Call(CreateRealmValueMethod.MakeGenericMethod(valueExpression.Type), new[] { valueExpression, Expression.Constant(property.Type.ToRealmValueType()) });
+            if (valueExpression.Type != typeof(RealmValue))
+            {
+                valueExpression = Expression.Call(CreateRealmValueMethod.MakeGenericMethod(valueExpression.Type), new[] { valueExpression, Expression.Constant(property.Type.ToRealmValueType()) });
+            }
+
             var setter = property.IsPrimaryKey ? GetSetMethod<RealmValue>(DummyHandle.SetValueUnique) : GetSetMethod<RealmValue>(DummyHandle.SetValue);
 
             if (valueExpression.Type != typeof(RealmValue))
             {
                 valueExpression = Expression.Convert(valueExpression, typeof(RealmValue));
+            }
+            else
+            {
+                //Test
             }
 
             arguments.Add(valueExpression);
