@@ -33,12 +33,6 @@ const cache = __importStar(require("@actions/cache"));
 const exec = __importStar(require("@actions/exec"));
 const utils = __importStar(require("./utils/common"));
 const input = __importStar(require("./utils/input_parsing"));
-class resultImpl {
-    constructor(result, error) {
-        this.result = result;
-        this.error = error;
-    }
-}
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, an hash is calculated over paths and the result is used as key in the dictionary of the cache.
  * The function can throw exceptions.
@@ -53,13 +47,16 @@ class resultImpl {
 function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
     return __awaiter(this, void 0, void 0, function* () {
         if (cmds.length === 0 || paths.length === 0) {
-            return new resultImpl(undefined, new Error(`No commands were supplied, nothing to do.`));
+            throw new Error(`No commands were supplied, nothing to do.`);
         }
         const parsedPaths = input.parsePaths(paths);
         const parsedCmds = input.parseCmds(cmds);
         let hash;
         try {
-            hash = hashFunc !== undefined ? yield hashFunc(parsedPaths, oss, hashPrefix) : yield utils.tryGetHash(parsedPaths, oss, hashPrefix);
+            hash =
+                hashFunc !== undefined
+                    ? yield hashFunc(parsedPaths, oss, hashPrefix)
+                    : yield utils.tryGetHash(parsedPaths, oss, hashPrefix);
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
@@ -75,14 +72,15 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
         }
         else {
-            return new resultImpl(undefined, new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`));
+            throw new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`);
         }
         if (cacheKey === undefined) {
             oss.info(`No cache was found, so the command will be executed...`);
             try {
-                for (let cmd of parsedCmds) {
-                    if ((yield exec.exec(cmd)) !== 0) {
-                        return new resultImpl(undefined, new Error(`Executing a command ${cmd} failed. Stopping execution!`));
+                for (const cmd of parsedCmds) {
+                    const returnCode = yield exec.exec(cmd);
+                    if (returnCode !== 0) {
+                        throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
                     }
                 }
             }
@@ -95,14 +93,14 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
                     oss.info(`Cache properly created with id ${cacheId}`);
                 }
                 catch (error) {
-                    return new resultImpl(undefined, new Error(`The cache could not be saved because ${error.message}`));
+                    throw new Error(`The cache could not be saved because ${error.message}`);
                 }
             }
         }
         else {
             oss.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
         }
-        return new resultImpl(cacheKey, undefined);
+        return cacheKey !== null && cacheKey !== void 0 ? cacheKey : "no hash calculated";
     });
 }
 exports.actionCore = actionCore;

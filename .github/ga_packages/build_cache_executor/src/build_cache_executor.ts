@@ -3,21 +3,6 @@ import * as exec from "@actions/exec";
 import * as utils from "./utils/common";
 import * as input from "./utils/input_parsing";
 
-export interface result {
-  result?: undefined;
-  error?: Error;
-}
-
-class resultImpl implements result {
-  result?: undefined;
-  error?: Error;
-
-  constructor(result?: undefined, error?: Error) {
-    this.result = result;
-    this.error = error;
-  }
-}
-
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, an hash is calculated over paths and the result is used as key in the dictionary of the cache.
  * The function can throw exceptions.
@@ -36,12 +21,9 @@ export async function actionCore(
   hashPrefix?: string,
   hashOptions?: utils.hashOptions,
   hashFunc?: utils.hashFunc
-): Promise<result> {
+): Promise<string> {
   if (cmds.length === 0 || paths.length === 0) {
-    return new resultImpl(
-      undefined,
-      new Error(`No commands were supplied, nothing to do.`)
-    );
+    throw new Error(`No commands were supplied, nothing to do.`);
   }
   const parsedPaths = input.parsePaths(paths);
   const parsedCmds = input.parseCmds(cmds);
@@ -69,11 +51,8 @@ export async function actionCore(
       );
     }
   } else {
-    return new resultImpl(
-      undefined,
-      new Error(
-        `No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`
-      )
+    throw new Error(
+      `No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`
     );
   }
 
@@ -82,10 +61,10 @@ export async function actionCore(
 
     try {
       for (const cmd of parsedCmds) {
-        if ((await exec.exec(cmd)) !== 0) {
-          return new resultImpl(
-            undefined,
-            new Error(`Executing a command ${cmd} failed. Stopping execution!`)
+        const returnCode = await exec.exec(cmd);
+        if (returnCode !== 0) {
+          throw Error(
+            `Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`
           );
         }
       }
@@ -100,9 +79,8 @@ export async function actionCore(
         const cacheId = await cache.saveCache(parsedPaths, hash);
         oss.info(`Cache properly created with id ${cacheId}`);
       } catch (error) {
-        return new resultImpl(
-          undefined,
-          new Error(`The cache could not be saved because ${error.message}`)
+        throw new Error(
+          `The cache could not be saved because ${error.message}`
         );
       }
     }
@@ -112,5 +90,5 @@ export async function actionCore(
     );
   }
 
-  return new resultImpl(cacheKey, undefined);
+  return cacheKey ?? "this should have never happened";
 }

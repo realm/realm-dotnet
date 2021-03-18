@@ -50,8 +50,8 @@ exports.tryGetHash = tryGetHash;
 // Can throw exceptions
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        let hashes = [];
-        for (let path of paths) {
+        const hashes = [];
+        for (const path of paths) {
             const hash = yield folderHash.hashElement(path, hashOptions);
             hashes.push(hash.hash);
         }
