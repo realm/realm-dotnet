@@ -37,9 +37,9 @@ using WaitCallbackT = void(void* task_completion_source, int32_t error_code, con
 
 namespace realm {
 namespace binding {
-    std::function<void(std::shared_ptr<SyncSession>* session, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len, bool is_client_reset)> s_session_error_callback;
-    std::function<void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes)> s_progress_callback;
-    std::function<void(void* task_completion_source, int32_t error_code, const char* message, size_t message_len)> s_wait_callback;
+    std::function<ErrorCallbackT> s_session_error_callback;
+    std::function<ProgressCallbackT> s_progress_callback;
+    std::function<WaitCallbackT> s_wait_callback;
 
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
     {

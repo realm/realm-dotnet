@@ -124,9 +124,13 @@ namespace binding {
         size_t serialized_len;
     };
 
-    extern std::function<void(void* tcs_ptr, MarshaledAppError err)> s_void_callback;
-    extern std::function<void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err)> s_user_callback;
-    extern std::function<void(void* tcs_ptr, BsonPayload response, MarshaledAppError err)> s_bson_callback;
+    using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
+    using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
+    using BsonCallbackT = void(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+
+    extern std::function<VoidCallbackT> s_void_callback;
+    extern std::function<UserCallbackT> s_user_callback;
+    extern std::function<BsonCallbackT> s_bson_callback;
 
     inline std::function<void(std::shared_ptr<SyncUser> user, util::Optional<AppError>)> get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {

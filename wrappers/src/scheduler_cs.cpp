@@ -30,10 +30,10 @@ using IsOnContextT = bool(void* context, void* target_context);
 using PostOnContextT = void(void* context, void* user_data);
 using ReleaseContextT = void(void* context);
 
-std::function<void*()> s_get_context;
-std::function<bool(void* context, void* target_context)> s_is_on_context;
-std::function<void(void* context, void* user_data)> s_post_on_context;
-std::function<void(void* context)> s_release_context;
+std::function<GetContextT> s_get_context;
+std::function<IsOnContextT> s_is_on_context;
+std::function<PostOnContextT> s_post_on_context;
+std::function<ReleaseContextT> s_release_context;
 
 struct SynchronizationContextScheduler : public Scheduler {
 public:

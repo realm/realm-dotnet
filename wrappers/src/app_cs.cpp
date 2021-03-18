@@ -51,10 +51,10 @@ namespace realm {
         std::string s_platform_version;
         std::string s_sdk_version;
 
-        std::function<void(void* managed_handler, realm_value_t message, util::Logger::Level level)> s_log_message_callback;
-        std::function<void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err)> s_user_callback;
-        std::function<void(void* tcs_ptr, MarshaledAppError err)> s_void_callback;
-        std::function<void(void* tcs_ptr, BsonPayload response, MarshaledAppError err)> s_bson_callback;
+        std::function<LogMessageCallbackT> s_log_message_callback;
+        std::function<UserCallbackT> s_user_callback;
+        std::function<VoidCallbackT> s_void_callback;
+        std::function<BsonCallbackT> s_bson_callback;
 
         struct AppConfiguration
         {
@@ -121,10 +121,10 @@ extern "C" {
     REALM_EXPORT void shared_app_initialize(uint16_t* platform, size_t platform_len,
         uint16_t* platform_version, size_t platform_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
-        UserCallbackT user_callback,
-        VoidCallbackT void_callback,
-        BsonCallbackT bson_callback,
-        LogMessageCallbackT log_message_callback)
+        UserCallbackT* user_callback,
+        VoidCallbackT* void_callback,
+        BsonCallbackT* bson_callback,
+        LogMessageCallbackT* log_message_callback)
     {
         s_platform = Utf16StringAccessor(platform, platform_len);
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);

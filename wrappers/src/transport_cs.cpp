@@ -44,13 +44,13 @@ struct HttpClientRequest {
     size_t body_len;
 };
 
-using ExecuteRequest = void(HttpClientRequest request, void* callback);
+using ExecuteRequestT = void(HttpClientRequest request, void* callback);
 using ResponseFunction = std::function<void(const Response)>;
 
 namespace realm {
 namespace binding {
 GenericNetworkTransport::NetworkTransportFactory s_transport_factory;
-std::function<void(HttpClientRequest request, void* callback)> s_execute_request;
+std::function<ExecuteRequestT> s_execute_request;
 }
 }
 
@@ -86,7 +86,7 @@ public:
 };
 
 extern "C" {
-    REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequest* execute)
+    REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
         s_execute_request = wrap_managed_callback(execute);
         s_transport_factory = []() -> std::unique_ptr<HttpClientTransport> {

@@ -22,9 +22,11 @@
 #include "realm_export_decls.hpp"
 #include <realm/sync/config.hpp>
 
+using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+
 namespace realm {
 namespace binding {
-    extern std::function<void(void*, uint64_t transferred_bytes, uint64_t transferrable_bytes)> s_progress_callback;
+    extern std::function<ProgressCallbackT> s_progress_callback;
 
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
 }
