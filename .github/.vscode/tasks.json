@@ -2,27 +2,22 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "typescript",
-			"tsconfig": "actions/build_cache_executor/tsconfig.json",
-			"problemMatcher": [
-				"$tsc"
-			],
+			"type": "npm",
+			"script": "build_to_distribute",
+			"path": "actions/build_cache_executor/",
 			"group": "build",
-			"label": "tsc: build - actions/build_cache_executor/tsconfig.json"
+			"problemMatcher": [],
+			"label": "npm: distribute - actions/build_cache_executor",
+			"detail": "tsc"
 		},
 		{
-			"label": "Pack to distribute build_cache_executor action",
-			"type": "shell",
-			"command": "ncc build actions/build_cache_executor/build/main.js -o actions/build_cache_executor/dist",
-			"dependsOn": "tsc: build - actions/build_cache_executor/tsconfig.json",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"presentation": {
-				"reveal": "always",
-				"panel": "shared"
-			}
+			"type": "npm",
+			"script": "build",
+			"path": "ga_packages/build_cache_executor/",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build - ga_packages/build_cache_executor",
+			"detail": "tsc"
 		}
 	]
 }

@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 
-import * as utils from "../../../ga_packages/build_cache_executor/build/utils/common";
-import * as input from "../../../ga_packages/build_cache_executor/build/utils/input_parsing";
-import * as actionCore from "../../../ga_packages/build_cache_executor/build/build_cache_executor";
+import * as utils from "../../../ga_packages/build_cache_executor/dist/utils/common";
+import * as input from "../../../ga_packages/build_cache_executor/dist/utils/input_parsing";
+import * as actionCore from "../../../ga_packages/build_cache_executor/dist/build_cache_executor";
 
 async function run(): Promise<void>
 {

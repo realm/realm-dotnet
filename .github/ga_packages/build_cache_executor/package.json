@@ -2,19 +2,14 @@
   "name": "@realm/build_cache_executor",
   "version": "1.0.0",
   "description": "Typescript functionalities to build and cache the artifacts",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./lib/build_cacje_executor.js",
   "directories": {
-    "lib": "lib",
     "test": "__tests__"
   },
-  "files": [
-    "lib"
-  ],
   "scripts": {
     "test": "mocha -r ts-node/register '__tests__/**/*.ts'",
-    "build": "tsc && ncc build ./build/build_cache_executor.js -o ./lib",
-    "build-types": "npm typescript ./lib/index.js --declaration --allowJs --emitDeclarationOnly --outDir ./lib"
+    "build": "tsc",
+    "lint": "eslint . --ext .ts"
   },
   "author": "Realm Inc.",
   "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",
@@ -30,7 +25,10 @@
     "@types/chai": "^4.2.15",
     "@types/mocha": "^8.2.1",
     "@types/sinon": "^9.0.11",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
     "chai": "^4.3.3",
+    "eslint": "^7.22.0",
     "mocha": "^8.3.1",
     "sinon": "^9.2.4",
     "ts-node": "^9.1.1"
