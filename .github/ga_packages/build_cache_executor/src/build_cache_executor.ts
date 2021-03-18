@@ -3,22 +3,19 @@ import * as exec from "@actions/exec";
 import * as utils from "./utils/common";
 import * as input from "./utils/input_parsing";
 
-export interface result
-{
-    result?: any;
-    error?: Error;
+export interface result {
+  result?: undefined;
+  error?: Error;
 }
 
-class resultImpl implements result
-{
-    result?: any;
-    error?: Error;
+class resultImpl implements result {
+  result?: undefined;
+  error?: Error;
 
-    constructor(result?: any, error?: Error)
-    {
-        this.result = result;
-        this.error = error;
-    }
+  constructor(result?: undefined, error?: Error) {
+    this.result = result;
+    this.error = error;
+  }
 }
 
 /**
@@ -33,85 +30,87 @@ class resultImpl implements result
  * @returns CacheKey necessary to recover the cached build later on. If the function fails, undefined is returned together with an Error explaining the reason.
  */
 export async function actionCore(
-    paths: string,
-    cmds: string,
-    oss: utils.outputStream,
-    hashPrefix?: string,
-    hashOptions?: utils.hashOptions,
-    hashFunc?: utils.hashFunc
-): Promise<result>
-{
-    if (cmds.length === 0 || paths.length === 0)
-    {
-        return new resultImpl(undefined, new Error(`No commands were supplied, nothing to do.`));
-    }
-    const parsedPaths = input.parsePaths(paths);
-    const parsedCmds = input.parseCmds(cmds);
+  paths: string,
+  cmds: string,
+  oss: utils.outputStream,
+  hashPrefix?: string,
+  hashOptions?: utils.hashOptions,
+  hashFunc?: utils.hashFunc
+): Promise<result> {
+  if (cmds.length === 0 || paths.length === 0) {
+    return new resultImpl(
+      undefined,
+      new Error(`No commands were supplied, nothing to do.`)
+    );
+  }
+  const parsedPaths = input.parsePaths(paths);
+  const parsedCmds = input.parseCmds(cmds);
 
-    let hash: string | undefined;
-    try
-    {
-        hash = hashFunc !== undefined ? await hashFunc(parsedPaths, oss, hashPrefix) : await utils.tryGetHash(parsedPaths, oss, hashPrefix);
-    }
-    catch (err)
-    {
-        throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
-    }
-    
-    let cacheKey: string | undefined = undefined;
-    if (hash !== undefined)
-    {
-        oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hash}`);
-        try
-        {
-            cacheKey = await cache.restoreCache(parsedPaths, hash);
-        }
-        catch (err)
-        {
-            oss.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
-        }
-    }
-    else
-    {
-        return new resultImpl(undefined, new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`));
-    }
-    
-    if (cacheKey === undefined)
-    {
-        oss.info(`No cache was found, so the command will be executed...`);
+  let hash: string | undefined;
+  try {
+    hash =
+      hashFunc !== undefined
+        ? await hashFunc(parsedPaths, oss, hashPrefix)
+        : await utils.tryGetHash(parsedPaths, oss, hashPrefix);
+  } catch (err) {
+    throw new Error(
+      `While calculating the hash something went terribly wrong: ${err.message}`
+    );
+  }
 
-        try
-        {
-            for (let cmd of parsedCmds)
-            {
-                if (await exec.exec(cmd) !== 0)
-                {
-                    return new resultImpl(undefined, new Error(`Executing a command ${cmd} failed. Stopping execution!`));
-                }
-            }
-        }
-        catch (err)
-        {
-            throw new Error(`Something went terribly wrong while executing a shell command: ${err.message}`);
-        }
-
-        if (hash !== undefined)
-        {
-            try
-            {
-                const cacheId = await cache.saveCache(parsedPaths, hash);
-                oss.info(`Cache properly created with id ${cacheId}`);
-            }
-            catch (error)
-            {
-                return new resultImpl(undefined, new Error(`The cache could not be saved because ${error.message}`));
-            }
-        }
+  let cacheKey: string | undefined = undefined;
+  if (hash !== undefined) {
+    oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hash}`);
+    try {
+      cacheKey = await cache.restoreCache(parsedPaths, hash);
+    } catch (err) {
+      oss.error(
+        `Impossible to retrieve cache: ${err}\n The build will start momentarily...`
+      );
     }
-    else
-    {
-        oss.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
+  } else {
+    return new resultImpl(
+      undefined,
+      new Error(
+        `No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`
+      )
+    );
+  }
+
+  if (cacheKey === undefined) {
+    oss.info(`No cache was found, so the command will be executed...`);
+
+    try {
+      for (const cmd of parsedCmds) {
+        if ((await exec.exec(cmd)) !== 0) {
+          return new resultImpl(
+            undefined,
+            new Error(`Executing a command ${cmd} failed. Stopping execution!`)
+          );
+        }
+      }
+    } catch (err) {
+      throw new Error(
+        `Something went terribly wrong while executing a shell command: ${err.message}`
+      );
     }
 
-    return new resultImpl(cacheKey, undefined);
+    if (hash !== undefined) {
+      try {
+        const cacheId = await cache.saveCache(parsedPaths, hash);
+        oss.info(`Cache properly created with id ${cacheId}`);
+      } catch (error) {
+        return new resultImpl(
+          undefined,
+          new Error(`The cache could not be saved because ${error.message}`)
+        );
+      }
+    }
+  } else {
+    oss.info(
+      `A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`
+    );
+  }
+
+  return new resultImpl(cacheKey, undefined);
 }

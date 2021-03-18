@@ -1,7 +1,7 @@
 import * as utils from "./utils/common";
 export interface result {
-    result?: any;
-    error?: Error;
+  result?: any;
+  error?: Error;
 }
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, an hash is calculated over paths and the result is used as key in the dictionary of the cache.
@@ -14,4 +14,11 @@ export interface result {
  * @param hashFunc Custom hash function if the default doesn't fullfil the user's needs
  * @returns CacheKey necessary to recover the cached build later on. If the function fails, undefined is returned together with an Error explaining the reason.
  */
-export declare function actionCore(paths: string, cmds: string, oss: utils.outputStream, hashPrefix?: string, hashOptions?: utils.hashOptions, hashFunc?: utils.hashFunc): Promise<result>;
+export declare function actionCore(
+  paths: string,
+  cmds: string,
+  oss: utils.outputStream,
+  hashPrefix?: string,
+  hashOptions?: utils.hashOptions,
+  hashFunc?: utils.hashFunc
+): Promise<result>;
