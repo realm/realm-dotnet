@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -42,7 +41,7 @@ namespace Realms
         private delegate bool is_on_context(IntPtr context, IntPtr targetContext);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_scheduler_invoke_function", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void scheduler_invoke_function(IntPtr function_ptr);
+        private static extern void scheduler_invoke_function(IntPtr function_ptr, [MarshalAs(UnmanagedType.I1)] bool can_execute);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_scheduler_callbacks", CallingConvention = CallingConvention.Cdecl)]
         private static extern void install_scheduler_callbacks(get_context get, post_on_context post, release_context release, is_on_context is_on);
@@ -64,13 +63,10 @@ namespace Realms
 
             internal void Post(IntPtr function_ptr)
             {
-                _context.Post(_ =>
+                _context?.Post(f_ptr =>
                 {
-                    if (!_isReleased)
-                    {
-                        scheduler_invoke_function(function_ptr);
-                    }
-                }, null);
+                    scheduler_invoke_function((IntPtr)f_ptr, !_isReleased);
+                }, function_ptr);
             }
 
             internal bool IsOnContext(Scheduler other) => _context == (other?._context ?? SynchronizationContext.Current) || _threadId == (other?._threadId ?? Environment.CurrentManagedThreadId);

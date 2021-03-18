@@ -39,13 +39,20 @@ using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 using namespace realm;
 using namespace realm::binding;
 
+using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len);
+using RealmChangedT = void(void* managed_state_handle);
+using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
+using OnBindingContextDestructedT = void(void* managed_handle);
+using LogMessageT = void(realm_value_t message, util::Logger::Level level);
+
 namespace realm {
 namespace binding {
-    void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len);
-    void (*s_realm_changed)(void* managed_state_handle);
-    void (*s_get_native_schema)(SchemaForMarshaling schema, void* managed_callback);
-    void (*s_on_binding_context_destructed)(void* managed_handle);
-    void (*s_log_message)(realm_value_t message, util::Logger::Level level);
+    std::function<void(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len)> s_open_realm_callback;
+    std::function<void(void* managed_state_handle)> s_realm_changed;
+    std::function<void(SchemaForMarshaling schema, void* managed_callback)> s_get_native_schema;
+    std::function<void(void* managed_handle)> s_on_binding_context_destructed;
+    std::function<void(realm_value_t message, util::Logger::Level level)> s_log_message;
+    std::atomic<bool> s_can_call_managed;
 
     CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
 
@@ -62,6 +69,11 @@ namespace binding {
     void log_message(std::string message, util::Logger::Level level)
     {
         s_log_message(to_capi(Mixed(message)), level);
+    }
+
+    bool can_call_managed()
+    {
+        return s_can_call_managed;
     }
 }
 
@@ -114,17 +126,18 @@ extern "C" {
 typedef uint32_t realm_table_key;
 
 REALM_EXPORT void shared_realm_install_callbacks(
-    decltype(s_realm_changed) realm_changed, 
-    decltype(s_get_native_schema) get_schema, 
-    decltype(s_open_realm_callback) open_callback, 
-    decltype(s_on_binding_context_destructed) on_binding_context_destructed,
-    decltype(s_log_message) log_message)
+    RealmChangedT* realm_changed, 
+    GetNativeSchemaT* get_schema, 
+    OpenRealmCallbackT open_callback, 
+    OnBindingContextDestructedT on_binding_context_destructed,
+    LogMessageT log_message)
 {
-    s_realm_changed = realm_changed;
-    s_get_native_schema = get_schema;
-    s_open_realm_callback = open_callback;
-    s_on_binding_context_destructed = on_binding_context_destructed;
-    s_log_message = log_message;
+    s_can_call_managed = true;
+    s_realm_changed = wrap_managed_callback(realm_changed);
+    s_get_native_schema = wrap_managed_callback(get_schema);
+    s_open_realm_callback = wrap_managed_callback(open_callback);
+    s_on_binding_context_destructed = wrap_managed_callback(on_binding_context_destructed);
+    s_log_message = wrap_managed_callback(log_message);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -264,6 +277,8 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm& realm, NativeException::
 
 REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& ex)
 {
+    s_can_call_managed = false;
+
     handle_errors(ex, [&]() {
         realm::_impl::RealmCoordinator::clear_all_caches();
     });

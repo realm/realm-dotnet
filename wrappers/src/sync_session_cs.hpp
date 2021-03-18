@@ -24,7 +24,7 @@
 
 namespace realm {
 namespace binding {
-    extern void (*s_progress_callback)(void*, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+    extern std::function<void(void*, uint64_t transferred_bytes, uint64_t transferrable_bytes)> s_progress_callback;
 
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
 }

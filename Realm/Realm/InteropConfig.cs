@@ -115,7 +115,7 @@ namespace Realms
                     return false;
                 }
 
-                var initialize = fileHelper.GetMethod("Initialize", BindingFlags.NonPublic | BindingFlags.Static);
+                var initialize = fileHelper.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
                 initialize.Invoke(null, null);
 
                 return true;

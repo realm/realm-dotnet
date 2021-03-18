@@ -49,8 +49,6 @@ namespace Realms
                     // This is the path in the Unity package - it is what the Editor uses.
                     AddWindowsWrappersToPath("Windows", isUnityTarget: true);
                 }
-
-                SynchronizationContextScheduler.Install();
             }
         }
 
