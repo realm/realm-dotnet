@@ -41,7 +41,7 @@ namespace Realms.Weaving
         void CopyToRealm(RealmObjectBase instance, bool update, bool skipDefaults);
 
         /// <summary>
-        /// Tries the get primary key value from a RealmObjectBase.
+        /// Tries to get the primary key value from a RealmObjectBase.
         /// </summary>
         /// <returns><c>true</c>, if the class has primary key, <c>false</c> otherwise.</returns>
         /// <param name="instance">The RealmObjectBase instance.</param>

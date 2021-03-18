@@ -183,6 +183,78 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmObject_GetHashCode_ChangesAfterAddingToRealm()
+        {
+            var objA = new RequiredPrimaryKeyStringObject { StringProperty = "a" };
+
+            var unmanagedHash = objA.GetHashCode();
+
+            Assert.That(objA.GetHashCode(), Is.EqualTo(unmanagedHash), "The hash code of an unmanaged object should be stable");
+
+            _realm.Write(() =>
+            {
+                _realm.Add(objA);
+            });
+
+            var managedHash = objA.GetHashCode();
+
+            Assert.That(unmanagedHash, Is.Not.EqualTo(managedHash), "The hash code should change after the object is managed");
+            Assert.That(objA.GetHashCode(), Is.EqualTo(managedHash), "The hash code of a managed object should be stable");
+        }
+
+        [Test]
+        public void RealmObject_GetHashCode_IsDifferentForDifferentObjects()
+        {
+            var objA = new RequiredPrimaryKeyStringObject { StringProperty = "a" };
+            var objB = new RequiredPrimaryKeyStringObject { StringProperty = "b" };
+
+            Assert.That(objB.GetHashCode(), Is.Not.EqualTo(objA.GetHashCode()), "Different unmanaged objects should have different hash codes");
+
+            _realm.Write(() =>
+            {
+                _realm.Add(objA);
+                _realm.Add(objB);
+            });
+
+            Assert.That(objA.GetHashCode(), Is.Not.EqualTo(objB.GetHashCode()), "Different managed objects should have different hashes");
+        }
+
+        [Test]
+        public void RealmObject_GetHashCode_IsSameForEqualManagedObjects()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new RequiredPrimaryKeyStringObject { StringProperty = "a" });
+            });
+
+            var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a");
+
+            Assert.That(objAgain.GetHashCode(), Is.EqualTo(obj.GetHashCode()), "The hash code of multiple managed objects pointing to the same row should be the same");
+            Assert.That(objAgain, Is.EqualTo(obj));
+        }
+
+        [Test]
+        public void RealmObject_GetHashCode_RemainsStableAfterDeletion()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new RequiredPrimaryKeyStringObject { StringProperty = "a" });
+            });
+
+            var managedHash = obj.GetHashCode();
+
+            var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a");
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(obj);
+            });
+
+            Assert.That(obj.GetHashCode(), Is.EqualTo(managedHash), "Object that was just deleted shouldn't change its hash code");
+            Assert.That(objAgain.GetHashCode(), Is.EqualTo(managedHash), "Object that didn't hash its hash code and its row got deleted should still have the same hash code");
+        }
+
+        [Test]
         public void RealmObject_WhenSerialized_ShouldSkipBaseProperties()
         {
             var obj = new SerializedObject();

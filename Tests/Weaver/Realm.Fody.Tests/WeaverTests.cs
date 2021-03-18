@@ -607,7 +607,8 @@ namespace RealmWeaver
                 "RequiredProperties.ListProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>.",
                 "RealmSetWithSetter.People has a setter but its type is a ISet which only supports getters.",
                 "RealmDictionaryWithSetter.People has a setter but its type is a IDictionary which only supports getters.",
-                "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm."
+                "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm.",
+                "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));

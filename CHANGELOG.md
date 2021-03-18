@@ -34,6 +34,7 @@
   * `Function` - proxies calls to a supplied function.
   
   Custom loggers can derive from the `Logger` class and provide their own implementation for the `Log` method or use `Function` and provide an `Action<string>`. (PR [#2276](https://github.com/realm/realm-dotnet/pull/2276))
+* `RealmObjectBase` now correctly overrides and implements `GetHashCode()`. (Issue [#1650](https://github.com/realm/realm-dotnet/issues/1650))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.

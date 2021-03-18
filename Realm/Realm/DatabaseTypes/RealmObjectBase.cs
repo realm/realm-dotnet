@@ -44,6 +44,9 @@ namespace Realms
     public abstract class RealmObjectBase : INotifyPropertyChanged, IThreadConfined, NotificationsHelper.INotifiable, IReflectableType
     {
         [NonSerialized, XmlIgnore]
+        private Lazy<int> _hashCode;
+
+        [NonSerialized, XmlIgnore]
         private Realm _realm;
 
         [NonSerialized, XmlIgnore]
@@ -169,6 +172,7 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
+            _hashCode = new Lazy<int>(() => _objectHandle.GetObjKey().GetHashCode());
 
             if (_propertyChanged != null)
             {
@@ -203,7 +207,10 @@ namespace Realms
 
         protected internal IList<T> GetListValue<T>(string propertyName)
         {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+            if (!IsManaged)
+            {
+                return new List<T>();
+            }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
@@ -211,7 +218,10 @@ namespace Realms
 
         protected internal ISet<T> GetSetValue<T>(string propertyName)
         {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+            if (!IsManaged)
+            {
+                return new HashSet<T>(RealmSet<T>.Comparer);
+            }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
@@ -219,7 +229,10 @@ namespace Realms
 
         protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+            if (!IsManaged)
+            {
+                return new Dictionary<string, TValue>();
+            }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetDictionary<TValue>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
@@ -301,6 +314,14 @@ namespace Realms
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
             return ObjectHandle.Equals(robj.ObjectHandle);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            // _hashCode is only set for managed objects - for unmanaged ones, we
+            // fall back to the default behavior.
+            return _hashCode?.Value ?? base.GetHashCode();
         }
 
         /// <summary>

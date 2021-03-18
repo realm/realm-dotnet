@@ -47,11 +47,12 @@ using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 
 namespace realm {
 namespace binding {
-    std::function<void(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len)> s_open_realm_callback;
-    std::function<void(void* managed_state_handle)> s_realm_changed;
-    std::function<void(SchemaForMarshaling schema, void* managed_callback)> s_get_native_schema;
-    std::function<void(void* managed_handle)> s_on_binding_context_destructed;
-    std::function<void(realm_value_t message, util::Logger::Level level)> s_log_message;
+    std::function<OpenRealmCallbackT> s_open_realm_callback;
+    std::function<RealmChangedT> s_realm_changed;
+    std::function<GetNativeSchemaT> s_get_native_schema;
+    std::function<OnBindingContextDestructedT> s_on_binding_context_destructed;
+    std::function<LogMessageT> s_log_message;
+
     std::atomic<bool> s_can_call_managed;
 
     CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
@@ -128,9 +129,9 @@ typedef uint32_t realm_table_key;
 REALM_EXPORT void shared_realm_install_callbacks(
     RealmChangedT* realm_changed, 
     GetNativeSchemaT* get_schema, 
-    OpenRealmCallbackT open_callback, 
-    OnBindingContextDestructedT on_binding_context_destructed,
-    LogMessageT log_message)
+    OpenRealmCallbackT* open_callback, 
+    OnBindingContextDestructedT* on_binding_context_destructed,
+    LogMessageT* log_message)
 {
     s_can_call_managed = true;
     s_realm_changed = wrap_managed_callback(realm_changed);

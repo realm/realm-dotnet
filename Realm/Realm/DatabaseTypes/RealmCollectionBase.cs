@@ -203,7 +203,7 @@ namespace Realms
         protected static EmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
         {
             var result = value.AsRealmObject<EmbeddedObject>();
-            if (result.IsManaged)
+            if (result?.IsManaged == true)
             {
                 throw new RealmException("Can't add to the collection an embedded object that is already managed.");
             }

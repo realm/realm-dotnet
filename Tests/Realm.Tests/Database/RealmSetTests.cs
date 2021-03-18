@@ -841,6 +841,136 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        #region Binary
+
+        private static byte[] Binary0 => TestHelpers.GetBytes(5, 0);
+
+        private static byte[] Binary1 => TestHelpers.GetBytes(5, 1);
+
+        private static byte[] Binary2 => TestHelpers.GetBytes(5, 2);
+
+        private static byte[] Binary3 => TestHelpers.GetBytes(5, 3);
+
+        private static byte[] Binary4 => TestHelpers.GetBytes(5, 4);
+
+        private static byte[] Binary5 => TestHelpers.GetBytes(5, 5);
+
+        private static byte[] Binary6 => TestHelpers.GetBytes(5, 6);
+
+        private static byte[] BinaryMax => TestHelpers.GetBytes(5, 255);
+
+        public static IEnumerable<TestCaseData<byte[]>> BinaryTestValues()
+        {
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary1, Binary2, Binary3 });
+            yield return new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>());
+            yield return new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 });
+        }
+
+        public static IEnumerable<TestCaseData<byte[]>> NullableBinaryTestValues()
+        {
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3, null }, new byte[][] { Binary1, Binary2, Binary3, null });
+            yield return new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>());
+            yield return new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 });
+            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary1, Binary2, null, null, null }, new byte[][] { Binary1, Binary1, null });
+            yield return new TestCaseData<byte[]>(new byte[][] { null }, new byte[][] { null, null });
+            yield return new TestCaseData<byte[]>(new byte[][] { null, null }, new byte[][] { null, Binary6 });
+        }
+
+        [TestCaseSource(nameof(BinaryTestValues))]
+        public void RealmSet_WhenUnmanaged_Binary(TestCaseData<byte[]> testData)
+        {
+            RunUnmanagedTests(o => o.ByteArraySet, testData);
+        }
+
+        [TestCaseSource(nameof(NullableBinaryTestValues))]
+        public void RealmSet_WhenUnmanaged_NullableBinary(TestCaseData<byte[]> testData)
+        {
+            RunUnmanagedTests(o => o.NullableByteArraySet, testData);
+        }
+
+        [TestCaseSource(nameof(BinaryTestValues))]
+        public void RealmSet_WhenManaged_Binary(TestCaseData<byte[]> testData)
+        {
+            RunManagedTests(o => o.ByteArraySet, testData);
+        }
+
+        [TestCaseSource(nameof(NullableBinaryTestValues))]
+        public void RealmSet_WhenManaged_NullableBinary(TestCaseData<byte[]> testData)
+        {
+            RunManagedTests(o => o.NullableByteArraySet, testData);
+        }
+
+        #endregion
+
+        #region IntPropertyObject
+
+        public static IEnumerable<TestCaseData<IntPropertyObject>> ObjectTestValues()
+        {
+            var objs = GenerateObjects(1, 2, 3, 4, 5, 6);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[3], objs[4], objs[5] });
+
+            objs = GenerateObjects(1, 2, 3);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[0], objs[1], objs[2] });
+
+            objs = GenerateObjects(0, int.MaxValue);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[1] }, new IntPropertyObject[] { objs[0] });
+
+            objs = GenerateObjects(0, int.MaxValue);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[1] }, Array.Empty<IntPropertyObject>());
+
+            objs = GenerateObjects(1);
+            yield return new TestCaseData<IntPropertyObject>(Array.Empty<IntPropertyObject>(), new IntPropertyObject[] { objs[0] });
+
+            objs = GenerateObjects(1, 2, 3, int.MaxValue);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1] }, new IntPropertyObject[] { objs[3], objs[0], objs[1], objs[2], objs[1] });
+
+            objs = GenerateObjects(1);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[0] });
+
+            objs = GenerateObjects(1, 2);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[1] });
+
+            objs = GenerateObjects(1, 2);
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[1], objs[1] }, new IntPropertyObject[] { objs[0], objs[0] });
+
+            IntPropertyObject[] GenerateObjects(params int[] values)
+            {
+                var result = new IntPropertyObject[values.Length];
+                for (var i = 0; i < result.Length; i++)
+                {
+                    result[i] = new IntPropertyObject { Int = values[i] };
+                }
+
+                return result;
+            }
+        }
+
+        [TestCaseSource(nameof(ObjectTestValues))]
+        public void RealmSet_WhenUnmanaged_Object(TestCaseData<IntPropertyObject> testData)
+        {
+            RunUnmanagedTests(o => o.ObjectSet, testData);
+        }
+
+        [TestCaseSource(nameof(ObjectTestValues))]
+        public void RealmSet_WhenManaged_Object(TestCaseData<IntPropertyObject> testData)
+        {
+            RunManagedTests(o => o.ObjectSet, testData);
+        }
+
+        #endregion
+
         private static void RunUnmanagedTests<T>(Func<SetsObject, ISet<T>> accessor, TestCaseData<T> testData)
         {
             var testObject = new SetsObject();
@@ -876,8 +1006,6 @@ namespace Realms.Tests.Database
             var managedSet = accessor(testObject);
             Assert.That(set, Is.Not.SameAs(managedSet));
 
-            CollectionAssert.AreEquivalent(managedSet, testData.GetReferenceSet());
-
             // Now we're testing set operations on RealmSet/HashSet
             testData.AssertCount(managedSet);
             testData.AssertExceptWith(managedSet);
@@ -891,18 +1019,18 @@ namespace Realms.Tests.Database
             testData.AssertUnionWith(managedSet);
 
             // Now we're testing set operations on RealmSet/RealmSet
-            //var othertestObject = _realm.Write(() => _realm.Add(new SetsObject()));
-            //var otherSet = accessor(othertestObject);
+            var otherTestObject = _realm.Write(() => _realm.Add(new SetsObject()));
+            var otherSet = accessor(otherTestObject);
 
-            //testData.AssertExceptWith(managedSet, otherSet);
-            //testData.AssertIntersectWith(managedSet, otherSet);
-            //testData.AssertIsProperSubsetOf(managedSet, otherSet);
-            //testData.AssertIsProperSupersetOf(managedSet, otherSet);
-            //testData.AssertIsSubsetOf(managedSet, otherSet);
-            //testData.AssertIsSupersetOf(managedSet, otherSet);
-            //testData.AssertOverlaps(managedSet, otherSet);
-            //testData.AssertSymmetricExceptWith(managedSet, otherSet);
-            //testData.AssertUnionWith(managedSet, otherSet);
+            testData.AssertExceptWith(managedSet, otherSet);
+            testData.AssertIntersectWith(managedSet, otherSet);
+            testData.AssertIsProperSubsetOf(managedSet, otherSet);
+            testData.AssertIsProperSupersetOf(managedSet, otherSet);
+            testData.AssertIsSubsetOf(managedSet, otherSet);
+            testData.AssertIsSupersetOf(managedSet, otherSet);
+            testData.AssertOverlaps(managedSet, otherSet);
+            testData.AssertSymmetricExceptWith(managedSet, otherSet);
+            testData.AssertUnionWith(managedSet, otherSet);
         }
 
         private static TestCaseData<RealmInteger<T>> ToInteger<T>(TestCaseData<T> data)
@@ -919,6 +1047,8 @@ namespace Realms.Tests.Database
 
         public class TestCaseData<T>
         {
+            private readonly string _description;
+
             public T[] InitialValues { get; }
 
             public T[] OtherCollection { get; }
@@ -927,17 +1057,25 @@ namespace Realms.Tests.Database
             {
                 InitialValues = initialValues.ToArray();
                 OtherCollection = otherCollection.ToArray();
+
+                if (typeof(T) == typeof(byte[]))
+                {
+                    var initial = InitialValues.Select(TestHelpers.ByteArrayToTestDescription);
+                    var other = OtherCollection.Select(TestHelpers.ByteArrayToTestDescription);
+                    _description = $"{typeof(T).Name}: {{{string.Join(",", initial)}}} - {{{string.Join(",", other)}}}";
+                }
+                else
+                {
+                    _description = $"{typeof(T).Name}: {{{string.Join(",", InitialValues)}}} - {{{string.Join(",", OtherCollection)}}}";
+                }
             }
 
-            public override string ToString()
-            {
-                return $"{typeof(T).Name}: {{{string.Join(",", InitialValues)}}} - {{{string.Join(",", OtherCollection)}}}";
-            }
+            public override string ToString() => _description;
 
             public void AssertCount(ISet<T> target)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+                var reference = new HashSet<T>(InitialValues, RealmSet<T>.Comparer);
 
                 Assert.That(target.Count, Is.EqualTo(reference.Count));
                 Assert.That(target, Is.EquivalentTo(reference));
@@ -946,116 +1084,102 @@ namespace Realms.Tests.Database
             public void AssertUnionWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.UnionWith(GetOrSeedOtherCollection(otherCollection));
+                    target.UnionWith(otherCollection);
                 });
 
-                reference.UnionWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.UnionWith)));
             }
 
             public void AssertExceptWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.ExceptWith(GetOrSeedOtherCollection(otherCollection));
+                    target.ExceptWith(otherCollection);
                 });
 
-                reference.ExceptWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.ExceptWith)));
             }
 
             public void AssertIntersectWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.IntersectWith(GetOrSeedOtherCollection(otherCollection));
+                    target.IntersectWith(otherCollection);
                 });
 
-                reference.IntersectWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.IntersectWith)));
             }
 
             public void AssertIsProperSubsetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsProperSubsetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsProperSubsetOf(OtherCollection);
+                var result = target.IsProperSubsetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSubsetOf)));
             }
 
             public void AssertIsProperSupersetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsProperSupersetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsProperSupersetOf(OtherCollection);
+                var result = target.IsProperSupersetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSupersetOf)));
             }
 
             public void AssertIsSubsetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsSubsetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsSubsetOf(OtherCollection);
+                var result = target.IsSubsetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSubsetOf)));
             }
 
             public void AssertIsSupersetOf(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.IsSupersetOf(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.IsSupersetOf(OtherCollection);
+                var result = target.IsSupersetOf(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSupersetOf)));
             }
 
             public void AssertOverlaps(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
 
-                var targetResult = target.Overlaps(GetOrSeedOtherCollection(otherCollection));
-                var referenceResult = reference.Overlaps(OtherCollection);
+                var result = target.Overlaps(GetOrSeedOtherCollection(otherCollection));
 
-                Assert.That(targetResult, Is.EqualTo(referenceResult));
+                Assert.That(result, Is.EqualTo(GetExpected(set => set.Overlaps)));
             }
 
             public void AssertSymmetricExceptWith(ISet<T> target, ICollection<T> otherCollection = null)
             {
                 Seed(target);
-                var reference = GetReferenceSet();
+
+                otherCollection = GetOrSeedOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
-                    target.SymmetricExceptWith(GetOrSeedOtherCollection(otherCollection));
+                    target.SymmetricExceptWith(otherCollection);
                 });
 
-                reference.SymmetricExceptWith(OtherCollection);
-
-                Assert.That(target, Is.EquivalentTo(reference));
+                Assert.That(target, Is.EquivalentTo(GetExpected(set => set.SymmetricExceptWith)));
             }
 
             public void Seed(ICollection<T> target, IEnumerable<T> values = null)
@@ -1070,9 +1194,21 @@ namespace Realms.Tests.Database
                 });
             }
 
-            public ISet<T> GetReferenceSet() => new HashSet<T>(InitialValues);
+            private bool GetExpected(Func<ISet<T>, Func<IEnumerable<T>, bool>> getInvoker)
+            {
+                var reference = new HashSet<T>(InitialValues, RealmSet<T>.Comparer);
 
-            private IEnumerable<T> GetOrSeedOtherCollection(ICollection<T> target)
+                return getInvoker(reference).Invoke(OtherCollection);
+            }
+
+            private ISet<T> GetExpected(Func<ISet<T>, Action<ICollection<T>>> getInvoker)
+            {
+                var reference = new HashSet<T>(InitialValues, RealmSet<T>.Comparer);
+                getInvoker(reference).Invoke(OtherCollection);
+                return reference;
+            }
+
+            private ICollection<T> GetOrSeedOtherCollection(ICollection<T> target)
             {
                 if (target == null)
                 {

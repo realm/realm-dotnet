@@ -57,15 +57,9 @@ namespace RealmWeaver
 
         public abstract TypeReference System_Collections_Generic_ListOfT { get; }
 
-        public MethodReference System_Collections_Generic_ListOfT_Constructor { get; private set; }
-
         public abstract TypeReference System_Collections_Generic_HashSetOfT { get; }
 
-        public MethodReference System_Collections_Generic_HashSetOfT_Constructor { get; private set; }
-
         public abstract TypeReference System_Collections_Generic_DictionaryOfTKeyTValue { get; }
-
-        public MethodReference System_Collections_Generic_DictionaryOfTKeyTValue_Constructor { get; private set; }
 
         public abstract TypeReference System_Linq_Enumerable { get; }
 
@@ -247,12 +241,6 @@ namespace RealmWeaver
                 HasThis = true,
                 Parameters = { new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { ISetOfT.GenericParameters.Single() } }) }
             };
-
-            System_Collections_Generic_ListOfT_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_ListOfT) { HasThis = true };
-
-            System_Collections_Generic_HashSetOfT_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_HashSetOfT) { HasThis = true };
-
-            System_Collections_Generic_DictionaryOfTKeyTValue_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_DictionaryOfTKeyTValue) { HasThis = true };
 
             {
                 System_Linq_Enumerable_Empty = new MethodReference("Empty", Types.Void, System_Linq_Enumerable);
