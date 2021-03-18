@@ -1,8 +1,13 @@
-## vNext
+## 10.1.2 (TBD)
 ------------------
 
 ### Fixed
-* None
+* On 32bit devices you may get exception with "No such object" when upgrading to v10. (Core upgrade)
+* The notification worker thread would rerun queries after every commit rather than only commits which modified tables which could affect the query results if the table had any outgoing links to tables not used in the query. (Core upgrade)
+* Fix "Invalid ref translation entry [16045690984833335023, 78187493520]" assertion failure which could occur when using sync or multiple processes writing to a single Realm file. (Core upgrade)
+* During integration of a large amount of data from the server, you may get `"Assertion failed: !fields.has_missing_parent_update()"`. (Core upgrade)
+* Syncing large Decimal128 values will cause `"Assertion failed: cx.w[1] == 0"`. (Core upgrade)
+* Avoid race condition leading to possible hangs on windows. (Core upgrade)
 
 ### Enhancements
 * None
@@ -14,7 +19,7 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.5.3.
+* Using Core 10.5.6.
 
 ## 10.1.1 (2021-02-25)
 ------------------
