@@ -1,7 +1,4 @@
 import * as core from "@actions/core";
-
-import * as utils from "../../../ga_packages/build_cache_executor/dist/utils/common";
-import * as input from "../../../ga_packages/build_cache_executor/dist/utils/input_parsing";
 import * as actionCore from "../../../ga_packages/build_cache_executor/dist/build_cache_executor";
 
 async function run(): Promise<void>
@@ -12,13 +9,13 @@ async function run(): Promise<void>
         const cmds = core.getInput("cmds", { required: true });
         const hashPrefix = core.getInput("hashPrefix", { required: false });
         
-        const buildResult = await actionCore.actionCore(paths, cmds, core, hashPrefix);
-        if (buildResult.error !== undefined)
+        const cacheKey = await actionCore.actionCore(paths, cmds, core, hashPrefix);
+        if (cacheKey === undefined)
         {
-            core.setFailed(`This action is aborted because ${buildResult.error.message}`);
+            core.setFailed(`Action aborted because either artifacts could not be built or they could not be cached`);
             return;
         }
-        core.setOutput("hashKey", buildResult.result);
+        core.setOutput("hashKey", cacheKey);
     }
     catch (error)
     {

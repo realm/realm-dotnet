@@ -1,5 +1,9 @@
 {
   "root": true,
+  "env": {
+    "commonjs": true,
+    "mocha": true
+  },
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint"
@@ -10,6 +14,8 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
   ],
-  "rules": { 
+  "rules": {
+    // I can't get this to work
+    // "no-unused-vars": ["warn", { "varsIgnorePattern": "@suite\\s+\\n?class\\s+\\w+\\s*\\{" }]
   }
 }

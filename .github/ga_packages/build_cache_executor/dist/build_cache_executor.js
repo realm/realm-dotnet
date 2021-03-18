@@ -42,7 +42,7 @@ const input = __importStar(require("./utils/input_parsing"));
  * @param hashPrefix Prefix added in front of the hash that is going to be used as key in the cache dictionary
  * @param hashOptions Extra options for the default hash function
  * @param hashFunc Custom hash function if the default doesn't fullfil the user's needs
- * @returns CacheKey necessary to recover the cached build later on. If the function fails, undefined is returned together with an Error explaining the reason.
+ * @returns CacheKey necessary to recover the cached build later on. Undefined is returned, otherwise.
  */
 function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -100,7 +100,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
         else {
             oss.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
         }
-        return cacheKey !== null && cacheKey !== void 0 ? cacheKey : "no hash calculated";
+        return cacheKey;
     });
 }
 exports.actionCore = actionCore;

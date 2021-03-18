@@ -5,6 +5,9 @@ import * as input from "../src/utils/input_parsing";
 import * as impl from "./class_implementations";
 import * as path from "path";
 
+// I can't get this to work
+//*eslint no-unused-vars: ["error", { "varsIgnorePattern": "@suite\\s+\\n?class\\s+\\w+\\s*\\{" }]*/
+
 @suite
 class InputParsing {
   private oss = new impl.outputStream();

@@ -8,6 +8,13 @@ import * as utils from "./utils/common";
  * @param hashPrefix Prefix added in front of the hash that is going to be used as key in the cache dictionary
  * @param hashOptions Extra options for the default hash function
  * @param hashFunc Custom hash function if the default doesn't fullfil the user's needs
- * @returns CacheKey necessary to recover the cached build later on. If the function fails, undefined is returned together with an Error explaining the reason.
+ * @returns CacheKey necessary to recover the cached build later on. Undefined is returned, otherwise.
  */
-export declare function actionCore(paths: string, cmds: string, oss: utils.outputStream, hashPrefix?: string, hashOptions?: utils.hashOptions, hashFunc?: utils.hashFunc): Promise<string>;
+export declare function actionCore(
+  paths: string,
+  cmds: string,
+  oss: utils.outputStream,
+  hashPrefix?: string,
+  hashOptions?: utils.hashOptions,
+  hashFunc?: utils.hashFunc
+): Promise<string | undefined>;

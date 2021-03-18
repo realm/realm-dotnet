@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import "mocha";
-import { suite, test } from "@testdeck/mocha";
+import { suite, test, timeout } from "@testdeck/mocha";
 import * as utils from "../src/utils/common";
 import * as impl from "./class_implementations";
 import * as path from "path";
@@ -10,6 +10,7 @@ class CommonUtils {
   private oss = new impl.outputStream();
 
   @test
+  @timeout(2500)
   async VerifyConsistentHashing() {
     const pwd = __dirname;
     const oneUp = path.resolve(path.join(pwd, "../"));
