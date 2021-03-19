@@ -43,7 +43,8 @@ function run() {
         try {
             const paths = core.getInput("cachePaths", { required: true });
             const cmds = core.getInput("cmds", { required: true });
-            const hashPrefix = core.getInput("hashPrefix", { required: false });
+            let hashPrefix = core.getInput("hashPrefix", { required: false });
+            hashPrefix = hashPrefix != "" ? hashPrefix : undefined;
             const cacheKey = yield actionCore.actionCore(paths, cmds, core, hashPrefix);
             if (cacheKey === undefined) {
                 core.setFailed(`Action aborted because either artifacts could not be built or they could not be cached`);
