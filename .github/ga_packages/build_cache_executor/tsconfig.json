@@ -10,6 +10,7 @@
       "sourceMap": false,
       "experimentalDecorators": true,
       "declaration": true,
+      "stripInternal": true
     },
     "include": [
       "./src"

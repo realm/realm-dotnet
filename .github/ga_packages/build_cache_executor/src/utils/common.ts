@@ -17,6 +17,7 @@ export type hashFunc = (
   hashOptions?: hashOptions
 ) => Promise<string | undefined>;
 
+/** @internal */
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
 // The final hash is prepend with a constant suffix different on each OS platform.
 export async function tryGetHash(
@@ -37,6 +38,7 @@ export async function tryGetHash(
   }
 }
 
+/** @internal */
 // Can throw exceptions
 async function hashFolders(
   paths: string[],

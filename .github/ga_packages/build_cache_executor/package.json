@@ -9,7 +9,8 @@
   "scripts": {
     "test": "mocha -r ts-node/register '__tests__/**/*.ts'",
     "build": "tsc",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "lint-fix": "eslint . --ext .ts --fix"
   },
   "author": "Realm Inc.",
   "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",

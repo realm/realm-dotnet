@@ -10,7 +10,7 @@ class CommonUtils {
   private oss = new impl.outputStream();
 
   @test
-  @timeout(2500)
+  @timeout(3500)
   async VerifyConsistentHashing() {
     const pwd = __dirname;
     const oneUp = path.resolve(path.join(pwd, "../"));

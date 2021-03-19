@@ -12,9 +12,3 @@ export declare type hashFunc = (
   hashPrefix?: string,
   hashOptions?: hashOptions
 ) => Promise<string | undefined>;
-export declare function tryGetHash(
-  paths: string[],
-  oss: outputStream,
-  hashPrefix?: string,
-  hashOptions?: hashOptions
-): Promise<string | undefined>;
