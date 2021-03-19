@@ -32,8 +32,7 @@ exports.tryGetHash = void 0;
 const folderHash = __importStar(require("folder-hash"));
 const crypto = __importStar(require("crypto"));
 /** @internal */
-// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant suffix different on each OS platform.
+// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile. The final hash is prepend with a constant hashPrefix.
 function tryGetHash(paths, oss, hashPrefix, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

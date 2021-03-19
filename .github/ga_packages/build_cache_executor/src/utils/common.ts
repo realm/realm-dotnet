@@ -19,7 +19,7 @@ export type hashFunc = (
 
 /** @internal */
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant suffix different on each OS platform.
+// The final hash is prepend with a constant hashPrefix if supplied, otherwise with current the OS platform.
 export async function tryGetHash(
   paths: string[],
   oss: outputStream,

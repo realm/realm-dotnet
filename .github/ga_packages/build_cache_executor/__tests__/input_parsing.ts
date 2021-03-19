@@ -30,7 +30,7 @@ class InputParsing {
 
   @test
   Cmd() {
-    const unparsedCmds = "echo 1\necho 2\necho3";
+    const unparsedCmds = "echo 1\necho 2\necho 3";
     const cmds = input.parseCmds(unparsedCmds);
     assert.equal(cmds.length, 3);
   }

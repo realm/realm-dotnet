@@ -1,6 +1,6 @@
 import * as utils from "./utils/common";
 /**
- * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, an hash is calculated over paths and the result is used as key in the dictionary of the cache.
+ * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
  * @param paths New line separated paths that need to be cached after the build (same paths used to create a hash)
  * @param cmds New line separated  cmds to build

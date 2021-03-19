@@ -495,7 +495,7 @@ const exec = __importStar(__nccwpck_require__(3864));
 const utils = __importStar(__nccwpck_require__(4580));
 const input = __importStar(__nccwpck_require__(1774));
 /**
- * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, an hash is calculated over paths and the result is used as key in the dictionary of the cache.
+ * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
  * @param paths New line separated paths that need to be cached after the build (same paths used to create a hash)
  * @param cmds New line separated  cmds to build
@@ -607,8 +607,7 @@ exports.tryGetHash = void 0;
 const folderHash = __importStar(__nccwpck_require__(63));
 const crypto = __importStar(__nccwpck_require__(6417));
 /** @internal */
-// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant suffix different on each OS platform.
+// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile. The final hash is prepend with a constant hashPrefix.
 function tryGetHash(paths, oss, hashPrefix, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
