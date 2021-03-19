@@ -12,7 +12,7 @@ export type hashOptions = folderHash.HashElementOptions;
 
 export type hashFunc = (
   paths: string[],
-  oss: outputStream,
+  oss?: outputStream,
   hashPrefix?: string,
   hashOptions?: hashOptions
 ) => Promise<string | undefined>;
@@ -22,7 +22,7 @@ export type hashFunc = (
 // The final hash is prepend with a constant hashPrefix if supplied, otherwise with current the OS platform.
 export async function tryGetHash(
   paths: string[],
-  oss: outputStream,
+  oss?: outputStream,
   hashPrefix?: string,
   hashOptions?: hashOptions
 ): Promise<string | undefined> {
@@ -33,7 +33,7 @@ export async function tryGetHash(
       crypto.createHash("sha256").update(folderHash).digest("base64")
     );
   } catch (error) {
-    oss.error(`Hashing failed: ${error}`);
+    oss?.error(`Hashing failed: ${error}`);
     return undefined;
   }
 }

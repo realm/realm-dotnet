@@ -607,7 +607,8 @@ exports.tryGetHash = void 0;
 const folderHash = __importStar(__nccwpck_require__(63));
 const crypto = __importStar(__nccwpck_require__(6417));
 /** @internal */
-// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile. The final hash is prepend with a constant hashPrefix.
+// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
+// The final hash is prepend with a constant hashPrefix if supplied, otherwise with current the OS platform.
 function tryGetHash(paths, oss, hashPrefix, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -616,7 +617,7 @@ function tryGetHash(paths, oss, hashPrefix, hashOptions) {
             return prefix.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
         }
         catch (error) {
-            oss.error(`Hashing failed: ${error}`);
+            oss === null || oss === void 0 ? void 0 : oss.error(`Hashing failed: ${error}`);
             return undefined;
         }
     });

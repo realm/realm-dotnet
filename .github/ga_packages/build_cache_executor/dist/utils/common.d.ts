@@ -8,7 +8,7 @@ export interface outputStream {
 export declare type hashOptions = folderHash.HashElementOptions;
 export declare type hashFunc = (
   paths: string[],
-  oss: outputStream,
+  oss?: outputStream,
   hashPrefix?: string,
   hashOptions?: hashOptions
 ) => Promise<string | undefined>;

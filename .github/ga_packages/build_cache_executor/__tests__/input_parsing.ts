@@ -2,7 +2,6 @@ import { assert } from "chai";
 import "mocha";
 import { suite, test } from "@testdeck/mocha";
 import * as input from "../src/utils/input_parsing";
-import * as impl from "./class_implementations";
 import * as path from "path";
 
 // I can't get this to work
@@ -10,8 +9,6 @@ import * as path from "path";
 
 @suite
 class InputParsing {
-  private oss = new impl.outputStream();
-
   @test
   Paths() {
     const pwd = __dirname;
