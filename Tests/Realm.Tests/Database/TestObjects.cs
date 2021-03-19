@@ -93,6 +93,8 @@ namespace Realms.Tests
         public RealmInteger<int> Int32CounterProperty { get; set; }
 
         public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        public RealmValue RealmValueProperty { get; set; }
     }
 
     public class DecimalsObject : RealmObject
