@@ -176,7 +176,7 @@ namespace Realms.Tests
             return values?.Select(kvp => (kvp.Item1, kvp.Item2 == null ? (RealmInteger<TValue>?)null : new RealmInteger<TValue>(kvp.Item2.Value))).ToArray();
         }
 
-        public static bool AreRealmValueEquals(RealmValue value1, RealmValue value2)  //TODO Can we do it differently?
+        public static bool RealmValueContentEqual(RealmValue value1, RealmValue value2)
         {
             // Necessary in order to check for sequence equality and not reference equality
             if (value1.Type == RealmValueType.Data && value2.Type == RealmValueType.Data)

@@ -684,10 +684,29 @@ namespace Realms.Tests.Database
             Assert.That(objs[0], Is.EqualTo(value));
         }
 
-        public void RealmValue_SchemTest()
+        [Test]
+        public void ChangingSchemaTest()
         {
-            // Open realm with Owner that has Mixed val prop of Dog, close realm
-            // Reopen realm with Owner in schema only, Mixed should return a dynamic
+            _realm.Write(() =>
+            {
+                _realm.Add(new RealmValueObject { RealmValueProperty = new InternalObject { IntProperty = 10, StringProperty = "brown" } });
+            });
+
+            _realm.Dispose();
+
+            var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
+            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+
+            using var singleSchemaRealm = GetRealm(config);
+
+            var rvo = singleSchemaRealm.All<RealmValueObject>().First();
+            var rv = rvo.RealmValueProperty;
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
+            dynamic d = rv.AsRealmObject();
+
+            Assert.That(d.IntProperty, Is.EqualTo(10));
+            Assert.That(d.StringProperty, Is.EqualTo("brown"));
         }
 
         #endregion
@@ -748,7 +767,7 @@ namespace Realms.Tests.Database
             foreach (var realmValue in realmValues)
             {
                 // Equality
-                var referenceResult = rvObjects.Where(r => TestHelpers.AreRealmValueEquals(r.RealmValueProperty, realmValue)).OrderBy(r => r.Id).ToList();
+                var referenceResult = rvObjects.Where(r => TestHelpers.RealmValueContentEqual(r.RealmValueProperty, realmValue)).OrderBy(r => r.Id).ToList();
 
                 var q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == realmValue).OrderBy(r => r.Id).ToList();
                 var f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty == $0", realmValue).OrderBy(r => r.Id).ToList();
@@ -757,7 +776,7 @@ namespace Realms.Tests.Database
                 Assert.That(f, Is.EquivalentTo(referenceResult));
 
                 // Non-Equality
-                referenceResult = rvObjects.Where(r => !TestHelpers.AreRealmValueEquals(r.RealmValueProperty, realmValue)).OrderBy(r => r.Id).ToList();
+                referenceResult = rvObjects.Where(r => !TestHelpers.RealmValueContentEqual(r.RealmValueProperty, realmValue)).OrderBy(r => r.Id).ToList();
 
                 q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty != realmValue).OrderBy(r => r.Id).ToList();
                 f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty != $0", realmValue).OrderBy(r => r.Id).ToList();
@@ -1413,7 +1432,7 @@ namespace Realms.Tests.Database
 
         private static void AssertRealmValueEquality(RealmValue value1, RealmValue value2)
         {
-            Assert.That(TestHelpers.AreRealmValueEquals(value1, value2), Is.True);
+            Assert.That(TestHelpers.RealmValueContentEqual(value1, value2), Is.True);
         }
 
         private RealmValueObject PersistAndFind(RealmValue rv)
