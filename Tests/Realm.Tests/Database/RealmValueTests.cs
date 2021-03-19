@@ -691,13 +691,12 @@ namespace Realms.Tests.Database
             RealmValue.Create(true, RealmValueType.Bool),
             RealmValue.Create("abc", RealmValueType.String),
             RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
-            RealmValue.Create(DateTimeOffset.Now, RealmValueType.Date),
+            RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
             RealmValue.Create(1.5f, RealmValueType.Float),
             RealmValue.Create(2.5d, RealmValueType.Double),
             RealmValue.Create(5m, RealmValueType.Decimal128),
-            RealmValue.Create(ObjectId.GenerateNewId(), RealmValueType.ObjectId),
-            RealmValue.Create(Guid.NewGuid(), RealmValueType.Guid),
-            RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object),
+            RealmValue.Create(new ObjectId("5f63e882536de46d71877979") , RealmValueType.ObjectId),
+            RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
         };
 
         [TestCaseSource(nameof(DynamicTestValues))]
@@ -717,6 +716,37 @@ namespace Realms.Tests.Database
             {
                 realmValueObject = dynamicRealm.DynamicApi.CreateObject("RealmValueObject", null);
                 Assert.That(realmValueObject, Is.InstanceOf<DynamicRealmObject>());
+
+                realmValueObject.RealmValueProperty = rv;
+            });
+
+            AssertRealmValueEquality((RealmValue)realmValueObject.RealmValueProperty, rv);
+        }
+
+        [Test]
+        public void DynamicTests_Object()
+        {
+            var config = new RealmConfiguration
+            {
+                ObjectClasses = new[] { typeof(RealmValueObject), typeof(InternalObject) },
+                IsDynamic = true
+            };
+
+            var dynamicRealm = Realm.GetInstance(config);
+
+            dynamic realmValueObject = null;
+            RealmValue rv = RealmValue.Null;
+
+            dynamicRealm.Write(() =>
+            {
+                realmValueObject = dynamicRealm.DynamicApi.CreateObject("RealmValueObject", null);
+                Assert.That(realmValueObject, Is.InstanceOf<DynamicRealmObject>());
+
+                var internalObject = dynamicRealm.DynamicApi.CreateObject("InternalObject", null);
+                internalObject.StringProperty = "brown";
+                internalObject.IntProperty = 10;
+
+                rv = internalObject;
 
                 realmValueObject.RealmValueProperty = rv;
             });
@@ -769,7 +799,7 @@ namespace Realms.Tests.Database
                 var referenceResult = rvObjects.Where(r => r.RealmValueProperty.Type == type).OrderBy(r => r.Id).ToList();
 
                 var q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type == type).OrderBy(r => r.Id).ToList();
-                var f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty.@type == '{ToFilterAttribute(type)}'").OrderBy(r => r.Id).ToList();
+                var f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty.@type == '{ConvertRealmValueTypeToFilterAttribute(type)}'").OrderBy(r => r.Id).ToList();
 
                 Assert.That(q, Is.EquivalentTo(referenceResult));
                 Assert.That(f, Is.EquivalentTo(referenceResult));
@@ -778,7 +808,7 @@ namespace Realms.Tests.Database
                 referenceResult = rvObjects.Where(r => r.RealmValueProperty.Type != type).OrderBy(r => r.Id).ToList();
 
                 q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type != type).OrderBy(r => r.Id).ToList();
-                f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty.@type != '{ToFilterAttribute(type)}'").OrderBy(r => r.Id).ToList();
+                f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty.@type != '{ConvertRealmValueTypeToFilterAttribute(type)}'").OrderBy(r => r.Id).ToList();
 
                 Assert.That(q, Is.EquivalentTo(referenceResult));
                 Assert.That(f, Is.EquivalentTo(referenceResult));
@@ -833,7 +863,7 @@ namespace Realms.Tests.Database
             Assert.That(n1, Is.EquivalentTo(n2));
             Assert.That(n1, Is.EquivalentTo(n3));
             Assert.That(n1, Is.EquivalentTo(n4));
-            Assert.That(n1, Is.EquivalentTo(new[] { rvo1, rvo2, rvo3, rvo4, rvo5 }));
+            Assert.That(n1, Is.EquivalentTo(new[] { rvo1, rvo2, rvo3, rvo4 }));
             Assert.That(n1, Is.Not.EquivalentTo(n5));
             Assert.That(n5, Is.EquivalentTo(new[] { rvo5 }));
 
@@ -1182,7 +1212,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(insertedIndices, Is.EquivalentTo(Enumerable.Range(0, referenceList.Count)));
 
-                var setIndex = 0; // As with list, should this be random/include all keys?
+                var setIndex = 0; 
 
                 realm.Write(() =>
                 {
@@ -1195,7 +1225,7 @@ namespace Realms.Tests.Database
                 Assert.That(modifiedIndices, Is.EquivalentTo(new[] { setIndex }));
                 Assert.That(newModifiedIndices, Is.EquivalentTo(new[] { setIndex }));
 
-                var removeIndex = 0; // Should I use a random Index? Test for all the indexes?
+                var removeIndex = 0;
 
                 realm.Write(() =>
                 {
@@ -1344,7 +1374,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(insertedIndices, Is.EquivalentTo(Enumerable.Range(0, referenceDict.Count)));
 
-                var setKey = dict.Keys.First(); // As with list, should this be random/include all keys?
+                var setKey = dict.Keys.First();
 
                 realm.Write(() =>
                 {
@@ -1362,7 +1392,7 @@ namespace Realms.Tests.Database
                 Assert.That(dict.AsRealmCollection()[newIndex].Key, Is.EqualTo(setKey));
                 Assert.That(dict.AsRealmCollection()[newIndex].Value, Is.EqualTo(sampleKeyPair.Value));
 
-                var removeKey = dict.Keys.First(); // As with list, should this be random/include all keys?
+                var removeKey = dict.Keys.First();
 
                 realm.Write(() =>
                 {
@@ -1473,7 +1503,7 @@ namespace Realms.Tests.Database
             return _realm.All<RealmValueObject>().First();
         }
 
-        private static string ToFilterAttribute(RealmValueType rvt)
+        private static string ConvertRealmValueTypeToFilterAttribute(RealmValueType rvt)
         {
             return rvt switch
             {
