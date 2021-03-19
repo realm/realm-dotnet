@@ -205,15 +205,6 @@ namespace Realms.Dynamic
 
             var setter = property.IsPrimaryKey ? GetSetMethod<RealmValue>(DummyHandle.SetValueUnique) : GetSetMethod<RealmValue>(DummyHandle.SetValue);
 
-            if (valueExpression.Type != typeof(RealmValue))
-            {
-                valueExpression = Expression.Convert(valueExpression, typeof(RealmValue));
-            }
-            else
-            {
-                //Test
-            }
-
             arguments.Add(valueExpression);
 
             if (!property.IsPrimaryKey)
