@@ -49,7 +49,8 @@ function tryGetHash(paths, oss, hashPrefix, hashOptions) {
 }
 exports.tryGetHash = tryGetHash;
 /** @internal */
-// Can throw exceptions
+// Calculates an array of hashes from all the paths (followingrecursively from
+// Can throw exceptions.
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         const hashes = [];
@@ -60,3 +61,4 @@ function hashFolders(paths, hashOptions) {
         return hashes.join("");
     });
 }
+//# sourceMappingURL=common.js.map

@@ -37,12 +37,12 @@ const input = __importStar(require("./utils/input_parsing"));
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
  * @param paths New line separated paths that need to be cached after the build (same paths used to create a hash)
- * @param cmds New line separated  cmds to build
- * @param oss Where to print the output messages
- * @param hashPrefix Prefix added in front of the hash that is going to be used as key in the cache dictionary
- * @param hashOptions Extra options for the default hash function
- * @param hashFunc Custom hash function if the default doesn't fullfil the user's needs
- * @returns CacheKey necessary to recover the cached build later on. Undefined is returned, otherwise.
+ * @param cmds New line separated cmds to build
+ * @param oss Output stream where to print the messages
+ * @param hashPrefix Optional prefix added in front of the hash that is going to be used as key in the cache dictionary
+ * @param hashOptions Optional wxtra options for the default hash function
+ * @param hashFunc Optional custom hash function if the default doesn't fullfil the user's needs
+ * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
 function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -51,21 +51,21 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
         }
         const parsedPaths = input.parsePaths(paths);
         const parsedCmds = input.parseCmds(cmds);
-        let hash;
+        let hashKey;
         try {
-            hash =
+            hashKey =
                 hashFunc !== undefined
-                    ? yield hashFunc(parsedPaths, oss, hashPrefix)
-                    : yield utils.tryGetHash(parsedPaths, oss, hashPrefix);
+                    ? yield hashFunc(parsedPaths, oss, hashPrefix, hashOptions)
+                    : yield utils.tryGetHash(parsedPaths, oss, hashPrefix, hashOptions);
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
         }
-        let cacheKey = undefined;
-        if (hash !== undefined) {
-            oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hash}`);
+        let cacheHit = undefined;
+        if (hashKey !== undefined) {
+            oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hashKey}`);
             try {
-                cacheKey = yield cache.restoreCache(parsedPaths, hash);
+                cacheHit = yield cache.restoreCache(parsedPaths, hashKey);
             }
             catch (err) {
                 oss.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
@@ -74,7 +74,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
         else {
             throw new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`);
         }
-        if (cacheKey === undefined) {
+        if (cacheHit === undefined) {
             oss.info(`No cache was found, so the command will be executed...`);
             try {
                 for (const cmd of parsedCmds) {
@@ -87,20 +87,24 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             catch (err) {
                 throw new Error(`Something went terribly wrong while executing a shell command: ${err.message}`);
             }
-            if (hash !== undefined) {
+            if (hashKey !== undefined) {
                 try {
-                    const cacheId = yield cache.saveCache(parsedPaths, hash);
+                    const cacheId = yield cache.saveCache(parsedPaths, hashKey);
                     oss.info(`Cache properly created with id ${cacheId}`);
                 }
                 catch (error) {
-                    throw new Error(`The cache could not be saved because ${error.message}`);
+                    throw new Error(`The cache could not be saved: ${error.message}`);
                 }
+            }
+            else {
+                throw new Error(`HashKey was undefined, so the current build can't be save. This should have never happened!`);
             }
         }
         else {
-            oss.info(`A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`);
+            oss.info(`A build was found in cache for hashKey ${hashKey} with cache hit key ${cacheHit}\nskipping building...`);
         }
-        return cacheKey;
+        return hashKey;
     });
 }
 exports.actionCore = actionCore;
+//# sourceMappingURL=build_cache_executor.js.map

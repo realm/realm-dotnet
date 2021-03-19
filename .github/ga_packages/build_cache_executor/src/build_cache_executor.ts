@@ -79,15 +79,12 @@ export async function actionCore(
         const cacheId = await cache.saveCache(parsedPaths, hashKey);
         oss.info(`Cache properly created with id ${cacheId}`);
       } catch (error) {
-        throw new Error(
-          `The cache could not be saved: ${error.message}`
-        );
+        throw new Error(`The cache could not be saved: ${error.message}`);
       }
-    }
-    else {
+    } else {
       throw new Error(
         `HashKey was undefined, so the current build can't be save. This should have never happened!`
-      )
+      );
     }
   } else {
     oss.info(
