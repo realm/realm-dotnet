@@ -39,7 +39,8 @@ export async function tryGetHash(
 }
 
 /** @internal */
-// Can throw exceptions
+// Calculates an array of hashes from all the paths (followingrecursively from
+// Can throw exceptions.
 async function hashFolders(
   paths: string[],
   hashOptions?: hashOptions

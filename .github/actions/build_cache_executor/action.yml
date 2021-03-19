@@ -12,7 +12,7 @@ inputs:
     required: false
 outputs:
   hashKey:
-    description: Key used to retrieve the resulting cached build at a later time.
+    description: Key used to retrieve the just cached build at a later time.
 runs:
   using: node12
   main: ./dist/index.js
