@@ -28,9 +28,9 @@ export async function actionCore(
   const parsedPaths = input.parsePaths(paths);
   const parsedCmds = input.parseCmds(cmds);
 
-  let hash: string | undefined;
+  let hashKey: string | undefined;
   try {
-    hash =
+    hashKey =
       hashFunc !== undefined
         ? await hashFunc(parsedPaths, oss, hashPrefix)
         : await utils.tryGetHash(parsedPaths, oss, hashPrefix);
@@ -40,11 +40,11 @@ export async function actionCore(
     );
   }
 
-  let cacheKey: string | undefined = undefined;
-  if (hash !== undefined) {
-    oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hash}`);
+  let cacheHit: string | undefined = undefined;
+  if (hashKey !== undefined) {
+    oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hashKey}`);
     try {
-      cacheKey = await cache.restoreCache(parsedPaths, hash);
+      cacheHit = await cache.restoreCache(parsedPaths, hashKey);
     } catch (err) {
       oss.error(
         `Impossible to retrieve cache: ${err}\n The build will start momentarily...`
@@ -56,7 +56,7 @@ export async function actionCore(
     );
   }
 
-  if (cacheKey === undefined) {
+  if (cacheHit === undefined) {
     oss.info(`No cache was found, so the command will be executed...`);
 
     try {
@@ -74,21 +74,26 @@ export async function actionCore(
       );
     }
 
-    if (hash !== undefined) {
+    if (hashKey !== undefined) {
       try {
-        const cacheId = await cache.saveCache(parsedPaths, hash);
+        const cacheId = await cache.saveCache(parsedPaths, hashKey);
         oss.info(`Cache properly created with id ${cacheId}`);
       } catch (error) {
         throw new Error(
-          `The cache could not be saved because ${error.message}`
+          `The cache could not be saved: ${error.message}`
         );
       }
     }
+    else {
+      throw new Error(
+        `HashKey was undefined, so the current build can't be save. This should have never happened!`
+      )
+    }
   } else {
     oss.info(
-      `A build was found in cache with cacheKey: ${cacheKey}\nskipping building...`
+      `A build was found in cache for hashKey ${hashKey} with cache hit key ${cacheHit}\nskipping building...`
     );
   }
 
-  return cacheKey;
+  return hashKey;
 }
