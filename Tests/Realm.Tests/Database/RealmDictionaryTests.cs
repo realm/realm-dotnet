@@ -1071,6 +1071,49 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+
+        #region RealmValue
+
+        public static IEnumerable<TestCaseData<RealmValue>> RealmValueTestValues()
+        {
+            yield return new TestCaseData<RealmValue>(
+                x => x,
+                TestHelpers.RealmValueContentEqual,
+                "sampleValue",
+                ("nullKey", RealmValue.Null),
+                ("intKey", RealmValue.Create(10, RealmValueType.Int)),
+                ("boolKey", RealmValue.Create(true, RealmValueType.Bool)),
+                ("stringKey", RealmValue.Create("abc", RealmValueType.String)),
+                ("dataKey", RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data)),
+                ("dateKey", RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date)),
+                ("floatKey", RealmValue.Create(1.5f, RealmValueType.Float)),
+                ("doubleKey", RealmValue.Create(2.5d, RealmValueType.Double)),
+                ("decimalKey", RealmValue.Create(5m, RealmValueType.Decimal128)),
+                ("objectIdKey", RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId)),
+                ("guidKey", RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid)),
+                ("objectKey", RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object)));
+        }
+
+        [TestCaseSource(nameof(RealmValueTestValues))]
+        public void RealmValue_Unmanaged(TestCaseData<RealmValue> testData)
+        {
+            RunUnmanagedTests(o => o.RealmValueDictionary, testData);
+        }
+
+        [TestCaseSource(nameof(RealmValueTestValues))]
+        public void RealmValue_Managed(TestCaseData<RealmValue> testData)
+        {
+            RunManagedTests(o => o.RealmValueDictionary, testData);
+        }
+
+        [Test]
+        public void RealmValue_Notifications()
+        {
+            RunManagedNotificationsTests(o => o.RealmValueDictionary, RealmValueTestValues().Last());
+        }
+
+        #endregion
+
         [Test]
         public void CanBeQueried()
         {

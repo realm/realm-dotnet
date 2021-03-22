@@ -722,12 +722,12 @@ namespace Realms.Tests.Database
                 RealmValue.Create(true, RealmValueType.Bool),
                 RealmValue.Create("abc", RealmValueType.String),
                 RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
-                RealmValue.Create(DateTimeOffset.Now, RealmValueType.Date),
+                RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
                 RealmValue.Create(1.5f, RealmValueType.Float),
                 RealmValue.Create(2.5d, RealmValueType.Double),
                 RealmValue.Create(5m, RealmValueType.Decimal128),
-                RealmValue.Create(ObjectId.GenerateNewId(), RealmValueType.ObjectId),
-                RealmValue.Create(Guid.NewGuid(), RealmValueType.Guid),
+                RealmValue.Create(new ObjectId("5f63e882536de46d71877979") , RealmValueType.ObjectId),
+                RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
                 RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object),
             };
         }
@@ -902,12 +902,12 @@ namespace Realms.Tests.Database
                 RealmValue.Create(true, RealmValueType.Bool),
                 RealmValue.Create("abc", RealmValueType.String),
                 RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
-                RealmValue.Create(DateTimeOffset.Now, RealmValueType.Date),
+                RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
                 RealmValue.Create(1.5f, RealmValueType.Float),
                 RealmValue.Create(2.5d, RealmValueType.Double),
                 RealmValue.Create(5m, RealmValueType.Decimal128),
-                RealmValue.Create(ObjectId.GenerateNewId(), RealmValueType.ObjectId),
-                RealmValue.Create(Guid.NewGuid(), RealmValueType.Guid),
+                RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
+                RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
                 RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object));
         }
 
@@ -956,12 +956,12 @@ namespace Realms.Tests.Database
                 ("boolKey", RealmValue.Create(true, RealmValueType.Bool)),
                 ("stringKey", RealmValue.Create("abc", RealmValueType.String)),
                 ("dataKey", RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data)),
-                ("dateKey", RealmValue.Create(DateTimeOffset.Now, RealmValueType.Date)),
+                ("dateKey", RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date)),
                 ("floatKey", RealmValue.Create(1.5f, RealmValueType.Float)),
                 ("doubleKey", RealmValue.Create(2.5d, RealmValueType.Double)),
                 ("decimalKey", RealmValue.Create(5m, RealmValueType.Decimal128)),
-                ("objectIdKey", RealmValue.Create(ObjectId.GenerateNewId(), RealmValueType.ObjectId)),
-                ("guidKey", RealmValue.Create(Guid.NewGuid(), RealmValueType.Guid)),
+                ("objectIdKey", RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId)),
+                ("guidKey", RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid)),
                 ("objectKey", RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object)));
         }
 
