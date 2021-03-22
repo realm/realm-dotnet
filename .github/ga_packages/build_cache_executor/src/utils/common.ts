@@ -19,7 +19,7 @@ export type hashFunc = (
 
 /** @internal */
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant hashPrefix if supplied, otherwise with current the OS platform.
+// The final hash is prepend with a constant hashPrefix if supplied, otherwise with the "cache-(current OS platform)-".
 export async function tryGetHash(
   paths: string[],
   oss?: outputStream,
@@ -39,7 +39,7 @@ export async function tryGetHash(
 }
 
 /** @internal */
-// Calculates an array of hashes from all the paths (followingrecursively from
+// Calculates an array of hashes from all the paths (following recursively all children) and returns 1 string that results from the joined elements of the arrar.
 // Can throw exceptions.
 async function hashFolders(
   paths: string[],
@@ -56,7 +56,7 @@ async function hashFolders(
 }
 
 /** @internal */
-// Recursively parse all nodes from the root to the children returning a flattened list of hashes of all nodes
+// Recursively parses all hash-nodes from the root to the children returning a flattened list of hashes of all nodes.
 function recursiveHashFolders(hashNode: folderHash.HashElementNode): string[] {
   let hashes: string[] = [];
 

@@ -22,6 +22,7 @@ class CommonUtils {
     if (hash !== undefined) {
       hashMap.set(hash, pwd);
     } else {
+      await this.CleanUp(tempFolder);
       assert.fail(`It was impossible to calculate the hash for ${pwd}`);
     }
     hash = await utils.tryGetHash([tempFolder]);
@@ -60,6 +61,8 @@ class CommonUtils {
   async VerifyHashPrefix(): Promise<void> {
     const pwd = __dirname;
     let hash = await utils.tryGetHash([pwd]);
+    
+    // check against default prefix
     assert.isTrue(hash?.startsWith(`cache-${process.platform}-`));
 
     const hashPrefix = "prefix";
