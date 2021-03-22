@@ -103,10 +103,6 @@ namespace Realms.Tests.Sync
                 var logger = new Logger.InMemoryLogger();
                 Logger.Default = logger;
 
-                var appConfig = SyncTestHelpers.GetAppConfig();
-
-                var app = CreateApp(appConfig);
-
                 var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
                 using var realm = await GetRealmAsync(config);
                 realm.Write(() =>

@@ -38,10 +38,16 @@ namespace realm {
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
     @warning if you update these codes also update the matching RealmExceptionCodes.cs
     */
-    NativeException convert_exception()
+    NativeException convert_exception(std::exception_ptr err)
     {
         try {
-            throw;  // rethrow so we can add typing information by different catches
+            if (err == nullptr) {
+                throw;  // rethrow so we can add typing information by different catches
+            }
+            else {
+                std::rethrow_exception(err);
+            }
+
         }
         catch (const RealmFileException& e) {
 
@@ -145,6 +151,10 @@ namespace realm {
         }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };
+        }
+        catch (const std::system_error& e) {
+            const std::error_code& ec = e.code();
+            return { RealmErrorType::SessionError, ec.message(), std::to_string(ec.value()) };
         }
         catch (const std::exception& e) {
             return { RealmErrorType::RealmError, e.what() };

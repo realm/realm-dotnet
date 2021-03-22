@@ -92,6 +92,8 @@ extern "C" {
         s_transport_factory = []() -> std::unique_ptr<HttpClientTransport> {
             return std::make_unique<HttpClientTransport>();
         };
+
+        realm::binding::s_can_call_managed = true;
     }
 
     REALM_EXPORT void realm_http_transport_respond(HttpClientResponse client_response, std::pair<char*, char*>* headers, int headers_len, void* function_ptr)

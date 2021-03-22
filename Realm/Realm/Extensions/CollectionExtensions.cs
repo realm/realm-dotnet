@@ -71,6 +71,39 @@ namespace Realms
         }
 
         /// <summary>
+        /// A convenience method that casts <see cref="ISet{T}"/> to <see cref="IRealmCollection{T}"/> which implements
+        /// <see cref="INotifyCollectionChanged"/>.
+        /// </summary>
+        /// <param name="set">The <see cref="ISet{T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the set.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
+        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
+        public static IRealmCollection<T> AsRealmCollection<T>(this ISet<T> set)
+        {
+            Argument.NotNull(set, nameof(set));
+
+            if (set is IRealmCollection<T> collection)
+            {
+                return collection;
+            }
+
+            throw new ArgumentException($"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
+        }
+
+        /// <summary>
+        /// A convenience method that casts <see cref="ISet{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// </summary>
+        /// <param name="set">The <see cref="ISet{T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the set.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
+        /// </returns>
+        public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) => set.AsRealmCollection().SubscribeForNotifications(callback);
+
+        /// <summary>
         /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
         /// <see cref="INotifyCollectionChanged"/>.
         /// </summary>

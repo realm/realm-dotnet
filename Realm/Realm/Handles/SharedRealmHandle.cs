@@ -21,14 +21,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
-using Realms.Sync.Exceptions;
 
 namespace Realms
 {
@@ -45,7 +43,7 @@ namespace Realms
             public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, int error_code, byte* message_buf, IntPtr message_len);
+            public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, NativeException ex);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void OnBindingContextDestructedCallback(IntPtr handle);
@@ -443,19 +441,19 @@ namespace Realms
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The task awaiter will own the ThreadSafeReference handle.")]
-        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, int error_code, byte* messageBuffer, IntPtr messageLength)
+        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
 
-            if (error_code == 0)
+            if (ex.type == RealmExceptionCodes.NoError)
             {
                 tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
             }
             else
             {
-                var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
-                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details";
+                var inner = ex.Convert();
+                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details.";
                 tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
         }

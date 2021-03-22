@@ -231,9 +231,25 @@ namespace Realms.Tests
             return value;
         }
 
-        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000)
+        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000, Task errorTask = null)
         {
-            AsyncContext.Run(() => testFunc().Timeout(timeout));
+            AsyncContext.Run(async () =>
+            {
+                var result = testFunc().Timeout(timeout);
+
+                if (errorTask != null)
+                {
+                    var completed = await Task.WhenAny(result, errorTask);
+                    if (completed == errorTask)
+                    {
+                        await errorTask;
+                        return;
+                    }
+                }
+
+                await result;
+
+            });
         }
 
         public static async Task<T> AssertThrows<T>(Func<Task> function)

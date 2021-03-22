@@ -39,7 +39,7 @@ using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 using namespace realm;
 using namespace realm::binding;
 
-using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len);
+using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using OnBindingContextDestructedT = void(void* managed_handle);
@@ -70,11 +70,6 @@ namespace binding {
     void log_message(std::string message, util::Logger::Level level)
     {
         s_log_message(to_capi(Mixed(message)), level);
-    }
-
-    bool can_call_managed()
-    {
-        return s_can_call_managed;
     }
 }
 
@@ -133,12 +128,13 @@ REALM_EXPORT void shared_realm_install_callbacks(
     OnBindingContextDestructedT* on_binding_context_destructed,
     LogMessageT* log_message)
 {
-    s_can_call_managed = true;
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
     s_open_realm_callback = wrap_managed_callback(open_callback);
     s_on_binding_context_destructed = wrap_managed_callback(on_binding_context_destructed);
     s_log_message = wrap_managed_callback(log_message);
+
+    realm::binding::s_can_call_managed = true;
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -213,16 +209,11 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
         auto task = Realm::get_synchronized_realm(config);
         task->start([task_completion_source](ThreadSafeReference ref, std::exception_ptr error) {
             if (error) {
-                try {
-                    std::rethrow_exception(error);
-                }
-                catch (const std::system_error& system_error) {
-                    const std::error_code& ec = system_error.code();
-                    s_open_realm_callback(task_completion_source, nullptr, ec.value(), ec.message().c_str(), ec.message().length());
-                }
+                auto native_ex = realm::convert_exception(error).for_marshalling();
+                s_open_realm_callback(task_completion_source, nullptr, std::move(native_ex));
             }
             else {
-                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), 0, nullptr, 0);
+                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), { RealmErrorType::NoError });
             }
         });
 

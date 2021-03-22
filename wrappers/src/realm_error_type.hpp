@@ -101,6 +101,8 @@ namespace realm {
         AppServiceError = 54,
 
         AppUnknownError = 59,
+
+        SessionError = 60,
     };
 
 }   // namespace realm

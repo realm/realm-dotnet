@@ -370,7 +370,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
       if (isUnix()) {
         if (nodeName == 'docker') {
           def test_runner_image = CreateDockerContainer(targetFramework)
-          withRealmCloud(version: '2020-12-04', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
+          withRealmCloud(version: '2021-03-22', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
               def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
 

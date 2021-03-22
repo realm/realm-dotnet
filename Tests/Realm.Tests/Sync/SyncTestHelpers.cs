@@ -38,14 +38,35 @@ namespace Realms.Tests.Sync
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
         };
 
-        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
+        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
         {
             if (_baseConfig == null)
             {
                 Assert.Ignore("MongoDB Realm is not setup.");
             }
 
-            TestHelpers.RunAsyncTest(testFunc, timeout);
+            if (ensureNoSessionErrors)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                Session.Error += HandleSessionError;
+                try
+                {
+                    TestHelpers.RunAsyncTest(testFunc, timeout, tcs.Task);
+                }
+                finally
+                {
+                    Session.Error -= HandleSessionError;
+                }
+
+                void HandleSessionError(object _, ErrorEventArgs errorArgs)
+                {
+                    tcs.TrySetException(errorArgs.Exception);
+                }
+            }
+            else
+            {
+                TestHelpers.RunAsyncTest(testFunc, timeout);
+            }
         }
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";

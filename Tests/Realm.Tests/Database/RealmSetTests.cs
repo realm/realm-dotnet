@@ -71,13 +71,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(BoolTestValues))]
         public void RealmSet_WhenManaged_Bool(TestCaseData<bool> testData)
         {
-            RunManagedTests(o => o.BooleanSet, testData);
+            RunManagedTests(o => o.BooleanSet, o => o.BooleanList, o => o.BooleanDict, testData);
         }
 
         [TestCaseSource(nameof(NullableBoolTestValues))]
         public void RealmSet_WhenManaged_NullableBool(TestCaseData<bool?> testData)
         {
-            RunManagedTests(o => o.NullableBooleanSet, testData);
+            RunManagedTests(o => o.NullableBooleanSet, o => o.NullableBooleanList, o => o.NullableBooleanDict, testData);
         }
 
         #endregion
@@ -140,25 +140,25 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(ByteTestValues))]
         public void RealmSet_WhenManaged_Byte(TestCaseData<byte> testData)
         {
-            RunManagedTests(o => o.ByteSet, testData);
+            RunManagedTests(o => o.ByteSet, o => o.ByteList, o => o.ByteDict, testData);
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
         public void RealmSet_WhenManaged_ByteCounter(TestCaseData<byte> testData)
         {
-            RunManagedTests(o => o.ByteCounterSet, ToInteger(testData));
+            RunManagedTests(o => o.ByteCounterSet, o => o.ByteCounterList, o => o.ByteCounterDict, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmSet_WhenManaged_NullableByte(TestCaseData<byte?> testData)
         {
-            RunManagedTests(o => o.NullableByteSet, testData);
+            RunManagedTests(o => o.NullableByteSet, o => o.NullableByteList, o => o.NullableByteDict, testData);
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmSet_WhenManaged_NullableByteCounter(TestCaseData<byte?> testData)
         {
-            RunManagedTests(o => o.NullableByteCounterSet, ToInteger(testData));
+            RunManagedTests(o => o.NullableByteCounterSet, o => o.NullableByteCounterList, o => o.NullableByteCounterDict, ToInteger(testData));
         }
 
         #endregion
@@ -221,25 +221,25 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(Int16TestValues))]
         public void RealmSet_WhenManaged_Int16(TestCaseData<short> testData)
         {
-            RunManagedTests(o => o.Int16Set, testData);
+            RunManagedTests(o => o.Int16Set, o => o.Int16List, o => o.Int16Dict, testData);
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
         public void RealmSet_WhenManaged_Int16Counter(TestCaseData<short> testData)
         {
-            RunManagedTests(o => o.Int16CounterSet, ToInteger(testData));
+            RunManagedTests(o => o.Int16CounterSet, o => o.Int16CounterList, o => o.Int16CounterDict, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmSet_WhenManaged_NullableInt16(TestCaseData<short?> testData)
         {
-            RunManagedTests(o => o.NullableInt16Set, testData);
+            RunManagedTests(o => o.NullableInt16Set, o => o.NullableInt16List, o => o.NullableInt16Dict, testData);
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmSet_WhenManaged_NullableInt16Counter(TestCaseData<short?> testData)
         {
-            RunManagedTests(o => o.NullableInt16CounterSet, ToInteger(testData));
+            RunManagedTests(o => o.NullableInt16CounterSet, o => o.NullableInt16CounterList, o => o.NullableInt16CounterDict, ToInteger(testData));
         }
 
         #endregion
@@ -302,25 +302,25 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(Int32TestValues))]
         public void RealmSet_WhenManaged_Int32(TestCaseData<int> testData)
         {
-            RunManagedTests(o => o.Int32Set, testData);
+            RunManagedTests(o => o.Int32Set, o => o.Int32List, o => o.Int32Dict, testData);
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
         public void RealmSet_WhenManaged_Int32Counter(TestCaseData<int> testData)
         {
-            RunManagedTests(o => o.Int32CounterSet, ToInteger(testData));
+            RunManagedTests(o => o.Int32CounterSet, o => o.Int32CounterList, o => o.Int32CounterDict, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmSet_WhenManaged_NullableInt32(TestCaseData<int?> testData)
         {
-            RunManagedTests(o => o.NullableInt32Set, testData);
+            RunManagedTests(o => o.NullableInt32Set, o => o.NullableInt32List, o => o.NullableInt32Dict, testData);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmSet_WhenManaged_NullableInt32Counter(TestCaseData<int?> testData)
         {
-            RunManagedTests(o => o.NullableInt32CounterSet, ToInteger(testData));
+            RunManagedTests(o => o.NullableInt32CounterSet, o => o.NullableInt32CounterList, o => o.NullableInt32CounterDict, ToInteger(testData));
         }
 
         #endregion
@@ -383,25 +383,25 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(Int64TestValues))]
         public void RealmSet_WhenManaged_Int64(TestCaseData<long> testData)
         {
-            RunManagedTests(o => o.Int64Set, testData);
+            RunManagedTests(o => o.Int64Set, o => o.Int64List, o => o.Int64Dict, testData);
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
         public void RealmSet_WhenManaged_Int64Counter(TestCaseData<long> testData)
         {
-            RunManagedTests(o => o.Int64CounterSet, ToInteger(testData));
+            RunManagedTests(o => o.Int64CounterSet, o => o.Int64CounterList, o => o.Int64CounterDict, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmSet_WhenManaged_NullableInt64(TestCaseData<long?> testData)
         {
-            RunManagedTests(o => o.NullableInt64Set, testData);
+            RunManagedTests(o => o.NullableInt64Set, o => o.NullableInt64List, o => o.NullableInt64Dict, testData);
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmSet_WhenManaged_NullableInt64Counter(TestCaseData<long?> testData)
         {
-            RunManagedTests(o => o.NullableInt64CounterSet, ToInteger(testData));
+            RunManagedTests(o => o.NullableInt64CounterSet, o => o.NullableInt64CounterList, o => o.NullableInt64CounterDict, ToInteger(testData));
         }
 
         #endregion
@@ -452,13 +452,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(FloatTestValues))]
         public void RealmSet_WhenManaged_Float(TestCaseData<float> testData)
         {
-            RunManagedTests(o => o.SingleSet, testData);
+            RunManagedTests(o => o.SingleSet, o => o.SingleList, o => o.SingleDict, testData);
         }
 
         [TestCaseSource(nameof(NullableFloatTestValues))]
         public void RealmSet_WhenManaged_NullableFloat(TestCaseData<float?> testData)
         {
-            RunManagedTests(o => o.NullableSingleSet, testData);
+            RunManagedTests(o => o.NullableSingleSet, o => o.NullableSingleList, o => o.NullableSingleDict, testData);
         }
 
         #endregion
@@ -509,13 +509,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(DoubleTestValues))]
         public void RealmSet_WhenManaged_Double(TestCaseData<double> testData)
         {
-            RunManagedTests(o => o.DoubleSet, testData);
+            RunManagedTests(o => o.DoubleSet, o => o.DoubleList, o => o.DoubleDict, testData);
         }
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
         public void RealmSet_WhenManaged_NullableDouble(TestCaseData<double?> testData)
         {
-            RunManagedTests(o => o.NullableDoubleSet, testData);
+            RunManagedTests(o => o.NullableDoubleSet, o => o.NullableDoubleList, o => o.NullableDoubleDict, testData);
         }
 
         #endregion
@@ -570,13 +570,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(DecimalTestValues))]
         public void RealmSet_WhenManaged_Decimal(TestCaseData<decimal> testData)
         {
-            RunManagedTests(o => o.DecimalSet, testData);
+            RunManagedTests(o => o.DecimalSet, o => o.DecimalList, o => o.DecimalDict, testData);
         }
 
         [TestCaseSource(nameof(NullableDecimalTestValues))]
         public void RealmSet_WhenManaged_NullableDecimal(TestCaseData<decimal?> testData)
         {
-            RunManagedTests(o => o.NullableDecimalSet, testData);
+            RunManagedTests(o => o.NullableDecimalSet, o => o.NullableDecimalList, o => o.NullableDecimalDict, testData);
         }
 
         #endregion
@@ -642,13 +642,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(Decimal128TestValues))]
         public void RealmSet_WhenManaged_Decimal128(TestCaseData<Decimal128> testData)
         {
-            RunManagedTests(o => o.Decimal128Set, testData);
+            RunManagedTests(o => o.Decimal128Set, o => o.Decimal128List, o => o.Decimal128Dict, testData);
         }
 
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
         public void RealmSet_WhenManaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
         {
-            RunManagedTests(o => o.NullableDecimal128Set, testData);
+            RunManagedTests(o => o.NullableDecimal128Set, o => o.NullableDecimal128List, o => o.NullableDecimal128Dict, testData);
         }
 
         #endregion
@@ -708,13 +708,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(ObjectIdTestValues))]
         public void RealmSet_WhenManaged_ObjectId(TestCaseData<ObjectId> testData)
         {
-            RunManagedTests(o => o.ObjectIdSet, testData);
+            RunManagedTests(o => o.ObjectIdSet, o => o.ObjectIdList, o => o.ObjectIdDict, testData);
         }
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
         public void RealmSet_WhenManaged_NullableObjectId(TestCaseData<ObjectId?> testData)
         {
-            RunManagedTests(o => o.NullableObjectIdSet, testData);
+            RunManagedTests(o => o.NullableObjectIdSet, o => o.NullableObjectIdList, o => o.NullableObjectIdDict, testData);
         }
 
         #endregion
@@ -773,13 +773,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
         public void RealmSet_WhenManaged_DateTimeOffset(TestCaseData<DateTimeOffset> testData)
         {
-            RunManagedTests(o => o.DateTimeOffsetSet, testData);
+            RunManagedTests(o => o.DateTimeOffsetSet, o => o.DateTimeOffsetList, o => o.DateTimeOffsetDict, testData);
         }
 
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
         public void RealmSet_WhenManaged_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
         {
-            RunManagedTests(o => o.NullableDateTimeOffsetSet, testData);
+            RunManagedTests(o => o.NullableDateTimeOffsetSet, o => o.NullableDateTimeOffsetList, o => o.NullableDateTimeOffsetDict, testData);
         }
 
         #endregion
@@ -830,13 +830,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(StringTestValues))]
         public void RealmSet_WhenManaged_String(TestCaseData<string> testData)
         {
-            RunManagedTests(o => o.StringSet, testData);
+            RunManagedTests(o => o.StringSet, o => o.StringList, o => o.StringDict, testData);
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
         public void RealmSet_WhenManaged_NullableString(TestCaseData<string> testData)
         {
-            RunManagedTests(o => o.NullableStringSet, testData);
+            RunManagedTests(o => o.NullableStringSet, o => o.NullableStringList, o => o.NullableStringDict, testData);
         }
 
         #endregion
@@ -903,13 +903,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(BinaryTestValues))]
         public void RealmSet_WhenManaged_Binary(TestCaseData<byte[]> testData)
         {
-            RunManagedTests(o => o.ByteArraySet, testData);
+            RunManagedTests(o => o.ByteArraySet, o => o.ByteArrayList, o => o.ByteArrayDict, testData);
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
         public void RealmSet_WhenManaged_NullableBinary(TestCaseData<byte[]> testData)
         {
-            RunManagedTests(o => o.NullableByteArraySet, testData);
+            RunManagedTests(o => o.NullableByteArraySet, o => o.NullableByteArrayList, o => o.NullableByteArrayDict, testData);
         }
 
         #endregion
@@ -966,14 +966,14 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(ObjectTestValues))]
         public void RealmSet_WhenManaged_Object(TestCaseData<IntPropertyObject> testData)
         {
-            RunManagedTests(o => o.ObjectSet, testData);
+            RunManagedTests(o => o.ObjectSet, o => o.ObjectList, o => o.ObjectDict, testData);
         }
 
         #endregion
 
-        private static void RunUnmanagedTests<T>(Func<SetsObject, ISet<T>> accessor, TestCaseData<T> testData)
+        private static void RunUnmanagedTests<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData)
         {
-            var testObject = new SetsObject();
+            var testObject = new CollectionsObject();
             var set = accessor(testObject);
 
             // We can't freeze unmanaged sets.
@@ -991,9 +991,9 @@ namespace Realms.Tests.Database
             testData.AssertUnionWith(set);
         }
 
-        private void RunManagedTests<T>(Func<SetsObject, ISet<T>> accessor, TestCaseData<T> testData)
+        private void RunManagedTests<T>(Func<CollectionsObject, ISet<T>> accessor, Func<CollectionsObject, IList<T>> listAccessor, Func<CollectionsObject, IDictionary<string, T>> dictAccessor, TestCaseData<T> testData)
         {
-            var testObject = new SetsObject();
+            var testObject = new CollectionsObject();
             var set = accessor(testObject);
 
             testData.Seed(set);
@@ -1019,8 +1019,15 @@ namespace Realms.Tests.Database
             testData.AssertUnionWith(managedSet);
 
             // Now we're testing set operations on RealmSet/RealmSet
-            var otherTestObject = _realm.Write(() => _realm.Add(new SetsObject()));
-            var otherSet = accessor(otherTestObject);
+            var otherSet = _realm.Write(() =>
+            {
+                var otherObj = _realm.Add(new CollectionsObject());
+                var result = accessor(otherObj);
+
+                result.UnionWith(testData.OtherCollection);
+
+                return result;
+            });
 
             testData.AssertExceptWith(managedSet, otherSet);
             testData.AssertIntersectWith(managedSet, otherSet);
@@ -1031,6 +1038,53 @@ namespace Realms.Tests.Database
             testData.AssertOverlaps(managedSet, otherSet);
             testData.AssertSymmetricExceptWith(managedSet, otherSet);
             testData.AssertUnionWith(managedSet, otherSet);
+
+            var otherList = _realm.Write(() =>
+            {
+                var otherObj = _realm.Add(new CollectionsObject());
+                var result = listAccessor(otherObj);
+
+                foreach (var item in testData.OtherCollection)
+                {
+                    result.Add(item);
+                }
+
+                return result;
+            });
+
+            testData.AssertExceptWith(managedSet, otherList);
+            testData.AssertIntersectWith(managedSet, otherList);
+            testData.AssertIsProperSubsetOf(managedSet, otherList);
+            testData.AssertIsProperSupersetOf(managedSet, otherList);
+            testData.AssertIsSubsetOf(managedSet, otherList);
+            testData.AssertIsSupersetOf(managedSet, otherList);
+            testData.AssertOverlaps(managedSet, otherList);
+            testData.AssertSymmetricExceptWith(managedSet, otherList);
+            testData.AssertUnionWith(managedSet, otherList);
+
+            // Dictionary.Values is backed by RealmResults
+            var otherResults = _realm.Write(() =>
+            {
+                var otherObj = _realm.Add(new CollectionsObject());
+                var result = dictAccessor(otherObj);
+
+                foreach (var item in testData.OtherCollection)
+                {
+                    result.Add(Guid.NewGuid().ToString(), item);
+                }
+
+                return result.Values;
+            });
+
+            testData.AssertExceptWith(managedSet, otherResults);
+            testData.AssertIntersectWith(managedSet, otherResults);
+            testData.AssertIsProperSubsetOf(managedSet, otherResults);
+            testData.AssertIsProperSupersetOf(managedSet, otherResults);
+            testData.AssertIsSubsetOf(managedSet, otherResults);
+            testData.AssertIsSupersetOf(managedSet, otherResults);
+            testData.AssertOverlaps(managedSet, otherResults);
+            testData.AssertSymmetricExceptWith(managedSet, otherResults);
+            testData.AssertUnionWith(managedSet, otherResults);
         }
 
         private static TestCaseData<RealmInteger<T>> ToInteger<T>(TestCaseData<T> data)
@@ -1085,7 +1139,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                otherCollection = GetOrSeedOtherCollection(otherCollection);
+                otherCollection = GetOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
@@ -1099,7 +1153,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                otherCollection = GetOrSeedOtherCollection(otherCollection);
+                otherCollection = GetOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
@@ -1113,7 +1167,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                otherCollection = GetOrSeedOtherCollection(otherCollection);
+                otherCollection = GetOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
@@ -1127,7 +1181,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                var result = target.IsProperSubsetOf(GetOrSeedOtherCollection(otherCollection));
+                var result = target.IsProperSubsetOf(GetOtherCollection(otherCollection));
 
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSubsetOf)));
             }
@@ -1136,7 +1190,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                var result = target.IsProperSupersetOf(GetOrSeedOtherCollection(otherCollection));
+                var result = target.IsProperSupersetOf(GetOtherCollection(otherCollection));
 
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSupersetOf)));
             }
@@ -1145,7 +1199,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                var result = target.IsSubsetOf(GetOrSeedOtherCollection(otherCollection));
+                var result = target.IsSubsetOf(GetOtherCollection(otherCollection));
 
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSubsetOf)));
             }
@@ -1154,7 +1208,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                var result = target.IsSupersetOf(GetOrSeedOtherCollection(otherCollection));
+                var result = target.IsSupersetOf(GetOtherCollection(otherCollection));
 
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSupersetOf)));
             }
@@ -1163,7 +1217,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                var result = target.Overlaps(GetOrSeedOtherCollection(otherCollection));
+                var result = target.Overlaps(GetOtherCollection(otherCollection));
 
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.Overlaps)));
             }
@@ -1172,7 +1226,7 @@ namespace Realms.Tests.Database
             {
                 Seed(target);
 
-                otherCollection = GetOrSeedOtherCollection(otherCollection);
+                otherCollection = GetOtherCollection(otherCollection);
 
                 WriteIfNecessary(target, () =>
                 {
@@ -1208,17 +1262,7 @@ namespace Realms.Tests.Database
                 return reference;
             }
 
-            private ICollection<T> GetOrSeedOtherCollection(ICollection<T> target)
-            {
-                if (target == null)
-                {
-                    return OtherCollection;
-                }
-
-                Seed(target, OtherCollection);
-
-                return target;
-            }
+            private ICollection<T> GetOtherCollection(ICollection<T> target) => target ?? OtherCollection;
 
             private static void WriteIfNecessary(IEnumerable<T> collection, Action writeAction)
             {

@@ -111,6 +111,8 @@ REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnCont
 
         return std::make_unique<ThreadScheduler>();
     });
+
+    realm::binding::s_can_call_managed = true;
 }
 
 REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr, bool execute_func)
