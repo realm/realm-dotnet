@@ -634,13 +634,30 @@ exports.tryGetHash = tryGetHash;
 // Can throw exceptions.
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
-        const hashes = [];
+        let hashes = [];
         for (const path of paths) {
-            const hash = yield folderHash.hashElement(path, hashOptions);
-            hashes.push(hash.hash);
+            const pathHash = recursiveHashFolders(yield folderHash.hashElement(path, hashOptions));
+            hashes = hashes.concat(pathHash);
         }
         return hashes.join("");
     });
+}
+/** @internal */
+/**
+ * Recursively parse all nodes from the root to the children returning a flattened list of hashes of all nodes
+ */
+function recursiveHashFolders(hashNode) {
+    let hashes = [];
+    if (hashNode === undefined) {
+        return hashes;
+    }
+    hashes.push(hashNode.hash);
+    if (hashNode.children !== undefined) {
+        for (const child of hashNode.children) {
+            hashes = hashes.concat(recursiveHashFolders(child));
+        }
+    }
+    return hashes;
 }
 //# sourceMappingURL=common.js.map
 

@@ -45,10 +45,30 @@ async function hashFolders(
   paths: string[],
   hashOptions?: hashOptions
 ): Promise<string> {
-  const hashes: string[] = [];
+  let hashes: string[] = [];
   for (const path of paths) {
-    const hash = await folderHash.hashElement(path, hashOptions);
-    hashes.push(hash.hash);
+    const pathHash = recursiveHashFolders(
+      await folderHash.hashElement(path, hashOptions)
+    );
+    hashes = hashes.concat(pathHash);
   }
   return hashes.join("");
+}
+
+/** @internal */
+// Recursively parse all nodes from the root to the children returning a flattened list of hashes of all nodes
+function recursiveHashFolders(hashNode: folderHash.HashElementNode): string[] {
+  let hashes: string[] = [];
+
+  if (hashNode === undefined) {
+    return hashes;
+  }
+  hashes.push(hashNode.hash);
+
+  if (hashNode.children !== undefined) {
+    for (const child of hashNode.children) {
+      hashes = hashes.concat(recursiveHashFolders(child));
+    }
+  }
+  return hashes;
 }

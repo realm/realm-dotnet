@@ -1,16 +1,21 @@
 import { assert } from "chai";
 import "mocha";
-import { suite, test, timeout } from "@testdeck/mocha";
-import * as utils from "../src/utils/common";
+import { suite, test } from "@testdeck/mocha";
 import * as path from "path";
+import * as fs from "fs-extra";
+import * as utils from "../src/utils/common";
 
 @suite
 class CommonUtils {
   @test
-  @timeout(3500)
-  async VerifyConsistentHashing() {
+  async VerifyConsistentHashing(): Promise<void> {
     const pwd = __dirname;
-    const oneUp = path.resolve(path.join(pwd, "../"));
+    const tempFolder = path.join(pwd, "tempFolder");
+
+    if (!(await fs.pathExists(tempFolder))) {
+      fs.mkdir(tempFolder);
+      await fs.writeFile(path.join(tempFolder, "testFile"), "junkContent");
+    }
 
     const hashMap = new Map<string, string>();
     let hash = await utils.tryGetHash([pwd]);
@@ -19,11 +24,12 @@ class CommonUtils {
     } else {
       assert.fail(`It was impossible to calculate the hash for ${pwd}`);
     }
-    hash = await utils.tryGetHash([oneUp]);
+    hash = await utils.tryGetHash([tempFolder]);
     if (hash !== undefined) {
-      hashMap.set(hash, oneUp);
+      hashMap.set(hash, tempFolder);
     } else {
-      assert.fail(`It was impossible to calculate the hash for ${oneUp}`);
+      await this.CleanUp(tempFolder);
+      assert.fail(`It was impossible to calculate the hash for ${tempFolder}`);
     }
 
     // recalculate to verify consistency
@@ -31,18 +37,27 @@ class CommonUtils {
     if (hash !== undefined) {
       assert.equal(hashMap.get(hash), pwd);
     } else {
+      await this.CleanUp(tempFolder);
       assert.fail(`It was impossible to re-calculate the hash for ${pwd}`);
     }
-    hash = await utils.tryGetHash([oneUp]);
+    hash = await utils.tryGetHash([tempFolder]);
     if (hash !== undefined) {
-      assert.equal(hashMap.get(hash), oneUp);
+      assert.equal(hashMap.get(hash), tempFolder);
     } else {
-      assert.fail(`It was impossible to re-calculate the hash for ${oneUp}`);
+      await this.CleanUp(tempFolder);
+      assert.fail(
+        `It was impossible to re-calculate the hash for ${tempFolder}`
+      );
     }
+    await this.CleanUp(tempFolder);
+  }
+
+  async CleanUp(tempFolderPath: string): Promise<void> {
+    await fs.remove(tempFolderPath);
   }
 
   @test
-  async VerifyHashPrefix() {
+  async VerifyHashPrefix(): Promise<void> {
     const pwd = __dirname;
     let hash = await utils.tryGetHash([pwd]);
     assert.isTrue(hash?.startsWith(`cache-${process.platform}-`));
