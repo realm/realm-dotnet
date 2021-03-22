@@ -19,3 +19,18 @@ jobs:
           ./wrappers/build-macos.sh
         cachePaths: |
           ./wrappers
+  build-wrappers-ios:
+    runs-on: macos-latest
+    name: Build iOS wrappers
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Build wrappers
+      uses: ./.github/actions/build_cache_executor
+      with:
+        cmds: |
+          ./wrappers/build-ios.sh --configuration=Release
+        cachePaths: |
+          ./wrappers
