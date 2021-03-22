@@ -88,7 +88,7 @@ export async function actionCore(
     }
   } else {
     oss.info(
-      `A build was found in cache for hashKey ${hashKey} with cache hit key ${cacheHit}\nskipping building...`
+      `A build was found in cache for hashKey ${hashKey}\nskipping building...`
     );
   }
 
