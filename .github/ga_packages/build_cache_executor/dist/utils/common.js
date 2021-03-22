@@ -33,7 +33,7 @@ const folderHash = __importStar(require("folder-hash"));
 const crypto = __importStar(require("crypto"));
 /** @internal */
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant hashPrefix if supplied, otherwise with current the OS platform.
+// The final hash is prepend with a constant hashPrefix if supplied, otherwise with the "cache-(current OS platform)-".
 function tryGetHash(paths, oss, hashPrefix, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -49,7 +49,7 @@ function tryGetHash(paths, oss, hashPrefix, hashOptions) {
 }
 exports.tryGetHash = tryGetHash;
 /** @internal */
-// Calculates an array of hashes from all the paths (followingrecursively from
+// Calculates an array of hashes from all the paths (following recursively all children) and returns 1 string that results from the joined elements of the arrar.
 // Can throw exceptions.
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -62,9 +62,7 @@ function hashFolders(paths, hashOptions) {
     });
 }
 /** @internal */
-/**
- * Recursively parse all nodes from the root to the children returning a flattened list of hashes of all nodes
- */
+// Recursively parses all hash-nodes from the root to the children returning a flattened list of hashes of all nodes.
 function recursiveHashFolders(hashNode) {
     let hashes = [];
     if (hashNode === undefined) {

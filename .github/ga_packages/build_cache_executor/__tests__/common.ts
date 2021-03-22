@@ -61,7 +61,7 @@ class CommonUtils {
   async VerifyHashPrefix(): Promise<void> {
     const pwd = __dirname;
     let hash = await utils.tryGetHash([pwd]);
-    
+
     // check against default prefix
     assert.isTrue(hash?.startsWith(`cache-${process.platform}-`));
 

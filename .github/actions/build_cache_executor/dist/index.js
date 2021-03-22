@@ -504,7 +504,7 @@ const input = __importStar(__nccwpck_require__(1774));
  * @param cmds New line separated cmds to build
  * @param oss Output stream where to print the messages
  * @param hashPrefix Optional prefix added in front of the hash that is going to be used as key in the cache dictionary
- * @param hashOptions Optional wxtra options for the default hash function
+ * @param hashOptions Optional extra options for the hash function, be it the default of the supplied custom
  * @param hashFunc Optional custom hash function if the default doesn't fullfil the user's needs
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
@@ -565,7 +565,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
         }
         else {
-            oss.info(`A build was found in cache for hashKey ${hashKey} with cache hit key ${cacheHit}\nskipping building...`);
+            oss.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
         }
         return hashKey;
     });
@@ -614,7 +614,7 @@ const folderHash = __importStar(__nccwpck_require__(63));
 const crypto = __importStar(__nccwpck_require__(6417));
 /** @internal */
 // Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant hashPrefix if supplied, otherwise with current the OS platform.
+// The final hash is prepend with a constant hashPrefix if supplied, otherwise with the "cache-(current OS platform)-".
 function tryGetHash(paths, oss, hashPrefix, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -630,7 +630,7 @@ function tryGetHash(paths, oss, hashPrefix, hashOptions) {
 }
 exports.tryGetHash = tryGetHash;
 /** @internal */
-// Calculates an array of hashes from all the paths (followingrecursively from
+// Calculates an array of hashes from all the paths (following recursively all children) and returns 1 string that results from the joined elements of the arrar.
 // Can throw exceptions.
 function hashFolders(paths, hashOptions) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -643,9 +643,7 @@ function hashFolders(paths, hashOptions) {
     });
 }
 /** @internal */
-/**
- * Recursively parse all nodes from the root to the children returning a flattened list of hashes of all nodes
- */
+// Recursively parses all hash-nodes from the root to the children returning a flattened list of hashes of all nodes.
 function recursiveHashFolders(hashNode) {
     let hashes = [];
     if (hashNode === undefined) {

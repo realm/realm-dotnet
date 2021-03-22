@@ -40,7 +40,7 @@ const input = __importStar(require("./utils/input_parsing"));
  * @param cmds New line separated cmds to build
  * @param oss Output stream where to print the messages
  * @param hashPrefix Optional prefix added in front of the hash that is going to be used as key in the cache dictionary
- * @param hashOptions Optional wxtra options for the default hash function
+ * @param hashOptions Optional extra options for the hash function, be it the default of the supplied custom
  * @param hashFunc Optional custom hash function if the default doesn't fullfil the user's needs
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
@@ -101,7 +101,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
         }
         else {
-            oss.info(`A build was found in cache for hashKey ${hashKey} with cache hit key ${cacheHit}\nskipping building...`);
+            oss.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
         }
         return hashKey;
     });
