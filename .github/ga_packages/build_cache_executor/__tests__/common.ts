@@ -66,9 +66,7 @@ class HashingFunctionalities {
             hashMap.set(hash, tempFolder);
         } else {
             await this.cleanUp(tempFolder);
-            assert.fail(
-                `It was impossible to calculate the hash for ${tempFolder}`
-            );
+            assert.fail(`It was impossible to calculate the hash for ${tempFolder}`);
         }
 
         // recalculate to verify consistency
@@ -77,18 +75,14 @@ class HashingFunctionalities {
             assert.equal(hashMap.get(hash), pwd);
         } else {
             await this.cleanUp(tempFolder);
-            assert.fail(
-                `It was impossible to re-calculate the hash for ${pwd}`
-            );
+            assert.fail(`It was impossible to re-calculate the hash for ${pwd}`);
         }
         hash = await utils.getHash([tempFolder]);
         if (hash !== undefined) {
             assert.equal(hashMap.get(hash), tempFolder);
         } else {
             await this.cleanUp(tempFolder);
-            assert.fail(
-                `It was impossible to re-calculate the hash for ${tempFolder}`
-            );
+            assert.fail(`It was impossible to re-calculate the hash for ${tempFolder}`);
         }
         await this.cleanUp(tempFolder);
     }
@@ -102,9 +96,7 @@ class HashingFunctionalities {
         const defaultPrefix = `cache-${process.platform}-`;
         assert.isTrue(hash?.startsWith(defaultPrefix));
 
-        const justHash = hash?.slice(
-            hash?.indexOf(defaultPrefix) + defaultPrefix?.length
-        );
+        const justHash = hash?.slice(hash?.indexOf(defaultPrefix) + defaultPrefix?.length);
 
         let hashPrefix = "prefix";
         hash = await utils.getHash([tempFolder], undefined, hashPrefix);
@@ -122,10 +114,7 @@ class HashingFunctionalities {
 
         if (!(await fs.pathExists(tempFolder))) {
             fs.mkdir(tempFolder);
-            await fs.writeFile(
-                path.join(tempFolder, "testFile"),
-                "junkContent"
-            );
+            await fs.writeFile(path.join(tempFolder, "testFile"), "junkContent");
         }
         return tempFolder;
     }

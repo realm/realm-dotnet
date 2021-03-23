@@ -33,16 +33,9 @@ export async function actionCore(
         hashKey =
             hashFunc !== undefined
                 ? await hashFunc(parsedPaths, oss, hashPrefix, hashOptions)
-                : await utils.getHash(
-                      parsedPaths,
-                      oss,
-                      hashPrefix,
-                      hashOptions
-                  );
+                : await utils.getHash(parsedPaths, oss, hashPrefix, hashOptions);
     } catch (err) {
-        throw new Error(
-            `While calculating the hash something went terribly wrong: ${err.message}`
-        );
+        throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
     }
 
     let cacheHit: string | undefined = undefined;
@@ -51,9 +44,7 @@ export async function actionCore(
         try {
             cacheHit = await cache.restoreCache(parsedPaths, hashKey);
         } catch (err) {
-            oss.error(
-                `Impossible to retrieve cache: ${err}\n The build will start momentarily...`
-            );
+            oss.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
         }
     } else {
         throw new Error(
@@ -68,15 +59,11 @@ export async function actionCore(
             for (const cmd of parsedCmds) {
                 const returnCode = await exec.exec(cmd);
                 if (returnCode !== 0) {
-                    throw Error(
-                        `Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`
-                    );
+                    throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
                 }
             }
         } catch (err) {
-            throw new Error(
-                `Something went terribly wrong while executing a shell command: ${err.message}`
-            );
+            throw new Error(`Something went terribly wrong while executing a shell command: ${err.message}`);
         }
 
         if (hashKey !== undefined) {
@@ -84,9 +71,7 @@ export async function actionCore(
                 const cacheId = await cache.saveCache(parsedPaths, hashKey);
                 oss.info(`Cache properly created with id ${cacheId}`);
             } catch (error) {
-                throw new Error(
-                    `The cache could not be saved: ${error.message}`
-                );
+                throw new Error(`The cache could not be saved: ${error.message}`);
             }
         } else {
             throw new Error(
@@ -94,9 +79,7 @@ export async function actionCore(
             );
         }
     } else {
-        oss.info(
-            `A build was found in cache for hashKey ${hashKey}\nskipping building...`
-        );
+        oss.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
     }
 
     return hashKey;

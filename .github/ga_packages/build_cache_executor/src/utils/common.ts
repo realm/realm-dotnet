@@ -33,27 +33,20 @@ export async function getHash(
     }
     const prefix = hashPrefix ?? `cache-${process.platform}-`;
     const folderHash = await hashFolders(paths, hashOptions);
-    return prefix.concat(
-        crypto.createHash("sha256").update(folderHash).digest("base64")
-    );
+    return prefix.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
 }
 
 /** @internal */
 // Calculates an array of hashes from all the paths (following recursively all children) and returns 1 string that results from the joined elements of the arrar.
 // Can throw exceptions.
-async function hashFolders(
-    paths: string[],
-    hashOptions?: hashOptions
-): Promise<string> {
+async function hashFolders(paths: string[], hashOptions?: hashOptions): Promise<string> {
     let hashes: string[] = [];
     for (const path of paths) {
         if (!(await fs.pathExists(path))) {
             throw new Error(`${path} path doesn't exist`);
         }
 
-        const pathHash = recursiveHashFolders(
-            await folderHash.hashElement(path, hashOptions)
-        );
+        const pathHash = recursiveHashFolders(await folderHash.hashElement(path, hashOptions));
         hashes = hashes.concat(pathHash);
     }
     return hashes.join("");
