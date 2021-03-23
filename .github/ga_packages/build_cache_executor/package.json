@@ -2,7 +2,8 @@
   "name": "@realm/build_cache_executor",
   "version": "1.0.0",
   "description": "Typescript functionalities to build and cache the artifacts",
-  "main": "./lib/build_cacje_executor.js",
+  "main": "dist/build_cache_executor.js",
+  "typings": "dist/build_cache_executor.d.ts",
   "directories": {
     "test": "__tests__"
   },
@@ -13,7 +14,7 @@
     "lint-fix": "eslint . --ext .ts --fix"
   },
   "author": "Realm Inc.",
-  "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",
+  "license": "Apache License, Version 2.0",
   "dependencies": {
     "@actions/cache": "^1.0.6",
     "@actions/core": "^1.2.6",
@@ -37,6 +38,7 @@
     "mocha": "^8.3.1",
     "prettier": "^2.2.1",
     "sinon": "^9.2.4",
-    "ts-node": "^9.1.1"
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
   }
 }
