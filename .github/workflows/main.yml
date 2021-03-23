@@ -36,32 +36,27 @@ jobs:
         cachePaths: |
           ./wrappers
         hashPrefix: cache-ios-
-  # build-wrappers-windows:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: Get CMake
-  #       # If there is a cache hit, no need to do any of the following steps. Unfortunately there is no way to cancel the rest of the job.
-  #       if: steps.wrapper-cache.outputs.cache-hit != 'true'
-  #       uses: lukka/get-cmake@latest
-  #     - name: Restore from cache and run vcpkg
-  #       if: steps.wrapper-cache.outputs.cache-hit != 'true'
-  #       uses: lukka/run-vcpkg@v5
-  #       with:
-  #         # Contains the list of packages and the triplet. If we need more than one triplet, we need to pass it with command line arguments
-  #         vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
-  #         vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
-  #         # If the cache key is the same, it does not execute
-  #         appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
-  #       env:
-  #         vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
-  #     - name: Build wrappers
-  #       uses: ./.github/actions/build_cache_executor
-  #       with:
-  #         cmds: |
-  #           .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
-  #         cachePaths: |
-  #           .\wrappers
+  build-wrappers-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+      - name: Restore from cache and run vcpkg
+        uses: lukka/run-vcpkg@v5
+        with:
+          vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
+          vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
+          appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
+        env:
+          vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
+      - name: Build wrappers
+        uses: ./.github/actions/build_cache_executor
+        with:
+          cmds: |
+            .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+          cachePaths: |
+            .\wrappers
