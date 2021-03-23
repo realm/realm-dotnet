@@ -38,6 +38,7 @@ jobs:
         hashPrefix: cache-ios-
   build-wrappers-windows:
     runs-on: windows-latest
+    name: Build Windows wrappers
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -54,9 +55,10 @@ jobs:
         env:
           vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
       - name: Build wrappers
-        uses: ./.github/actions/build_cache_executor
+        uses: .\.github\actions\build_cache_executor
         with:
           cmds: |
             .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
           cachePaths: |
             .\wrappers
+          hashPrefix: cache-win-
