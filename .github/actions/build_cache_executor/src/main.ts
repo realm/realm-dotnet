@@ -20,7 +20,7 @@ async function run(): Promise<void> {
     core.setOutput("hashKey", cacheKey);
   } catch (error) {
     core.setFailed(
-      `Something went terribly wrong while retrieving the cache and or building: ${error.message}`
+      `Hard failure: ${error.message}`
     );
   }
 }
