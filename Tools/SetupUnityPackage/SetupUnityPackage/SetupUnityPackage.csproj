@@ -14,7 +14,7 @@
     <Folder Include="MetaFiles\Dependencies\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UnityUtils\UnityUtils.csproj" />
+    <ProjectReference Include="..\UnityWeaver\UnityWeaver.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="MetaFiles\Dependencies.meta">

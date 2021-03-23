@@ -13,17 +13,17 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using UnityUtils;
+using RealmWeaver;
 
 namespace SetupUnityPackage
 {
     public class Options
     {
-        [Option("path", Required = false, HelpText = "Use a local NuGet package.")]
+        [Option("path", Required = true, HelpText = "Path to the Realm.nupkg to use.")]
         public string Path { get; set; }
 
-        [Option("nuget-version", Required = false, HelpText = "Specify an explicit version of the package to use.")]
-        public string Version { get; set; }
+        [Option("utils-path", Required = true, HelpText = "Path to the Realm.UnityUtils.nupkg to use.")]
+        public string UtilsPath { get; set; }
 
         [Option("include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
         public bool IncludeDependencies { get; set; }
@@ -38,6 +38,7 @@ namespace SetupUnityPackage
     public static class Program
     {
         private const string RealmPackageId = "Realm";
+        private const string UnityUtilsPackageId = "Realm.UnityUtils";
         private const string RealmPackagaName = "realm.unity";
         private const string RealmBundlePackageName = "realm.unity.bundle";
 
@@ -61,6 +62,10 @@ namespace SetupUnityPackage
                 { "runtimes/win10-arm/nativeassets/uap10.0/realm-wrappers.dll", "UWP/ARM/realm-wrappers.dll" },
                 { "runtimes/win10-x64/nativeassets/uap10.0/realm-wrappers.dll", "UWP/x86_64/realm-wrappers.dll" },
                 { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "UWP/x86/realm-wrappers.dll" },
+            },
+            [UnityUtilsPackageId] = new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/Realm.UnityUtils.dll", "Realm.UnityUtils.dll" },
             },
             ["MongoDB.Bson"] = new Dictionary<string, string>
             {
@@ -96,12 +101,6 @@ namespace SetupUnityPackage
 
         private static async Task Run(Options opts)
         {
-            if (opts.Path == null)
-            {
-                Console.WriteLine("Local path not specified, using NuGet to download package.");
-                opts.Path = await DownloadPackage(RealmPackageId, opts.Version);
-            }
-
             Console.WriteLine("Including Realm binaries");
 
             var (version, realmDependencies) = await CopyBinaries(opts.Path, _packageMaps[RealmPackageId]);
@@ -109,10 +108,13 @@ namespace SetupUnityPackage
             Console.WriteLine($"Included {_packageMaps[RealmPackageId].Count} files from {RealmPackageId}@{version}");
 
             Console.WriteLine("Inluding UnityUtils");
+            var (utilsVersion, _) = await CopyBinaries(opts.UtilsPath, _packageMaps[UnityUtilsPackageId]);
+            Console.WriteLine($"Included {_packageMaps[UnityUtilsPackageId].Count} files from {UnityUtilsPackageId}@{utilsVersion}");
 
-            var targetPath = Path.Combine(GetUnityPackagePath(), "UnityUtils.dll");
-            File.Copy(GetUnityUtilsPath(), targetPath, overwrite: true);
-            Console.WriteLine($"Included 1 file from UnityUtils@{typeof(FileHelper).Assembly.GetName().Version.ToString(3)}");
+            Console.WriteLine("Inluding UnityWeaver");
+            var unityWeaverTargetPath = Path.Combine(GetUnityEditorPath(), "UnityWeaver.dll");
+            File.Copy(GetUnityWeaverPath(), unityWeaverTargetPath, overwrite: true);
+            Console.WriteLine($"Included 1 file from UnityWeaver@{typeof(UnityWeaver).Assembly.GetName().Version.ToString(3)}");
 
             if (opts.IncludeDependencies)
             {
@@ -233,7 +235,12 @@ namespace SetupUnityPackage
                 foreach (var kvp in fileMap)
                 {
                     var targetPath = Path.Combine(unityPath, kvp.Value);
-                    File.Delete(targetPath);
+
+                    if (File.Exists(targetPath))
+                    {
+                        File.Delete(targetPath);
+                    }
+
                     packageReader.ExtractFile(kvp.Key, targetPath, NullLogger.Instance);
                 }
 
@@ -252,6 +259,8 @@ namespace SetupUnityPackage
 
         private static string GetUnityPackagePath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Runtime");
 
+        private static string GetUnityEditorPath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Editor");
+
         private static string GetUnityUtilsPath()
         {
 #if DEBUG
@@ -261,6 +270,17 @@ namespace SetupUnityPackage
 #endif
 
             return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityUtils", "bin", targetFolder, "netstandard2.0", "UnityUtils.dll");
+        }
+
+        private static string GetUnityWeaverPath()
+        {
+#if DEBUG
+            var targetFolder = "Debug";
+#else
+            var targetFolder = "Release";
+#endif
+
+            return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityWeaver", "bin", targetFolder, "netstandard2.0", "UnityWeaver.dll");
         }
 
         private static void UpdatePackageJson(bool includesDependencies)

@@ -53,7 +53,7 @@ namespace Realms
                 EnsureKeyNotNull(key);
                 var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
-                if (_isEmbedded)
+                if (_isEmbedded && realmValue.Type != RealmValueType.Null)
                 {
                     Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.SetEmbedded(key));
                     return;
@@ -95,7 +95,7 @@ namespace Realms
             EnsureKeyNotNull(key);
             var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
-            if (_isEmbedded)
+            if (_isEmbedded && realmValue.Type != RealmValueType.Null)
             {
                 Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.AddEmbedded(key));
                 return;

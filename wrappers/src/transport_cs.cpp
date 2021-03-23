@@ -29,12 +29,6 @@ using namespace realm::util;
 using namespace realm::app;
 using namespace realm::binding;
 
-namespace realm {
-namespace binding {
-    GenericNetworkTransport::NetworkTransportFactory s_transport_factory;
-}
-}
-
 struct HttpClientRequest {
     HttpMethod method;
 
@@ -50,8 +44,15 @@ struct HttpClientRequest {
     size_t body_len;
 };
 
-using ExecuteRequest = void(HttpClientRequest request, void* callback);
+using ExecuteRequestT = void(HttpClientRequest request, void* callback);
 using ResponseFunction = std::function<void(const Response)>;
+
+namespace realm {
+namespace binding {
+GenericNetworkTransport::NetworkTransportFactory s_transport_factory;
+std::function<ExecuteRequestT> s_execute_request;
+}
+}
 
 struct HttpClientResponse {
     int http_status_code;
@@ -63,10 +64,6 @@ struct HttpClientResponse {
 
 struct HttpClientTransport : public GenericNetworkTransport {
 public:
-    HttpClientTransport(ExecuteRequest* execute)
-        : m_execute(execute)
-    { }
-
     void send_request_to_server(const Request request, ResponseFunction completionBlock) override {
         std::vector<std::pair<char*, char*>> headers;
         for (auto& kvp : request.headers) {
@@ -84,17 +81,16 @@ public:
             request.body.length()
         };
 
-        m_execute(std::move(client_request), new ResponseFunction(completionBlock));
+        s_execute_request(std::move(client_request), new ResponseFunction(completionBlock));
     }
-private:
-    ExecuteRequest* m_execute;
 };
 
 extern "C" {
-    REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequest* execute)
+    REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
-        s_transport_factory = [=]() -> std::unique_ptr<HttpClientTransport> {
-            return std::make_unique<HttpClientTransport>(execute);
+        s_execute_request = wrap_managed_callback(execute);
+        s_transport_factory = []() -> std::unique_ptr<HttpClientTransport> {
+            return std::make_unique<HttpClientTransport>();
         };
     }
 

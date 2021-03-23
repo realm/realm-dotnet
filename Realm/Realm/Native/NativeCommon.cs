@@ -21,37 +21,14 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using Realms.Native;
 
 namespace Realms
 {
     internal static class NativeCommon
     {
-#if DEBUG
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public unsafe delegate void DebugLoggerCallback(byte* utf8String, IntPtr stringLen);
-
-        [MonoPInvokeCallback(typeof(DebugLoggerCallback))]
-        private static unsafe void DebugLogger(byte* utf8String, IntPtr stringLen)
-        {
-            var message = Encoding.UTF8.GetString(utf8String, (int)stringLen);
-            Console.WriteLine(message);
-        }
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_debug_logger", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void set_debug_logger(DebugLoggerCallback callback);
-#endif  // DEBUG
-
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe void delete_pointer(IntPtr pointer);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void reset_for_testing();
 
         private static int _isInitialized;
 
@@ -72,14 +49,6 @@ namespace Realms
                     // This is the path in the Unity package - it is what the Editor uses.
                     AddWindowsWrappersToPath("Windows", isUnityTarget: true);
                 }
-
-#if DEBUG
-                DebugLoggerCallback logger = DebugLogger;
-                GCHandle.Alloc(logger);
-                set_debug_logger(logger);
-#endif
-
-                SynchronizationContextScheduler.Install();
             }
         }
 

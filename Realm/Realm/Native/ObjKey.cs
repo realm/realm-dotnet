@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+using System;
+using System.Runtime.InteropServices;
 
-[assembly: Realms.Explicit]
-[assembly: InternalsVisibleTo("Realm.Tests")]
-[assembly: InternalsVisibleTo("Realm.UnityUtils")]
-[assembly: InternalsVisibleTo("PerformanceTests")]
+namespace Realms.Native
+{
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ObjKey : IEquatable<ObjKey>
+    {
+        private Int64 value;
+
+        public bool Equals(ObjKey other) => value.Equals(other.value);
+
+        public override bool Equals(object obj) => obj is ObjKey other && Equals(other);
+
+        public override int GetHashCode() => value.GetHashCode();
+
+        public static bool operator ==(ObjKey left, ObjKey right) => left.value == right.value;
+
+        public static bool operator !=(ObjKey left, ObjKey right) => left.value != right.value;
+    }
+}

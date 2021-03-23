@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Logging;
 
 namespace Realms.Sync.Native
 {
@@ -107,6 +108,6 @@ namespace Realms.Sync.Native
 
         internal LogLevel log_level;
 
-        internal IntPtr managed_log_callback;
+        internal IntPtr managed_logger;
     }
 }

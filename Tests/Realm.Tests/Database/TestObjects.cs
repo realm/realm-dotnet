@@ -210,7 +210,10 @@ namespace Realms.Tests
 
         public ISet<string> NullableStringSet { get; }
 
+        [Required]
         public ISet<byte[]> ByteArraySet { get; }
+
+        public ISet<byte[]> NullableByteArraySet { get; }
 
         public ISet<DateTimeOffset> DateTimeOffsetSet { get; }
 
@@ -253,6 +256,8 @@ namespace Realms.Tests
         public ISet<RealmInteger<int>?> NullableInt32CounterSet { get; }
 
         public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
+
+        public ISet<IntPropertyObject> ObjectSet { get; }
     }
 
     public class DictionariesObject : RealmObject
@@ -589,11 +594,15 @@ namespace Realms.Tests
     public class IntPropertyObject : RealmObject
     {
         public int Int { get; set; }
+
+        public override string ToString() => $"Int: {Int}";
     }
 
     public class EmbeddedIntPropertyObject : EmbeddedObject
     {
         public int Int { get; set; }
+
+        public override string ToString() => $"Int: {Int}";
     }
 
     public class RecursiveBacklinksObject : RealmObject

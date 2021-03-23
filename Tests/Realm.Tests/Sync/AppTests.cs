@@ -19,6 +19,7 @@
 using System;
 using System.Text;
 using NUnit.Framework;
+using Realms.Logging;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -89,6 +90,36 @@ namespace Realms.Tests.Sync
 
                 Assert.That(log, Does.Contain($"[{logLevel}]"));
                 Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
+            });
+        }
+
+        [TestCase(LogLevel.Debug)]
+        [TestCase(LogLevel.Info)]
+        public void RealmConfiguration_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                Logger.LogLevel = logLevel;
+                var logger = new Logger.InMemoryLogger();
+                Logger.Default = logger;
+
+                var appConfig = SyncTestHelpers.GetAppConfig();
+
+                var app = CreateApp(appConfig);
+
+                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                using var realm = await GetRealmAsync(config);
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
+                });
+
+                await WaitForUploadAsync(realm);
+
+                var log = logger.GetLog();
+
+                Assert.That(log, Does.Contain($"{logLevel}:"));
+                Assert.That(log, Does.Not.Contain($"{logLevel - 1}:"));
             });
         }
     }

@@ -25,8 +25,6 @@ using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
-#pragma warning disable CS0618 // Don't complain about SimulateProgress
-
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {

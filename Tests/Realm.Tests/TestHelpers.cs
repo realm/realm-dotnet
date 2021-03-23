@@ -39,10 +39,21 @@ namespace Realms.Tests
     {
         public static readonly Random Random = new Random();
 
-        public static byte[] GetBytes(int size)
+        public static byte[] GetBytes(int size, byte? value = null)
         {
             var result = new byte[size];
-            Random.NextBytes(result);
+            if (value == null)
+            {
+                Random.NextBytes(result);
+            }
+            else
+            {
+                for (var i = 0; i < size; i++)
+                {
+                    result[i] = value.Value;
+                }
+            }
+
             return result;
         }
 
@@ -266,6 +277,23 @@ namespace Realms.Tests
             transform.Load(transformFile);
             using var writer = new XmlTextWriter(resultPath, null);
             transform.Transform(xpathDocument, null, writer);
+        }
+
+        public static string ByteArrayToTestDescription<T>(T arr)
+        {
+            var byteArr = (byte[])(object)arr;
+
+            if (byteArr == null)
+            {
+                return "<null>";
+            }
+
+            if (byteArr.Length == 0)
+            {
+                return "<empty>";
+            }
+
+            return $"<{byteArr[0]}>";
         }
     }
 }

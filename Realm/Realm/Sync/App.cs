@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Helpers;
+using Realms.Logging;
 
 namespace Realms.Sync
 {
@@ -159,14 +160,20 @@ namespace Realms.Sync
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
-                log_level = config.LogLevel,
+#pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
+                log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
             };
 
             if (config.CustomLogger != null)
             {
-                // TODO: should we free this eventually?
-                var logHandle = GCHandle.Alloc(config.CustomLogger);
-                nativeConfig.managed_log_callback = GCHandle.ToIntPtr(logHandle);
+                var logger = Logger.Function((level, message) => config.CustomLogger(message, level));
+                logger._logLevel = nativeConfig.log_level;
+                nativeConfig.managed_logger = GCHandle.ToIntPtr(logger.GCHandle);
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+            else if (Logger.Default != null)
+            {
+                nativeConfig.managed_logger = GCHandle.ToIntPtr(Logger.Default.GCHandle);
             }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);

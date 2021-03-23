@@ -18,6 +18,7 @@
 
 using System;
 using Realms.Helpers;
+using Realms.Logging;
 
 namespace Realms.Sync
 {
@@ -113,16 +114,18 @@ namespace Realms.Sync
         /// Gets or sets a custom log function that will be invoked for each log message emitted by sync.
         /// </summary>
         /// <remarks>
-        /// The first argument of the action is the log message itself, while the second one is the <see cref="Sync.LogLevel"/>
+        /// The first argument of the action is the log message itself, while the second one is the <see cref="LogLevel"/>
         /// at which the log message was emitted.
         /// </remarks>
         /// <value>The custom logger.</value>
+        [Obsolete("Configure the global RealmConfiguration.Logger instead")]
         public Action<string, LogLevel> CustomLogger { get; set; }
 
         /// <summary>
         /// Gets or sets the log level for sync operations.
         /// </summary>
         /// <value>The sync log level.</value>
+        [Obsolete("Configure the global RealmConfiguration.LogLevel instead")]
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
 
         /// <summary>

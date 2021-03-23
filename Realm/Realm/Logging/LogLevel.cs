@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Sync
+namespace Realms.Logging
 {
     /// <summary>
     /// Specifies the criticality level above which messages will be logged

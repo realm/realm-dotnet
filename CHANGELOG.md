@@ -27,6 +27,14 @@
   ```
 * Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
+* Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
+`Logger.Default`. This replaces `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` which will be removed in a future release. The built-in implementations are:
+  * `Console` - uses the `System.Console` for most projects and `UnityEngine.Debug` for Unity projects.
+  * `Null` - ignores all messages.
+  * `Function` - proxies calls to a supplied function.
+
+  Custom loggers can derive from the `Logger` class and provide their own implementation for the `Log` method or use `Function` and provide an `Action<string>`. (PR [#2276](https://github.com/realm/realm-dotnet/pull/2276))
+* `RealmObjectBase` now correctly overrides and implements `GetHashCode()`. (Issue [#1650](https://github.com/realm/realm-dotnet/issues/1650))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
@@ -35,6 +43,48 @@
 * Using Core 11.x.y. (it's in flux)
 * Enabled LTO builds for all platforms except Android. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
+
+## 10.1.2 (2021-03-19)
+------------------
+
+### Fixed
+* On 32bit devices you may get exception with "No such object" when upgrading to v10. (Core upgrade)
+* The notification worker thread would rerun queries after every commit rather than only commits which modified tables which could affect the query results if the table had any outgoing links to tables not used in the query. (Core upgrade)
+* Fix "Invalid ref translation entry [16045690984833335023, 78187493520]" assertion failure which could occur when using sync or multiple processes writing to a single Realm file. (Core upgrade)
+* During integration of a large amount of data from the server, you may get `"Assertion failed: !fields.has_missing_parent_update()"`. (Core upgrade)
+* Syncing large Decimal128 values will cause `"Assertion failed: cx.w[1] == 0"`. (Core upgrade)
+* Avoid race condition leading to possible hangs on windows. (Core upgrade)
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 10.5.6.
+
+## 10.1.1 (2021-02-25)
+------------------
+
+### Fixed
+* Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`) being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
+* The Realm notification listener thread could sometimes hit the assertion failure "!skip_version.version" if a write transaction was committed at a very specific time. (Core upgrade)
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 10.5.3.
 
 ## 10.1.0 (2021-02-09)
 
