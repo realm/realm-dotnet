@@ -124,7 +124,7 @@ namespace Realms.Tests.Database
             RealmValue.Create(1.5f, RealmValueType.Float),
             RealmValue.Create(2.5d, RealmValueType.Double),
             RealmValue.Create(5m, RealmValueType.Decimal128),
-            RealmValue.Create(new ObjectId("5f63e882536de46d71877979") , RealmValueType.ObjectId),
+            RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
             RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
         };
 

@@ -177,6 +177,8 @@ namespace Realms.Tests
         public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
 
         public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
+
+        public IList<RealmValue> RealmValueList { get; }
     }
 
     public class SetsObject : RealmObject

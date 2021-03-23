@@ -991,19 +991,6 @@ namespace Realms.Tests.Database
 
             tcd.Seed(rvo.RealmValueDictionary);
 
-            _realm.Write(() =>
-            {
-                rvo.TestDict.Add("t1", 1);
-                rvo.TestDict.Add("t2", 2);
-                rvo.TestDict.Add("t3", 3);
-            });
-
-            var keys1 = rvo.TestDict.Keys;
-            var keysList1 = rvo.TestDict.Keys.ToList();
-
-            var keys = rvo.RealmValueDictionary.Keys;
-            var keysList = rvo.RealmValueDictionary.Keys.ToList();
-
             tcd.AssertContains(rvo.RealmValueDictionary);
             tcd.AssertCount(rvo.RealmValueDictionary);
             tcd.AssertEquality(rvo.RealmValueDictionary);
