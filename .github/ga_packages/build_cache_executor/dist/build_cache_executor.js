@@ -56,7 +56,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             hashKey =
                 hashFunc !== undefined
                     ? yield hashFunc(parsedPaths, oss, hashPrefix, hashOptions)
-                    : yield utils.tryGetHash(parsedPaths, oss, hashPrefix, hashOptions);
+                    : yield utils.getHash(parsedPaths, oss, hashPrefix, hashOptions);
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);

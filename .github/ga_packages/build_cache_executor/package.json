@@ -19,7 +19,8 @@
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.0.4",
     "@types/folder-hash": "^3.3.0",
-    "folder-hash": "^4.0.0"
+    "folder-hash": "^4.0.0",
+    "fs-extra": "^9.1.0"
   },
   "devDependencies": {
     "@testdeck/mocha": "^0.1.2",
@@ -33,7 +34,6 @@
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "fs-extra": "^9.1.0",
     "mocha": "^8.3.1",
     "prettier": "^2.2.1",
     "sinon": "^9.2.4",

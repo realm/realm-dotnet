@@ -33,7 +33,7 @@ export async function actionCore(
     hashKey =
       hashFunc !== undefined
         ? await hashFunc(parsedPaths, oss, hashPrefix, hashOptions)
-        : await utils.tryGetHash(parsedPaths, oss, hashPrefix, hashOptions);
+        : await utils.getHash(parsedPaths, oss, hashPrefix, hashOptions);
   } catch (err) {
     throw new Error(
       `While calculating the hash something went terribly wrong: ${err.message}`

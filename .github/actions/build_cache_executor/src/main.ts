@@ -19,9 +19,7 @@ async function run(): Promise<void> {
     }
     core.setOutput("hashKey", cacheKey);
   } catch (error) {
-    core.setFailed(
-      `Hard failure: ${error.message}`
-    );
+    core.setFailed(`Hard failure: ${error.message}`);
   }
 }
 
