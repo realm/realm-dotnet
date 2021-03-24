@@ -49,7 +49,7 @@ jobs:
         uses: .\.github\actions\build_cache_executor
         with:
           cmds: |
-            .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64
+            powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64
           cachePaths: |
             .\wrappers
           hashPrefix: cache-win-
