@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
@@ -690,7 +691,7 @@ namespace Realms
                     RealmValueType.Int => AsInt64().GetHashCode(),
                     RealmValueType.Bool => AsBool().GetHashCode(),
                     RealmValueType.String => AsString().GetHashCode(),
-                    RealmValueType.Data => AsData().GetHashCode(),
+                    RealmValueType.Data => AsData().Length, //TODO Check if we can do it better...
                     RealmValueType.Date => AsDate().GetHashCode(),
                     RealmValueType.Float => AsFloat().GetHashCode(),
                     RealmValueType.Double => AsDouble().GetHashCode(),
@@ -899,7 +900,7 @@ namespace Realms
                 RealmValueType.Int => AsInt64() == other.AsInt64(),
                 RealmValueType.Bool => AsBool() == other.AsBool(),
                 RealmValueType.String => AsString() == other.AsString(),
-                RealmValueType.Data => AsData() == other.AsData(),
+                RealmValueType.Data => AsData().SequenceEqual(other.AsData()),  //TIDO check
                 RealmValueType.Date => AsDate() == other.AsDate(),
                 RealmValueType.Float => AsFloat() == other.AsFloat(),
                 RealmValueType.Double => AsDouble() == other.AsDouble(),

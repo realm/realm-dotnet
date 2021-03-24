@@ -604,7 +604,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(RealmValueTestValues))]
         public void Test_ManagedRealmValueList(RealmValue[] values)
         {
-            RunManagedTests(obj => obj.RealmValueList, values, TestHelpers.RealmValueContentEqual);
+            RunManagedTests(obj => obj.RealmValueList, values);
         }
 
         [TestCase]
@@ -863,21 +863,21 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(RealmValueTestValues))]
         public void Test_UnmanagedRealmValueList(RealmValue[] values)
         {
-            RunUnmanagedTests(obj => obj.RealmValueList, values, TestHelpers.RealmValueContentEqual);
+            RunUnmanagedTests(obj => obj.RealmValueList, values);
         }
 
         #endregion Unmanaged Tests
 
         #region Utils
 
-        private void RunManagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList, Func<T, T, bool> equalityFunc = null)
+        private void RunManagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
         {
             TestHelpers.RunAsyncTest(async () =>
             {
                 var listObject = new ListsObject();
                 var list = listGetter(listObject);
 
-                var testData = new ListTestCaseData<T>(equalityFunc, testList);
+                var testData = new ListTestCaseData<T>(testList);
                 testData.Seed(list);
 
                 _realm.Write(() => _realm.Add(listObject));
@@ -893,12 +893,12 @@ namespace Realms.Tests.Database
             }, timeout: 100000);
         }
 
-        private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList, Func<T, T, bool> equalityFunc = null)
+        private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
         {
             var listObject = new ListsObject();
             var list = listGetter(listObject);
 
-            var testData = new ListTestCaseData<T>(equalityFunc, testList);
+            var testData = new ListTestCaseData<T>(testList);
             testData.Seed(list);
 
             RunTestsCore(testData, list);
@@ -923,13 +923,10 @@ namespace Realms.Tests.Database
 
         public class ListTestCaseData<T> : TestCaseData
         {
-            private readonly Func<T, T, bool> _equalityFunc;
             private List<T> referenceList = new List<T>();
 
-            public ListTestCaseData(Func<T, T, bool> equalityFunc, params T[] listData)
+            public ListTestCaseData(params T[] listData)
             {
-                _equalityFunc = equalityFunc;
-
                 if (listData == null)
                 {
                     listData = Array.Empty<T>();
@@ -956,7 +953,7 @@ namespace Realms.Tests.Database
                 var iterator = 0;
                 foreach (var item in list)
                 {
-                    Assert.That(item, IsEqualTo(referenceList[iterator++]));
+                    Assert.That(item, Is.EqualTo(referenceList[iterator++]));
                 }
             }
 
@@ -964,7 +961,7 @@ namespace Realms.Tests.Database
             {
                 for (int i = 0; i < referenceList.Count; i++)
                 {
-                    Assert.That(list[i], IsEqualTo(referenceList[i]));
+                    Assert.That(list[i], Is.EqualTo(referenceList[i]));
                 }
 
                 Assert.That(() => list[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
@@ -973,7 +970,7 @@ namespace Realms.Tests.Database
 
             public void AssertEquality(IList<T> list)
             {
-                Assert.That(list, IsEquivalentTo(referenceList));
+                Assert.That(list, Is.EquivalentTo(referenceList));
             }
 
             public void AssertIndexOf(IList<T> list)
@@ -1048,7 +1045,7 @@ namespace Realms.Tests.Database
                 {
                     list[indexToSet] = valueToSet;
 
-                    Assert.That(list[indexToSet], IsEqualTo(valueToSet));
+                    Assert.That(list[indexToSet], Is.EqualTo(valueToSet));
                     Assert.That(() => list[-1] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
                     Assert.That(() => list[list.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
                 });
@@ -1076,7 +1073,7 @@ namespace Realms.Tests.Database
                     Assert.That(() => list.Move(from, list.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
                 });
 
-                Assert.That(list[to], IsEqualTo(referenceList[from]));
+                Assert.That(list[to], Is.EqualTo(referenceList[from]));
             }
 
             public void AssertRemove(IList<T> list)
@@ -1101,7 +1098,7 @@ namespace Realms.Tests.Database
                     Assert.That(() => list.RemoveAt(list.Count), Throws.TypeOf<ArgumentOutOfRangeException>());
                 });
 
-                Assert.That(list, IsEquivalentTo(copyReferenceList));
+                Assert.That(list, Is.EquivalentTo(copyReferenceList));
             }
 
             public void AssertRemoveAt(IList<T> list)
@@ -1126,7 +1123,7 @@ namespace Realms.Tests.Database
                     Assert.That(() => list.RemoveAt(list.Count), Throws.TypeOf<ArgumentOutOfRangeException>());
                 });
 
-                Assert.That(list, IsEquivalentTo(copyReferenceList));
+                Assert.That(list, Is.EquivalentTo(copyReferenceList));
             }
 
             public async Task AssertThreadSafeReference(IList<T> list)
@@ -1146,7 +1143,7 @@ namespace Realms.Tests.Database
 
                         for (var i = 0; i < backgroundList.Count; i++)
                         {
-                            Assert.That(backgroundList[i], IsEqualTo(referenceList[i]));
+                            Assert.That(backgroundList[i], Is.EqualTo(referenceList[i]));
                         }
                     }
                 });
@@ -1281,26 +1278,6 @@ namespace Realms.Tests.Database
                 Assert.That(notifications.Count, Is.EqualTo(1));
                 verifier();
                 notifications.Clear();
-            }
-
-            private CollectionItemsEqualConstraint IsEquivalentTo(IEnumerable<T> other)
-            {
-                if (_equalityFunc == null)
-                {
-                    return Is.EquivalentTo(other);
-                }
-
-                return Is.EquivalentTo(other).Using<T>(_equalityFunc);
-            }
-
-            private EqualConstraint IsEqualTo(T other)
-            {
-                if (_equalityFunc == null)
-                {
-                    return Is.EqualTo(other);
-                }
-
-                return Is.EqualTo(other).Using<T>(_equalityFunc);
             }
 
             private static void WriteIfNecessary(IEnumerable<T> collection, Action writeAction)

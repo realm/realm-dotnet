@@ -1077,8 +1077,6 @@ namespace Realms.Tests.Database
         public static IEnumerable<TestCaseData<RealmValue>> RealmValueTestValues()
         {
             yield return new TestCaseData<RealmValue>(
-                x => x,
-                TestHelpers.RealmValueContentEqual,
                 "sampleValue",
                 ("nullKey", RealmValue.Null),
                 ("intKey", RealmValue.Create(10, RealmValueType.Int)),

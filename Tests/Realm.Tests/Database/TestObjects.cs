@@ -258,6 +258,9 @@ namespace Realms.Tests
         public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
 
         public ISet<IntPropertyObject> ObjectSet { get; }
+
+        public ISet<RealmValue> RealmValueSet { get; }
+
     }
 
     public class DictionariesObject : RealmObject

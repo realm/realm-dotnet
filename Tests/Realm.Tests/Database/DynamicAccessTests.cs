@@ -140,7 +140,7 @@ namespace Realms.Tests.Database
                 ato.RealmValueProperty = rv;
             });
 
-            Assert.That(TestHelpers.RealmValueContentEqual((RealmValue)ato.RealmValueProperty, rv), Is.True);
+            Assert.That((RealmValue)ato.RealmValueProperty, Is.EqualTo(rv));
         }
 
         [Test]
@@ -159,7 +159,7 @@ namespace Realms.Tests.Database
                 ato.RealmValueProperty = rv;
             });
 
-            Assert.That(TestHelpers.RealmValueContentEqual((RealmValue)ato.RealmValueProperty, rv), Is.True);
+            Assert.That((RealmValue)ato.RealmValueProperty, Is.EqualTo(rv));
         }
 
         private object InvokeGetter(object o, string propertyName)
