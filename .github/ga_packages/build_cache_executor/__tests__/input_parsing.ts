@@ -10,7 +10,30 @@ import * as path from "path";
 @suite
 class InputParsing {
   @test
-  Paths() {
+  PathsElements() {
+    let unparsedPath = "";
+    let paths = input.parseCmds(unparsedPath);
+    assert.equal(paths.length, 0);
+
+    unparsedPath = "\n";
+    paths = input.parseCmds(unparsedPath);
+    assert.equal(paths.length, 0);
+
+    unparsedPath = "/";
+    paths = input.parseCmds(unparsedPath);
+    assert.equal(paths.length, 1);
+
+    unparsedPath = "/\n";
+    paths = input.parseCmds(unparsedPath);
+    assert.equal(paths.length, 1);
+
+    unparsedPath = "/a/b/c/\nd/e/f\ng/h/e/";
+    paths = input.parseCmds(unparsedPath);
+    assert.equal(paths.length, 3);
+  }
+
+  @test
+  PathCorrectness() {
     const pwd = __dirname;
     const oneUp = path.resolve(path.join(pwd, "../"));
     const twoUp = path.resolve(path.join(pwd, "../.."));
@@ -26,9 +49,25 @@ class InputParsing {
   }
 
   @test
-  Cmd() {
-    const unparsedCmds = "echo 1\necho 2\necho 3";
-    const cmds = input.parseCmds(unparsedCmds);
+  CmdElements() {
+    let unparsedCmds = "";
+    let cmds = input.parseCmds(unparsedCmds);
+    assert.equal(cmds.length, 0);
+
+    unparsedCmds = "\n";
+    cmds = input.parseCmds(unparsedCmds);
+    assert.equal(cmds.length, 0);
+
+    unparsedCmds = "echo 1";
+    cmds = input.parseCmds(unparsedCmds);
+    assert.equal(cmds.length, 1);
+
+    unparsedCmds = "echo 1\n";
+    cmds = input.parseCmds(unparsedCmds);
+    assert.equal(cmds.length, 1);
+
+    unparsedCmds = "echo 1\necho 2\necho 3";
+    cmds = input.parseCmds(unparsedCmds);
     assert.equal(cmds.length, 3);
   }
 }
