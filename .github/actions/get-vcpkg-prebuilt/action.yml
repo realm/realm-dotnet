@@ -1,0 +1,9 @@
+name: 'get-vcpkg-prebuilt'
+description: 'Get windows build dependencies'
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+      shell: powershell

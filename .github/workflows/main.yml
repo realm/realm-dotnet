@@ -44,21 +44,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      # - name: Get CMake
-      #   uses: lukka/get-cmake@latest
-      # - name: Restore from cache and run vcpkg
-      #   uses: lukka/run-vcpkg@v5
-      #   with:
-      #     vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
-      #     vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
-      #     appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
-      #   env:
-      #     vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
+      - uses: ./.github/actions/get-vcpkg-prebuilt
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
           cmds: |
-            .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+            .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64
           cachePaths: |
             .\wrappers
           hashPrefix: cache-win-
