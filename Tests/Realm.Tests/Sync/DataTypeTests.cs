@@ -29,8 +29,15 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class DataTypeSynchronizationTests : SyncTestBase
     {
+        #region Boolean
+
         [Test]
         public void Set_Boolean() => TestSetCore(o => o.BooleanSet, true, false);
+
+        [Test]
+        public void Dict_Boolean() => TestDictionaryCore(o => o.BooleanDict, true, false);
+
+        #endregion
 
         [Test]
         public void Set_Byte() => TestSetCore(o => o.ByteSet, (byte)9, (byte)255);
@@ -70,7 +77,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
-        private void TestSetCore<T>(Func<SyncSetsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
             if (equalsOverride == null)
             {
@@ -85,13 +92,13 @@ namespace Realms.Tests.Sync
 
                 var obj1 = realm1.Write(() =>
                 {
-                    return realm1.Add(new SyncSetsObject());
+                    return realm1.Add(new SyncCollectionsObject());
                 });
 
                 await WaitForUploadAsync(realm1);
                 await WaitForDownloadAsync(realm2);
 
-                var obj2 = realm2.Find<SyncSetsObject>(obj1.Id);
+                var obj2 = realm2.Find<SyncCollectionsObject>(obj1.Id);
 
                 var set1 = getter(obj1);
                 var set2 = getter(obj2);
@@ -135,6 +142,87 @@ namespace Realms.Tests.Sync
 
                 Assert.That(set1, Is.Empty);
                 Assert.That(set2, Is.Empty);
+            }, ensureNoSessionErrors: true);
+        }
+
+        private void TestDictionaryCore<T>(Func<SyncCollectionsObject, IDictionary<string, T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        {
+            var comparer = new Func<KeyValuePair<string, T>, KeyValuePair<string, T>, bool>((a, b) =>
+            {
+                return a.Key == b.Key && (equalsOverride?.Invoke(a.Value, b.Value) ?? a.Value.Equals(b.Value));
+            });
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+                var realm1 = await GetIntegrationRealmAsync(partition);
+                var realm2 = await GetIntegrationRealmAsync(partition);
+
+                var obj1 = realm1.Write(() =>
+                {
+                    return realm1.Add(new SyncCollectionsObject());
+                });
+
+                await WaitForUploadAsync(realm1);
+                await WaitForDownloadAsync(realm2);
+
+                var obj2 = realm2.Find<SyncCollectionsObject>(obj1.Id);
+
+                var dict1 = getter(obj1);
+                var dict2 = getter(obj2);
+
+                var key1 = "a";
+                var key2 = "b";
+
+                // Assert Add works from both sides
+                realm1.Write(() =>
+                {
+                    dict1.Add(key1, item1);
+                });
+
+                await WaitForCollectionChangeAsync(dict2.AsRealmCollection());
+
+                Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
+
+                realm2.Write(() =>
+                {
+                    dict2[key2] = item2;
+                });
+
+                await WaitForCollectionChangeAsync(dict1.AsRealmCollection());
+
+                Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
+
+                // Assert Update works
+                realm1.Write(() =>
+                {
+                    dict1[key1] = item2;
+                });
+
+                await WaitForCollectionChangeAsync(dict2.AsRealmCollection());
+
+                Assert.That(dict2, Is.EquivalentTo(dict1).Using(comparer));
+
+                // Assert Remove works
+                realm2.Write(() =>
+                {
+                    dict2.Remove(key1);
+                });
+
+                await WaitForCollectionChangeAsync(dict1.AsRealmCollection());
+
+                Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
+
+                // Assert Clear works
+                realm1.Write(() =>
+                {
+                    dict1.Clear();
+                });
+
+                await WaitForCollectionChangeAsync(dict2.AsRealmCollection());
+
+                Assert.That(dict1, Is.Empty);
+                Assert.That(dict2, Is.Empty);
             }, ensureNoSessionErrors: true);
         }
 
