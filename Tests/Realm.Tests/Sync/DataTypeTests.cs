@@ -19,12 +19,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
-using Realms.Logging;
 
 namespace Realms.Tests.Sync
 {
@@ -69,16 +67,15 @@ namespace Realms.Tests.Sync
         [Test]
         public void Set_Binary() => TestSetCore(o => o.ByteArraySet, TestHelpers.GetBytes(5), TestHelpers.GetBytes(6), (a, b) => a.SequenceEqual(b));
 
-        //[Test]
-        //public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+        [Test]
+        public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         private void TestSetCore<T>(Func<SyncSetsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
-            Logger.LogLevel = LogLevel.All;
-            Logger.Default = Logger.Function(message =>
+            if (equalsOverride == null)
             {
-                Debug.WriteLine(message);
-            });
+                equalsOverride = (a, b) => a.Equals(b);
+            }
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -99,28 +96,49 @@ namespace Realms.Tests.Sync
                 var set1 = getter(obj1);
                 var set2 = getter(obj2);
 
+                // Assert Add works from both sides
                 realm1.Write(() =>
                 {
                     set1.Add(item1);
                 });
 
-                if (equalsOverride == null)
-                {
-                    equalsOverride = (a, b) => a.Equals(b);
-                }
+                await WaitForCollectionChangeAsync(set2.AsRealmCollection());
 
-                await WaitForCollectionChangeAsync(set2.AsRealmCollection(), item => equalsOverride(item, item1));
+                Assert.That(set1, Is.EquivalentTo(set2).Using(equalsOverride));
 
                 realm2.Write(() =>
                 {
                     set2.Add(item2);
                 });
 
-                await WaitForCollectionChangeAsync(set1.AsRealmCollection(), item => equalsOverride(item, item2));
+                await WaitForCollectionChangeAsync(set1.AsRealmCollection());
+
+                Assert.That(set1, Is.EquivalentTo(set2).Using(equalsOverride));
+
+                // Assert Remove works
+                realm2.Write(() =>
+                {
+                    set2.Remove(set2.First());
+                });
+
+                await WaitForCollectionChangeAsync(set1.AsRealmCollection());
+
+                Assert.That(set1, Is.EquivalentTo(set2).Using(equalsOverride));
+
+                // Assert Clear works
+                realm1.Write(() =>
+                {
+                    set1.Clear();
+                });
+
+                await WaitForCollectionChangeAsync(set2.AsRealmCollection());
+
+                Assert.That(set1, Is.Empty);
+                Assert.That(set2, Is.Empty);
             }, ensureNoSessionErrors: true);
         }
 
-        private async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, Func<T, bool> condition, int timeout = 10 * 1000)
+        private async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -136,10 +154,7 @@ namespace Realms.Tests.Sync
 
             void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
-                if (e.NewItems.Cast<T>().Any(condition))
-                {
-                    tcs.TrySetResult(null);
-                }
+                tcs.TrySetResult(null);
             }
         }
     }
