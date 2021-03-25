@@ -11,10 +11,10 @@ import * as utils from "./utils/common";
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
 export declare function actionCore(
-  paths: string,
-  cmds: string,
-  oss: utils.outputStream,
-  hashPrefix?: string,
-  hashOptions?: utils.hashOptions,
-  hashFunc?: utils.hashFunc
+    paths: string,
+    cmds: string,
+    oss: utils.outputStream,
+    hashPrefix?: string,
+    hashOptions?: utils.hashOptions,
+    hashFunc?: utils.hashFunc
 ): Promise<string | undefined>;
