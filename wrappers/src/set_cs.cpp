@@ -119,8 +119,8 @@ REALM_EXPORT bool realm_set_contains_value(object_store::Set& set, realm_value_t
                 throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
             }
 
-            if ((set_type & PropertyType::Flags) == PropertyType::Mixed) {
-                return set.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())) > -1;
+            if ((set_type & ~PropertyType::Flags) == PropertyType::Mixed) {
+                return set.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())) != not_found;
             }
 
             return set.find(value.link.object->obj()) != realm::not_found;
