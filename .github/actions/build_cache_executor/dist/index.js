@@ -41,13 +41,9 @@ const actionCore = __importStar(__nccwpck_require__(9301));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const paths = core.getInput("cachePaths", { required: true });
-            const cmds = core.getInput("cmds", { required: true });
-            let hashPrefix = core.getInput("hashPrefix", {
-                required: false,
-            });
-            hashPrefix = hashPrefix != "" ? hashPrefix : undefined;
-            const cacheKey = yield actionCore.actionCore(paths, cmds, core, hashPrefix);
+            const path = core.getInput("cachePath", { required: true });
+            const cmd = core.getInput("cmd", { required: true });
+            const cacheKey = yield actionCore.actionCore(path, cmd, core);
             if (cacheKey === undefined) {
                 core.setFailed(`Action aborted because either artifacts could not be built or they could not be cached`);
                 return;
@@ -496,56 +492,48 @@ exports.actionCore = void 0;
 const cache = __importStar(__nccwpck_require__(4471));
 const exec = __importStar(__nccwpck_require__(3864));
 const utils = __importStar(__nccwpck_require__(4580));
-const input = __importStar(__nccwpck_require__(1774));
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
- * @param paths New line separated paths that need to be cached after the build (same paths used to create a hash)
- * @param cmds New line separated cmds to build
- * @param oss Output stream where to print the messages
- * @param hashPrefix Optional prefix added in front of the hash that is going to be used as key in the cache dictionary
- * @param hashOptions Optional extra options for the hash function, be it the default of the supplied custom
- * @param hashFunc Optional custom hash function if the default doesn't fullfil the user's needs
+ * @param path Path that needs to be cached after the build (same paths used to create a hash)
+ * @param cmd Cmd to execute to obtain a build
+ * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
+function actionCore(path, cmd, logger) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (cmds.length === 0 || paths.length === 0) {
-            throw new Error(`No commands were supplied, nothing to do.`);
+        if (cmd.length === 0) {
+            throw new Error(`No command was supplied, nothing to do.`);
         }
-        const parsedPaths = input.parsePaths(paths);
-        const parsedCmds = input.parseCmds(cmds);
+        if (path.length === 0) {
+            throw new Error(`No path was supplied, nothing to cache.`);
+        }
         let hashKey;
         try {
-            hashKey =
-                hashFunc !== undefined
-                    ? yield hashFunc(parsedPaths, oss, hashPrefix, hashOptions)
-                    : yield utils.getHash(parsedPaths, oss, hashPrefix, hashOptions);
+            hashKey = cmd.concat(yield utils.getHash(path));
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
         }
         let cacheHit = undefined;
         if (hashKey !== undefined) {
-            oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hashKey}`);
+            logger.info(`Hash key for ${path} is: ${hashKey}`);
             try {
-                cacheHit = yield cache.restoreCache(parsedPaths, hashKey);
+                cacheHit = yield cache.restoreCache([path], hashKey);
             }
             catch (err) {
-                oss.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
+                logger.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
             }
         }
         else {
             throw new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`);
         }
         if (cacheHit === undefined) {
-            oss.info(`No cache was found, so the command will be executed...`);
+            logger.info(`No cache was found, so the command will be executed...`);
             try {
-                for (const cmd of parsedCmds) {
-                    const returnCode = yield exec.exec(cmd);
-                    if (returnCode !== 0) {
-                        throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
-                    }
+                const returnCode = yield exec.exec(cmd);
+                if (returnCode !== 0) {
+                    throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
                 }
             }
             catch (err) {
@@ -553,8 +541,8 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
             if (hashKey !== undefined) {
                 try {
-                    const cacheId = yield cache.saveCache(parsedPaths, hashKey);
-                    oss.info(`Cache properly created with id ${cacheId}`);
+                    const cacheId = yield cache.saveCache([path], hashKey);
+                    logger.info(`Cache properly created with id ${cacheId}`);
                 }
                 catch (error) {
                     throw new Error(`The cache could not be saved: ${error.message}`);
@@ -565,7 +553,7 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
         }
         else {
-            oss.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
+            logger.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
         }
         return hashKey;
     });
@@ -611,76 +599,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getHash = void 0;
 const folderHash = __importStar(__nccwpck_require__(63));
-const crypto = __importStar(__nccwpck_require__(6417));
+//import * as crypto from "crypto";
 const fs = __importStar(__nccwpck_require__(6344));
 /** @internal */
-// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant hashPrefix if supplied, otherwise with the "cache-(current OS platform)-".
+// Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
 // Can throw exceptions.
-function getHash(paths, oss, hashPrefix, hashOptions) {
+function getHash(path) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (paths.length === 0) {
-            throw new Error("There are no paths supplied");
+        if (path.length === 0) {
+            throw new Error("There is no path supplied");
         }
-        const prefix = hashPrefix !== null && hashPrefix !== void 0 ? hashPrefix : `cache-${process.platform}-`;
-        const folderHash = yield hashFolders(paths, hashOptions);
-        return prefix.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
+        if (!(yield fs.pathExists(path))) {
+            throw new Error(`${path} path doesn't exist`);
+        }
+        return (yield folderHash.hashElement(path)).hash;
+        //return crypto.createHash("sha256").update(hash).digest("base64");
     });
 }
 exports.getHash = getHash;
-/** @internal */
-// Calculates an array of hashes from all the paths (following recursively all children) and returns 1 string that results from the joined elements of the arrar.
-// Can throw exceptions.
-function hashFolders(paths, hashOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let hashes = [];
-        for (const path of paths) {
-            if (!(yield fs.pathExists(path))) {
-                throw new Error(`${path} path doesn't exist`);
-            }
-            const pathHash = recursiveHashFolders(yield folderHash.hashElement(path, hashOptions));
-            hashes = hashes.concat(pathHash);
-        }
-        return hashes.join("");
-    });
-}
-/** @internal */
-// Recursively parses all hash-nodes from the root to the children returning a flattened list of hashes of all nodes.
-function recursiveHashFolders(hashNode) {
-    let hashes = [];
-    if (hashNode === undefined) {
-        return hashes;
-    }
-    hashes.push(hashNode.hash);
-    if (hashNode.children !== undefined) {
-        for (const child of hashNode.children) {
-            hashes = hashes.concat(recursiveHashFolders(child));
-        }
-    }
-    return hashes;
-}
 //# sourceMappingURL=common.js.map
-
-/***/ }),
-
-/***/ 1774:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseCmds = exports.parsePaths = void 0;
-/** @internal */
-function parsePaths(str) {
-    return str.split("\n").filter(x => x);
-}
-exports.parsePaths = parsePaths;
-/** @internal */
-function parseCmds(str) {
-    return str.split("\n").filter(x => x);
-}
-exports.parseCmds = parseCmds;
-//# sourceMappingURL=input_parsing.js.map
 
 /***/ }),
 

@@ -6,16 +6,14 @@ jobs:
     runs-on: macos-latest
     name: Build macOs wrappers
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Build wrappers
-      uses: ./.github/actions/build_cache_executor
-      env: 
-        REALM_CMAKE_CONFIGURATION: Release
-      with:
-        cmds: |
-          ./wrappers/build-macos.sh
-        cachePaths: |
-          ./wrappers
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build wrappers
+        uses: ./.github/actions/build_cache_executor
+        env:
+          REALM_CMAKE_CONFIGURATION: Release
+        with:
+          cmd: ./wrappers/build-macos.sh
+          cachePath: ./wrappers

@@ -2,14 +2,11 @@ name: Build and cache executor
 description: Once supplied build commands, the action checks for cached binaries and builds if not found. The outcome of a build is then cached for later use
 inputs:
   cmds:
-    description: New line separated commands that need to be executed to produce the build
+    description: Command that needs to be executed to produce the build
     required: true
-  cachePaths:
-    description: New line separated paths that the action is going to use to produce an index to look up cached artifacts or to save them if none were found
+  cachePath:
+    description: Path that the action is going to use to produce an index to look up cached artifacts or to save them if none were found
     required: true
-  hashPrefix:
-    description: Optional prefix to add to the resulting hash used to search and save for cached builds
-    required: false
 outputs:
   hashKey:
     description: Key used to retrieve the just cached build at a later time

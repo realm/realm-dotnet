@@ -11,41 +11,27 @@ class HashingFunctionalities {
     @test
     async basicHashing(): Promise<void> {
         try {
-            await utils.getHash([]);
-        } catch (err) {
-            assert.equal(err.message, "There are no paths supplied");
-        }
-        try {
-            await utils.getHash(["gibberish"]);
+            await utils.getHash("gibberish");
         } catch (err) {
             assert.equal(err.message, "gibberish path doesn't exist");
         }
         try {
-            await utils.getHash(["\n"]);
+            await utils.getHash("\n");
         } catch (err) {
             assert.equal(err.message, "\n path doesn't exist");
         }
         try {
-            await utils.getHash([""]);
+            await utils.getHash("");
         } catch (err) {
-            assert.equal(err.message, " path doesn't exist");
+            assert.equal(err.message, "There is no path supplied");
         }
 
         const tempFolder = await this.makeTempDir("tempDir");
-        const tempFolder1 = await this.makeTempDir("tempDir1");
-        const tempFolder2 = await this.makeTempDir("tempDir2");
-
-        let hash = await utils.getHash([tempFolder]);
-        assert.notEqual(hash, "");
-        assert.notEqual(hash, undefined);
-
-        hash = await utils.getHash([tempFolder, tempFolder1, tempFolder2]);
+        const hash = await utils.getHash(tempFolder);
         assert.notEqual(hash, "");
         assert.notEqual(hash, undefined);
 
         await this.cleanUp(tempFolder);
-        await this.cleanUp(tempFolder1);
-        await this.cleanUp(tempFolder2);
     }
 
     @test
@@ -54,14 +40,14 @@ class HashingFunctionalities {
         const tempFolder = await this.makeTempDir("tempDir");
 
         const hashMap = new Map<string, string>();
-        let hash = await utils.getHash([pwd]);
+        let hash = await utils.getHash(pwd);
         if (hash !== undefined) {
             hashMap.set(hash, pwd);
         } else {
             await this.cleanUp(tempFolder);
             assert.fail(`It was impossible to calculate the hash for ${pwd}`);
         }
-        hash = await utils.getHash([tempFolder]);
+        hash = await utils.getHash(tempFolder);
         if (hash !== undefined) {
             hashMap.set(hash, tempFolder);
         } else {
@@ -70,42 +56,20 @@ class HashingFunctionalities {
         }
 
         // recalculate to verify consistency
-        hash = await utils.getHash([pwd]);
+        hash = await utils.getHash(pwd);
         if (hash !== undefined) {
             assert.equal(hashMap.get(hash), pwd);
         } else {
             await this.cleanUp(tempFolder);
             assert.fail(`It was impossible to re-calculate the hash for ${pwd}`);
         }
-        hash = await utils.getHash([tempFolder]);
+        hash = await utils.getHash(tempFolder);
         if (hash !== undefined) {
             assert.equal(hashMap.get(hash), tempFolder);
         } else {
             await this.cleanUp(tempFolder);
             assert.fail(`It was impossible to re-calculate the hash for ${tempFolder}`);
         }
-        await this.cleanUp(tempFolder);
-    }
-
-    @test
-    async verifyHashPrefix(): Promise<void> {
-        const tempFolder = await this.makeTempDir("tempDir");
-        let hash = await utils.getHash([tempFolder]);
-
-        // check against default prefix
-        const defaultPrefix = `cache-${process.platform}-`;
-        assert.isTrue(hash?.startsWith(defaultPrefix));
-
-        const justHash = hash?.slice(hash?.indexOf(defaultPrefix) + defaultPrefix?.length);
-
-        let hashPrefix = "prefix";
-        hash = await utils.getHash([tempFolder], undefined, hashPrefix);
-        assert.isTrue(hash?.startsWith(hashPrefix));
-
-        hashPrefix = "";
-        hash = await utils.getHash([tempFolder], undefined, hashPrefix);
-        assert.equal(hash, justHash);
-
         await this.cleanUp(tempFolder);
     }
 

@@ -30,52 +30,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHash = void 0;
 const folderHash = __importStar(require("folder-hash"));
-const crypto = __importStar(require("crypto"));
+//import * as crypto from "crypto";
 const fs = __importStar(require("fs-extra"));
 /** @internal */
-// Given an array of paths, it creates a hash from the joined list of hashes of each subfolder and subfile.
-// The final hash is prepend with a constant hashPrefix if supplied, otherwise with the "cache-(current OS platform)-".
+// Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
 // Can throw exceptions.
-function getHash(paths, oss, hashPrefix, hashOptions) {
+function getHash(path) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (paths.length === 0) {
-            throw new Error("There are no paths supplied");
+        if (path.length === 0) {
+            throw new Error("There is no path supplied");
         }
-        const prefix = hashPrefix !== null && hashPrefix !== void 0 ? hashPrefix : `cache-${process.platform}-`;
-        const folderHash = yield hashFolders(paths, hashOptions);
-        return prefix.concat(crypto.createHash("sha256").update(folderHash).digest("base64"));
+        if (!(yield fs.pathExists(path))) {
+            throw new Error(`${path} path doesn't exist`);
+        }
+        return (yield folderHash.hashElement(path)).hash;
+        //return crypto.createHash("sha256").update(hash).digest("base64");
     });
 }
 exports.getHash = getHash;
-/** @internal */
-// Calculates an array of hashes from all the paths (following recursively all children) and returns 1 string that results from the joined elements of the arrar.
-// Can throw exceptions.
-function hashFolders(paths, hashOptions) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let hashes = [];
-        for (const path of paths) {
-            if (!(yield fs.pathExists(path))) {
-                throw new Error(`${path} path doesn't exist`);
-            }
-            const pathHash = recursiveHashFolders(yield folderHash.hashElement(path, hashOptions));
-            hashes = hashes.concat(pathHash);
-        }
-        return hashes.join("");
-    });
-}
-/** @internal */
-// Recursively parses all hash-nodes from the root to the children returning a flattened list of hashes of all nodes.
-function recursiveHashFolders(hashNode) {
-    let hashes = [];
-    if (hashNode === undefined) {
-        return hashes;
-    }
-    hashes.push(hashNode.hash);
-    if (hashNode.children !== undefined) {
-        for (const child of hashNode.children) {
-            hashes = hashes.concat(recursiveHashFolders(child));
-        }
-    }
-    return hashes;
-}
 //# sourceMappingURL=common.js.map

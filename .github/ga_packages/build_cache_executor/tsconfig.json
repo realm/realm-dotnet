@@ -1,19 +1,18 @@
 {
-    "compilerOptions": {
-      "target": "es6",
-      "module": "CommonJS",
-      "moduleResolution": "node",
-      "outDir": "./dist",
-      "rootDir": "./src",
-      "strict": true,
-      "esModuleInterop": true,
-      "sourceMap": true,
-      "experimentalDecorators": true,
-      "declaration": true,
-      "stripInternal": true
-    },
-    "include": [
-      "./src",
-      "./__tests__"
-    ],
+  "compilerOptions": {
+    "target": "es6",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "stripInternal": true
+  },
+  "include": [
+    "./src"
+  ],
 }
