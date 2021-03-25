@@ -173,15 +173,18 @@ stage('Package') {
         packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
 
-        if (shouldPublishPackage()) {
-          withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
-            echo "Publishing Realm.Fody.${packageVersion} to github packages"
-            bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
-            bat "dotnet nuget update source github -s https://nuget.pkg.github.com/realm/index.json -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
-            bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -s \"github\""
-            bat "dotnet nuget push \"Realm.${packageVersion}.nupkg\" -s \"github\""
-          }
-        }
+        // Disable github packages because it fails to push with:
+        //    Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+        //    An existing connection was forcibly closed by the remote host.
+        // if (shouldPublishPackage()) {
+        //   withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+        //     echo "Publishing Realm.Fody.${packageVersion} to github packages"
+        //     bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
+        //     bat "dotnet nuget update source github -s https://nuget.pkg.github.com/realm/index.json -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
+        //     bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -s \"github\""
+        //     bat "dotnet nuget push \"Realm.${packageVersion}.nupkg\" -s \"github\""
+        //   }
+        // }
       }
     }
   }
