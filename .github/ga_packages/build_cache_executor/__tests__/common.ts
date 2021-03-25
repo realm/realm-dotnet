@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import * as utils from "../src/utils/common";
 
 @suite
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class HashingFunctionalities {
   @test
   async basicHashing(): Promise<void> {
