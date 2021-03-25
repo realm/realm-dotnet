@@ -1,7 +1,7 @@
 name: Build and cache executor
 description: Once supplied build commands, the action checks for cached binaries and builds if not found. The outcome of a build is then cached for later use
 inputs:
-  cmds:
+  cmd:
     description: Command that needs to be executed to produce the build
     required: true
   cachePath:

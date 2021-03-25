@@ -1,14 +1,14 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function (o, m, k, k2) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function () { return m[k]; } });
-}) : (function (o, m, k, k2) {
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function (o, v) {
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
     Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function (o, v) {
+}) : function(o, v) {
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
@@ -37,7 +37,7 @@ const utils = __importStar(require("./utils/common"));
  * The function can throw exceptions.
  * @param path Path that needs to be cached after the build (same paths used to create a hash)
  * @param cmd Cmd to execute to obtain a build
- * @param logger Logger where to print the messages
+ * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
 function actionCore(path, cmd, logger) {

@@ -599,7 +599,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getHash = void 0;
 const folderHash = __importStar(__nccwpck_require__(63));
-//import * as crypto from "crypto";
 const fs = __importStar(__nccwpck_require__(6344));
 /** @internal */
 // Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
@@ -613,7 +612,6 @@ function getHash(path) {
             throw new Error(`${path} path doesn't exist`);
         }
         return (yield folderHash.hashElement(path)).hash;
-        //return crypto.createHash("sha256").update(hash).digest("base64");
     });
 }
 exports.getHash = getHash;
