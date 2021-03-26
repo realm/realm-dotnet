@@ -26,21 +26,34 @@ using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
+    public enum AppConfigType
+    {
+        Default,
+        IntPartitionKey,
+        ObjectIdPartitionKey,
+        UUIDPartitionKey,
+    }
+
     public static class SyncTestHelpers
     {
         public const string DefaultPassword = "123456";
 
-        private static AppConfiguration _baseConfig;
-
-        public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig?.AppId ?? "myapp-123")
+        private static readonly IDictionary<AppConfigType, string> _appIds = new Dictionary<AppConfigType, string>
         {
-            BaseUri = _baseConfig?.BaseUri ?? new Uri("http://localhost:12345"),
+            [AppConfigType.Default] = "myapp-123",
+        };
+
+        private static Uri _baseUri;
+
+        public static AppConfiguration GetAppConfig(AppConfigType type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
+        {
+            BaseUri = _baseUri ?? new Uri("http://localhost:12345"),
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
         };
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
         {
-            if (_baseConfig == null)
+            if (_baseUri == null || _appIds[AppConfigType.Default] == "myapp-123")
             {
                 Assert.Ignore("MongoDB Realm is not setup.");
             }
@@ -75,31 +88,21 @@ namespace Realms.Tests.Sync
         {
             var result = new List<string>();
 
-            string baasUrl = null;
-            string baasAppId = null;
-
             for (var i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
                     case "--baasurl":
-                        baasUrl = args[++i];
+                        _baseUri = new Uri(args[++i]);
                         break;
                     case "--baasappid":
-                        baasAppId = args[++i];
+                        var appId = args[++i];
+                        _appIds[GetConfigTypeForId(appId)] = appId;
                         break;
                     default:
                         result.Add(args[i]);
                         break;
                 }
-            }
-
-            if (baasUrl != null && baasAppId != null)
-            {
-                _baseConfig = new AppConfiguration(baasAppId)
-                {
-                    BaseUri = new Uri(baasUrl),
-                };
             }
 
             return result.ToArray();
@@ -131,6 +134,21 @@ namespace Realms.Tests.Sync
             session.SimulateError(code, message);
 
             return tcs.Task;
+        }
+
+        private static AppConfigType GetConfigTypeForId(string appId)
+        {
+            if (appId.StartsWith("dotnet-integration-tests"))
+            {
+                return AppConfigType.Default;
+            }
+
+            if (appId.StartsWith("int-partition-key"))
+            {
+                return AppConfigType.IntPartitionKey;
+            }
+
+            throw new NotSupportedException($"Unexpected appId: {appId}");
         }
     }
 }
