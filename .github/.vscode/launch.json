@@ -14,10 +14,8 @@
                 "!**/node_modules/**"
             ],
             "args": [
-                // "src/main.ts"
                 "src/build_cache_executor.ts"
             ],
-            // "cwd": "${workspaceRoot}/actions/build_cache_executor",
             "cwd": "${workspaceRoot}/ga_packages/build_cache_executor/",
             "protocol": "inspector",
             "skipFiles": [
