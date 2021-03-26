@@ -170,10 +170,8 @@ namespace Realms.Tests.Database
                 var callsite = CallSite<Func<CallSite, object, object>>.Create(binder);
                 return callsite.Target(callsite, o);
             }
-            else
-            {
-                return TestHelpers.GetPropertyValue(o, propertyName);
-            }
+
+            return TestHelpers.GetPropertyValue(o, propertyName);
         }
 
         private void InvokeSetter<T>(object o, string propertyName, T propertyValue)

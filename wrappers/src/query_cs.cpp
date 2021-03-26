@@ -34,7 +34,7 @@ inline ColKey get_key_for_prop(Query& query, SharedRealm& realm, size_t property
     return realm->schema().find(ObjectStore::object_type_for_table_name(query.get_table()->get_name()))->persisted_properties[property_index].column_key;
 }
 
-inline TypeOfValue::Attribute attribute_from(realm_value_type type)  //Should we put it somewhere else...?
+inline TypeOfValue::Attribute attribute_from(realm_value_type type)
 {
     switch (type) {
     case realm_value_type::RLM_TYPE_NULL:

@@ -184,6 +184,10 @@ namespace Realms
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
                     return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
                 case RealmValueType.Object:
+                    if (!AsRealmObject().IsManaged)
+                    {
+                        throw new InvalidOperationException("Can't convert unmanaged object to native");
+                    }
                     return (PrimitiveValue.Object(_objectValue?.ObjectHandle), null);
                 default:
                     return (_primitiveValue, null);
@@ -691,7 +695,7 @@ namespace Realms
                     RealmValueType.Int => AsInt64().GetHashCode(),
                     RealmValueType.Bool => AsBool().GetHashCode(),
                     RealmValueType.String => AsString().GetHashCode(),
-                    RealmValueType.Data => AsData().Length, //TODO Check if we can do it better...
+                    RealmValueType.Data => AsData().Length,
                     RealmValueType.Date => AsDate().GetHashCode(),
                     RealmValueType.Float => AsFloat().GetHashCode(),
                     RealmValueType.Double => AsDouble().GetHashCode(),
@@ -858,7 +862,7 @@ namespace Realms
         {
             if (Type != type)
             {
-                throw new InvalidOperationException($"Can't cast to {target} since the underlying value is {Type}");
+                throw new InvalidCastException($"Can't cast to {target} since the underlying value is {Type}"); 
             }
         }
 
@@ -900,7 +904,7 @@ namespace Realms
                 RealmValueType.Int => AsInt64() == other.AsInt64(),
                 RealmValueType.Bool => AsBool() == other.AsBool(),
                 RealmValueType.String => AsString() == other.AsString(),
-                RealmValueType.Data => AsData().SequenceEqual(other.AsData()),  //TIDO check
+                RealmValueType.Data => AsData().SequenceEqual(other.AsData()),
                 RealmValueType.Date => AsDate() == other.AsDate(),
                 RealmValueType.Float => AsFloat() == other.AsFloat(),
                 RealmValueType.Double => AsDouble() == other.AsDouble(),
@@ -908,7 +912,7 @@ namespace Realms
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
-                RealmValueType.Null => Type == RealmValueType.Null,
+                RealmValueType.Null => true,
                 _ => false,
             };
         }

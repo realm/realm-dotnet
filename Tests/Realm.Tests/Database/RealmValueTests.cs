@@ -501,17 +501,17 @@ namespace Realms.Tests.Database
         {
             RealmValue rv = 10;
 
-            Assert.That(() => rv.AsString(), Throws.InvalidOperationException);
-            Assert.That(() => rv.AsFloat(), Throws.InvalidOperationException);
+            Assert.That(() => rv.AsString(), Throws.Exception.TypeOf<InvalidCastException>());
+            Assert.That(() => rv.AsFloat(), Throws.Exception.TypeOf<InvalidCastException>());
 
             rv = Guid.NewGuid().ToString();
 
-            Assert.That(() => rv.AsInt16(), Throws.InvalidOperationException);
-            Assert.That(() => rv.AsGuid(), Throws.InvalidOperationException);
+            Assert.That(() => rv.AsInt16(), Throws.Exception.TypeOf<InvalidCastException>());
+            Assert.That(() => rv.AsGuid(), Throws.Exception.TypeOf<InvalidCastException>());
 
             rv = true;
 
-            Assert.That(() => rv.AsInt16(), Throws.InvalidOperationException);
+            Assert.That(() => rv.AsInt16(), Throws.Exception.TypeOf<InvalidCastException>());
         }
 
         [Test]

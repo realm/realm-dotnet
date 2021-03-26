@@ -999,6 +999,21 @@ namespace Realms.Tests.Database
             yield return new TestCaseData<RealmValue>( Array.Empty<RealmValue>(), new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
 
             static RealmValue GetRealmValueObject() => RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object);
+
+            var i1 = RealmValue.Create(1, RealmValueType.Int);
+            var i2 = RealmValue.Create(1d, RealmValueType.Double);
+            var i3 = RealmValue.Create(1f, RealmValueType.Double);
+            var i4 = RealmValue.Create(true, RealmValueType.Bool);
+            var i5 = RealmValue.Create(1m, RealmValueType.Decimal128);
+
+            yield return new TestCaseData<RealmValue>(new[] { i1, i2, i3, i4, i5 }, new[] { i1, i2, i3, i4, i5 });
+
+            var s1 = RealmValue.Create(string.Empty, RealmValueType.String);
+            var s2 = RealmValue.Create(0, RealmValueType.Int);
+            var s3 = RealmValue.Create(Guid.Empty, RealmValueType.Guid);
+            var s4 = RealmValue.Null;
+
+            yield return new TestCaseData<RealmValue>(new[] { s1, s2, s3, s4 }, new[] { s1, s2, s3, s4 });
         }
 
         [TestCaseSource(nameof(RealmTestValues))]
