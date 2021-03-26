@@ -5,32 +5,55 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch ga_package main",
             "type": "node",
-            "console": "integratedTerminal",
             "request": "launch",
-            "name": "Launch Program",
+            // don't remove the following although it rases a warning. It avoids errors to show up in the console https://github.com/microsoft/vscode/issues/102335
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
+            "args": [
+                // "src/main.ts"
+                "src/build_cache_executor.ts"
+            ],
+            // "cwd": "${workspaceRoot}/actions/build_cache_executor",
+            "cwd": "${workspaceRoot}/ga_packages/build_cache_executor/",
+            "protocol": "inspector",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            //"preLaunchTask": "npm: distribute - actions/build_cache_executor",
-            "program": "${file}",
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ]
+            "sourceMaps": true,
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register"
+            ],
+            "console": "internalConsole"
         },
         {
             "name": "mocha tests",
             "type": "node",
             "protocol": "inspector",
             "request": "launch",
-            "console": "integratedTerminal",
-            "program": "${workspaceRoot}/ga_packages/build_cache_executor/node_modules/mocha/bin/_mocha",
+            "program": "node_modules/mocha/bin/_mocha",
             "stopOnEntry": false,
             "cwd": "${workspaceRoot}/ga_packages/build_cache_executor/",
-            "args": [ "-r", "ts-node/register", "${workspaceRoot}/ga_packages/build_cache_executor/__tests__/**/*.ts", "--no-timeouts", "--colors"],
+            // don't remove the following although it rases a warning. It avoids errors to show up in the console https://github.com/microsoft/vscode/issues/102335
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
+            "args": [
+                "-r",
+                "ts-node/register",
+                "__tests__/**/*.ts",
+                "--no-timeouts",
+                "--colors"
+            ],
             "runtimeExecutable": null,
             "env": {
-            "NODE_ENV": "testing"
+                "NODE_ENV": "testing"
             }
         }
     ]

@@ -6,8 +6,8 @@
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-export declare function actionCore(path: string, cmd: string, logger: logger): Promise<string | undefined>;
-export interface logger {
+export declare function actionCore(path: string, cmd: string, logger: iLogger): Promise<string | undefined>;
+export interface iLogger {
     debug(message: string): void;
     info(message: string): void;
     warning(message: string): void;

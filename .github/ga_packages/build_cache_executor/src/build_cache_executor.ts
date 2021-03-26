@@ -11,7 +11,7 @@ import * as fs from "fs-extra";
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-export async function actionCore(path: string, cmd: string, logger: logger): Promise<string | undefined> {
+export async function actionCore(path: string, cmd: string, logger: iLogger): Promise<string | undefined> {
     if (cmd.length === 0) {
         throw new Error(`No command was supplied, nothing to do.`);
     }
@@ -71,7 +71,7 @@ export async function actionCore(path: string, cmd: string, logger: logger): Pro
     return hashKey;
 }
 
-export interface logger {
+export interface iLogger {
     debug(message: string): void;
     info(message: string): void;
     warning(message: string): void;
@@ -90,3 +90,20 @@ export async function getHash(path: string): Promise<string> {
     }
     return (await folderHash.hashElement(path)).hash;
 }
+
+//// DEBUG!: uncomment to debug
+// class logger implements iLogger {
+//     debug(message: string): void {
+//         console.debug(message);
+//     }
+//     info(message: string): void {
+//         console.log(message);
+//     }
+//     warning(message: string): void {
+//         console.warn(message);
+//     }
+//     error(message: string): void {
+//         console.error(message);
+//     }
+// }
+// actionCore(".", "echo 1", new logger());

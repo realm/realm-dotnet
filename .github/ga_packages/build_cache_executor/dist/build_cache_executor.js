@@ -115,4 +115,20 @@ function getHash(path) {
     });
 }
 exports.getHash = getHash;
+//// DEBUG!: uncomment to debug
+// class logger implements iLogger {
+//     debug(message: string): void {
+//         console.debug(message);
+//     }
+//     info(message: string): void {
+//         console.log(message);
+//     }
+//     warning(message: string): void {
+//         console.warn(message);
+//     }
+//     error(message: string): void {
+//         console.error(message);
+//     }
+// }
+// actionCore(".", "echo 1", new logger());
 //# sourceMappingURL=build_cache_executor.js.map
