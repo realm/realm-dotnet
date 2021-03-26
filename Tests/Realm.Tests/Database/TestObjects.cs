@@ -472,6 +472,8 @@ namespace Realms.Tests
         [Required]
         public IDictionary<string, byte[]> ByteArrayDict { get; }
 
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
+
         // TODO: reenable when https://jira.mongodb.org/browse/REALMC-8495 is fixed
         //public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 

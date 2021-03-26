@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -39,43 +38,128 @@ namespace Realms.Tests.Sync
 
         #endregion
 
+        #region Byte
+
         [Test]
         public void Set_Byte() => TestSetCore(o => o.ByteSet, (byte)9, (byte)255);
+
+        [Test]
+        public void Dict_Byte() => TestDictionaryCore(o => o.ByteDict, (byte)9, (byte)255);
+
+        #endregion
+
+        #region Int16
 
         [Test]
         public void Set_Int16() => TestSetCore(o => o.Int16Set, (short)55, (short)987);
 
         [Test]
+        public void Dict_Int16() => TestDictionaryCore(o => o.Int16Dict, (short)55, (short)987);
+
+        #endregion
+
+        #region Int32
+
+        [Test]
         public void Set_Int32() => TestSetCore(o => o.Int32Set, 987, 123);
+
+        [Test]
+        public void Dict_Int32() => TestDictionaryCore(o => o.Int32Dict, 555, 666);
+
+        #endregion
+
+        #region Int64
 
         [Test]
         public void Set_Int64() => TestSetCore(o => o.Int64Set, 12345678910111213, 987654321);
 
         [Test]
+        public void Dict_Int64() => TestDictionaryCore(o => o.Int64Dict, 9999999999999L, 1111111111111111111L);
+
+        #endregion
+
+        #region Byte
+
+        [Test]
         public void Set_Double() => TestSetCore(o => o.DoubleSet, 123.456, 789.123);
+
+        [Test]
+        public void Dict_Double() => TestDictionaryCore(o => o.DoubleDict, 99999.555555, 8777778.12312456);
+
+        #endregion
+
+        #region Decimal
 
         // TODO: use more precise numbers once https://jira.mongodb.org/browse/REALMC-8475 is done.
         [Test]
         public void Set_Decimal() => TestSetCore(o => o.DecimalSet, 123.7777777777777m, 999.99999999999m);
+
+        [Test]
+        public void Dict_Decimal() => TestDictionaryCore(o => o.DecimalDict, 987654321.7777777m, 999.99999999999m);
+
+        #endregion
+
+        #region Decimal128
 
         // TODO: use more precise numbers once https://jira.mongodb.org/browse/REALMC-8475 is done.
         [Test]
         public void Set_Decimal128() => TestSetCore(o => o.Decimal128Set, 123.7777777777777m, 999.99999999999m);
 
         [Test]
+        public void Dict_Decimal128() => TestDictionaryCore(o => o.Decimal128Dict, 1.123456789m, 987654321.7777m);
+
+        #endregion
+
+        #region ObjectId
+
+        [Test]
         public void Set_ObjectId() => TestSetCore(o => o.ObjectIdSet, ObjectId.GenerateNewId(), ObjectId.GenerateNewId());
+
+        [Test]
+        public void Dict_ObjectId() => TestDictionaryCore(o => o.ObjectIdDict, ObjectId.GenerateNewId(), ObjectId.GenerateNewId());
+
+        #endregion
+
+        #region DateTimeOffset
 
         [Test]
         public void Set_DateTimeOffset() => TestSetCore(o => o.DateTimeOffsetSet, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
 
         [Test]
+        public void Dict_DateTimeOffset() => TestDictionaryCore(o => o.DateTimeOffsetDict, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+
+        #endregion
+
+        #region String
+
+        [Test]
         public void Set_String() => TestSetCore(o => o.StringSet, "abc", "cde");
+
+        [Test]
+        public void Dict_String() => TestDictionaryCore(o => o.StringDict, "hohoho", string.Empty);
+
+        #endregion
+
+        #region Byte
 
         [Test]
         public void Set_Binary() => TestSetCore(o => o.ByteArraySet, TestHelpers.GetBytes(5), TestHelpers.GetBytes(6), (a, b) => a.SequenceEqual(b));
 
         [Test]
+        public void Dict_Binary() => TestDictionaryCore(o => o.ByteArrayDict, TestHelpers.GetBytes(10), TestHelpers.GetBytes(15), (a, b) => a.SequenceEqual(b));
+
+        #endregion
+
+        #region Object
+
+        [Test]
         public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+
+        // TODO: implement when https://jira.mongodb.org/browse/REALMC-8495 is fixed
+        //[Test]
+        //public void Dict_Object() => TestDictionaryCore(o => o.BooleanDict, true, false);
+
+        #endregion
 
         private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
@@ -226,24 +310,18 @@ namespace Realms.Tests.Sync
             }, ensureNoSessionErrors: true);
         }
 
-        private async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)
+        private static async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)
         {
             var tcs = new TaskCompletionSource<object>();
+            using var token = collection.SubscribeForNotifications((collection, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    tcs.TrySetResult(null);
+                }
+            });
 
-            try
-            {
-                collection.CollectionChanged += Collection_CollectionChanged;
-                await tcs.Task.Timeout(timeout);
-            }
-            finally
-            {
-                collection.CollectionChanged -= Collection_CollectionChanged;
-            }
-
-            void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-            {
-                tcs.TrySetResult(null);
-            }
+            await tcs.Task.Timeout(timeout);
         }
     }
 }
