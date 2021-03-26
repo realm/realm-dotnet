@@ -3,7 +3,7 @@ import "mocha";
 import { suite, test } from "@testdeck/mocha";
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as utils from "../src/utils/common";
+import * as main from "../src/build_cache_executor";
 
 @suite
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,23 +11,23 @@ class HashingFunctionalities {
     @test
     async basicHashing(): Promise<void> {
         try {
-            await utils.getHash("gibberish");
+            await main.getHash("gibberish");
         } catch (err) {
             assert.equal(err.message, "gibberish path doesn't exist");
         }
         try {
-            await utils.getHash("\n");
+            await main.getHash("\n");
         } catch (err) {
             assert.equal(err.message, "\n path doesn't exist");
         }
         try {
-            await utils.getHash("");
+            await main.getHash("");
         } catch (err) {
             assert.equal(err.message, "There is no path supplied");
         }
 
         const tempFolder = await this.makeTempDir("tempDir");
-        const hash = await utils.getHash(tempFolder);
+        const hash = await main.getHash(tempFolder);
         assert.notEqual(hash, "");
         assert.notEqual(hash, undefined);
 
@@ -40,14 +40,14 @@ class HashingFunctionalities {
         const tempFolder = await this.makeTempDir("tempDir");
 
         const hashMap = new Map<string, string>();
-        let hash = await utils.getHash(pwd);
+        let hash = await main.getHash(pwd);
         if (hash !== undefined) {
             hashMap.set(hash, pwd);
         } else {
             await this.cleanUp(tempFolder);
             assert.fail(`It was impossible to calculate the hash for ${pwd}`);
         }
-        hash = await utils.getHash(tempFolder);
+        hash = await main.getHash(tempFolder);
         if (hash !== undefined) {
             hashMap.set(hash, tempFolder);
         } else {
@@ -56,14 +56,14 @@ class HashingFunctionalities {
         }
 
         // recalculate to verify consistency
-        hash = await utils.getHash(pwd);
+        hash = await main.getHash(pwd);
         if (hash !== undefined) {
             assert.equal(hashMap.get(hash), pwd);
         } else {
             await this.cleanUp(tempFolder);
             assert.fail(`It was impossible to re-calculate the hash for ${pwd}`);
         }
-        hash = await utils.getHash(tempFolder);
+        hash = await main.getHash(tempFolder);
         if (hash !== undefined) {
             assert.equal(hashMap.get(hash), tempFolder);
         } else {

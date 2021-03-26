@@ -28,10 +28,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.actionCore = void 0;
+exports.getHash = exports.actionCore = void 0;
 const cache = __importStar(require("@actions/cache"));
 const exec = __importStar(require("@actions/exec"));
-const utils = __importStar(require("./utils/common"));
+const folderHash = __importStar(require("folder-hash"));
+const fs = __importStar(require("fs-extra"));
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
@@ -50,7 +51,7 @@ function actionCore(path, cmd, logger) {
         }
         let hashKey;
         try {
-            hashKey = cmd.concat(yield utils.getHash(path));
+            hashKey = cmd.concat(yield getHash(path));
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
@@ -99,4 +100,19 @@ function actionCore(path, cmd, logger) {
     });
 }
 exports.actionCore = actionCore;
+/** @internal */
+// Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
+// Can throw exceptions.
+function getHash(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (path.length === 0) {
+            throw new Error("There is no path supplied");
+        }
+        if (!(yield fs.pathExists(path))) {
+            throw new Error(`${path} path doesn't exist`);
+        }
+        return (yield folderHash.hashElement(path)).hash;
+    });
+}
+exports.getHash = getHash;
 //# sourceMappingURL=build_cache_executor.js.map

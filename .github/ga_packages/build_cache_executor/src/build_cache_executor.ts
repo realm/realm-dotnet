@@ -1,6 +1,7 @@
 import * as cache from "@actions/cache";
 import * as exec from "@actions/exec";
-import * as utils from "./utils/common";
+import * as folderHash from "folder-hash";
+import * as fs from "fs-extra";
 
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
@@ -10,7 +11,7 @@ import * as utils from "./utils/common";
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-export async function actionCore(path: string, cmd: string, logger: utils.logger): Promise<string | undefined> {
+export async function actionCore(path: string, cmd: string, logger: logger): Promise<string | undefined> {
     if (cmd.length === 0) {
         throw new Error(`No command was supplied, nothing to do.`);
     }
@@ -20,7 +21,7 @@ export async function actionCore(path: string, cmd: string, logger: utils.logger
 
     let hashKey: string | undefined;
     try {
-        hashKey = cmd.concat(await utils.getHash(path));
+        hashKey = cmd.concat(await getHash(path));
     } catch (err) {
         throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
     }
@@ -68,4 +69,24 @@ export async function actionCore(path: string, cmd: string, logger: utils.logger
     }
 
     return hashKey;
+}
+
+export interface logger {
+    debug(message: string): void;
+    info(message: string): void;
+    warning(message: string): void;
+    error(message: string): void;
+}
+
+/** @internal */
+// Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
+// Can throw exceptions.
+export async function getHash(path: string): Promise<string> {
+    if (path.length === 0) {
+        throw new Error("There is no path supplied");
+    }
+    if (!(await fs.pathExists(path))) {
+        throw new Error(`${path} path doesn't exist`);
+    }
+    return (await folderHash.hashElement(path)).hash;
 }

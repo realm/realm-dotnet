@@ -1,4 +1,3 @@
-import * as utils from "./utils/common";
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
@@ -7,4 +6,10 @@ import * as utils from "./utils/common";
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-export declare function actionCore(path: string, cmd: string, logger: utils.logger): Promise<string | undefined>;
+export declare function actionCore(path: string, cmd: string, logger: logger): Promise<string | undefined>;
+export interface logger {
+    debug(message: string): void;
+    info(message: string): void;
+    warning(message: string): void;
+    error(message: string): void;
+}
