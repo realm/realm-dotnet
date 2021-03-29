@@ -1002,7 +1002,7 @@ namespace Realms.Tests.Database
 
             var i1 = RealmValue.Create(1, RealmValueType.Int);
             var i2 = RealmValue.Create(1d, RealmValueType.Double);
-            var i3 = RealmValue.Create(1f, RealmValueType.Double);
+            var i3 = RealmValue.Create(1f, RealmValueType.Float);
             var i4 = RealmValue.Create(true, RealmValueType.Bool);
             var i5 = RealmValue.Create(1m, RealmValueType.Decimal128);
 
@@ -1014,6 +1014,13 @@ namespace Realms.Tests.Database
             var s4 = RealmValue.Null;
 
             yield return new TestCaseData<RealmValue>(new[] { s1, s2, s3, s4 }, new[] { s1, s2, s3, s4 });
+
+            var d1 = RealmValue.Create(1m, RealmValueType.Decimal128);
+            var d2 = RealmValue.Create(1f, RealmValueType.Decimal128);
+            var d3 = RealmValue.Create(1d, RealmValueType.Decimal128);
+            var d4 = RealmValue.Create(1, RealmValueType.Decimal128);
+
+            yield return new TestCaseData<RealmValue>(new[] { d1, d2, d3, d4 }, new[] { d1, d2, d3, d4 });
         }
 
         [TestCaseSource(nameof(RealmTestValues))]
