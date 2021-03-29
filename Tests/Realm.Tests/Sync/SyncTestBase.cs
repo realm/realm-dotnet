@@ -118,6 +118,12 @@ namespace Realms.Tests.Sync
             return new User(handle);
         }
 
+        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)
+        {
+            var config = await GetIntegrationConfigAsync(partition, app);
+            return await GetRealmAsync(config);
+        }
+
         protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null)
         {
             app ??= DefaultApp;
@@ -131,7 +137,7 @@ namespace Realms.Tests.Sync
         {
             return new SyncConfiguration(partition, user, optionalPath)
             {
-                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject) },
+                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncSetsObject), typeof(IntPropertyObject) },
                 SessionStopPolicy = SessionStopPolicy.Immediately,
             };
         }

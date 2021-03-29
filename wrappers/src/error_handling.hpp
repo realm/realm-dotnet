@@ -103,9 +103,7 @@ public:
     KeyAlreadyExistsException(std::string key) : std::runtime_error(util::format("An item with the key '%1' has already been added.", key)) {}
 };
 
-REALM_EXPORT NativeException convert_exception();
-
-void throw_managed_exception(const NativeException& exception);
+REALM_EXPORT NativeException convert_exception(std::exception_ptr err = nullptr);
 
 template <class T>
 struct Default {

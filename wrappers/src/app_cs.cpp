@@ -134,6 +134,8 @@ extern "C" {
         s_void_callback = wrap_managed_callback(void_callback);
         s_bson_callback = wrap_managed_callback(bson_callback);
         s_log_message_callback = wrap_managed_callback(log_message_callback);
+
+        realm::binding::s_can_call_managed = true;
     }
 
     REALM_EXPORT SharedApp* shared_app_create(AppConfiguration app_config, uint8_t* encryption_key, NativeException::Marshallable& ex)

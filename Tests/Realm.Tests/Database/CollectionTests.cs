@@ -228,7 +228,7 @@ namespace Realms.Tests.Database
                 item => item.Int += 2);
 
             var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
-            Assert.That(items, Is.EqualTo(Enumerable.Range(2, 10)));
+            Assert.That(items, Is.EquivalentTo(Enumerable.Range(2, 10)));
         }
 
         [Test]
@@ -245,7 +245,7 @@ namespace Realms.Tests.Database
             Assert.That(container.Items, Is.Empty);
 
             var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
-            Assert.That(items, Is.EqualTo(Enumerable.Range(0, 10)));
+            Assert.That(items, Is.EquivalentTo(Enumerable.Range(0, 10)));
         }
 
         [Test]

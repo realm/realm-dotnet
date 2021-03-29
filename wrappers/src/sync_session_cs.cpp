@@ -103,6 +103,8 @@ REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_er
     s_session_error_callback = wrap_managed_callback(session_error_callback);
     s_progress_callback = wrap_managed_callback(progress_callback);
     s_wait_callback = wrap_managed_callback(wait_callback);
+
+    realm::binding::s_can_call_managed = true;
 }
 
 enum class CSharpNotifierType : uint8_t {

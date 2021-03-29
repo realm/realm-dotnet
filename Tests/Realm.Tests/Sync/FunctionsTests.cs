@@ -36,7 +36,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await GetUserAsync();
-                var result = await user.Functions.CallAsync("sumFunc", 1, 2, 3);
+                var result = await user.Functions.CallAsync("sumFunc", 1L, 2L, 3L);
 
                 Assert.That(result.AsInt64, Is.EqualTo(6));
             });
@@ -94,7 +94,7 @@ namespace Realms.Tests.Sync
                     date = DateTime.UtcNow,
                     child = new
                     {
-                        intValue = 2
+                        intValue = 2L
                     }
                 };
 
@@ -108,13 +108,13 @@ namespace Realms.Tests.Sync
                     arr = new[] { 4, 5, 6 },
                     child = new
                     {
-                        intValue = 3
+                        intValue = 3L
                     }
                 };
 
                 var result = await user.Functions.CallAsync("documentFunc", first, second);
 
-                Assert.That(result["intValue"].AsInt64, Is.EqualTo(3));
+                Assert.That(result["intValue"].AsInt32, Is.EqualTo(3));
                 Assert.That(result["floatValue"].AsDouble, Is.EqualTo(3.5));
                 Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
                 Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first.objectId));

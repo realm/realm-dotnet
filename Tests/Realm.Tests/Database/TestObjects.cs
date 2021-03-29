@@ -177,7 +177,7 @@ namespace Realms.Tests
         public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
     }
 
-    public class SetsObject : RealmObject
+    public class CollectionsObject : RealmObject
     {
         public ISet<char> CharSet { get; }
 
@@ -252,6 +252,205 @@ namespace Realms.Tests
         public ISet<RealmInteger<int>?> NullableInt32CounterSet { get; }
 
         public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
+
+        public ISet<IntPropertyObject> ObjectSet { get; }
+
+        public IList<char> CharList { get; }
+
+        public IList<byte> ByteList { get; }
+
+        public IList<short> Int16List { get; }
+
+        public IList<int> Int32List { get; }
+
+        public IList<long> Int64List { get; }
+
+        public IList<float> SingleList { get; }
+
+        public IList<double> DoubleList { get; }
+
+        public IList<bool> BooleanList { get; }
+
+        public IList<decimal> DecimalList { get; }
+
+        public IList<Decimal128> Decimal128List { get; }
+
+        public IList<ObjectId> ObjectIdList { get; }
+
+        [Required]
+        public IList<string> StringList { get; }
+
+        public IList<string> NullableStringList { get; }
+
+        [Required]
+        public IList<byte[]> ByteArrayList { get; }
+
+        public IList<byte[]> NullableByteArrayList { get; }
+
+        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+
+        public IList<char?> NullableCharList { get; }
+
+        public IList<byte?> NullableByteList { get; }
+
+        public IList<short?> NullableInt16List { get; }
+
+        public IList<int?> NullableInt32List { get; }
+
+        public IList<long?> NullableInt64List { get; }
+
+        public IList<float?> NullableSingleList { get; }
+
+        public IList<double?> NullableDoubleList { get; }
+
+        public IList<bool?> NullableBooleanList { get; }
+
+        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
+
+        public IList<decimal?> NullableDecimalList { get; }
+
+        public IList<Decimal128?> NullableDecimal128List { get; }
+
+        public IList<ObjectId?> NullableObjectIdList { get; }
+
+        public IList<RealmInteger<byte>> ByteCounterList { get; }
+
+        public IList<RealmInteger<short>> Int16CounterList { get; }
+
+        public IList<RealmInteger<int>> Int32CounterList { get; }
+
+        public IList<RealmInteger<long>> Int64CounterList { get; }
+
+        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
+
+        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
+
+        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
+
+        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
+
+        public IList<IntPropertyObject> ObjectList { get; }
+
+        public IDictionary<string, char> CharDict { get; }
+
+        public IDictionary<string, byte> ByteDict { get; }
+
+        public IDictionary<string, short> Int16Dict { get; }
+
+        public IDictionary<string, int> Int32Dict { get; }
+
+        public IDictionary<string, long> Int64Dict { get; }
+
+        public IDictionary<string, float> SingleDict { get; }
+
+        public IDictionary<string, double> DoubleDict { get; }
+
+        public IDictionary<string, bool> BooleanDict { get; }
+
+        public IDictionary<string, decimal> DecimalDict { get; }
+
+        public IDictionary<string, Decimal128> Decimal128Dict { get; }
+
+        public IDictionary<string, ObjectId> ObjectIdDict { get; }
+
+        [Required]
+        public IDictionary<string, string> StringDict { get; }
+
+        public IDictionary<string, string> NullableStringDict { get; }
+
+        [Required]
+        public IDictionary<string, byte[]> ByteArrayDict { get; }
+
+        public IDictionary<string, byte[]> NullableByteArrayDict { get; }
+
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
+
+        public IDictionary<string, char?> NullableCharDict { get; }
+
+        public IDictionary<string, byte?> NullableByteDict { get; }
+
+        public IDictionary<string, short?> NullableInt16Dict { get; }
+
+        public IDictionary<string, int?> NullableInt32Dict { get; }
+
+        public IDictionary<string, long?> NullableInt64Dict { get; }
+
+        public IDictionary<string, float?> NullableSingleDict { get; }
+
+        public IDictionary<string, double?> NullableDoubleDict { get; }
+
+        public IDictionary<string, bool?> NullableBooleanDict { get; }
+
+        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDict { get; }
+
+        public IDictionary<string, decimal?> NullableDecimalDict { get; }
+
+        public IDictionary<string, Decimal128?> NullableDecimal128Dict { get; }
+
+        public IDictionary<string, ObjectId?> NullableObjectIdDict { get; }
+
+        public IDictionary<string, RealmInteger<byte>> ByteCounterDict { get; }
+
+        public IDictionary<string, RealmInteger<short>> Int16CounterDict { get; }
+
+        public IDictionary<string, RealmInteger<int>> Int32CounterDict { get; }
+
+        public IDictionary<string, RealmInteger<long>> Int64CounterDict { get; }
+
+        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDict { get; }
+
+        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDict { get; }
+
+        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDict { get; }
+
+        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDict { get; }
+
+        public IDictionary<string, IntPropertyObject> ObjectDict { get; }
+    }
+
+    // This is a stripped-down version of SetsObject because Sync doesn't support float
+    // or collections of nullable primitives
+    public class SyncSetsObject : RealmObject
+    {
+        [MapTo("_id")]
+        [PrimaryKey]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public ISet<char> CharSet { get; }
+
+        public ISet<byte> ByteSet { get; }
+
+        public ISet<short> Int16Set { get; }
+
+        public ISet<int> Int32Set { get; }
+
+        public ISet<long> Int64Set { get; }
+
+        public ISet<double> DoubleSet { get; }
+
+        public ISet<bool> BooleanSet { get; }
+
+        public ISet<decimal> DecimalSet { get; }
+
+        public ISet<Decimal128> Decimal128Set { get; }
+
+        public ISet<ObjectId> ObjectIdSet { get; }
+
+        [Required]
+        public ISet<string> StringSet { get; }
+
+        [Required]
+        public ISet<byte[]> ByteArraySet { get; }
+
+        public ISet<DateTimeOffset> DateTimeOffsetSet { get; }
+
+        public ISet<RealmInteger<byte>> ByteCounterSet { get; }
+
+        public ISet<RealmInteger<short>> Int16CounterSet { get; }
+
+        public ISet<RealmInteger<int>> Int32CounterSet { get; }
+
+        public ISet<RealmInteger<long>> Int64CounterSet { get; }
 
         public ISet<IntPropertyObject> ObjectSet { get; }
     }
@@ -586,6 +785,10 @@ namespace Realms.Tests
 
     public class IntPropertyObject : RealmObject
     {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
         public int Int { get; set; }
 
         public override string ToString() => $"Int: {Int}";
