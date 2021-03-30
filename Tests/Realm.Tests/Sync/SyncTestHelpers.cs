@@ -185,7 +185,7 @@ namespace Realms.Tests.Sync
                 return AppConfigType.UUIDPartitionKey;
             }
 
-            throw new NotSupportedException($"Unexpected appName: {appName}");
+            return (AppConfigType)(-1);
         }
 
         private class BaasClient : IDisposable
