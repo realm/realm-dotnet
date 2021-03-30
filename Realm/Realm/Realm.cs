@@ -481,6 +481,11 @@ namespace Realms
             return ret;
         }
 
+        internal void MergeWithSchema(RealmSchema schema)
+        {
+
+        }
+
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>

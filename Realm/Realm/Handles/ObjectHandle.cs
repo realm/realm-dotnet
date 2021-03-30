@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -169,7 +170,15 @@ namespace Realms
             }
 
             var (objectHandle, tableKey) = result.AsObject(Root);
-            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
+
+            if (!realm.Metadata.TryGetValue(tableKey, out var objectMetadata))
+            {
+                RealmSchema schema = null;
+                realm.SharedRealmHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));  //TODO Can be done in one line, for testing
+                realm.MergeWithSchema(schema);
+            }
+
+            return new RealmValue(realm.MakeObject(objectMetadata, objectHandle));
         }
 
         public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)

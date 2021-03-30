@@ -716,31 +716,51 @@ namespace Realms.Tests.Database
         {
             yield return new RealmValue[]
             {
-                RealmValue.Null,
-                RealmValue.Create(10, RealmValueType.Int),
-                RealmValue.Create(true, RealmValueType.Bool),
-                RealmValue.Create("abc", RealmValueType.String),
-                RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
-                RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
-                RealmValue.Create(1.5f, RealmValueType.Float),
-                RealmValue.Create(2.5d, RealmValueType.Double),
-                RealmValue.Create(5m, RealmValueType.Decimal128),
-                RealmValue.Create(new ObjectId("5f63e882536de46d71877979") , RealmValueType.ObjectId),
-                RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
+                //RealmValue.Null,
+                //RealmValue.Create(10, RealmValueType.Int),
+                //RealmValue.Create(true, RealmValueType.Bool),
+                //RealmValue.Create("abc", RealmValueType.String),
+                //RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
+                //RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
+                //RealmValue.Create(1.5f, RealmValueType.Float),
+                //RealmValue.Create(2.5d, RealmValueType.Double),
+                //RealmValue.Create(5m, RealmValueType.Decimal128),
+                //RealmValue.Create(new ObjectId("5f63e882536de46d71877979") , RealmValueType.ObjectId),
+                //RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
                 RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object),
             };
         }
 
-        //[TestCaseSource(nameof(QueryTestValues))] Otherwise test crash
+        [TestCaseSource(nameof(QueryTestValues))]
         public void Query_Generic(RealmValue[] realmValues)
         {
-            // TODO This test does not succeed because of https://github.com/realm/realm-core/issues/4531
             var rvObjects = realmValues.Select((rv, index) => new RealmValueObject { Id = index, RealmValueProperty = rv }).ToList();
 
             _realm.Write(() =>
             {
                 _realm.Add(rvObjects);
             });
+
+            foreach (var realmValue in realmValues)
+            {
+                // Equality
+                var referenceResult = rvObjects.Where(r => r.RealmValueProperty == realmValue).OrderBy(r => r.Id).ToList();
+
+                var q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == realmValue).OrderBy(r => r.Id).ToList();
+                var f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty == $0", realmValue).OrderBy(r => r.Id).ToList();
+
+                Assert.That(q, Is.EquivalentTo(referenceResult), $"{realmValue.Type}");
+                Assert.That(f, Is.EquivalentTo(referenceResult));
+
+                // Non-Equality
+                referenceResult = rvObjects.Where(r => r.RealmValueProperty != realmValue).OrderBy(r => r.Id).ToList();
+
+                q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty != realmValue).OrderBy(r => r.Id).ToList();
+                f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty != $0", realmValue).OrderBy(r => r.Id).ToList();
+
+                Assert.That(q, Is.EquivalentTo(referenceResult));
+                Assert.That(f, Is.EquivalentTo(referenceResult));
+            }
 
             foreach (RealmValueType type in Enum.GetValues(typeof(RealmValueType)))
             {
@@ -758,27 +778,6 @@ namespace Realms.Tests.Database
 
                 q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty.Type != type).OrderBy(r => r.Id).ToList();
                 f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty.@type != '{ConvertRealmValueTypeToFilterAttribute(type)}'").OrderBy(r => r.Id).ToList();
-
-                Assert.That(q, Is.EquivalentTo(referenceResult));
-                Assert.That(f, Is.EquivalentTo(referenceResult));
-            }
-
-            foreach (var realmValue in realmValues)
-            {
-                // Equality
-                var referenceResult = rvObjects.Where(r => r.RealmValueProperty == realmValue).OrderBy(r => r.Id).ToList();
-
-                var q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty == realmValue).OrderBy(r => r.Id).ToList();
-                var f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty == $0", realmValue).OrderBy(r => r.Id).ToList();
-
-                Assert.That(q, Is.EquivalentTo(referenceResult));
-                Assert.That(f, Is.EquivalentTo(referenceResult));
-
-                // Non-Equality
-                referenceResult = rvObjects.Where(r => r.RealmValueProperty != realmValue).OrderBy(r => r.Id).ToList();
-
-                q = _realm.All<RealmValueObject>().Where(r => r.RealmValueProperty != realmValue).OrderBy(r => r.Id).ToList();
-                f = _realm.All<RealmValueObject>().Filter($"RealmValueProperty != $0", realmValue).OrderBy(r => r.Id).ToList();
 
                 Assert.That(q, Is.EquivalentTo(referenceResult));
                 Assert.That(f, Is.EquivalentTo(referenceResult));
