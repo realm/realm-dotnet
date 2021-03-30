@@ -2,37 +2,35 @@ import * as cache from "@actions/cache";
 import * as exec from "@actions/exec";
 import * as folderHash from "folder-hash";
 import * as fs from "fs-extra";
-import * as input_parsing from "./input_parsing";
 
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
- * @param paths Paths that needs to be cached after the build (same paths used to create a hash)
+ * @param path Path that needs to be cached after the build (same paths used to create a hash)
  * @param cmd Cmd to execute to obtain a build
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-export async function actionCore(paths: string, cmd: string, logger: iLogger): Promise<string | undefined> {
+export async function actionCore(path: string, cmd: string, logger: iLogger): Promise<string | undefined> {
     if (cmd.length === 0) {
         throw new Error(`No command was supplied, nothing to do.`);
     }
-    if (paths.length === 0) {
+    if (path.length === 0) {
         throw new Error(`No path was supplied, nothing to cache.`);
     }
 
-    const parsedPaths = input_parsing.parse_paths(paths);
     let hashKey: string | undefined;
     try {
-        hashKey = cmd.concat(await getHash(parsedPaths[0]));
+        hashKey = cmd.concat(await getHash(path));
     } catch (err) {
         throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
     }
 
     let cacheHit: string | undefined = undefined;
     if (hashKey !== undefined) {
-        logger.info(`Hash key for ${paths} is: ${hashKey}`);
+        logger.info(`Hash key for ${path} is: ${hashKey}`);
         try {
-            cacheHit = await cache.restoreCache(parsedPaths, hashKey);
+            cacheHit = await cache.restoreCache([path], hashKey);
         } catch (err) {
             logger.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
         }
@@ -56,7 +54,7 @@ export async function actionCore(paths: string, cmd: string, logger: iLogger): P
 
         if (hashKey !== undefined) {
             try {
-                const cacheId = await cache.saveCache(parsedPaths, hashKey);
+                const cacheId = await cache.saveCache([path], hashKey);
                 logger.info(`Cache properly created with id ${cacheId}`);
             } catch (error) {
                 throw new Error(`The cache could not be saved: ${error.message}`);

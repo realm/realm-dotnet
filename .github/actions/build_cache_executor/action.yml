@@ -4,8 +4,8 @@ inputs:
   cmd:
     description: Command that needs to be executed to produce the build
     required: true
-  cachePaths:
-    description: New line separated paths that the action is going to use to produce an index to look up cached artifacts or to save them if none were found
+  cachePath:
+    description: Path that the action is going to use to produce an index to look up cached artifacts or to save them if none were found
     required: true
 outputs:
   hashKey:

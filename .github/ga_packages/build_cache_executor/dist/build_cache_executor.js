@@ -33,36 +33,34 @@ const cache = __importStar(require("@actions/cache"));
 const exec = __importStar(require("@actions/exec"));
 const folderHash = __importStar(require("folder-hash"));
 const fs = __importStar(require("fs-extra"));
-const input_parsing = __importStar(require("./input_parsing"));
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
- * @param paths Paths that needs to be cached after the build (same paths used to create a hash)
+ * @param path Path that needs to be cached after the build (same paths used to create a hash)
  * @param cmd Cmd to execute to obtain a build
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-function actionCore(paths, cmd, logger) {
+function actionCore(path, cmd, logger) {
     return __awaiter(this, void 0, void 0, function* () {
         if (cmd.length === 0) {
             throw new Error(`No command was supplied, nothing to do.`);
         }
-        if (paths.length === 0) {
+        if (path.length === 0) {
             throw new Error(`No path was supplied, nothing to cache.`);
         }
-        const parsedPaths = input_parsing.parse_paths(paths);
         let hashKey;
         try {
-            hashKey = cmd.concat(yield getHash(parsedPaths[0]));
+            hashKey = cmd.concat(yield getHash(path));
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
         }
         let cacheHit = undefined;
         if (hashKey !== undefined) {
-            logger.info(`Hash key for ${paths} is: ${hashKey}`);
+            logger.info(`Hash key for ${path} is: ${hashKey}`);
             try {
-                cacheHit = yield cache.restoreCache(parsedPaths, hashKey);
+                cacheHit = yield cache.restoreCache([path], hashKey);
             }
             catch (err) {
                 logger.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
@@ -84,7 +82,7 @@ function actionCore(paths, cmd, logger) {
             }
             if (hashKey !== undefined) {
                 try {
-                    const cacheId = yield cache.saveCache(parsedPaths, hashKey);
+                    const cacheId = yield cache.saveCache([path], hashKey);
                     logger.info(`Cache properly created with id ${cacheId}`);
                 }
                 catch (error) {
