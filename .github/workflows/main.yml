@@ -6,36 +6,30 @@ jobs:
     runs-on: macos-latest
     name: Build macOs wrappers
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Build wrappers
-      uses: ./.github/actions/build_cache_executor
-      env: 
-        REALM_CMAKE_CONFIGURATION: Release
-      with:
-        cmds: |
-          ./wrappers/build-macos.sh
-        cachePaths: |
-          ./wrappers
-        hashPrefix: cache-macos-
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build wrappers
+        uses: ./.github/actions/build_cache_executor
+        env:
+          REALM_CMAKE_CONFIGURATION: Release
+        with:
+          cmd: ./wrappers/build-macos.sh
+          cachePath: ./wrappers
   build-wrappers-ios:
     runs-on: macos-latest
     name: Build iOS wrappers
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Build wrappers
-      uses: ./.github/actions/build_cache_executor
-      with:
-        cmds: |
-          ./wrappers/build-ios.sh --configuration=Release
-        cachePaths: |
-          ./wrappers
-        hashPrefix: cache-ios-
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build wrappers
+        uses: ./.github/actions/build_cache_executor
+        with:
+          cmds: ./wrappers/build-ios.sh --configuration=Release
+          cachePaths: ./wrappers
   build-wrappers-windows:
     runs-on: windows-latest
     name: Build Windows wrappers
@@ -43,13 +37,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
       - uses: ./.github/actions/get-vcpkg-prebuilt
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
-          cmds: |
-            powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64
-          cachePaths: |
-            .\wrappers
-          hashPrefix: cache-win-
+          cmds: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64
+          cachePaths: .\wrappers

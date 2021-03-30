@@ -28,60 +28,53 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.actionCore = void 0;
+exports.getHash = exports.actionCore = void 0;
 const cache = __importStar(require("@actions/cache"));
 const exec = __importStar(require("@actions/exec"));
-const utils = __importStar(require("./utils/common"));
-const input = __importStar(require("./utils/input_parsing"));
+const folderHash = __importStar(require("folder-hash"));
+const fs = __importStar(require("fs-extra"));
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
- * @param paths New line separated paths that need to be cached after the build (same paths used to create a hash)
- * @param cmds New line separated cmds to build
- * @param oss Output stream where to print the messages
- * @param hashPrefix Optional prefix added in front of the hash that is going to be used as key in the cache dictionary
- * @param hashOptions Optional extra options for the hash function, be it the default of the supplied custom
- * @param hashFunc Optional custom hash function if the default doesn't fullfil the user's needs
+ * @param path Path that needs to be cached after the build (same paths used to create a hash)
+ * @param cmd Cmd to execute to obtain a build
+ * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
+function actionCore(path, cmd, logger) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (cmds.length === 0 || paths.length === 0) {
-            throw new Error(`No commands were supplied, nothing to do.`);
+        if (cmd.length === 0) {
+            throw new Error(`No command was supplied, nothing to do.`);
         }
-        const parsedPaths = input.parsePaths(paths);
-        const parsedCmds = input.parseCmds(cmds);
+        if (path.length === 0) {
+            throw new Error(`No path was supplied, nothing to cache.`);
+        }
         let hashKey;
         try {
-            hashKey =
-                hashFunc !== undefined
-                    ? yield hashFunc(parsedPaths, oss, hashPrefix, hashOptions)
-                    : yield utils.tryGetHash(parsedPaths, oss, hashPrefix, hashOptions);
+            hashKey = cmd.concat(yield getHash(path));
         }
         catch (err) {
             throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
         }
         let cacheHit = undefined;
         if (hashKey !== undefined) {
-            oss.info(`Hash key for ${parsedPaths.join("\n")} is: ${hashKey}`);
+            logger.info(`Hash key for ${path} is: ${hashKey}`);
             try {
-                cacheHit = yield cache.restoreCache(parsedPaths, hashKey);
+                cacheHit = yield cache.restoreCache([path], hashKey);
             }
             catch (err) {
-                oss.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
+                logger.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
             }
         }
         else {
             throw new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`);
         }
         if (cacheHit === undefined) {
-            oss.info(`No cache was found, so the command will be executed...`);
+            logger.info(`No cache was found, so the command will be executed...`);
             try {
-                for (const cmd of parsedCmds) {
-                    const returnCode = yield exec.exec(cmd);
-                    if (returnCode !== 0) {
-                        throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
-                    }
+                const returnCode = yield exec.exec(cmd);
+                if (returnCode !== 0) {
+                    throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
                 }
             }
             catch (err) {
@@ -89,8 +82,8 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
             if (hashKey !== undefined) {
                 try {
-                    const cacheId = yield cache.saveCache(parsedPaths, hashKey);
-                    oss.info(`Cache properly created with id ${cacheId}`);
+                    const cacheId = yield cache.saveCache([path], hashKey);
+                    logger.info(`Cache properly created with id ${cacheId}`);
                 }
                 catch (error) {
                     throw new Error(`The cache could not be saved: ${error.message}`);
@@ -101,10 +94,41 @@ function actionCore(paths, cmds, oss, hashPrefix, hashOptions, hashFunc) {
             }
         }
         else {
-            oss.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
+            logger.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
         }
         return hashKey;
     });
 }
 exports.actionCore = actionCore;
+/** @internal */
+// Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
+// Can throw exceptions.
+function getHash(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (path.length === 0) {
+            throw new Error("There is no path supplied");
+        }
+        if (!(yield fs.pathExists(path))) {
+            throw new Error(`${path} path doesn't exist`);
+        }
+        return (yield folderHash.hashElement(path)).hash;
+    });
+}
+exports.getHash = getHash;
+//// DEBUG!: uncomment to debug
+// class logger implements iLogger {
+//     debug(message: string): void {
+//         console.debug(message);
+//     }
+//     info(message: string): void {
+//         console.log(message);
+//     }
+//     warning(message: string): void {
+//         console.warn(message);
+//     }
+//     error(message: string): void {
+//         console.error(message);
+//     }
+// }
+// actionCore(".", "echo 1", new logger());
 //# sourceMappingURL=build_cache_executor.js.map
