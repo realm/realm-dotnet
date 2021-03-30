@@ -138,7 +138,7 @@ namespace Realms.Tests.Sync
             return new SyncConfiguration(partition, user, optionalPath)
             {
                 // TODO: add the embedded object when https://jira.mongodb.org/browse/REALMC-8495 is fixed
-                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject) },
+                ObjectClasses = new[] { typeof(SyncAllTypesObject), typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject) },
                 //ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject) },
                 SessionStopPolicy = SessionStopPolicy.Immediately,
             };

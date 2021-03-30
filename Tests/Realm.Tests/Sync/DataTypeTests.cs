@@ -161,6 +161,34 @@ namespace Realms.Tests.Sync
 
         #endregion
 
+        #region RealmValue
+
+        [Test]
+        public void Set_RealmValue1() => TestSetCore(o => o.RealmValueSet, "abc", 10);
+
+        [Test]
+        public void Set_RealmValue2() => TestSetCore(o => o.RealmValueSet, new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
+
+        [Test]
+        public void Set_RealmValue3() => TestSetCore(o => o.RealmValueSet, new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
+
+        [Test]
+        public void Set_RealmValue4() => TestSetCore(o => o.RealmValueSet, true, new IntPropertyObject { Int = 10 });
+
+        [Test]
+        public void Dict_RealmValue1() => TestDictionaryCore(o => o.RealmValueDict, "abc", 10);
+
+        [Test]
+        public void Dict_RealmValue2() => TestDictionaryCore(o => o.RealmValueDict, new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
+
+        [Test]
+        public void Dict_RealmValue3() => TestDictionaryCore(o => o.RealmValueDict, new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
+
+        [Test]
+        public void Dict_RealmValue4() => TestDictionaryCore(o => o.RealmValueDict, true, new IntPropertyObject { Int = 10 });
+
+        #endregion
+
         private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
             if (equalsOverride == null)
@@ -308,6 +336,74 @@ namespace Realms.Tests.Sync
                 Assert.That(dict1, Is.Empty);
                 Assert.That(dict2, Is.Empty);
             }, ensureNoSessionErrors: true);
+        }
+
+        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T,  bool> equalsOverride = null)
+        {
+            if (equalsOverride == null)
+            {
+                equalsOverride = (a, b) => a.Equals(b);
+            }
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+                var realm1 = await GetIntegrationRealmAsync(partition);
+                var realm2 = await GetIntegrationRealmAsync(partition);
+
+                var obj1 = realm1.Write(() =>
+                {
+                    return realm1.Add(new SyncAllTypesObject());
+                });
+
+                await WaitForUploadAsync(realm1);
+                await WaitForDownloadAsync(realm2);
+
+                var obj2 = realm2.Find<SyncAllTypesObject>(obj1.Id);
+
+                realm1.Write(() =>
+                {
+                    setter(obj1, item1);
+                });
+
+                await WaitForPropertyChangedAsync(obj2);
+
+                var prop1 = getter(obj1);
+                var prop2 = getter(obj2);
+
+                Assert.That(prop1, Is.EqualTo(prop2).Using<T>(equalsOverride));
+                Assert.That(prop1, Is.EqualTo(item1).Using<T>(equalsOverride));
+
+                realm1.Write(() =>
+                {
+                    setter(obj2, item2);
+                });
+
+                await WaitForPropertyChangedAsync(obj1);
+
+                prop1 = getter(obj1);
+                prop2 = getter(obj2);
+
+                Assert.That(prop1, Is.EqualTo(prop2).Using<T>(equalsOverride));
+                Assert.That(prop1, Is.EqualTo(item1).Using<T>(equalsOverride));
+            }, ensureNoSessionErrors: true);
+        }
+
+        private static async Task WaitForPropertyChangedAsync(RealmObject realmObject, int timeout = 10 * 1000)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            realmObject.PropertyChanged += RealmObject_PropertyChanged;
+
+            void RealmObject_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+            {
+                if (e != null)
+                {
+                    tcs.TrySetResult(null);
+                }
+            }
+
+            await tcs.Task.Timeout(timeout);
+            realmObject.PropertyChanged -= RealmObject_PropertyChanged;  //TODO Need to check this for correctness
         }
 
         private static async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)
