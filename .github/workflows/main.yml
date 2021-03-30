@@ -49,8 +49,8 @@ jobs:
         with:
           cmd: powershell (Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip) -and (Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\)
           cachePaths: |
-            'C:'
-            '!C:\System Volume Information'
+            C:\
+            !C:\System Volume Information
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
