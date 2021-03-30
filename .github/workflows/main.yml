@@ -17,6 +17,7 @@ jobs:
         with:
           cmd: ./wrappers/build-macos.sh
           cachePath: ./wrappers
+
   build-wrappers-ios:
     runs-on: macos-latest
     name: Build iOS wrappers
@@ -30,9 +31,13 @@ jobs:
         with:
           cmd: ./wrappers/build-ios.sh --configuration=Release
           cachePath: ./wrappers
+
   build-wrappers-windows:
     runs-on: windows-latest
     name: Build Windows wrappers
+    strategy:
+      matrix:
+        arch: [Win32, x64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -46,5 +51,5 @@ jobs:
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
-          cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64
+          cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
           cachePath: .\wrappers
