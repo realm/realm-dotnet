@@ -241,6 +241,6 @@ namespace Realms
             return new ResultsHandle(frozenRealmHandle, result);
         }
 
-        public override void Clear() => throw new NotSupportedException();
+        public override void Clear() => throw new NotSupportedException("Clearing a Results collection is not supported.");
     }
 }

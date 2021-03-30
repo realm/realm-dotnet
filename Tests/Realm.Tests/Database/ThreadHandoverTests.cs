@@ -351,7 +351,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(otherQuery, Is.InstanceOf(typeof(RealmResults<IntPropertyObject>)));
                 var values = otherQuery.ToArray().Select(q => q.Int);
-                Assert.That(values, Is.EqualTo(expected));
+                Assert.That(values, Is.EquivalentTo(expected));
             });
         }
     }

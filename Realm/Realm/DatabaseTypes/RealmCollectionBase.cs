@@ -400,7 +400,7 @@ namespace Realms
 
         #region IList
 
-        public bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
+        public virtual bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
         public void Clear() => Handle.Value.Clear();
 

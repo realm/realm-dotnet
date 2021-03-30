@@ -64,6 +64,10 @@ namespace Realms.Tests.Database
             public IDictionary<string, DynamicDog> DogsDictionary { get; }
 
             public IDictionary<string, string> TagsDictionary { get; }
+
+            public ISet<DynamicDog> DogsSet { get; }
+
+            public ISet<string> TagsSet { get; }
         }
 
         private readonly DynamicTestObjectType _mode;
@@ -98,6 +102,8 @@ namespace Realms.Tests.Database
                 o1.Dogs.Add(d1);
                 o1.DogsDictionary.Add(d1.Name, d1);
                 o1.TagsDictionary.Add(d1.Name, "great");
+                o1.DogsSet.Add(d1);
+                o1.TagsSet.Add("responsible");
 
                 var d2 = _realm.DynamicApi.CreateObject("DynamicDog", null);
                 d2.Name = EarlsName;
@@ -105,6 +111,8 @@ namespace Realms.Tests.Database
                 o1.Dogs.Add(d2);
                 o1.DogsDictionary.Add(d2.Name, d2);
                 o1.TagsDictionary.Add(d2.Name, "playful");
+                o1.DogsSet.Add(d2);
+                o1.TagsSet.Add("coffee lover");
 
                 // lonely people and dogs
                 var o2 = _realm.DynamicApi.CreateObject("DynamicOwner", null);
@@ -598,6 +606,103 @@ namespace Realms.Tests.Database
             Assert.That(tim.TagsDictionary.Count, Is.EqualTo(1));
         }
 
+        [Test]
+        public void Set_Count()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            Assert.That(tim.DogsSet.Count, Is.EqualTo(2));
+            Assert.That(tim.TagsSet.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Set_Add()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            var pipi = _realm.Write(() =>
+            {
+                var innerPipi = _realm.DynamicApi.CreateObject("DynamicDog", null);
+                innerPipi.Name = PipilottasName;
+                innerPipi.Color = "Orange";
+
+                Assert.That(tim.DogsSet.Add(innerPipi), Is.True);
+                Assert.That(tim.TagsSet.Add("cheerful"), Is.True);
+
+                return innerPipi;
+            });
+
+            Assert.That(tim.DogsSet.Count, Is.EqualTo(3));
+            Assert.That(((IEnumerable<dynamic>)tim.DogsSet).Any(d => d.Name == PipilottasName));
+            Assert.That(tim.DogsSet.Contains(pipi));
+
+            Assert.That(tim.TagsSet.Count, Is.EqualTo(3));
+            Assert.That(((IEnumerable<dynamic>)tim.TagsSet).Any(t => t == "cheerful"));
+            Assert.That(tim.TagsSet.Contains("cheerful"));
+
+            _realm.Write(() =>
+            {
+                // These are already added to the sets
+                Assert.That(tim.DogsSet.Add(pipi), Is.False);
+                Assert.That(tim.TagsSet.Add("cheerful"), Is.False);
+            });
+
+            Assert.That(tim.DogsSet.Count, Is.EqualTo(3));
+            Assert.That(((IEnumerable<dynamic>)tim.DogsSet).Any(d => d.Name == PipilottasName));
+            Assert.That(tim.DogsSet.Contains(pipi));
+
+            Assert.That(tim.TagsSet.Count, Is.EqualTo(3));
+            Assert.That(((IEnumerable<dynamic>)tim.TagsSet).Any(t => t == "cheerful"));
+            Assert.That(tim.TagsSet.Contains("cheerful"));
+        }
+
+        [Test]
+        public void Set_Iteration()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var dogNames = new List<string>();
+            var dogColors = new List<string>();
+
+            foreach (var dog in tim.DogsSet)
+            {
+                dogNames.Add(dog.Name);
+                dogColors.Add(dog.Color);
+            }
+
+            Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
+            Assert.That(dogColors, Is.EquivalentTo(new[] { "Black", "White" }));
+
+            var tags = new List<string>();
+
+            foreach (var tag in tim.TagsSet)
+            {
+                tags.Add(tag);
+            }
+
+            Assert.That(tags, Is.EquivalentTo(new[] { "coffee lover", "responsible" }));
+        }
+
+        [Test]
+        public void Set_Remove()
+        {
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            Assert.That(tim.DogsSet.Count, Is.EqualTo(2));
+
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(d => d.Name == BilbosName);
+            _realm.Write(() =>
+            {
+                tim.DogsSet.Remove(bilbo);
+                tim.TagsSet.Remove("responsible");
+            });
+
+            Assert.That(tim.DogsSet.Count, Is.EqualTo(1));
+            Assert.That(tim.DogsSet.Contains(bilbo), Is.False);
+
+            Assert.That(tim.TagsSet.Count, Is.EqualTo(1));
+            Assert.That(tim.TagsSet.Contains("responsible"), Is.False);
+        }
+
         // Suggested https://stackoverflow.com/a/10021436/1649102
         private static TValue TryGetValue<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey value, out bool found)
         {
@@ -605,5 +710,7 @@ namespace Realms.Tests.Database
             found = dict.TryGetValue(value, out result);
             return result;
         }
+
+        private static bool Any(dynamic collection, Func<dynamic, bool> predicate) => ((IEnumerable<dynamic>)collection).Any(predicate);
     }
 }

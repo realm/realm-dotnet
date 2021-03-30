@@ -104,7 +104,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 _setHandle.ExceptWith(realmCollection.Handle.Value);
                 return;
@@ -125,7 +125,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 _setHandle.IntersectWith(realmCollection.Handle.Value);
                 return;
@@ -163,7 +163,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 _setHandle.SymmetricExceptWith(realmCollection.Handle.Value);
                 return;
@@ -199,7 +199,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 _setHandle.UnionWith(realmCollection.Handle.Value);
                 return;
@@ -223,7 +223,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 return _setHandle.Overlaps(realmCollection.Handle.Value);
             }
@@ -249,7 +249,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 return _setHandle.SetEquals(realmCollection.Handle.Value);
             }
@@ -276,7 +276,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 return _setHandle.IsSubsetOf(realmCollection.Handle.Value, proper);
             }
@@ -318,7 +318,7 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
                 return _setHandle.IsSupersetOf(realmCollection.Handle.Value, proper);
             }

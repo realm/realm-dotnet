@@ -38,6 +38,8 @@ namespace Realms
 
         public IQueryProvider Provider { get; }
 
+        public override bool IsReadOnly => true;
+
         internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
         {
             Provider = realmResultsProvider;

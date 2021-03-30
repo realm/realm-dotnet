@@ -57,6 +57,8 @@ namespace Realms.Exceptions
         AppServiceError = 54,
         AppUnknownError = 59,
 
+        SessionError = 60,
+
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,
         StdInvalidOperation = 102

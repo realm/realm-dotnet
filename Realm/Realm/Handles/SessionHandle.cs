@@ -190,28 +190,35 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength, bool isClientReset)
         {
-            var handle = new SessionHandle(sessionHandlePtr);
-            var session = new Session(handle);
-            var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
-
-            SessionException exception;
-
-            if (isClientReset)
+            try
             {
-                var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
-                exception = new ClientResetException(session.User.App, message, userInfo);
-            }
-            else if (errorCode == ErrorCode.PermissionDenied)
-            {
-                var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
-                exception = new PermissionDeniedException(session.User.App, message, userInfo);
-            }
-            else
-            {
-                exception = new SessionException(message, errorCode);
-            }
+                var handle = new SessionHandle(sessionHandlePtr);
+                var session = new Session(handle);
+                var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
 
-            Session.RaiseError(session, exception);
+                SessionException exception;
+
+                if (isClientReset)
+                {
+                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
+                    exception = new ClientResetException(session.User.App, message, userInfo);
+                }
+                else if (errorCode == ErrorCode.PermissionDenied)
+                {
+                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
+                    exception = new PermissionDeniedException(session.User.App, message, userInfo);
+                }
+                else
+                {
+                    exception = new SessionException(message, errorCode);
+                }
+
+                Session.RaiseError(session, exception);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
