@@ -42,7 +42,7 @@ jobs:
         uses: .\.github\actions\build_cache_executor
         with:
           cmd: Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip && Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-          cachePath: 'C:\'
+          cachePath: ./wrappers/build.ps1
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
