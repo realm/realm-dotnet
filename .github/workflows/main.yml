@@ -41,7 +41,7 @@ jobs:
       - name: Fetch dependencies
         uses: .\.github\actions\build_cache_executor
         with:
-          cmd: Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip && Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+          cmd: powershell (Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip) -and (Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\)
           cachePath: ./wrappers/build.ps1
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
