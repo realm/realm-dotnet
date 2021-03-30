@@ -420,7 +420,7 @@ namespace Realms.Tests
 
     // This is a stripped-down version of SetsObject because Sync doesn't support float
     // or collections of nullable primitives
-    public class SyncSetsObject : RealmObject
+    public class SyncCollectionsObject : RealmObject
     {
         [MapTo("_id")]
         [PrimaryKey]
@@ -454,17 +454,40 @@ namespace Realms.Tests
 
         public ISet<DateTimeOffset> DateTimeOffsetSet { get; }
 
-        public ISet<RealmInteger<byte>> ByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>> Int16CounterSet { get; }
-
-        public ISet<RealmInteger<int>> Int32CounterSet { get; }
-
-        public ISet<RealmInteger<long>> Int64CounterSet { get; }
-
         public ISet<IntPropertyObject> ObjectSet { get; }
 
-        public ISet<RealmValue> RealmValueSet { get; }
+        public IDictionary<string, char> CharDict { get; }
+
+        public IDictionary<string, byte> ByteDict { get; }
+
+        public IDictionary<string, short> Int16Dict { get; }
+
+        public IDictionary<string, int> Int32Dict { get; }
+
+        public IDictionary<string, long> Int64Dict { get; }
+
+        public IDictionary<string, double> DoubleDict { get; }
+
+        public IDictionary<string, bool> BooleanDict { get; }
+
+        public IDictionary<string, decimal> DecimalDict { get; }
+
+        public IDictionary<string, Decimal128> Decimal128Dict { get; }
+
+        public IDictionary<string, ObjectId> ObjectIdDict { get; }
+
+        [Required]
+        public IDictionary<string, string> StringDict { get; }
+
+        [Required]
+        public IDictionary<string, byte[]> ByteArrayDict { get; }
+
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
+
+        // TODO: reenable when https://jira.mongodb.org/browse/REALMC-8495 is fixed
+        //public IDictionary<string, IntPropertyObject> ObjectDict { get; }
+
+        //public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
     }
 
     public class DictionariesObject : RealmObject
