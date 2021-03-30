@@ -37,8 +37,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          submodules: "recursive"
-      - uses: ./.github/actions/get-vcpkg-prebuilt
+          submodules: recursive
+      - name: Fetch dependencies
+        uses: .\.github\actions\build_cache_executor
+        with:
+          cmd: Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip && Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+          cachePath: 'C:\'
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
