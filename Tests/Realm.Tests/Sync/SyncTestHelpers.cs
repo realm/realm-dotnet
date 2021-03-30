@@ -18,7 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -37,10 +43,11 @@ namespace Realms.Tests.Sync
     public static class SyncTestHelpers
     {
         public const string DefaultPassword = "123456";
+        private const string DummyAppId = "myapp-123";
 
         private static readonly IDictionary<AppConfigType, string> _appIds = new Dictionary<AppConfigType, string>
         {
-            [AppConfigType.Default] = "myapp-123",
+            [AppConfigType.Default] = DummyAppId,
         };
 
         private static Uri _baseUri;
@@ -53,10 +60,12 @@ namespace Realms.Tests.Sync
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
         {
-            if (_baseUri == null || _appIds[AppConfigType.Default] == "myapp-123")
+            if (_baseUri == null)
             {
                 Assert.Ignore("MongoDB Realm is not setup.");
             }
+
+            ExtractBaasApps();
 
             if (ensureNoSessionErrors)
             {
@@ -95,17 +104,35 @@ namespace Realms.Tests.Sync
                     case "--baasurl":
                         _baseUri = new Uri(args[++i]);
                         break;
-                    case "--baasappid":
-                        var appId = args[++i];
-                        _appIds[GetConfigTypeForId(appId)] = appId;
-                        break;
                     default:
                         result.Add(args[i]);
                         break;
                 }
             }
 
+            ExtractBaasApps();
+
             return result.ToArray();
+        }
+
+        private static void ExtractBaasApps()
+        {
+            if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
+            {
+                return;
+            }
+
+            AsyncContext.Run(async () =>
+            {
+                using var client = new BaasClient(_baseUri);
+
+                var apps = await client.GetApps();
+
+                foreach (var (appName, appId) in apps)
+                {
+                    _appIds[GetConfigTypeForId(appName)] = appId;
+                }
+            });
         }
 
         public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)
@@ -136,19 +163,102 @@ namespace Realms.Tests.Sync
             return tcs.Task;
         }
 
-        private static AppConfigType GetConfigTypeForId(string appId)
+        private static AppConfigType GetConfigTypeForId(string appName)
         {
-            if (appId.StartsWith("dotnet-integration-tests"))
+            if (appName == "dotnet-integration-tests")
             {
                 return AppConfigType.Default;
             }
 
-            if (appId.StartsWith("int-partition-key"))
+            if (appName == "int-partition-key")
             {
                 return AppConfigType.IntPartitionKey;
             }
 
-            throw new NotSupportedException($"Unexpected appId: {appId}");
+            if (appName == "objectid-partition-key")
+            {
+                return AppConfigType.ObjectIdPartitionKey;
+            }
+
+            if (appName == "uuid-partition-key")
+            {
+                return AppConfigType.UUIDPartitionKey;
+            }
+
+            throw new NotSupportedException($"Unexpected appName: {appName}");
+        }
+
+        private class BaasClient : IDisposable
+        {
+            private readonly Uri _baseUri;
+            private readonly HttpClient _client = new HttpClient();
+
+            public BaasClient(Uri baseUri)
+            {
+                _baseUri = baseUri;
+                _client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
+            }
+
+            private async Task Authenticate()
+            {
+                if (_client.DefaultRequestHeaders.Authorization != null)
+                {
+                    return;
+                }
+
+                using var request = GetJsonContent(new
+                {
+                    username = "unique_user@domain.com",
+                    password = "password"
+                });
+
+                var response = await _client.PostAsync(GetAdminUri("auth/providers/local-userpass/login"), request);
+                var content = await response.Content.ReadAsStringAsync();
+                var doc = BsonDocument.Parse(content);
+                _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {doc["access_token"].AsString}");
+            }
+
+            private async Task<string> GetGroupId()
+            {
+                await Authenticate();
+                var response = await _client.GetAsync(GetAdminUri("auth/profile"));
+                var content = await response.Content.ReadAsStringAsync();
+                var doc = BsonDocument.Parse(content);
+                return doc["roles"].AsBsonArray[0].AsBsonDocument["group_id"].AsString;
+            }
+
+            public async Task<(string AppName, string AppId)[]> GetApps()
+            {
+                var groupId = await GetGroupId();
+                var response = await _client.GetAsync(GetAdminUri($"groups/{groupId}/apps"));
+                var content = await response.Content.ReadAsStringAsync();
+                return BsonSerializer.Deserialize<BsonArray>(content)
+                    .Select(x => x.AsBsonDocument)
+                    .Select(doc => (doc["name"].AsString, doc["client_app_id"].AsString))
+                    .ToArray();
+            }
+
+            public void Dispose()
+            {
+                _client.Dispose();
+            }
+
+            private Uri GetAdminUri(string relativePath)
+            {
+                var builder = new UriBuilder(_baseUri);
+                builder.Path = $"api/admin/v3.0/{relativePath}";
+                return builder.Uri;
+            }
+
+            private static HttpContent GetJsonContent(object obj)
+            {
+                var json = obj.ToJson();
+                var content = new StringContent(json);
+
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                return content;
+            }
         }
     }
 }

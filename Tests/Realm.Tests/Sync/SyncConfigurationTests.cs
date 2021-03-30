@@ -30,8 +30,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithoutPath()
         {
-            var user = GetFakeUser();
-            var config = GetSyncConfiguration("foo-bar", user);
+            var config = GetFakeConfig();
 
             var file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists, Is.False);
@@ -47,8 +46,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithRelativePath()
         {
-            var user = GetFakeUser();
-            var config = GetSyncConfiguration("foo-bar", user, "myrealm.realm");
+            var config = GetFakeConfig(optionalPath: "myrealm.realm");
 
             var file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists, Is.False);
@@ -65,10 +63,8 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            var user = GetFakeUser();
-
             var path = Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString());
-            var config = GetSyncConfiguration("foo-bar", user, path);
+            var config = GetFakeConfig(optionalPath: path);
 
             Realm.DeleteRealm(config);
             var file = new FileInfo(config.DatabasePath);
@@ -86,10 +82,9 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithEncryptionKey_DoesntThrow()
         {
-            var user = GetFakeUser();
             var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
 
-            var config = GetSyncConfiguration("foo-bar", user);
+            var config = GetFakeConfig();
             config.EncryptionKey = TestHelpers.GetEncryptionKey(key);
 
             Assert.That(() => GetRealm(config), Throws.Nothing);
@@ -98,19 +93,15 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_CanBeSetAsRealmConfigurationDefault()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
+            var config = GetFakeConfig();
+            RealmConfiguration.DefaultConfiguration = config;
 
-                RealmConfiguration.DefaultConfiguration = GetSyncConfiguration("abc", user);
+            using var realm = GetRealm();
 
-                using var realm = GetRealm();
-
-                Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
-                var syncConfig = (SyncConfiguration)realm.Config;
-                Assert.That(syncConfig.User.Id, Is.EqualTo(user.Id));
-                Assert.That(syncConfig.Partition, Is.EqualTo("abc"));
-            });
+            Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
+            var syncConfig = (SyncConfiguration)realm.Config;
+            Assert.That(syncConfig.User.Id, Is.EqualTo(config.User.Id));
+            Assert.That(syncConfig.Partition, Is.EqualTo(config.Partition));
         }
     }
 }

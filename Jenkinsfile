@@ -372,23 +372,19 @@ def NetCoreTest(String nodeName, String targetFramework) {
         dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
-      String integrationTestsLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
-      String intPartitionKeyLocation = "${env.WORKSPACE}/Tests/TestApps/int-partition-key"
-
       if (isUnix()) {
         if (nodeName == 'docker') {
           def test_runner_image = CreateDockerContainer(targetFramework)
           withRealmCloud(
             version: '2021-03-28',
             appsToImport: [
-              "dotnet-integration-tests": integrationTestsLocation,
-              "int-partition-key": intPartitionKeyLocation
+              "dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests",
+              "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key"
+              "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key"
+              "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
-              def integrationTestsId = sh script: "cat ${integrationTestsLocation}/app_id", returnStdout: true
-              def intPartitionKeyId = sh script: "cat ${intPartitionKeyLocation}/app_id", returnStdout: true
-
-              script += " --baasurl http://mongodb-realm:9090 --baasappid ${integrationTestsId.trim()} --baasappid ${intPartitionKeyId.trim()}"
+              script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
               sh """
                 export HOME=/tmp
