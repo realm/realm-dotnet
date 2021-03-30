@@ -379,8 +379,8 @@ def NetCoreTest(String nodeName, String targetFramework) {
             version: '2021-03-28',
             appsToImport: [
               "dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests",
-              "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key"
-              "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key"
+              "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key",
+              "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
               "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
