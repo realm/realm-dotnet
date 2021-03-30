@@ -16,7 +16,7 @@ jobs:
           REALM_CMAKE_CONFIGURATION: Release
         with:
           cmd: ./wrappers/build-macos.sh
-          cachePath: ./wrappers
+          cachePaths: ./wrappers
 
   build-wrappers-ios:
     runs-on: macos-latest
@@ -30,7 +30,7 @@ jobs:
         uses: ./.github/actions/build_cache_executor
         with:
           cmd: ./wrappers/build-ios.sh --configuration=Release
-          cachePath: ./wrappers
+          cachePaths: ./wrappers
 
   build-wrappers-windows:
     runs-on: windows-latest
@@ -44,12 +44,16 @@ jobs:
         with:
           submodules: recursive
       - name: Fetch dependencies
+        # uses: .\.github\actions\get-vcpkg-prebuilt
         uses: .\.github\actions\build_cache_executor
         with:
           cmd: powershell (Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip) -and (Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\)
-          cachePath: ./wrappers/build.ps1
+          cachePaths: |
+            'C:\'
+            '!C:\System Volume Information'
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
           cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
-          cachePath: .\wrappers
+          # cachePaths: .\wa!ppers
+#

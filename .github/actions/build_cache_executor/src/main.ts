@@ -3,8 +3,8 @@ import * as actionCore from "../../../ga_packages/build_cache_executor/dist/buil
 
 async function run(): Promise<void> {
   try {
-    const path = core.getInput("cachePath", { required: true });
     const cmd = core.getInput("cmd", { required: true });
+    const path = core.getInput("cachePaths", { required: true });
 
     const cacheKey = await actionCore.actionCore(path, cmd, core);
 
