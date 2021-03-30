@@ -163,29 +163,22 @@ namespace Realms.Tests.Sync
 
         #region RealmValue
 
-        [Test]
-        public void Set_RealmValue1() => TestSetCore(o => o.RealmValueSet, "abc", 10);
+        public static IEnumerable<(RealmValue Item1, RealmValue Item2)> RealmTestValues()
+        {
+            yield return ("abc", 10);
+            yield return (new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
+            yield return (new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
+            yield return (true, new IntPropertyObject { Int = 10 });
+        }
+
+        [TestCaseSource(nameof(RealmTestValues))]
+        public void Set_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestSetCore(o => o.RealmValueSet, values.Item1, values.Item2);
+
+        [TestCaseSource(nameof(RealmTestValues))]
+        public void Dict_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestDictionaryCore(o => o.RealmValueDict, values.Item1, values.Item2);
 
         [Test]
-        public void Set_RealmValue2() => TestSetCore(o => o.RealmValueSet, new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
-
-        [Test]
-        public void Set_RealmValue3() => TestSetCore(o => o.RealmValueSet, new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
-
-        [Test]
-        public void Set_RealmValue4() => TestSetCore(o => o.RealmValueSet, true, new IntPropertyObject { Int = 10 });
-
-        [Test]
-        public void Dict_RealmValue1() => TestDictionaryCore(o => o.RealmValueDict, "abc", 10);
-
-        [Test]
-        public void Dict_RealmValue2() => TestDictionaryCore(o => o.RealmValueDict, new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
-
-        [Test]
-        public void Dict_RealmValue3() => TestDictionaryCore(o => o.RealmValueDict, new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
-
-        [Test]
-        public void Dict_RealmValue4() => TestDictionaryCore(o => o.RealmValueDict, true, new IntPropertyObject { Int = 10 });
+        public void Property_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestPropertyCore(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, values.Item1, values.Item2);
 
         #endregion
 
