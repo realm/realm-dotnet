@@ -2,84 +2,129 @@ name: build and test
 on: [push]
 
 jobs:
-  build-wrappers-macos:
-    runs-on: macos-latest
-    name: Build macOs wrappers
+  # build-wrappers-macos:
+  #   runs-on: macos-latest
+  #   name: Build macOs wrappers
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  #     - name: Build wrappers
+  #       uses: ./.github/actions/build_cache_executor
+  #       env:
+  #         REALM_CMAKE_CONFIGURATION: Release
+  #       with:
+  #         cmd: ./wrappers/build-macos.sh
+  #         cachePath: ./wrappers
+
+  # build-wrappers-ios:
+  #   runs-on: macos-latest
+  #   name: Build iOS wrappers
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  #     - name: Build wrappers
+  #       uses: ./.github/actions/build_cache_executor
+  #       with:
+  #         cmd: ./wrappers/build-ios.sh --configuration=Release
+  #         cachePath: ./wrappers
+
+  # build-wrappers-windows:
+  #   runs-on: windows-latest
+  #   name: Build Windows wrappers
+  #   strategy:
+  #     matrix:
+  #       arch: [Win32, x64]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  #     - name: Check if cached dependencies
+  #       id: dependencies-cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: 'C:\'
+  #         key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
+  #     - name: Fetch dependencies
+  #       if: steps.dependencies-cache.outputs.cache-hit != 'true'
+  #       uses: .\.github\actions\get-vcpkg-prebuilt
+  #     - name: Build wrappers
+  #       uses: .\.github\actions\build_cache_executor
+  #       with:
+  #         cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
+  #         cachePath: .\wrappers
+
+  # build-wrappers-windows-uwp:
+  #   runs-on: windows-latest
+  #   name: Build Windows UWP wrappers
+  #   strategy:
+  #     matrix:
+  #       arch: [Win32, x64, ARM]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  #     - name: Check if cached dependencies
+  #       id: dependencies-cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: 'C:\'
+  #         key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
+  #     - name: Fetch dependencies
+  #       if: steps.dependencies-cache.outputs.cache-hit != 'true'
+  #       uses: .\.github\actions\get-vcpkg-prebuilt
+  #     - name: Build wrappers
+  #       uses: .\.github\actions\build_cache_executor
+  #       with:
+  #         cmd: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
+  #         cachePath: .\wrappers
+
+  build-wrappers-linux:
+    runs-on: ubuntu-latest
+    name: Build linux wrappers
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Spin docker container
+        uses: ./.github/actions/setup-docker-container
+        with:
+          dockerfile: ./wrappers/centos.Dockerfile
       - name: Build wrappers
         uses: ./.github/actions/build_cache_executor
         env:
           REALM_CMAKE_CONFIGURATION: Release
         with:
-          cmd: ./wrappers/build-macos.sh
+          cmd: ./wrappers/build.sh
           cachePath: ./wrappers
-
-  build-wrappers-ios:
-    runs-on: macos-latest
-    name: Build iOS wrappers
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Build wrappers
-        uses: ./.github/actions/build_cache_executor
-        with:
-          cmd: ./wrappers/build-ios.sh --configuration=Release
-          cachePath: ./wrappers
-
-  build-wrappers-windows:
-    runs-on: windows-latest
-    name: Build Windows wrappers
-    strategy:
-      matrix:
-        arch: [Win32, x64]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check if cached dependencies
-        id: dependencies-cache
-        uses: actions/cache@v2
-        with:
-          path: 'C:\'
-          key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
-      - name: Fetch dependencies
-        if: steps.dependencies-cache.outputs.cache-hit != 'true'
-        uses: .\.github\actions\get-vcpkg-prebuilt
-      - name: Build wrappers
-        uses: .\.github\actions\build_cache_executor
-        with:
-          cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
-          cachePath: .\wrappers
-
-  build-wrappers-windows-uwp:
-    runs-on: windows-latest
-    name: Build Windows UWP wrappers
-    strategy:
-      matrix:
-        arch: [Win32, x64, ARM]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check if cached dependencies
-        id: dependencies-cache
-        uses: actions/cache@v2
-        with:
-          path: 'C:\'
-          key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
-      - name: Fetch dependencies
-        if: steps.dependencies-cache.outputs.cache-hit != 'true'
-        uses: .\.github\actions\get-vcpkg-prebuilt
-      - name: Build wrappers
-        uses: .\.github\actions\build_cache_executor
-        with:
-          cmd: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
-          cachePath: .\wrappers
+  # build-wrappers-android:
+  #   runs-on: windows-latest
+  #   name: Build Windows UWP wrappers
+  #   strategy:
+  #     matrix:
+  #       arch: [Win32, x64, ARM]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  #     - name: Check if cached dependencies
+  #       id: dependencies-cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: 'C:\'
+  #         key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
+  #     - name: Fetch dependencies
+  #       if: steps.dependencies-cache.outputs.cache-hit != 'true'
+  #       uses: .\.github\actions\get-vcpkg-prebuilt
+  #     - name: Build wrappers
+  #       uses: .\.github\actions\build_cache_executor
+  #       with:
+  #         cmd: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
+  #         cachePath: .\wrappers
