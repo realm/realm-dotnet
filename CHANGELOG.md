@@ -25,6 +25,24 @@
   var obj = new MyObject();
   obj.Denominations.Add("quarter", 0.25d);
   ```
+* Add support for `RealmValue` data type. This new type can represent any valid Realm data type, including objects. Collections (lists, sets and dictionaries) of `RealmValue` are also supported, but 'RealmValue' cannot contain collections. Please note that a property of type `RealmValue` cannot be nullable, but can contain null, represented by the value `RealmValue.Null`. (PR [#2252](https://github.com/realm/realm-dotnet/pull/2252))   
+
+  ```csharp
+  public class MyObject : RealmObject
+  {
+      public RealmValue MyValue { get; set; }
+  }
+  
+  var obj = new MyObject();
+  obj.MyValue = RealmValue.Null;
+  obj.MyValue = 1;
+  obj.MyValue = "abc";
+  
+  if (obj.Type == RealmValueType.String)
+  {
+      var myString = obj.MyValue.AsString();
+  }
+  ```
 * Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
