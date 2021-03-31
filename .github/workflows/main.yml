@@ -44,7 +44,7 @@ jobs:
         id: dependencies-cache
         uses: actions/cache@v2
         with:
-          path: 'C:\'
+          path: 'C:\src'
           key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
       - name: Fetch dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
@@ -58,6 +58,10 @@ jobs:
       matrix:
         arch: [Win32, x64]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
@@ -72,6 +76,10 @@ jobs:
       matrix:
         arch: [Win32, x64, ARM]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
