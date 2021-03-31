@@ -43,14 +43,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Check if cached dependencies
+        id: dependencies-cache
+        uses: actions/cache@v2
+        with:
+          path: 'C:\'
+          key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
       - name: Fetch dependencies
+        if: steps.dependencies-cache.outputs.cache-hit != 'true'
         uses: .\.github\actions\get-vcpkg-prebuilt
-        # uses: .\.github\actions\build_cache_executor
-        # with:
-        #   cmd: powershell (Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip) -and (Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\)
-        #   cachePath: |
-        #     C:\
-        #     !C:\System Volume Information
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
