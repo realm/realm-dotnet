@@ -32,17 +32,10 @@ jobs:
           cmd: ./wrappers/build-ios.sh --configuration=Release
           cachePath: ./wrappers
 
-  build-wrappers-windows:
+  fetch-windows-dependencies:
     runs-on: windows-latest
-    name: Build Windows wrappers
-    strategy:
-      matrix:
-        arch: [Win32, x64]
+    name: Fetch windows dependencies
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Check if cached dependencies
         id: dependencies-cache
         uses: actions/cache@v2
@@ -52,6 +45,19 @@ jobs:
       - name: Fetch dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
         uses: .\.github\actions\get-vcpkg-prebuilt
+
+  build-wrappers-windows:
+    runs-on: windows-latest
+    name: Build Windows wrappers
+    needs: fetch-windows-dependencies
+    strategy:
+      matrix:
+        arch: [Win32, x64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
@@ -61,6 +67,7 @@ jobs:
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Build Windows UWP wrappers
+    needs: fetch-windows-dependencies
     strategy:
       matrix:
         arch: [Win32, x64, ARM]
@@ -69,15 +76,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Check if cached dependencies
-        id: dependencies-cache
-        uses: actions/cache@v2
-        with:
-          path: 'C:\'
-          key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
-      - name: Fetch dependencies
-        if: steps.dependencies-cache.outputs.cache-hit != 'true'
-        uses: .\.github\actions\get-vcpkg-prebuilt
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
