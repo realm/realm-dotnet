@@ -1,9 +1,0 @@
-name: setup-docker-container
-description: Setup docker container to be used in a github action workflow
-inputs:
-  dockerfile:
-    description: Name of the dockerfile
-    required: true
-runs:
-  using: docker
-  image: ${{ inputs.dockerfile }}

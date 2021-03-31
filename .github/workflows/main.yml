@@ -93,9 +93,7 @@ jobs:
         with:
           submodules: recursive
       - name: Spin docker container
-        uses: ./.github/actions/setup-docker-container
-        with:
-          dockerfile: ./wrappers/centos.Dockerfile
+        uses: ./.github/actions/setup-centos-docker-container
       - name: Build wrappers
         uses: ./.github/actions/build_cache_executor
         env:
@@ -103,28 +101,22 @@ jobs:
         with:
           cmd: ./wrappers/build.sh
           cachePath: ./wrappers
-  # build-wrappers-android:
-  #   runs-on: windows-latest
-  #   name: Build Windows UWP wrappers
-  #   strategy:
-  #     matrix:
-  #       arch: [Win32, x64, ARM]
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         submodules: recursive
-  #     - name: Check if cached dependencies
-  #       id: dependencies-cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: 'C:\'
-  #         key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
-  #     - name: Fetch dependencies
-  #       if: steps.dependencies-cache.outputs.cache-hit != 'true'
-  #       uses: .\.github\actions\get-vcpkg-prebuilt
-  #     - name: Build wrappers
-  #       uses: .\.github\actions\build_cache_executor
-  #       with:
-  #         cmd: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
-  #         cachePath: .\wrappers
+
+  build-wrappers-android:
+    runs-on: ubuntu-latest
+    name: Build Android wrappers
+    strategy:
+      matrix:
+        arch: [armeabi-v7a, arm64-v8a, x86, x86_64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Spin docker container
+        uses: ./.github/actions/setup-android-docker-container
+      - name: Build wrappers
+        uses: ./.github/actions/build_cache_executor
+        with:
+          cmd: ./build-android.sh --configuration=Release --ARCH=${{ matrix.arch }}
+          cachePath: ./wrappers
