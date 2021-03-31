@@ -36,6 +36,10 @@ jobs:
     runs-on: windows-latest
     name: Fetch windows dependencies
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Check if cached dependencies
         id: dependencies-cache
         uses: actions/cache@v2
@@ -54,10 +58,6 @@ jobs:
       matrix:
         arch: [Win32, x64]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
@@ -72,10 +72,6 @@ jobs:
       matrix:
         arch: [Win32, x64, ARM]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
