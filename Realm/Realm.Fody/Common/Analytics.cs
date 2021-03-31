@@ -117,7 +117,7 @@ namespace RealmWeaver
 
                     // Version of weaver is expected to match that of the library.
                     // TODO: temp - remove that when we're out of beta
-                    .Replace("%REALM_VERSION%", "10.0.0-beta.1") // Assembly.GetExecutingAssembly().GetName().Version.ToString())
+                    .Replace("%REALM_VERSION%", "10.2.0-beta.1") // Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)
