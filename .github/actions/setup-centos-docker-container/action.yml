@@ -1,5 +1,0 @@
-name: setup-centos-docker-container
-description: Setup docker container for centos to be used in a github action to build wrappers
-runs:
-  using: docker
-  image: centos.Dockerfile
