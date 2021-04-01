@@ -2,4 +2,4 @@ name: centos-docker-container-build
 description: Spawn a centos docker container and linux build wrappers
 runs:
   using: docker
-  image: /github/workspace/wrappers/centos.Dockerfile
+  image: ../../../wrappers/centos.Dockerfile
