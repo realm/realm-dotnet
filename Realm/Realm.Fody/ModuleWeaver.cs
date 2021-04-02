@@ -30,8 +30,9 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName);
-        var result = weaver.Execute();
-        WriteInfo(result.ToString());
+        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
+        var executionResult = weaver.Execute(!disableAnalytics);
+        WriteInfo(executionResult.ToString());
     }
 
     public override IEnumerable<string> GetAssembliesForScanning()

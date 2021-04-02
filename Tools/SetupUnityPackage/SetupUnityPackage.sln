@@ -4,8 +4,6 @@ VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetupUnityPackage", "SetupUnityPackage\SetupUnityPackage.csproj", "{32143B0E-FF13-4EFD-A487-0667C970ECFD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityWeaver", "UnityWeaver\UnityWeaver.csproj", "{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,10 +14,6 @@ Global
 		{32143B0E-FF13-4EFD-A487-0667C970ECFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32143B0E-FF13-4EFD-A487-0667C970ECFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32143B0E-FF13-4EFD-A487-0667C970ECFD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF3EDFBB-3B79-45E2-AD7E-B7A2329E1802}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

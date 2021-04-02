@@ -34,11 +34,33 @@ namespace RealmWeaver
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
     public class UnityWeaver : IPostBuildPlayerScriptDLLs
     {
+        private const string EnableAnalyticsPref = "realm_enable_analytics";
+        private const string EnableAnalyticsMenuItemPath = "Realm/Enable build-time analytics";
+
+        private static bool _analyticsEnabled;
+
+        private static bool AnalyticsEnabled
+        {
+            get => _analyticsEnabled && Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null;
+            set
+            {
+                _analyticsEnabled = value;
+                EditorPrefs.SetBool(EnableAnalyticsPref, value);
+                Menu.SetChecked(EnableAnalyticsMenuItemPath, value);
+            }
+        }
+
         public int callbackOrder => 0;
 
         [InitializeOnLoadMethod]
         public static void Initialize()
         {
+            // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
+            EditorApplication.delayCall += () =>
+            {
+                AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
+            };
+
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
             {
                 if (string.IsNullOrEmpty(assemblyPath))
@@ -57,6 +79,7 @@ namespace RealmWeaver
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences);
             };
 
+            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
             WeaveAssembliesOnEditorLaunch();
         }
 
@@ -65,6 +88,12 @@ namespace RealmWeaver
         {
             var assembliesWoven = await WeaveAllAssemblies();
             UnityLogger.Instance.Info($"Weaving completed. {assembliesWoven} assemblies needed weaving.");
+        }
+
+        [MenuItem(EnableAnalyticsMenuItemPath)]
+        public static void DisableAnalyticsMenuItem()
+        {
+            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
         }
 
         private static void WeaveAssembliesOnEditorLaunch()
@@ -88,7 +117,6 @@ namespace RealmWeaver
             try
             {
                 EditorApplication.LockReloadAssemblies();
-
                 var weavingTasks = CompilationPipeline.GetAssemblies(AssembliesType.Player)
                     .Select(assembly => Task.Run(() =>
                     {
@@ -150,7 +178,7 @@ namespace RealmWeaver
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
                     // using NETStandard2, so we just hardcode this.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, new FrameworkName(".NETStandard,Version=v2.0"));
-                    var results = weaver.Execute();
+                    var results = weaver.Execute(AnalyticsEnabled);
 
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
@@ -171,6 +199,11 @@ namespace RealmWeaver
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
+            if (report == null)
+            {
+                return;
+            }
+
             // This is a bit hacky - we need actual references, not directories, containing references, so we pass folder/dummy.dll
             // knowing that dummy.dll will be stripped.
             var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(ApiCompatibilityLevel.NET_Standard_2_0).Select(d => Path.Combine(d, "dummy.dll"));

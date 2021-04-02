@@ -33,9 +33,6 @@
   <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\" />
-    <Folder Include="Extensions\" />
-  </ItemGroup>
+  <Import Project="..\Realm.Weaver\Realm.Weaver.projitems" Label="Shared" />
   <Import Project="..\AssemblyInfo.props" />
 </Project>
