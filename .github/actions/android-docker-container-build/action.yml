@@ -3,4 +3,4 @@ description: Spawn a debian docker container and linux build wrappers
 runs:
   using: docker
   # this won't work, search how to
-  image: /github/workspace/wrappers/android.Dockerfile
+  image: ../../../wrappers/android.Dockerfile
