@@ -37,13 +37,20 @@ namespace Realms
         {
         }
 
-        protected override void Dispose(bool disposing)
+        protected override bool ReleaseHandle()
         {
-            var managedObjectHandle = NativeMethods.destroy_notificationtoken(handle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            GCHandle.FromIntPtr(managedObjectHandle).Free();
+            try
+            {
+                var managedObjectHandle = NativeMethods.destroy_notificationtoken(handle, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                GCHandle.FromIntPtr(managedObjectHandle).Free();
+            }
+            catch
+            {
+                return false;
+            }
 
-            base.Dispose(disposing);
+            return base.ReleaseHandle();
         }
 
         protected override void Unbind()
