@@ -76,10 +76,11 @@ jobs:
           key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
       - name: Build wrappers
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        uses: .\.github\actions\build_cache_executor
-        with:
-          cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
-          cachePath: .\wrappers
+        # uses: .\.github\actions\build_cache_executor
+        # with:
+        #   cmd: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
+        #   cachePath: .\wrappers
+        run: powershell .\wrappers\build.ps1 Windows -Configuration Release -Platforms ${{ matrix.arch }}
 
   build-wrappers-windows-uwp:
     runs-on: windows-latest
@@ -107,7 +108,8 @@ jobs:
           key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
       - name: Build wrappers
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        uses: .\.github\actions\build_cache_executor
-        with:
-          cmd: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
-          cachePath: .\wrappers
+        # uses: .\.github\actions\build_cache_executor
+        # with:
+        #   cmd: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
+        #   cachePath: .\wrappers
+        run: powershell .\wrappers\build.ps1 WindowsStore -Configuration Release -Platforms ${{ matrix.arch }}
