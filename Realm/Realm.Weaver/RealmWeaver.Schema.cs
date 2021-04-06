@@ -70,7 +70,7 @@ namespace RealmWeaver
             }
             else
             {
-                _logger.Warning("Default schema appears to be empty. This is not an error if you don't have any RealmObject inheritors declared. Otherwise it may be a bug with the weaver.");
+                _logger.Warning($"Default schema for {_moduleDefinition.Assembly.Name} appears to be empty. This is not an error if you don't have any RealmObject inheritors declared. Otherwise it may be a bug with the weaver.");
             }
         }
 

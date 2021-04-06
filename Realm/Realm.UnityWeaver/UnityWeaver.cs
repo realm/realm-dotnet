@@ -28,6 +28,7 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
+using UnityEngine;
 
 namespace RealmWeaver
 {
@@ -41,7 +42,7 @@ namespace RealmWeaver
 
         private static bool AnalyticsEnabled
         {
-            get => _analyticsEnabled && Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null;
+            get => _analyticsEnabled;
             set
             {
                 _analyticsEnabled = value;
@@ -76,7 +77,7 @@ namespace RealmWeaver
                     return;
                 }
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences);
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
             };
 
             AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
@@ -120,7 +121,7 @@ namespace RealmWeaver
                 var weavingTasks = CompilationPipeline.GetAssemblies(AssembliesType.Player)
                     .Select(assembly => Task.Run(() =>
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences))
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
                         {
                             return null;
                         }
@@ -158,7 +159,7 @@ namespace RealmWeaver
             return assembliesWoven;
         }
 
-        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string targetOSName)
         {
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -178,7 +179,16 @@ namespace RealmWeaver
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
                     // using NETStandard2, so we just hardcode this.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, new FrameworkName(".NETStandard,Version=v2.0"));
-                    var results = weaver.Execute(AnalyticsEnabled);
+
+                    var analyticsConfig = new Analytics.Config
+                    {
+                        TargetOSName = targetOSName,
+                        FrameworkVersion = Application.unityVersion,
+                        Framework = framework,
+                        RunAnalytics = AnalyticsEnabled
+                    };
+
+                    var results = weaver.Execute(analyticsConfig);
 
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
@@ -212,9 +222,10 @@ namespace RealmWeaver
                 .ToArray();
 
             var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
+            var targetOS = GetTargetOSName(report.summary.platform);
             foreach (var file in assembliesToWeave)
             {
-                WeaveAssemblyCore(file.path, referencePaths);
+                WeaveAssemblyCore(file.path, referencePaths, "Unity", targetOS);
             }
 
             if (report.summary.platform == BuildTarget.iOS)
@@ -233,6 +244,44 @@ namespace RealmWeaver
                         realmResolutionResult.SaveModuleUpdates();
                     }
                 }
+            }
+        }
+
+        private static string GetTargetOSName(BuildTarget target)
+        {
+            // These have to match Analytics.GetConfig(FrameworkName)
+            switch (target)
+            {
+                case BuildTarget.StandaloneOSX:
+                    return "osx";
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                    return "windows";
+                case BuildTarget.iOS:
+                    return "ios";
+                case BuildTarget.Android:
+                    return "android";
+                case BuildTarget.StandaloneLinux64:
+                    return "linux";
+                case BuildTarget.tvOS:
+                    return "tvos";
+                default:
+                    return "UNKNOWN";
+            }
+        }
+
+        private static string GetTargetOSName(RuntimePlatform target)
+        {
+            switch (target)
+            {
+                case RuntimePlatform.WindowsEditor:
+                    return "windows";
+                case RuntimePlatform.OSXEditor:
+                    return "osx";
+                case RuntimePlatform.LinuxEditor:
+                    return "linux";
+                default:
+                    return "UNKOWN";
             }
         }
 

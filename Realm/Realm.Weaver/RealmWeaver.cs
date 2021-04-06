@@ -161,7 +161,7 @@ namespace RealmWeaver
             _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
         }
 
-        public WeaveModuleResult Execute(bool shouldSubmitAnalytics)
+        public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
             //// System.Diagnostics.Debugger.Launch();
@@ -179,14 +179,16 @@ namespace RealmWeaver
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
-            var submitAnalytics = shouldSubmitAnalytics ? Task.Run(() =>
+            var submitAnalytics = Task.Run(() =>
             {
-                var analytics = new Analytics(_frameworkName, _moduleDefinition.Name, IsUsingSync());
+                analyticsConfig.ModuleName = _moduleDefinition.Name;
+                analyticsConfig.IsUsingSync = IsUsingSync();
+                var analytics = new Analytics(analyticsConfig);
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
 #if DEBUG
-                    _logger.Debug($@"
+                    _logger.Info($@"
 ----------------------------------
 Analytics payload
 {payload}
@@ -197,7 +199,7 @@ Analytics payload
                 {
                     _logger.Debug("Error submitting analytics: " + e.Message);
                 }
-            }) : Task.CompletedTask;
+            });
 
             var matchingTypes = GetMatchingTypes().ToArray();
             var WeavePropertyResults = new List<WeaveTypeResult>();

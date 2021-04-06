@@ -31,7 +31,16 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName);
         var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
-        var executionResult = weaver.Execute(!disableAnalytics);
+        var (targetOSName, targetOSVersion) = Analytics.GetTargetOS(frameworkName);
+        var analyticsConfig = new Analytics.Config
+        {
+            Framework = "xamarin", // This is for backwards compatibility
+            TargetOSName = targetOSName,
+            TargetOSVersion = targetOSVersion,
+            FrameworkVersion = frameworkName.Version.ToString(),
+            RunAnalytics = !disableAnalytics,
+        };
+        var executionResult = weaver.Execute(analyticsConfig);
         WriteInfo(executionResult.ToString());
     }
 
