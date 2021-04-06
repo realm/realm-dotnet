@@ -126,4 +126,4 @@ jobs:
         # if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/android-docker-container-build
         with:
-          entrypoint: wrappers/build-android.sh --configuration=Release --ARCH=${{ matrix.arch }}
+          entrypoint: '["wrappers/build-android.sh", "--configuration=Release", "--ARCH=${{ matrix.arch }}" ]'
