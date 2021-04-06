@@ -111,6 +111,24 @@ namespace Realms.Sync
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
+        /// </summary>
+        /// <param name="partition">
+        /// The partition identifying the remote Realm that will be synchronized.
+        /// </param>
+        /// <param name="user">
+        /// A valid <see cref="User"/>.
+        /// </param>
+        /// <param name="optionalPath">
+        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
+        /// </param>
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
+        public SyncConfiguration(Guid? partition, User user, string optionalPath = null)
+            : this((object)partition, user, optionalPath)
+        {
+        }
+
         private SyncConfiguration(object partition, User user, string path)
         {
             Argument.NotNull(user, nameof(user));
