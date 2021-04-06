@@ -21,6 +21,7 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "shared_realm_cs.hpp"
+#include "notifications_cs.hpp"
 
 #include <realm.hpp>
 #include <realm/object-store/object_store.hpp>
@@ -46,6 +47,9 @@ using OnBindingContextDestructedT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 
 namespace realm {
+    std::function<ObjectNotificationCallbackT> s_object_notification_callback;
+    std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
+
 namespace binding {
     std::function<OpenRealmCallbackT> s_open_realm_callback;
     std::function<RealmChangedT> s_realm_changed;
@@ -126,13 +130,17 @@ REALM_EXPORT void shared_realm_install_callbacks(
     GetNativeSchemaT* get_schema, 
     OpenRealmCallbackT* open_callback, 
     OnBindingContextDestructedT* on_binding_context_destructed,
-    LogMessageT* log_message)
+    LogMessageT* log_message,
+    ObjectNotificationCallbackT* notify_object,
+    DictionaryNotificationCallbackT* notify_dictionary)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
     s_open_realm_callback = wrap_managed_callback(open_callback);
     s_on_binding_context_destructed = wrap_managed_callback(on_binding_context_destructed);
     s_log_message = wrap_managed_callback(log_message);
+    realm::s_object_notification_callback = wrap_managed_callback(notify_object);
+    realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
 
     realm::binding::s_can_call_managed = true;
 }

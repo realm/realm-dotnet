@@ -33,6 +33,8 @@ namespace Realms.Tests.Database
         private class OrderedContainer : RealmObject
         {
             public IList<OrderedObject> Items { get; }
+
+            public IDictionary<string, OrderedObject> ItemsDictionary { get; }
         }
 
         private class OrderedObject : RealmObject
@@ -127,6 +129,101 @@ namespace Realms.Tests.Database
                 _realm.Refresh();
                 Assert.That(notificationCount, Is.EqualTo(1));
             }
+        }
+
+        [Test]
+        public void DictionaryUnsubscribeInNotificationCallback()
+        {
+            var container = _realm.Write(() =>
+            {
+                return _realm.Add(new OrderedContainer());
+            });
+
+            IDisposable notificationToken = null;
+
+            var notificationCount = 0;
+            notificationToken = container.ItemsDictionary.SubscribeForKeyNotifications(delegate
+            {
+                notificationCount++;
+                notificationToken.Dispose();
+            });
+
+            for (var i = 0; i < 2; i++)
+            {
+                _realm.Write(() => container.ItemsDictionary.Add(Guid.NewGuid().ToString(), new OrderedObject()));
+                _realm.Refresh();
+                Assert.That(notificationCount, Is.EqualTo(1));
+            }
+        }
+
+        [Test]
+        public void DictionarySubscribeInTransaction()
+        {
+            var notificationsCount = 0;
+            var (token, container) = _realm.Write(() =>
+            {
+                var container = _realm.Add(new OrderedContainer());
+                var token = container.ItemsDictionary.SubscribeForKeyNotifications((dict, changes, error) =>
+                {
+                    notificationsCount++;
+                });
+
+                return (token, container);
+            });
+
+            _realm.Refresh();
+            Assert.That(notificationsCount, Is.EqualTo(1));
+
+            _realm.Write(() =>
+            {
+                container.ItemsDictionary.Add(Guid.NewGuid().ToString(), new OrderedObject());
+            });
+
+            _realm.Refresh();
+            Assert.That(notificationsCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void DictionaryNotificationToken_KeepsCollectionAlive()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var dictionary = _realm.Write(() =>
+                {
+                    return _realm.Add(new OrderedContainer()).ItemsDictionary;
+                });
+
+                var weakRef = new WeakReference(dictionary);
+                var token = dictionary.SubscribeForKeyNotifications(delegate { });
+
+                dictionary = null;
+
+                for (var i = 0; i < 10; i++)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                Assert.That(weakRef.IsAlive);
+
+                token.Dispose();
+                token = null;
+
+                for (var i = 0; i < 10; i++)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    if (!weakRef.IsAlive)
+                    {
+                        break;
+                    }
+                }
+
+                Assert.That(weakRef.IsAlive, Is.False);
+            });
         }
 
         [Test]

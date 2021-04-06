@@ -1154,6 +1154,7 @@ namespace Realms.Tests.Database
 
                 await testData.AssertNotifications_Realm(managedDictionary);
                 await testData.AssertNotifications_CollectionChanged(managedDictionary);
+                await testData.AssertKeyNotifications(managedDictionary);
             });
         }
 
@@ -1424,6 +1425,71 @@ namespace Realms.Tests.Database
                 Assert.That(referenceDict, Is.Empty);
             }
 
+            public async Task AssertKeyNotifications(IDictionary<string, T> target)
+            {
+                Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
+
+                Seed(target);
+
+                target.AsRealmCollection().Realm.Refresh();
+
+                var callbacks = new List<DictionaryChangeSet>();
+                using var token = target.SubscribeForKeyNotifications((collection, changes, error) =>
+                {
+                    Assert.That(error, Is.Null);
+
+                    if (changes != null)
+                    {
+                        callbacks.Add(changes);
+                    }
+                });
+
+                var newKey = Guid.NewGuid().ToString();
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(newKey, SampleValue);
+                });
+
+                var changes = await EnsureRefreshed(callbacks, 1);
+
+                Assert.That(changes.InsertedKeys.Length, Is.EqualTo(1));
+                Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(0));
+
+                Assert.That(changes.InsertedKeys.Single(), Is.EqualTo(newKey));
+                Assert.That(target[changes.InsertedKeys.Single()], IsEqualTo(SampleValue));
+
+                if (!TryGetDifferentValue(target, SampleValue, out var result))
+                {
+                    Assert.Fail("Couldn't find a unique value to replace - fix the test!");
+                }
+
+                var keyToUpdate = result.Key;
+                WriteIfNecessary(target, () =>
+                {
+                    target[keyToUpdate] = SampleValue;
+                });
+
+                changes = await EnsureRefreshed(callbacks, 2);
+
+                Assert.That(changes.InsertedKeys.Length, Is.EqualTo(0));
+                Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(1));
+
+                Assert.That(changes.ModifiedKeys.Single(), Is.EqualTo(keyToUpdate));
+                Assert.That(target[changes.ModifiedKeys.Single()], IsEqualTo(SampleValue));
+
+                // Verify we stop receiving notifications after we dispose of the token
+                token.Dispose();
+
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(Guid.NewGuid().ToString(), SampleValue);
+                });
+
+                target.AsRealmCollection().Realm.Refresh();
+
+                Assert.That(callbacks.Count, Is.EqualTo(2));
+            }
+
             public async Task AssertNotifications_Realm(IDictionary<string, T> target)
             {
                 Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
@@ -1521,7 +1587,7 @@ namespace Realms.Tests.Database
                     target.Add(newKey, SampleValue);
                 });
 
-                var changes = await EnsureRefreshed(1);
+                var changes = await EnsureRefreshed(callbacks, 1);
                 var insertedIndex = assertInsertion(changes);
 
                 Assert.That(target.ElementAt(insertedIndex).Key, Is.EqualTo(newKey));
@@ -1535,7 +1601,7 @@ namespace Realms.Tests.Database
                     target.Remove(newKey);
                 });
 
-                changes = await EnsureRefreshed(2);
+                changes = await EnsureRefreshed(callbacks, 2);
 
                 var deletedIndex = assertDeletion(changes);
                 Assert.That(deletedIndex, Is.EqualTo(insertedIndex));
@@ -1558,7 +1624,7 @@ namespace Realms.Tests.Database
                     target[keyToUpdate] = SampleValue;
                 });
 
-                changes = await EnsureRefreshed(3);
+                changes = await EnsureRefreshed(callbacks, 3);
 
                 var (oldIndex, newIndex) = assertModification(changes);
 
@@ -1568,15 +1634,6 @@ namespace Realms.Tests.Database
 
                 Assert.That(target.AsRealmCollection()[newIndex].Key, Is.EqualTo(keyToUpdate));
                 Assert.That(target.AsRealmCollection()[newIndex].Value, IsEqualTo(SampleValue));
-
-                async Task<TArgs> EnsureRefreshed(int expectedCallbackCount)
-                {
-                    await TestHelpers.WaitForConditionAsync(() => callbacks.Count == expectedCallbackCount);
-
-                    Assert.That(callbacks.Count, Is.EqualTo(expectedCallbackCount));
-
-                    return callbacks[expectedCallbackCount - 1];
-                }
             }
 
             public async Task AssertFreeze(IDictionary<string, T> target)
@@ -1790,6 +1847,15 @@ namespace Realms.Tests.Database
 
                 result = (-1, null, default(T));
                 return false;
+            }
+
+            private static async Task<TArgs> EnsureRefreshed<TArgs>(IList<TArgs> callbacks, int expectedCallbackCount)
+            {
+                await TestHelpers.WaitForConditionAsync(() => callbacks.Count == expectedCallbackCount);
+
+                Assert.That(callbacks.Count, Is.EqualTo(expectedCallbackCount));
+
+                return callbacks[expectedCallbackCount - 1];
             }
 
             public IDictionary<string, T> GetReferenceDictionary() => InitialValues.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

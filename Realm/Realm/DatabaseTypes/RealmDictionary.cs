@@ -22,7 +22,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using Realms.Dynamic;
 using Realms.Helpers;
 
@@ -32,9 +34,18 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider, IRealmCollectionBase<DictionaryHandle>
+    public class RealmDictionary<TValue>
+        : RealmCollectionBase<KeyValuePair<string, TValue>>,
+          IDictionary<string, TValue>,
+          IDynamicMetaObjectProvider,
+          IRealmCollectionBase<DictionaryHandle>,
+          IKeyNotifiable
     {
+        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new List<DictionaryNotificationCallbackDelegate<TValue>>();
         private readonly DictionaryHandle _dictionaryHandle;
+
+        private bool _deliveredInitialKeyNotification;
+        private NotificationTokenHandle _keyNotificationToken;
 
         public TValue this[string key]
         {
@@ -144,6 +155,51 @@ namespace Realms
             return false;
         }
 
+        public IDisposable SubscribeForKeyNotifications(DictionaryNotificationCallbackDelegate<TValue> callback)
+        {
+            Argument.NotNull(callback, nameof(callback));
+
+            if (_keyCallbacks.Count == 0)
+            {
+                SubscribeForNotifications();
+            }
+            else if (_deliveredInitialKeyNotification)
+            {
+                callback(this, null, null);
+            }
+
+            _keyCallbacks.Add(callback);
+
+            return new DictionaryNotificationToken(this, callback);
+        }
+
+        private void SubscribeForNotifications()
+        {
+            Debug.Assert(_keyNotificationToken == null, "_keyNotificationToken must be null before subscribing.");
+
+            Realm.ExecuteOutsideTransaction(() =>
+            {
+                var managedResultsHandle = GCHandle.Alloc(this);
+                _keyNotificationToken = _dictionaryHandle.AddKeyNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
+            });
+        }
+
+        private void UnsubscribeFromNotifications(DictionaryNotificationCallbackDelegate<TValue> callback)
+        {
+            if (_keyCallbacks.Remove(callback) &&
+                _keyCallbacks.Count == 0)
+            {
+                UnsubscribeFromNotifications();
+            }
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            _keyNotificationToken?.Dispose();
+            _keyNotificationToken = null;
+            _deliveredInitialKeyNotification = false;
+        }
+
         private static string EnsureKeyNotNull(string key)
         {
             if (key == null)
@@ -159,5 +215,55 @@ namespace Realms
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Metadata, Realm);
+
+        void IKeyNotifiable.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
+        {
+            var managedException = exception?.Convert();
+            DictionaryChangeSet changeset = null;
+            if (changes != null)
+            {
+                var actualChanges = changes.Value;
+                changeset = new DictionaryChangeSet(
+                    insertedKeys: actualChanges.Insertions.AsEnumerable().Select(v => v.AsString()).ToArray(),
+                    modifiedKeys: actualChanges.Modifications.AsEnumerable().Select(v => v.AsString()).ToArray());
+            }
+            else
+            {
+                _deliveredInitialKeyNotification = true;
+            }
+
+            foreach (var callback in _keyCallbacks.ToArray())
+            {
+                callback(this, changeset, managedException);
+            }
+        }
+
+        private class DictionaryNotificationToken : IDisposable
+        {
+            private RealmDictionary<TValue> _dictionary;
+            private DictionaryNotificationCallbackDelegate<TValue> _callback;
+
+            internal DictionaryNotificationToken(RealmDictionary<TValue> dictionary, DictionaryNotificationCallbackDelegate<TValue> callback)
+            {
+                Argument.NotNull(dictionary, nameof(dictionary));
+                Argument.NotNull(callback, nameof(callback));
+
+                _dictionary = dictionary;
+                _callback = callback;
+            }
+
+            public void Dispose()
+            {
+                if (_dictionary == null || _callback == null)
+                {
+                    // Double dispose, just ignore
+                    return;
+                }
+
+                _dictionary.UnsubscribeFromNotifications(_callback);
+                _callback = null;
+                _dictionary = null;
+            }
+        }
     }
 }

@@ -34,7 +34,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     public abstract class RealmCollectionBase<T>
-        : NotificationsHelper.INotifiable,
+        : INotifiable,
           IRealmCollection<T>,
           IThreadConfined,
           IMetadataObject
@@ -227,7 +227,7 @@ namespace Realms
             Realm.ExecuteOutsideTransaction(() =>
             {
                 var managedResultsHandle = GCHandle.Alloc(this);
-                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), NotificationsHelper.NotificationCallback);
+                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }
 
@@ -370,7 +370,7 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
             ChangeSet changeset = null;
@@ -458,12 +458,21 @@ namespace Realms
 
             internal NotificationToken(RealmCollectionBase<T> collection, NotificationCallbackDelegate<T> callback)
             {
+                Argument.NotNull(collection, nameof(collection));
+                Argument.NotNull(callback, nameof(callback));
+
                 _collection = collection;
                 _callback = callback;
             }
 
             public void Dispose()
             {
+                if (_callback == null || _collection == null)
+                {
+                    // Double dispose - ignore
+                    return;
+                }
+
                 _collection.UnsubscribeFromNotifications(_callback);
                 _callback = null;
                 _collection = null;

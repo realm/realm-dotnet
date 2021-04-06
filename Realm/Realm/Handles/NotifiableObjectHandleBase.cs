@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
@@ -43,16 +44,25 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void NotificationCallbackDelegate(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
+        public delegate void NotificationCallback(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
 
         protected NotifiableObjectHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback);
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle);
 
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
 
         public abstract bool IsFrozen { get; }
+
+        [MonoPInvokeCallback(typeof(NotificationCallback))]
+        public static void NotifyObjectChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
+        {
+            if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable notifiable)
+            {
+                notifiable.NotifyCallbacks(new PtrTo<CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+            }
+        }
     }
 }
