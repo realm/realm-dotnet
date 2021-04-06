@@ -92,14 +92,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      # - name: Check if contains wrappers already
-      #   id: wrapper-cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ./wrappers/build/
-      #     key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+      - name: Check if contains wrappers already
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/
+          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
       - name: Spin docker container to build
-        # if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/centos-docker-container-build
         env:
           REALM_CMAKE_CONFIGURATION: Release
@@ -116,14 +116,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      # - name: Check if contains wrappers already
-      #   id: wrapper-cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ./wrappers/build/
-      #     key: wrapper-android-${{hashfiles('./wrappers/**')}}
+      - name: Check if contains wrappers already
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/
+          key: wrapper-android-${{ matrix.arch }}-${{hashfiles('./wrappers/**')}}
       - name: Spin docker container
-        # if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/android-docker-container-build
         with:
           entrypoint: wrappers/build-android.sh
