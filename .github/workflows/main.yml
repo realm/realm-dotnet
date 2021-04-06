@@ -62,6 +62,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Obtain the cached dependencies
+        uses: actions/cache@v2
+        with:
+          path: 'C:\src'
+          key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
@@ -80,6 +85,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Obtain the cached dependencies
+        uses: actions/cache@v2
+        with:
+          path: 'C:\src'
+          key: dependencies-windows-${{hashfiles('.\wrappers\build.ps1')}}
       - name: Build wrappers
         uses: .\.github\actions\build_cache_executor
         with:
