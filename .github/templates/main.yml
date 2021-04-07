@@ -6,7 +6,7 @@
 - name: Build wrappers
   uses: ./.github/actions/build_cache_executor
   with:
-    cmd: #@ cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == \"pull_request\" ? \"OFF\" : \"ON\"}}"
+    cmd: #@ cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
     inputPath: ./wrappers
     outputPath: ./wrappers/build/**
     outputVar: #@ outputVar
