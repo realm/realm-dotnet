@@ -102,6 +102,7 @@ jobs:
         # if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/centos-docker-container-build
         env:
+          PROJ_ROOT: ${{GITHUB_WORKSPACE}}
           REALM_CMAKE_CONFIGURATION: Release
         with:
           entrypoint: wrappers/build.sh
