@@ -1,5 +1,6 @@
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 #@ actualCommand = cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
+#@ cacheKey = actualCommand + "-${{hashFiles('./wrappers/**')}}"
 - name: Checkout code
   uses: actions/checkout@v2
   with:
@@ -9,7 +10,7 @@
   uses: actions/cache@v2
   with:
     path: ./wrappers/build/**
-    cacheKey: #@ actualCommand + "-${{hashFiles('./wrappers/**')}}"
+    cacheKey: #@ cacheKey
 #@ if intermediateSteps:
 #@ for step in intermediateSteps:
 - #@ step
@@ -23,7 +24,7 @@
   uses: actions/cache@v2
   with:
     path: ./wrappers/build/**
-    cacheKey: #@ actualCommand + "-${{hashFiles('./wrappers/**'))}}"
+    cacheKey: #@ cacheKey
 #@ end
 
 #@ def setupVcpkg():
