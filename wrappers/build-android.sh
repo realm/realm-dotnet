@@ -12,10 +12,6 @@ case $i in
     ARCH="${i#*=}"
     shift
   ;;
-  -c=*|--configuration=*)
-    REALM_CMAKE_CONFIGURATION="${i#*=}"
-    shift
-  ;;
   *)
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS $i"
   ;;

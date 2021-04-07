@@ -9,10 +9,6 @@ export REALM_CMAKE_SUBPLATFORM=iOS
 for i in "$@"
 do
 case $i in
-  -c=*|--configuration=*)
-    export REALM_CMAKE_CONFIGURATION="${i#*=}"
-    shift
-  ;;
   *)
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS $i"
   ;;

@@ -16,7 +16,7 @@ jobs:
       - name: Build wrappers
         uses: ./.github/actions/build_cache_executor
         with:
-          cmd: ./wrappers/build-macos.sh Release -GXcode -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+          cmd: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
           inputPath: ./wrappers
           outputPath: ./wrappers/build/**
           outputVar: wrappers-macos
