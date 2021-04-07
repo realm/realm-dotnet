@@ -3,5 +3,5 @@ description: Spawn a centos docker container and linux build wrappers
 runs:
   using: docker
   env:
-    PROJ_ROOT: /
+    REALM_CMAKE_CONFIGURATION: Release
   image: ${{PROJ_ROOT}}/wrappers/centos.Dockerfile
