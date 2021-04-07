@@ -36,6 +36,7 @@ namespace Realms.Helpers
         {
             var decimalSerializer = new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false));
             BsonSerializer.RegisterSerializer(decimalSerializer);
+            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         }
 
         public static string ToNativeJson<T>(this T value, bool tryDynamic = true)

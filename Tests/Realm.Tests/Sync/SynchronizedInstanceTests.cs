@@ -89,12 +89,10 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await GetUserAsync();
-
                 var partition = Guid.NewGuid().ToString();
 
-                var config = GetSyncConfiguration(partition, user, Guid.NewGuid().ToString());
-                var asyncConfig = GetSyncConfiguration(partition, user, config.DatabasePath + "_async");
+                var config = await GetIntegrationConfigAsync(partition);
+                var asyncConfig = await GetIntegrationConfigAsync(partition);
 
                 using var realm = GetRealm(config);
                 AddDummyData(realm, singleTransaction);
@@ -128,7 +126,7 @@ namespace Realms.Tests.Sync
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = GetSyncConfiguration((string)config.Partition, config.User, config.DatabasePath + "_download");
+                config = await GetIntegrationConfigAsync((string)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     callbacksInvoked++;
@@ -150,8 +148,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 await PopulateData(config);
 
-                // Update config to make sure we're not opening the same Realm file.
-                config = GetSyncConfiguration((string)config.Partition, config.User, config.DatabasePath + "1");
+                config = await GetIntegrationConfigAsync((string)config.Partition);
 
                 using var cts = new CancellationTokenSource();
                 _ = Task.Run(async () =>
