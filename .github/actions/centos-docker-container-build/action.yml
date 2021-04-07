@@ -2,4 +2,6 @@ name: centos-docker-container-build
 description: Spawn a centos docker container and linux build wrappers
 runs:
   using: docker
+  env:
+    PROJ_ROOT: /
   image: ${{env.PROJ_ROOT}}/wrappers/centos.Dockerfile
