@@ -9,6 +9,10 @@ export REALM_CMAKE_SUBPLATFORM=iOS
 for i in "$@"
 do
 case $i in
+  -c=*|--configuration=*)
+    REALM_CMAKE_CONFIGURATION="${i#*=}"
+    shift
+  ;;
   *)
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS $i"
   ;;
@@ -16,7 +20,7 @@ esac
 done
 
 function build() {
-  bash "$SCRIPT_DIRECTORY"/build.sh -GXcode $EXTRA_CMAKE_ARGS \
+  bash "$SCRIPT_DIRECTORY"/build.sh -c=$REALM_CMAKE_CONFIGURATION -GXcode $EXTRA_CMAKE_ARGS \
     -DCMAKE_SYSTEM_NAME=iOS \
     -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=NO \
     -DCMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE=YES \

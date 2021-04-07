@@ -12,6 +12,10 @@ case $i in
     ARCH="${i#*=}"
     shift
   ;;
+  -c=*|--configuration=*)
+    REALM_CMAKE_CONFIGURATION="${i#*=}"
+    shift
+  ;;
   *)
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS $i"
   ;;
@@ -19,7 +23,7 @@ esac
 done
 
 function build() {
-  REALM_CMAKE_SUBPLATFORM="Android/$1" bash "$SCRIPT_DIRECTORY"/build.sh -DCMAKE_TOOLCHAIN_FILE="${ANDROID_NDK}/build/cmake/android.toolchain.cmake" -DANDROID_ABI=$1 $EXTRA_CMAKE_ARGS
+  REALM_CMAKE_SUBPLATFORM="Android/$1" bash "$SCRIPT_DIRECTORY"/build.sh -c=$REALM_CMAKE_CONFIGURATION -DCMAKE_TOOLCHAIN_FILE="${ANDROID_NDK}/build/cmake/android.toolchain.cmake" -DANDROID_ABI=$1 $EXTRA_CMAKE_ARGS
 }
 
 export REALM_CMAKE_CONFIGURATION
