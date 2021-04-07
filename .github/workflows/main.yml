@@ -104,7 +104,7 @@ jobs:
         env:
           REALM_CMAKE_CONFIGURATION: Release
         with:
-          entrypoint: /bin/echo $REALM_CMAKE_CONFIGURATION
+          entrypoint: wrappers/build.sh
   # build-wrappers-android:
   #   runs-on: ubuntu-latest
   #   name: Build Android wrappers
