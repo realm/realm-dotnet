@@ -1,6 +1,7 @@
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 #@ actualCommand = cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
 #@ cacheKey = actualCommand + "-${{hashFiles('./wrappers/**')}}"
+#@ cacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 - name: Checkout code
   uses: actions/checkout@v2
   with:
@@ -13,14 +14,15 @@
     key: #@ cacheKey
 #@ if intermediateSteps:
 #@ for step in intermediateSteps:
+#@ step["if"] = cacheCondition
 - #@ step
 #@ end
 #@ end
 - name: Build wrappers
-  if: steps.check-cache.outputs.cache-hit != 'true'
+  if: #@ cacheCondition
   run: #@ actualCommand
 - name: Store cache
-  if: steps.check-cache.outputs.cache-hit != 'true'
+  if: #@ cacheCondition
   uses: actions/cache@v2
   with:
     path: ./wrappers/build/**
