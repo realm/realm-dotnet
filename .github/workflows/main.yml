@@ -1,6 +1,9 @@
 name: build and test
-on: [push]
-
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
@@ -12,10 +15,8 @@ jobs:
           submodules: recursive
       - name: Build wrappers
         uses: ./.github/actions/build_cache_executor
-        env:
-          REALM_CMAKE_CONFIGURATION: Release
         with:
-          cmd: ./wrappers/build-macos.sh
+          cmd: ./wrappers/build-macos.sh Release -GXcode -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
           inputPath: ./wrappers
           outputPath: ./wrappers/build/**
           outputVar: wrappers-macos
