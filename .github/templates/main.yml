@@ -1,15 +1,33 @@
-#@ def buildWrappers(cmd, outputVar):
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
+#@ actualCommand = cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
 - name: Checkout code
   uses: actions/checkout@v2
   with:
     submodules: recursive
-- name: Build wrappers
-  uses: ./.github/actions/build_cache_executor
+- name: Check cache
+  id: check-cache
+  uses: actions/cache@v2
   with:
-    cmd: #@ cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
-    inputPath: ./wrappers
-    outputPath: ./wrappers/build/**
-    outputVar: #@ outputVar
+    path: ./wrappers/build/**
+    cacheKey: #@ actualCommand + "-${{hashFiles('./wrappers/**'))}}"
+#@ if intermediateSteps:
+#@ for step in intermediateSteps:
+- #@ step
+#@ end
+#@ end
+- name: Build wrappers
+  if: steps.check-cache.outputs.cache-hit != 'true'
+  run: #@ actualCommand
+- name: Store cache
+  if: steps.check-cache.outputs.cache-hit != 'true'
+  uses: actions/cache@v2
+  with:
+    path: ./wrappers/build/**
+    cacheKey: #@ actualCommand + "-${{hashFiles('./wrappers/**'))}}"
+#@ end
+
+#@ def setupVcpkg():
+#@   return {"name": "Setup Vcpkg", "uses": "./.github/actions/get-vcpkg-prebuilt"}
 #@ end
 
 ---

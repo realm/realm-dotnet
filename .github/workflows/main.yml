@@ -14,10 +14,18 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Build wrappers
-      uses: ./.github/actions/build_cache_executor
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
       with:
-        cmd: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
-        inputPath: ./wrappers
-        outputPath: ./wrappers/build/**
-        outputVar: wrappers-macos
+        path: ./wrappers/build/**
+        cacheKey: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**'))}}
+    - name: Build wrappers
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
+    - name: Store cache
+      if: steps.check-cache.outputs.cache-hit != 'true'
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        cacheKey: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**'))}}
