@@ -57,3 +57,31 @@ jobs:
     - name: Build wrappers
       run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+  build-wrappers-android:
+    runs-on: ubuntu-20.04
+    name: Build Android wrappers
+    matrix:
+      arch:
+      - armeabi-v7a
+      - arm64-v8a
+      - x86
+      - x86_64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Setup NDK
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r21d
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Build wrappers
+      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
