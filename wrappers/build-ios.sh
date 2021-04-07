@@ -26,10 +26,10 @@ function build() {
 
   # This is a workaround for CMAKE_IOS_INSTALL_COMBINED removing @rpath from LC_DYLIB_ID.
   # Reported here: https://cmake.org/pipermail/cmake/2018-October/068316.html
-  rm build/iOS/$REALM_CMAKE_CONFIGURATION/realm-wrappers.framework/realm-wrappers
-  xcrun lipo -create cmake/iOS/src/$REALM_CMAKE_CONFIGURATION-iphoneos/realm-wrappers.framework/realm-wrappers \
-                     cmake/iOS/src/$REALM_CMAKE_CONFIGURATION-iphonesimulator/realm-wrappers.framework/realm-wrappers \
-             -output build/iOS/$REALM_CMAKE_CONFIGURATION/realm-wrappers.framework/realm-wrappers
+  rm "$SCRIPT_DIRECTORY"/build/iOS/$REALM_CMAKE_CONFIGURATION/realm-wrappers.framework/realm-wrappers
+  xcrun lipo -create "$SCRIPT_DIRECTORY"/cmake/iOS/src/$REALM_CMAKE_CONFIGURATION-iphoneos/realm-wrappers.framework/realm-wrappers \
+                     "$SCRIPT_DIRECTORY"/cmake/iOS/src/$REALM_CMAKE_CONFIGURATION-iphonesimulator/realm-wrappers.framework/realm-wrappers \
+             -output "$SCRIPT_DIRECTORY"/build/iOS/$REALM_CMAKE_CONFIGURATION/realm-wrappers.framework/realm-wrappers
 }
 
 build

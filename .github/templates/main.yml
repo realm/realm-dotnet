@@ -19,14 +19,6 @@ with:
   key: #@ key
 #@ end
 
-#@ def storeCache(key):
-name: Store cache
-uses: actions/cache@v2
-with:
-  path: ./wrappers/build/**
-  key: #@ key
-#@ end
-
 #@ def cacheCondition():
 #@overlay/match missing_ok=True
 if: steps.check-cache.outputs.cache-hit != 'true'
@@ -50,9 +42,7 @@ steps:
   - name: Build wrappers
     run: #@ actualCommand
     _: #@ template.replace(cacheCondition())
-  - #@ template.replace([overlay.apply(storeCache(cacheKey), cacheCondition())])
 #@ end
-
 
 ---
 name: build and test
