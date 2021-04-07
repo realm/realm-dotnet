@@ -19,13 +19,13 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      if: steps.check-cache.outputs.cache-hit != 'true'
       run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
-    - name: Store cache
       if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store cache
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      if: steps.check-cache.outputs.cache-hit != 'true'

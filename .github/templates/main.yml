@@ -1,37 +1,58 @@
-#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
-#@ actualCommand = cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
-#@ cacheKey = actualCommand + "-${{hashFiles('./wrappers/**')}}"
-#@ cacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
-- name: Checkout code
-  uses: actions/checkout@v2
-  with:
-    submodules: recursive
-- name: Check cache
-  id: check-cache
-  uses: actions/cache@v2
-  with:
-    path: ./wrappers/build/**
-    key: #@ cacheKey
-#@ if intermediateSteps:
-#@ for step in intermediateSteps:
-#@ step["if"] = cacheCondition
-- #@ step
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@ configuration = "Release"
+
+#@ def checkoutCode():
+name: Checkout code
+uses: actions/checkout@v2
+with:
+  submodules: recursive
 #@ end
+
+#@ def checkCache(key):
+name: Check cache
+id: check-cache
+uses: actions/cache@v2
+with:
+  path: ./wrappers/build/**
+  key: #@ key
 #@ end
-- name: Build wrappers
-  if: #@ cacheCondition
-  run: #@ actualCommand
-- name: Store cache
-  if: #@ cacheCondition
-  uses: actions/cache@v2
-  with:
-    path: ./wrappers/build/**
-    key: #@ cacheKey
+
+#@ def storeCache(key):
+name: Store cache
+uses: actions/cache@v2
+with:
+  path: ./wrappers/build/**
+  key: #@ key
+#@ end
+
+#@ def cacheCondition():
+#@overlay/match missing_ok=True
+if: steps.check-cache.outputs.cache-hit != 'true'
 #@ end
 
 #@ def setupVcpkg():
-#@   return {"name": "Setup Vcpkg", "uses": "./.github/actions/get-vcpkg-prebuilt"}
+name: Setup Vcpkg
+uses: ./.github/actions/get-vcpkg-prebuilt
 #@ end
+
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
+#@ actualCommand = cmd + " --configuration=" + configuration + " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
+#@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+
+steps:
+  - #@ checkoutCode()
+  - #@ checkCache(cacheKey)
+#@ for step in intermediateSteps:
+  - #@ template.replace([overlay.apply(step, cacheCondition())])
+#@ end
+  - name: Build wrappers
+    run: #@ actualCommand
+    _: #@ template.replace(cacheCondition())
+  - #@ template.replace([overlay.apply(storeCache(cacheKey), cacheCondition())])
+#@ end
+
 
 ---
 name: build and test
@@ -45,4 +66,4 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Build macOS wrappers
-    steps: #@ buildWrappers("./wrappers/build-macos.sh", "wrappers-macos")
+    _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
