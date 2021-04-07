@@ -4,4 +4,4 @@ runs:
   using: docker
   env:
     REALM_CMAKE_CONFIGURATION: Release
-  image: ${{PROJ_ROOT}}/wrappers/centos.Dockerfile
+  image: ../../../wrappers/centos.Dockerfile
