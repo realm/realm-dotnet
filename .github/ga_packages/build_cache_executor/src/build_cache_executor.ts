@@ -6,25 +6,25 @@ import * as fs from "fs-extra";
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
- * @param path Path that needs to be cached after the build (same paths used to create a hash)
+ * @param inputPath Path that needs to be cached after the build (same paths used to create a hash)
  * @param cmd Cmd to execute to obtain a build
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-export async function actionCore(path: string, cmd: string, logger: Logger): Promise<string | undefined> {
-    await validateInput(path, cmd);
+export async function actionCore(inputPath: string, outputPath: string, cmd: string, logger: Logger): Promise<string | undefined> {
+    await validateInput(inputPath, outputPath, cmd);
 
-    const pathHash = (await folderHash.hashElement(path)).hash;
+    const pathHash = (await folderHash.hashElement(inputPath)).hash;
     const hashKey = `${cmd}${pathHash}`;
 
-    logger.info(`Hash key for ${path} is: ${hashKey}`);
+    logger.info(`Hash key for ${inputPath} is: ${hashKey}`);
 
-    if (!await existsInCache(path, hashKey)) {
-        logger.info(`No cache was found, so the command will be executed...`);
+    if (!await existsInCache(outputPath, hashKey)) {
+        logger.info("No cache was found, so the command will be executed...");
 
         await executeCommand(cmd);
 
-        await cache.saveCache([path], hashKey);
+        await cache.saveCache([outputPath], hashKey);
     } else {
         logger.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
     }
@@ -32,23 +32,27 @@ export async function actionCore(path: string, cmd: string, logger: Logger): Pro
     return hashKey;
 }
 
-async function validateInput(path: string, cmd: string): Promise<void> {
+async function validateInput(inputPath: string, outputPath: string, cmd: string): Promise<void> {
     if (cmd.length === 0) {
         throw new Error(`No command was supplied, nothing to do.`);
     }
 
-    if (path.length === 0) {
-        throw new Error(`No path was supplied, nothing to cache.`);
+    if (inputPath.length === 0) {
+        throw new Error("No inputPath was supplied");
     }
 
-    if (!(await fs.pathExists(path))) {
-        throw new Error(`${path} path doesn't exist`);
+    if (!(await fs.pathExists(inputPath))) {
+        throw new Error(`inputPath '${inputPath}' doesn't exist`);
+    }
+
+    if (outputPath.length === 0) {
+        throw new Error("No outputPath was supplied");
     }
 }
 
-async function existsInCache(path: string, key: string): Promise<boolean> {
+async function existsInCache(outputPath: string, key: string): Promise<boolean> {
     try {
-        const cacheHit = await cache.restoreCache([path], key);
+        const cacheHit = await cache.restoreCache([outputPath], key);
         return cacheHit === key;
     } catch { }
 

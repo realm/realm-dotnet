@@ -28,7 +28,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getHash = exports.actionCore = void 0;
+exports.actionCore = void 0;
 const cache = __importStar(require("@actions/cache"));
 const exec = __importStar(require("@actions/exec"));
 const folderHash = __importStar(require("folder-hash"));
@@ -36,62 +36,21 @@ const fs = __importStar(require("fs-extra"));
 /**
  * Builds and caches the resulting artifacts. In order to store the artifacts in a cache, a hash (cacheKey) is calculated over paths and the result is used as key in the cache dictionary.
  * The function can throw exceptions.
- * @param path Path that needs to be cached after the build (same paths used to create a hash)
+ * @param inputPath Path that needs to be cached after the build (same paths used to create a hash)
  * @param cmd Cmd to execute to obtain a build
  * @param logger Output stream where to print the messages
  * @returns CacheKey necessary to recover the cached build later on. Undefined is returned if something went wrong.
  */
-function actionCore(path, cmd, logger) {
+function actionCore(inputPath, outputPath, cmd, logger) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (cmd.length === 0) {
-            throw new Error(`No command was supplied, nothing to do.`);
-        }
-        if (path.length === 0) {
-            throw new Error(`No path was supplied, nothing to cache.`);
-        }
-        let hashKey;
-        try {
-            hashKey = cmd.concat(yield getHash(path));
-        }
-        catch (err) {
-            throw new Error(`While calculating the hash something went terribly wrong: ${err.message}`);
-        }
-        let cacheHit = undefined;
-        if (hashKey !== undefined) {
-            logger.info(`Hash key for ${path} is: ${hashKey}`);
-            try {
-                cacheHit = yield cache.restoreCache([path], hashKey);
-            }
-            catch (err) {
-                logger.error(`Impossible to retrieve cache: ${err}\n The build will start momentarily...`);
-            }
-        }
-        else {
-            throw new Error(`No hash could be calculated, so nothing to search in cache. Since what's going to be built now can't be cached, abort!`);
-        }
-        if (cacheHit === undefined) {
-            logger.info(`No cache was found, so the command will be executed...`);
-            try {
-                const returnCode = yield exec.exec(cmd);
-                if (returnCode !== 0) {
-                    throw Error(`Executing a command ${cmd} failed with code ${returnCode}. Stopping execution!`);
-                }
-            }
-            catch (err) {
-                throw new Error(`Something went terribly wrong while executing a shell command: ${err.message}`);
-            }
-            if (hashKey !== undefined) {
-                try {
-                    const cacheId = yield cache.saveCache([path], hashKey);
-                    logger.info(`Cache properly created with id ${cacheId}`);
-                }
-                catch (error) {
-                    throw new Error(`The cache could not be saved: ${error.message}`);
-                }
-            }
-            else {
-                throw new Error(`HashKey was undefined, so the current build can't be save. This should have never happened!`);
-            }
+        yield validateInput(inputPath, outputPath, cmd);
+        const pathHash = (yield folderHash.hashElement(inputPath)).hash;
+        const hashKey = `${cmd}${pathHash}`;
+        logger.info(`Hash key for ${inputPath} is: ${hashKey}`);
+        if (!(yield existsInCache(outputPath, hashKey))) {
+            logger.info("No cache was found, so the command will be executed...");
+            yield executeCommand(cmd);
+            yield cache.saveCache([outputPath], hashKey);
         }
         else {
             logger.info(`A build was found in cache for hashKey ${hashKey}\nskipping building...`);
@@ -100,21 +59,46 @@ function actionCore(path, cmd, logger) {
     });
 }
 exports.actionCore = actionCore;
-/** @internal */
-// Given a path, it calculates a hash resulting from the joined hashes of all subfolders and subfiles.
-// Can throw exceptions.
-function getHash(path) {
+function validateInput(inputPath, outputPath, cmd) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (path.length === 0) {
-            throw new Error("There is no path supplied");
+        if (cmd.length === 0) {
+            throw new Error(`No command was supplied, nothing to do.`);
         }
-        if (!(yield fs.pathExists(path))) {
-            throw new Error(`${path} path doesn't exist`);
+        if (inputPath.length === 0) {
+            throw new Error("No inputPath was supplied");
         }
-        return (yield folderHash.hashElement(path)).hash;
+        if (!(yield fs.pathExists(inputPath))) {
+            throw new Error(`inputPath '${inputPath}' doesn't exist`);
+        }
+        if (outputPath.length === 0) {
+            throw new Error("No outputPath was supplied");
+        }
     });
 }
-exports.getHash = getHash;
+function existsInCache(outputPath, key) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const cacheHit = yield cache.restoreCache([outputPath], key);
+            return cacheHit === key;
+        }
+        catch (_a) { }
+        return false;
+    });
+}
+function executeCommand(cmd) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let returnCode = 0;
+        try {
+            returnCode = yield exec.exec(cmd);
+        }
+        catch (err) {
+            throw new Error(`Something went wrong while executing the command '${cmd}': ${err.message}`);
+        }
+        if (returnCode !== 0) {
+            throw Error(`Executing a command '${cmd}' failed with non-zero code: ${returnCode}`);
+        }
+    });
+}
 //// DEBUG!: uncomment to debug
 // class logger implements iLogger {
 //     debug(message: string): void {

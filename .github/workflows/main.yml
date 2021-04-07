@@ -4,7 +4,7 @@ on: [push]
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
-    name: Build macOs wrappers
+    name: Build macOS wrappers
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -16,4 +16,6 @@ jobs:
           REALM_CMAKE_CONFIGURATION: Release
         with:
           cmd: ./wrappers/build-macos.sh
-          cachePath: ./wrappers
+          inputPath: ./wrappers
+          outputPath: ./wrappers/build/**
+          outputVar: wrappers-macos
