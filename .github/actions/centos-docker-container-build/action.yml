@@ -4,4 +4,4 @@ runs:
   using: docker
   env:
     PROJ_ROOT: /
-  image: ${{env.PROJ_ROOT}}/wrappers/centos.Dockerfile
+  image: ${{PROJ_ROOT}}/wrappers/centos.Dockerfile
