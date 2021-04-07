@@ -396,7 +396,7 @@ namespace Realms.Tests.Sync
             }
 
             await tcs.Task.Timeout(timeout);
-            realmObject.PropertyChanged -= RealmObject_PropertyChanged;  //TODO Need to check this for correctness
+            realmObject.PropertyChanged -= RealmObject_PropertyChanged;
         }
 
         private static async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)
