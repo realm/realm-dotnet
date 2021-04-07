@@ -22,6 +22,7 @@
     "@types/sinon": "^9.0.11",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
+    "@vercel/ncc": "^0.28.1",
     "chai": "^4.3.3",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
