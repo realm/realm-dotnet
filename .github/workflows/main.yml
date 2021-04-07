@@ -41,7 +41,7 @@ jobs:
       run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
   build-wrappers-linux:
-    runs-on: ubuntu-2004
+    runs-on: ubuntu-20.04
     name: Build Linux wrappers
     steps:
     - name: Checkout code
