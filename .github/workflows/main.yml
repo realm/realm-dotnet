@@ -60,12 +60,13 @@ jobs:
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Build Android wrappers
-    matrix:
-      arch:
-      - armeabi-v7a
-      - arm64-v8a
-      - x86
-      - x86_64
+    strategy:
+      matrix:
+        arch:
+        - armeabi-v7a
+        - arm64-v8a
+        - x86
+        - x86_64
     steps:
     - name: Checkout code
       uses: actions/checkout@v2

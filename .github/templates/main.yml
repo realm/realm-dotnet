@@ -76,6 +76,7 @@ jobs:
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Build Android wrappers
-    matrix:
-      arch: #@ androidABIs
+    strategy:
+      matrix:
+        arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", [setupNDK()]))
