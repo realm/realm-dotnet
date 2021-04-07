@@ -4,9 +4,16 @@ inputs:
   cmd:
     description: Command that needs to be executed to produce the build
     required: true
-  cachePath:
+  inputPath:
     description: Path that the action is going to use to produce an index to look up cached artifacts or to save them if none were found
     required: true
+  outputPath:
+    description: Path of the artifacts that will be cached
+    required: true
+  outputVar:
+    description: The variable that will be used to store the cache key
+    required: false
+    default: hashKey
 outputs:
   hashKey:
     description: Key used to retrieve the just cached build at a later time

@@ -10,7 +10,7 @@ async function run(): Promise<void> {
 
         const cacheKey = await actionCore.actionCore(inputPath, outputPath, cmd, core);
 
-        core.setOutput(outputVar || "hashKey", cacheKey);
+        core.setOutput(outputVar, cacheKey);
     } catch (error) {
         core.setFailed(error.message);
     }
