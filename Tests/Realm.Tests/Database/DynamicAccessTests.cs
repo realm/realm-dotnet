@@ -151,7 +151,7 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                var intObject = _realm.DynamicApi.CreateObject("IntPropertyObject", null);
+                var intObject = _realm.DynamicApi.CreateObject("IntPropertyObject", ObjectId.GenerateNewId());
                 intObject.Int = 10;
                 rv = intObject;
 
