@@ -9,7 +9,7 @@
   uses: actions/cache@v2
   with:
     path: ./wrappers/build/**
-    cacheKey: #@ actualCommand + "-${{hashFiles('./wrappers/**'))}}"
+    cacheKey: #@ actualCommand + "-${{hashFiles('./wrappers/**')}}"
 #@ if intermediateSteps:
 #@ for step in intermediateSteps:
 - #@ step
