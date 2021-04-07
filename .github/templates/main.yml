@@ -1,0 +1,27 @@
+#@ def buildWrappers(cmd, outputVar):
+- name: Checkout code
+  uses: actions/checkout@v2
+  with:
+    submodules: recursive
+- name: Build wrappers
+  uses: ./.github/actions/build_cache_executor
+  with:
+    cmd: #@ cmd + " --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == \"pull_request\" ? \"OFF\" : \"ON\"}}"
+    inputPath: ./wrappers
+    outputPath: ./wrappers/build/**
+    outputVar: #@ outputVar
+#@ end
+
+---
+name: build and test
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+jobs:
+  build-wrappers-macos:
+    runs-on: macos-latest
+    name: Build macOS wrappers
+    steps: #@ buildWrappers("./wrappers/build-macos.sh", "wrappers-macos")

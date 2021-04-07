@@ -2,21 +2,22 @@ name: build and test
 on:
   push:
     branches:
-      - main
-  pull_request:
+    - main
+    - master
+  pull_request: null
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Build macOS wrappers
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Build wrappers
-        uses: ./.github/actions/build_cache_executor
-        with:
-          cmd: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
-          inputPath: ./wrappers
-          outputPath: ./wrappers/build/**
-          outputVar: wrappers-macos
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Build wrappers
+      uses: ./.github/actions/build_cache_executor
+      with:
+        cmd: './wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == "pull_request" ? "OFF" : "ON"}}'
+        inputPath: ./wrappers
+        outputPath: ./wrappers/build/**
+        outputVar: wrappers-macos
