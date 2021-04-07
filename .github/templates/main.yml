@@ -10,7 +10,7 @@
   uses: actions/cache@v2
   with:
     path: ./wrappers/build/**
-    cacheKey: #@ cacheKey
+    key: #@ cacheKey
 #@ if intermediateSteps:
 #@ for step in intermediateSteps:
 - #@ step
@@ -24,7 +24,7 @@
   uses: actions/cache@v2
   with:
     path: ./wrappers/build/**
-    cacheKey: #@ cacheKey
+    key: #@ cacheKey
 #@ end
 
 #@ def setupVcpkg():
