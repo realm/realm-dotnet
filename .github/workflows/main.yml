@@ -29,3 +29,26 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
       if: steps.check-cache.outputs.cache-hit != 'true'
+  build-wrappers-ios:
+    runs-on: macos-latest
+    name: Build iOS wrappers
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      if: steps.check-cache.outputs.cache-hit != 'true'

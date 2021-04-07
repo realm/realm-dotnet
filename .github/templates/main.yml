@@ -67,3 +67,7 @@ jobs:
     runs-on: macos-latest
     name: Build macOS wrappers
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
+  build-wrappers-ios:
+    runs-on: macos-latest
+    name: Build iOS wrappers
+    _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
