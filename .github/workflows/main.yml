@@ -92,39 +92,39 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Check if contains wrappers already
-        id: wrapper-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/
-          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+      # - name: Check if contains wrappers already
+      #   id: wrapper-cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ./wrappers/build/
+      #     key: wrapper-linux-${{hashfiles('./wrappers/**')}}
       - name: Spin docker container to build
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        # if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/centos-docker-container-build
         env:
           REALM_CMAKE_CONFIGURATION: Release
         with:
-          entrypoint: wrappers/build.sh
-  build-wrappers-android:
-    runs-on: ubuntu-latest
-    name: Build Android wrappers
-    strategy:
-      matrix:
-        arch: [armeabi-v7a, arm64-v8a, x86, x86_64]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check if contains wrappers already
-        id: wrapper-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/
-          key: wrapper-android-${{ matrix.arch }}-${{hashfiles('./wrappers/**')}}
-      - name: Spin docker container
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        uses: ./.github/actions/android-docker-container-build
-        with:
-          entrypoint: wrappers/build-android.sh
-          args: --configuration=Release --ARCH=${{ matrix.arch }}
+          entrypoint: echo $REALM_CMAKE_CONFIGURATION
+  # build-wrappers-android:
+  #   runs-on: ubuntu-latest
+  #   name: Build Android wrappers
+  #   strategy:
+  #     matrix:
+  #       arch: [armeabi-v7a, arm64-v8a, x86, x86_64]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  #     - name: Check if contains wrappers already
+  #       id: wrapper-cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ./wrappers/build/
+  #         key: wrapper-android-${{ matrix.arch }}-${{hashfiles('./wrappers/**')}}
+  #     - name: Spin docker container
+  #       if: steps.wrapper-cache.outputs.cache-hit != 'true'
+  #       uses: ./.github/actions/android-docker-container-build
+  #       with:
+  #         entrypoint: wrappers/build-android.sh
+  #         args: --configuration=Release --ARCH=${{ matrix.arch }}
