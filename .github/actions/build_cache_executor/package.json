@@ -11,7 +11,7 @@
     "lint-fix": "eslint . --ext .ts --fix"
   },
   "author": "Realm Inc.",
-  "license": "Apache License, Version 2.0",
+  "license": "Apache License, Version 2.0 -- VERIFY THIS IS FINE!",
   "dependencies": {
     "@actions/core": "^1.2.6"
   },
@@ -22,7 +22,6 @@
     "@types/sinon": "^9.0.11",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
-    "@vercel/ncc": "^0.28.1",
     "chai": "^4.3.3",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
@@ -30,7 +29,6 @@
     "mocha": "^8.3.1",
     "prettier": "^2.2.1",
     "sinon": "^9.2.4",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.2.3"
+    "ts-node": "^9.1.1"
   }
 }
