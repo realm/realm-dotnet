@@ -40,3 +40,20 @@ jobs:
     - name: Build wrappers
       run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+  build-wrappers-linux:
+    runs-on: ubuntu-2004
+    name: Build Linux wrappers
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-linux-Release-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
