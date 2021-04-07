@@ -89,7 +89,7 @@ namespace Realms
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));
             }
 
-            return _handle.Find(realmValue);
+            return ResultsHandle.Find(realmValue);
         }
 
         void ICollection<T>.Add(T item) => throw new NotSupportedException("Adding elements to the Results collection is not supported.");
