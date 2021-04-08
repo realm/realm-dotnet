@@ -30,22 +30,6 @@ name: Setup Vcpkg
 uses: ./.github/actions/get-vcpkg-prebuilt
 #@ end
 
-#@ def downloadNDK():
-name: Download NDK
-uses: nttld/setup-ndk@v1
-id: download-ndk
-with:
-  ndk-version: r21d
-#@ end
-
-#@ def setupNDKVariables():
-name: Setup NDK Environment
-run: |
-    echo "ANDROID_NDK_ROOT=${{ steps.download-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
-    echo "ANDROID_NDK_HOME=${{ steps.download-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
-    echo "ANDROID_NDK=${{ steps.download-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
-#@ end
-
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 #@ actualCommand = cmd + " --configuration=" + configuration + " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
 #@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
@@ -88,4 +72,4 @@ jobs:
     strategy:
       matrix:
         arch: #@ androidABIs
-    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", [downloadNDK(), setupNDKVariables()]))
+    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
