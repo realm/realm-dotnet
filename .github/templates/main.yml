@@ -53,9 +53,9 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@   configurationParam = " -Configuration " + configuration
 #@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
 #@ end
-#@ actualCommand = cmd + configurationParam + ltoParam
 #@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
-#@ echo "::set-output name={\"cacheKey\"}::{cacheKey}"
+#@ saveOutput = "echo \"::set-output name={cacheKey}::{" + cacheKey + "}\""
+#@ actualCommand = cmd + configurationParam + ltoParam + "\n" + saveOutput
 
 steps:
   - #@ checkoutCode()

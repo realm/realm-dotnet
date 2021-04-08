@@ -2,120 +2,171 @@ name: build and test
 on:
   push:
     branches:
-    - main
-    - master
+      - main
+      - master
   pull_request: null
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Build macOS wrappers
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-    - name: Build wrappers
-      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Check cache
+        id: check-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/**
+          key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      - name: Build wrappers
+        run: |-
+          ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+          echo "::set-output name={cacheKey}::{wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        if: steps.check-cache.outputs.cache-hit != 'true'
   build-wrappers-ios:
     runs-on: macos-latest
     name: Build iOS wrappers
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-    - name: Build wrappers
-      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Check cache
+        id: check-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/**
+          key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      - name: Build wrappers
+        run: |-
+          ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+          echo "::set-output name={cacheKey}::{wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        if: steps.check-cache.outputs.cache-hit != 'true'
   build-wrappers-linux:
     runs-on: ubuntu-20.04
     name: Build Linux wrappers
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-    - name: Build wrappers
-      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Check cache
+        id: check-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/**
+          key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      - name: Build wrappers
+        run: |-
+          ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+          echo "::set-output name={cacheKey}::{wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        if: steps.check-cache.outputs.cache-hit != 'true'
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Build Android wrappers
     strategy:
       matrix:
         arch:
-        - armeabi-v7a
-        - arm64-v8a
-        - x86
-        - x86_64
+          - armeabi-v7a
+          - arm64-v8a
+          - x86
+          - x86_64
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-    - name: Build wrappers
-      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Check cache
+        id: check-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/**
+          key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      - name: Build wrappers
+        run: |-
+          ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+          echo "::set-output name={cacheKey}::{wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        if: steps.check-cache.outputs.cache-hit != 'true'
   build-wrappers-windows:
     runs-on: windows-latest
     name: Build Windows wrappers
     strategy:
       matrix:
         arch:
-        - Win32
-        - x64
+          - Win32
+          - x64
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-    - name: Check Vcpkg cache
-      id: check-vcpkg-cache
-      uses: actions/cache@v2
-      with:
-        path: C:\src
-        key: vcpkg
-      if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Setup Vcpkg
-      run: |
-        Write-Output 'Beginning download...'
-        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
-        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-        Write-Output 'Completed!'
-      shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
-    - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Check cache
+        id: check-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/**
+          key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      - name: Check Vcpkg cache
+        id: check-vcpkg-cache
+        uses: actions/cache@v2
+        with:
+          path: C:\src
+          key: vcpkg
+        if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Setup Vcpkg
+        run: |
+          Write-Output 'Beginning download...'
+          Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+          Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
+          Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+          Write-Output 'Completed!'
+        shell: powershell
+        if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      - name: Build wrappers
+        run: |-
+          powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+          echo "::set-output name={cacheKey}::{wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        if: steps.check-cache.outputs.cache-hit != 'true'
+  build-wrappers-windows-uwp:
+    runs-on: windows-latest
+    name: Build Windows UWP wrappers
+    strategy:
+      matrix:
+        arch:
+          - Win32
+          - x64
+          - ARM
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Check cache
+        id: check-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/**
+          key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+      - name: Check Vcpkg cache
+        id: check-vcpkg-cache
+        uses: actions/cache@v2
+        with:
+          path: C:\src
+          key: vcpkg
+        if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Setup Vcpkg
+        run: |
+          Write-Output 'Beginning download...'
+          Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+          Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
+          Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+          Write-Output 'Completed!'
+        shell: powershell
+        if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      - name: Build wrappers
+        run: |-
+          powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+          echo "::set-output name={cacheKey}::{wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        if: steps.check-cache.outputs.cache-hit != 'true'
