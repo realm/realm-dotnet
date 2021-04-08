@@ -4,6 +4,7 @@
 #@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArch = [ 'Win32', 'x64' ]
+#@ windowsUWPArch = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 
 #@ def checkoutCode():
@@ -33,6 +34,7 @@ if: #@ wrappersCacheCondition
 #@ end
 
 #@ def setupVcpkg():
+#! TODO make a composite action for this with cache included
 name: Setup Vcpkg
 run: |
   Write-Output 'Beginning download...'
@@ -53,6 +55,7 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ end
 #@ actualCommand = cmd + configurationParam + ltoParam
 #@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+#@ echo "::set-output name={cacheKey}::{cacheKey}"
 
 steps:
   - #@ checkoutCode()
@@ -100,3 +103,10 @@ jobs:
       matrix:
         arch: #@ windowsArch
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+  build-wrappers-windows-uwp:
+    runs-on: windows-latest
+    name: Build Windows UWP wrappers
+    strategy:
+      matrix:
+        arch: #@ windowsUWPArch
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
