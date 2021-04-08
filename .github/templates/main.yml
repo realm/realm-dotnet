@@ -55,7 +55,7 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ end
 #@ actualCommand = cmd + configurationParam + ltoParam
 #@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
-#@ echo "::set-output name={cacheKey}::{cacheKey}"
+#@ echo "::set-output name={\"cacheKey\"}::{cacheKey}"
 
 steps:
   - #@ checkoutCode()
@@ -109,4 +109,4 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsUWPArch
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
