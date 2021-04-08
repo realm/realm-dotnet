@@ -194,7 +194,7 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
             query.equal(std::move(col_key), from_capi(primitive.string));
             break;
         case realm_value_type::RLM_TYPE_LINK:
-            query.links_to(std::move(col_key), primitive.link.object->obj().get_key());
+            query.equal(std::move(col_key), from_capi(primitive));
             break;
         }
     });
@@ -238,7 +238,7 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
             query.not_equal(std::move(col_key), from_capi(primitive.string));
             break;
         case realm_value_type::RLM_TYPE_LINK:
-            query.Not().links_to(std::move(col_key), primitive.link.object->obj().get_key());
+            query.not_equal(std::move(col_key), from_capi(primitive));
             break;
         }
     });
