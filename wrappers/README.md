@@ -1,7 +1,6 @@
 About Wrappers
 ==============
 
-
 Wrappers contains all our native code and its interfaces to C#.
 
 It usually involves a download phase which pulls prebuilt [Core](https://github.com/realm/realm-core) libraries from a server.
