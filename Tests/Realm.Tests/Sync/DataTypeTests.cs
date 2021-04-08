@@ -155,9 +155,8 @@ namespace Realms.Tests.Sync
         [Test]
         public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
-        // TODO: implement when https://jira.mongodb.org/browse/REALMC-8495 is fixed
-        //[Test]
-        //public void Dict_Object() => TestDictionaryCore(o => o.BooleanDict, true, false);
+        [Test]
+        public void Dict_Object() => TestDictionaryCore(o => o.ObjectDict, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         #endregion
 

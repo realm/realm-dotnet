@@ -34,7 +34,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     public abstract class RealmCollectionBase<T>
-        : NotificationsHelper.INotifiable,
+        : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
           IThreadConfined,
           IMetadataObject
@@ -181,7 +181,7 @@ namespace Realms
 
             _callbacks.Add(callback);
 
-            return new NotificationToken(this, callback);
+            return NotificationToken.Create(callback, UnsubscribeFromNotifications);
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -227,7 +227,7 @@ namespace Realms
             Realm.ExecuteOutsideTransaction(() =>
             {
                 var managedResultsHandle = GCHandle.Alloc(this);
-                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), NotificationsHelper.NotificationCallback);
+                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }
 
@@ -370,7 +370,7 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
             ChangeSet changeset = null;
@@ -450,25 +450,6 @@ namespace Realms
         }
 
         #endregion IList
-
-        private class NotificationToken : IDisposable
-        {
-            private RealmCollectionBase<T> _collection;
-            private NotificationCallbackDelegate<T> _callback;
-
-            internal NotificationToken(RealmCollectionBase<T> collection, NotificationCallbackDelegate<T> callback)
-            {
-                _collection = collection;
-                _callback = callback;
-            }
-
-            public void Dispose()
-            {
-                _collection.UnsubscribeFromNotifications(_callback);
-                _callback = null;
-                _collection = null;
-            }
-        }
 
         public class Enumerator : IEnumerator<T>
         {

@@ -145,7 +145,9 @@ namespace Realms
                 GetNativeSchemaCallback nativeSchemaCallback,
                 OpenRealmCallback openCallback,
                 OnBindingContextDestructedCallback contextDestructedCallback,
-                LogMessageCallback logMessageCallback);
+                LogMessageCallback logMessageCallback,
+                NotifiableObjectHandleBase.NotificationCallback notifyObject,
+                DictionaryHandle.KeyNotificationCallback notifyDictionary);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -178,14 +180,18 @@ namespace Realms
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
             NativeMethods.OnBindingContextDestructedCallback onBindingContextDestructed = OnBindingContextDestructed;
             NativeMethods.LogMessageCallback logMessage = LogMessage;
+            NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
+            DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
             GCHandle.Alloc(openRealm);
             GCHandle.Alloc(onBindingContextDestructed);
             GCHandle.Alloc(logMessage);
+            GCHandle.Alloc(notifyObject);
+            GCHandle.Alloc(notifyDictionary);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed, logMessage);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed, logMessage, notifyObject, notifyDictionary);
         }
 
         [Preserve]
