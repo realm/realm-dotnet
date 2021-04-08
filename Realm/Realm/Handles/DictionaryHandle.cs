@@ -332,7 +332,7 @@ namespace Realms
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
         public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
         {
-            if (GCHandle.FromIntPtr(managedHandle).Target is IKeyNotifiable notifiable)
+            if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
                 notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
             }

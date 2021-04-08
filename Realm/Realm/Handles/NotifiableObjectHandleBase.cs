@@ -59,7 +59,7 @@ namespace Realms
         [MonoPInvokeCallback(typeof(NotificationCallback))]
         public static void NotifyObjectChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
         {
-            if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable notifiable)
+            if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<CollectionChangeSet> notifiable)
             {
                 notifiable.NotifyCallbacks(new PtrTo<CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
             }

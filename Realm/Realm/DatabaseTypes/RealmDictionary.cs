@@ -39,7 +39,7 @@ namespace Realms
           IDictionary<string, TValue>,
           IDynamicMetaObjectProvider,
           IRealmCollectionBase<DictionaryHandle>,
-          IKeyNotifiable
+          INotifiable<DictionaryHandle.DictionaryChangeSet>
     {
         private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new List<DictionaryNotificationCallbackDelegate<TValue>>();
         private readonly DictionaryHandle _dictionaryHandle;
@@ -170,7 +170,7 @@ namespace Realms
 
             _keyCallbacks.Add(callback);
 
-            return new DictionaryNotificationToken(this, callback);
+            return NotificationToken.Create(callback, UnsubscribeFromNotifications);
         }
 
         private void SubscribeForNotifications()
@@ -216,7 +216,7 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Metadata, Realm);
 
-        void IKeyNotifiable.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
             DictionaryChangeSet changeset = null;
@@ -235,34 +235,6 @@ namespace Realms
             foreach (var callback in _keyCallbacks.ToArray())
             {
                 callback(this, changeset, managedException);
-            }
-        }
-
-        private class DictionaryNotificationToken : IDisposable
-        {
-            private RealmDictionary<TValue> _dictionary;
-            private DictionaryNotificationCallbackDelegate<TValue> _callback;
-
-            internal DictionaryNotificationToken(RealmDictionary<TValue> dictionary, DictionaryNotificationCallbackDelegate<TValue> callback)
-            {
-                Argument.NotNull(dictionary, nameof(dictionary));
-                Argument.NotNull(callback, nameof(callback));
-
-                _dictionary = dictionary;
-                _callback = callback;
-            }
-
-            public void Dispose()
-            {
-                if (_dictionary == null || _callback == null)
-                {
-                    // Double dispose, just ignore
-                    return;
-                }
-
-                _dictionary.UnsubscribeFromNotifications(_callback);
-                _callback = null;
-                _dictionary = null;
             }
         }
     }

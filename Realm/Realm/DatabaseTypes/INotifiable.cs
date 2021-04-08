@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,18 +16,58 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Realms.Helpers;
+
 namespace Realms
 {
     /// <summary>
     /// INotifiable represents a reactive object (e.g. RealmObjectBase/Collection).
     /// </summary>
-    internal interface INotifiable
+    /// <typeparam name="TChangeset">The type of the changeset.</typeparam>
+    internal interface INotifiable<TChangeset>
+        where TChangeset : struct
     {
         /// <summary>
         /// Method called when there are changes to report for that object.
         /// </summary>
         /// <param name="changes">The changes that occurred.</param>
         /// <param name="exception">An exception if one occurred.</param>
-        void NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception);
+        void NotifyCallbacks(TChangeset? changes, NativeException? exception);
+    }
+
+    internal class NotificationToken<TCallback> : IDisposable
+    {
+        private TCallback _callback;
+        private Action<TCallback> _unsubscribe;
+
+        internal NotificationToken(TCallback callback, Action<TCallback> unsubscribe)
+        {
+            Argument.NotNull(callback, nameof(callback));
+            Argument.NotNull(unsubscribe, nameof(unsubscribe));
+
+            _callback = callback;
+            _unsubscribe = unsubscribe;
+        }
+
+        public void Dispose()
+        {
+            if (_callback == null || _unsubscribe == null)
+            {
+                // Double dispose - ignore
+                return;
+            }
+
+            _unsubscribe(_callback);
+            _callback = default;
+            _unsubscribe = null;
+        }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is just a helper for the generic token")]
+    internal static class NotificationToken
+    {
+        public static NotificationToken<T> Create<T>(T callback, Action<T> unsubscribe) => new NotificationToken<T>(callback, unsubscribe);
     }
 }

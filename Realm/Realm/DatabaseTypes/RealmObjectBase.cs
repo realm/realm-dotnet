@@ -41,7 +41,11 @@ namespace Realms
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
     [Serializable]
-    public abstract class RealmObjectBase : INotifyPropertyChanged, IThreadConfined, INotifiable, IReflectableType
+    public abstract class RealmObjectBase
+        : INotifyPropertyChanged,
+          IThreadConfined,
+          INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
+          IReflectableType
     {
         [NonSerialized, XmlIgnore]
         private Lazy<int> _hashCode;
@@ -403,7 +407,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
 
