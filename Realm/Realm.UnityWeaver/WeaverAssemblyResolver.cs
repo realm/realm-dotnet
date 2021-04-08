@@ -121,6 +121,11 @@ namespace RealmWeaver
 
         public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             if (!_cache.TryGetValue(name.FullName, out var assemblyDef))
             {
                 try

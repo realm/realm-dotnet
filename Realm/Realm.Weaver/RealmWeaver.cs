@@ -161,7 +161,7 @@ namespace RealmWeaver
             _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
         }
 
-        public WeaveModuleResult Execute()
+        public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
             //// System.Diagnostics.Debugger.Launch();
@@ -181,12 +181,14 @@ namespace RealmWeaver
 
             var submitAnalytics = Task.Run(() =>
             {
-                var analytics = new Analytics(_frameworkName, _moduleDefinition.Name, IsUsingSync());
+                analyticsConfig.ModuleName = _moduleDefinition.Name;
+                analyticsConfig.IsUsingSync = IsUsingSync();
+                var analytics = new Analytics(analyticsConfig);
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
 #if DEBUG
-                    _logger.Debug($@"
+                    _logger.Info($@"
 ----------------------------------
 Analytics payload
 {payload}
