@@ -21,10 +21,10 @@ jobs:
           path: ./wrappers/build/**
           key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
       - name: Build wrappers
-        run: |-
-          ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-          echo "::set-output name={cacheKey}::{wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
         if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Output cacheKey
+        run: echo "::set-output name=cacheKey::wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
   build-wrappers-ios:
     runs-on: macos-latest
     name: Build iOS wrappers
@@ -40,10 +40,10 @@ jobs:
           path: ./wrappers/build/**
           key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
       - name: Build wrappers
-        run: |-
-          ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-          echo "::set-output name={cacheKey}::{wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
         if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Output cacheKey
+        run: echo "::set-output name=cacheKey::wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
   build-wrappers-linux:
     runs-on: ubuntu-20.04
     name: Build Linux wrappers
@@ -59,10 +59,10 @@ jobs:
           path: ./wrappers/build/**
           key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
       - name: Build wrappers
-        run: |-
-          ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-          echo "::set-output name={cacheKey}::{wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
         if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Output cacheKey
+        run: echo "::set-output name=cacheKey::wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Build Android wrappers
@@ -85,10 +85,10 @@ jobs:
           path: ./wrappers/build/**
           key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
       - name: Build wrappers
-        run: |-
-          ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-          echo "::set-output name={cacheKey}::{wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
         if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Output cacheKey
+        run: echo "::set-output name=cacheKey::wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
   build-wrappers-windows:
     runs-on: windows-latest
     name: Build Windows wrappers
@@ -125,10 +125,10 @@ jobs:
         shell: powershell
         if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
       - name: Build wrappers
-        run: |-
-          powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-          echo "::set-output name={cacheKey}::{wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
         if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Output cacheKey
+        run: echo "::set-output name=cacheKey::wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Build Windows UWP wrappers
@@ -166,7 +166,7 @@ jobs:
         shell: powershell
         if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
       - name: Build wrappers
-        run: |-
-          powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-          echo "::set-output name={cacheKey}::{wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}}"
+        run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
         if: steps.check-cache.outputs.cache-hit != 'true'
+      - name: Output cacheKey
+        run: echo "::set-output name=cacheKey::wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
