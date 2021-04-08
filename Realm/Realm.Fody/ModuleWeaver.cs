@@ -30,17 +30,8 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName);
-        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
-        var (targetOSName, targetOSVersion) = Analytics.GetTargetOS(frameworkName);
-        var analyticsConfig = new Analytics.Config
-        {
-            Framework = "xamarin", // This is for backwards compatibility
-            TargetOSName = targetOSName,
-            TargetOSVersion = targetOSVersion,
-            FrameworkVersion = frameworkName.Version.ToString(),
-            RunAnalytics = !disableAnalytics,
-        };
-        var executionResult = weaver.Execute(analyticsConfig);
+
+        var executionResult = weaver.Execute(GetAnalyticsConfig(frameworkName));
         WriteInfo(executionResult.ToString());
     }
 
@@ -54,6 +45,61 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Collections";
         yield return "System.ObjectModel";
         yield return "System.Threading";
+    }
+
+    private Analytics.Config GetAnalyticsConfig(FrameworkName frameworkName)
+    {
+        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
+
+        var config = new Analytics.Config
+        {
+            Framework = "xamarin", // This is for backwards compatibility
+            RunAnalytics = !disableAnalytics,
+        };
+
+        var version = "UNKNOWN";
+
+        // Default to windows for backward compatibility
+        var name = "windows";
+
+        try
+        {
+            // Legacy reporting used ios, osx, and android
+            switch (frameworkName.Identifier)
+            {
+                case "Xamarin.iOS":
+                    name = "ios";
+                    break;
+                case "Xamarin.Mac":
+                    name = "osx";
+                    break;
+                case "MonoAndroid":
+                case "Mono.Android":
+                    name = "android";
+                    break;
+                default:
+                    name = frameworkName.Identifier;
+                    break;
+            }
+
+            version = frameworkName.Version.ToString();
+        }
+        catch
+        {
+#if DEBUG
+            // Make sure we get build failures and address the problem in debug,
+            // but don't fail users' builds because of that.
+            throw;
+#endif
+        }
+
+        config.FrameworkVersion = version;
+        config.TargetOSName = name;
+
+        // For backward compatibility
+        config.TargetOSVersion = version;
+
+        return config;
     }
 
     void ILogger.Debug(string message)

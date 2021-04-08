@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -170,47 +169,6 @@ namespace RealmWeaver
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
             request.GetResponse();
-        }
-
-        public static (string Name, string Version) GetTargetOS(FrameworkName frameworkName)
-        {
-            var version = "UNKNOWN";
-
-            // Default to windows for backward compatibility
-            var name = "windows";
-
-            try
-            {
-                // Legacy reporting used ios, osx, and android
-                switch (frameworkName.Identifier)
-                {
-                    case "Xamarin.iOS":
-                        name = "ios";
-                        break;
-                    case "Xamarin.Mac":
-                        name = "osx";
-                        break;
-                    case "MonoAndroid":
-                    case "Mono.Android":
-                        name = "android";
-                        break;
-                    default:
-                        name = frameworkName.Identifier;
-                        break;
-                }
-
-                version = frameworkName.Version.ToString();
-            }
-            catch
-            {
-#if DEBUG
-                // Make sure we get build failures and address the problem in debug,
-                // but don't fail users' builds because of that.
-                throw;
-#endif
-            }
-
-            return (name, version);
         }
 
         private static string SHA256Hash(byte[] bytes)
