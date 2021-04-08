@@ -169,6 +169,8 @@ namespace Realms.Tests.Sync
             yield return (new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
             yield return (new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
             yield return (true, new IntPropertyObject { Int = 10 });
+            yield return (RealmValue.Null, 5m);
+            yield return (12, 15d);
         }
 
         [TestCaseSource(nameof(RealmTestValues))]
@@ -177,7 +179,7 @@ namespace Realms.Tests.Sync
         [TestCaseSource(nameof(RealmTestValues))]
         public void Dict_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestDictionaryCore(o => o.RealmValueDict, values.Item1, values.Item2);
 
-        [Test]
+        [TestCaseSource(nameof(RealmTestValues))]
         public void Property_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestPropertyCore(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, values.Item1, values.Item2);
 
         #endregion
@@ -367,7 +369,7 @@ namespace Realms.Tests.Sync
                 Assert.That(prop1, Is.EqualTo(prop2).Using<T>(equalsOverride));
                 Assert.That(prop1, Is.EqualTo(item1).Using<T>(equalsOverride));
 
-                realm1.Write(() =>
+                realm2.Write(() =>
                 {
                     setter(obj2, item2);
                 });
@@ -378,7 +380,7 @@ namespace Realms.Tests.Sync
                 prop2 = getter(obj2);
 
                 Assert.That(prop1, Is.EqualTo(prop2).Using<T>(equalsOverride));
-                Assert.That(prop1, Is.EqualTo(item1).Using<T>(equalsOverride));
+                Assert.That(prop2, Is.EqualTo(item2).Using<T>(equalsOverride));
             }, ensureNoSessionErrors: true);
         }
 
