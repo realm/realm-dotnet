@@ -474,10 +474,9 @@ namespace Realms.Tests
 
         public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
 
-        // TODO: reenable when https://jira.mongodb.org/browse/REALMC-8495 is fixed
-        //public IDictionary<string, IntPropertyObject> ObjectDict { get; }
+        public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
-        //public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
     }
 
     public class DictionariesObject : RealmObject

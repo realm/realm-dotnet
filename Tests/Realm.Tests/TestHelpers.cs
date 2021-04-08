@@ -235,20 +235,7 @@ namespace Realms.Tests
         {
             AsyncContext.Run(async () =>
             {
-                var result = testFunc().Timeout(timeout);
-
-                if (errorTask != null)
-                {
-                    var completed = await Task.WhenAny(result, errorTask);
-                    if (completed == errorTask)
-                    {
-                        await errorTask;
-                        return;
-                    }
-                }
-
-                await result;
-
+                await Task.WhenAny(testFunc(), errorTask).Timeout(timeout);
             });
         }
 
