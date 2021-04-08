@@ -3,6 +3,7 @@
 
 #@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
+#@ windowsArch = [ 'Win32', 'x64' ]
 
 #@ def checkoutCode():
 name: Checkout code
@@ -27,19 +28,32 @@ if: steps.check-cache.outputs.cache-hit != 'true'
 
 #@ def setupVcpkg():
 name: Setup Vcpkg
-uses: ./.github/actions/get-vcpkg-prebuilt
+run: |
+  Write-Output 'Beginning download...'
+  Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+  Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
+  Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+  Write-Output 'Completed!'
+
+shell: powershell
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
-#@ actualCommand = cmd + " --configuration=" + configuration + " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}"
-#@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name == 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+#@ configurationParam =  " --configuration=" + configuration
+#@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
+#@ if cmd.startswith("powershell"):
+#@   configurationParam = " -Configuration " + configuration
+#@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
+#@ end
+#@ actualCommand = cmd + configurationParam + ltoParam
+#@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
 
 steps:
   - #@ checkoutCode()
   - #@ checkCache(cacheKey)
-#@ for step in intermediateSteps:
+  #@ for step in intermediateSteps:
   - #@ template.replace([overlay.apply(step, cacheCondition())])
-#@ end
+  #@ end
   - name: Build wrappers
     run: #@ actualCommand
     _: #@ template.replace(cacheCondition())
@@ -73,3 +87,10 @@ jobs:
       matrix:
         arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
+  build-wrappers-windows:
+    runs-on: windows-latest
+    name: Build Windows wrappers
+    strategy:
+      matrix:
+        arch: #@ windowsArch
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg() ]))
