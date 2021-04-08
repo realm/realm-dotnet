@@ -34,7 +34,6 @@ if: #@ wrappersCacheCondition
 #@ end
 
 #@ def setupVcpkg():
-#! TODO make a composite action for this with cache included
 name: Setup Vcpkg
 run: |
   Write-Output 'Beginning download...'
