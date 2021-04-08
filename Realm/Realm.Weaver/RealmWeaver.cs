@@ -187,7 +187,7 @@ namespace RealmWeaver
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
-#if DEBUG
+#if DEBUG || true
                     _logger.Info($@"
 ----------------------------------
 Analytics payload
