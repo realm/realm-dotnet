@@ -4,6 +4,7 @@
 #@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArch = [ 'Win32', 'x64' ]
+#@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 
 #@ def checkoutCode():
 name: Checkout code
@@ -21,9 +22,14 @@ with:
   key: #@ key
 #@ end
 
-#@ def cacheCondition():
-#@overlay/match missing_ok=True
-if: steps.check-cache.outputs.cache-hit != 'true'
+#@ def cacheVcpkg():
+name: Check Vcpkg cache
+id: check-vcpkg-cache
+uses: actions/cache@v2
+with:
+  path: 'C:\src'
+  key: vcpkg
+if: #@ wrappersCacheCondition
 #@ end
 
 #@ def setupVcpkg():
@@ -34,8 +40,8 @@ run: |
   Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
   Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
   Write-Output 'Completed!'
-
 shell: powershell
+if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
@@ -52,11 +58,11 @@ steps:
   - #@ checkoutCode()
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
-  - #@ template.replace([overlay.apply(step, cacheCondition())])
+  - #@ step
   #@ end
   - name: Build wrappers
     run: #@ actualCommand
-    _: #@ template.replace(cacheCondition())
+    if: #@ wrappersCacheCondition
 #@ end
 
 ---
@@ -93,4 +99,4 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArch
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
