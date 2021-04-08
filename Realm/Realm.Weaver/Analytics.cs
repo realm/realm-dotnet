@@ -123,7 +123,8 @@ namespace RealmWeaver
                     .Replace("%OS_VERSION%", osVersion)
                     .Replace("%TARGET_OS%", _config.TargetOSName)
                     .Replace("%TARGET_OS_VERSION%", _config.TargetOSVersion)
-                    .Replace("%FRAMEWORK%", _config.Framework);
+                    .Replace("%FRAMEWORK%", _config.Framework)
+                    .Replace("%FRAMEWORK_VERSION%", _config.FrameworkVersion);
             }
         }
 
