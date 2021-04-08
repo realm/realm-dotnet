@@ -235,7 +235,7 @@ namespace Realms.Tests
         {
             AsyncContext.Run(async () =>
             {
-                await Task.WhenAny(testFunc(), errorTask).Timeout(timeout);
+                await (errorTask == null ? testFunc() : Task.WhenAny(testFunc(), errorTask)).Timeout(timeout);
             });
         }
 
