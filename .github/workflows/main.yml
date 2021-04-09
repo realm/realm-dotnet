@@ -2,222 +2,268 @@ name: build and test
 "on":
   push:
     branches:
-      - main
-      - master
+    - main
+    - master
   pull_request: null
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Build macOS wrappers
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check cache
-        id: check-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/**
-          key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-      - name: Build wrappers
-        run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-macos
-          path: wrappers/build/**
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-macos
+        path: wrappers/build/**
+        retention-days: 1
   build-wrappers-ios:
     runs-on: macos-latest
     name: Build iOS wrappers
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check cache
-        id: check-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/**
-          key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-      - name: Build wrappers
-        run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-ios
-          path: wrappers/build/**
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-ios
+        path: wrappers/build/**
+        retention-days: 1
   build-wrappers-linux:
     runs-on: ubuntu-20.04
     name: Build Linux wrappers
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check cache
-        id: check-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/**
-          key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-      - name: Build wrappers
-        run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-linux
-          path: wrappers/build/**
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-linux
+        path: wrappers/build/**
+        retention-days: 1
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Build Android wrappers
     strategy:
       matrix:
         arch:
-          - armeabi-v7a
-          - arm64-v8a
-          - x86
-          - x86_64
+        - armeabi-v7a
+        - arm64-v8a
+        - x86
+        - x86_64
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check cache
-        id: check-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/**
-          key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-      - name: Build wrappers
-        run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-android-${{ matrix.arch }}
-          path: wrappers/build/**
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-android-${{ matrix.arch }}
+        path: wrappers/build/**
+        retention-days: 1
   build-wrappers-windows:
     runs-on: windows-latest
     name: Build Windows wrappers
     strategy:
       matrix:
         arch:
-          - Win32
-          - x64
+        - Win32
+        - x64
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check cache
-        id: check-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/**
-          key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-      - name: Check Vcpkg cache
-        id: check-vcpkg-cache
-        uses: actions/cache@v2
-        with:
-          path: C:\src
-          key: vcpkg
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Setup Vcpkg
-        run: |
-          Write-Output 'Beginning download...'
-          Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-          Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
-          Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-          Write-Output 'Completed!'
-        shell: powershell
-        if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
-      - name: Build wrappers
-        run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-windows-${{ matrix.arch }}
-          path: wrappers/build/**
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Check Vcpkg cache
+      id: check-vcpkg-cache
+      uses: actions/cache@v2
+      with:
+        path: C:\src
+        key: vcpkg
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Setup Vcpkg
+      run: |
+        Write-Output 'Beginning download...'
+        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
+        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+        Write-Output 'Completed!'
+      shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+    - name: Build wrappers
+      run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-${{ matrix.arch }}
+        path: wrappers/build/**
+        retention-days: 1
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Build Windows UWP wrappers
     strategy:
       matrix:
         arch:
-          - Win32
-          - x64
-          - ARM
+        - Win32
+        - x64
+        - ARM
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Check cache
-        id: check-cache
-        uses: actions/cache@v2
-        with:
-          path: ./wrappers/build/**
-          key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
-      - name: Check Vcpkg cache
-        id: check-vcpkg-cache
-        uses: actions/cache@v2
-        with:
-          path: C:\src
-          key: vcpkg
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Setup Vcpkg
-        run: |
-          Write-Output 'Beginning download...'
-          Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-          Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
-          Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-          Write-Output 'Completed!'
-        shell: powershell
-        if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
-      - name: Build wrappers
-        run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-        if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-windows-uwp-${{ matrix.arch }}
-          path: wrappers/build/**
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Check Vcpkg cache
+      id: check-vcpkg-cache
+      uses: actions/cache@v2
+      with:
+        path: C:\src
+        key: vcpkg
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Setup Vcpkg
+      run: |
+        Write-Output 'Beginning download...'
+        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
+        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+        Write-Output 'Completed!'
+      shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+    - name: Build wrappers
+      run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-uwp-${{ matrix.arch }}
+        path: wrappers/build/**
+        retention-days: 1
   build-package:
     runs-on: windows-latest
     name: Build packages
     needs:
-      - build-wrappers-windows
-      - build-wrappers-macos
-      - build-wrappers-ios
-      - build-wrappers-android
-      - build-wrappers-linux
-      - build-wrappers-windows-uwp
+    - build-wrappers-windows
+    - build-wrappers-macos
+    - build-wrappers-ios
+    - build-wrappers-android
+    - build-wrappers-linux
+    - build-wrappers-windows-uwp
     steps:
-      - name: Fetch Artifacts Linux
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-linux
-          path: wrappers/build
-      - name: Fetch Artifacts MacOS
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-macos
-          path: wrappers/build
-      - name: Fetch Artifacts Windows 32
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-Win32
-          path: wrappers/build
-      - name: Fetch Artifacts Windows 64
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-x64
-          path: wrappers/build
-      - name: list folder
-        run: powershell tree /F
+    - name: Fetch Artifacts MacOS
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-macos
+        path: wrappers/build
+    - name: Fetch Artifacts iOS
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-ios
+        path: wrappers/build
+    - name: Fetch Artifacts Linux
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-linux
+        path: wrappers/build
+    - name: Fetch Artifacts Android armeabi-v7a
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-armeabi-v7a
+        path: wrappers/build
+    - name: Fetch Artifacts Android arm64-v8a
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-arm64-v8a
+        path: wrappers/build
+    - name: Fetch Artifacts Android x86
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-x86
+        path: wrappers/build
+    - name: Fetch Artifacts Android x86_64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-x86_64
+        path: wrappers/build
+    - name: Fetch Artifacts Windows 32bit
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-Win32
+        path: wrappers/build
+    - name: Fetch Artifacts Windows 64bit
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-x64
+        path: wrappers/build
+    - name: Fetch Artifacts Windows UWP 32bit
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-Win32
+        path: wrappers/build
+    - name: Fetch Artifacts Windows UWP 64bit
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-x64
+        path: wrappers/build
+    - name: Fetch Artifacts Windows UWP ARM
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-ARM
+        path: wrappers/build
+    - name: list folder
+      run: powershell tree /F
