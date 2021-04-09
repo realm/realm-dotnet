@@ -265,5 +265,3 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
-    - name: list folder
-      run: powershell tree /F
