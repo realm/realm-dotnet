@@ -160,9 +160,7 @@ namespace Realms.Tests.Sync
 
         private static SyncConfiguration UpdateConfig(SyncConfiguration config)
         {
-            // TODO: add the embedded object when https://jira.mongodb.org/browse/REALMC-8495 is fixed
-            config.ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(SyncAllTypesObject) };
-            //ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject) },
+            config.ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
 
             return config;

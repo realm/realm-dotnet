@@ -28,17 +28,40 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
+using UnityEngine;
 
 namespace RealmWeaver
 {
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
     public class UnityWeaver : IPostBuildPlayerScriptDLLs
     {
+        private const string EnableAnalyticsPref = "realm_enable_analytics";
+        private const string EnableAnalyticsMenuItemPath = "Realm/Enable build-time analytics";
+
+        private static bool _analyticsEnabled;
+
+        private static bool AnalyticsEnabled
+        {
+            get => _analyticsEnabled;
+            set
+            {
+                _analyticsEnabled = value;
+                EditorPrefs.SetBool(EnableAnalyticsPref, value);
+                Menu.SetChecked(EnableAnalyticsMenuItemPath, value);
+            }
+        }
+
         public int callbackOrder => 0;
 
         [InitializeOnLoadMethod]
         public static void Initialize()
         {
+            // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
+            EditorApplication.delayCall += () =>
+            {
+                AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
+            };
+
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
             {
                 if (string.IsNullOrEmpty(assemblyPath))
@@ -54,9 +77,10 @@ namespace RealmWeaver
                     return;
                 }
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences);
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
             };
 
+            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
             WeaveAssembliesOnEditorLaunch();
         }
 
@@ -65,6 +89,12 @@ namespace RealmWeaver
         {
             var assembliesWoven = await WeaveAllAssemblies();
             UnityLogger.Instance.Info($"Weaving completed. {assembliesWoven} assemblies needed weaving.");
+        }
+
+        [MenuItem(EnableAnalyticsMenuItemPath)]
+        public static void DisableAnalyticsMenuItem()
+        {
+            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
         }
 
         private static void WeaveAssembliesOnEditorLaunch()
@@ -88,11 +118,10 @@ namespace RealmWeaver
             try
             {
                 EditorApplication.LockReloadAssemblies();
-
                 var weavingTasks = CompilationPipeline.GetAssemblies(AssembliesType.Player)
                     .Select(assembly => Task.Run(() =>
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences))
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
                         {
                             return null;
                         }
@@ -130,7 +159,7 @@ namespace RealmWeaver
             return assembliesWoven;
         }
 
-        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string targetOSName)
         {
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -150,7 +179,16 @@ namespace RealmWeaver
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
                     // using NETStandard2, so we just hardcode this.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, new FrameworkName(".NETStandard,Version=v2.0"));
-                    var results = weaver.Execute();
+
+                    var analyticsConfig = new Analytics.Config
+                    {
+                        TargetOSName = targetOSName,
+                        FrameworkVersion = Application.unityVersion,
+                        Framework = framework,
+                        RunAnalytics = AnalyticsEnabled
+                    };
+
+                    var results = weaver.Execute(analyticsConfig);
 
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
@@ -171,6 +209,11 @@ namespace RealmWeaver
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
+            if (report == null)
+            {
+                return;
+            }
+
             // This is a bit hacky - we need actual references, not directories, containing references, so we pass folder/dummy.dll
             // knowing that dummy.dll will be stripped.
             var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(ApiCompatibilityLevel.NET_Standard_2_0).Select(d => Path.Combine(d, "dummy.dll"));
@@ -179,9 +222,10 @@ namespace RealmWeaver
                 .ToArray();
 
             var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
+            var targetOS = GetTargetOSName(report.summary.platform);
             foreach (var file in assembliesToWeave)
             {
-                WeaveAssemblyCore(file.path, referencePaths);
+                WeaveAssemblyCore(file.path, referencePaths, "Unity", targetOS);
             }
 
             if (report.summary.platform == BuildTarget.iOS)
@@ -200,6 +244,44 @@ namespace RealmWeaver
                         realmResolutionResult.SaveModuleUpdates();
                     }
                 }
+            }
+        }
+
+        private static string GetTargetOSName(BuildTarget target)
+        {
+            // These have to match Analytics.GetConfig(FrameworkName)
+            switch (target)
+            {
+                case BuildTarget.StandaloneOSX:
+                    return "osx";
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                    return "windows";
+                case BuildTarget.iOS:
+                    return "ios";
+                case BuildTarget.Android:
+                    return "android";
+                case BuildTarget.StandaloneLinux64:
+                    return "linux";
+                case BuildTarget.tvOS:
+                    return "tvos";
+                default:
+                    return "UNKNOWN";
+            }
+        }
+
+        private static string GetTargetOSName(RuntimePlatform target)
+        {
+            switch (target)
+            {
+                case RuntimePlatform.WindowsEditor:
+                    return "windows";
+                case RuntimePlatform.OSXEditor:
+                    return "osx";
+                case RuntimePlatform.LinuxEditor:
+                    return "linux";
+                default:
+                    return "UNKOWN";
             }
         }
 

@@ -41,7 +41,11 @@ namespace Realms
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
     [Serializable]
-    public abstract class RealmObjectBase : INotifyPropertyChanged, IThreadConfined, NotificationsHelper.INotifiable, IReflectableType
+    public abstract class RealmObjectBase
+        : INotifyPropertyChanged,
+          IThreadConfined,
+          INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
+          IReflectableType
     {
         [NonSerialized, XmlIgnore]
         private Lazy<int> _hashCode;
@@ -391,7 +395,7 @@ namespace Realms
                 if (ObjectHandle.IsValid)
                 {
                     var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), NotificationsHelper.NotificationCallback);
+                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle));
                 }
             });
         }
@@ -403,7 +407,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
 

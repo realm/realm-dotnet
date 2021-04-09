@@ -79,7 +79,7 @@ namespace Realms
             public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, NotificationCallbackDelegate callback, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlink_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);
@@ -302,9 +302,9 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
         }

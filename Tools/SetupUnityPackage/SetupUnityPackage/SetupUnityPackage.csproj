@@ -14,9 +14,6 @@
     <Folder Include="MetaFiles\Dependencies\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UnityWeaver\UnityWeaver.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="MetaFiles\Dependencies.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

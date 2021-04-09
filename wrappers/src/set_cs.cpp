@@ -149,10 +149,10 @@ REALM_EXPORT void realm_set_destroy(object_store::Set* set)
     delete set;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_set, callback, [set](CollectionChangeCallback callback) {
+        return subscribe_for_notifications(managed_set, [set](CollectionChangeCallback callback) {
             return set->add_notification_callback(callback);
         });
     });

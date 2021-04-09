@@ -38,7 +38,7 @@ namespace Realms
             public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, NotificationCallbackDelegate callback, out NativeException ex);
+            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -131,9 +131,9 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
         }

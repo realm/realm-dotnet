@@ -19,8 +19,9 @@
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
-using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RealmWeaver
 {
@@ -62,7 +63,8 @@ namespace RealmWeaver
       ""Anonymized Bundle ID"": ""%APP_ID%"",
       ""Binding"": ""dotnet"",
       ""Language"": ""c#"",
-      ""Framework"": ""xamarin"",
+      ""Framework"": ""%FRAMEWORK%"",
+      ""Framework Version"": ""%FRAMEWORK_VERSION%"",
       ""Sync Enabled"": ""%SYNC_ENABLED%"",
       ""Realm Version"": ""%REALM_VERSION%"",
       ""Host OS Type"": ""%OS_TYPE%"",
@@ -72,9 +74,7 @@ namespace RealmWeaver
    }
 }";
 
-        private readonly FrameworkName _frameworkName;
-        private readonly bool _isSyncEnabled;
-        private readonly string _anonymizedAppID;
+        private readonly Config _config;
 
         private static string AnonymizedUserID
         {
@@ -96,7 +96,7 @@ namespace RealmWeaver
         {
             // Assume OS X if not Windows.
             return NetworkInterface.GetAllNetworkInterfaces()
-                                   .Where(n => n.Name == "en0")
+                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
                                    .Select(n => n.GetPhysicalAddress().GetAddressBytes())
                                    .FirstOrDefault();
         }
@@ -106,14 +106,13 @@ namespace RealmWeaver
             get
             {
                 ComputeHostOSNameAndVersion(out var osName, out var osVersion);
-                ComputeTargetOSNameAndVersion(out var targetName, out var targetVersion);
                 return JsonTemplate
                     .Replace("%EVENT%", "Run")
                     .Replace("%TOKEN%", MixPanelToken)
                     .Replace("%USER_ID%", AnonymizedUserID)
-                    .Replace("%APP_ID%", _anonymizedAppID)
+                    .Replace("%APP_ID%", _config.ModuleName)
 
-                    .Replace("%SYNC_ENABLED%", _isSyncEnabled.ToString())
+                    .Replace("%SYNC_ENABLED%", _config.IsUsingSync.ToString())
 
                     // Version of weaver is expected to match that of the library.
                     // TODO: temp - remove that when we're out of beta
@@ -121,20 +120,26 @@ namespace RealmWeaver
 
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)
-                    .Replace("%TARGET_OS%", targetName)
-                    .Replace("%TARGET_OS_VERSION%", targetVersion);
+                    .Replace("%TARGET_OS%", _config.TargetOSName)
+                    .Replace("%TARGET_OS_VERSION%", _config.TargetOSVersion)
+                    .Replace("%FRAMEWORK%", _config.Framework)
+                    .Replace("%FRAMEWORK_VERSION%", _config.FrameworkVersion);
             }
         }
 
-        internal Analytics(FrameworkName frameworkName, string moduleName, bool isUsingSync)
+        internal Analytics(Config config)
         {
-            _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleName));
-            _frameworkName = frameworkName;
-            _isSyncEnabled = isUsingSync;
+            config.ModuleName = SHA256Hash(Encoding.UTF8.GetBytes(config.ModuleName));
+            _config = config;
         }
 
         internal string SubmitAnalytics()
         {
+            if (!_config.RunAnalytics || Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null)
+            {
+                return "Analytics disabled";
+            }
+
             var payload = JsonPayload;
 
             // uncomment next line to inspect the payload under Windows VS build
@@ -166,45 +171,6 @@ namespace RealmWeaver
             request.GetResponse();
         }
 
-        private void ComputeTargetOSNameAndVersion(out string name, out string version)
-        {
-            version = "UNKNOWN";
-
-            // Default to windows for backward compatibility
-            name = "windows";
-
-            try
-            {
-                // Legacy reporting used ios, osx, and android
-                switch (_frameworkName.Identifier)
-                {
-                    case "Xamarin.iOS":
-                        name = "ios";
-                        break;
-                    case "Xamarin.Mac":
-                        name = "osx";
-                        break;
-                    case "MonoAndroid":
-                    case "Mono.Android":
-                        name = "android";
-                        break;
-                    default:
-                        name = _frameworkName.Identifier;
-                        break;
-                }
-
-                version = _frameworkName.Version.ToString();
-            }
-            catch
-            {
-#if DEBUG
-                // Make sure we get build failures and address the problem in debug,
-                // but don't fail users' builds because of that.
-                throw;
-#endif
-            }
-        }
-
         private static string SHA256Hash(byte[] bytes)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
@@ -215,26 +181,35 @@ namespace RealmWeaver
 
         private static void ComputeHostOSNameAndVersion(out string name, out string version)
         {
-            switch (Environment.OSVersion.Platform)
+            var platformRegex = new Regex("^(?<platform>[^0-9]*) (?<version>[^ ]*)", RegexOptions.Compiled);
+            var osDescription = platformRegex.Match(RuntimeInformation.OSDescription);
+            if (osDescription.Success)
             {
-                // Mono completely messes up reporting the OS name and version for OS X, so...
-                /*   case PlatformID.MacOSX:
-                       name = "osx";
-                       break;
-                   case PlatformID.Unix:
-                       name = "linux";
-                       break; */
-                case PlatformID.Win32Windows:
-                case PlatformID.Win32NT:
-                    name = "windows";
-                    break;
-                default:
-                    name = "osx";  //// proved "windows" detected so default to "osx" for now
-                                   //// name = Environment.OSVersion.Platform.ToString();
-                    break;
+                name = osDescription.Groups["platform"].Value;
+                version = osDescription.Groups["version"].Value;
             }
+            else
+            {
+                name = Environment.OSVersion.Platform.ToString();
+                version = Environment.OSVersion.VersionString;
+            }
+        }
 
-            version = Environment.OSVersion.Version.ToString();
+        public class Config
+        {
+            public bool RunAnalytics { get; set; }
+
+            public string TargetOSName { get; set; }
+
+            public string TargetOSVersion { get; set; }
+
+            public string Framework { get; set; }
+
+            public bool IsUsingSync { get; set; }
+
+            public string ModuleName { get; set; }
+
+            public string FrameworkVersion { get; set; }
         }
     }
 }

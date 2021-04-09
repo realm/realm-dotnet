@@ -13,7 +13,6 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using RealmWeaver;
 
 namespace SetupUnityPackage
 {
@@ -24,6 +23,9 @@ namespace SetupUnityPackage
 
         [Option("utils-path", Required = true, HelpText = "Path to the Realm.UnityUtils.nupkg to use.")]
         public string UtilsPath { get; set; }
+
+        [Option("weaver-path", Required = true, HelpText = "Path to the Realm.UnityWeaver.nupkg to use.")]
+        public string WeaverPath { get; set; }
 
         [Option("include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
         public bool IncludeDependencies { get; set; }
@@ -39,6 +41,7 @@ namespace SetupUnityPackage
     {
         private const string RealmPackageId = "Realm";
         private const string UnityUtilsPackageId = "Realm.UnityUtils";
+        private const string UnityWeaverPackageId = "Realm.UnityWeaver";
         private const string RealmPackagaName = "realm.unity";
         private const string RealmBundlePackageName = "realm.unity.bundle";
 
@@ -66,6 +69,10 @@ namespace SetupUnityPackage
             [UnityUtilsPackageId] = new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.UnityUtils.dll", "Realm.UnityUtils.dll" },
+            },
+            [UnityWeaverPackageId] = new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/Realm.UnityWeaver.dll", "../Editor/Realm.UnityWeaver.dll" },
             },
             ["MongoDB.Bson"] = new Dictionary<string, string>
             {
@@ -112,9 +119,9 @@ namespace SetupUnityPackage
             Console.WriteLine($"Included {_packageMaps[UnityUtilsPackageId].Count} files from {UnityUtilsPackageId}@{utilsVersion}");
 
             Console.WriteLine("Inluding UnityWeaver");
-            var unityWeaverTargetPath = Path.Combine(GetUnityEditorPath(), "UnityWeaver.dll");
-            File.Copy(GetUnityWeaverPath(), unityWeaverTargetPath, overwrite: true);
-            Console.WriteLine($"Included 1 file from UnityWeaver@{typeof(UnityWeaver).Assembly.GetName().Version.ToString(3)}");
+
+            var (weaverVersion, _) = await CopyBinaries(opts.WeaverPath, _packageMaps[UnityWeaverPackageId]);
+            Console.WriteLine($"Included {_packageMaps[UnityWeaverPackageId].Count} files from {UnityWeaverPackageId}@{weaverVersion}");
 
             if (opts.IncludeDependencies)
             {
@@ -258,30 +265,6 @@ namespace SetupUnityPackage
         }
 
         private static string GetUnityPackagePath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Runtime");
-
-        private static string GetUnityEditorPath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Editor");
-
-        private static string GetUnityUtilsPath()
-        {
-#if DEBUG
-            var targetFolder = "Debug";
-#else
-            var targetFolder = "Release";
-#endif
-
-            return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityUtils", "bin", targetFolder, "netstandard2.0", "UnityUtils.dll");
-        }
-
-        private static string GetUnityWeaverPath()
-        {
-#if DEBUG
-            var targetFolder = "Debug";
-#else
-            var targetFolder = "Release";
-#endif
-
-            return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityWeaver", "bin", targetFolder, "netstandard2.0", "UnityWeaver.dll");
-        }
 
         private static void UpdatePackageJson(bool includesDependencies)
         {

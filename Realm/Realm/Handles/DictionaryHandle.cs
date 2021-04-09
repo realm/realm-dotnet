@@ -25,6 +25,16 @@ namespace Realms
 {
     internal class DictionaryHandle : CollectionHandleBase
     {
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct DictionaryChangeSet
+        {
+            public MarshaledVector<PrimitiveValue> Insertions;
+            public MarshaledVector<PrimitiveValue> Modifications;
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
+
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
@@ -39,7 +49,10 @@ namespace Realms
             public static extern void destroy(IntPtr listInternalHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, NotificationCallbackDelegate callback, out NativeException ex);
+            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_key_notification_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_key_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -120,9 +133,16 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new NotificationTokenHandle(this, result);
+        }
+
+        public NotificationTokenHandle AddKeyNotificationCallback(IntPtr managedObjectHandle)
+        {
+            var result = NativeMethods.add_key_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
         }
@@ -300,6 +320,15 @@ namespace Realms
             var resultsPtr = NativeMethods.get_keys(this, out var ex);
             ex.ThrowIfNecessary();
             return new ResultsHandle(Root ?? this, resultsPtr);
+        }
+
+        [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
+        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
+        {
+            if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
+            {
+                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+            }
         }
     }
 }
