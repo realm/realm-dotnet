@@ -1,5 +1,5 @@
 name: build and test
-on:
+"on":
   push:
     branches:
       - main
@@ -199,9 +199,25 @@ jobs:
       - build-wrappers-linux
       - build-wrappers-windows-uwp
     steps:
-      - name: Fetch Artifacts
+      - name: Fetch Artifacts Linux
         uses: actions/download-artifact@v2
         with:
+          name: wrappers-linux
+          path: wrappers/build
+      - name: Fetch Artifacts MacOS
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-macos
+          path: wrappers/build
+      - name: Fetch Artifacts Windows 32
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-Win32
+          path: wrappers/build
+      - name: Fetch Artifacts Windows 64
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-x64
           path: wrappers/build
       - name: list folder
         run: powershell tree /F
