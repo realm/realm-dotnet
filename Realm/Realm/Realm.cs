@@ -1414,19 +1414,23 @@ namespace Realms
             {
                 foreach (var objectMetadata in objectsMetadata)
                 {
-
                     if (stringToRealmObjectMetadataDict.ContainsKey(objectMetadata.Schema.Name))
                     {
-                        Argument.AssertDebug("You are trying to merge an object schema that is already present. Please open an issue in the realm-dotnet repository.");  //TODO Add link to repository
+                        Argument.AssertDebug($"Trying to add object schema to the string mapping that is already present: {objectMetadata.Schema.Name}");
+                    }
+                    else
+                    {
+                        stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
                     }
 
                     if (tableKeyToRealmObjectMetadataDict.ContainsKey(objectMetadata.TableKey))
                     {
-                        Argument.AssertDebug("You are trying to merge an object schema that is already present. Please open an issue in the realm-dotnet repository.");
+                        Argument.AssertDebug($"Trying to add object schema to the table key mapping that is already present: {objectMetadata.Schema.Name} - {objectMetadata.TableKey}");
                     }
-
-                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
-                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
+                    else
+                    {
+                        tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
+                    }
                 }
             }
         }
