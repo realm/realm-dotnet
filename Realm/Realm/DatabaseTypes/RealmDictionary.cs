@@ -214,7 +214,7 @@ namespace Realms
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
 
-        protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Metadata, Realm);
+        protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
         void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
         {
