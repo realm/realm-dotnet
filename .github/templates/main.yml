@@ -1,0 +1,187 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@ configuration = "Release"
+#@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
+#@ windowsArchs = [ 'Win32', 'x64' ]
+#@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
+#@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
+
+#@ def checkoutCode():
+name: Checkout code
+uses: actions/checkout@v2
+with:
+  submodules: recursive
+#@ end
+
+#@ def checkCache(key):
+name: Check cache
+id: check-cache
+uses: actions/cache@v2
+with:
+  path: ./wrappers/build/**
+  key: #@ key
+#@ end
+
+#@ def cacheVcpkg():
+name: Check Vcpkg cache
+id: check-vcpkg-cache
+uses: actions/cache@v2
+with:
+  path: 'C:\src'
+  key: vcpkg
+if: #@ wrappersCacheCondition
+#@ end
+
+#@ def setupVcpkg():
+name: Setup Vcpkg
+run: |
+  Write-Output 'Beginning download...'
+  Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+  Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
+  Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+  Write-Output 'Completed!'
+shell: powershell
+if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
+#@ end
+
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
+#@ configurationParam =  " --configuration=" + configuration
+#@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
+#@ if cmd.startswith("powershell"):
+#@   configurationParam = " -Configuration " + configuration
+#@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
+#@ end
+#@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+#@ actualCommand = cmd + configurationParam + ltoParam
+
+steps:
+  - #@ checkoutCode()
+  - #@ checkCache(cacheKey)
+  #@ for step in intermediateSteps:
+  - #@ step
+  #@ end
+  - name: Build wrappers
+    run: #@ actualCommand
+    if: #@ wrappersCacheCondition
+  - name: Store artifacts
+    uses: actions/upload-artifact@v2
+    with:
+      name: #@ outputVar
+      path: wrappers/build/**
+      retention-days: 1
+#@ end
+
+---
+name: build and test
+"on":
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+jobs:
+  build-wrappers-macos:
+    runs-on: macos-latest
+    name: Build macOS wrappers
+    _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
+  build-wrappers-ios:
+    runs-on: macos-latest
+    name: Build iOS wrappers
+    _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
+  build-wrappers-linux:
+    runs-on: ubuntu-20.04
+    name: Build Linux wrappers
+    _: #@ template.replace(buildWrappers("./wrappers/build.sh", "wrappers-linux"))
+  build-wrappers-android:
+    runs-on: ubuntu-20.04
+    name: Build Android wrappers
+    strategy:
+      matrix:
+        arch: #@ androidABIs
+    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
+  build-wrappers-windows:
+    runs-on: windows-latest
+    name: Build Windows wrappers
+    strategy:
+      matrix:
+        arch: #@ windowsArchs
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+  build-wrappers-windows-uwp:
+    runs-on: windows-latest
+    name: Build Windows UWP wrappers
+    strategy:
+      matrix:
+        arch: #@ windowsUWPArchs
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+  build-package:
+    runs-on: windows-latest
+    name: Build packages
+    needs:
+      - build-wrappers-windows
+      - build-wrappers-macos
+      - build-wrappers-ios
+      - build-wrappers-android
+      - build-wrappers-linux
+      - build-wrappers-windows-uwp
+    steps:
+      - name: Fetch Artifacts MacOS
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-macos
+          path: wrappers/build
+      - name: Fetch Artifacts iOS
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-ios
+          path: wrappers/build
+      - name: Fetch Artifacts Linux
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-linux
+          path: wrappers/build
+      - name: Fetch Artifacts Android armeabi-v7a
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-armeabi-v7a
+          path: wrappers/build
+      - name: Fetch Artifacts Android arm64-v8a
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-arm64-v8a
+          path: wrappers/build
+      - name: Fetch Artifacts Android x86
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-x86
+          path: wrappers/build
+      - name: Fetch Artifacts Android x86_64
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-x86_64
+          path: wrappers/build
+      - name: Fetch Artifacts Windows 32bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-Win32
+          path: wrappers/build
+      - name: Fetch Artifacts Windows 64bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-x64
+          path: wrappers/build
+      - name: Fetch Artifacts Windows UWP 32bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-uwp-Win32
+          path: wrappers/build
+      - name: Fetch Artifacts Windows UWP 64bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-uwp-x64
+          path: wrappers/build
+      - name: Fetch Artifacts Windows UWP ARM
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-uwp-ARM
+          path: wrappers/build

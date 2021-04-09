@@ -60,7 +60,7 @@ stage('Build wrappers') {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode ${bashExtraArgs}"
+          sh "./build-macos.sh --configuration=${configuration} ${bashExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: 'macos-wrappers'
       }
@@ -69,7 +69,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh ${bashExtraArgs}")
+          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "./build.sh --configuration=${configuration} ${bashExtraArgs}")
         }
         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
       }
@@ -365,7 +365,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
 
       if (isUnix()) {
         if (nodeName == 'docker') {
-          def test_runner_image = CreateDockerContainer(targetFramework)          
+          def test_runner_image = CreateDockerContainer(targetFramework)
           withRealmCloud(version: '2020-12-04', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
               def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
