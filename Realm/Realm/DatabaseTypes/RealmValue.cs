@@ -667,6 +667,32 @@ namespace Realms
         }
 
         /// <summary>
+        /// Gets the name of the type of the object contained in <see cref="RealmValue"/>.
+        /// If it does not contain an object, it will return null.
+        /// </summary>
+        /// <returns>
+        /// The name of the type stored in <see cref="RealmValue"/> if an object, null otherwise.
+        /// </returns>
+        public string ObjectType
+        {
+            get
+            {
+                if (Type != RealmValueType.Object)
+                {
+                    return null;
+                }
+
+                var obj = AsRealmObject();
+                if (obj.IsManaged)
+                {
+                    return obj.ObjectSchema.Name;
+                }
+
+                return obj.GetType().Name;
+            }
+        }
+
+        /// <summary>
         /// Returns the string representation of this <see cref="RealmValue"/>.
         /// </summary>
         /// <returns>A string describing the value.</returns>

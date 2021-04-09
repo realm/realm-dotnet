@@ -473,6 +473,35 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmValue_WhenManaged_ObjectType()
+        {
+            RealmValue rv = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+            var managedObject = PersistAndFind(rv);
+
+            Assert.That(managedObject.RealmValueProperty.ObjectType, Is.EqualTo(nameof(InternalObject)));
+
+            _realm.Write(() =>
+            {
+                managedObject.RealmValueProperty = "string";
+            });
+
+            Assert.That(managedObject.RealmValueProperty.ObjectType, Is.Null);
+        }
+
+        [Test]
+        public void RealmValue_WhenUnmanaged_ObjectType()
+        {
+            RealmValue rv = new InternalObject { IntProperty = 10, StringProperty = "brown" };
+            var managedObject = new RealmValueObject { RealmValueProperty = rv };
+
+            Assert.That(managedObject.RealmValueProperty.ObjectType, Is.EqualTo(nameof(InternalObject)));
+
+            managedObject.RealmValueProperty = "string";
+
+            Assert.That(managedObject.RealmValueProperty.ObjectType, Is.Null);
+        }
+
+        [Test]
         public void RealmValue_WhenRealmInteger_Increments()
         {
             RealmValue rv = 10;
