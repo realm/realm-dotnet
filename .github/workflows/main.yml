@@ -205,6 +205,10 @@ jobs:
     - build-wrappers-linux
     - build-wrappers-windows-uwp
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Fetch Artifacts MacOS
       uses: actions/download-artifact@v2
       with:
@@ -265,3 +269,14 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
+    - name: Build nugetpkg Realm.Fody
+      run: MsBuild.exe ${{ GITHUB_WORKSPACE }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+    - name: Build nugetpkg Realm
+      run: "MsBuild.exe ${{ GITHUB_WORKSPACE }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+    - name: Build nugetpkg Realm.UnityUtils
+      run: "MsBuild.exe ${{ GITHUB_WORKSPACE }}/Realm/UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+    - name: Build nugetpkg Realm.UnityWeaver
+      run: "MsBuild.exe ${{ GITHUB_WORKSPACE }}/Realm/UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+    - name: Just tree struct
+      run: tree ${{ GITHUB_WORKSPACE }}/Realm /F
+
