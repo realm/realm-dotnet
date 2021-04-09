@@ -69,6 +69,7 @@ namespace binding {
     CSharpBindingContext::~CSharpBindingContext()
     {
         s_on_binding_context_destructed(m_managed_state_handle);
+        m_realm_schema = realm::Schema();
     }
 
     void log_message(std::string message, util::Logger::Level level)

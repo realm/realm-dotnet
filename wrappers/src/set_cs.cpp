@@ -69,12 +69,12 @@ REALM_EXPORT void realm_set_get_value(object_store::Set& set, size_t ndx, realm_
             throw IndexOutOfRangeException("Get from RealmSet", ndx, count);
 
         if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            *value = to_capi(new Object(set.get_realm(), set.get_object_schema(), set.get(ndx)));
+            *value = to_capi(set.get(ndx), set.get_realm());
         }
         else {
             auto val = set.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(new Object(set.get_realm(), val.get<ObjLink>()));
+                *value = to_capi(val.get<ObjLink>(), set.get_realm());
             }
             else {
                 *value = to_capi(std::move(val));

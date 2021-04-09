@@ -73,7 +73,7 @@ namespace Realms
         /// <value>The <see cref="RealmValueType"/> of the current value in the database.</value>
         public RealmValueType Type { get; }
 
-        internal RealmValue(PrimitiveValue primitive, ObjectHandle handle = default, IntPtr propertyIndex = default) : this()
+        internal RealmValue(PrimitiveValue primitive, Realm realm = null, ObjectHandle handle = default, IntPtr propertyIndex = default) : this()
         {
             Type = primitive.Type;
             _objectHandle = handle;
@@ -88,31 +88,37 @@ namespace Realms
                     _stringValue = primitive.AsString();
                     break;
                 case RealmValueType.Object:
-                    throw new NotSupportedException("Use RealmValue(RealmObject) instead.");
+                    Argument.NotNull(realm, nameof(realm));
+                    _objectValue = primitive.AsObject(realm);
+                    break;
                 default:
                     _primitiveValue = primitive;
                     break;
             }
         }
 
-        internal RealmValue(byte[] data) : this()
+        private RealmValue(byte[] data) : this()
         {
             Type = data == null ? RealmValueType.Null : RealmValueType.Data;
             _dataValue = data;
         }
 
-        internal RealmValue(string value) : this()
+        private RealmValue(string value) : this()
         {
             Type = value == null ? RealmValueType.Null : RealmValueType.String;
             _stringValue = value;
         }
 
-        internal RealmValue(RealmObjectBase obj) : this()
+        private RealmValue(RealmObjectBase obj) : this()
         {
             Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
             _objectValue = obj;
         }
 
+        /// <summary>
+        /// Gets a RealmValue representing <c>null</c>.
+        /// </summary>
+        /// <value>A new RealmValue instance of type <see cref="RealmValue.Null"/>.</value>
         public static RealmValue Null => new RealmValue(PrimitiveValue.Null());
 
         private static RealmValue Bool(bool value) => new RealmValue(PrimitiveValue.Bool(value));
@@ -889,7 +895,7 @@ namespace Realms
         {
             if (Type != type)
             {
-                throw new InvalidCastException($"Can't cast to {target} since the underlying value is {Type}"); 
+                throw new InvalidCastException($"Can't cast to {target} since the underlying value is {Type}");
             }
         }
 
