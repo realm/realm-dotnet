@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Realm.UnityWeaver</PackageId>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>Realm.UnityWeaver</Title>
+    <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
+    <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
+    <AssemblyName>Realm.UnityWeaver</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Unity3D.SDK" Version="2020.2.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\Realm.Unity\Editor\Cecil\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\Realm.Unity\Editor\Cecil\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\Realm.Unity\Editor\Cecil\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="..\Realm.Weaver\Realm.Weaver.projitems" Label="Shared" />
+  <ItemGroup>
+    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+  </ItemGroup>
+  <Import Project="..\AssemblyInfo.props" />
+</Project>

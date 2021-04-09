@@ -124,7 +124,7 @@ namespace Realms
             _sortDescriptor.AddClause(_realm.SharedRealmHandle, _metadata.TableKey, propertyChain, isAscending, isReplacing);
         }
 
-        private bool IsSortClause(string methodName, out bool isAscending, out bool isReplacing)
+        private static bool IsSortClause(string methodName, out bool isAscending, out bool isReplacing)
         {
             switch (methodName)
             {

@@ -31,11 +31,15 @@ using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
+using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len, bool is_client_reset);
+using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+using WaitCallbackT = void(void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
+
 namespace realm {
 namespace binding {
-    void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len, bool is_client_reset);
-    void (*s_progress_callback)(void*, uint64_t transferred_bytes, uint64_t transferrable_bytes);
-    void (*s_wait_callback)(void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
+    std::function<ErrorCallbackT> s_session_error_callback;
+    std::function<ProgressCallbackT> s_progress_callback;
+    std::function<WaitCallbackT> s_wait_callback;
 
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
     {
@@ -94,11 +98,13 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_syncsession_install_callbacks(decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback, decltype(s_wait_callback) wait_callback)
+REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback)
 {
-    s_session_error_callback = session_error_callback;
-    s_progress_callback = progress_callback;
-    s_wait_callback = wait_callback;
+    s_session_error_callback = wrap_managed_callback(session_error_callback);
+    s_progress_callback = wrap_managed_callback(progress_callback);
+    s_wait_callback = wrap_managed_callback(wait_callback);
+
+    realm::binding::s_can_call_managed = true;
 }
 
 enum class CSharpNotifierType : uint8_t {

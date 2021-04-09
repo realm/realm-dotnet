@@ -22,6 +22,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
 using Realms.Dynamic;
 using Realms.Helpers;
@@ -35,6 +36,9 @@ namespace Realms
     public class RealmSet<T> : RealmCollectionBase<T>, ISet<T>, IDynamicMetaObjectProvider
     {
         private readonly SetHandle _setHandle;
+
+        [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "We need to be on the generic class so that the weaver can use it.")]
+        public static IEqualityComparer<T> Comparer { get; } = typeof(T) == typeof(byte[]) ? (IEqualityComparer<T>)new BinaryEqualityComparer() : EqualityComparer<T>.Default;
 
         internal RealmSet(Realm realm, SetHandle adoptedSet, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
@@ -64,7 +68,7 @@ namespace Realms
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                return false;
             }
 
             return _setHandle.Remove(realmValue);
@@ -78,7 +82,7 @@ namespace Realms
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                return false;
             }
 
             return _setHandle.Contains(realmValue);
@@ -100,10 +104,10 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
-                // Call ExceptWith in native
-                throw new NotImplementedException();
+                _setHandle.ExceptWith(realmCollection.Handle.Value);
+                return;
             }
 
             if (Count == 0)
@@ -121,10 +125,10 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
-                // Call IntersectWith in native
-                throw new NotImplementedException();
+                _setHandle.IntersectWith(realmCollection.Handle.Value);
+                return;
             }
 
             // intersection of anything with empty set is empty set, so return if count is 0
@@ -155,82 +159,19 @@ namespace Realms
             }
         }
 
-        public bool IsSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: false);
-
-        public bool IsProperSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: true);
-
-        public bool IsSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: false);
-
-        public bool IsProperSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: true);
-
-        public bool Overlaps(IEnumerable<T> other)
-        {
-            Argument.NotNull(other, nameof(other));
-
-            if (other is RealmCollectionBase<T> realmCollection)
-            {
-                // Call Overlaps in native
-                throw new NotImplementedException();
-            }
-
-            // Special case - empty set doesn't overlap with anything.
-            if (Count == 0)
-            {
-                return false;
-            }
-
-            foreach (var item in other)
-            {
-                if (Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool SetEquals(IEnumerable<T> other)
-        {
-            Argument.NotNull(other, nameof(other));
-
-            if (other is RealmCollectionBase<T> realmCollection)
-            {
-                // Call Overlaps in native
-                throw new NotImplementedException();
-            }
-
-            var otherSet = GetSet(other);
-            if (otherSet.Count != Count)
-            {
-                return false;
-            }
-
-            foreach (var item in otherSet)
-            {
-                if (!Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We already know that counts are the same
-            return true;
-        }
-
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
-                // Call Overlaps in native
-                throw new NotImplementedException();
+                _setHandle.SymmetricExceptWith(realmCollection.Handle.Value);
+                return;
             }
 
             // We create a new hashset because we're going to be manipulating the in-memory collection
             // as that's cheaper.
-            var otherSet = new HashSet<T>(other);
+            var otherSet = new HashSet<T>(other, Comparer);
 
             // Special case - this is a no-op
             if (otherSet.Count == 0)
@@ -258,9 +199,9 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
-                // Call UnionWith in native
+                _setHandle.UnionWith(realmCollection.Handle.Value);
                 return;
             }
 
@@ -270,14 +211,74 @@ namespace Realms
             }
         }
 
+        public bool IsSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: false);
+
+        public bool IsProperSubsetOf(IEnumerable<T> other) => IsSubsetCore(other, proper: true);
+
+        public bool IsSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: false);
+
+        public bool IsProperSupersetOf(IEnumerable<T> other) => IsSupersetCore(other, proper: true);
+
+        public bool Overlaps(IEnumerable<T> other)
+        {
+            Argument.NotNull(other, nameof(other));
+
+            if (other is RealmSet<T> realmCollection)
+            {
+                return _setHandle.Overlaps(realmCollection.Handle.Value);
+            }
+
+            // Special case - empty set doesn't overlap with anything.
+            if (Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var item in other)
+            {
+                if (Contains(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool SetEquals(IEnumerable<T> other)
+        {
+            Argument.NotNull(other, nameof(other));
+
+            if (other is RealmSet<T> realmCollection)
+            {
+                return _setHandle.SetEquals(realmCollection.Handle.Value);
+            }
+
+            var otherSet = GetSet(other);
+            if (otherSet.Count != Count)
+            {
+                return false;
+            }
+
+            foreach (var item in otherSet)
+            {
+                if (!Contains(item))
+                {
+                    return false;
+                }
+            }
+
+            // We already know that counts are the same
+            return true;
+        }
+
         private bool IsSubsetCore(IEnumerable<T> other, bool proper)
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
-                // Call IsSubsetOf in native
-                throw new NotImplementedException();
+                return _setHandle.IsSubsetOf(realmCollection.Handle.Value, proper);
             }
 
             // The empty set is a subset of any set.
@@ -317,10 +318,9 @@ namespace Realms
         {
             Argument.NotNull(other, nameof(other));
 
-            if (other is RealmCollectionBase<T> realmCollection)
+            if (other is RealmSet<T> realmCollection)
             {
-                // Call IsSupersetOf in native
-                throw new NotImplementedException();
+                return _setHandle.IsSupersetOf(realmCollection.Handle.Value, proper);
             }
 
             var count = Count;
@@ -358,16 +358,49 @@ namespace Realms
             return true;
         }
 
-        private static ISet<T> GetSet(IEnumerable<T> enumerable)
+        private static ISet<T> GetSet(IEnumerable<T> collection)
         {
-            if (enumerable is ISet<T> set)
+            if (collection is HashSet<T> set && set.Comparer == Comparer)
             {
                 return set;
             }
 
-            return new HashSet<T>(enumerable);
+            return new HashSet<T>(collection, Comparer);
         }
 
         #endregion
+
+        private class BinaryEqualityComparer : EqualityComparer<byte[]>
+        {
+            public override bool Equals(byte[] x, byte[] y)
+            {
+                if (x == null || y == null)
+                {
+                    return x == y;
+                }
+
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x.Length != y.Length)
+                {
+                    return false;
+                }
+
+                return x.SequenceEqual(y);
+            }
+
+            public override int GetHashCode(byte[] obj)
+            {
+                if (obj == null)
+                {
+                    throw new ArgumentNullException(nameof(obj));
+                }
+
+                return obj.Length;
+            }
+        }
     }
 }

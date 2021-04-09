@@ -101,10 +101,10 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, callback, [results](CollectionChangeCallback callback) {
+        return subscribe_for_notifications(managed_results, [results](CollectionChangeCallback callback) {
             return results->add_notification_callback(callback);
         });
     });

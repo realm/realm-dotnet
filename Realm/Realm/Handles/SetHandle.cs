@@ -38,7 +38,7 @@ namespace Realms
             public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, NotificationCallbackDelegate callback, out NativeException ex);
+            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -72,6 +72,34 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool remove_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_except_with", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void except_with(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_intersect_with", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void intersect_with(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_symmetric_except_with", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void symmetric_except_with(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_union_with", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void union_with(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_is_subset_of", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool is_subset_of(SetHandle handle, CollectionHandleBase other_handle, [MarshalAs(UnmanagedType.I1)] bool proper, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_is_superset_of", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool is_superset_of(SetHandle handle, CollectionHandleBase other_handle, [MarshalAs(UnmanagedType.I1)] bool proper, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_overlaps", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool overlaps(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_set_equals", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool set_equals(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -103,9 +131,9 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
         }
@@ -180,5 +208,65 @@ namespace Realms
             nativeException.ThrowIfNecessary();
             return result;
         }
+
+        #region Set methods
+
+        public void ExceptWith(CollectionHandleBase other)
+        {
+            NativeMethods.except_with(this, other, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void IntersectWith(CollectionHandleBase other)
+        {
+            NativeMethods.intersect_with(this, other, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void SymmetricExceptWith(CollectionHandleBase other)
+        {
+            NativeMethods.symmetric_except_with(this, other, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void UnionWith(CollectionHandleBase other)
+        {
+            NativeMethods.union_with(this, other, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public bool IsSubsetOf(CollectionHandleBase other, bool proper)
+        {
+            var result = NativeMethods.is_subset_of(this, other, proper, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
+        }
+
+        public bool IsSupersetOf(CollectionHandleBase other, bool proper)
+        {
+            var result = NativeMethods.is_superset_of(this, other, proper, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
+        }
+
+        public bool Overlaps(CollectionHandleBase other)
+        {
+            var result = NativeMethods.overlaps(this, other, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
+        }
+
+        public bool SetEquals(CollectionHandleBase other)
+        {
+            var result = NativeMethods.set_equals(this, other, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
+        }
+
+        #endregion
     }
 }

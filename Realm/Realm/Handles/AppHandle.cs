@@ -20,10 +20,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
+using Realms.Logging;
 using Realms.Native;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
@@ -37,7 +36,7 @@ namespace Realms.Sync
 #pragma warning disable IDE1006 // Naming Styles
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void LogMessageCallback(IntPtr managed_handler, byte* message_buf, IntPtr message_len, LogLevel logLevel);
+            public unsafe delegate void LogMessageCallback(IntPtr managed_handler, PrimitiveValue messageValue, LogLevel logLevel);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void UserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error);
@@ -174,15 +173,16 @@ namespace Realms.Sync
             ////     platformVersion = Environment.OSVersion.VersionString;
             //// }
 
-            var platform = "Realm .NET";
+            var platform = InteropConfig.Platform;
             var platformVersion = RuntimeInformation.OSDescription;
 
-            var sdkVersion = typeof(AppHandle).GetTypeInfo().Assembly.GetName().Version.ToString(3);
+            // TODO: temp - remove that once we're out of beta
+            var sdkVersion = "10.2.0-beta.1"; // InteropConfig.SDKVersion.ToString(3);
 
             NativeMethods.initialize(
-                platform, (IntPtr)platform.Length,
-                platformVersion, (IntPtr)platformVersion.Length,
-                sdkVersion, (IntPtr)sdkVersion.Length,
+                platform, platform.IntPtrLength(),
+                platformVersion, platformVersion.IntPtrLength(),
+                sdkVersion, sdkVersion.IntPtrLength(),
                 userLogin, taskCallback, bsonCallback, logMessage);
 
             HttpClientTransport.Install();
@@ -293,18 +293,18 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static unsafe void HandleLogMessage(IntPtr managedHandler, byte* messageBuffer, IntPtr messageLength, LogLevel level)
+        private static unsafe void HandleLogMessage(IntPtr managedHandler, PrimitiveValue messageValue, LogLevel level)
         {
             try
             {
-                var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
-                var logCallback = (Action<string, LogLevel>)GCHandle.FromIntPtr(managedHandler).Target;
-                logCallback.Invoke(message, level);
+                var message = messageValue.AsString();
+                var logger = (Logger)GCHandle.FromIntPtr(managedHandler).Target;
+                logger.Log(level, message);
             }
             catch (Exception ex)
             {
                 var errorMessage = $"An error occurred while trying to log a message: {ex}";
-                Console.Error.WriteLine(errorMessage);
+                Logger.Console.Log(LogLevel.Error, errorMessage);
             }
         }
 

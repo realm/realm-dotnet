@@ -37,11 +37,25 @@ namespace Realms
         {
         }
 
+        protected override bool ReleaseHandle()
+        {
+            try
+            {
+                var managedObjectHandle = NativeMethods.destroy_notificationtoken(handle, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                GCHandle.FromIntPtr(managedObjectHandle).Free();
+            }
+            catch
+            {
+                return false;
+            }
+
+            return base.ReleaseHandle();
+        }
+
         protected override void Unbind()
         {
-            var managedObjectHandle = NativeMethods.destroy_notificationtoken(handle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            GCHandle.FromIntPtr(managedObjectHandle).Free();
+            // The token is destroyed in Dispose
         }
     }
 }

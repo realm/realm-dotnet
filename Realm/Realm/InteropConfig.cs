@@ -17,8 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Realms.Logging;
 
 namespace Realms
 {
@@ -29,14 +32,29 @@ namespace Realms
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
+        public static readonly string Platform;
+
+        public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version;
+
+        private static readonly List<string> _potentialStorageFolders = new List<string>
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+            Path.Combine(Directory.GetCurrentDirectory(), "Documents")
+        };
+
         private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
         {
-            if (TryGetUWPFolder(out var folder) ||
-                TryGetPersonalFolder(out folder) ||
-                TryGetUnityFolder(out folder) ||
-                TryGetFallbackFolder(out folder))
+            if (TryGetUWPFolder(out var folder))
             {
                 return folder;
+            }
+
+            foreach (var potentialFolder in _potentialStorageFolders)
+            {
+                if (TryGetDatabaseFolder(() => potentialFolder, out folder))
+                {
+                    return folder;
+                }
             }
 
             throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
@@ -48,6 +66,65 @@ namespace Realms
         {
             get => _customStorageFolder ?? _defaultStorageFolder.Value;
             set => _customStorageFolder = value;
+        }
+
+        public static void AddPotentialStorageFolder(string folder)
+        {
+#if DEBUG
+            if (_defaultStorageFolder.IsValueCreated)
+            {
+                throw new NotSupportedException("Adding a potential storage folder after the lazy value has been created.");
+            }
+#endif
+
+            _potentialStorageFolders.Insert(0, folder);
+        }
+
+        static InteropConfig()
+        {
+            Platform = TryInitializeUnity() ? "Realm Unity" : "Realm .NET";
+
+            AppDomain.CurrentDomain.DomainUnload += (_, __) =>
+            {
+                Logger.LogDefault(LogLevel.Info, "Realm: Domain is unloading, force closing all Realm instances.");
+
+                try
+                {
+                    var sw = new Stopwatch();
+                    sw.Start();
+
+                    SharedRealmHandle.CloseAllRealms();
+
+                    sw.Stop();
+                    Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogDefault(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
+                }
+            };
+        }
+
+        private static bool TryInitializeUnity()
+        {
+            try
+            {
+                var fileHelper = Type.GetType($"UnityUtils.Initializer, Realm.UnityUtils, Version={SDKVersion}, Culture=neutral, PublicKeyToken=null");
+                if (fileHelper == null)
+                {
+                    return false;
+                }
+
+                var initialize = fileHelper.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
+                initialize.Invoke(null, null);
+
+                return true;
+            }
+            catch
+            {
+            }
+
+            return false;
         }
 
         private static bool TryGetUWPFolder(out string folder) => TryGetDatabaseFolder(() =>
@@ -69,39 +146,17 @@ namespace Realms
             return (string)pathProperty.GetValue(localFolder);
         }, out folder);
 
-        private static bool TryGetPersonalFolder(out string folder)
-            => TryGetDatabaseFolder(() => Environment.GetFolderPath(Environment.SpecialFolder.Personal), out folder);
-
-        private static bool TryGetUnityFolder(out string folder) => TryGetDatabaseFolder(() =>
-        {
-            var fileHelper = Type.GetType("UnityUtils.FileHelper, UnityUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
-            if (fileHelper != null)
-            {
-                var getInternalStorage = fileHelper.GetMethod("GetInternalStorage", BindingFlags.Public | BindingFlags.Static);
-                return (string)getInternalStorage.Invoke(null, null);
-            }
-
-            return null;
-        }, out folder);
-
-        private static bool TryGetFallbackFolder(out string folder) => TryGetDatabaseFolder(() =>
-        {
-            var currentDirectory = Directory.GetCurrentDirectory();
-            if (!IsDirectoryWritable(currentDirectory))
-            {
-                return null;
-            }
-
-            var docsFolder = Path.Combine(currentDirectory, "Documents");
-            Directory.CreateDirectory(docsFolder);
-            return docsFolder;
-        }, out folder);
-
         private static bool TryGetDatabaseFolder(Func<string> getter, out string folder)
         {
             try
             {
                 var result = getter();
+
+                if (result != null && !Directory.Exists(result))
+                {
+                    Directory.CreateDirectory(result);
+                }
+
                 if (result != null && IsDirectoryWritable(result))
                 {
                     folder = result;

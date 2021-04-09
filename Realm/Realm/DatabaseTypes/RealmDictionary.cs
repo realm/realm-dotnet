@@ -22,7 +22,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using Realms.Dynamic;
 using Realms.Helpers;
 
@@ -32,9 +34,18 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider, IRealmCollectionBase<DictionaryHandle>
+    public class RealmDictionary<TValue>
+        : RealmCollectionBase<KeyValuePair<string, TValue>>,
+          IDictionary<string, TValue>,
+          IDynamicMetaObjectProvider,
+          IRealmCollectionBase<DictionaryHandle>,
+          INotifiable<DictionaryHandle.DictionaryChangeSet>
     {
+        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new List<DictionaryNotificationCallbackDelegate<TValue>>();
         private readonly DictionaryHandle _dictionaryHandle;
+
+        private bool _deliveredInitialKeyNotification;
+        private NotificationTokenHandle _keyNotificationToken;
 
         public TValue this[string key]
         {
@@ -50,10 +61,10 @@ namespace Realms
 
             set
             {
-                EnsureKeyNotNull(key);
+                ValidateKey(key);
                 var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
-                if (_isEmbedded)
+                if (_isEmbedded && realmValue.Type != RealmValueType.Null)
                 {
                     Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.SetEmbedded(key));
                     return;
@@ -92,10 +103,10 @@ namespace Realms
 
         public void Add(string key, TValue value)
         {
-            EnsureKeyNotNull(key);
+            ValidateKey(key);
             var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
-            if (_isEmbedded)
+            if (_isEmbedded && realmValue.Type != RealmValueType.Null)
             {
                 Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.AddEmbedded(key));
                 return;
@@ -144,11 +155,66 @@ namespace Realms
             return false;
         }
 
-        private static string EnsureKeyNotNull(string key)
+        public IDisposable SubscribeForKeyNotifications(DictionaryNotificationCallbackDelegate<TValue> callback)
+        {
+            Argument.NotNull(callback, nameof(callback));
+
+            if (_keyCallbacks.Count == 0)
+            {
+                SubscribeForNotifications();
+            }
+            else if (_deliveredInitialKeyNotification)
+            {
+                callback(this, null, null);
+            }
+
+            _keyCallbacks.Add(callback);
+
+            return NotificationToken.Create(callback, UnsubscribeFromNotifications);
+        }
+
+        private void SubscribeForNotifications()
+        {
+            Debug.Assert(_keyNotificationToken == null, "_keyNotificationToken must be null before subscribing.");
+
+            Realm.ExecuteOutsideTransaction(() =>
+            {
+                var managedResultsHandle = GCHandle.Alloc(this);
+                _keyNotificationToken = _dictionaryHandle.AddKeyNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
+            });
+        }
+
+        private void UnsubscribeFromNotifications(DictionaryNotificationCallbackDelegate<TValue> callback)
+        {
+            if (_keyCallbacks.Remove(callback) &&
+                _keyCallbacks.Count == 0)
+            {
+                UnsubscribeFromNotifications();
+            }
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            _keyNotificationToken?.Dispose();
+            _keyNotificationToken = null;
+            _deliveredInitialKeyNotification = false;
+        }
+
+        private static string ValidateKey(string key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key), "A persisted dictionary cannot store null keys.");
+                throw new ArgumentNullException(nameof(key), "Value cannot be null.");
+            }
+
+            if (key.StartsWith("$", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException($"A persisted dictionary cannot have a key that starts with '$': {key}");
+            }
+
+            if (key.Contains('.'))
+            {
+                throw new NotSupportedException($"A persisted dictionary cannot have a key that contains '.': {key}");
             }
 
             return key;
@@ -159,5 +225,27 @@ namespace Realms
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Metadata, Realm);
+
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
+        {
+            var managedException = exception?.Convert();
+            DictionaryChangeSet changeset = null;
+            if (changes != null)
+            {
+                var actualChanges = changes.Value;
+                changeset = new DictionaryChangeSet(
+                    insertedKeys: actualChanges.Insertions.AsEnumerable().Select(v => v.AsString()).ToArray(),
+                    modifiedKeys: actualChanges.Modifications.AsEnumerable().Select(v => v.AsString()).ToArray());
+            }
+            else
+            {
+                _deliveredInitialKeyNotification = true;
+            }
+
+            foreach (var callback in _keyCallbacks.ToArray())
+            {
+                callback(this, changeset, managedException);
+            }
+        }
     }
 }

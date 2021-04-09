@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -118,28 +119,57 @@ namespace Realms.Tests.Sync
             return new User(handle);
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null)
+        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)
+        {
+            var config = await GetIntegrationConfigAsync(partition, app);
+            return await GetRealmAsync(config);
+        }
+
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
             var user = await GetUserAsync(app);
-            return GetSyncConfiguration(partition, user);
+            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
         }
 
-        protected static SyncConfiguration GetSyncConfiguration(string partition, User user, string optionalPath = null)
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
         {
-            return new SyncConfiguration(partition, user, optionalPath)
-            {
-                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject) },
-                SessionStopPolicy = SessionStopPolicy.Immediately,
-            };
+            app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
+
+            var user = await GetUserAsync(app);
+            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+        }
+
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
+        {
+            app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
+
+            var user = await GetUserAsync(app);
+            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+        }
+
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
+        {
+            app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.UUIDPartitionKey));
+
+            var user = await GetUserAsync(app);
+            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+        }
+
+        private static SyncConfiguration UpdateConfig(SyncConfiguration config)
+        {
+            config.ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject) };
+            config.SessionStopPolicy = SessionStopPolicy.Immediately;
+
+            return config;
         }
 
         public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
-            return GetSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath);
+            return UpdateConfig(new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
     }
 }

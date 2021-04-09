@@ -1071,6 +1071,7 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+
         [Test]
         public void CanBeQueried()
         {
@@ -1095,6 +1096,57 @@ namespace Realms.Tests.Database
 
             var startsWith = _realm.All<DictionariesObject>().Filter($"{nameof(StringDictionary)}.@keys beginswith 'f'");
             Assert.That(startsWith, Is.Empty);
+        }
+
+        [TestCase(".", "contains '.'")]
+        [TestCase("$", "starts with '$'")]
+        [TestCase("$foo", "starts with '$'")]
+        [TestCase("foo.bar", "contains '.'")]
+        [TestCase("foo.", "contains '.'")]
+        public void InvalidKeys_ThrowNotSupportedException(string key, string expectedErrorFragment)
+        {
+            _realm.Write(() =>
+            {
+                var dict = _realm.Add(new DictionariesObject()).StringDictionary;
+                Assert.That(() => dict[key] = "abc", Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+                Assert.That(() => dict.Add(key, "abc"), Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+                Assert.That(() => dict.Add(new KeyValuePair<string, string>(key, "abc")), Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+
+                var unmanaged = new DictionariesObject();
+                unmanaged.StringDictionary[key] = "foo-bar";
+
+                Assert.That(() => _realm.Add(unmanaged), Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+            });
+        }
+
+        [Test]
+        public void NullKey_ThrowsArgumentNullException()
+        {
+            _realm.Write(() =>
+            {
+                var dict = _realm.Add(new DictionariesObject()).StringDictionary;
+                Assert.That(() => dict[null] = "abc", Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict.Add(null, "abc"), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict.Add(new KeyValuePair<string, string>(null, "abc")), Throws.TypeOf<ArgumentNullException>());
+            });
+        }
+
+        [TestCase("a$")]
+        [TestCase("a$$$$$$$$$")]
+        [TestCase("_$_$_")]
+        public void Key_MayContainDollarSign(string key)
+        {
+            _realm.Write(() =>
+            {
+                var dict = _realm.Add(new DictionariesObject()).StringDictionary;
+                dict[key] = "abc";
+                dict.Clear();
+
+                dict.Add(key, "abc");
+                dict.Clear();
+
+                dict.Add(new KeyValuePair<string, string>(key, "abc"));
+            });
         }
 
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
@@ -1153,6 +1205,7 @@ namespace Realms.Tests.Database
 
                 await testData.AssertNotifications_Realm(managedDictionary);
                 await testData.AssertNotifications_CollectionChanged(managedDictionary);
+                await testData.AssertKeyNotifications(managedDictionary);
             });
         }
 
@@ -1188,7 +1241,9 @@ namespace Realms.Tests.Database
             private readonly Func<T, T> _cloneFunc;
             private readonly Func<T, T, bool> _equalityFunc;
 
-            public T SampleValue { get; }
+            private T _sampleValue;
+
+            public T SampleValue => _cloneFunc(_sampleValue);
 
             private (string Key, T Value)[] _initialValues;
 
@@ -1204,13 +1259,18 @@ namespace Realms.Tests.Database
                 _cloneFunc = cloneFunc;
                 _equalityFunc = equalityFunc;
 
-                SampleValue = sampleValue;
+                _sampleValue = sampleValue;
 
                 _initialValues = initialValues.ToArray();
             }
 
             public override string ToString()
             {
+                if (typeof(T) == typeof(byte[]))
+                {
+                    return string.Join(", ", _initialValues.Select(kvp => $"{kvp.Key}-{TestHelpers.ByteArrayToTestDescription(kvp.Value)}"));
+                }
+
                 return string.Join(", ", _initialValues.Select(kvp => $"{kvp.Key}-{kvp.Value}"));
             }
 
@@ -1282,7 +1342,7 @@ namespace Realms.Tests.Database
                 Assert.That(target[key1], IsEqualTo(value1));
 
                 var key2 = Guid.NewGuid().ToString();
-                var value2 = target.First().Value;
+                var value2 = _cloneFunc(target.First().Value);
                 WriteIfNecessary(target, () =>
                 {
                     target.Add(key2, value2);
@@ -1416,6 +1476,71 @@ namespace Realms.Tests.Database
                 Assert.That(referenceDict, Is.Empty);
             }
 
+            public async Task AssertKeyNotifications(IDictionary<string, T> target)
+            {
+                Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
+
+                Seed(target);
+
+                target.AsRealmCollection().Realm.Refresh();
+
+                var callbacks = new List<DictionaryChangeSet>();
+                using var token = target.SubscribeForKeyNotifications((collection, changes, error) =>
+                {
+                    Assert.That(error, Is.Null);
+
+                    if (changes != null)
+                    {
+                        callbacks.Add(changes);
+                    }
+                });
+
+                var newKey = Guid.NewGuid().ToString();
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(newKey, SampleValue);
+                });
+
+                var changes = await EnsureRefreshed(callbacks, 1);
+
+                Assert.That(changes.InsertedKeys.Length, Is.EqualTo(1));
+                Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(0));
+
+                Assert.That(changes.InsertedKeys.Single(), Is.EqualTo(newKey));
+                Assert.That(target[changes.InsertedKeys.Single()], IsEqualTo(SampleValue));
+
+                if (!TryGetDifferentValue(target, SampleValue, out var result))
+                {
+                    Assert.Fail("Couldn't find a unique value to replace - fix the test!");
+                }
+
+                var keyToUpdate = result.Key;
+                WriteIfNecessary(target, () =>
+                {
+                    target[keyToUpdate] = SampleValue;
+                });
+
+                changes = await EnsureRefreshed(callbacks, 2);
+
+                Assert.That(changes.InsertedKeys.Length, Is.EqualTo(0));
+                Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(1));
+
+                Assert.That(changes.ModifiedKeys.Single(), Is.EqualTo(keyToUpdate));
+                Assert.That(target[changes.ModifiedKeys.Single()], IsEqualTo(SampleValue));
+
+                // Verify we stop receiving notifications after we dispose of the token
+                token.Dispose();
+
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(Guid.NewGuid().ToString(), SampleValue);
+                });
+
+                target.AsRealmCollection().Realm.Refresh();
+
+                Assert.That(callbacks.Count, Is.EqualTo(2));
+            }
+
             public async Task AssertNotifications_Realm(IDictionary<string, T> target)
             {
                 Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
@@ -1513,7 +1638,7 @@ namespace Realms.Tests.Database
                     target.Add(newKey, SampleValue);
                 });
 
-                var changes = await EnsureRefreshed(1);
+                var changes = await EnsureRefreshed(callbacks, 1);
                 var insertedIndex = assertInsertion(changes);
 
                 Assert.That(target.ElementAt(insertedIndex).Key, Is.EqualTo(newKey));
@@ -1527,7 +1652,7 @@ namespace Realms.Tests.Database
                     target.Remove(newKey);
                 });
 
-                changes = await EnsureRefreshed(2);
+                changes = await EnsureRefreshed(callbacks, 2);
 
                 var deletedIndex = assertDeletion(changes);
                 Assert.That(deletedIndex, Is.EqualTo(insertedIndex));
@@ -1550,7 +1675,7 @@ namespace Realms.Tests.Database
                     target[keyToUpdate] = SampleValue;
                 });
 
-                changes = await EnsureRefreshed(3);
+                changes = await EnsureRefreshed(callbacks, 3);
 
                 var (oldIndex, newIndex) = assertModification(changes);
 
@@ -1560,15 +1685,6 @@ namespace Realms.Tests.Database
 
                 Assert.That(target.AsRealmCollection()[newIndex].Key, Is.EqualTo(keyToUpdate));
                 Assert.That(target.AsRealmCollection()[newIndex].Value, IsEqualTo(SampleValue));
-
-                async Task<TArgs> EnsureRefreshed(int expectedCallbackCount)
-                {
-                    await TestHelpers.WaitForConditionAsync(() => callbacks.Count == expectedCallbackCount);
-
-                    Assert.That(callbacks.Count, Is.EqualTo(expectedCallbackCount));
-
-                    return callbacks[expectedCallbackCount - 1];
-                }
             }
 
             public async Task AssertFreeze(IDictionary<string, T> target)
@@ -1782,6 +1898,15 @@ namespace Realms.Tests.Database
 
                 result = (-1, null, default(T));
                 return false;
+            }
+
+            private static async Task<TArgs> EnsureRefreshed<TArgs>(IList<TArgs> callbacks, int expectedCallbackCount)
+            {
+                await TestHelpers.WaitForConditionAsync(() => callbacks.Count == expectedCallbackCount);
+
+                Assert.That(callbacks.Count, Is.EqualTo(expectedCallbackCount));
+
+                return callbacks[expectedCallbackCount - 1];
             }
 
             public IDictionary<string, T> GetReferenceDictionary() => InitialValues.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

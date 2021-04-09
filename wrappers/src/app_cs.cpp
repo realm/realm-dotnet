@@ -40,16 +40,21 @@ using namespace app;
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
+using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
+using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
+using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
+using BsonCallbackT = void(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+
 namespace realm {
     namespace binding {
         std::string s_platform;
         std::string s_platform_version;
         std::string s_sdk_version;
 
-        void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
-        void (*s_user_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
-        void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
-        void (*s_bson_callback)(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+        std::function<LogMessageCallbackT> s_log_message_callback;
+        std::function<UserCallbackT> s_user_callback;
+        std::function<VoidCallbackT> s_void_callback;
+        std::function<BsonCallbackT> s_bson_callback;
 
         struct AppConfiguration
         {
@@ -76,38 +81,38 @@ namespace realm {
 
             util::Logger::Level log_level;
 
-            void* managed_log_handler;
+            void* managed_logger;
         };
 
         class SyncLogger : public util::RootLogger {
         public:
             SyncLogger(void* delegate)
-                : m_log_message_delegate(delegate)
+                : managed_logger(delegate)
             {
             }
 
             void do_log(util::Logger::Level level, std::string message) {
-                s_log_message_callback(m_log_message_delegate, message.c_str(), message.length(), level);
+                s_log_message_callback(managed_logger, to_capi(Mixed(message)), level);
             }
         private:
-            void* m_log_message_delegate;
+            void* managed_logger;
         };
 
         class SyncLoggerFactory : public realm::SyncLoggerFactory {
         public:
-            SyncLoggerFactory(void* managed_log_handler)
-                : m_managed_log_handler(managed_log_handler)
+            SyncLoggerFactory(void* managed_logger)
+                : managed_logger(managed_logger)
             {
             }
 
             std::unique_ptr<util::Logger> make_logger(util::Logger::Level level)
             {
-                auto logger = std::make_unique<SyncLogger>(m_managed_log_handler);
+                auto logger = std::make_unique<SyncLogger>(managed_logger);
                 logger->set_level_threshold(level);
                 return std::unique_ptr<util::Logger>(logger.release());
             }
         private:
-            void* m_managed_log_handler;
+            void* managed_logger;
         };
     }
 }
@@ -116,19 +121,21 @@ extern "C" {
     REALM_EXPORT void shared_app_initialize(uint16_t* platform, size_t platform_len,
         uint16_t* platform_version, size_t platform_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
-        decltype(s_user_callback) user_callback,
-        decltype(s_void_callback) void_callback,
-        decltype(s_bson_callback) bson_callback,
-        decltype(s_log_message_callback) log_message_callback)
+        UserCallbackT* user_callback,
+        VoidCallbackT* void_callback,
+        BsonCallbackT* bson_callback,
+        LogMessageCallbackT* log_message_callback)
     {
         s_platform = Utf16StringAccessor(platform, platform_len);
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
         s_sdk_version = Utf16StringAccessor(sdk_version, sdk_version_len);
 
-        s_user_callback = user_callback;
-        s_void_callback = void_callback;
-        s_bson_callback = bson_callback;
-        s_log_message_callback = log_message_callback;
+        s_user_callback = wrap_managed_callback(user_callback);
+        s_void_callback = wrap_managed_callback(void_callback);
+        s_bson_callback = wrap_managed_callback(bson_callback);
+        s_log_message_callback = wrap_managed_callback(log_message_callback);
+
+        realm::binding::s_can_call_managed = true;
     }
 
     REALM_EXPORT SharedApp* shared_app_create(AppConfiguration app_config, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -177,8 +184,8 @@ extern "C" {
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
-            if (app_config.managed_log_handler) {
-                sync_client_config.logger_factory = new realm::binding::SyncLoggerFactory(app_config.managed_log_handler);
+            if (app_config.managed_logger) {
+                sync_client_config.logger_factory = new realm::binding::SyncLoggerFactory(app_config.managed_logger);
             }
 
             return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));
@@ -302,7 +309,7 @@ extern "C" {
     REALM_EXPORT void shared_app_reset_for_testing(SharedApp& app) {
         auto users = app->all_users();
         for (size_t i = 0; i < users.size(); i++) {
-            auto user = users[i];
+            auto &user = users[i];
             user->log_out();
         }
 

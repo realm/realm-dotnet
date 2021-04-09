@@ -71,6 +71,39 @@ namespace Realms
         }
 
         /// <summary>
+        /// A convenience method that casts <see cref="ISet{T}"/> to <see cref="IRealmCollection{T}"/> which implements
+        /// <see cref="INotifyCollectionChanged"/>.
+        /// </summary>
+        /// <param name="set">The <see cref="ISet{T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the set.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
+        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
+        public static IRealmCollection<T> AsRealmCollection<T>(this ISet<T> set)
+        {
+            Argument.NotNull(set, nameof(set));
+
+            if (set is IRealmCollection<T> collection)
+            {
+                return collection;
+            }
+
+            throw new ArgumentException($"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
+        }
+
+        /// <summary>
+        /// A convenience method that casts <see cref="ISet{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// </summary>
+        /// <param name="set">The <see cref="ISet{T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the set.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
+        /// </returns>
+        public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) => set.AsRealmCollection().SubscribeForNotifications(callback);
+
+        /// <summary>
         /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
         /// <see cref="INotifyCollectionChanged"/>.
         /// </summary>
@@ -185,6 +218,29 @@ namespace Realms
         public static IDisposable SubscribeForNotifications<T>(this IDictionary<string, T> dictionary, NotificationCallbackDelegate<KeyValuePair<string, T>> callback)
         {
             return dictionary.AsRealmCollection().SubscribeForNotifications(callback);
+        }
+
+        /// <summary>
+        /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// </summary>
+        /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
+        /// <typeparam name="T">Type of the elements in the dictionary.</typeparam>
+        /// <seealso cref="IRealmCollection{TValue}.SubscribeForNotifications"/>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}"/>.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
+        /// </returns>
+        public static IDisposable SubscribeForKeyNotifications<T>(this IDictionary<string, T> dictionary, DictionaryNotificationCallbackDelegate<T> callback)
+        {
+            Argument.NotNull(dictionary, nameof(dictionary));
+
+            if (dictionary is RealmDictionary<T> collection)
+            {
+                return collection.SubscribeForKeyNotifications(callback);
+            }
+
+            throw new ArgumentException($"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
         }
 
         /// <summary>

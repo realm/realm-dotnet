@@ -27,6 +27,10 @@ stage('Checkout') {
     if (shouldPublishPackage()) {
       versionSuffix = "alpha.${env.BUILD_ID}"
     }
+    // TODO: temp for beta releases
+    else if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH == "release/10.2.0-beta.1") {
+      versionSuffix = "beta.1"
+    }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
       enableLTO = false
@@ -149,6 +153,12 @@ stage('Package') {
       dir('Realm') {
         msbuild target: 'Pack', properties: props, restore: true
       }
+      dir('Realm.UnityUtils') {
+        msbuild target: 'Pack', properties: props, restore: true
+      }
+      dir('Realm.UnityWeaver') {
+        msbuild target: 'Pack', properties: props, restore: true
+      }
 
       recordIssues (
         tool: msBuild(),
@@ -170,34 +180,39 @@ stage('Package') {
         packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
 
-        if (shouldPublishPackage()) {
-          withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
-            echo "Publishing Realm.Fody.${packageVersion} to github packages"
-            bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
-            bat "dotnet nuget update source github -s https://nuget.pkg.github.com/realm/index.json -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
-            bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -s \"github\""
-            bat "dotnet nuget push \"Realm.${packageVersion}.nupkg\" -s \"github\""
-          }
-        }
+        // Disable github packages because it fails to push with:
+        //    Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
+        //    An existing connection was forcibly closed by the remote host.
+        // if (shouldPublishPackage()) {
+        //   withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+        //     echo "Publishing Realm.Fody.${packageVersion} to github packages"
+        //     bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
+        //     bat "dotnet nuget update source github -s https://nuget.pkg.github.com/realm/index.json -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
+        //     bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -s \"github\""
+        //     bat "dotnet nuget push \"Realm.${packageVersion}.nupkg\" -s \"github\""
+        //   }
+        // }
       }
     }
   }
 }
 
 stage('Unity Package') {
-  rlmNode('dotnet && macos') {
+  rlmNode('dotnet && windows') {
     unstash 'dotnet-source'
     unstash 'packages'
 
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
+    def utilsPackagePath = findFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
+    def weaverPackagePath = findFiles(glob: "Realm.UnityWeaver.${packageVersion}.nupkg")[0].path
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --pack"
+    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "realm.unity-${packageVersion}.tgz"
-      sh "rm realm.unity-${packageVersion}.tgz"
+      bat "del realm.unity-${packageVersion}.tgz"
     }
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --include-dependencies --pack"
+    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "*.tgz"
     }
@@ -361,16 +376,19 @@ def NetCoreTest(String nodeName, String targetFramework) {
         dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
-      String appLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
-
       if (isUnix()) {
         if (nodeName == 'docker') {
           def test_runner_image = CreateDockerContainer(targetFramework)
-          withRealmCloud(version: '2020-12-04', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
+          withRealmCloud(
+            version: '2021-04-08',
+            appsToImport: [
+              "dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests",
+              "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key",
+              "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
+              "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
+            ]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
-              def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
-
-              script += " --baasurl http://mongodb-realm:9090 --baasappid ${appId.trim()}"
+              script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
               sh """
                 export HOME=/tmp
@@ -453,9 +471,9 @@ def CreateDockerContainer(String targetFramework) {
   def test_runner_image
   switch(targetFramework) {
     case 'netcoreapp3.1':
-      // In .netcore 3.1 using msbuild extras under linux fails because of missing Microsoft.WinFX.props. This is generated by a mismatching lower/upper case for a folder name.
-      // Renaming the folders in questions fixes the issue. This action is achieved through making a custom docker container. More info can be found at https://github.com/dotnet/sdk/issues/11108
-      test_runner_image = docker.build("netcoreapp3.1_custom", "./CustomNetcore31DockerImg")
+      // Using a custom docker image for .NET Core 3.1 because the official has incorrect casing for
+      // Microsoft.WinFX.props. More info can be found at https://github.com/dotnet/sdk/issues/11108
+      test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore3.1.406", extra_args: "-f ./Tests/netcore31.Dockerfile")
     break
     case 'net5.0':
       dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'

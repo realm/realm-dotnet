@@ -19,9 +19,12 @@
 #ifndef NOTIFICATIONS_CS_HPP
 #define NOTIFICATIONS_CS_HPP
 
+#include "marshalling.hpp"
 #include <memory>
 #include <realm/object-store/collection_notifications.hpp>
 #include "error_handling.hpp"
+
+using namespace realm::binding;
 
 namespace realm {
     struct MarshallableCollectionChangeSet {
@@ -42,16 +45,29 @@ namespace realm {
         
         MarshallableIndexSet properties;
     };
-    
-    typedef void (*ManagedNotificationCallback)(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
+
+    struct MarshallableDictionaryChangeSet {
+        struct MarshallableKeySet {
+            realm_value_t* keys;
+            size_t count;
+        };
+
+        MarshallableKeySet insertions;
+        MarshallableKeySet modifications;
+    };
     
     struct ManagedNotificationTokenContext {
         NotificationToken token;
         void* managed_object;
-        ManagedNotificationCallback callback;
         ObjectSchema* schema;
     };
-    
+
+    using ObjectNotificationCallbackT = void(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
+    using DictionaryNotificationCallbackT = void(void* managed_results, MarshallableDictionaryChangeSet*, NativeException::Marshallable*);
+
+    extern std::function<ObjectNotificationCallbackT> s_object_notification_callback;
+    extern std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
+
     inline size_t get_property_index(const ObjectSchema* schema, const ColKey column_key) {
         if (!schema)
             return 0;
@@ -75,6 +91,18 @@ namespace realm {
         return std::vector<size_t>();
     }
 
+    static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed>& keySet)
+    {
+        std::vector<realm_value_t> result;
+        result.reserve(keySet.size());
+
+        for (auto &key : keySet) {
+            result.push_back(to_capi(key));
+        }
+
+        return std::move(result);
+    }
+
     static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
         if (e) {
             try {
@@ -82,10 +110,11 @@ namespace realm {
             } catch (...) {
                 auto exception = convert_exception();
                 auto marshallable_exception = exception.for_marshalling();
-                context->callback(context->managed_object, nullptr, &marshallable_exception);
+                s_object_notification_callback(context->managed_object, nullptr, &marshallable_exception);
             }
         } else if (changes.empty()) {
-            context->callback(context->managed_object, nullptr, nullptr);
+            
+            s_object_notification_callback(context->managed_object, nullptr, nullptr);
         } else {
             auto deletions = get_indexes_vector(changes.deletions);
             auto insertions = get_indexes_vector(changes.insertions);
@@ -109,16 +138,16 @@ namespace realm {
                 { properties.data(), properties.size() }
             };
             
-            context->callback(context->managed_object, &marshallable_changes, nullptr);
+            s_object_notification_callback(context->managed_object, &marshallable_changes, nullptr);
         }
     }
 
+
     template<typename Subscriber>
-    inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, ManagedNotificationCallback callback, Subscriber subscriber, ObjectSchema* schema = nullptr)
+    inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, Subscriber subscriber, ObjectSchema* schema = nullptr)
     {
         auto context = new ManagedNotificationTokenContext();
         context->managed_object = managed_object;
-        context->callback = callback;
         context->schema = schema;
         context->token = subscriber([context](CollectionChangeSet changes, std::exception_ptr e) {
             handle_changes(context, changes, e);

@@ -27,7 +27,6 @@ namespace Realms
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -46,7 +45,7 @@ namespace Realms
             public static extern void clear(ResultsHandle results, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallbackDelegate callback, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
@@ -81,7 +80,6 @@ namespace Realms
             public static extern IntPtr freeze(ResultsHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
         public override bool IsValid
@@ -150,9 +148,9 @@ namespace Realms
             return new SortDescriptorHandle(Root ?? this, result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
         }
@@ -232,6 +230,6 @@ namespace Realms
             return new ResultsHandle(frozenRealmHandle, result);
         }
 
-        public override void Clear() => throw new NotSupportedException();
+        public override void Clear() => throw new NotSupportedException("Clearing a Results collection is not supported.");
     }
 }

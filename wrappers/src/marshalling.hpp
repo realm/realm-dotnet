@@ -483,5 +483,26 @@ private:
 
 size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words
 
+extern std::atomic<bool> s_can_call_managed;
+
+template <typename TReturn, typename ...TArgs>
+inline auto wrap_managed_callback(TReturn (*func)(TArgs... args))
+{
+    return [func](TArgs... args) -> TReturn {
+        if constexpr (std::is_same_v<TReturn, void>) {
+            if (realm::binding::s_can_call_managed) {
+                func(std::forward<TArgs>(args)...);
+            }
+        }
+        else {
+            if (realm::binding::s_can_call_managed) {
+                return func(std::forward<TArgs>(args)...);
+            }
+
+            return {};
+        }
+    };
+}
+
 } // namespace binding
 } // namespace realm

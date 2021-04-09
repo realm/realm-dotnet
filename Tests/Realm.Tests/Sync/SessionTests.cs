@@ -25,21 +25,18 @@ using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
-#pragma warning disable CS0618 // Don't complain about SimulateProgress
-
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
         {
-            var user = GetFakeUser();
-            var config = GetSyncConfiguration("foo-bar", user);
+            var config = GetFakeConfig();
 
             using var realm = GetRealm(config);
             var session = GetSession(realm);
 
-            Assert.That(session.User, Is.EqualTo(user));
+            Assert.That(session.User, Is.EqualTo(config.User));
         }
 
         [Test]

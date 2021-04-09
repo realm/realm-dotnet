@@ -149,10 +149,10 @@ REALM_EXPORT void realm_set_destroy(object_store::Set* set)
     delete set;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_set, callback, [set](CollectionChangeCallback callback) {
+        return subscribe_for_notifications(managed_set, [set](CollectionChangeCallback callback) {
             return set->add_notification_callback(callback);
         });
     });
@@ -190,6 +190,74 @@ REALM_EXPORT object_store::Set* realm_set_freeze(const object_store::Set& set, c
 {
     return handle_errors(ex, [&]() {
         return new object_store::Set(set.freeze(realm));
+    });
+}
+
+const object_store::Set& hack_remove_me(const object_store::Collection& other_collection) {
+    return static_cast<const object_store::Set&>(other_collection);
+}
+
+REALM_EXPORT void realm_set_except_with(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        set.assign_difference(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT void realm_set_symmetric_except_with(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        set.assign_symmetric_difference(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT void realm_set_intersect_with(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        set.assign_intersection(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT void realm_set_union_with(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        set.assign_union(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT bool realm_set_is_subset_of(object_store::Set& set, const object_store::Collection& other_collection, bool proper, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        if (proper) {
+            return set.is_strict_subset_of(hack_remove_me(other_collection));
+        }
+
+        return set.is_subset_of(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT bool realm_set_is_superset_of(object_store::Set& set, const object_store::Collection& other_collection, bool proper, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        if (proper) {
+            return set.is_strict_superset_of(hack_remove_me(other_collection));
+        }
+
+        return set.is_superset_of(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT bool realm_set_overlaps(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return set.intersects(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT bool realm_set_set_equals(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> bool {
+        return set.set_equals(hack_remove_me(other_collection));
     });
 }
 

@@ -217,6 +217,14 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT int64_t object_get_obj_key(const Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            // ObjKey is incompatible with C, so we return just the value.
+            return object.obj().get_key().value;
+        });
+    }
+
     REALM_EXPORT ThreadSafeReference* object_get_thread_safe_reference(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
@@ -233,10 +241,10 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+    REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return subscribe_for_notifications(managed_object, callback, [object](CollectionChangeCallback callback) {
+            return subscribe_for_notifications(managed_object, [object](CollectionChangeCallback callback) {
                 return object->add_notification_callback(callback);
             }, new ObjectSchema(object->get_object_schema()));
         });

@@ -21,13 +21,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
-using Realms.Sync.Exceptions;
 
 namespace Realms
 {
@@ -44,10 +43,13 @@ namespace Realms
             public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, int error_code, byte* message_buf, IntPtr message_len);
+            public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, NativeException ex);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void OnBindingContextDestructedCallback(IntPtr handle);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open(Configuration configuration,
@@ -82,6 +84,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern void close_realm(SharedRealmHandle sharedRealm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_all_realms", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void close_all_realms(out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -135,7 +140,14 @@ namespace Realms
             public static extern void get_schema(SharedRealmHandle sharedRealm, IntPtr callback, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback, OpenRealmCallback openCallback, OnBindingContextDestructedCallback contextDestructedCallback);
+            public static extern void install_callbacks(
+                NotifyRealmCallback notifyRealmCallback,
+                GetNativeSchemaCallback nativeSchemaCallback,
+                OpenRealmCallback openCallback,
+                OnBindingContextDestructedCallback contextDestructedCallback,
+                LogMessageCallback logMessageCallback,
+                NotifiableObjectHandleBase.NotificationCallback notifyObject,
+                DictionaryHandle.KeyNotificationCallback notifyDictionary);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -161,17 +173,25 @@ namespace Realms
         {
             NativeCommon.Initialize();
 
+            SynchronizationContextScheduler.Install();
+
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
             NativeMethods.OnBindingContextDestructedCallback onBindingContextDestructed = OnBindingContextDestructed;
+            NativeMethods.LogMessageCallback logMessage = LogMessage;
+            NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
+            DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
             GCHandle.Alloc(openRealm);
             GCHandle.Alloc(onBindingContextDestructed);
+            GCHandle.Alloc(logMessage);
+            GCHandle.Alloc(notifyObject);
+            GCHandle.Alloc(notifyDictionary);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed, logMessage, notifyObject, notifyDictionary);
         }
 
         [Preserve]
@@ -223,6 +243,12 @@ namespace Realms
         public void CloseRealm()
         {
             NativeMethods.close_realm(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public static void CloseAllRealms()
+        {
+            NativeMethods.close_all_realms(out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -421,24 +447,24 @@ namespace Realms
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The task awaiter will own the ThreadSafeReference handle.")]
-        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, int error_code, byte* messageBuffer, IntPtr messageLength)
+        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
 
-            if (error_code == 0)
+            if (ex.type == RealmExceptionCodes.NoError)
             {
                 tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
             }
             else
             {
-                var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
-                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details";
+                var inner = ex.Convert();
+                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details.";
                 tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
         }
 
-        [MonoPInvokeCallbackAttribute(typeof(NativeMethods.OnBindingContextDestructedCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.OnBindingContextDestructedCallback))]
         public static void OnBindingContextDestructed(IntPtr handle)
         {
             if (handle != IntPtr.Zero)
@@ -446,6 +472,12 @@ namespace Realms
                 var gch = GCHandle.FromIntPtr(handle);
                 ((Realm.State)gch.Target).Dispose();
             }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
+        private static void LogMessage(PrimitiveValue message, LogLevel level)
+        {
+            Logger.LogDefault(level, message.AsString());
         }
 
         public class SchemaMarshaler
