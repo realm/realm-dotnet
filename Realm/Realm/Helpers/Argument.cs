@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Logging;
 
 namespace Realms.Helpers
 {
@@ -63,6 +64,15 @@ namespace Realms.Helpers
             {
                 throw new ArgumentNullException(paramName);
             }
+        }
+
+        public static void AssertDebug(string message)
+        {
+#if DEBUG
+            throw new Exception(message);
+#else
+            Logger.LogDefault(LogLevel.Error, message);
+#endif
         }
     }
 }

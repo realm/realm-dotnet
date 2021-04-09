@@ -312,6 +312,35 @@ static inline realm_value_t to_capi(Object* obj)
     return val;
 }
 
+static inline realm_value_t to_capi(Obj obj, SharedRealm realm)
+{
+    realm::Schema realm_schema;
+    auto schema = realm->schema().find(obj.get_table()->get_key());
+
+    if (schema == realm->schema().end())
+    {
+        realm_schema = ObjectStore::schema_from_group(realm->read_group());
+        schema = realm_schema.find(obj.get_table()->get_key());
+    }
+
+    auto object = new Object(realm, *schema, obj);
+    
+
+    //We need to save the schema somewhere (CSharpBindings)
+
+
+    realm_value_t val{};
+    val.type = realm_value_type::RLM_TYPE_LINK;
+    val.link.object = object;
+    val.link.table_key = object->get_object_schema().table_key;
+    return val;
+}
+
+static inline realm_value_t to_capi(ObjLink obj_link, SharedRealm realm)
+{
+    return to_capi(realm->read_group().get_object(obj_link), realm);
+}
+
 static inline realm_value_t to_capi(Mixed value)
 {
     realm_value_t val{};

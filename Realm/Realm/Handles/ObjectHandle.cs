@@ -91,6 +91,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ObjectHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_schema", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, out NativeException ex);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE1006 // Naming Styles
         }
@@ -173,9 +176,12 @@ namespace Realms
 
             if (!realm.Metadata.TryGetValue(tableKey, out var objectMetadata))
             {
-                RealmSchema schema = null;
-                realm.SharedRealmHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));  //TODO Can be done in one line, for testing
-                realm.MergeWithSchema(schema);
+                RealmSchema smallSchema = null;
+                Action<Native.Schema> callback = (nativeSmallSchema) => { smallSchema = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema); };
+                var handle = GCHandle.Alloc(callback);
+                NativeMethods.get_schema(objectHandle, GCHandle.ToIntPtr(handle), out nativeException);
+                nativeException.ThrowIfNecessary();
+                objectMetadata = realm.MergeWithSchema(smallSchema)[tableKey];
             }
 
             return new RealmValue(realm.MakeObject(objectMetadata, objectHandle));

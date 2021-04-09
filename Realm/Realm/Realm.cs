@@ -481,9 +481,10 @@ namespace Realms
             return ret;
         }
 
-        internal void MergeWithSchema(RealmSchema schema)
+        internal RealmMetadata MergeWithSchema(RealmSchema schema)
         {
-
+            Metadata.Add(schema.Select(CreateRealmObjectMetadata));
+            return Metadata;
         }
 
         /// <summary>
@@ -1396,11 +1397,7 @@ namespace Realms
                 stringToRealmObjectMetadataDict = new Dictionary<string, RealmObjectBase.Metadata>();
                 tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, RealmObjectBase.Metadata>();
 
-                foreach (var objectMetadata in objectsMetadata)
-                {
-                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
-                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
-                }
+                Add(objectsMetadata);
             }
 
             public bool TryGetValue(string objectType, out RealmObjectBase.Metadata metadata) =>
@@ -1412,6 +1409,26 @@ namespace Realms
             public RealmObjectBase.Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
 
             public RealmObjectBase.Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
+
+            public void Add(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            {
+                foreach (var objectMetadata in objectsMetadata)
+                {
+
+                    if (stringToRealmObjectMetadataDict.ContainsKey(objectMetadata.Schema.Name))
+                    {
+                        Argument.AssertDebug("You are trying to merge an object schema that is already present. Please open an issue in the realm-dotnet repository.");  //TODO Add link to repository
+                    }
+
+                    if (tableKeyToRealmObjectMetadataDict.ContainsKey(objectMetadata.TableKey))
+                    {
+                        Argument.AssertDebug("You are trying to merge an object schema that is already present. Please open an issue in the realm-dotnet repository.");
+                    }
+
+                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
+                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
+                }
+            }
         }
 
         internal class State : IDisposable

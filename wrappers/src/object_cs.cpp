@@ -30,6 +30,14 @@
 using namespace realm;
 using namespace realm::binding;
 
+using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
+
+namespace realm {
+namespace binding {
+    extern std::function<GetNativeSchemaT> s_get_native_schema;
+    }
+}
+
 extern "C" {
     REALM_EXPORT bool object_get_is_valid(const Object& object, NativeException::Marshallable& ex)
     {
@@ -88,12 +96,29 @@ extern "C" {
             else {
                 auto val = object.obj().get_any(prop.column_key);
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
-                    *value = to_capi(new Object(object.realm(), val.get<ObjLink>()));
+                    *value = to_capi(val.get<ObjLink>(), object.realm());
                 }
                 else {
                     *value = to_capi(std::move(val));
                 }
             }
+        });
+    }
+
+    REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            std::vector<SchemaObject> schema_objects;
+            std::vector<SchemaProperty> schema_properties;
+
+            auto& object_schema = object.get_object_schema();
+            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties, object_schema.is_embedded));
+
+            s_get_native_schema(SchemaForMarshaling{
+                schema_objects.data(),
+                static_cast<int>(schema_objects.size()),
+                schema_properties.data()
+            }, managed_callback);
         });
     }
 

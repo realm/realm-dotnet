@@ -712,7 +712,7 @@ namespace Realms.Tests.Database
             Assert.That(objs[0], Is.EqualTo(value));
         }
 
-        //[Test] //TODO This fails
+        [Test]
         public void ChangingSchemaTest()
         {
             _realm.Write(() =>
