@@ -271,19 +271,19 @@ jobs:
         path: wrappers/build
     - name: Build nugetpkg Realm.Fody
       run: |
-      "cd C:\\Program/ Files/ (x86)\\Microsoft/ Visual/ Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin"
-      "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+        cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'
+        powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore
     - name: Build nugetpkg Realm
       run: |
-      "cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'"
-      "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+        "cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'"
+        "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
     - name: Build nugetpkg Realm.UnityUtils
       run:  |
-      "cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'"
-      "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+        "cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'"
+        "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
     - name: Build nugetpkg Realm.UnityWeaver
       run: |
-      "cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'"
-      "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
+        "cd \'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\'"
+        "powershell MsBuild.exe ${{ env.GITHUB_WORKSPACE }}/Realm/UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=../packages -restore"
     - name: Just tree struct
       run: tree ${{ env.GITHUB_WORKSPACE }}/Realm /F
