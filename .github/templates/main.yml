@@ -3,8 +3,8 @@
 
 #@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
-#@ windowsArch = [ 'Win32', 'x64' ]
-#@ windowsUWPArch = [ 'Win32', 'x64', 'ARM' ]
+#@ windowsArchs = [ 'Win32', 'x64' ]
+#@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 
 #@ def checkoutCode():
@@ -54,7 +54,6 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ end
 #@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
 #@ actualCommand = cmd + configurationParam + ltoParam
-#@ saveOutput = "echo \"::set-output name=cacheKey::" + cacheKey + "\""
 
 steps:
   - #@ checkoutCode()
@@ -65,13 +64,17 @@ steps:
   - name: Build wrappers
     run: #@ actualCommand
     if: #@ wrappersCacheCondition
-  - name: Output cacheKey
-    run: #@ saveOutput
+  - name: Store artifacts
+    uses: actions/upload-artifact@v2
+    with:
+      name: #@ outputVar
+      path: wrappers/build/**
+      retention-days: 1
 #@ end
 
 ---
 name: build and test
-on:
+"on":
   push:
     branches:
       - main
@@ -102,12 +105,83 @@ jobs:
     name: Build Windows wrappers
     strategy:
       matrix:
-        arch: #@ windowsArch
+        arch: #@ windowsArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Build Windows UWP wrappers
     strategy:
       matrix:
-        arch: #@ windowsUWPArch
+        arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+  build-package:
+    runs-on: windows-latest
+    name: Build packages
+    needs:
+      - build-wrappers-windows
+      - build-wrappers-macos
+      - build-wrappers-ios
+      - build-wrappers-android
+      - build-wrappers-linux
+      - build-wrappers-windows-uwp
+    steps:
+      - name: Fetch Artifacts MacOS
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-macos
+          path: wrappers/build
+      - name: Fetch Artifacts iOS
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-ios
+          path: wrappers/build
+      - name: Fetch Artifacts Linux
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-linux
+          path: wrappers/build
+      - name: Fetch Artifacts Android armeabi-v7a
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-armeabi-v7a
+          path: wrappers/build
+      - name: Fetch Artifacts Android arm64-v8a
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-arm64-v8a
+          path: wrappers/build
+      - name: Fetch Artifacts Android x86
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-x86
+          path: wrappers/build
+      - name: Fetch Artifacts Android x86_64
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-android-x86_64
+          path: wrappers/build
+      - name: Fetch Artifacts Windows 32bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-Win32
+          path: wrappers/build
+      - name: Fetch Artifacts Windows 64bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-x64
+          path: wrappers/build
+      - name: Fetch Artifacts Windows UWP 32bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-uwp-Win32
+          path: wrappers/build
+      - name: Fetch Artifacts Windows UWP 64bit
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-uwp-x64
+          path: wrappers/build
+      - name: Fetch Artifacts Windows UWP ARM
+        uses: actions/download-artifact@v2
+        with:
+          name: wrappers-windows-uwp-ARM
+          path: wrappers/build
