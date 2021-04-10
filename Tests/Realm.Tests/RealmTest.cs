@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+using Realms.Sync;
 
 namespace Realms.Tests
 {
@@ -95,14 +96,13 @@ namespace Realms.Tests
         {
             foreach (var realm in _realms)
             {
-                try
+                if (realm.Config is SyncConfiguration)
                 {
-                    realm.Dispose();
-                    Realm.DeleteRealm(realm.Config);
+                    realm.GetSession().Handle.ShutdownAndWait();
                 }
-                catch
-                {
-                }
+
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
             }
         }
 
