@@ -17,14 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
+using Realms.Logging;
 
 namespace Realms.Helpers
 {
     internal static class Argument
     {
-        [SuppressMessage("Performance", "CA1823:Avoid unused private fields", Justification = "It's used in release.")]
-        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "It's used in release.")]
         private const string OpenIssueText = "Please create a new issue at http://github.com/realm/realm-dotnet/issues/new.";
 
         public static void NotNullOrEmpty(string value, string paramName)
@@ -72,10 +70,10 @@ namespace Realms.Helpers
 
         public static void AssertDebug(string message)
         {
+            Logger.LogDefault(LogLevel.Error, $"{message} {OpenIssueText}");
+
 #if DEBUG
             throw new Exception(message);
-#else
-            Logger.LogDefault(LogLevel.Error, $"{message} {OpenIssueText}");
 #endif
         }
     }
