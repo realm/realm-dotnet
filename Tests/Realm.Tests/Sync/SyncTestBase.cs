@@ -59,7 +59,6 @@ namespace Realms.Tests.Sync
         {
             foreach (var session in _sessions)
             {
-                session?.Handle.ShutdownAndWait();
                 session?.CloseHandle();
             }
 

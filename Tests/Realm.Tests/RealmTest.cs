@@ -100,10 +100,7 @@ namespace Realms.Tests
 
             foreach (var realm in _realms)
             {
-                for (var i = 0; i < 100; i++)
-                {
-                    Assert.That(DeleteRealmWithRetries(realm), Is.True);
-                }
+                Assert.That(DeleteRealmWithRetries(realm), Is.True, "Couldn't delete a Realm on teardown.");
             }
         }
 
@@ -118,7 +115,7 @@ namespace Realms.Tests
                 }
                 catch
                 {
-                    Task.Delay(5).Wait();
+                    Task.Delay(50).Wait();
                 }
             }
 
