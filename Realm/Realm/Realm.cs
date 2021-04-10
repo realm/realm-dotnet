@@ -158,6 +158,13 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase config = null)
         {
             using var realm = GetInstance(config);
+            if (config is SyncConfiguration)
+            {
+                var session = realm.GetSession();
+                session.Handle.ShutdownAndWait();
+                session.CloseHandle();
+            }
+
             return realm.SharedRealmHandle.Compact();
         }
 

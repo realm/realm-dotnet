@@ -80,6 +80,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_stop", CallingConvention = CallingConvention.Cdecl)]
             public static extern void stop(SessionHandle session, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_shutdown_and_wait", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void shutdown_and_wait(SessionHandle session, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_start", CallingConvention = CallingConvention.Cdecl)]
             public static extern void start(SessionHandle session, out NativeException ex);
 
@@ -179,6 +182,15 @@ namespace Realms.Sync
         public void Start()
         {
             NativeMethods.start(this, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        /// <summary>
+        /// Terminates the sync session and releases the Realm file it was using.
+        /// </summary>
+        public void ShutdownAndWait()
+        {
+            NativeMethods.shutdown_and_wait(this, out var ex);
             ex.ThrowIfNecessary();
         }
 
