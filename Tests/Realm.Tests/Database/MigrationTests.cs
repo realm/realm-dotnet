@@ -84,7 +84,7 @@ namespace Realms.Tests.Database
                 }
             };
 
-            using var realm = GetRealm(configuration);
+            var realm = GetRealm(configuration);
             var person = realm.All<Person>().Single();
             Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
         }

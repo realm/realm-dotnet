@@ -979,7 +979,7 @@ namespace Realms.Tests.Database
                         _realm.Add(owner);
                     });
 
-                    listRef = new WeakReference(owner.Dogs.Freeze());
+                    listRef = new WeakReference(Freeze(owner.Dogs));
                 })();
 
                 while (listRef.IsAlive)
@@ -1051,14 +1051,14 @@ namespace Realms.Tests.Database
         public void List_Freeze_WhenUnmanaged_Throws()
         {
             var list = new List<Owner>();
-            Assert.Throws<RealmException>(() => list.Freeze(), "Unmanaged lists cannot be frozen.");
+            Assert.Throws<RealmException>(() => Freeze(list), "Unmanaged lists cannot be frozen.");
         }
 
         [Test]
         public void Query_Freeze_WhenUnmanaged_Throws()
         {
             var query = new List<Owner>().AsQueryable();
-            Assert.Throws<RealmException>(() => query.Freeze(), "Unmanaged queries cannot be frozen.");
+            Assert.Throws<RealmException>(() => Freeze(query), "Unmanaged queries cannot be frozen.");
         }
 
         [Test]
@@ -1111,7 +1111,8 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            var frozenList = obj.Dogs.Freeze();
+            var frozenList = Freeze(obj.Dogs);
+
             Assert.That(frozenList.Count, Is.EqualTo(2));
 
             _realm.Write(() =>
@@ -1135,7 +1136,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "E" });
             });
 
-            var frozenQuery = _realm.All<Dog>().OrderBy(d => d.Name).Freeze();
+            var frozenQuery = Freeze(_realm.All<Dog>().OrderBy(d => d.Name));
             Assert.That(frozenQuery.Count(), Is.EqualTo(3));
             Assert.That(frozenQuery.ElementAt(0).Name, Is.EqualTo("A"));
             Assert.That(frozenQuery.ElementAt(1).Name, Is.EqualTo("C"));
@@ -1163,7 +1164,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "E" });
             });
 
-            var frozenQuery = _realm.All<Dog>().Filter("TRUEPREDICATE SORT(Name ASC)").Freeze();
+            var frozenQuery = Freeze(_realm.All<Dog>().Filter("TRUEPREDICATE SORT(Name ASC)"));
             Assert.That(frozenQuery.Count(), Is.EqualTo(3));
             Assert.That(frozenQuery.ElementAt(0).Name, Is.EqualTo("A"));
             Assert.That(frozenQuery.ElementAt(1).Name, Is.EqualTo("C"));
@@ -1191,7 +1192,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "Lasse" });
             });
 
-            var frozenQuery = _realm.All<Dog>().Where(d => d.Name.StartsWith("R")).Freeze();
+            var frozenQuery = Freeze(_realm.All<Dog>().Where(d => d.Name.StartsWith("R")));
             Assert.That(frozenQuery.Count(), Is.EqualTo(2));
 
             _realm.Write(() =>

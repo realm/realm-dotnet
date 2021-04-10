@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
-using Realms.Sync;
 
 namespace Realms.Tests
 {
@@ -96,14 +95,34 @@ namespace Realms.Tests
         {
             foreach (var realm in _realms)
             {
-                if (realm.Config is SyncConfiguration)
-                {
-                    realm.GetSession().Handle.ShutdownAndWait();
-                }
-
                 realm.Dispose();
-                Realm.DeleteRealm(realm.Config);
             }
+
+            foreach (var realm in _realms)
+            {
+                for (var i = 0; i < 100; i++)
+                {
+                    Assert.That(DeleteRealmWithRetries(realm), Is.True);
+                }
+            }
+        }
+
+        private static bool DeleteRealmWithRetries(Realm realm)
+        {
+            for (var i = 0; i < 100; i++)
+            {
+                try
+                {
+                    Realm.DeleteRealm(realm.Config);
+                    return true;
+                }
+                catch
+                {
+                    Task.Delay(5).Wait();
+                }
+            }
+
+            return false;
         }
 
         protected Realm GetRealm(RealmConfigurationBase config = null)

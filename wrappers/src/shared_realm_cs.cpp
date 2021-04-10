@@ -45,6 +45,7 @@ using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using OnBindingContextDestructedT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
+using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -56,6 +57,7 @@ namespace binding {
     std::function<GetNativeSchemaT> s_get_native_schema;
     std::function<OnBindingContextDestructedT> s_on_binding_context_destructed;
     std::function<LogMessageT> s_log_message;
+    std::function<MigrationCallbackT> s_on_migration;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -133,7 +135,8 @@ REALM_EXPORT void shared_realm_install_callbacks(
     OnBindingContextDestructedT* on_binding_context_destructed,
     LogMessageT* log_message,
     ObjectNotificationCallbackT* notify_object,
-    DictionaryNotificationCallbackT* notify_dictionary)
+    DictionaryNotificationCallbackT* notify_dictionary,
+    MigrationCallbackT* on_migration)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
@@ -142,6 +145,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     s_log_message = wrap_managed_callback(log_message);
     realm::s_object_notification_callback = wrap_managed_callback(notify_object);
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
+    s_on_migration = wrap_managed_callback(on_migration);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -188,7 +192,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                     schema_properties.data()
                 };
 
-                if (!configuration.migration_callback(&oldRealm, &newRealm, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
+                if (!s_on_migration(&oldRealm, &newRealm, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
                     throw ManagedExceptionDuringMigration();
                 }
             };

@@ -96,7 +96,7 @@ namespace Realms.Tests.Sync
             var config = GetFakeConfig();
             RealmConfiguration.DefaultConfiguration = config;
 
-            using var realm = GetRealm();
+            var realm = GetRealm();
 
             Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
             var syncConfig = (SyncConfiguration)realm.Config;

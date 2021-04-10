@@ -287,7 +287,7 @@ namespace Realms.Tests.Database
                     {
                         _realm.Add(owner);
                     });
-                    var frozenOwner = owner.Freeze();
+                    var frozenOwner = Freeze(owner);
                     objRef = new WeakReference(frozenOwner);
                 })();
 
@@ -307,7 +307,7 @@ namespace Realms.Tests.Database
         public void RealmObject_Freeze_WhenObjectIsUnmanaged_Throws()
         {
             var owner = new Owner();
-            Assert.Throws<RealmException>(() => owner.Freeze(), "Unmanaged objects cannot be frozen.");
+            Assert.Throws<RealmException>(() => Freeze(owner), "Unmanaged objects cannot be frozen.");
         }
 
         [Test]
@@ -351,7 +351,7 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            var frozenObj = obj.Freeze();
+            var frozenObj = Freeze(obj);
 
             Assert.Throws<RealmFrozenException>(() => frozenObj.PropertyChanged += (_, __) => { }, "It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
         }
@@ -404,13 +404,13 @@ namespace Realms.Tests.Database
         [Test]
         public void FrozenObject_DoesntGetDeleted()
         {
-            var frozenPeter = _realm.Write(() =>
+            var frozenPeter = Freeze(_realm.Write(() =>
             {
                 return _realm.Add(new Owner
                 {
                     Name = "Peter"
                 });
-            }).Freeze();
+            }));
 
             _realm.Write(() =>
             {
