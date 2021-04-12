@@ -158,6 +158,13 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase config = null)
         {
             using var realm = GetInstance(config);
+            if (config is SyncConfiguration)
+            {
+                var session = realm.GetSession();
+                session.Handle.ShutdownAndWait();
+                session.CloseHandle();
+            }
+
             return realm.SharedRealmHandle.Compact();
         }
 
@@ -249,7 +256,7 @@ namespace Realms
         {
             Config = config;
 
-            if (config.EnableCache)
+            if (config.EnableCache && sharedRealmHandle.CanCache)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
@@ -263,7 +270,7 @@ namespace Realms
                 _state = new State();
                 sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(_state.GCHandle));
 
-                if (config.EnableCache)
+                if (config.EnableCache && sharedRealmHandle.CanCache)
                 {
                     _states.Value[config.DatabasePath] = new WeakReference<State>(_state);
                 }
@@ -378,7 +385,7 @@ namespace Realms
             {
                 // only mutate the state on explicit disposal
                 // otherwise we do so on the finalizer thread
-                if (Config.EnableCache && _state.RemoveRealm(this))
+                if (Config.EnableCache && SharedRealmHandle.CanCache && _state.RemoveRealm(this))
                 {
                     _states.Value.Remove(Config.DatabasePath);
                 }

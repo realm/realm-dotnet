@@ -168,5 +168,12 @@ REALM_EXPORT void realm_syncsession_start(const SharedSyncSession& session, Nati
     });
 }
 
+REALM_EXPORT void realm_syncsession_shutdown_and_wait(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        session->shutdown_and_wait();
+    });
+}
+
 }
 

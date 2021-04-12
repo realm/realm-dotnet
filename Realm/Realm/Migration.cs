@@ -34,8 +34,9 @@ namespace Realms
     /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
     public class Migration
     {
-        private readonly RealmConfiguration _configuration;
-        private readonly RealmSchema _schema;
+        internal RealmConfiguration Configuration { get; }
+
+        internal RealmSchema Schema { get; }
 
         /// <summary>
         /// Gets the <see cref="Realm"/> as it was before migrating. Use the dynamic API to access it.
@@ -53,53 +54,40 @@ namespace Realms
 
         internal Migration(RealmConfiguration configuration, RealmSchema schema)
         {
-            _configuration = configuration;
-            _schema = schema;
+            Configuration = configuration;
+            Schema = schema;
         }
 
         internal void PopulateConfiguration(ref Configuration configuration)
         {
             var migrationHandle = GCHandle.Alloc(this);
-
-            configuration.migration_callback = MigrationCallback;
             configuration.managed_migration_handle = GCHandle.ToIntPtr(migrationHandle);
         }
 
-        private bool Execute(Realm oldRealm, Realm newRealm)
+        internal bool Execute(Realm oldRealm, Realm newRealm)
         {
             OldRealm = oldRealm;
             NewRealm = newRealm;
 
             try
             {
-                _configuration.MigrationCallback(this, oldRealm.Config.SchemaVersion);
+                Configuration.MigrationCallback(this, oldRealm.Config.SchemaVersion);
             }
             catch (Exception e)
             {
                 MigrationException = e;
                 return false;
             }
+            finally
+            {
+                OldRealm.Dispose();
+                OldRealm = null;
+
+                NewRealm.Dispose();
+                NewRealm = null;
+            }
 
             return true;
-        }
-
-        [MonoPInvokeCallback(typeof(MigrationCallback))]
-        private static bool MigrationCallback(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
-        {
-            var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
-            var migration = (Migration)migrationHandle.Target;
-
-            var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
-            var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, IsReadOnly = true };
-            var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
-
-            var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-            var newRealm = new Realm(newRealmHandle, migration._configuration, migration._schema);
-
-            var result = migration.Execute(oldRealm, newRealm);
-            migrationHandle.Free();
-
-            return result;
         }
     }
 }

@@ -28,6 +28,8 @@ namespace Realms
         {
         }
 
+        public override bool CanCache => false;
+
         protected override void Unbind()
         {
             // do nothing - we don't own this, so we don't need to clean up

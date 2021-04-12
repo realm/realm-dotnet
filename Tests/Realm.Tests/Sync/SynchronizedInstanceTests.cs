@@ -41,46 +41,35 @@ namespace Realms.Tests.Sync
         [TestCase(false, false)]
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var config = GetFakeConfig();
+            if (encrypt)
             {
-                var config = GetFakeConfig();
-                if (encrypt)
+                config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
+            }
+
+            using (var realm = GetRealm(config))
+            {
+                var session = GetSession(realm);
+                session.Stop();
+                if (populate)
                 {
-                    config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
+                    AddDummyData(realm, singleTransaction: false);
                 }
 
-                using (var realm = GetRealm(config))
-                {
-                    var session = GetSession(realm);
-                    session.Stop();
-                    if (populate)
-                    {
-                        AddDummyData(realm, singleTransaction: false);
-                    }
+                session.CloseHandle();
+            }
 
-                    session.CloseHandle();
-                }
+            var initialSize = new FileInfo(config.DatabasePath).Length;
 
-                var initialSize = new FileInfo(config.DatabasePath).Length;
+            Assert.That(Realm.Compact(config), Is.True);
 
-                var attempts = 200;
+            var finalSize = new FileInfo(config.DatabasePath).Length;
+            Assert.That(initialSize, Is.GreaterThanOrEqualTo(finalSize));
 
-                // Give core a chance to close the Realm
-                while (!Realm.Compact(config) && (attempts-- > 0))
-                {
-                    await Task.Delay(50);
-                }
-
-                Assert.That(attempts, Is.GreaterThan(0));
-
-                var finalSize = new FileInfo(config.DatabasePath).Length;
-                Assert.That(initialSize, Is.GreaterThanOrEqualTo(finalSize));
-
-                using (var realm = GetRealm(config))
-                {
-                    Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? DummyDataSize / 2 : 0));
-                }
-            });
+            using (var realm = GetRealm(config))
+            {
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? DummyDataSize / 2 : 0));
+            }
         }
 
         [TestCase(true)]

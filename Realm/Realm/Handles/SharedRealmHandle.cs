@@ -147,7 +147,8 @@ namespace Realms
                 OnBindingContextDestructedCallback contextDestructedCallback,
                 LogMessageCallback logMessageCallback,
                 NotifiableObjectHandleBase.NotificationCallback notifyObject,
-                DictionaryHandle.KeyNotificationCallback notifyDictionary);
+                DictionaryHandle.KeyNotificationCallback notifyDictionary,
+                MigrationCallback onMigration);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -182,6 +183,7 @@ namespace Realms
             NativeMethods.LogMessageCallback logMessage = LogMessage;
             NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
+            MigrationCallback onMigration = OnMigration;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
@@ -190,14 +192,17 @@ namespace Realms
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(notifyObject);
             GCHandle.Alloc(notifyDictionary);
+            GCHandle.Alloc(onMigration);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed, logMessage, notifyObject, notifyDictionary);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed, logMessage, notifyObject, notifyDictionary, onMigration);
         }
 
         [Preserve]
         public SharedRealmHandle(IntPtr handle) : base(null, handle)
         {
         }
+
+        public virtual bool CanCache => true;
 
         protected override void Unbind()
         {
@@ -478,6 +483,31 @@ namespace Realms
         private static void LogMessage(PrimitiveValue message, LogLevel level)
         {
             Logger.LogDefault(level, message.AsString());
+        }
+
+        [MonoPInvokeCallback(typeof(MigrationCallback))]
+        private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
+        {
+            var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
+            var migration = (Migration)migrationHandle.Target;
+
+            var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
+            var oldConfiguration = new RealmConfiguration(migration.Configuration.DatabasePath)
+            {
+                SchemaVersion = schemaVersion,
+                IsReadOnly = true,
+                EnableCache = false
+            };
+            var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
+
+            var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
+            var newConfiguration = migration.Configuration.Clone();
+            var newRealm = new Realm(newRealmHandle, migration.Configuration, migration.Schema);
+
+            var result = migration.Execute(oldRealm, newRealm);
+            migrationHandle.Free();
+
+            return result;
         }
 
         public class SchemaMarshaler

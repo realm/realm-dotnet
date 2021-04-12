@@ -55,7 +55,6 @@ namespace Realms.Native
 
         internal ulong schema_version;
 
-        internal MigrationCallback migration_callback;
         internal IntPtr managed_migration_handle;
 
         internal ShouldCompactCallback should_compact_callback;

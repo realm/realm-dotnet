@@ -95,15 +95,33 @@ namespace Realms.Tests
         {
             foreach (var realm in _realms)
             {
+                realm.Dispose();
+            }
+
+            foreach (var realm in _realms)
+            {
+                // TODO: this should be an assertion but fails on our migration tests due to https://github.com/realm/realm-core/issues/4605.
+                // Assert.That(DeleteRealmWithRetries(realm), Is.True, "Couldn't delete a Realm on teardown.");
+                DeleteRealmWithRetries(realm);
+            }
+        }
+
+        private static bool DeleteRealmWithRetries(Realm realm)
+        {
+            for (var i = 0; i < 100; i++)
+            {
                 try
                 {
-                    realm.Dispose();
                     Realm.DeleteRealm(realm.Config);
+                    return true;
                 }
                 catch
                 {
+                    Task.Delay(50).Wait();
                 }
             }
+
+            return false;
         }
 
         protected Realm GetRealm(RealmConfigurationBase config = null)
