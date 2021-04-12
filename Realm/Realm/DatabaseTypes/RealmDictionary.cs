@@ -61,7 +61,7 @@ namespace Realms
 
             set
             {
-                EnsureKeyNotNull(key);
+                ValidateKey(key);
                 var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
                 if (_isEmbedded && realmValue.Type != RealmValueType.Null)
@@ -103,7 +103,7 @@ namespace Realms
 
         public void Add(string key, TValue value)
         {
-            EnsureKeyNotNull(key);
+            ValidateKey(key);
             var realmValue = Operator.Convert<TValue, RealmValue>(value);
 
             if (_isEmbedded && realmValue.Type != RealmValueType.Null)
@@ -200,11 +200,21 @@ namespace Realms
             _deliveredInitialKeyNotification = false;
         }
 
-        private static string EnsureKeyNotNull(string key)
+        private static string ValidateKey(string key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException(nameof(key), "A persisted dictionary cannot store null keys.");
+                throw new ArgumentNullException(nameof(key), "Value cannot be null.");
+            }
+
+            if (key.StartsWith("$", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException($"A persisted dictionary cannot have a key that starts with '$': {key}");
+            }
+
+            if (key.Contains('.'))
+            {
+                throw new NotSupportedException($"A persisted dictionary cannot have a key that contains '.': {key}");
             }
 
             return key;

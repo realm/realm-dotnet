@@ -1138,6 +1138,57 @@ namespace Realms.Tests.Database
             Assert.That(startsWith, Is.Empty);
         }
 
+        [TestCase(".", "contains '.'")]
+        [TestCase("$", "starts with '$'")]
+        [TestCase("$foo", "starts with '$'")]
+        [TestCase("foo.bar", "contains '.'")]
+        [TestCase("foo.", "contains '.'")]
+        public void InvalidKeys_ThrowNotSupportedException(string key, string expectedErrorFragment)
+        {
+            _realm.Write(() =>
+            {
+                var dict = _realm.Add(new DictionariesObject()).StringDictionary;
+                Assert.That(() => dict[key] = "abc", Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+                Assert.That(() => dict.Add(key, "abc"), Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+                Assert.That(() => dict.Add(new KeyValuePair<string, string>(key, "abc")), Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+
+                var unmanaged = new DictionariesObject();
+                unmanaged.StringDictionary[key] = "foo-bar";
+
+                Assert.That(() => _realm.Add(unmanaged), Throws.TypeOf<NotSupportedException>().And.Message.Contains(expectedErrorFragment));
+            });
+        }
+
+        [Test]
+        public void NullKey_ThrowsArgumentNullException()
+        {
+            _realm.Write(() =>
+            {
+                var dict = _realm.Add(new DictionariesObject()).StringDictionary;
+                Assert.That(() => dict[null] = "abc", Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict.Add(null, "abc"), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict.Add(new KeyValuePair<string, string>(null, "abc")), Throws.TypeOf<ArgumentNullException>());
+            });
+        }
+
+        [TestCase("a$")]
+        [TestCase("a$$$$$$$$$")]
+        [TestCase("_$_$_")]
+        public void Key_MayContainDollarSign(string key)
+        {
+            _realm.Write(() =>
+            {
+                var dict = _realm.Add(new DictionariesObject()).StringDictionary;
+                dict[key] = "abc";
+                dict.Clear();
+
+                dict.Add(key, "abc");
+                dict.Clear();
+
+                dict.Add(new KeyValuePair<string, string>(key, "abc"));
+            });
+        }
+
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
             TestHelpers.RunAsyncTest(async () =>

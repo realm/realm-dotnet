@@ -64,7 +64,7 @@ stage('Build wrappers') {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode ${bashExtraArgs}"
+          sh "./build-macos.sh --configuration=${configuration} ${bashExtraArgs}"
         }
         stash includes: 'wrappers/build/**', name: 'macos-wrappers'
       }
@@ -73,7 +73,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh ${bashExtraArgs}")
+          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "./build.sh --configuration=${configuration} ${bashExtraArgs}")
         }
         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
       }
