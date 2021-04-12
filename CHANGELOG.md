@@ -1,4 +1,4 @@
-## 10.5.0 (TBD)
+## 10.2.0-beta.1 (2021-04-12)
 
 ### Fixed
 * Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`) being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
@@ -25,19 +25,19 @@
   var obj = new MyObject();
   obj.Denominations.Add("quarter", 0.25d);
   ```
-* Add support for `RealmValue` data type. This new type can represent any valid Realm data type, including objects. Collections (lists, sets and dictionaries) of `RealmValue` are also supported, but 'RealmValue' cannot contain collections. Please note that a property of type `RealmValue` cannot be nullable, but can contain null, represented by the value `RealmValue.Null`. (PR [#2252](https://github.com/realm/realm-dotnet/pull/2252))   
+* Add support for `RealmValue` data type. This new type can represent any valid Realm data type, including objects. Collections (lists, sets and dictionaries) of `RealmValue` are also supported, but 'RealmValue' cannot contain collections. Please note that a property of type `RealmValue` cannot be nullable, but can contain null, represented by the value `RealmValue.Null`. (PR [#2252](https://github.com/realm/realm-dotnet/pull/2252))
 
   ```csharp
   public class MyObject : RealmObject
   {
       public RealmValue MyValue { get; set; }
   }
-  
+
   var obj = new MyObject();
   obj.MyValue = RealmValue.Null;
   obj.MyValue = 1;
   obj.MyValue = "abc";
-  
+
   if (obj.Type == RealmValueType.String)
   {
       var myString = obj.MyValue.AsString();
