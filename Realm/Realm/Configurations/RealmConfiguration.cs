@@ -138,6 +138,7 @@ namespace Realms
 
             if (ShouldCompactOnLaunch != null)
             {
+                // TODO: this should be moved elsewhere
                 var handle = GCHandle.Alloc(ShouldCompactOnLaunch);
                 configuration.should_compact_callback = ShouldCompactOnLaunchCallback;
                 configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(handle);

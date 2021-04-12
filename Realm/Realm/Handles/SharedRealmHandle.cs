@@ -173,9 +173,10 @@ namespace Realms
         static unsafe SharedRealmHandle()
         {
             NativeCommon.Initialize();
+        }
 
-            SynchronizationContextScheduler.Install();
-
+        public static void Initialize()
+        {
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
