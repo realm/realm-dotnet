@@ -177,7 +177,7 @@ namespace Realms.Sync
             var platformVersion = RuntimeInformation.OSDescription;
 
             // TODO: temp - remove that once we're out of beta
-            var sdkVersion = "10.2.0-beta.1"; // InteropConfig.SDKVersion.ToString(3);
+            var sdkVersion = "10.2.0-beta.2"; // InteropConfig.SDKVersion.ToString(3);
 
             NativeMethods.initialize(
                 platform, platform.IntPtrLength(),

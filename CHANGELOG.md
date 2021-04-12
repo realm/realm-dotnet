@@ -1,3 +1,17 @@
+## 10.2.0-beta.2 (TBD)
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 11.x.y. (it's in flux)
+
 ## 10.2.0-beta.1 (2021-04-12)
 
 ### Fixed
@@ -31,6 +45,12 @@
   public class MyObject : RealmObject
   {
       public RealmValue MyValue { get; set; }
+
+      public IList<RealmValue> ValuesList { get; }
+
+      public ISet<RealmValue> ValuesSet { get; }
+
+      public IDictionary<string, RealmValue> ValuesDict { get; }
   }
 
   var obj = new MyObject();
@@ -43,13 +63,30 @@
       var myString = obj.MyValue.AsString();
   }
   ```
+* Add support for sets of objects or primitive values. Sets are unordered collections that ensure uniqueness of their elements. Realm uses its internal equality comparer
+and it is not possible to customize its behavior by overriding `Equals` or `GetHashCode` on your custom classes. Objects will always be compared by db reference - i.e.
+two distinct objects in the database will always be different, even if their contents are identical, and multiple references to the same database object will always be
+equal.
+  ```csharp
+  public class MyObject : RealmObject
+  {
+      public ISet<string> UniqueStrings { get; }
+  }
+
+  // Realm will automatically manage the underlying set, so there's no need
+  // to define a constructor  or assign it to some value.
+
+  var obj = new MyObject();
+  var didAdd = obj.UniqueStrings.Add("foo"); // true
+  didAdd = obj.UniqueStrings.Add("foo"); // false
+  ```
 * Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
 `Logger.Default`. This replaces `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` which will be removed in a future release. The built-in implementations are:
-  * `Console` - uses the `System.Console` for most projects and `UnityEngine.Debug` for Unity projects.
-  * `Null` - ignores all messages.
-  * `Function` - proxies calls to a supplied function.
+  * `Console` - uses the `System.Console` for most projects and `UnityEngine.Debug` for Unity projects: `Logger.Default = Logger.Console;`
+  * `Null` - ignores all messages: `Logger.Default = Logger.Null;`
+  * `Function` - proxies calls to a supplied function: `Logger.Default = Logger.Function(message => myExternalLogger.Log(message));`
 
   Custom loggers can derive from the `Logger` class and provide their own implementation for the `Log` method or use `Function` and provide an `Action<string>`. (PR [#2276](https://github.com/realm/realm-dotnet/pull/2276))
 * `RealmObjectBase` now correctly overrides and implements `GetHashCode()`. (Issue [#1650](https://github.com/realm/realm-dotnet/issues/1650))
