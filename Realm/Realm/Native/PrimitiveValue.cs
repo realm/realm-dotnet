@@ -254,7 +254,18 @@ namespace Realms.Native
             return bytes;
         }
 
-        public (ObjectHandle Handle, TableKey TableKey) AsObject(RealmHandle root) => (new ObjectHandle(root, link_value.object_ptr), link_value.table_key);
+        public RealmObjectBase AsObject(Realm realm)
+        {
+            var handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
+
+            if (!realm.Metadata.TryGetValue(link_value.table_key, out var objectMetadata))
+            {
+                var objectSchema = handle.GetSchema();
+                objectMetadata = realm.MergeWithSchema(objectSchema)[link_value.table_key];
+            }
+
+            return realm.MakeObject(objectMetadata, handle);
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct StringValue

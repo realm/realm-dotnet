@@ -22,7 +22,6 @@ using System.ComponentModel;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
-using Realms.Dynamic;
 
 namespace Realms.Tests.Database
 {
@@ -46,7 +45,7 @@ namespace Realms.Tests.Database
         private static readonly DateTimeOffset[] _dateValues = new DateTimeOffset[] { DateTimeOffset.Now, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
         private static readonly Guid[] _guidValues = new Guid[] { Guid.NewGuid(), Guid.Empty };
         private static readonly ObjectId[] _objectIdValues = new ObjectId[] { ObjectId.GenerateNewId(), ObjectId.Empty };
-        private static readonly string[] _stringValues = new string[] {"a", "abc", string.Empty};
+        private static readonly string[] _stringValues = new string[] { "a", "abc", string.Empty };
         private static readonly byte[][] _dataValues = new byte[][] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
         private static readonly RealmObject[] _objectValues = new RealmObject[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
@@ -638,8 +637,11 @@ namespace Realms.Tests.Database
 
             _realm.Refresh();
 
-            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(RealmValueObject.RealmValueProperty),
-                nameof(RealmValueObject.RealmValueProperty) }));
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[]
+            {
+                nameof(RealmValueObject.RealmValueProperty),
+                nameof(RealmValueObject.RealmValueProperty)
+            }));
         }
 
         [TestCase(1, true)]
@@ -680,8 +682,11 @@ namespace Realms.Tests.Database
 
             _realm.Refresh();
 
-            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(RealmValueObject.RealmValueProperty),
-                nameof(RealmValueObject.RealmValueProperty) }));
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[]
+            {
+                nameof(RealmValueObject.RealmValueProperty),
+                nameof(RealmValueObject.RealmValueProperty)
+            }));
 
             _realm.Write(() =>
             {
@@ -690,9 +695,12 @@ namespace Realms.Tests.Database
 
             _realm.Refresh();
 
-            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(RealmValueObject.RealmValueProperty),
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[]
+            {
                 nameof(RealmValueObject.RealmValueProperty),
-                nameof(RealmValueObject.RealmValueProperty) }));
+                nameof(RealmValueObject.RealmValueProperty),
+                nameof(RealmValueObject.RealmValueProperty)
+            }));
         }
 
         [Test]
@@ -713,7 +721,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ChangingSchemaTest()
+        public void RealmValueProperty_WhenObjectIsNotInSchema_ReturnsDynamic()
         {
             _realm.Write(() =>
             {
@@ -729,6 +737,113 @@ namespace Realms.Tests.Database
 
             var rvo = singleSchemaRealm.All<RealmValueObject>().First();
             var rv = rvo.RealmValueProperty;
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
+            dynamic d = rv.AsRealmObject();
+
+            Assert.That(d.IntProperty, Is.EqualTo(10));
+            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+        }
+
+        [Test]
+        public void RealmValueList_WhenObjectIsNotInSchema_ReturnsDynamic()
+        {
+            _realm.Write(() =>
+            {
+                var obj = _realm.Add(new RealmValueObject());
+                obj.RealmValueList.Add(new InternalObject { IntProperty = 10, StringProperty = "brown" });
+            });
+
+            _realm.Dispose();
+
+            var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
+            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+
+            using var singleSchemaRealm = GetRealm(config);
+
+            var rvo = singleSchemaRealm.All<RealmValueObject>().First();
+            var rv = rvo.RealmValueList.Single();
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
+            dynamic d = rv.AsRealmObject();
+
+            Assert.That(d.IntProperty, Is.EqualTo(10));
+            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+        }
+
+        [Test]
+        public void RealmValueSet_WhenObjectIsNotInSchema_ReturnsDynamic()
+        {
+            _realm.Write(() =>
+            {
+                var obj = _realm.Add(new RealmValueObject());
+                obj.RealmValueSet.Add(new InternalObject { IntProperty = 10, StringProperty = "brown" });
+            });
+
+            _realm.Dispose();
+
+            var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
+            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+
+            using var singleSchemaRealm = GetRealm(config);
+
+            var rvo = singleSchemaRealm.All<RealmValueObject>().First();
+            var rv = rvo.RealmValueSet.Single();
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
+            dynamic d = rv.AsRealmObject();
+
+            Assert.That(d.IntProperty, Is.EqualTo(10));
+            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+        }
+
+        [Test]
+        public void RealmValueDictionary_WhenObjectIsNotInSchema_ReturnsDynamic()
+        {
+            _realm.Write(() =>
+            {
+                var obj = _realm.Add(new RealmValueObject());
+                obj.RealmValueDictionary.Add("foo", new InternalObject { IntProperty = 10, StringProperty = "brown" });
+            });
+
+            _realm.Dispose();
+
+            var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
+            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+
+            using var singleSchemaRealm = GetRealm(config);
+
+            var rvo = singleSchemaRealm.All<RealmValueObject>().First();
+            var rv = rvo.RealmValueDictionary["foo"];
+
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
+            dynamic d = rv.AsRealmObject();
+
+            Assert.That(d.IntProperty, Is.EqualTo(10));
+            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+        }
+
+        [Test]
+        public void RealmValueResults_WhenObjectIsNotInSchema_ReturnsDynamic()
+        {
+            _realm.Write(() =>
+            {
+                var obj = _realm.Add(new RealmValueObject());
+                obj.RealmValueDictionary.Add("foo", new InternalObject { IntProperty = 10, StringProperty = "brown" });
+            });
+
+            _realm.Dispose();
+
+            var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
+            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+
+            using var singleSchemaRealm = GetRealm(config);
+
+            var rvo = singleSchemaRealm.All<RealmValueObject>().First();
+
+            // A bit hacky - we take advantage of the fact Values is Results
+            Assert.That(rvo.RealmValueDictionary.Values, Is.TypeOf<RealmResults<RealmValue>>());
+            var rv = rvo.RealmValueDictionary.Values.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
             dynamic d = rv.AsRealmObject();
@@ -754,7 +869,7 @@ namespace Realms.Tests.Database
                 RealmValue.Create(1.5f, RealmValueType.Float),
                 RealmValue.Create(2.5d, RealmValueType.Double),
                 RealmValue.Create(5m, RealmValueType.Decimal128),
-                RealmValue.Create(new ObjectId("5f63e882536de46d71877979") , RealmValueType.ObjectId),
+                RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
                 RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
                 RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object),
             };
@@ -955,6 +1070,8 @@ namespace Realms.Tests.Database
             public RealmValue RealmValueProperty { get; set; }
 
             public IList<RealmValue> RealmValueList { get; }
+
+            public ISet<RealmValue> RealmValueSet { get; }
 
             public IDictionary<string, RealmValue> RealmValueDictionary { get; }
 

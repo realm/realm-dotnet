@@ -179,7 +179,7 @@ namespace Realms
         {
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
-            return ToRealmValue(result, realm);
+            return new RealmValue(result, realm);
         }
 
         public unsafe bool Add(in RealmValue value)

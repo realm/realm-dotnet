@@ -198,15 +198,7 @@ namespace Realms
                 return false;
             }
 
-            if (result.Type != RealmValueType.Object)
-            {
-                value = new RealmValue(result);
-            }
-            else
-            {
-                value = ToRealmValue(result, realm);
-            }
-
+            value = new RealmValue(result, realm);
             return true;
         }
 
@@ -214,7 +206,7 @@ namespace Realms
         {
             NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var ex);
             ex.ThrowIfNecessary();
-            var value = ToRealmValue(primitiveValue, realm);
+            var value = new RealmValue(primitiveValue, realm);
             return new KeyValuePair<string, TValue>(key.AsString(), value.As<TValue>());
         }
 

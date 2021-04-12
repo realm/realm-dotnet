@@ -21,9 +21,12 @@
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
 #include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/binding_context.hpp>
+
 #include "wrapper_exceptions.hpp"
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
+#include "shared_realm_cs.hpp"
 
 namespace realm {
 namespace binding {
@@ -303,36 +306,29 @@ static inline Mixed from_capi(realm_value_t val)
     REALM_TERMINATE("Invalid realm_value_t");
 }
 
-static inline realm_value_t to_capi(Object* obj)
-{
-    realm_value_t val{};
-    val.type = realm_value_type::RLM_TYPE_LINK;
-    val.link.object = obj;
-    val.link.table_key = obj->get_object_schema().table_key;
-    return val;
-}
-
 static inline realm_value_t to_capi(Obj obj, SharedRealm realm)
 {
-    realm::Schema realm_schema;
-    auto schema = realm->schema().find(obj.get_table()->get_key());
-
+    auto table_key = obj.get_table()->get_key();
+    auto schema = realm->schema().find(table_key);
     if (schema == realm->schema().end())
     {
-        realm_schema = ObjectStore::schema_from_group(realm->read_group());
-        schema = realm_schema.find(obj.get_table()->get_key());
+        // These shenanigans are only necessary because realm->schema() doesn't automatically update.
+        // TODO: remove this code when https://github.com/realm/realm-core/issues/4584 is resolved
+        CSharpBindingContext *cs_binding_context = dynamic_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+        schema = cs_binding_context->m_realm_schema.find(table_key);
+        if (schema == cs_binding_context->m_realm_schema.end())
+        {
+            cs_binding_context->m_realm_schema = ObjectStore::schema_from_group(realm->read_group());
+            schema = cs_binding_context->m_realm_schema.find(table_key);
+        }
     }
 
-    auto object = new Object(realm, *schema, obj);
-    
-
-    //We need to save the schema somewhere (CSharpBindings)
-
+    auto object = new Object(realm, *schema, std::move(obj));
 
     realm_value_t val{};
     val.type = realm_value_type::RLM_TYPE_LINK;
     val.link.object = object;
-    val.link.table_key = object->get_object_schema().table_key;
+    val.link.table_key = table_key;
     return val;
 }
 
@@ -392,7 +388,7 @@ static inline realm_value_t to_capi(Mixed value)
         case type_TypedLink:
             [[fallthrough]];
         case type_Link:
-            REALM_TERMINATE("Can't use to_capi on values containing links.");
+            REALM_TERMINATE("Can't use this overload of to_capi on values containing links, use to_capi(Obj, SharedRealm) instead.");
         case type_ObjectId: {
             val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
             val.object_id = to_capi(value.get<ObjectId>());
@@ -428,12 +424,12 @@ inline realm_value_t to_capi(object_store::Dictionary& dictionary, Mixed val)
     switch (val.get_type()) {
     case type_Link:
         if ((dictionary.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            return to_capi(new Object(dictionary.get_realm(), ObjLink(dictionary.get_object_schema().table_key, val.get<ObjKey>())));
+            return to_capi(ObjLink(dictionary.get_object_schema().table_key, val.get<ObjKey>()), dictionary.get_realm());
         }
 
         REALM_UNREACHABLE();
     case type_TypedLink:
-        return to_capi(new Object(dictionary.get_realm(), val.get_link()));
+        return to_capi(val.get_link(), dictionary.get_realm());
     default:
         return to_capi(std::move(val));
     }

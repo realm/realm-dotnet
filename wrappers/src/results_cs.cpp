@@ -61,7 +61,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
 
         if ((results.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             if (auto obj = results.get<Obj>(ndx)) {
-                *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), obj));
+                *value = to_capi(obj, results.get_realm());
             }
             else {
                 *value = realm_value_t{};
@@ -70,7 +70,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
         else {
             auto val = results.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(new Object(results.get_realm(), val.get<ObjLink>()));
+                *value = to_capi(val.get<ObjLink>(), results.get_realm());
             }
             else {
                 *value = to_capi(std::move(val));

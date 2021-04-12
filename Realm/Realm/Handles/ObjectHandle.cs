@@ -167,24 +167,19 @@ namespace Realms
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            if (result.Type != RealmValueType.Object)
-            {
-                return new RealmValue(result, this, propertyIndex);
-            }
+            return new RealmValue(result, realm, this, propertyIndex);
+        }
 
-            var (objectHandle, tableKey) = result.AsObject(Root);
+        public RealmSchema GetSchema()
+        {
+            RealmSchema result = null;
+            Action<Native.Schema> callback = (nativeSmallSchema) => { result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema); };
+            var callbackHandle = GCHandle.Alloc(callback);
 
-            if (!realm.Metadata.TryGetValue(tableKey, out var objectMetadata))
-            {
-                RealmSchema smallSchema = null;
-                Action<Native.Schema> callback = (nativeSmallSchema) => { smallSchema = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema); };
-                var handle = GCHandle.Alloc(callback);
-                NativeMethods.get_schema(objectHandle, GCHandle.ToIntPtr(handle), out nativeException);
-                nativeException.ThrowIfNecessary();
-                objectMetadata = realm.MergeWithSchema(smallSchema)[tableKey];
-            }
+            NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
+            nativeException.ThrowIfNecessary();
 
-            return new RealmValue(realm.MakeObject(objectMetadata, objectHandle));
+            return result;
         }
 
         public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)
@@ -226,7 +221,9 @@ namespace Realms
         {
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
-            var currentValue = new RealmValue(result, this, propertyIndex);
+
+            // Objects can't be PKs, so realm: null is fine.
+            var currentValue = new RealmValue(result, realm: null, this, propertyIndex);
 
             if (!currentValue.Equals(value))
             {

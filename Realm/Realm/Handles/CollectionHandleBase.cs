@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Native;
 
 namespace Realms
 {
@@ -54,16 +53,5 @@ namespace Realms
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
-
-        protected RealmValue ToRealmValue(PrimitiveValue primitive, Realm realm)
-        {
-            if (primitive.Type != RealmValueType.Object)
-            {
-                return new RealmValue(primitive);
-            }
-
-            var (objectHandle, tableKey) = primitive.AsObject(Root);
-            return new RealmValue(realm.MakeObject(realm.Metadata[tableKey], objectHandle));
-        }
     }
 }

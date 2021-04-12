@@ -136,12 +136,12 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
 
         if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
-            *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), list.get(ndx)));
+            *value = to_capi(list.get(ndx), list.get_realm());
         }
         else {
             auto val = list.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(new Object(list.get_realm(), val.get<ObjLink>()));
+                *value = to_capi(val.get<ObjLink>(), list.get_realm());
             }
             else {
                 *value = to_capi(std::move(val));

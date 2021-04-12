@@ -87,7 +87,7 @@ extern "C" {
             if ((prop.type & ~PropertyType::Flags) == PropertyType::Object) {
                 const Obj link_obj = object.obj().get_linked_object(prop.column_key);
                 if (link_obj) {
-                    *value = to_capi(new Object(object.realm(), link_obj));
+                    *value = to_capi(link_obj, object.realm());
                 }
                 else {
                     value->type = realm_value_type::RLM_TYPE_NULL;
