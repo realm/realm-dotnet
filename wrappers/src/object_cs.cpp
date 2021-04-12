@@ -35,7 +35,7 @@ using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback
 namespace realm {
 namespace binding {
     extern std::function<GetNativeSchemaT> s_get_native_schema;
-    }
+}
 }
 
 extern "C" {

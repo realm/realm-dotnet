@@ -258,10 +258,13 @@ namespace Realms.Native
         {
             var handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
 
+            // If Metadata doesn't contain the schema for this object, it's likely because
+            // the value is Mixed and the object type was added by a newer version of the
+            // app via Sync. In this case, we need to look up the object schema from disk
             if (!realm.Metadata.TryGetValue(link_value.table_key, out var objectMetadata))
             {
-                var objectSchema = handle.GetSchema();
-                objectMetadata = realm.MergeWithSchema(objectSchema)[link_value.table_key];
+                var onDiskSchema = handle.GetSchema();
+                objectMetadata = realm.MergeSchema(onDiskSchema)[link_value.table_key];
             }
 
             return realm.MakeObject(objectMetadata, handle);

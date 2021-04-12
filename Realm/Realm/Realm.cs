@@ -481,7 +481,7 @@ namespace Realms
             return ret;
         }
 
-        internal RealmMetadata MergeWithSchema(RealmSchema schema)
+        internal RealmMetadata MergeSchema(RealmSchema schema)
         {
             Metadata.Add(schema.Select(CreateRealmObjectMetadata));
             return Metadata;

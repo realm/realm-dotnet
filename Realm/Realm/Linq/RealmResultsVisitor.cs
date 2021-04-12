@@ -24,7 +24,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
-using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
@@ -575,12 +574,12 @@ namespace Realms
 
                 if (IsRealmValueTypeExpression(memberExpression, out leftName))
                 {
-                    rightValue = (RealmValueType)(int)rightValue;
-
                     if (node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual)
                     {
                         throw new NotSupportedException($"Only expressions of type Equal and NotEqual can be used with RealmValueType.");
                     }
+
+                    rightValue = (RealmValueType)(int)rightValue;
                 }
                 else
                 {

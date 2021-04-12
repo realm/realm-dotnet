@@ -1122,7 +1122,7 @@ namespace Realms.Tests.Database
             Assert.That(objsByName, Is.EqualTo(new[] { 3, 2, 1 }));
         }
 
-        [Test]  //TODO This fails because of query equals (waiting for an answer)
+        [Test]
         public void Where_WhenTypeIsMappedTo_FiltersCorrectly()
         {
             RemappedTypeObject first = null;
