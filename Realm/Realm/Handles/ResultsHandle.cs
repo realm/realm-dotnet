@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms
@@ -66,8 +67,8 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
                 out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_value(ResultsHandle results, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_descriptor_ordering", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_sort_descriptor(ResultsHandle results, out NativeException ex);
@@ -112,11 +113,11 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        public RealmValue GetValueAtIndex(int index, Realm realm)
         {
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
-            return ToRealmValue(result, metadata, realm);
+            return new RealmValue(result, realm);
         }
 
         public override int Count()
@@ -193,7 +194,13 @@ namespace Realms
             var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
             {
-                (primitiveValues[i], handles[i]) = arguments[i].ToNative();
+                var argument = arguments[i];
+                if (argument.Type == RealmValueType.Object && !argument.AsRealmObject().IsManaged)
+                {
+                    throw new RealmException("Can't use unmanaged object as argument of Filter");
+                }
+
+                (primitiveValues[i], handles[i]) = argument.ToNative();
             }
 
             var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, (IntPtr)primitiveValues.Length, out var ex);
@@ -206,9 +213,11 @@ namespace Realms
             return new ResultsHandle(this, ptr);
         }
 
-        public int Find(ObjectHandle objectHandle)
+        public unsafe int Find(in RealmValue value)
         {
-            var result = NativeMethods.find_object(this, objectHandle, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            var result = NativeMethods.find_value(this, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return (int)result;
         }

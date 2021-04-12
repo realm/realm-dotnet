@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
@@ -72,7 +73,7 @@ namespace Realms
         /// <value>The <see cref="RealmValueType"/> of the current value in the database.</value>
         public RealmValueType Type { get; }
 
-        internal RealmValue(PrimitiveValue primitive, ObjectHandle handle = default, IntPtr propertyIndex = default) : this()
+        internal RealmValue(PrimitiveValue primitive, Realm realm = null, ObjectHandle handle = default, IntPtr propertyIndex = default) : this()
         {
             Type = primitive.Type;
             _objectHandle = handle;
@@ -87,32 +88,38 @@ namespace Realms
                     _stringValue = primitive.AsString();
                     break;
                 case RealmValueType.Object:
-                    throw new NotSupportedException("Use RealmValue(RealmObject) instead.");
+                    Argument.NotNull(realm, nameof(realm));
+                    _objectValue = primitive.AsObject(realm);
+                    break;
                 default:
                     _primitiveValue = primitive;
                     break;
             }
         }
 
-        internal RealmValue(byte[] data) : this()
+        private RealmValue(byte[] data) : this()
         {
             Type = data == null ? RealmValueType.Null : RealmValueType.Data;
             _dataValue = data;
         }
 
-        internal RealmValue(string value) : this()
+        private RealmValue(string value) : this()
         {
             Type = value == null ? RealmValueType.Null : RealmValueType.String;
             _stringValue = value;
         }
 
-        internal RealmValue(RealmObjectBase obj) : this()
+        private RealmValue(RealmObjectBase obj) : this()
         {
             Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
             _objectValue = obj;
         }
 
-        internal static RealmValue Null() => new RealmValue(PrimitiveValue.Null());
+        /// <summary>
+        /// Gets a RealmValue representing <c>null</c>.
+        /// </summary>
+        /// <value>A new RealmValue instance of type <see cref="RealmValue.Null"/>.</value>
+        public static RealmValue Null => new RealmValue(PrimitiveValue.Null());
 
         private static RealmValue Bool(bool value) => new RealmValue(PrimitiveValue.Bool(value));
 
@@ -183,6 +190,11 @@ namespace Realms
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
                     return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
                 case RealmValueType.Object:
+                    if (!AsRealmObject().IsManaged)
+                    {
+                        throw new InvalidOperationException("Can't convert unmanaged object to native");
+                    }
+
                     return (PrimitiveValue.Object(_objectValue?.ObjectHandle), null);
                 default:
                     return (_primitiveValue, null);
@@ -618,6 +630,11 @@ namespace Realms
         /// <returns>The underlying value converted to <typeparamref name="T"/>.</returns>
         public T As<T>()
         {
+            if (typeof(T) == typeof(RealmValue))
+            {
+                return Operator.Convert<RealmValue, T>(this);
+            }
+
             if (Type == RealmValueType.Int)
             {
                 return Operator.Convert<long, T>(AsInt64());
@@ -656,6 +673,32 @@ namespace Realms
         }
 
         /// <summary>
+        /// Gets the name of the type of the object contained in <see cref="RealmValue"/>.
+        /// If it does not contain an object, it will return null.
+        /// </summary>
+        /// <returns>
+        /// The name of the type stored in <see cref="RealmValue"/> if an object, null otherwise.
+        /// </returns>
+        public string ObjectType
+        {
+            get
+            {
+                if (Type != RealmValueType.Object)
+                {
+                    return null;
+                }
+
+                var obj = AsRealmObject();
+                if (obj.IsManaged)
+                {
+                    return obj.ObjectSchema.Name;
+                }
+
+                return obj.GetType().Name;
+            }
+        }
+
+        /// <summary>
         /// Returns the string representation of this <see cref="RealmValue"/>.
         /// </summary>
         /// <returns>A string describing the value.</returns>
@@ -685,7 +728,7 @@ namespace Realms
                     RealmValueType.Int => AsInt64().GetHashCode(),
                     RealmValueType.Bool => AsBool().GetHashCode(),
                     RealmValueType.String => AsString().GetHashCode(),
-                    RealmValueType.Data => AsData().GetHashCode(),
+                    RealmValueType.Data => AsData().Length,
                     RealmValueType.Date => AsDate().GetHashCode(),
                     RealmValueType.Float => AsFloat().GetHashCode(),
                     RealmValueType.Double => AsDouble().GetHashCode(),
@@ -800,31 +843,31 @@ namespace Realms
 
         public static implicit operator RealmValue(Guid val) => Guid(val);
 
-        public static implicit operator RealmValue(char? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(char? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(byte? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(byte? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(short? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(short? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(int? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(int? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(long? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(long? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(float? val) => val == null ? Null() : Float(val.Value);
+        public static implicit operator RealmValue(float? val) => val == null ? Null : Float(val.Value);
 
-        public static implicit operator RealmValue(double? val) => val == null ? Null() : Double(val.Value);
+        public static implicit operator RealmValue(double? val) => val == null ? Null : Double(val.Value);
 
-        public static implicit operator RealmValue(bool? val) => val == null ? Null() : Bool(val.Value);
+        public static implicit operator RealmValue(bool? val) => val == null ? Null : Bool(val.Value);
 
-        public static implicit operator RealmValue(DateTimeOffset? val) => val == null ? Null() : Date(val.Value);
+        public static implicit operator RealmValue(DateTimeOffset? val) => val == null ? Null : Date(val.Value);
 
-        public static implicit operator RealmValue(decimal? val) => val == null ? Null() : Decimal(val.Value);
+        public static implicit operator RealmValue(decimal? val) => val == null ? Null : Decimal(val.Value);
 
-        public static implicit operator RealmValue(Decimal128? val) => val == null ? Null() : Decimal(val.Value);
+        public static implicit operator RealmValue(Decimal128? val) => val == null ? Null : Decimal(val.Value);
 
-        public static implicit operator RealmValue(ObjectId? val) => val == null ? Null() : ObjectId(val.Value);
+        public static implicit operator RealmValue(ObjectId? val) => val == null ? Null : ObjectId(val.Value);
 
-        public static implicit operator RealmValue(Guid? val) => val == null ? Null() : Guid(val.Value);
+        public static implicit operator RealmValue(Guid? val) => val == null ? Null : Guid(val.Value);
 
         public static implicit operator RealmValue(RealmInteger<byte> val) => Int(val);
 
@@ -834,13 +877,13 @@ namespace Realms
 
         public static implicit operator RealmValue(RealmInteger<long> val) => Int(val);
 
-        public static implicit operator RealmValue(RealmInteger<byte>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<byte>? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(RealmInteger<short>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<short>? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(RealmInteger<int>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<int>? val) => val == null ? Null : Int(val.Value);
 
-        public static implicit operator RealmValue(RealmInteger<long>? val) => val == null ? Null() : Int(val.Value);
+        public static implicit operator RealmValue(RealmInteger<long>? val) => val == null ? Null : Int(val.Value);
 
         public static implicit operator RealmValue(byte[] val) => Data(val);
 
@@ -852,7 +895,7 @@ namespace Realms
         {
             if (Type != type)
             {
-                throw new InvalidOperationException($"Can't cast to {target} since the underlying value is {Type}");
+                throw new InvalidCastException($"Can't cast to {target} since the underlying value is {Type}");
             }
         }
 
@@ -894,13 +937,15 @@ namespace Realms
                 RealmValueType.Int => AsInt64() == other.AsInt64(),
                 RealmValueType.Bool => AsBool() == other.AsBool(),
                 RealmValueType.String => AsString() == other.AsString(),
-                RealmValueType.Data => AsData() == other.AsData(),
+                RealmValueType.Data => AsData().SequenceEqual(other.AsData()),
                 RealmValueType.Date => AsDate() == other.AsDate(),
                 RealmValueType.Float => AsFloat() == other.AsFloat(),
                 RealmValueType.Double => AsDouble() == other.AsDouble(),
                 RealmValueType.Decimal128 => AsDecimal128() == other.AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
+                RealmValueType.Guid => AsGuid() == other.AsGuid(),
                 RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
+                RealmValueType.Null => true,
                 _ => false,
             };
         }

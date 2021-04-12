@@ -106,6 +106,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_realm_value_type_equal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void realm_value_type_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, RealmValueType realm_value_type, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_realm_value_type_not_equal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void realm_value_type_not_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, RealmValueType realm_value_type, out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -247,6 +253,18 @@ namespace Realms
         public void NullNotEqual(SharedRealmHandle realm, IntPtr propertyIndex)
         {
             NativeMethods.null_not_equal(this, realm, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void RealmValueTypeEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
+        {
+            NativeMethods.realm_value_type_equal(this, realm, propertyIndex, type, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void RealmValueTypeNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
+        {
+            NativeMethods.realm_value_type_not_equal(this, realm, propertyIndex, type, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

@@ -145,7 +145,7 @@ namespace Realms
 
         public bool TryGetValue(string key, out TValue value)
         {
-            if (key != null && _dictionaryHandle.TryGet(key, Metadata, Realm, out var realmValue))
+            if (key != null && _dictionaryHandle.TryGet(key, Realm, out var realmValue))
             {
                 value = realmValue.As<TValue>();
                 return true;
@@ -224,7 +224,7 @@ namespace Realms
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
 
-        protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Metadata, Realm);
+        protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
         void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
         {

@@ -110,7 +110,9 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             if (level < (_logLevel ?? LogLevel))
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 return;
             }

@@ -93,6 +93,8 @@ namespace Realms.Tests
         public RealmInteger<int> Int32CounterProperty { get; set; }
 
         public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        public RealmValue RealmValueProperty { get; set; }
     }
 
     public class DecimalsObject : RealmObject
@@ -175,6 +177,8 @@ namespace Realms.Tests
         public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
 
         public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
+
+        public IList<RealmValue> RealmValueList { get; }
     }
 
     public class CollectionsObject : RealmObject
@@ -255,6 +259,8 @@ namespace Realms.Tests
 
         public ISet<IntPropertyObject> ObjectSet { get; }
 
+        public ISet<RealmValue> RealmValueSet { get; }
+
         public IList<char> CharList { get; }
 
         public IList<byte> ByteList { get; }
@@ -331,6 +337,8 @@ namespace Realms.Tests
 
         public IList<IntPropertyObject> ObjectList { get; }
 
+        public IList<RealmValue> RealmValueList { get; }
+
         public IDictionary<string, char> CharDict { get; }
 
         public IDictionary<string, byte> ByteDict { get; }
@@ -406,6 +414,8 @@ namespace Realms.Tests
         public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDict { get; }
 
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
+
+        public IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
     // This is a stripped-down version of SetsObject because Sync doesn't support float
@@ -446,6 +456,8 @@ namespace Realms.Tests
 
         public ISet<IntPropertyObject> ObjectSet { get; }
 
+        public ISet<RealmValue> RealmValueSet { get; }
+
         public IDictionary<string, char> CharDict { get; }
 
         public IDictionary<string, byte> ByteDict { get; }
@@ -477,6 +489,47 @@ namespace Realms.Tests
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+
+        public IDictionary<string, RealmValue> RealmValueDict { get; }
+    }
+
+    // This is a stripped-down version of SetsObject because Sync doesn't support float
+    // or collections of nullable primitives
+    public class SyncAllTypesObject : RealmObject
+    {
+        [MapTo("_id")]
+        [PrimaryKey]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public char CharProperty { get; set; }
+
+        public byte ByteProperty { get; set; }
+
+        public short Int16Property { get; set; }
+
+        public int Int32Property { get; set; }
+
+        public long Int64Property { get; set; }
+
+        public double DoubleProperty { get; set; }
+
+        public bool BooleanProperty { get; set; }
+
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
+        public ObjectId ObjectIdProperty { get; set; }
+
+        public Guid GuidProperty { get; set; }
+
+        public string StringProperty { get; set; }
+
+        public byte[] ByteArrayProperty { get; set; }
+
+        public RealmValue RealmValueProperty { get; set; }
     }
 
     public class DictionariesObject : RealmObject
@@ -560,6 +613,9 @@ namespace Realms.Tests
         public IDictionary<string, IntPropertyObject> ObjectDictionary { get; }
 
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+
+        public IDictionary<string, RealmValue> RealmValueDictionary { get; }
+
     }
 
     public class CounterObject : RealmObject

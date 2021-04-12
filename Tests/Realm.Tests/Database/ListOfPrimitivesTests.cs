@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -29,8 +30,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class ListOfPrimitivesTests : RealmInstanceTest
     {
-        private static readonly Random _random = new Random();
-
         #region TestCaseSources
 
         private static readonly IEnumerable<bool?[]> _booleanValues = new[]
@@ -377,6 +376,23 @@ namespace Realms.Tests.Database
             yield return new object[] { new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null } };
         }
 
+        public static IEnumerable<object> RealmValueTestValues()
+        {
+            yield return new RealmValue[] {
+                RealmValue.Null,
+                RealmValue.Create(10, RealmValueType.Int),
+                RealmValue.Create(true, RealmValueType.Bool),
+                RealmValue.Create("abc", RealmValueType.String),
+                RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
+                RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
+                RealmValue.Create(1.5f, RealmValueType.Float),
+                RealmValue.Create(2.5d, RealmValueType.Double),
+                RealmValue.Create(5m, RealmValueType.Decimal128),
+                RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
+                RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
+                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object) };
+        }
+
         #endregion TestCaseSources
 
         #region Managed Tests
@@ -585,6 +601,12 @@ namespace Realms.Tests.Database
             RunManagedTests(obj => obj.ByteArrayList, values);
         }
 
+        [TestCaseSource(nameof(RealmValueTestValues))]
+        public void Test_ManagedRealmValueList(RealmValue[] values)
+        {
+            RunManagedTests(obj => obj.RealmValueList, values);
+        }
+
         [TestCase]
         public void RequiredStringList_CanAddEmptyString()
         {
@@ -628,216 +650,6 @@ namespace Realms.Tests.Database
             obj.Strings.Add("strings.NonEmpty");
             var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(obj)));
             Assert.That(ex.Message, Does.Contain("Attempted to add null to a list of required values"));
-        }
-
-        private void RunManagedTests<T>(Func<ListsObject, IList<T>> itemsGetter, T[] toAdd)
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var listObject = new ListsObject();
-                _realm.Write(() => _realm.Add(listObject));
-                var items = itemsGetter(listObject);
-                await RunManagedTestsCore(items, toAdd);
-            }, timeout: 100000);
-        }
-
-        private async Task RunManagedTestsCore<T>(IList<T> items, T[] toAdd)
-        {
-            var realm = (items as RealmList<T>).Realm;
-
-            if (toAdd == null)
-            {
-                toAdd = Array.Empty<T>();
-            }
-
-            var notifications = new List<ChangeSet>();
-            using var token = items.SubscribeForNotifications((sender, changes, error) =>
-            {
-                if (changes != null)
-                {
-                    notifications.Add(changes);
-                }
-            });
-
-            // Test add
-            realm.Write(() =>
-            {
-                foreach (var item in toAdd)
-                {
-                    items.Add(item);
-                }
-            });
-
-            // Test notifications
-            if (toAdd.Any())
-            {
-                VerifyNotifications(realm, notifications, () =>
-                {
-                    Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, toAdd.Length)));
-                });
-            }
-
-            // Test iterating
-            var iterator = 0;
-            foreach (var item in items)
-            {
-                Assert.That(item, Is.EqualTo(toAdd[iterator++]));
-            }
-
-            // Test access by index
-            for (var i = 0; i < items.Count; i++)
-            {
-                Assert.That(items[i], Is.EqualTo(toAdd[i]));
-            }
-
-            Assert.That(() => items[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
-            Assert.That(() => items[items.Count], Throws.TypeOf<ArgumentOutOfRangeException>());
-
-            // Test indexOf
-            foreach (var item in toAdd)
-            {
-                Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
-            }
-
-            // Test threadsafe reference
-            var reference = ThreadSafeReference.Create(items);
-            await Task.Run(() =>
-            {
-                using var bgRealm = GetRealm(realm.Config);
-                var backgroundList = bgRealm.ResolveReference(reference);
-                for (var i = 0; i < backgroundList.Count; i++)
-                {
-                    Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
-                }
-            });
-
-            if (toAdd.Any())
-            {
-                // Test insert
-                var toInsert = toAdd[_random.Next(0, toAdd.Length)];
-                realm.Write(() =>
-                {
-                    items.Insert(0, toInsert);
-                    items.Insert(items.Count, toInsert);
-
-                    Assert.That(() => items.Insert(-1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    Assert.That(() => items.Insert(items.Count + 1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
-                });
-
-                Assert.That(items.First(), Is.EqualTo(toInsert));
-                Assert.That(items.Last(), Is.EqualTo(toInsert));
-
-                // Test notifications
-                VerifyNotifications(realm, notifications, () =>
-                {
-                    Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(new[] { 0, items.Count - 1 }));
-                });
-
-                // Test remove
-                realm.Write(() =>
-                {
-                    items.Remove(toInsert);
-                    items.RemoveAt(items.Count - 1);
-
-                    Assert.That(() => items.RemoveAt(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    Assert.That(() => items.RemoveAt(items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                });
-
-                CollectionAssert.AreEqual(items, toAdd);
-
-                // Test notifications
-                VerifyNotifications(realm, notifications, () =>
-                {
-                    Assert.That(notifications[0].DeletedIndices, Is.EquivalentTo(new[] { 0, items.Count + 1 }));
-                });
-
-                // Test set
-                var indexToSet = TestHelpers.Random.Next(0, items.Count);
-                var previousValue = items[indexToSet];
-                var valueToSet = toAdd[TestHelpers.Random.Next(0, toAdd.Length)];
-                realm.Write(() =>
-                {
-                    items[indexToSet] = valueToSet;
-
-                    Assert.That(() => items[-1] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
-                    Assert.That(() => items[items.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
-                });
-
-                VerifyNotifications(realm, notifications, () =>
-                {
-                    Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
-                });
-
-                realm.Write(() => items[indexToSet] = previousValue);
-
-                VerifyNotifications(realm, notifications, () =>
-                {
-                    Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
-                });
-
-                // Test move
-                var from = TestHelpers.Random.Next(0, items.Count);
-                var to = TestHelpers.Random.Next(0, items.Count);
-
-                realm.Write(() =>
-                {
-                    items.Move(from, to);
-
-                    Assert.That(() => items.Move(-1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    Assert.That(() => items.Move(from, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    Assert.That(() => items.Move(items.Count + 1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    Assert.That(() => items.Move(from, items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                });
-
-                Assert.That(items[to], Is.EqualTo(toAdd[from]));
-
-                // Test notifications
-                if (from != to)
-                {
-                    VerifyNotifications(realm, notifications, () =>
-                    {
-                        Assert.That(notifications[0].Moves.Length, Is.EqualTo(1));
-                        var move = notifications[0].Moves[0];
-
-                        // Moves may be reported with swapped from/to arguments if the elements are adjacent
-                        if (move.From == to)
-                        {
-                            Assert.That(move.From, Is.EqualTo(to));
-                            Assert.That(move.To, Is.EqualTo(from));
-                        }
-                        else
-                        {
-                            Assert.That(move.From, Is.EqualTo(from));
-                            Assert.That(move.To, Is.EqualTo(to));
-                        }
-                    });
-                }
-            }
-
-            // Test Clear
-            realm.Write(() =>
-            {
-                items.Clear();
-            });
-
-            Assert.That(items, Is.Empty);
-
-            // Test notifications
-            if (toAdd.Any())
-            {
-                VerifyNotifications(realm, notifications, () =>
-                {
-                    // TODO: verify notifications contains the expected Deletions collection
-                });
-            }
-        }
-
-        private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
-        {
-            realm.Refresh();
-            Assert.That(notifications.Count, Is.EqualTo(1));
-            verifier();
-            notifications.Clear();
         }
 
         #endregion Managed Tests
@@ -1048,30 +860,448 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.ByteArrayList, values);
         }
 
-        private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> accessor, T[] toAdd)
+        [TestCaseSource(nameof(RealmValueTestValues))]
+        public void Test_UnmanagedRealmValueList(RealmValue[] values)
         {
-            if (toAdd == null)
-            {
-                toAdd = Array.Empty<T>();
-            }
-
-            var listsObject = new ListsObject();
-            var list = accessor(listsObject);
-
-            foreach (var item in toAdd)
-            {
-                list.Add(item);
-            }
-
-            CollectionAssert.AreEqual(list, toAdd);
-
-            _realm.Write(() => _realm.Add(listsObject));
-
-            var managedList = accessor(listsObject);
-
-            CollectionAssert.AreEqual(managedList, toAdd);
+            RunUnmanagedTests(obj => obj.RealmValueList, values);
         }
 
         #endregion Unmanaged Tests
+
+        #region Utils
+
+        private void RunManagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var listObject = new ListsObject();
+                var list = listGetter(listObject);
+
+                var testData = new ListTestCaseData<T>(testList);
+                testData.Seed(list);
+
+                _realm.Write(() => _realm.Add(listObject));
+
+                var managedList = listGetter(listObject);
+
+                Assert.That(list, Is.Not.SameAs(managedList));
+
+                RunTestsCore(testData, managedList);
+
+                await testData.AssertThreadSafeReference(managedList);
+                testData.AssertNotifications(managedList);
+            }, timeout: 100000);
+        }
+
+        private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
+        {
+            var listObject = new ListsObject();
+            var list = listGetter(listObject);
+
+            var testData = new ListTestCaseData<T>(testList);
+            testData.Seed(list);
+
+            RunTestsCore(testData, list);
+        }
+
+        private void RunTestsCore<T>(ListTestCaseData<T> testData, IList<T> list)
+        {
+            testData.AssertEquality(list);
+            testData.AssertCount(list);
+            testData.AssertAccessByIndex(list);
+            testData.AssertAccessByIterator(list);
+            testData.AssertContains(list);
+            testData.AssertIndexOf(list);
+
+            testData.AssertInsert(list);
+            testData.AssertMove(list);
+            testData.AssertSet(list);
+            testData.AssertRemove(list);
+            testData.AssertRemoveAt(list);
+            testData.AssertClear(list);
+        }
+
+        public class ListTestCaseData<T> : TestCaseData
+        {
+            private List<T> referenceList = new List<T>();
+
+            public ListTestCaseData(params T[] listData)
+            {
+                if (listData == null)
+                {
+                    listData = Array.Empty<T>();
+                }
+
+                referenceList.AddRange(listData);
+            }
+
+            public void Seed(IList<T> list)
+            {
+                WriteIfNecessary(list, () =>
+                {
+                    list.Clear();
+
+                    for (int i = 0; i < referenceList.Count; i++)
+                    {
+                        list.Add(referenceList[i]);
+                    }
+                });
+            }
+
+            public void AssertAccessByIterator(IList<T> list)
+            {
+                var iterator = 0;
+                foreach (var item in list)
+                {
+                    Assert.That(item, Is.EqualTo(referenceList[iterator++]));
+                }
+            }
+
+            public void AssertAccessByIndex(IList<T> list)
+            {
+                for (int i = 0; i < referenceList.Count; i++)
+                {
+                    Assert.That(list[i], Is.EqualTo(referenceList[i]));
+                }
+
+                Assert.That(() => list[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+                Assert.That(() => list[list.Count], Throws.TypeOf<ArgumentOutOfRangeException>());
+            }
+
+            public void AssertEquality(IList<T> list)
+            {
+                Assert.That(list, Is.EquivalentTo(referenceList));
+            }
+
+            public void AssertIndexOf(IList<T> list)
+            {
+                foreach (var val in referenceList)
+                {
+                    Assert.That(list.IndexOf(val), Is.EqualTo(referenceList.IndexOf(val)));
+                }
+            }
+
+            public void AssertContains(IList<T> list)
+            {
+                for (int i = 0; i < referenceList.Count; i++)
+                {
+                    var rv = referenceList[i];
+                    Assert.That(list.Contains(rv), Is.True);
+                }
+            }
+
+            public void AssertCount(IList<T> list)
+            {
+                Assert.That(list.Count, Is.EqualTo(referenceList.Count));
+            }
+
+            public void AssertInsert(IList<T> list)
+            {
+                if (!referenceList.Any())
+                {
+                    return;
+                }
+
+                Seed(list);
+
+                var toInsert = referenceList[TestHelpers.Random.Next(0, referenceList.Count)];
+
+                WriteIfNecessary(list, () =>
+                {
+                    list.Insert(0, toInsert);
+                    list.Insert(list.Count, toInsert);
+
+                    Assert.That(() => list.Insert(-1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list.Insert(list.Count + 1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                Assert.That(list.First(), Is.EqualTo(toInsert));
+                Assert.That(list.Last(), Is.EqualTo(toInsert));
+            }
+
+            public void AssertClear(IList<T> list)
+            {
+                WriteIfNecessary(list, () =>
+                {
+                    list.Clear();
+                });
+
+                Assert.That(list.Count, Is.EqualTo(0));
+            }
+
+            public void AssertSet(IList<T> list)
+            {
+                if (!referenceList.Any())
+                {
+                    return;
+                }
+
+                Seed(list);
+
+                var indexToSet = TestHelpers.Random.Next(0, referenceList.Count);
+                var valueToSet = referenceList[TestHelpers.Random.Next(0, referenceList.Count)];
+
+                WriteIfNecessary(list, () =>
+                {
+                    list[indexToSet] = valueToSet;
+
+                    Assert.That(list[indexToSet], Is.EqualTo(valueToSet));
+                    Assert.That(() => list[-1] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list[list.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+            }
+
+            public void AssertMove(IList<T> list)
+            {
+                if (!referenceList.Any())
+                {
+                    return;
+                }
+
+                Seed(list);
+
+                var from = TestHelpers.Random.Next(0, list.Count);
+                var to = TestHelpers.Random.Next(0, list.Count);
+
+                WriteIfNecessary(list, () =>
+                {
+                    list.Move(from, to);
+
+                    Assert.That(() => list.Move(-1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list.Move(from, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list.Move(list.Count + 1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list.Move(from, list.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                Assert.That(list[to], Is.EqualTo(referenceList[from]));
+            }
+
+            public void AssertRemove(IList<T> list)
+            {
+                if (!referenceList.Any())
+                {
+                    return;
+                }
+
+                Seed(list);
+
+                var copyReferenceList = referenceList.ToList();
+                var toRemove = copyReferenceList[TestHelpers.Random.Next(copyReferenceList.Count)];
+
+                copyReferenceList.Remove(toRemove);
+
+                WriteIfNecessary(list, () =>
+                {
+                    list.Remove(toRemove);
+
+                    Assert.That(() => list.RemoveAt(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list.RemoveAt(list.Count), Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                Assert.That(list, Is.EquivalentTo(copyReferenceList));
+            }
+
+            public void AssertRemoveAt(IList<T> list)
+            {
+                if (!referenceList.Any())
+                {
+                    return;
+                }
+
+                Seed(list);
+
+                var copyReferenceList = referenceList.ToList();
+                var toRemoveIndex = TestHelpers.Random.Next(copyReferenceList.Count);
+
+                copyReferenceList.RemoveAt(toRemoveIndex);
+
+                WriteIfNecessary(list, () =>
+                {
+                    list.RemoveAt(toRemoveIndex);
+
+                    Assert.That(() => list.RemoveAt(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => list.RemoveAt(list.Count), Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                Assert.That(list, Is.EquivalentTo(copyReferenceList));
+            }
+
+            public async Task AssertThreadSafeReference(IList<T> list)
+            {
+                Assert.That(list, Is.TypeOf<RealmList<T>>());
+
+                var tsr = ThreadSafeReference.Create(list);
+                var originalThreadId = Environment.CurrentManagedThreadId;
+
+                await Task.Run(() =>
+                {
+                    Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
+
+                    using (var bgRealm = Realm.GetInstance(list.AsRealmCollection().Realm.Config))
+                    {
+                        var backgroundList = bgRealm.ResolveReference(tsr);
+
+                        for (var i = 0; i < backgroundList.Count; i++)
+                        {
+                            Assert.That(backgroundList[i], Is.EqualTo(referenceList[i]));
+                        }
+                    }
+                });
+            }
+
+            public void AssertNotifications(IList<T> list)
+            {
+                if (!referenceList.Any())
+                {
+                    return;
+                }
+
+                Assert.That(list, Is.TypeOf<RealmList<T>>());
+
+                var realm = list.AsRealmCollection().Realm;
+
+                var changeSetList = new List<ChangeSet>();
+                using var token = list.SubscribeForNotifications((collection, changes, error) =>
+                {
+                    Assert.That(error, Is.Null);
+
+                    if (changes != null)
+                    {
+                        changeSetList.Add(changes);
+                    }
+                });
+
+                // Add
+                Seed(list);
+
+                VerifyNotifications(realm, changeSetList, () =>
+                {
+                    Assert.That(changeSetList[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, referenceList.Count)));
+                });
+
+                // Insert
+                var toInsert = referenceList[TestHelpers.Random.Next(0, referenceList.Count)];
+
+                WriteIfNecessary(list, () =>
+                {
+                    list.Insert(0, toInsert);
+                    list.Insert(list.Count, toInsert);
+                });
+
+                VerifyNotifications(realm, changeSetList, () =>
+                {
+                    Assert.That(changeSetList[0].InsertedIndices, Is.EquivalentTo(new[] { 0, list.Count - 1 }));
+                });
+
+                // Remove
+                realm.Write(() =>
+                {
+                    list.Remove(toInsert);
+                    list.RemoveAt(list.Count - 1);
+                });
+
+                VerifyNotifications(realm, changeSetList, () =>
+                {
+                    Assert.That(changeSetList[0].DeletedIndices, Is.EquivalentTo(new[] { 0, list.Count + 1 }));
+                });
+
+                // Set
+                var indexToSet = TestHelpers.Random.Next(0, referenceList.Count);
+                var previousValue = list[indexToSet];
+                var valueToSet = referenceList[TestHelpers.Random.Next(0, referenceList.Count)];
+
+                WriteIfNecessary(list, () =>
+                {
+                    list[indexToSet] = valueToSet;
+                });
+
+                VerifyNotifications(realm, changeSetList, () =>
+                {
+                    Assert.That(changeSetList[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
+                });
+
+                WriteIfNecessary(list, () =>
+                {
+                    list[indexToSet] = previousValue;
+                });
+
+                VerifyNotifications(realm, changeSetList, () =>
+                {
+                    Assert.That(changeSetList[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
+                });
+
+                // Move
+                var from = TestHelpers.Random.Next(0, list.Count);
+                var to = TestHelpers.Random.Next(0, list.Count);
+
+                realm.Write(() =>
+                {
+                    list.Move(from, to);
+                });
+
+                if (from != to)
+                {
+                    VerifyNotifications(realm, changeSetList, () =>
+                    {
+                        Assert.That(changeSetList[0].Moves.Length, Is.EqualTo(1));
+                        var move = changeSetList[0].Moves[0];
+
+                        // Moves may be reported with swapped from/to arguments if the elements are adjacent
+                        if (move.From == to)
+                        {
+                            Assert.That(move.From, Is.EqualTo(to));
+                            Assert.That(move.To, Is.EqualTo(from));
+                        }
+                        else
+                        {
+                            Assert.That(move.From, Is.EqualTo(from));
+                            Assert.That(move.To, Is.EqualTo(to));
+                        }
+                    });
+                }
+
+                // Clear
+                realm.Write(() =>
+                {
+                    list.Clear();
+                });
+
+                VerifyNotifications(realm, changeSetList, () =>
+                {
+                    Assert.That(changeSetList[0].DeletedIndices, Is.EquivalentTo(Enumerable.Range(0, referenceList.Count)));
+                });
+            }
+
+            private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
+            {
+                realm.Refresh();
+                Assert.That(notifications.Count, Is.EqualTo(1));
+                verifier();
+                notifications.Clear();
+            }
+
+            private static void WriteIfNecessary(IEnumerable<T> collection, Action writeAction)
+            {
+                Transaction transaction = null;
+                try
+                {
+                    if (collection is RealmCollectionBase<T> realmCollection)
+                    {
+                        transaction = realmCollection.Realm.BeginWrite();
+                    }
+
+                    writeAction();
+
+                    transaction?.Commit();
+                }
+                catch
+                {
+                    transaction?.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        #endregion
     }
 }

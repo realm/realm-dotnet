@@ -1162,6 +1162,92 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        #region RealmValue
+
+        public static IEnumerable<TestCaseData<RealmValue>> RealmTestValues()
+        {
+            var rv0 = RealmValue.Null;
+            var rv1 = RealmValue.Create(10, RealmValueType.Int);
+            var rv2 = RealmValue.Create(true, RealmValueType.Bool);
+            var rv3 = RealmValue.Create("abc", RealmValueType.String);
+            var rv4 = RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data);
+            var rv5 = RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date);
+            var rv6 = RealmValue.Create(1.5f, RealmValueType.Float);
+            var rv7 = RealmValue.Create(2.5d, RealmValueType.Double);
+            var rv8 = RealmValue.Create(5m, RealmValueType.Decimal128);
+            var rv9 = RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId);
+            var rv10 = RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid);
+            var rv11 = GetRealmValueObject();
+
+            yield return new TestCaseData<RealmValue>(new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 }, new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
+
+            rv11 = GetRealmValueObject();
+
+            yield return new TestCaseData<RealmValue>(new[] { rv0, rv1, rv2, rv3, rv4, rv5 }, new[] { rv6, rv7, rv8, rv9, rv10, rv11 });
+
+            rv11 = GetRealmValueObject();
+
+            yield return new TestCaseData<RealmValue>( Array.Empty<RealmValue>(), new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
+
+            static RealmValue GetRealmValueObject() => RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object);
+
+            var i1 = RealmValue.Create(1, RealmValueType.Int);
+            var i2 = RealmValue.Create(1d, RealmValueType.Double);
+            var i3 = RealmValue.Create(1f, RealmValueType.Float);
+            var i4 = RealmValue.Create(true, RealmValueType.Bool);
+            var i5 = RealmValue.Create(1m, RealmValueType.Decimal128);
+
+            yield return new TestCaseData<RealmValue>(new[] { i1, i2, i3, i4, i5 }, new[] { i1, i2, i3, i4, i5 });
+
+            var s1 = RealmValue.Create(string.Empty, RealmValueType.String);
+            var s2 = RealmValue.Create(0, RealmValueType.Int);
+            var s3 = RealmValue.Create(Guid.Empty, RealmValueType.Guid);
+            var s4 = RealmValue.Null;
+
+            yield return new TestCaseData<RealmValue>(new[] { s1, s2, s3, s4 }, new[] { s1, s2, s3, s4 });
+
+            var d1 = RealmValue.Create(1m, RealmValueType.Decimal128);
+            var d2 = RealmValue.Create(1f, RealmValueType.Decimal128);
+            var d3 = RealmValue.Create(1d, RealmValueType.Decimal128);
+            var d4 = RealmValue.Create(1, RealmValueType.Decimal128);
+
+            yield return new TestCaseData<RealmValue>(new[] { d1, d2, d3, d4 }, new[] { d1, d2, d3, d4 });
+        }
+
+        [TestCaseSource(nameof(RealmTestValues))]
+        public void RealmSet_WhenUnmanaged_RealmValue(TestCaseData<RealmValue> testData)
+        {
+            RunUnmanagedTests(o => o.RealmValueSet, testData);
+        }
+
+        [TestCaseSource(nameof(RealmTestValues))]
+        public void RealmSet_WhenManaged_RealmValue(TestCaseData<RealmValue> testData)
+        {
+            RunManagedTests(o => o.RealmValueSet, o => o.RealmValueList, o => o.RealmValueDict, testData);
+        }
+
+        [Test]
+        public void RealmSet_WhenManaged_RealmValue_Notifications()
+        {
+            var testData = new TestCaseData<RealmValue>(new RealmValue[] {
+                RealmValue.Null,
+                RealmValue.Create(10, RealmValueType.Int),
+                RealmValue.Create(true, RealmValueType.Bool),
+                RealmValue.Create("abc", RealmValueType.String),
+                RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
+                RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
+                RealmValue.Create(1.5f, RealmValueType.Float),
+                RealmValue.Create(2.5d, RealmValueType.Double),
+                RealmValue.Create(5m, RealmValueType.Decimal128),
+                RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
+                RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
+                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object) });
+
+            RunManagedNotificationsTests(o => o.RealmValueSet, testData, newValue: "newValue");
+        }
+
+        #endregion
+
         private static void RunUnmanagedTests<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData)
         {
             var testObject = new CollectionsObject();

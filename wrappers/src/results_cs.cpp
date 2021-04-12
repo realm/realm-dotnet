@@ -61,7 +61,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
 
         if ((results.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             if (auto obj = results.get<Obj>(ndx)) {
-                *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), obj));
+                *value = to_capi(obj, results.get_realm());
             }
             else {
                 *value = realm_value_t{};
@@ -70,7 +70,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
         else {
             auto val = results.get_any(ndx);
             if (!val.is_null() && val.get_type() == type_TypedLink) {
-                *value = to_capi(new Object(results.get_realm(), val.get<ObjLink>()));
+                *value = to_capi(val.get<ObjLink>(), results.get_realm());
             }
             else {
                 *value = to_capi(std::move(val));
@@ -175,13 +175,17 @@ REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::
     });
 }
 
-REALM_EXPORT size_t results_find_object(Results& results, const Object& object, NativeException::Marshallable& ex)
+REALM_EXPORT size_t results_find_value(Results& results, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        if (results.get_realm() != object.realm()) {
-            throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+        if (value.type == realm_value_type::RLM_TYPE_LINK) {
+            if (results.get_realm() != value.link.object->realm()) {
+                throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+            }
+            return results.index_of(value.link.object->obj());
         }
-        return results.index_of(object.obj());
+
+        return results.index_of(from_capi(value));
     });
 }
 

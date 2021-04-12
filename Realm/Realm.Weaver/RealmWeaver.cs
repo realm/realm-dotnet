@@ -49,6 +49,7 @@ namespace RealmWeaver
         internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
         internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
         internal const string GuidTypeName = "System.Guid";
+        internal const string RealmValueTypeName = "Realms.RealmValue";
         internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
         internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
         internal const string NullableInt16TypeName = "System.Nullable`1<System.Int16>";
@@ -63,7 +64,7 @@ namespace RealmWeaver
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
         internal const string NullableGuidTypeName = "System.Nullable`1<System.Guid>";
 
-        private static readonly HashSet<string> _primitiveValueTypes = new HashSet<string>
+        private static readonly HashSet<string> _realmValueTypes = new HashSet<string>
         {
             CharTypeName,
             SingleTypeName,
@@ -72,8 +73,8 @@ namespace RealmWeaver
             DecimalTypeName,
             Decimal128TypeName,
             ObjectIdTypeName,
-            GuidTypeName,
             DateTimeOffsetTypeName,
+            GuidTypeName,
             NullableCharTypeName,
             NullableSingleTypeName,
             NullableDoubleTypeName,
@@ -100,7 +101,8 @@ namespace RealmWeaver
             $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
             $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
             ByteArrayTypeName,
-            StringTypeName
+            StringTypeName,
+            RealmValueTypeName,
         };
 
         private static readonly IEnumerable<string> _primaryKeyTypes = new[]
@@ -372,7 +374,7 @@ Analytics payload
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
             }
 
-            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName))
+            if (_realmValueTypes.Contains(prop.PropertyType.FullName))
             {
                 if (prop.SetMethod == null)
                 {
@@ -389,7 +391,7 @@ Analytics payload
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
                 if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_primitiveValueTypes.Contains(elementType.FullName))
+                    !_realmValueTypes.Contains(elementType.FullName))
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                 }
@@ -540,13 +542,16 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
+            if (!prop.IsRealmValue())
             {
-                Parameters = { new ParameterDefinition(_references.RealmValue) },
-                HasThis = false
-            };
+                var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(_references.RealmValue) },
+                    HasThis = false
+                };
 
-            il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+                il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+            }
 
             // This only happens when we have a relationship - explicitly cast.
             if (convertType != prop.PropertyType)
@@ -718,19 +723,22 @@ Analytics payload
             il.Append(il.Create(OpCodes.Ldstr, columnName));
             il.Append(il.Create(OpCodes.Ldarg_1));
 
-            var convertType = prop.PropertyType;
-            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
+            if (!prop.IsRealmValue())
             {
-                convertType = _references.RealmObjectBase;
+                var convertType = prop.PropertyType;
+                if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
+                {
+                    convertType = _references.RealmObjectBase;
+                }
+
+                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(convertType) },
+                    HasThis = false
+                };
+
+                il.Append(il.Create(OpCodes.Call, convertMethod));
             }
-
-            var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
-            {
-                Parameters = { new ParameterDefinition(convertType) },
-                HasThis = false
-            };
-
-            il.Append(il.Create(OpCodes.Call, convertMethod));
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
             il.Append(il.Create(OpCodes.Ret));
@@ -762,7 +770,7 @@ Analytics payload
                     *foreach* non-list woven property in castInstance's schema
                     *if* castInstace.field is a RealmObject descendant
                         castInstance.Realm.Add(castInstance.field, update);
-                        castInstance.Field = castInstance.field;
+                        castInstance.Property = castInstance.Field;
                     *else if* property is PK
                         *do nothing*
                     *else if* property is [Required] or nullable
@@ -845,6 +853,7 @@ Analytics payload
                                               property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
                                               property.IsDecimal() ||
                                               property.IsDecimal128() ||
+                                              property.IsRealmValue() ||
                                               property.IsObjectId() ||
                                               property.IsGuid();
 

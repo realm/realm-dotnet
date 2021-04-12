@@ -76,6 +76,11 @@ namespace Realms.Schema
         LinkingObjects = 8,
 
         /// <summary>
+        /// A property that can contain RealmValue supported types.
+        /// </summary>
+        RealmValue = 9,
+
+        /// <summary>
         /// 96 bit ObjectID property.
         /// </summary>
         ObjectId = 10,

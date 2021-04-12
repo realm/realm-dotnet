@@ -19,7 +19,6 @@
 #ifndef SHARED_REALM_CS_HPP
 #define SHARED_REALM_CS_HPP
 
-#include "marshalling.hpp"
 #include "schema_cs.hpp"
 #include "sync_session_cs.hpp"
 
@@ -94,6 +93,10 @@ namespace binding {
         {
             return m_managed_state_handle;
         }
+
+        // TODO: this should go away once https://github.com/realm/realm-core/issues/4584 is resolved
+        Schema m_realm_schema;
+
     private:
         void* m_managed_state_handle;
 

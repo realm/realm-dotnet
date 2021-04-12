@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Native;
 
 namespace Realms
 {
@@ -54,21 +53,5 @@ namespace Realms
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
-
-        protected RealmValue ToRealmValue(PrimitiveValue primitive, RealmObjectBase.Metadata metadata, Realm realm)
-        {
-            if (primitive.Type != RealmValueType.Object)
-            {
-                return new RealmValue(primitive);
-            }
-
-            var objectHandle = primitive.AsObject(Root);
-            if (metadata == null)
-            {
-                throw new NotImplementedException("Mixed objects are not supported yet.");
-            }
-
-            return new RealmValue(realm.MakeObject(metadata, objectHandle));
-        }
     }
 }

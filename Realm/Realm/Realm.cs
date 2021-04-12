@@ -481,6 +481,12 @@ namespace Realms
             return ret;
         }
 
+        internal RealmMetadata MergeSchema(RealmSchema schema)
+        {
+            Metadata.Add(schema.Select(CreateRealmObjectMetadata));
+            return Metadata;
+        }
+
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>
@@ -1391,11 +1397,7 @@ namespace Realms
                 stringToRealmObjectMetadataDict = new Dictionary<string, RealmObjectBase.Metadata>();
                 tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, RealmObjectBase.Metadata>();
 
-                foreach (var objectMetadata in objectsMetadata)
-                {
-                    stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
-                    tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
-                }
+                Add(objectsMetadata);
             }
 
             public bool TryGetValue(string objectType, out RealmObjectBase.Metadata metadata) =>
@@ -1407,6 +1409,30 @@ namespace Realms
             public RealmObjectBase.Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
 
             public RealmObjectBase.Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
+
+            public void Add(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            {
+                foreach (var objectMetadata in objectsMetadata)
+                {
+                    if (stringToRealmObjectMetadataDict.ContainsKey(objectMetadata.Schema.Name))
+                    {
+                        Argument.AssertDebug($"Trying to add object schema to the string mapping that is already present: {objectMetadata.Schema.Name}");
+                    }
+                    else
+                    {
+                        stringToRealmObjectMetadataDict[objectMetadata.Schema.Name] = objectMetadata;
+                    }
+
+                    if (tableKeyToRealmObjectMetadataDict.ContainsKey(objectMetadata.TableKey))
+                    {
+                        Argument.AssertDebug($"Trying to add object schema to the table key mapping that is already present: {objectMetadata.Schema.Name} - {objectMetadata.TableKey}");
+                    }
+                    else
+                    {
+                        tableKeyToRealmObjectMetadataDict[objectMetadata.TableKey] = objectMetadata;
+                    }
+                }
+            }
         }
 
         internal class State : IDisposable

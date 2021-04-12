@@ -184,7 +184,7 @@ namespace Realms
             return new DictionaryHandle(frozenRealmHandle, result);
         }
 
-        public bool TryGet(string key, RealmObjectBase.Metadata metadata, Realm realm, out RealmValue value)
+        public bool TryGet(string key, Realm realm, out RealmValue value)
         {
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
@@ -198,30 +198,15 @@ namespace Realms
                 return false;
             }
 
-            if (result.Type != RealmValueType.Object)
-            {
-                value = new RealmValue(result);
-            }
-            else
-            {
-                var objectHandle = result.AsObject(Root);
-
-                if (metadata == null)
-                {
-                    throw new NotImplementedException("Mixed objects are not supported yet.");
-                }
-
-                value = new RealmValue(realm.MakeObject(metadata, objectHandle));
-            }
-
+            value = new RealmValue(result, realm);
             return true;
         }
 
-        public KeyValuePair<string, TValue> GetValueAtIndex<TValue>(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        public KeyValuePair<string, TValue> GetValueAtIndex<TValue>(int index, Realm realm)
         {
             NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var ex);
             ex.ThrowIfNecessary();
-            var value = ToRealmValue(primitiveValue, metadata, realm);
+            var value = new RealmValue(primitiveValue, realm);
             return new KeyValuePair<string, TValue>(key.AsString(), value.As<TValue>());
         }
 

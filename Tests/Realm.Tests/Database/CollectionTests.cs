@@ -502,7 +502,6 @@ namespace Realms.Tests.Database
             yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 88.8f, 88.8, true);
             yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 49f, 49, true);
             yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 106.0, 106m, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.BooleanProperty), true, 1, true);
             yield return new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 1m, 1f, true);
             yield return new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 5m, 5.0, true);
 
@@ -514,7 +513,6 @@ namespace Realms.Tests.Database
             yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 74L, 7435, false);
             yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 3.0f, 21.0, false);
             yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 4.0, 'c', false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.BooleanProperty), true, 298, false);
 
             // no implicit conversion no match
             yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 109.9, 109.9f, false);
@@ -530,6 +528,7 @@ namespace Realms.Tests.Database
             yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 5.0, "I'm getting angry");
             yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, "I give up");
             yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, "enough");
+            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 1);
             yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), 5);
             yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 7m, new byte[] { 0x1, 0x2, 0x3 });
             yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new byte[] { 0x3, 0x2, 0x1 });
@@ -667,7 +666,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Owner { TopDog = new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true } });
             });
 
-            Assert.Throws<RealmException>(() => _realm.All<Owner>().Filter("TopDog = $0", new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true }), "**put your message here!**");
+            Assert.Throws<RealmException>(() => _realm.All<Owner>().Filter("TopDog = $0", new Dog { Name = "Doge", Color = "almost yellow", Vaccinated = true }));
         }
 
         [Test]

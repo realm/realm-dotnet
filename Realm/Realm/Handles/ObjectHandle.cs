@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -89,6 +90,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ObjectHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_schema", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, out NativeException ex);
 
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE1006 // Naming Styles
@@ -163,14 +167,20 @@ namespace Realms
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            if (result.Type != RealmValueType.Object)
-            {
-                return new RealmValue(result, this, propertyIndex);
-            }
+            return new RealmValue(result, realm, this, propertyIndex);
+        }
 
-            var objectHandle = result.AsObject(Root);
-            metadata.Schema.TryFindProperty(propertyName, out var property);
-            return new RealmValue(realm.MakeObject(realm.Metadata[property.ObjectType], objectHandle));
+        public RealmSchema GetSchema()
+        {
+            RealmSchema result = null;
+            Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
+
+            // The callbackHandle will get freed in SharedRealmHandle.GetNativeSchema.
+            var callbackHandle = GCHandle.Alloc(callback);
+            NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
         }
 
         public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)
@@ -212,7 +222,9 @@ namespace Realms
         {
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
-            var currentValue = new RealmValue(result, this, propertyIndex);
+
+            // Objects can't be PKs, so realm: null is fine.
+            var currentValue = new RealmValue(result, realm: null, this, propertyIndex);
 
             if (!currentValue.Equals(value))
             {

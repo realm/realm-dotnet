@@ -254,7 +254,21 @@ namespace Realms.Native
             return bytes;
         }
 
-        public ObjectHandle AsObject(RealmHandle root) => new ObjectHandle(root, link_value.object_ptr);
+        public RealmObjectBase AsObject(Realm realm)
+        {
+            var handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
+
+            // If Metadata doesn't contain the schema for this object, it's likely because
+            // the value is Mixed and the object type was added by a newer version of the
+            // app via Sync. In this case, we need to look up the object schema from disk
+            if (!realm.Metadata.TryGetValue(link_value.table_key, out var objectMetadata))
+            {
+                var onDiskSchema = handle.GetSchema();
+                objectMetadata = realm.MergeSchema(onDiskSchema)[link_value.table_key];
+            }
+
+            return realm.MakeObject(objectMetadata, handle);
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct StringValue
@@ -274,6 +288,7 @@ namespace Realms.Native
         private struct LinkValue
         {
             public IntPtr object_ptr;
+            public TableKey table_key;
         }
 
         [StructLayout(LayoutKind.Sequential)]

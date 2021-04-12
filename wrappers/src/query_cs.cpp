@@ -34,6 +34,38 @@ inline ColKey get_key_for_prop(Query& query, SharedRealm& realm, size_t property
     return realm->schema().find(ObjectStore::object_type_for_table_name(query.get_table()->get_name()))->persisted_properties[property_index].column_key;
 }
 
+inline TypeOfValue::Attribute attribute_from(realm_value_type type)
+{
+    switch (type) {
+    case realm_value_type::RLM_TYPE_NULL:
+        return TypeOfValue::Attribute::Null;
+    case realm_value_type::RLM_TYPE_INT:
+        return TypeOfValue::Attribute::Int;
+    case realm_value_type::RLM_TYPE_BOOL:
+        return TypeOfValue::Attribute::Bool;
+    case realm_value_type::RLM_TYPE_STRING:
+        return TypeOfValue::Attribute::String;
+    case realm_value_type::RLM_TYPE_BINARY:
+        return TypeOfValue::Attribute::Binary;
+    case realm_value_type::RLM_TYPE_TIMESTAMP:
+        return TypeOfValue::Attribute::Timestamp;
+    case realm_value_type::RLM_TYPE_FLOAT:
+        return TypeOfValue::Attribute::Float;
+    case realm_value_type::RLM_TYPE_DOUBLE:
+        return TypeOfValue::Attribute::Double;
+    case realm_value_type::RLM_TYPE_DECIMAL128:
+        return TypeOfValue::Attribute::Decimal128;
+    case realm_value_type::RLM_TYPE_OBJECT_ID:
+        return TypeOfValue::Attribute::ObjectId;
+    case realm_value_type::RLM_TYPE_LINK:
+        return TypeOfValue::Attribute::ObjectLink;
+    case realm_value_type::RLM_TYPE_UUID:
+        return TypeOfValue::Attribute::UUID;
+    default:
+        REALM_UNREACHABLE();
+    }
+}
+
 extern "C" {
 
 REALM_EXPORT void query_destroy(Query* query)
@@ -158,8 +190,11 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
         case realm_value_type::RLM_TYPE_BINARY:
             query.equal(std::move(col_key), from_capi(primitive.binary));
             break;
+        case realm_value_type::RLM_TYPE_STRING:
+            query.equal(std::move(col_key), from_capi(primitive.string));
+            break;
         case realm_value_type::RLM_TYPE_LINK:
-            query.links_to(std::move(col_key), primitive.link.object->obj().get_key());
+            query.equal(std::move(col_key), from_capi(primitive));
             break;
         }
     });
@@ -199,8 +234,11 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
         case realm_value_type::RLM_TYPE_BINARY:
             query.not_equal(std::move(col_key), from_capi(primitive.binary));
             break;
+        case realm_value_type::RLM_TYPE_STRING:
+            query.not_equal(std::move(col_key), from_capi(primitive.string));
+            break;
         case realm_value_type::RLM_TYPE_LINK:
-            query.Not().links_to(std::move(col_key), primitive.link.object->obj().get_key());
+            query.not_equal(std::move(col_key), from_capi(primitive));
             break;
         }
     });
@@ -363,4 +401,19 @@ REALM_EXPORT Results* query_create_results(Query& query, SharedRealm& realm, Des
     });
 }
 
+REALM_EXPORT void query_realm_value_type_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_type realm_value_type, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        auto col_key = get_key_for_prop(query, realm, property_index);
+        query.and_query(query.get_table()->column<Mixed>(col_key).type_of_value() == TypeOfValue(attribute_from(realm_value_type)));
+    });
+}
+
+REALM_EXPORT void query_realm_value_type_not_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_type realm_value_type, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        auto col_key = get_key_for_prop(query, realm, property_index);
+        query.and_query(query.get_table()->column<Mixed>(col_key).type_of_value() != TypeOfValue(attribute_from(realm_value_type)));  //Need to check if correct
+    });
+}
 }   // extern "C"

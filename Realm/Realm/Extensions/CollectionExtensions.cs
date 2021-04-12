@@ -178,6 +178,16 @@ namespace Realms
             }
             else
             {
+                if (from < 0 || from >= list.Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(from));
+                }
+
+                if (to < 0 || to >= list.Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(to));
+                }
+
                 var item = list[from];
                 list.RemoveAt(from);
                 list.Insert(to, item);

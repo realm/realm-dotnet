@@ -175,11 +175,11 @@ namespace Realms
             return new SetHandle(frozenRealmHandle, result);
         }
 
-        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        public RealmValue GetValueAtIndex(int index, Realm realm)
         {
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
-            return ToRealmValue(result, metadata, realm);
+            return new RealmValue(result, realm);
         }
 
         public unsafe bool Add(in RealmValue value)

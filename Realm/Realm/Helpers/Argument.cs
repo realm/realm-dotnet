@@ -17,11 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Logging;
 
 namespace Realms.Helpers
 {
     internal static class Argument
     {
+        private const string OpenIssueText = "Please create a new issue at http://github.com/realm/realm-dotnet/issues/new.";
+
         public static void NotNullOrEmpty(string value, string paramName)
         {
             if (string.IsNullOrEmpty(value))
@@ -63,6 +66,15 @@ namespace Realms.Helpers
             {
                 throw new ArgumentNullException(paramName);
             }
+        }
+
+        public static void AssertDebug(string message)
+        {
+            Logger.LogDefault(LogLevel.Error, $"{message} {OpenIssueText}");
+
+#if DEBUG
+            throw new Exception(message);
+#endif
         }
     }
 }

@@ -560,8 +560,6 @@ namespace Realms
                     memberExpression = leftExpression as MemberExpression;
                 }
 
-                var leftName = GetColumnName(memberExpression, node.NodeType);
-
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
@@ -570,6 +568,22 @@ namespace Realms
                 if (rightValue is RealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase. \nUnable to process '{node.Right}'.");
+                }
+
+                string leftName = null;
+
+                if (IsRealmValueTypeExpression(memberExpression, out leftName))
+                {
+                    if (node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual)
+                    {
+                        throw new NotSupportedException($"Only expressions of type Equal and NotEqual can be used with RealmValueType.");
+                    }
+
+                    rightValue = (RealmValueType)(int)rightValue;
+                }
+                else
+                {
+                    leftName = GetColumnName(memberExpression, node.NodeType);
                 }
 
                 switch (node.NodeType)
@@ -611,7 +625,7 @@ namespace Realms
         {
             try
             {
-                var val = rh.GetValueAtIndex(index, _metadata, _realm);
+                var val = rh.GetValueAtIndex(index, _realm);
                 return Expression.Constant(val.AsRealmObject());
             }
             catch (ArgumentOutOfRangeException ex)
@@ -640,10 +654,14 @@ namespace Realms
             switch (value)
             {
                 case null:
+                case RealmValue rv when rv.Type == RealmValueType.Null:
                     queryHandle.NullEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
                     queryHandle.StringEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
+                    break;
+                case RealmValueType realmValueType:
+                    queryHandle.RealmValueTypeEqual(_realm.SharedRealmHandle, propertyIndex, realmValueType);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
@@ -658,10 +676,14 @@ namespace Realms
             switch (value)
             {
                 case null:
+                case RealmValue rv when rv.Type == RealmValueType.Null:
                     queryHandle.NullNotEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
                     queryHandle.StringNotEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
+                    break;
+                case RealmValueType realmValueType:
+                    queryHandle.RealmValueTypeNotEqual(_realm.SharedRealmHandle, propertyIndex, realmValueType);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
@@ -797,6 +819,10 @@ namespace Realms
             {
                 action(realm, propertyIndex, (RealmObjectBase)value);
             }
+            else if (columnType == typeof(RealmValue))
+            {
+                action(realm, propertyIndex, (RealmValue)value);
+            }
             else
             {
                 throw new NotImplementedException();
@@ -837,6 +863,24 @@ namespace Realms
             }
 
             return name;
+        }
+
+        private bool IsRealmValueTypeExpression(MemberExpression memberExpression, out string leftName)
+        {
+            leftName = null;
+
+            if (memberExpression?.Type != typeof(RealmValueType))
+            {
+                return false;
+            }
+
+            if (memberExpression.Expression is MemberExpression innerExpression)
+            {
+                leftName = GetColumnName(innerExpression, memberExpression.NodeType);
+                return innerExpression.Type == typeof(RealmValue);
+            }
+
+            return false;
         }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
