@@ -18,7 +18,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -32,8 +31,12 @@ namespace Realms
     /// the classes by using the dynamic API.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
-    public class Migration
+    public class Migration : IDisposable
     {
+        private GCHandle? _handle;
+
+        internal GCHandle MigrationHandle => _handle.HasValue ? _handle.Value : throw new ObjectDisposedException(nameof(Migration));
+
         internal RealmConfiguration Configuration { get; }
 
         internal RealmSchema Schema { get; }
@@ -56,12 +59,7 @@ namespace Realms
         {
             Configuration = configuration;
             Schema = schema;
-        }
-
-        internal void PopulateConfiguration(ref Configuration configuration)
-        {
-            var migrationHandle = GCHandle.Alloc(this);
-            configuration.managed_migration_handle = GCHandle.ToIntPtr(migrationHandle);
+            _handle = GCHandle.Alloc(this);
         }
 
         internal bool Execute(Realm oldRealm, Realm newRealm)
@@ -88,6 +86,16 @@ namespace Realms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (_handle.HasValue)
+            {
+                _handle.Value.Free();
+                _handle = null;
+            }
         }
     }
 }

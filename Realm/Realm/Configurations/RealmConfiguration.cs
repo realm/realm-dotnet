@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -133,15 +132,14 @@ namespace Realms
             if (MigrationCallback != null)
             {
                 migration = new Migration(this, schema);
-                migration.PopulateConfiguration(ref configuration);
+                configuration.managed_migration_handle = GCHandle.ToIntPtr(migration.MigrationHandle);
             }
 
+            GCHandle? shouldCompactHandle = null;
             if (ShouldCompactOnLaunch != null)
             {
-                // TODO: this should be moved elsewhere
-                var handle = GCHandle.Alloc(ShouldCompactOnLaunch);
-                configuration.should_compact_callback = ShouldCompactOnLaunchCallback;
-                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(handle);
+                shouldCompactHandle = GCHandle.Alloc(ShouldCompactOnLaunch);
+                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(shouldCompactHandle.Value);
             }
 
             var srPtr = IntPtr.Zero;
@@ -152,6 +150,11 @@ namespace Realms
             catch (ManagedExceptionDuringMigrationException)
             {
                 throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
+            }
+            finally
+            {
+                migration?.Dispose();
+                shouldCompactHandle?.Free();
             }
 
             var srHandle = new SharedRealmHandle(srPtr);
@@ -178,21 +181,6 @@ namespace Realms
             }
 
             return Task.FromResult(CreateRealm(schema));
-        }
-
-        [MonoPInvokeCallback(typeof(ShouldCompactCallback))]
-        private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
-        {
-            var handle = GCHandle.FromIntPtr(delegatePtr);
-            var compactDelegate = (ShouldCompactDelegate)handle.Target;
-            try
-            {
-                return compactDelegate(totalSize, dataSize);
-            }
-            finally
-            {
-                handle.Free();
-            }
         }
     }
 }

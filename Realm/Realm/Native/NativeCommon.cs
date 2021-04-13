@@ -57,7 +57,6 @@ namespace Realms
                 SessionHandle.InstallCallbacks();
                 HttpClientTransport.Install();
                 AppHandle.Initialize();
-
             }
         }
 
