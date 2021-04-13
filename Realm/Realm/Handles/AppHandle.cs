@@ -309,7 +309,7 @@ namespace Realms.Sync
             catch (Exception ex)
             {
                 var errorMessage = $"An error occurred while trying to log a message: {ex}";
-                Logger.Console.Log(LogLevel.Error, errorMessage);
+                Logger.LogDefault(LogLevel.Error, errorMessage);
             }
         }
 
