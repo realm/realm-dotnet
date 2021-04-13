@@ -204,9 +204,7 @@ namespace Realms.Sync
         {
             Argument.NotNull(credentials, nameof(credentials));
 
-            var tcs = new TaskCompletionSource<SyncUserHandle>();
-            Handle.LogIn(credentials.ToNative(), tcs);
-            var handle = await tcs.Task;
+            var handle = await Handle.LogInAsync(credentials.ToNative());
 
             return new User(handle, this);
         }
@@ -233,13 +231,11 @@ namespace Realms.Sync
         /// An awaitable <see cref="Task"/> that represents the asynchronous RemoveUser operation. Successful completion indicates that the user has been logged out,
         /// their local data - removed, and the user's <see cref="User.RefreshToken"/> - revoked on the server.
         /// </returns>
-        public async Task RemoveUserAsync(User user)
+        public Task RemoveUserAsync(User user)
         {
             Argument.NotNull(user, nameof(user));
 
-            var tcs = new TaskCompletionSource<object>();
-            Handle.Remove(user.Handle, tcs);
-            await tcs.Task;
+            return Handle.RemoveAsync(user.Handle);
         }
 
         /// <summary>

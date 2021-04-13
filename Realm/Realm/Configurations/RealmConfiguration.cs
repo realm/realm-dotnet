@@ -160,7 +160,7 @@ namespace Realms
             var srHandle = new SharedRealmHandle(srPtr);
             if (IsDynamic && !schema.Any())
             {
-                srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                schema = srHandle.GetSchema();
             }
 
             return new Realm(srHandle, this, schema);

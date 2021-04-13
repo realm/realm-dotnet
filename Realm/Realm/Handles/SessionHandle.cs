@@ -150,11 +150,22 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public void Wait(TaskCompletionSource<object> tcs, ProgressDirection direction)
+        public async Task WaitAsync(ProgressDirection direction)
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
-            ex.ThrowIfNecessary();
+
+            try
+            {
+                NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
+                ex.ThrowIfNecessary();
+
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public IntPtr GetRawPointer()
@@ -240,22 +251,15 @@ namespace Realms.Sync
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<object>)handle.Target;
 
-            try
+            if (error_code == 0)
             {
-                if (error_code == 0)
-                {
-                    tcs.TrySetResult(null);
-                }
-                else
-                {
-                    var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
-                    const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
-                    tcs.TrySetException(new RealmException(OuterMessage, inner));
-                }
+                tcs.TrySetResult(null);
             }
-            finally
+            else
             {
-                handle.Free();
+                var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
+                const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
+                tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
         }
     }

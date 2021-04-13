@@ -247,8 +247,7 @@ namespace Realms
 
             var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
             nativeException.ThrowIfNecessary();
-            var asyncTaskHandle = new AsyncOpenTaskHandle(asyncTaskPtr);
-            return asyncTaskHandle;
+            return new AsyncOpenTaskHandle(asyncTaskPtr);
         }
 
         public static IntPtr ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
@@ -374,11 +373,22 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void GetSchema(Action<Native.Schema> callback)
+        public RealmSchema GetSchema()
         {
+            RealmSchema result = null;
+            Action<Native.Schema> callback = schema => result = RealmSchema.CreateFromObjectStoreSchema(schema);
             var handle = GCHandle.Alloc(callback);
-            NativeMethods.get_schema(this, GCHandle.ToIntPtr(handle), out var nativeException);
-            nativeException.ThrowIfNecessary();
+            try
+            {
+                NativeMethods.get_schema(this, GCHandle.ToIntPtr(handle), out var nativeException);
+                nativeException.ThrowIfNecessary();
+            }
+            finally
+            {
+                handle.Free();
+            }
+
+            return result;
         }
 
         public ObjectHandle CreateObject(TableKey tableKey)
@@ -453,7 +463,6 @@ namespace Realms
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
             var callback = (Action<Native.Schema>)handle.Target;
             callback(schema);
-            handle.Free();
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyRealmCallback))]
@@ -526,14 +535,7 @@ namespace Realms
         {
             var handle = GCHandle.FromIntPtr(delegatePtr);
             var compactDelegate = (ShouldCompactDelegate)handle.Target;
-            try
-            {
-                return compactDelegate(totalSize, dataSize);
-            }
-            finally
-            {
-                handle.Free();
-            }
+            return compactDelegate(totalSize, dataSize);
         }
 
         public class SchemaMarshaler

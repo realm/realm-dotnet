@@ -261,18 +261,38 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public void LogIn(Native.Credentials credentials, TaskCompletionSource<SyncUserHandle> tcs)
+        public async Task<SyncUserHandle> LogInAsync(Native.Credentials credentials)
         {
+            var tcs = new TaskCompletionSource<SyncUserHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.login_user(this, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+
+            try
+            {
+                NativeMethods.login_user(this, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                return await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public void Remove(SyncUserHandle user, TaskCompletionSource<object> tcs)
+        public async Task RemoveAsync(SyncUserHandle user)
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.remove_user(this, user, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+            try
+            {
+                NativeMethods.remove_user(this, user, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public void ResetForTesting()
@@ -318,22 +338,15 @@ namespace Realms.Sync
         private static unsafe void HandleUserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            try
+            var tcs = (TaskCompletionSource<SyncUserHandle>)tcsHandle.Target;
+            if (error.is_null)
             {
-                var tcs = (TaskCompletionSource<SyncUserHandle>)tcsHandle.Target;
-                if (error.is_null)
-                {
-                    var userHandle = new SyncUserHandle(user_ptr);
-                    tcs.TrySetResult(userHandle);
-                }
-                else
-                {
-                    tcs.TrySetException(new AppException(error));
-                }
+                var userHandle = new SyncUserHandle(user_ptr);
+                tcs.TrySetResult(userHandle);
             }
-            finally
+            else
             {
-                tcsHandle.Free();
+                tcs.TrySetException(new AppException(error));
             }
         }
 
@@ -341,21 +354,14 @@ namespace Realms.Sync
         private static unsafe void HandleTaskCompletion(IntPtr tcs_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            try
+            var tcs = (TaskCompletionSource<object>)tcsHandle.Target;
+            if (error.is_null)
             {
-                var tcs = (TaskCompletionSource<object>)tcsHandle.Target;
-                if (error.is_null)
-                {
-                    tcs.TrySetResult(null);
-                }
-                else
-                {
-                    tcs.TrySetException(new AppException(error));
-                }
+                tcs.TrySetResult(null);
             }
-            finally
+            else
             {
-                tcsHandle.Free();
+                tcs.TrySetException(new AppException(error));
             }
         }
 
@@ -363,21 +369,14 @@ namespace Realms.Sync
         private static unsafe void HandleBsonCallback(IntPtr tcs_ptr, BsonPayload response, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            try
+            var tcs = (TaskCompletionSource<BsonPayload>)tcsHandle.Target;
+            if (error.is_null)
             {
-                var tcs = (TaskCompletionSource<BsonPayload>)tcsHandle.Target;
-                if (error.is_null)
-                {
-                    tcs.TrySetResult(response);
-                }
-                else
-                {
-                    tcs.TrySetException(new AppException(error));
-                }
+                tcs.TrySetResult(response);
             }
-            finally
+            else
             {
-                tcsHandle.Free();
+                tcs.TrySetException(new AppException(error));
             }
         }
 
@@ -385,27 +384,20 @@ namespace Realms.Sync
         private static unsafe void HandleApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            try
+            var tcs = (TaskCompletionSource<UserApiKey[]>)tcsHandle.Target;
+            if (error.is_null)
             {
-                var tcs = (TaskCompletionSource<UserApiKey[]>)tcsHandle.Target;
-                if (error.is_null)
+                var result = new UserApiKey[api_keys_len];
+                for (var i = 0; i < api_keys_len; i++)
                 {
-                    var result = new UserApiKey[api_keys_len];
-                    for (var i = 0; i < api_keys_len; i++)
-                    {
-                        result[i] = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
-                    }
+                    result[i] = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
+                }
 
-                    tcs.TrySetResult(result);
-                }
-                else
-                {
-                    tcs.TrySetException(new AppException(error));
-                }
+                tcs.TrySetResult(result);
             }
-            finally
+            else
             {
-                tcsHandle.Free();
+                tcs.TrySetException(new AppException(error));
             }
         }
     }
