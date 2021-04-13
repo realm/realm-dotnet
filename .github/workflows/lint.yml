@@ -1,0 +1,14 @@
+name: lint
+"on":
+  pull_request:
+jobs:
+  verify-todos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nirinchev/verify-todo@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          include: "**/*.+(cs|cpp|hpp)"
+          exclude: "wrappers/realm-core/**"
+          pattern: "\\WR[A-Z]+-[0-9]+"
