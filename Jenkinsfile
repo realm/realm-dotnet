@@ -28,8 +28,8 @@ stage('Checkout') {
       versionSuffix = "alpha.${env.BUILD_ID}"
     }
     // TODO: temp for beta releases
-    else if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH == "release/10.2.0-beta.1") {
-      versionSuffix = "beta.1"
+    else if (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH == "release/10.2.0-beta.2") {
+      versionSuffix = "beta.2"
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
