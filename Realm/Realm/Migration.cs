@@ -31,11 +31,11 @@ namespace Realms
     /// the classes by using the dynamic API.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
-    public class Migration : IDisposable
+    public class Migration
     {
         private GCHandle? _handle;
 
-        internal GCHandle MigrationHandle => _handle.HasValue ? _handle.Value : throw new ObjectDisposedException(nameof(Migration));
+        internal GCHandle MigrationHandle => _handle ?? throw new ObjectDisposedException(nameof(Migration));
 
         internal RealmConfiguration Configuration { get; }
 
@@ -88,14 +88,10 @@ namespace Realms
             return true;
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
+        internal void ReleaseHandle()
         {
-            if (_handle.HasValue)
-            {
-                _handle.Value.Free();
-                _handle = null;
-            }
+            _handle?.Free();
+            _handle = null;
         }
     }
 }

@@ -153,7 +153,7 @@ namespace Realms
             }
             finally
             {
-                migration?.Dispose();
+                migration?.ReleaseHandle();
                 shouldCompactHandle?.Free();
             }
 
