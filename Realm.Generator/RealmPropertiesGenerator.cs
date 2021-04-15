@@ -66,7 +66,8 @@ namespace Realm.Generator
                     public partial class {className} : IRealmClass
                     {{
                 ";
-                            var classEndSource = @"
+
+            var classEndSource = @"
                     }
                 }";
 
@@ -78,7 +79,7 @@ namespace Realm.Generator
             foreach (var field in fieldDeclarations.SelectMany(fd => fd.Declaration.Variables))
             {
                 var fieldSymbol = model.GetDeclaredSymbol(field) as IFieldSymbol;
-                var type = fieldSymbol.Type.Name;
+                var type = fieldSymbol.Type.ToDisplayString();
                 var name = fieldSymbol.Name;
                 var visibility = fieldSymbol.DeclaredAccessibility;
                 if (visibility != Accessibility.Private)
@@ -95,6 +96,7 @@ namespace Realm.Generator
             var propertiesSource = propertiesSourceBuilder.ToString();
             string copyToRealmSource = $@"public void CopyToRealm() {{ {copyToRealmSourceBuilder} }}";
 
+            // TODO: add header explaining that the file will be regenerated.
             var fullSource =
                 usingsSource +
                 classStartSource +
@@ -102,14 +104,19 @@ namespace Realm.Generator
                 copyToRealmSource +
                 classEndSource;
 
-            var formattedSource = CSharpSyntaxTree.ParseText(fullSource).GetRoot().NormalizeWhitespace().ToFullString();
 
-            context.AddSource($"class_{className}", SourceText.From(formattedSource, Encoding.UTF8));
+            context.AddSource($"{className}.Generated", FormatSourceCode(fullSource));
         }
 
-        private string GenerateUsingStrings(List<UsingDirectiveSyntax> usingDeclarations)
+        private static SourceText FormatSourceCode(string fullSource)
         {
-            return string.Join("", usingDeclarations.Select(ud => ud.ToFullString()));
+            var formatted = CSharpSyntaxTree.ParseText(fullSource).GetRoot().NormalizeWhitespace().ToFullString();
+            return SourceText.From(formatted, Encoding.UTF8);
+        }
+
+        private string GenerateUsingStrings(IEnumerable<UsingDirectiveSyntax> usingDeclarations)
+        {
+            return string.Join("", usingDeclarations.Select(ud => ud.WithoutLeadingTrivia().ToFullString()));
         }
 
         private (string PropertyString, string CopyToRealmPropertyString) GeneratePropertyStrings(string type, string name)
@@ -128,16 +135,14 @@ namespace Realm.Generator
                         {{
                             return ({type})GetValue(""{propertyName}"");
                         }}
-                        else
-                        {{
-                            return {backingFieldName};
-                        }}
+                        
+                        return {backingFieldName};
                     }}
                     set
                     {{
                         if (IsManaged)
                         {{
-                            SetValue(""{propertyName}"", (RealmValue)value);
+                            SetValue(""{propertyName}"", value);
                         }}
                         else
                         {{
@@ -155,7 +160,7 @@ namespace Realm.Generator
         {
             public ClassDeclarationSyntax ClassDeclaration { get; private set; }
             public NamespaceDeclarationSyntax NamespaceDeclaration { get; private set; }
-            public List<UsingDirectiveSyntax> UsingDeclarations { get; private set; }
+            public UsingDirectiveSyntax[] UsingDeclarations { get; private set; }
 
             //This thing here is useful because we can create "candidates" for code generation to use later in "Execute"
             public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
@@ -165,7 +170,7 @@ namespace Realm.Generator
                     //Debugger.Launch();
                     ClassDeclaration = classSyntax;
                     NamespaceDeclaration = classSyntax.Parent as NamespaceDeclarationSyntax;
-                    UsingDeclarations = (NamespaceDeclaration.Parent as CompilationUnitSyntax).Usings.ToList();
+                    UsingDeclarations = (NamespaceDeclaration.Parent as CompilationUnitSyntax).Usings.ToArray();
                 }
             }
 
