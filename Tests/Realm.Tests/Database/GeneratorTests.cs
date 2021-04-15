@@ -26,17 +26,30 @@ using Realm.Generator;
 
 namespace Realms.Tests.Database
 {
+    [RealmClass]
+    public partial class SimpleObject : RealmObject
+    {
+        private int intValue;
+        private string stringValue;
+    }
+
     [TestFixture, Preserve(AllMembers = true)]
     public class AAAAAAGeneratorTests : RealmInstanceTest
     {
         [Test]
         public void TestA()
         {
+            var intValue = 1;
+            var stringValue = "bla";
+
             var standalone = new SimpleObject
             {
-                Id = 1,
-                StringValue = "bla"
+                IntValue = intValue,
+                StringValue = stringValue,
             };
+
+            Assert.That(standalone.IntValue, Is.EqualTo(intValue));
+            Assert.That(standalone.StringValue, Is.EqualTo(stringValue));
 
             _realm.Write(() =>
             {
@@ -45,26 +58,28 @@ namespace Realms.Tests.Database
 
             Assert.That(standalone.IsManaged, Is.True);
 
+            Assert.That(standalone.IntValue, Is.EqualTo(intValue));
+            Assert.That(standalone.StringValue, Is.EqualTo(stringValue));
+
             var queried = _realm.All<SimpleObject>().First();
-            Assert.That(queried.Id, Is.EqualTo(standalone.Id));
+            Assert.That(queried.IntValue, Is.EqualTo(standalone.IntValue));
             Assert.That(queried.StringValue, Is.EqualTo(standalone.StringValue));
+
+            intValue = 5;
+            stringValue = "abracadabra";
 
             _realm.Write(() =>
             {
-                standalone.Id = 3;
-                standalone.StringValue = "b2";
+                standalone.IntValue = intValue;
+                standalone.StringValue = stringValue;
             });
 
+            Assert.That(standalone.IntValue, Is.EqualTo(intValue));
+            Assert.That(standalone.StringValue, Is.EqualTo(stringValue));
+
             queried = _realm.All<SimpleObject>().First();
-            Assert.That(queried.Id, Is.EqualTo(standalone.Id));
+            Assert.That(queried.IntValue, Is.EqualTo(standalone.IntValue));
             Assert.That(queried.StringValue, Is.EqualTo(standalone.StringValue));
         }
-    }
-
-    [RealmClass]
-    public partial class SimpleObject : RealmObject
-    {
-        private int id;
-        private string stringValue;
     }
 }
