@@ -208,8 +208,8 @@ stage('Unity Package') {
 
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
     dir('Realm/Realm.Unity') {
-      archiveArtifacts "realm.unity-${packageVersion}.tgz"
-      bat "del realm.unity-${packageVersion}.tgz"
+      archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
+      bat "del io.realm.unity-${packageVersion}.tgz"
     }
 
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
