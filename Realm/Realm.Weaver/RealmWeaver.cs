@@ -140,7 +140,7 @@ namespace RealmWeaver
         {
             foreach (var type in _moduleDefinition.GetTypes().Where(t => t.IsRealmObjectDescendant(_references)))
             {
-                if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
+                if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute" || a.AttributeType.Name == "RealmClassAttribute"))
                 {
                     continue;
                 }

@@ -1,17 +1,19 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
+    <TargetFrameworks>net461</TargetFrameworks>
     <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -88,4 +90,24 @@
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Realm.Generator\Realm.Generator.csproj"
+        OutputItemType="Analyzer"
+        ReferenceOutputAssembly="false"/>
+  </ItemGroup>
+
+  <Target Name="AddSourceGeneratedFiles" AfterTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="Generated\**" />
+    </ItemGroup>
+  </Target>
+  <Target Name="RemoveSourceGeneratedFiles" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Remove="Generated\**" />
+    </ItemGroup>
+  </Target>
+  <!-- <Target Name="CleanSourceGeneratedFiles" AfterTargets="Clean">
+    <RemoveDir Directories="Generated" />
+  </Target> -->
 </Project>
