@@ -140,7 +140,7 @@ namespace RealmWeaver
         {
             foreach (var type in _moduleDefinition.GetTypes().Where(t => t.IsRealmObjectDescendant(_references)))
             {
-                if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute" || a.AttributeType.Name == "RealmClassAttribute"))
+                if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
                 {
                     continue;
                 }
@@ -234,56 +234,66 @@ Analytics payload
             _logger.Debug("Weaving " + type.Name);
 
             var persistedProperties = new List<WeavePropertyResult>();
+
             foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
-                try
+                if (!type.CustomAttributes.Any(a => a.AttributeType.Name == "RealmClassAttribute"))
                 {
-                    var weaveResult = WeaveProperty(prop, type);
-                    if (weaveResult.Woven)
+                    try
                     {
-                        persistedProperties.Add(weaveResult);
-                    }
-                    else
-                    {
-                        var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                        if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
+                        var weaveResult = WeaveProperty(prop, type);
+                        if (weaveResult.Woven)
                         {
-                            // We only want one error point, so even though there may be more problems, we only log the first one.
-                            _logger.Error(weaveResult.ErrorMessage, sequencePoint);
+                            persistedProperties.Add(weaveResult);
                         }
                         else
                         {
-                            if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
+                            var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
+                            if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
                             {
-                                _logger.Warning(weaveResult.WarningMessage, sequencePoint);
+                                // We only want one error point, so even though there may be more problems, we only log the first one.
+                                _logger.Error(weaveResult.ErrorMessage, sequencePoint);
                             }
-
-                            var realmAttributeNames = prop.CustomAttributes
-                                                          .Select(a => a.AttributeType.Name)
-                                                          .Intersect(RealmPropertyAttributes)
-                                                          .OrderBy(a => a)
-                                                          .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
-
-                            if (realmAttributeNames.Any())
+                            else
                             {
-                                _logger.Error($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                                if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
+                                {
+                                    _logger.Warning(weaveResult.WarningMessage, sequencePoint);
+                                }
+
+                                var realmAttributeNames = prop.CustomAttributes
+                                                                .Select(a => a.AttributeType.Name)
+                                                                .Intersect(RealmPropertyAttributes)
+                                                                .OrderBy(a => a)
+                                                                .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
+
+                                if (realmAttributeNames.Any())
+                                {
+                                    _logger.Error($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                                }
                             }
                         }
+
+                    }
+                    catch (Exception e)
+                    {
+                        var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
+                        _logger.Error(
+                            $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
+                            sequencePoint);
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                    _logger.Error(
-                        $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
-                        sequencePoint);
+                    var wovenPropertyAttribute = new CustomAttribute(_references.WovenPropertyAttribute_Constructor);
+                    prop.CustomAttributes.Add(wovenPropertyAttribute);
                 }
             }
 
             if (!persistedProperties.Any())
             {
-                _logger.Error($"Class {type.Name} is a RealmObject but has no persisted properties.");
-                return null;
+                //_logger.Error($"Class {type.Name} is a RealmObject but has no persisted properties.");
+                //return null;
             }
 
             var pkProperty = persistedProperties.FirstOrDefault(p => p.IsPrimaryKey);
@@ -810,6 +820,7 @@ Analytics payload
                         castInstance.Property.Union(set);
                     }
                 */
+
 
                 var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObjectBase);
                 copyToRealm.Parameters.Add(instanceParameter);

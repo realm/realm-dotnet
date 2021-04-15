@@ -45,16 +45,26 @@ namespace Realms.Tests.Database
 
             Assert.That(standalone.IsManaged, Is.True);
 
-            var queried = _realm.Find<SimpleObject>(1);
-            Assert.That(queried, Is.EqualTo(standalone));
+            var queried = _realm.All<SimpleObject>().First();
+            Assert.That(queried.Id, Is.EqualTo(standalone.Id));
+            Assert.That(queried.StringValue, Is.EqualTo(standalone.StringValue));
+
+            _realm.Write(() =>
+            {
+                standalone.Id = 3;
+                standalone.StringValue = "b2";
+            });
+
+            queried = _realm.All<SimpleObject>().First();
+            Assert.That(queried.Id, Is.EqualTo(standalone.Id));
+            Assert.That(queried.StringValue, Is.EqualTo(standalone.StringValue));
         }
     }
 
+    [RealmClass]
     public partial class SimpleObject : RealmObject
     {
-        [PrimaryKey]
-        public long Id { get; set; }
-
-        public string StringValue { get; set; }
+        private int id;
+        private string stringValue;
     }
 }

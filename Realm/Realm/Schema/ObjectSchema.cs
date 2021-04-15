@@ -111,7 +111,7 @@ namespace Realms.Schema
             Argument.NotNull(type, nameof(type));
 
             Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
-
+            var name = type.Name;
             var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
             foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
@@ -172,11 +172,11 @@ namespace Realms.Schema
 
             public ObjectSchema Build()
             {
-                if (Count == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"No properties in {Name}, has linker stripped it? See https://thereIsntSuchDocYet");
-                }
+                //if (Count == 0)
+                //{
+                //    throw new InvalidOperationException(
+                //        $"No properties in {Name}, has linker stripped it? See https://thereIsntSuchDocYet");
+                //}
 
                 return new ObjectSchema(Name, this.ToDictionary(p => p.Name))
                 {

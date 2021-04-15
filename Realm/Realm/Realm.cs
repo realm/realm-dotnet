@@ -37,6 +37,11 @@ using Realms.Sync;
 
 namespace Realms
 {
+    public interface IRealmClass
+    {
+        void CopyToRealm();
+    }
+
     /// <summary>
     /// A Realm instance (also referred to as a Realm) represents a Realm database.
     /// </summary>
@@ -624,7 +629,14 @@ namespace Realms
             obj.SetOwner(this, objectHandle, metadata);
 
             // If an object is newly created, we don't need to invoke setters of properties with default values.
-            metadata.Helper.CopyToRealm(obj, update, isNew);
+            if (obj is IRealmClass rc)
+            {
+                rc.CopyToRealm();
+            }
+            else
+            {
+                metadata.Helper.CopyToRealm(obj, update, isNew);
+            }
             obj.OnManaged();
         }
 
