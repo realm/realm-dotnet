@@ -56,7 +56,7 @@ namespace Realm.Generator
             var model = context.Compilation.GetSemanticModel(classNode.SyntaxTree);
 
             var className = classNode.Identifier.ValueText;
-            var namespaceName = (model.GetDeclaredSymbol(syntaxReceiver.NamespaceDeclaration) as INamespaceSymbol).ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+            var namespaceName = model.GetDeclaredSymbol(syntaxReceiver.NamespaceDeclaration).ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 
             var usingsSource = GenerateUsingStrings(syntaxReceiver.UsingDeclarations);
 
