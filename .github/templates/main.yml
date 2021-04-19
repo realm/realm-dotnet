@@ -76,7 +76,7 @@ steps:
 #@ def buildNugetPkgs():
 #@ for pkgName in nugetPackages:
 #@ buildCmd = "powershell MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
-#@ stepName = "Build nugetpkg" + pkgName
+#@ stepName = "Build nuget package " + pkgName
   - name: #@ stepName
     run: #@ buildCmd
 #@ end
