@@ -17,10 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -284,6 +284,51 @@ namespace Realms.Tests
             }
 
             return $"<{byteArr[0]}>";
+        }
+
+        public static IEqualityComparer<T> GetComparer<T>(Func<T, T, bool> equalityFunc) => new FunctionComparer<T>(equalityFunc);
+
+        public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)
+        {
+            var observer = new FunctionObserver<T>(onNext);
+            return observable.Subscribe(observer);
+        }
+
+        private class FunctionComparer<T> : IEqualityComparer<T>
+        {
+            private readonly Func<T, T, bool> _equalityFunc;
+
+            public FunctionComparer(Func<T, T, bool> equalityFunc)
+            {
+                _equalityFunc = equalityFunc;
+            }
+
+            public bool Equals(T x, T y) => _equalityFunc(x, y);
+
+            public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
+        }
+
+        private class FunctionObserver<T> : IObserver<T>
+        {
+            private readonly Action<T> _onNext;
+
+            public FunctionObserver(Action<T> onNext)
+            {
+                _onNext = onNext;
+            }
+
+            public void OnCompleted()
+            {
+            }
+
+            public void OnError(Exception error)
+            {
+            }
+
+            public void OnNext(T value)
+            {
+                _onNext?.Invoke(value);
+            }
         }
     }
 }

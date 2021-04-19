@@ -535,7 +535,6 @@ namespace Realms.Tests
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
 
         public IDictionary<string, RealmValue> RealmValueDictionary { get; }
-
     }
 
     public class CounterObject : RealmObject

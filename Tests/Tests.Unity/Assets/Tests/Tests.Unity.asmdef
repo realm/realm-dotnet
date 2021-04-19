@@ -1,0 +1,33 @@
+{
+    "name": "Tests.Unity",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "MongoDB.Bson.dll",
+        "Nito.AsyncEx.Context.dll",
+        "Nito.AsyncEx.Tasks.dll",
+        "Nito.Disposables.dll",
+        "Realm.dll",
+        "Realm.UnityUtils.dll",
+        "Remotion.Linq.dll",
+        "System.Buffers.dll",
+        "System.Collections.Immutable.dll",
+        "System.Runtime.CompilerServices.Unsafe.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

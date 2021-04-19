@@ -1135,7 +1135,7 @@ namespace Realms.Tests.Database
         public class TestCaseData<T>
         {
             private readonly Func<T, T> _cloneFunc;
-            private readonly Func<T, T, bool> _equalityFunc;
+            private readonly IEqualityComparer<T> _equalityFunc;
 
             private T _sampleValue;
 
@@ -1153,7 +1153,7 @@ namespace Realms.Tests.Database
             public TestCaseData(Func<T, T> cloneFunc, Func<T, T, bool> equalityFunc, T sampleValue, params (string Key, T Value)[] initialValues)
             {
                 _cloneFunc = cloneFunc;
-                _equalityFunc = equalityFunc;
+                _equalityFunc = TestHelpers.GetComparer(equalityFunc);
 
                 _sampleValue = sampleValue;
 
@@ -1705,7 +1705,9 @@ namespace Realms.Tests.Database
                     return Is.EquivalentTo(dict);
                 }
 
-                return Is.EquivalentTo(dict).Using<KeyValuePair<string, T>>((first, second) => first.Key == second.Key && _equalityFunc(first.Value, second.Value));
+                var comparer = TestHelpers.GetComparer<KeyValuePair<string, T>>((first, second) => first.Key == second.Key && _equalityFunc.Equals(first.Value, second.Value));
+
+                return Is.EquivalentTo(dict).Using(comparer);
             }
 
             private CollectionItemsEqualConstraint IsEquivalentTo(IEnumerable<T> other)
