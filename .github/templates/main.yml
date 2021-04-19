@@ -6,6 +6,7 @@
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
+#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver']
 
 #@ def checkoutCode():
 name: Checkout code
@@ -72,6 +73,20 @@ steps:
       retention-days: 1
 #@ end
 
+#@ def buildNugetPkgs():
+#@ for pkgName in nugetPackages:
+#@ buildCmd = "powershell MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
+#@ stepName = "Build nugetpkg" + pkgName
+  - name: #@ stepName
+    run: #@ buildCmd
+#@ end
+  - name: Store artifacts
+    uses: actions/upload-artifact@v2
+    with:
+      path: ${{ github.workspace }}/Realm/packages/**
+      retention-days: 1
+#@ end
+
 ---
 name: build and test
 "on":
@@ -125,6 +140,9 @@ jobs:
       - build-wrappers-linux
       - build-wrappers-windows-uwp
     steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - #@ checkoutCode()
       - name: Fetch Artifacts MacOS
         uses: actions/download-artifact@v2
         with:
@@ -185,3 +203,4 @@ jobs:
         with:
           name: wrappers-windows-uwp-ARM
           path: wrappers/build
+      - #@ template.replace(buildNugetPkgs())

@@ -271,15 +271,18 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
-    # - name: Tree struct before build nuget pkg
-    #   run: tree . /F
-    - name: Build nugetpkg Realm.Fody
-      run: "powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
-    - name: Build nugetpkg Realm
-      run: "powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
-    - name: Build nugetpkg Realm.UnityUtils
-      run: "powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
-    - name: Build nugetpkg Realm.UnityWeaver
-      run: "powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
+    - name: Build nugetpkgRealm.Fody
+      run: powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
+    - name: Build nugetpkgRealm
+      run: powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
+    - name: Build nugetpkgRealm.UnityUtils
+      run: powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
+    - name: Build nugetpkgRealm.UnityWeaver
+      run: powershell MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ github.workspace }}/Realm/packages/**
+        retention-days: 1
     - name: Tree struct after building nuget pkg
-      run: tree . /F
+      run: tree ${{ github.workspace }}/Realm /F
