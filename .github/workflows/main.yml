@@ -205,6 +205,12 @@ jobs:
     - build-wrappers-linux
     - build-wrappers-windows-uwp
     steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Fetch Artifacts MacOS
       uses: actions/download-artifact@v2
       with:
@@ -265,8 +271,6 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
     - name: Tree struct before build nuget pkg
       run: tree . /F
     - name: Build nugetpkg Realm.Fody
