@@ -331,7 +331,7 @@ jobs:
     - name: Fetch nuget pkgs artifacts
       uses: actions/download-artifact@v2
       with:
-        path: ${{ github.workspace }}/Realm/packages/**
+        path: ${{ github.workspace }}/Realm/packages
     - name: Build the tests
       run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Test/Test.Nuget.config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=10.2.0
     - name: Run the tests
