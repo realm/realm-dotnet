@@ -316,3 +316,28 @@ jobs:
         name: Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.pacakge_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.pacakge_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  run-tests-net-framework:
+    runs-on: windows-latest
+    name: Run tests for NET framework
+    steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Fetch nuget pkgs artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: ${{ github.workspace }}/Realm/packages/**
+    - name: Build the tests
+      run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Test/Test.Nuget.config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=10.2.0
+    - name: Run the tests
+      run: |
+        cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
+        Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: TestResults.Windows.xml
