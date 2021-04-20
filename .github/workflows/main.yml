@@ -319,6 +319,8 @@ jobs:
   run-tests-net-framework:
     runs-on: windows-latest
     name: Run tests for NET framework
+    needs:
+    - build-package
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
