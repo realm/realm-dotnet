@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -134,7 +133,6 @@ namespace RealmWeaver
         private readonly ImportedReferences _references;
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
-        private readonly FrameworkName _frameworkName;
 
         private IEnumerable<TypeDefinition> GetMatchingTypes()
         {
@@ -155,12 +153,11 @@ namespace RealmWeaver
             }
         }
 
-        public Weaver(ModuleDefinition module, ILogger logger, FrameworkName frameworkName)
+        public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
             _moduleDefinition = module;
             _logger = logger;
-            _frameworkName = frameworkName;
-            _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
+            _references = ImportedReferences.Create(_moduleDefinition, framework);
         }
 
         public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
