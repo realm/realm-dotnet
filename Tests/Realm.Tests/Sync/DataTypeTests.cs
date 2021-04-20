@@ -334,11 +334,6 @@ namespace Realms.Tests.Sync
 
         private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
-
             var comparer = TestHelpers.GetComparer(equalsOverride);
 
             SyncTestHelpers.RunBaasTestAsync(async () =>

@@ -286,7 +286,7 @@ namespace Realms.Tests
             return $"<{byteArr[0]}>";
         }
 
-        public static IEqualityComparer<T> GetComparer<T>(Func<T, T, bool> equalityFunc) => new FunctionComparer<T>(equalityFunc);
+        public static IEqualityComparer<T> GetComparer<T>(Func<T, T, bool> equalityFunc) => equalityFunc != null ? new FunctionComparer<T>(equalityFunc) : (IEqualityComparer<T>)EqualityComparer<T>.Default;
 
         public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)
         {
