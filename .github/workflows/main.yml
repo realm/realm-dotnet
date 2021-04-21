@@ -283,9 +283,7 @@ jobs:
       run: |
         cd Realm/packages;
         tmpName=$(basename Realm.Fody* .nupkg);
-        echo "tmpName = ${tmpName}";
         pkgName=${tmpName#"Realm.Fody."};
-        echo "pkgName = ${pkgName}";
         echo "NUGET_PKG_VERSION=${pkgName}" >> $GITHUB_ENV ;
       shell: bash
     - name: Store artifacts for Realm.Fody
