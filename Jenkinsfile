@@ -200,7 +200,9 @@ stage('Package') {
 stage('Unity Package') {
   rlmNode('dotnet && windows') {
     unstash 'dotnet-source'
-    unstash 'packages'
+    dir('Realm/packages') {
+      unstash 'packages'
+    }
 
     bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
     dir('Realm/Realm.Unity') {

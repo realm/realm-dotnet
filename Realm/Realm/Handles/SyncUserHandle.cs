@@ -234,9 +234,9 @@ namespace Realms.Sync
             });
         }
 
-        public async Task<BsonPayload> CallFunctionAsync(AppHandle app, string name, string args)
+        public async Task<string> CallFunctionAsync(AppHandle app, string name, string args)
         {
-            var tcs = new TaskCompletionSource<BsonPayload>();
+            var tcs = new TaskCompletionSource<string>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
