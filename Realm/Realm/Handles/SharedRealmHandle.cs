@@ -481,7 +481,7 @@ namespace Realms
 
             if (ex.type == RealmExceptionCodes.NoError)
             {
-                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
+                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference));
             }
             else
             {

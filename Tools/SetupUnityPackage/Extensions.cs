@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -41,5 +42,23 @@ namespace SetupUnityPackage
         public static string SolutionFolder { get; } = BuildFolder.Substring(0, BuildFolder.IndexOf(Path.Combine("Tools", "SetupUnityPackage")));
 
         public static string PackagesFolder { get; } = Path.Combine(SolutionFolder, "Realm", "packages");
+
+        public static void CopyFiles(string from, string to, Func<string, bool> shouldIncludeFile = null)
+        {
+            var testFiles = Directory.EnumerateFiles(from, "*.*", SearchOption.AllDirectories);
+            foreach (var file in testFiles)
+            {
+                var relativePath = Path.GetRelativePath(from, file);
+                if (shouldIncludeFile != null && !shouldIncludeFile(relativePath))
+                {
+                    continue;
+                }
+
+                var targetPath = Path.Combine(to, relativePath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                File.Copy(file, targetPath, overwrite: true);
+            }
+        }
     }
 }

@@ -206,3 +206,5 @@ Tests/Tests.Unity/Assets/Tests/**/*.meta
 Tests/Tests.Unity/Assets/Dependencies/**/*.dll
 Tests/Tests.Unity/Assets/Dependencies/**/*.dll.meta
 launchSettings.json
+Tests/Tests.Unity/Assets/StreamingAssets/
+Tests/Tests.Unity/Assets/StreamingAssets.meta

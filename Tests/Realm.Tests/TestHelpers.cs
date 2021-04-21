@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+#if NETCOREAPP || NETFRAMEWORK
+using System.Runtime.InteropServices;
+#endif
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -85,22 +87,32 @@ namespace Realms.Tests
 
         public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
         {
-            var assembly = typeof(TestHelpers).Assembly;
-            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
-            if (resourceName == null)
-            {
-                throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
-            }
-
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
 
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var stream = GetResourceStream(realmName))
             using (var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
                 stream.CopyTo(destination);
             }
 
             return destPath;
+        }
+
+        private static Stream GetResourceStream(string name)
+        {
+#if UNITY_2019_1_OR_NEWER
+            var assetPath = Path.Combine(UnityEngine.Application.streamingAssetsPath, name);
+            return new FileStream(assetPath, FileMode.Open);
+#else
+            var assembly = typeof(TestHelpers).Assembly;
+            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(name));
+            if (resourceName == null)
+            {
+                throw new Exception($"Couldn't find embedded resource '{name}' in the RealmTests assembly");
+            }
+
+            return assembly.GetManifestResourceStream(resourceName);
+#endif
         }
 
         public static bool IsWindows
@@ -135,6 +147,18 @@ namespace Realms.Tests
             {
 #if NETCOREAPP || NETFRAMEWORK
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static bool IsUnity
+        {
+            get
+            {
+#if UNITY_2019_1_OR_NEWER
+                return true;
 #else
                 return false;
 #endif
@@ -286,26 +310,10 @@ namespace Realms.Tests
             return $"<{byteArr[0]}>";
         }
 
-        public static IEqualityComparer<T> GetComparer<T>(Func<T, T, bool> equalityFunc) => equalityFunc != null ? new FunctionComparer<T>(equalityFunc) : (IEqualityComparer<T>)EqualityComparer<T>.Default;
-
         public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)
         {
             var observer = new FunctionObserver<T>(onNext);
             return observable.Subscribe(observer);
-        }
-
-        private class FunctionComparer<T> : IEqualityComparer<T>
-        {
-            private readonly Func<T, T, bool> _equalityFunc;
-
-            public FunctionComparer(Func<T, T, bool> equalityFunc)
-            {
-                _equalityFunc = equalityFunc;
-            }
-
-            public bool Equals(T x, T y) => _equalityFunc(x, y);
-
-            public int GetHashCode(T obj) => obj?.GetHashCode() ?? 0;
         }
 
         private class FunctionObserver<T> : IObserver<T>

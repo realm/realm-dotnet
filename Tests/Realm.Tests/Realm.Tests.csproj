@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <LocalDev>true</LocalDev>
-    <UnityBuild>true</UnityBuild>
+    <UnityBuild>false</UnityBuild>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
@@ -108,7 +108,6 @@
     <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />

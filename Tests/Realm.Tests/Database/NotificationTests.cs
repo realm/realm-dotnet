@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Logging;
 
 namespace Realms.Tests.Database
 {
@@ -67,12 +68,13 @@ namespace Realms.Tests.Database
         public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
         {
             using var sw = new StringWriter();
-            var original = Console.Out;
-            Console.SetOut(sw);
+            var original = Logger.Default;
+
+            Logger.Default = Logger.Function(sw.WriteLine);
             _realm.NotifyError(new Exception());
 
             Assert.That(sw.ToString(), Does.Contain("exception").And.Contains("Realm.Error"));
-            Console.SetOut(original);
+            Logger.Default = original;
         }
 
         [Test]

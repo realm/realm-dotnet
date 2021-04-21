@@ -61,20 +61,10 @@ namespace SetupUnityPackage
 
             await CopyDependencies(opts, dependencies);
 
-            var testFiles = Directory.EnumerateFiles(testsProjectFolder, "*.*", SearchOption.AllDirectories);
-            foreach (var file in testFiles)
-            {
-                var relativePath = Path.GetRelativePath(testsProjectFolder, file);
-                if (!TestOptions.ShouldIncludeTestFile(relativePath))
-                {
-                    continue;
-                }
+            Helpers.CopyFiles(testsProjectFolder, Path.Combine(opts.PackageBasePath, "Tests"), TestOptions.ShouldIncludeTestFile);
 
-                var targetPath = Path.Combine(opts.PackageBasePath, "Tests", relativePath);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                File.Copy(file, targetPath, overwrite: true);
-            }
+            var resourcesFolder = Path.Combine(testsProjectFolder, "EmbeddedResources");
+            Helpers.CopyFiles(resourcesFolder, Path.Combine(opts.PackageBasePath, "StreamingAssets"));
         }
 
         private static async Task Run(RealmOptions opts)
