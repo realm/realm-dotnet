@@ -280,7 +280,7 @@ jobs:
     - name: Build nuget package Realm.UnityWeaver
       run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
     - name: Find version of package
-      run: "tmpName=$(basename Realm.Fody* .nupkg)\npkgName=${tmpName#Realm.Fody.}\necho \"NUGET_PKG_VERSION=${pkgName}\" >> $GITHUB_ENV \necho \"pkgName = ${pkgName}\"\necho \"saved env var: ${{env.NUGET_PKG_VERSION}}\"\n"
+      run: "tmpName=$(basename Realm.Fody* .nupkg)\necho \"tmpName = ${tmpName}\"\npkgName=${tmpName#\"Realm.Fody.\"}\necho \"pkgName = ${pkgName}\"\necho \"NUGET_PKG_VERSION=${pkgName}\" >> $GITHUB_ENV \necho \"saved env var: ${{env.NUGET_PKG_VERSION}}\"\n"
       shell: bash
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
