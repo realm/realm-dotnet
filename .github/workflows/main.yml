@@ -281,13 +281,12 @@ jobs:
       run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
     - name: Find version of package
       run: |
-        cd ${{ github.workspace }}/Realm/packages;
+        cd Realm/packages;
         tmpName=$(basename Realm.Fody* .nupkg);
         echo "tmpName = ${tmpName}";
         pkgName=${tmpName#"Realm.Fody."};
         echo "pkgName = ${pkgName}";
         echo "NUGET_PKG_VERSION=${pkgName}" >> $GITHUB_ENV ;
-        echo "saved env var: ${{env.NUGET_PKG_VERSION}}";
       shell: bash
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
