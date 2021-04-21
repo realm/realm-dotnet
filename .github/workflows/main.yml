@@ -281,6 +281,7 @@ jobs:
       run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore
     - name: Find version of package
       run: |
+        cd ${{ github.workspace }}/Realm/packages;
         tmpName=$(basename Realm.Fody* .nupkg);
         echo "tmpName = ${tmpName}";
         pkgName=${tmpName#"Realm.Fody."};
