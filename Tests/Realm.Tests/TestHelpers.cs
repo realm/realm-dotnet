@@ -98,6 +98,44 @@ namespace Realms.Tests
             return destPath;
         }
 
+        public static Task WaitUntilReferenceIsCollected(params WeakReference[] references)
+        {
+            return Task.Run(async () =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                while (references.Any(r => r.IsAlive))
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    await Task.Delay(1000);
+                }
+            }).Timeout(10000);
+        }
+
+        public static async Task EnsureThatReferenceIsAlive(int milliseconds, params WeakReference[] references)
+        {
+            var timeoutTask = Task.Delay(milliseconds);
+
+            var result = await Task.WhenAny(timeoutTask, Task.Run(async () =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                while (references.All(r => r.IsAlive))
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    await Task.Delay(1000);
+                }
+            }));
+
+            Assert.That(references.All(r => r.IsAlive), $"Expected references to be alive after {milliseconds} ms, but at least one was dead.");
+        }
+
         private static Stream GetResourceStream(string name)
         {
 #if UNITY_2019_1_OR_NEWER

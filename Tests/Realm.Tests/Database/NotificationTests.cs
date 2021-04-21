@@ -200,31 +200,12 @@ namespace Realms.Tests.Database
 
                 dictionary = null;
 
-                for (var i = 0; i < 10; i++)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
-
-                Assert.That(weakRef.IsAlive);
+                await TestHelpers.EnsureThatReferenceIsAlive(2000, weakRef);
 
                 token.Dispose();
                 token = null;
 
-                for (var i = 0; i < 10; i++)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
-                    if (!weakRef.IsAlive)
-                    {
-                        break;
-                    }
-                }
-
-                Assert.That(weakRef.IsAlive, Is.False);
+                await TestHelpers.WaitUntilReferenceIsCollected(weakRef);
             });
         }
 

@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -967,27 +966,19 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference listRef = null;
-                new Action(() =>
+                var owner = _realm.Write(() =>
                 {
-                    var owner = new Owner
+                    return _realm.Add(new Owner
                     {
                         Dogs = { new Dog { Name = "Lasse" } }
-                    };
-                    _realm.Write(() =>
-                    {
-                        _realm.Add(owner);
                     });
+                });
 
-                    listRef = new WeakReference(Freeze(owner.Dogs));
-                })();
+                var listRef = new WeakReference(Freeze(owner.Dogs));
+                owner = null;
+                _realm.Dispose();
 
-                while (listRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                await TestHelpers.WaitUntilReferenceIsCollected(listRef);
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -1024,23 +1015,15 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference queryRef = null;
-                new Action(() =>
+                _realm.Write(() =>
                 {
-                    _realm.Write(() =>
-                    {
-                        _realm.Add(new Dog { Name = "Lasse" });
-                    });
+                    _realm.Add(new Dog { Name = "Lasse" });
+                });
 
-                    queryRef = new WeakReference(_realm.All<Dog>());
-                })();
+                var queryRef = new WeakReference(_realm.All<Dog>());
+                _realm.Dispose();
 
-                while (queryRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                await TestHelpers.WaitUntilReferenceIsCollected(queryRef);
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);

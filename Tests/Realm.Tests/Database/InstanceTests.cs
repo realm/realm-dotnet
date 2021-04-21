@@ -823,19 +823,10 @@ namespace Realms.Tests.Database
                 WeakReference frozenRealmRef = null;
                 using (var realm = GetRealm())
                 {
-                    new Action(() =>
-                    {
-                        var frozenRealm = realm.Freeze();
-                        frozenRealmRef = new WeakReference(frozenRealm);
-                    })();
+                    frozenRealmRef = new WeakReference(realm.Freeze());
                 }
 
-                while (frozenRealmRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                await TestHelpers.WaitUntilReferenceIsCollected(frozenRealmRef);
 
                 // This will throw on Windows if the Realm wasn't really disposed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -891,20 +882,7 @@ namespace Realms.Tests.Database
                 var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
                 var token = cts.Token;
 
-                while (realmRef.IsAlive || stateRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
-                    if (token.IsCancellationRequested)
-                    {
-                        Assert.Fail($"Some references are still alive: RealmRef.IsAlive={realmRef.IsAlive}, StateRef.IsAlive={stateRef.IsAlive}");
-                    }
-                }
-
-                Assert.That(realmRef.IsAlive, Is.False);
-                Assert.That(stateRef.IsAlive, Is.False);
+                await TestHelpers.WaitUntilReferenceIsCollected(realmRef, stateRef);
             });
         }
 

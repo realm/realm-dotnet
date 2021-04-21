@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -279,27 +278,23 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference objRef = null;
-                new Action(() =>
-                {
-                    var owner = new Owner();
-                    _realm.Write(() =>
-                    {
-                        _realm.Add(owner);
-                    });
-                    var frozenOwner = Freeze(owner);
-                    objRef = new WeakReference(frozenOwner);
-                })();
+                var config = _realm.Config;
 
-                while (objRef.IsAlive)
+                WeakReference objRef = null;
+                var owner = _realm.Write(() =>
                 {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                    return _realm.Add(new Owner());
+                });
+
+                objRef = new WeakReference(owner.Freeze());
+
+                owner = null;
+                _realm.Dispose();
+
+                await TestHelpers.WaitUntilReferenceIsCollected(objRef);
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                Realm.DeleteRealm(config);
             });
         }
 

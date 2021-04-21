@@ -406,16 +406,12 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var notifiedPropertyNames = new List<string>();
-                WeakReference personReference = null;
-                var person = new Person();
-                _realm.Write(() => _realm.Add(person));
+                var person = _realm.Write(() => _realm.Add(new Person()));
 
                 person.PropertyChanged += (sender, e) =>
                 {
                     notifiedPropertyNames.Add(e.PropertyName);
                 };
-
-                personReference = new WeakReference(person);
 
                 _realm.Write(() => person.FirstName = "Peter");
 
@@ -425,15 +421,10 @@ namespace Realms.Tests.Database
 
                 notifiedPropertyNames.Clear();
 
+                var personReference = new WeakReference(person);
                 person = null;
-                while (personReference.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
 
-                Assert.That(personReference.IsAlive, Is.False);
+                await TestHelpers.WaitUntilReferenceIsCollected(personReference);
 
                 _realm.Write(() =>
                 {

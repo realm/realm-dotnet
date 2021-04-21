@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -35,46 +34,48 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
-            // Arrange
-            var realm = GetWeakRealm();
-            Person person = null;
-            ((Realm)realm.Target).Write(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                person = ((Realm)realm.Target).Add(new Person());
+                // Arrange
+                var realmRef = GetWeakRealm();
+                var person = ((Realm)realmRef.Target).Write(() =>
+                {
+                    return ((Realm)realmRef.Target).Add(new Person());
+                });
+
+                // Act
+                await TestHelpers.EnsureThatReferenceIsAlive(2000, realmRef);
+
+                // Assert
+                Assert.That(realmRef.IsAlive);
+                Assert.That(((Realm)realmRef.Target).IsClosed, Is.False);
+                Assert.That(person.IsValid);
+
+                // TearDown
+                ((Realm)realmRef.Target).Dispose();
             });
-
-            // Act
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            // Assert
-            Assert.That(realm.IsAlive);
-            Assert.That(((Realm)realm.Target).IsClosed, Is.False);
-            Assert.That(person.IsValid);
-
-            // TearDown
-            ((Realm)realm.Target).Dispose();
         }
 
         [Test]
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
-            // Arrange
-            using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
-            var realmThatWillBeFinalized = GetWeakRealm();
-            Person person = null;
-            realm.Write(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                person = realm.Add(new Person());
+                // Arrange
+                using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
+                var realmThatWillBeFinalized = GetWeakRealm();
+                Person person = null;
+                realm.Write(() =>
+                {
+                    person = realm.Add(new Person());
+                });
+
+                // Act
+                await TestHelpers.WaitUntilReferenceIsCollected(realmThatWillBeFinalized);
+
+                // Assert
+                Assert.That(person.IsValid);
             });
-
-            // Act
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            // Assert
-            Assert.That(realmThatWillBeFinalized.IsAlive, Is.False);
-            Assert.That(person.IsValid);
         }
 
         [Test]
@@ -82,21 +83,16 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var realm = GetWeakRealm();
-                var transaction = CreateTransaction();
+                var realmRef = GetWeakRealm();
+                var transaction = ((Realm)realmRef.Target).BeginWrite();
 
-                await Task.Yield();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                await TestHelpers.EnsureThatReferenceIsAlive(2000, realmRef);
 
                 Assert.DoesNotThrow(transaction.Dispose);
-                Assert.That(realm.IsAlive);
+                Assert.That(realmRef.IsAlive);
 
                 // TearDown
-                ((Realm)realm.Target).Dispose();
-
-                Transaction CreateTransaction() => ((Realm)realm.Target).BeginWrite();
+                ((Realm)realmRef.Target).Dispose();
             });
         }
     }

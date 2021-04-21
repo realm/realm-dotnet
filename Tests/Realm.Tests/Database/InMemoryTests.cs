@@ -137,24 +137,17 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 WeakReference realmReference = null;
-                new Action(() =>
+                using (var realm = Realm.GetInstance(_config))
                 {
-                    var realm = Realm.GetInstance(_config);
                     realm.Write(() => realm.Add(new IntPropertyObject
                     {
                         Int = 42
                     }));
-                    realmReference = new WeakReference(realm);
-                })();
 
-                while (realmReference.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
+                    realmReference = new WeakReference(realm);
                 }
 
-                Assert.That(realmReference.IsAlive, Is.False);
+                await TestHelpers.WaitUntilReferenceIsCollected(realmReference);
 
                 // Sometimes it takes a little while for the file to be deleted
                 await Task.Delay(200);
