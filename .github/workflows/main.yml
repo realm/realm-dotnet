@@ -213,11 +213,14 @@ jobs:
         submodules: recursive
     - name: Set version suffix
       run: |
-        if [[ $GITHUB_REF == "master" ]]; then
+        if [[ $GITHUB_REF == "master" ]]
+        then
           echo "BUILD_SUFFIX=alpha.$GITHUB_RUN_ID" >> $GITHUB_ENV
-        elif [[ "GITHUB_REF" == *"beta"* ]]; then
+        elif [[ "GITHUB_REF" == *"beta"* ]]
+        then
           echo "BUILD_SUFFIX=beta.$GITHUB_RUN_ID" >> $GITHUB_ENV
-        elseif [[ "GITHUB_REF" == *"release"* ]]; then
+        elseif [[ "GITHUB_REF" == *"release"* ]]
+        then
           echo "BUILD_SUFFIX=release.$GITHUB_RUN_ID" >> $GITHUB_ENV
         else
           echo "BUILD_SUFFIX=" >> $GITHUB_ENV
