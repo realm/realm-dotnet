@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -50,6 +51,7 @@ namespace Realms
     /// </code>
     /// </example>
     [Preserve(AllMembers = true)]
+    [DebuggerDisplay("{Type} - {ToString(),nq}")]
     public readonly struct RealmValue : IEquatable<RealmValue>
     {
         private readonly PrimitiveValue _primitiveValue;

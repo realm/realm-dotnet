@@ -41,6 +41,7 @@ namespace Realms
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
     [Serializable]
+    [DebuggerDisplay("IsValid={IsValid}")]
     public abstract class RealmObjectBase
         : INotifyPropertyChanged,
           IThreadConfined,
