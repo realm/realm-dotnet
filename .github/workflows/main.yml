@@ -219,7 +219,7 @@ jobs:
         elif [[ "$GITHUB_REF" == *"beta"* ]]
         then
           echo "BUILD_SUFFIX=beta.$GITHUB_RUN_ID" >> $GITHUB_ENV
-        elseif [[ "$GITHUB_REF" == *"release"* ]]
+        elif [[ "$GITHUB_REF" == *"release"* ]]
         then
           echo "BUILD_SUFFIX=release.$GITHUB_RUN_ID" >> $GITHUB_ENV
         else
