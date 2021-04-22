@@ -1,7 +1,7 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <LocalDev>true</LocalDev>
+    <LocalDev>false</LocalDev>
     <UnityBuild>false</UnityBuild>
   </PropertyGroup>
   
