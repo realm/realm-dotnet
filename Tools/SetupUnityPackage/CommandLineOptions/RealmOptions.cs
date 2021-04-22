@@ -21,6 +21,14 @@ namespace SetupUnityPackage
 
         public override string PackageBasePath => Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity");
 
+        public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
+        {
+            "Microsoft.CSharp",
+            "Realm.Fody",
+            "Fody",
+            "System.Dynamic.Runtime",
+        };
+
         public override PackageInfo[] Files { get; } = new[]
         {
             new PackageInfo("Realm", DependencyMode.IncludeIfRequested, new Dictionary<string, string>

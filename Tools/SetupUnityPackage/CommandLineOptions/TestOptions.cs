@@ -14,6 +14,14 @@ namespace SetupUnityPackage
             "Program.cs"
         };
 
+        public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
+        {
+            "Realm.Fody",
+            "Fody",
+            "Realm",
+            "Microsoft.CSharp"
+        };
+
         public override PackageInfo[] Files { get; } = new[]
         {
             new PackageInfo("Realm.Tests", DependencyMode.IncludeIfRequested),

@@ -22,15 +22,6 @@ namespace SetupUnityPackage
         private const string RealmPackagaName = "io.realm.unity";
         private const string RealmBundlePackageName = "io.realm.unity-bundled";
 
-        private static readonly ISet<string> _ignoredDependencies = new HashSet<string>
-        {
-            "Microsoft.CSharp",
-            "Realm.Fody",
-            "Fody",
-            "System.Dynamic.Runtime",
-            "Realm",
-        };
-
         public static async Task Main(string[] args)
         {
             await Parser.Default.ParseArguments<RealmOptions, TestOptions>(args)
@@ -119,7 +110,7 @@ namespace SetupUnityPackage
             {
                 var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
                 var info = opts.Files.SingleOrDefault(i => i.Id == package.Id || i.Id == "*");
-                if (_ignoredDependencies.Contains(package.Id))
+                if (opts.IgnoredDependencies.Contains(package.Id))
                 {
                     Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it is ignored.");
                 }
@@ -135,7 +126,7 @@ namespace SetupUnityPackage
                 }
                 else
                 {
-                    Console.WriteLine($"Error: package {package.Id} was not found either in {nameof(OptionsBase.Files)} or {nameof(_ignoredDependencies)}.");
+                    Console.WriteLine($"Error: package {package.Id} was not found either in {nameof(OptionsBase.Files)} or {nameof(OptionsBase.IgnoredDependencies)}.");
                     Environment.Exit(1);
                 }
             }
