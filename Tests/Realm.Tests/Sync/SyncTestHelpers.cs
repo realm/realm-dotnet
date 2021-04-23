@@ -50,7 +50,7 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = DummyAppId,
         };
 
-        private static Uri _baseUri = new Uri("http://10.12.1.99:9090");
+        private static Uri _baseUri;
 
         public static AppConfiguration GetAppConfig(AppConfigType type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
         {

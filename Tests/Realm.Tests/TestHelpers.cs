@@ -89,11 +89,17 @@ namespace Realms.Tests
         {
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
 
-            using (var stream = GetResourceStream(realmName))
-            using (var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            var assembly = typeof(TestHelpers).Assembly;
+            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
+            if (resourceName == null)
             {
-                stream.CopyTo(destination);
+                throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
             }
+
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+            stream.CopyTo(destination);
 
             return destPath;
         }
@@ -136,23 +142,6 @@ namespace Realms.Tests
             Assert.That(references.All(r => r.IsAlive), $"Expected references to be alive after {milliseconds} ms, but at least one was dead.");
         }
 
-        private static Stream GetResourceStream(string name)
-        {
-#if UNITY_2019_1_OR_NEWER
-            var assetPath = Path.Combine(UnityEngine.Application.streamingAssetsPath, name);
-            return new FileStream(assetPath, FileMode.Open);
-#else
-            var assembly = typeof(TestHelpers).Assembly;
-            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(name));
-            if (resourceName == null)
-            {
-                throw new Exception($"Couldn't find embedded resource '{name}' in the RealmTests assembly");
-            }
-
-            return assembly.GetManifestResourceStream(resourceName);
-#endif
-        }
-
         public static bool IsWindows
         {
             get
@@ -185,18 +174,6 @@ namespace Realms.Tests
             {
 #if NETCOREAPP || NETFRAMEWORK
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsUnity
-        {
-            get
-            {
-#if UNITY_2019_1_OR_NEWER
-                return true;
 #else
                 return false;
 #endif

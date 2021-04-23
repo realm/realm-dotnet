@@ -9,11 +9,6 @@ namespace SetupUnityPackage
     {
         public override string PackageBasePath => Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Assets");
 
-        private static readonly ISet<string> _ignoredTestFiles = new HashSet<string>
-        {
-            "Program.cs"
-        };
-
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
         {
             "Realm.Fody",
@@ -24,17 +19,15 @@ namespace SetupUnityPackage
 
         public override PackageInfo[] Files { get; } = new[]
         {
-            new PackageInfo("Realm.Tests", DependencyMode.IncludeIfRequested),
+            new PackageInfo("Realm.Tests", DependencyMode.IncludeIfRequested, new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/Realm.Tests.dll", "Tests/Realm.Tests.dll" },
+                { "lib/netstandard2.0/Realm.Tests.pdb", "Tests/Realm.Tests.pdb" },
+            }),
             new PackageInfo("*", DependencyMode.IsDependency, new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/(?<file>.*\\.dll)", "Dependencies/$file" }
             })
         };
-
-        public static bool ShouldIncludeTestFile(string relativePath)
-            => relativePath.EndsWith(".cs") &&
-               !_ignoredTestFiles.Contains(relativePath) &&
-               !relativePath.StartsWith("obj") &&
-               !relativePath.StartsWith("bin");
     }
 }

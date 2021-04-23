@@ -46,16 +46,16 @@ namespace SetupUnityPackage
             }
 
             var testsProjectFolder = Path.Combine(Helpers.SolutionFolder, "Tests", "Realm.Tests");
-            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder}", Helpers.SolutionFolder);
+            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} --include-symbols", Helpers.SolutionFolder);
 
             var (_, dependencies) = await CopyMainPackages(Helpers.PackagesFolder, opts);
 
             await CopyDependencies(opts, dependencies);
 
-            Helpers.CopyFiles(testsProjectFolder, Path.Combine(opts.PackageBasePath, "Tests"), TestOptions.ShouldIncludeTestFile);
+            //Helpers.CopyFiles(testsProjectFolder, Path.Combine(opts.PackageBasePath, "Tests"), TestOptions.ShouldIncludeTestFile);
 
-            var resourcesFolder = Path.Combine(testsProjectFolder, "EmbeddedResources");
-            Helpers.CopyFiles(resourcesFolder, Path.Combine(opts.PackageBasePath, "StreamingAssets"));
+            //var resourcesFolder = Path.Combine(testsProjectFolder, "EmbeddedResources");
+            //Helpers.CopyFiles(resourcesFolder, Path.Combine(opts.PackageBasePath, "StreamingAssets"));
         }
 
         private static async Task Run(RealmOptions opts)
@@ -211,8 +211,13 @@ namespace SetupUnityPackage
         {
             if (!File.Exists(path))
             {
-                var regex = new Regex($"{info.Id}.[0-9\\.]*.nupkg");
-                path = Directory.GetFiles(path, "*.nupkg").Single(regex.IsMatch);
+                // Try to find a .symbols.nupkg first - as that will contain both the dll and the pdbs.
+                var regex = new Regex($"{info.Id}.[0-9\\.]*(.symbols)?.nupkg");
+                path = Directory.GetFiles(path, "*.nupkg")
+                    .Select(f => (File: f, Match: regex.Match(f)))
+                    .OrderByDescending(f => f.Match.Groups.Count(g => g.Success))
+                    .Select(f => f.File)
+                    .First();
             }
 
             using var stream = File.OpenRead(path);
