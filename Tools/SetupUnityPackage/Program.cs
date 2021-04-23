@@ -51,11 +51,6 @@ namespace SetupUnityPackage
             var (_, dependencies) = await CopyMainPackages(Helpers.PackagesFolder, opts);
 
             await CopyDependencies(opts, dependencies);
-
-            //Helpers.CopyFiles(testsProjectFolder, Path.Combine(opts.PackageBasePath, "Tests"), TestOptions.ShouldIncludeTestFile);
-
-            //var resourcesFolder = Path.Combine(testsProjectFolder, "EmbeddedResources");
-            //Helpers.CopyFiles(resourcesFolder, Path.Combine(opts.PackageBasePath, "StreamingAssets"));
         }
 
         private static async Task Run(RealmOptions opts)
