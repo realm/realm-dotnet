@@ -75,25 +75,27 @@ steps:
 
 #@ def buildNugetPkgs():
 #@ for pkgName in nugetPackages:
-#@ buildCmd = "MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=" + configuration + " -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -restore"
+#@ buildCmd = "MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=" + configuration + " -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }} -restore"
   - name: #@ "Build nuget package " + pkgName
     run: #@ buildCmd
 #@ end
 
-  - name: Find version of package
+  - name: Find nupkg version
+    id: find-nupkg-version
     run: |
-      cd Realm/packages;
-      tmpName=$(basename Realm.Fody* .nupkg);
-      pkgName=${tmpName#"Realm.Fody."};
-      echo "NUGET_PKG_VERSION=${pkgName}" >> $GITHUB_ENV ;
-    shell: 'bash'
+      cd Realm/packages
+      tmpName=$(basename Realm.Fody* .nupkg)
+      pkgName=${tmpName#"Realm.Fody."}
+      echo "::set-output name=NUGET_PKG_VERSION::$pkgName"
+    shell: bash
 
 #@ for pkgName in nugetPackages:
+  #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION}}.nupkg"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
     with:
-      name: #@ pkgName + ".${{env.NUGET_PKG_VERSION}}.nupkg" 
-      path: ${{ github.workspace }}/Realm/packages/
+      name: #@ finalPkgName
+      path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
 #@ end
 
@@ -151,66 +153,79 @@ jobs:
       - build-wrappers-android
       - build-wrappers-linux
       - build-wrappers-windows-uwp
+    outputs:
+      nuget_pkg_version: ${{ steps.find-nupkg-version.outpus.NUGET_PKG_VERSION }}
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
-      - name: Fetch Artifacts MacOS
+      - name: Set version suffix
+        id: set-version-suffix
+        run: |
+          if [[ $GITHUB_EVENT_NAME != "pull_request" ]]; then
+            echo "::set-output name=BUILD_SUFFIX::alpha.$GITHUB_RUN_ID"
+          elif [[ GITHUB_EVENT_NAME == "pull_request" ]]; then
+            echo "::set-output name=BUILD_SUFFIX::PR.$GITHUB_RUN_ID"
+          else
+            echo "set-output name=BUILD_SUFFIX::"
+          fi
+        shell: bash
+      - name: Fetch artifacts MacOS
         uses: actions/download-artifact@v2
         with:
           name: wrappers-macos
           path: wrappers/build
-      - name: Fetch Artifacts iOS
+      - name: Fetch artifacts iOS
         uses: actions/download-artifact@v2
         with:
           name: wrappers-ios
           path: wrappers/build
-      - name: Fetch Artifacts Linux
+      - name: Fetch artifacts Linux
         uses: actions/download-artifact@v2
         with:
           name: wrappers-linux
           path: wrappers/build
-      - name: Fetch Artifacts Android armeabi-v7a
+      - name: Fetch artifacts Android armeabi-v7a
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-armeabi-v7a
           path: wrappers/build
-      - name: Fetch Artifacts Android arm64-v8a
+      - name: Fetch artifacts Android arm64-v8a
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-arm64-v8a
           path: wrappers/build
-      - name: Fetch Artifacts Android x86
+      - name: Fetch artifacts Android x86
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-x86
           path: wrappers/build
-      - name: Fetch Artifacts Android x86_64
+      - name: Fetch artifacts Android x86_64
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-x86_64
           path: wrappers/build
-      - name: Fetch Artifacts Windows 32bit
+      - name: Fetch artifacts Windows 32bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-Win32
           path: wrappers/build
-      - name: Fetch Artifacts Windows 64bit
+      - name: Fetch artifacts Windows 64bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-x64
           path: wrappers/build
-      - name: Fetch Artifacts Windows UWP 32bit
+      - name: Fetch artifacts Windows UWP 32bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-uwp-Win32
           path: wrappers/build
-      - name: Fetch Artifacts Windows UWP 64bit
+      - name: Fetch artifacts Windows UWP 64bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-uwp-x64
           path: wrappers/build
-      - name: Fetch Artifacts Windows UWP ARM
+      - name: Fetch artifacts Windows UWP ARM
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-uwp-ARM
