@@ -348,7 +348,7 @@ jobs:
         name: ${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.UnityWeaver.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.UnityWeaver.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
     - name: Build the tests
-      run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Test/Test.Nuget.config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}
+      run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Test/Test.Nuget.config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}
     - name: Run the tests
       run: |
         cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
