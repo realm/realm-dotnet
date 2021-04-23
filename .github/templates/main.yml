@@ -90,7 +90,7 @@ steps:
     shell: bash
 
 #@ for pkgName in nugetPackages:
-  #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION}}.nupkg"
+  #@ finalPkgName = "${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }}." + pkgName + ".${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
     with:
