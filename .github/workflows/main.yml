@@ -303,24 +303,24 @@ jobs:
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.Fody.${{env.NUGET_PKG_VERSION}}.nupkg
+        name: Realm.Fody.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION}}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.${{env.NUGET_PKG_VERSION}}.nupkg
+        name: Realm.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION}}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm.UnityUtils
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.UnityUtils.${{env.NUGET_PKG_VERSION}}.nupkg
+        name: Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION}}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm.UnityWeaver
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.UnityWeaver.${{env.NUGET_PKG_VERSION}}.nupkg
+        name: Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION}}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
