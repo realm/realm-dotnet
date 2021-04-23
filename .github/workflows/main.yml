@@ -206,6 +206,7 @@ jobs:
     - build-wrappers-windows-uwp
     outputs:
       nuget_pkg_version: ${{ steps.find-nupkg-version.outpus.NUGET_PKG_VERSION }}
+      build_suffix: ${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }}
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
