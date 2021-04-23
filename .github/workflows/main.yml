@@ -319,8 +319,7 @@ jobs:
   run-tests-net-framework:
     runs-on: windows-latest
     name: Run tests for NET framework
-    needs:
-    - build-nuget-packages
+    needs: build-nuget-packages
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -331,23 +330,23 @@ jobs:
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: ${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.Fody.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.Fody.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        name: ${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.Fody.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.Fody.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: ${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        name: ${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
     - name: Fetch Realm.UnityUtils
       uses: actions/download-artifact@v2
       with:
-        name: ${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.UnityUtils.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.UnityUtils.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        name: ${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.UnityUtils.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.UnityUtils.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
     - name: Fetch Realm.UnityWeaver
       uses: actions/download-artifact@v2
       with:
-        name: ${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.UnityWeaver.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/${{ jobs.build-nuget-packages.outputs.build_suffix }}Realm.UnityWeaver.${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        name: ${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.UnityWeaver.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/${{ needs.build-nuget-packages.outputs.build_suffix }}Realm.UnityWeaver.${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg
     - name: Build the tests
       run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Test/Test.Nuget.config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}
     - name: Run the tests

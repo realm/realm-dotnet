@@ -106,7 +106,7 @@ steps:
 =======
 #@ def fetchNugetPkgs():
 #@ for pkgName in nugetPackages:
-#@ finalPkgName = "${{ jobs.build-nuget-packages.outputs.build_suffix }}" + pkgName + ".${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
+#@ finalPkgName = "${{ needs.build-nuget-packages.outputs.build_suffix }}" + pkgName + ".${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
   - name: #@ "Fetch " + pkgName
     uses: actions/download-artifact@v2
     with:
@@ -244,8 +244,7 @@ jobs:
   run-tests-net-framework:
     runs-on: windows-latest
     name: Run tests for NET framework
-    needs:
-    - build-nuget-packages
+    needs: build-nuget-packages
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
