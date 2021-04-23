@@ -41,7 +41,6 @@ namespace Realms
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
     [Serializable]
-    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public abstract class RealmObjectBase
         : INotifyPropertyChanged,
           IThreadConfined,
@@ -66,30 +65,6 @@ namespace Realms
         [field: NonSerialized, XmlIgnore]
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
-
-        internal string DebuggerDisplay(bool withTypeName = false)
-        {
-            var typeString = string.Empty;
-
-            if (withTypeName)
-            {
-                typeString = GetType().Name;
-            }
-
-            var pkString = string.Empty;
-
-            var pkProperty = _metadata?.Schema.PrimaryKeyProperty;
-            if (pkProperty != null && _metadata.Helper.TryGetPrimaryKeyValue(this as RealmObject, out var pkValue))
-            {
-                pkString += $"{pkProperty.Value.Name} = {pkValue}";
-            }
-
-            var isValidString = $"IsValid = {IsValid}";
-
-            var strings = new[] { typeString, pkString, isValidString }.Where(s => !string.IsNullOrEmpty(s));
-
-            return string.Join(", ", strings);
-        }
 
         /// <summary>
         /// Occurs when a property value changes.
@@ -351,6 +326,30 @@ namespace Realms
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
             return _hashCode?.Value ?? base.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var typeString = GetType().Name;
+
+            if (!IsManaged)
+            {
+                return $"{typeString} (unmanaged)";
+            }
+
+            if (!IsValid)
+            {
+                return $"{typeString} (removed)";
+            }
+
+            if (this is RealmObject ro && _metadata.Helper.TryGetPrimaryKeyValue(ro, out var pkValue))
+            {
+                var pkProperty = _metadata.Schema.PrimaryKeyProperty;
+                return $"{typeString} ({pkProperty.Value.Name} = {pkValue})";
+            }
+
+            return typeString;
         }
 
         /// <summary>
