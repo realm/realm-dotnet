@@ -204,6 +204,8 @@ jobs:
     - build-wrappers-android
     - build-wrappers-linux
     - build-wrappers-windows-uwp
+    outputs:
+      nuget_pkg_version: ${{ steps.find-nupkg-version.outpus.NUGET_PKG_VERSION }}
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -212,18 +214,14 @@ jobs:
       with:
         submodules: recursive
     - name: Set version suffix
+      id: set-version-suffix
       run: |
-        if [[ $GITHUB_REF == "master" ]]
-        then
-          echo "BUILD_SUFFIX=alpha.$GITHUB_RUN_ID" >> $GITHUB_ENV
-        elif [[ "$GITHUB_REF" == *"beta"* ]]
-        then
-          echo "BUILD_SUFFIX=beta.$GITHUB_RUN_ID" >> $GITHUB_ENV
-        elif [[ "$GITHUB_REF" == *"release"* ]]
-        then
-          echo "BUILD_SUFFIX=release.$GITHUB_RUN_ID" >> $GITHUB_ENV
+        if [[ $GITHUB_EVENT_NAME != "pull_request" ]]; then
+          echo "::set-output name=BUILD_SUFFIX::alpha.$GITHUB_RUN_ID"
+        elif [[ GITHUB_EVENT_NAME == "pull_request" ]]; then
+          echo "::set-output name=BUILD_SUFFIX::PR.$GITHUB_RUN_ID"
         else
-          echo "BUILD_SUFFIX=" >> $GITHUB_ENV
+          echo "set-output name=BUILD_SUFFIX::"
         fi
       shell: bash
     - name: Fetch artifacts MacOS
@@ -287,19 +285,20 @@ jobs:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Build nuget package Realm.Fody
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ env.BUILD_SUFFIX }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }} -restore
     - name: Build nuget package Realm
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ env.BUILD_SUFFIX }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }} -restore
     - name: Build nuget package Realm.UnityUtils
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ env.BUILD_SUFFIX }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }} -restore
     - name: Build nuget package Realm.UnityWeaver
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ env.BUILD_SUFFIX }} -restore
-    - name: Find version of package
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.BUILD_SUFFIX }} -restore
+    - name: Find nupkg version
+      id: find-nupkg-version
       run: |
         cd Realm/packages
         tmpName=$(basename Realm.Fody* .nupkg)
         pkgName=${tmpName#"Realm.Fody."}
-        echo "NUGET_PKG_VERSION=${pkgName}" >> $GITHUB_ENV
+        echo "::set-output name=NUGET_PKG_VERSION::$pkgName"
       shell: bash
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
