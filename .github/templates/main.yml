@@ -93,6 +93,7 @@ steps:
 #@ end
 #@ end
 
+<<<<<<< HEAD
 #@ def findPackageVersion():
   - name: Find nupkg version
     id: find-nupkg-version
@@ -102,6 +103,17 @@ steps:
       pkgName=${tmpName#"Realm.Fody."}
       echo "::set-output name=pacakge_version::$pkgName"
     shell: bash
+=======
+#@ def fetchNugetPkgs():
+#@ for pkgName in nugetPackages:
+#@ finalPkgName = "${{ jobs.build-nuget-packages.outputs.build_suffix }}" + pkgName + ".${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
+  - name: #@ "Fetch " + pkgName
+    uses: actions/download-artifact@v2
+    with:
+      name: #@ finalPkgName
+      path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName
+#@ end
+>>>>>>> Templated test
 #@ end
 
 ---
@@ -146,7 +158,7 @@ jobs:
       matrix:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
-  build-package:
+  build-nuget-packages:
     runs-on: windows-latest
     name: Build packages
     needs:
@@ -229,3 +241,24 @@ jobs:
       - #@ template.replace(buildPackages())
       - #@ template.replace(findPackageVersion())
       - #@ template.replace(uploadPackageArtifacts())
+  run-tests-net-framework:
+    runs-on: windows-latest
+    name: Run tests for NET framework
+    needs:
+    - build-nuget-packages
+    steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - #@ checkoutCode()
+      - #@ template.replace(fetchNugetPkgs())
+      - name: Build the tests
+        run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Test/Test.Nuget.config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ jobs.build-nuget-packages.outputs.nuget_pkg_version }}"
+      - name: Run the tests
+        run: |
+          cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
+          Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        if: always()
+        with:
+          files: TestResults.Windows.xml
