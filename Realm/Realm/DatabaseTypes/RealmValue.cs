@@ -51,7 +51,7 @@ namespace Realms
     /// </code>
     /// </example>
     [Preserve(AllMembers = true)]
-    [DebuggerDisplay("{Type} - {ToString(),nq}")]
+    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public readonly struct RealmValue : IEquatable<RealmValue>
     {
         private readonly PrimitiveValue _primitiveValue;
@@ -115,6 +115,12 @@ namespace Realms
         {
             Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
             _objectValue = obj;
+        }
+
+        internal string DebuggerDisplay()
+        {
+            var valueString = Type == RealmValueType.Object ? AsRealmObject().DebuggerDisplay(true) : ToString();
+            return $"Type = {Type}, Value = {valueString}";
         }
 
         /// <summary>
