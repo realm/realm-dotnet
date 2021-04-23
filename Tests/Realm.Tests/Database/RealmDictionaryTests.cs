@@ -119,22 +119,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.ByteDictionary, testData);
         }
 
-        [TestCaseSource(nameof(ByteTestValues))]
-        public void ByteCounter_Unmanaged(TestCaseData<byte> testData)
-        {
-            RunUnmanagedTests(o => o.ByteCounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void NullableByte_Unmanaged(TestCaseData<byte?> testData)
         {
             RunUnmanagedTests(o => o.NullableByteDictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
-        public void NullableByteCounter_Unmanaged(TestCaseData<byte?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
@@ -143,22 +131,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.ByteDictionary, testData);
         }
 
-        [TestCaseSource(nameof(ByteTestValues))]
-        public void ByteCounter_Managed(TestCaseData<byte> testData)
-        {
-            RunManagedTests(o => o.ByteCounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void NullableByte_Managed(TestCaseData<byte?> testData)
         {
             RunManagedTests(o => o.NullableByteDictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
-        public void NullableByteCounter_Managed(TestCaseData<byte?> testData)
-        {
-            RunManagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -171,18 +147,6 @@ namespace Realms.Tests.Database
         public void NullableByte_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableByteDictionary, NullableByteTestValues().Last());
-        }
-
-        [Test]
-        public void ByteCounter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.ByteCounterDictionary, ToInteger(ByteTestValues().Last()));
-        }
-
-        [Test]
-        public void NullableByteCounter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableByteCounterDictionary, ToInteger(NullableByteTestValues().Last()));
         }
 
         #endregion
@@ -218,22 +182,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int16Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int16TestValues))]
-        public void Int16Counter_Unmanaged(TestCaseData<short> testData)
-        {
-            RunUnmanagedTests(o => o.Int16CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void NullableInt16_Unmanaged(TestCaseData<short?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt16Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void NullableInt16Counter_Unmanaged(TestCaseData<short?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
@@ -242,22 +194,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int16Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int16TestValues))]
-        public void Int16Counter_Managed(TestCaseData<short> testData)
-        {
-            RunManagedTests(o => o.Int16CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void NullableInt16_Managed(TestCaseData<short?> testData)
         {
             RunManagedTests(o => o.NullableInt16Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void NullableInt16Counter_Managed(TestCaseData<short?> testData)
-        {
-            RunManagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -270,18 +210,6 @@ namespace Realms.Tests.Database
         public void NullableInt16_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt16Dictionary, NullableInt16TestValues().Last());
-        }
-
-        [Test]
-        public void Int16Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int16CounterDictionary, ToInteger(Int16TestValues().Last()));
-        }
-
-        [Test]
-        public void NullableInt16Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt16CounterDictionary, ToInteger(NullableInt16TestValues().Last()));
         }
 
         #endregion
@@ -317,22 +245,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int32Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int32TestValues))]
-        public void Int32Counter_Unmanaged(TestCaseData<int> testData)
-        {
-            RunUnmanagedTests(o => o.Int32CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void NullableInt32_Unmanaged(TestCaseData<int?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt32Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void NullableInt32Counter_Unmanaged(TestCaseData<int?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
@@ -341,22 +257,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int32Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int32TestValues))]
-        public void Int32Counter_Managed(TestCaseData<int> testData)
-        {
-            RunManagedTests(o => o.Int32CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void NullableInt32_Managed(TestCaseData<int?> testData)
         {
             RunManagedTests(o => o.NullableInt32Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void NullableInt32Counter_Managed(TestCaseData<int?> testData)
-        {
-            RunManagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -369,18 +273,6 @@ namespace Realms.Tests.Database
         public void NullableInt32_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt32Dictionary, NullableInt32TestValues().Last());
-        }
-
-        [Test]
-        public void Int32Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int32CounterDictionary, ToInteger(Int32TestValues().Last()));
-        }
-
-        [Test]
-        public void NullableInt32Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt32CounterDictionary, ToInteger(NullableInt32TestValues().Last()));
         }
 
         #endregion
@@ -416,22 +308,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int64Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void Int64Counter_Unmanaged(TestCaseData<long> testData)
-        {
-            RunUnmanagedTests(o => o.Int64CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void NullableInt64_Unmanaged(TestCaseData<long?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt64Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void NullableInt64Counter_Unmanaged(TestCaseData<long?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -440,22 +320,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int64Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void Int64Counter_Managed(TestCaseData<long> testData)
-        {
-            RunManagedTests(o => o.Int64CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void NullableInt64_Managed(TestCaseData<long?> testData)
         {
             RunManagedTests(o => o.NullableInt64Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void NullableInt64Counter_Managed(TestCaseData<long?> testData)
-        {
-            RunManagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -468,18 +336,6 @@ namespace Realms.Tests.Database
         public void NullableInt64_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt64Dictionary, NullableInt64TestValues().Last());
-        }
-
-        [Test]
-        public void Int64Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int64CounterDictionary, ToInteger(Int64TestValues().Last()));
-        }
-
-        [Test]
-        public void NullableInt64Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt64CounterDictionary, ToInteger(NullableInt64TestValues().Last()));
         }
         #endregion
 

@@ -105,6 +105,18 @@ namespace RealmWeaver
             RealmValueTypeName,
         };
 
+        public static readonly HashSet<string> _counterTypes = new HashSet<string>
+        {
+            $"Realms.RealmInteger`1<{ByteTypeName}>",
+            $"Realms.RealmInteger`1<{Int16TypeName}>",
+            $"Realms.RealmInteger`1<{Int32TypeName}>",
+            $"Realms.RealmInteger`1<{Int64TypeName}>",
+            $"System.Nullable`1<Realms.RealmInteger`1<{ByteTypeName}>>",
+            $"System.Nullable`1<Realms.RealmInteger`1<{Int16TypeName}>>",
+            $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
+            $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
+        };
+
         private static readonly IEnumerable<string> _primaryKeyTypes = new[]
         {
             StringTypeName,
@@ -390,10 +402,18 @@ Analytics payload
             {
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
-                if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_realmValueTypes.Contains(elementType.FullName))
+
+                if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references))
                 {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
+                    if (_counterTypes.Contains(elementType.FullName))
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<RealmInteger> which is not supported.");
+                    }
+
+                    if (!_realmValueTypes.Contains(elementType.FullName))
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
+                    }
                 }
 
                 if (prop.SetMethod != null)
