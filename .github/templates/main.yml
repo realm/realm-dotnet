@@ -93,6 +93,17 @@ steps:
 #@ end
 #@ end
 
+#@ def findPackageVersion():
+  - name: Find nupkg version
+    id: find-nupkg-version
+    run: |
+      cd Realm/packages
+      tmpName=$(basename Realm.Fody* .nupkg)
+      pkgName=${tmpName#"Realm.Fody."}
+      echo "::set-output name=pacakge_version::$pkgName"
+    shell: bash
+#@ end
+
 ---
 name: build and test
 "on":
@@ -216,12 +227,5 @@ jobs:
           name: wrappers-windows-uwp-ARM
           path: wrappers/build
       - #@ template.replace(buildPackages())
-      - name: Find nupkg version
-        id: find-nupkg-version
-        run: |
-          cd Realm/packages
-          tmpName=$(basename Realm.Fody* .nupkg)
-          pkgName=${tmpName#"Realm.Fody."}
-          echo "::set-output name=pacakge_version::$pkgName"
-        shell: bash
+      - #@ template.replace(findPackageVersion())
       - #@ template.replace(uploadPackageArtifacts())
