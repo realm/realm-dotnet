@@ -278,13 +278,12 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var config = _realm.Config;
-
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    var owner = _realm.Write(() =>
+                    using var realm = Realm.GetInstance(_configuration);
+                    var owner = realm.Write(() =>
                     {
-                        return _realm.Add(new Owner());
+                        return realm.Add(new Owner());
                     });
 
                     var frozenOwner = owner.Freeze();
@@ -294,7 +293,7 @@ namespace Realms.Tests.Database
                 });
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
-                Realm.DeleteRealm(config);
+                Realm.DeleteRealm(_configuration);
             });
         }
 
