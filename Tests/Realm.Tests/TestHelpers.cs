@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
@@ -114,43 +115,62 @@ namespace Realms.Tests
             return WaitUntilReferenceIsCollected(references);
         }
 
-        private static Task WaitUntilReferenceIsCollected(params WeakReference[] references)
+        private static async Task WaitUntilReferenceIsCollected(params WeakReference[] references)
         {
-            return Task.Run(async () =>
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+            using var cts = new CancellationTokenSource(10000);
 
-                while (references.Any(r => r.IsAlive))
+            try
+            {
+                await Task.Run(async () =>
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
 
-                    await Task.Delay(100);
-                }
-            }).Timeout(10000);
+                    while (references.Any(r => r.IsAlive))
+                    {
+                        cts.Token.ThrowIfCancellationRequested();
+
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+
+                        await Task.Delay(100);
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            Assert.That(references.All(r => !r.IsAlive), "Expected all references to be collected after 10 sec. but some of them were alive.");
         }
 
         private static async Task EnsureThatReferenceIsAlive(params WeakReference[] references)
         {
-            var timeoutTask = Task.Delay(2000);
+            using var cts = new CancellationTokenSource(2000);
 
-            var result = await Task.WhenAny(timeoutTask, Task.Run(async () =>
+            try
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-
-                while (references.All(r => r.IsAlive))
+                await Task.Run(async () =>
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
 
-                    await Task.Delay(100);
-                }
-            }));
+                    while (references.All(r => r.IsAlive))
+                    {
+                        cts.Token.ThrowIfCancellationRequested();
 
-            Assert.That(result, Is.EqualTo(timeoutTask));
-            Assert.That(references.All(r => r.IsAlive), $"Expected references to be alive after 2000 ms, but at least one was dead.");
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+
+                        await Task.Delay(100);
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            Assert.That(references.All(r => r.IsAlive), "Expected all references to be alive after 2000 ms, but at least one was dead.");
         }
 
         public static async Task EnsurePreserverKeepsObjectAlive<T>(Func<(T Preserver, WeakReference Reference)> func, Action<(T Preserver, WeakReference Reference)> assertReferenceIsAlive = null)
@@ -168,6 +188,8 @@ namespace Realms.Tests
                 {
                     disposable.Dispose();
                 }
+
+                preserver = default;
             })();
 
             await WaitUntilReferenceIsCollected(reference);

@@ -870,10 +870,10 @@ namespace Realms.Tests.Database
                 {
                     var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    var realm = Realm.GetInstance();
+                    using var realm = Realm.GetInstance();
                     var state = stateAccessor.GetValue(realm);
 
-                    return new object[] { realm, state };
+                    return new object[] { state };
                 });
             });
         }

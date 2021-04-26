@@ -67,43 +67,36 @@ namespace Realms.Tests.Database
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
 
-                var realm = GetRealm(_config);
+                using var realm = GetRealm(_config);
 
-                try
+                var query = realm.All<IntPropertyObject>();
+                using var token = query.SubscribeForNotifications((sender, changes, error) =>
                 {
-                    var query = realm.All<IntPropertyObject>();
-                    query.SubscribeForNotifications((sender, changes, error) =>
+                    if (changes != null)
                     {
-                        if (changes != null)
-                        {
-                            tcs.TrySetResult(changes);
-                        }
-                        else if (error != null)
-                        {
-                            tcs.TrySetException(error);
-                        }
-                    });
-
-                    await Task.Run(() =>
+                        tcs.TrySetResult(changes);
+                    }
+                    else if (error != null)
                     {
-                        using var otherRealm = GetRealm(_config);
-                        otherRealm.Write(() => otherRealm.Add(new IntPropertyObject
-                        {
-                            Int = 42
-                        }));
-                    });
+                        tcs.TrySetException(error);
+                    }
+                });
 
-                    var backgroundChanges = await tcs.Task;
-
-                    Assert.That(backgroundChanges.InsertedIndices, Is.Not.Empty);
-                    Assert.That(backgroundChanges.DeletedIndices, Is.Empty);
-                    Assert.That(backgroundChanges.ModifiedIndices, Is.Empty);
-                    Assert.That(backgroundChanges.InsertedIndices[0], Is.EqualTo(0));
-                }
-                finally
+                await Task.Run(() =>
                 {
-                    realm.Dispose();
-                }
+                    using var otherRealm = GetRealm(_config);
+                    otherRealm.Write(() => otherRealm.Add(new IntPropertyObject
+                    {
+                        Int = 42
+                    }));
+                });
+
+                var backgroundChanges = await tcs.Task;
+
+                Assert.That(backgroundChanges.InsertedIndices, Is.Not.Empty);
+                Assert.That(backgroundChanges.DeletedIndices, Is.Empty);
+                Assert.That(backgroundChanges.ModifiedIndices, Is.Empty);
+                Assert.That(backgroundChanges.InsertedIndices[0], Is.EqualTo(0));
             });
         }
 
