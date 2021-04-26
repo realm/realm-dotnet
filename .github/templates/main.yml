@@ -161,8 +161,7 @@ jobs:
       - #@ checkoutCode()
       - name: Set version suffix
         id: set-version-suffix
-        outputs:
-          build_suffix: ${{ github.event_name == 'pull_request' && format('PR-{0}.{1}', github.event.number, env.GITHUB_RUN_NUMBER) || format('alpha.{0}', env.GITHUB_RUN_NUMBER)}}
+        run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}.{1}', github.event.number, env.GITHUB_RUN_NUMBER) || format('alpha.{0}', env.GITHUB_RUN_NUMBER)}}"
       - name: Fetch artifacts MacOS
         uses: actions/download-artifact@v2
         with:
