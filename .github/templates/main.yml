@@ -93,7 +93,6 @@ steps:
 #@ end
 #@ end
 
-<<<<<<< HEAD
 #@ def findPackageVersion():
   - name: Find nupkg version
     id: find-nupkg-version
@@ -103,7 +102,8 @@ steps:
       pkgName=${tmpName#"Realm.Fody."}
       echo "::set-output name=pacakge_version::$pkgName"
     shell: bash
-=======
+#@ end
+
 #@ def fetchNugetPkgs():
 #@ for pkgName in nugetPackages:
 #@ finalPkgName = pkgName + ".${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
@@ -113,7 +113,6 @@ steps:
       name: #@ finalPkgName
       path: ${{ github.workspace }}/Realm/packages/
 #@ end
->>>>>>> Templated test
 #@ end
 
 ---
