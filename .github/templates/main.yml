@@ -94,17 +94,17 @@ steps:
 #@ end
 
 #@ def findPackageVersion():
-  - name: Find nupkg version
-    id: find-nupkg-version
-    run: |
-      cd Realm/packages
-      tmpName=$(basename Realm.Fody* .nupkg)
-      pkgName=${tmpName#"Realm.Fody."}
-      echo "::set-output name=package_version::$pkgName"
-    shell: bash
+name: Find nupkg version
+id: find-nupkg-version
+run: |
+  cd Realm/packages
+  tmpName=$(basename Realm.Fody* .nupkg)
+  pkgName=${tmpName#"Realm.Fody."}
+  echo "::set-output name=package_version::$pkgName"
+shell: bash
 #@ end
 
-#@ def fetchNugetPkgs():
+#@ def fetchPackageArtifacts():
 #@ for pkgName in nugetPackages:
 #@ finalPkgName = pkgName + ".${{ needs.build-nuget-packages.outputs.package_version }}.nupkg"
   - name: #@ "Fetch " + pkgName
@@ -238,7 +238,7 @@ jobs:
           name: wrappers-windows-uwp-ARM
           path: wrappers/build
       - #@ template.replace(buildPackages())
-      - #@ template.replace(findPackageVersion())
+      - #@ findPackageVersion()
       - #@ template.replace(uploadPackageArtifacts())
   run-tests-net-framework:
     runs-on: windows-latest
@@ -248,7 +248,7 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
-      - #@ template.replace(fetchNugetPkgs())
+      - #@ template.replace(fetchPackageArtifacts())
       - name: Build the tests
         run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.package_version }} -restore"
       - name: Run the tests #! TODO don't hardcode Release
