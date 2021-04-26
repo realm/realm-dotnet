@@ -109,7 +109,15 @@ namespace Realms.Tests
         {
             var references = new Func<WeakReference[]>(() =>
             {
-                return objectsGetter().Select(o => new WeakReference(o)).ToArray();
+                var objects = objectsGetter();
+                var result = new WeakReference[objects.Length];
+
+                for (var i = 0; i < objects.Length; i++)
+                {
+                    result[i] = new WeakReference(objects[i]);
+                }
+
+                return result;
             })();
 
             return WaitUntilReferenceIsCollected(references);
