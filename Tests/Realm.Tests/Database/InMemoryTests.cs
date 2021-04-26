@@ -136,28 +136,24 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference realmReference = null;
-                using (var realm = Realm.GetInstance(_config))
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
+                    var realm = Realm.GetInstance(_config);
                     realm.Write(() => realm.Add(new IntPropertyObject
                     {
                         Int = 42
                     }));
 
-                    realmReference = new WeakReference(realm);
-                }
-
-                await TestHelpers.WaitUntilReferenceIsCollected(realmReference);
+                    return new[] { realm };
+                });
 
                 // Sometimes it takes a little while for the file to be deleted
                 await Task.Delay(200);
 
                 Assert.That(File.Exists(_config.DatabasePath), Is.False);
 
-                using (var realm = GetRealm(_config))
-                {
-                    Assert.That(realm.All<IntPropertyObject>(), Is.Empty);
-                }
+                using var realm2 = GetRealm(_config);
+                Assert.That(realm2.All<IntPropertyObject>(), Is.Empty);
             });
         }
 

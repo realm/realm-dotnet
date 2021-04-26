@@ -966,19 +966,20 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var owner = _realm.Write(() =>
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    return _realm.Add(new Owner
+                    var owner = _realm.Write(() =>
                     {
-                        Dogs = { new Dog { Name = "Lasse" } }
+                        return _realm.Add(new Owner
+                        {
+                            Dogs = { new Dog { Name = "Lasse" } }
+                        });
                     });
+
+                    var frozenList = owner.Dogs.Freeze();
+                    var frozenRealm = frozenList.AsRealmCollection().Realm;
+                    return new object[] { frozenList, frozenRealm };
                 });
-
-                var listRef = new WeakReference(Freeze(owner.Dogs));
-                owner = null;
-                _realm.Dispose();
-
-                await TestHelpers.WaitUntilReferenceIsCollected(listRef);
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -1015,15 +1016,16 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                _realm.Write(() =>
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    _realm.Add(new Dog { Name = "Lasse" });
+                    _realm.Write(() =>
+                    {
+                        _realm.Add(new Dog { Name = "Lasse" });
+                    });
+
+                    var frozenQuery = _realm.All<Dog>().Freeze();
+                    return new[] { frozenQuery };
                 });
-
-                var queryRef = new WeakReference(_realm.All<Dog>());
-                _realm.Dispose();
-
-                await TestHelpers.WaitUntilReferenceIsCollected(queryRef);
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);

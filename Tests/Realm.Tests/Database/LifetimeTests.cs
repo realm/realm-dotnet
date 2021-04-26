@@ -24,35 +24,27 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class LifetimeTests : RealmTest
     {
-        // This method was extracted to ensure that the actual realm instance
-        // isn't preserved in the scope of the test, even when the debugger is running.
-        private static WeakReference GetWeakRealm()
-        {
-            return new WeakReference(Realm.GetInstance());
-        }
-
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                // Arrange
-                var realmRef = GetWeakRealm();
-                var person = ((Realm)realmRef.Target).Write(() =>
+                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
                 {
-                    return ((Realm)realmRef.Target).Add(new Person());
+                    var realm = Realm.GetInstance();
+                    var person = realm.Write(() =>
+                    {
+                        return realm.Add(new Person());
+                    });
+                    var realmReference = new WeakReference(realm);
+
+                    return (person, realmReference);
+                }, x =>
+                {
+                    Assert.That(x.Reference.IsAlive);
+                    Assert.That(((Realm)x.Reference.Target).IsClosed, Is.False);
+                    Assert.That(x.Preserver.IsValid);
                 });
-
-                // Act
-                await TestHelpers.EnsureThatReferenceIsAlive(2000, realmRef);
-
-                // Assert
-                Assert.That(realmRef.IsAlive);
-                Assert.That(((Realm)realmRef.Target).IsClosed, Is.False);
-                Assert.That(person.IsValid);
-
-                // TearDown
-                ((Realm)realmRef.Target).Dispose();
             });
         }
 
@@ -61,17 +53,22 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                // Arrange
                 using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
-                var realmThatWillBeFinalized = GetWeakRealm();
-                Person person = null;
-                realm.Write(() =>
-                {
-                    person = realm.Add(new Person());
-                });
 
-                // Act
-                await TestHelpers.WaitUntilReferenceIsCollected(realmThatWillBeFinalized);
+                Person person = null;
+                await TestHelpers.EnsureObjectsAreCollected(() =>
+                {
+                    var secondRealm = Realm.GetInstance(realm.Config);
+
+                    // Create a person in the first Realm instance and let the second one get garbage collected.
+                    // We expect this not to close the first one or invalidate the person instance.
+                    realm.Write(() =>
+                    {
+                        person = realm.Add(new Person());
+                    });
+
+                    return new[] { secondRealm };
+                });
 
                 // Assert
                 Assert.That(person.IsValid);
@@ -83,16 +80,14 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var realmRef = GetWeakRealm();
-                var transaction = ((Realm)realmRef.Target).BeginWrite();
+                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
+                {
+                    var realm = Realm.GetInstance();
+                    var transaction = realm.BeginWrite();
+                    var realmReference = new WeakReference(realm);
 
-                await TestHelpers.EnsureThatReferenceIsAlive(2000, realmRef);
-
-                Assert.DoesNotThrow(transaction.Dispose);
-                Assert.That(realmRef.IsAlive);
-
-                // TearDown
-                ((Realm)realmRef.Target).Dispose();
+                    return (transaction, realmReference);
+                });
             });
         }
     }

@@ -820,13 +820,11 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference frozenRealmRef = null;
-                using (var realm = GetRealm())
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    frozenRealmRef = new WeakReference(realm.Freeze());
-                }
-
-                await TestHelpers.WaitUntilReferenceIsCollected(frozenRealmRef);
+                    using var realm = GetRealm();
+                    return new[] { realm.Freeze() };
+                });
 
                 // This will throw on Windows if the Realm wasn't really disposed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -868,21 +866,15 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
+                await TestHelpers.EnsureObjectsAreCollected(() =>
+                {
+                    var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                var realm = Realm.GetInstance();
-                var state = stateAccessor.GetValue(realm);
+                    var realm = Realm.GetInstance();
+                    var state = stateAccessor.GetValue(realm);
 
-                var realmRef = new WeakReference(realm);
-                var stateRef = new WeakReference(state);
-
-                realm = null;
-                state = null;
-
-                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                var token = cts.Token;
-
-                await TestHelpers.WaitUntilReferenceIsCollected(realmRef, stateRef);
+                    return new object[] { realm, state };
+                });
             });
         }
 

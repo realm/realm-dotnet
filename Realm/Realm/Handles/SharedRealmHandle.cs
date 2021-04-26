@@ -154,7 +154,7 @@ namespace Realms
                 GetNativeSchemaCallback native_schema_callback,
                 OpenRealmCallback open_callback,
                 OnBindingContextDestructedCallback context_destructed_callback,
-                LogMessageCallback log_mssage_callback,
+                LogMessageCallback log_message_callback,
                 NotifiableObjectHandleBase.NotificationCallback notify_object,
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
                 MigrationCallback migration_callback,

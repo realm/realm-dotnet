@@ -280,18 +280,18 @@ namespace Realms.Tests.Database
             {
                 var config = _realm.Config;
 
-                WeakReference objRef = null;
-                var owner = _realm.Write(() =>
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    return _realm.Add(new Owner());
+                    var owner = _realm.Write(() =>
+                    {
+                        return _realm.Add(new Owner());
+                    });
+
+                    var frozenOwner = owner.Freeze();
+                    var frozenRealm = frozenOwner.Realm;
+
+                    return new object[] { frozenOwner, frozenRealm };
                 });
-
-                objRef = new WeakReference(owner.Freeze());
-
-                owner = null;
-                _realm.Dispose();
-
-                await TestHelpers.WaitUntilReferenceIsCollected(objRef);
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(config);

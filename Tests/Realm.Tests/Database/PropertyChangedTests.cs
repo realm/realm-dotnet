@@ -406,25 +406,25 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var notifiedPropertyNames = new List<string>();
-                var person = _realm.Write(() => _realm.Add(new Person()));
-
-                person.PropertyChanged += (sender, e) =>
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    notifiedPropertyNames.Add(e.PropertyName);
-                };
+                    var person = _realm.Write(() => _realm.Add(new Person()));
 
-                _realm.Write(() => person.FirstName = "Peter");
+                    person.PropertyChanged += (sender, e) =>
+                    {
+                        notifiedPropertyNames.Add(e.PropertyName);
+                    };
 
-                // Sanity check
-                _realm.Refresh();
-                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
+                    _realm.Write(() => person.FirstName = "Peter");
 
-                notifiedPropertyNames.Clear();
+                    // Sanity check
+                    _realm.Refresh();
+                    Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
-                var personReference = new WeakReference(person);
-                person = null;
+                    notifiedPropertyNames.Clear();
 
-                await TestHelpers.WaitUntilReferenceIsCollected(personReference);
+                    return new[] { person };
+                });
 
                 _realm.Write(() =>
                 {

@@ -104,7 +104,17 @@ namespace Realms.Tests
             return destPath;
         }
 
-        public static Task WaitUntilReferenceIsCollected(params WeakReference[] references)
+        public static Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
+        {
+            var references = new Func<WeakReference[]>(() =>
+            {
+                return objectsGetter().Select(o => new WeakReference(o)).ToArray();
+            })();
+
+            return WaitUntilReferenceIsCollected(references);
+        }
+
+        private static Task WaitUntilReferenceIsCollected(params WeakReference[] references)
         {
             return Task.Run(async () =>
             {
@@ -116,14 +126,14 @@ namespace Realms.Tests
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
 
-                    await Task.Delay(1000);
+                    await Task.Delay(100);
                 }
             }).Timeout(10000);
         }
 
-        public static async Task EnsureThatReferenceIsAlive(int milliseconds, params WeakReference[] references)
+        private static async Task EnsureThatReferenceIsAlive(params WeakReference[] references)
         {
-            var timeoutTask = Task.Delay(milliseconds);
+            var timeoutTask = Task.Delay(2000);
 
             var result = await Task.WhenAny(timeoutTask, Task.Run(async () =>
             {
@@ -135,11 +145,32 @@ namespace Realms.Tests
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
 
-                    await Task.Delay(1000);
+                    await Task.Delay(100);
                 }
             }));
 
-            Assert.That(references.All(r => r.IsAlive), $"Expected references to be alive after {milliseconds} ms, but at least one was dead.");
+            Assert.That(result, Is.EqualTo(timeoutTask));
+            Assert.That(references.All(r => r.IsAlive), $"Expected references to be alive after 2000 ms, but at least one was dead.");
+        }
+
+        public static async Task EnsurePreserverKeepsObjectAlive<T>(Func<(T Preserver, WeakReference Reference)> func, Action<(T Preserver, WeakReference Reference)> assertReferenceIsAlive = null)
+        {
+            WeakReference reference = null;
+            await new Func<Task>(async () =>
+            {
+                T preserver;
+                (preserver, reference) = func();
+                await EnsureThatReferenceIsAlive(reference);
+
+                assertReferenceIsAlive?.Invoke((preserver, reference));
+
+                if (preserver is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            })();
+
+            await WaitUntilReferenceIsCollected(reference);
         }
 
         public static bool IsWindows

@@ -190,22 +190,18 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var dictionary = _realm.Write(() =>
+                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
                 {
-                    return _realm.Add(new OrderedContainer()).ItemsDictionary;
+                    var dictionary = _realm.Write(() =>
+                    {
+                        return _realm.Add(new OrderedContainer()).ItemsDictionary;
+                    });
+
+                    var dictReference = new WeakReference(dictionary);
+                    var token = dictionary.SubscribeForKeyNotifications(delegate { });
+
+                    return (token, dictReference);
                 });
-
-                var weakRef = new WeakReference(dictionary);
-                var token = dictionary.SubscribeForKeyNotifications(delegate { });
-
-                dictionary = null;
-
-                await TestHelpers.EnsureThatReferenceIsAlive(2000, weakRef);
-
-                token.Dispose();
-                token = null;
-
-                await TestHelpers.WaitUntilReferenceIsCollected(weakRef);
             });
         }
 
