@@ -327,6 +327,26 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityUtils
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.UnityUtils.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityWeaver
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Build the tests
       run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.package_version }} -restore
     - name: Run the tests
