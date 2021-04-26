@@ -83,7 +83,7 @@ namespace RealmWeaver
                 Config = config
             };
 
-            return weaver.ExecuteTestRun(assemblyPath, runPeVerify: false, ignoreCodes: new[] { "80131869" }); ;
+            return weaver.ExecuteTestRun(assemblyPath, runPeVerify: false, ignoreCodes: new[] { "80131869" });
         }
 
         #endregion helpers

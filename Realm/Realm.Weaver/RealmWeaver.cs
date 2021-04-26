@@ -105,18 +105,6 @@ namespace RealmWeaver
             RealmValueTypeName,
         };
 
-        public static readonly HashSet<string> _counterTypes = new HashSet<string>
-        {
-            $"Realms.RealmInteger`1<{ByteTypeName}>",
-            $"Realms.RealmInteger`1<{Int16TypeName}>",
-            $"Realms.RealmInteger`1<{Int32TypeName}>",
-            $"Realms.RealmInteger`1<{Int64TypeName}>",
-            $"System.Nullable`1<Realms.RealmInteger`1<{ByteTypeName}>>",
-            $"System.Nullable`1<Realms.RealmInteger`1<{Int16TypeName}>>",
-            $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
-            $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
-        };
-
         private static readonly IEnumerable<string> _primaryKeyTypes = new[]
         {
             StringTypeName,
@@ -405,7 +393,7 @@ Analytics payload
 
                 if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references))
                 {
-                    if (_counterTypes.Contains(elementType.FullName))
+                    if (elementType.IsRealmInteger(out _, out _))
                     {
                         return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<RealmInteger> which is not supported.");
                     }
