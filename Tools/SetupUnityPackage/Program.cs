@@ -207,10 +207,11 @@ namespace SetupUnityPackage
             if (!File.Exists(path))
             {
                 // Try to find a .symbols.nupkg first - as that will contain both the dll and the pdbs.
-                var regex = new Regex($"{info.Id}.[0-9\\.]*(.symbols)?.nupkg");
+                var regex = new Regex($"{info.Id}\\.[0-9]+\\.[0-9\\-\\.A-Za-z]*?(?<symbols>\\.symbols)?\\.nupkg");
                 path = Directory.GetFiles(path, "*.nupkg")
                     .Select(f => (File: f, Match: regex.Match(f)))
-                    .OrderByDescending(f => f.Match.Groups.Count(g => g.Success))
+                    .Where(f => f.Match.Success)
+                    .OrderByDescending(f => f.Match.Groups["symbols"]?.Success)
                     .Select(f => f.File)
                     .First();
 
