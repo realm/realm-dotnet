@@ -252,10 +252,10 @@ jobs:
       - #@ template.replace(fetchNugetPkgs())
       - name: Build the tests
         run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.nuget_pkg_version }} -restore"
-      - name: Run the tests
+      - name: Run the tests # TODO don't hardcode Release
         run: |
           cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
-          Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+          ./Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         if: always()
