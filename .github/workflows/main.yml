@@ -357,4 +357,4 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
-        files: TestResults.Windows.xml
+        files: ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml
