@@ -73,24 +73,17 @@ steps:
       retention-days: 1
 #@ end
 
-#@ def buildNugetPkgs():
+#@ def buildPackages():
 #@ for pkgName in nugetPackages:
 #@ buildCmd = "MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=" + configuration + " -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore"
   - name: #@ "Build nuget package " + pkgName
     run: #@ buildCmd
 #@ end
+#@ end
 
-  - name: Find nupkg version
-    id: find-nupkg-version
-    run: |
-      cd Realm/packages
-      tmpName=$(basename Realm.Fody* .nupkg)
-      pkgName=${tmpName#"Realm.Fody."}
-      echo "::set-output name=nuget_pkg_version::$pkgName"
-    shell: bash
-
+#@ def uploadPackageArtifacts():
 #@ for pkgName in nugetPackages:
-#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg"
+#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.pacakge_version }}.nupkg"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
     with:
@@ -98,7 +91,6 @@ steps:
       path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
 #@ end
-
 #@ end
 
 ---
@@ -154,13 +146,14 @@ jobs:
       - build-wrappers-linux
       - build-wrappers-windows-uwp
     outputs:
-      nuget_pkg_version: ${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}
+      pacakge_version: ${{ steps.find-nupkg-version.outputs.pacakge_version }}
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - name: Set version suffix
         id: set-version-suffix
+        #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
         run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}.{1}', github.event.number, github.run_number) || format('alpha.{0}', github.run_number)}}"
       - name: Fetch artifacts MacOS
         uses: actions/download-artifact@v2
@@ -222,4 +215,13 @@ jobs:
         with:
           name: wrappers-windows-uwp-ARM
           path: wrappers/build
-      - #@ template.replace(buildNugetPkgs())
+      - #@ template.replace(buildPackages())
+      - name: Find nupkg version
+        id: find-nupkg-version
+        run: |
+          cd Realm/packages
+          tmpName=$(basename Realm.Fody* .nupkg)
+          pkgName=${tmpName#"Realm.Fody."}
+          echo "::set-output name=pacakge_version::$pkgName"
+        shell: bash
+      - #@ template.replace(uploadPackageArtifacts())
