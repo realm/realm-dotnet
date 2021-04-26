@@ -83,7 +83,7 @@ steps:
 
 #@ def uploadPackageArtifacts():
 #@ for pkgName in nugetPackages:
-#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.pacakge_version }}.nupkg"
+#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
     with:
@@ -100,13 +100,13 @@ steps:
       cd Realm/packages
       tmpName=$(basename Realm.Fody* .nupkg)
       pkgName=${tmpName#"Realm.Fody."}
-      echo "::set-output name=pacakge_version::$pkgName"
+      echo "::set-output name=package_version::$pkgName"
     shell: bash
 #@ end
 
 #@ def fetchNugetPkgs():
 #@ for pkgName in nugetPackages:
-#@ finalPkgName = pkgName + ".${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
+#@ finalPkgName = pkgName + ".${{ needs.build-nuget-packages.outputs.package_version }}.nupkg"
   - name: #@ "Fetch " + pkgName
     uses: actions/download-artifact@v2
     with:
@@ -168,7 +168,7 @@ jobs:
       - build-wrappers-linux
       - build-wrappers-windows-uwp
     outputs:
-      pacakge_version: ${{ steps.find-nupkg-version.outputs.pacakge_version }}
+      package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
@@ -250,7 +250,7 @@ jobs:
       - #@ checkoutCode()
       - #@ template.replace(fetchNugetPkgs())
       - name: Build the tests
-        run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.pacakge_version }} -restore"
+        run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.package_version }} -restore"
       - name: Run the tests #! TODO don't hardcode Release
         run: |
           cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
