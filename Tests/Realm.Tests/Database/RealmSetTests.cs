@@ -135,22 +135,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.ByteSet, testData);
         }
 
-        [TestCaseSource(nameof(ByteTestValues))]
-        public void RealmSet_WhenUnmanaged_ByteCounter(TestCaseData<byte> testData)
-        {
-            RunUnmanagedTests(o => o.ByteCounterSet, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmSet_WhenUnmanaged_NullableByte(TestCaseData<byte?> testData)
         {
             RunUnmanagedTests(o => o.NullableByteSet, testData);
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
-        public void RealmSet_WhenUnmanaged_NullableByteCounter(TestCaseData<byte?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableByteCounterSet, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
@@ -159,22 +147,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.ByteSet, o => o.ByteList, o => o.ByteDict, testData);
         }
 
-        [TestCaseSource(nameof(ByteTestValues))]
-        public void RealmSet_WhenManaged_ByteCounter(TestCaseData<byte> testData)
-        {
-            RunManagedTests(o => o.ByteCounterSet, o => o.ByteCounterList, o => o.ByteCounterDict, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmSet_WhenManaged_NullableByte(TestCaseData<byte?> testData)
         {
             RunManagedTests(o => o.NullableByteSet, o => o.NullableByteList, o => o.NullableByteDict, testData);
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
-        public void RealmSet_WhenManaged_NullableByteCounter(TestCaseData<byte?> testData)
-        {
-            RunManagedTests(o => o.NullableByteCounterSet, o => o.NullableByteCounterList, o => o.NullableByteCounterDict, ToInteger(testData));
         }
 
         [Test]
@@ -230,22 +206,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int16Set, testData);
         }
 
-        [TestCaseSource(nameof(Int16TestValues))]
-        public void RealmSet_WhenUnmanaged_Int16Counter(TestCaseData<short> testData)
-        {
-            RunUnmanagedTests(o => o.Int16CounterSet, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmSet_WhenUnmanaged_NullableInt16(TestCaseData<short?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt16Set, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void RealmSet_WhenUnmanaged_NullableInt16Counter(TestCaseData<short?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt16CounterSet, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
@@ -254,22 +218,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int16Set, o => o.Int16List, o => o.Int16Dict, testData);
         }
 
-        [TestCaseSource(nameof(Int16TestValues))]
-        public void RealmSet_WhenManaged_Int16Counter(TestCaseData<short> testData)
-        {
-            RunManagedTests(o => o.Int16CounterSet, o => o.Int16CounterList, o => o.Int16CounterDict, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmSet_WhenManaged_NullableInt16(TestCaseData<short?> testData)
         {
             RunManagedTests(o => o.NullableInt16Set, o => o.NullableInt16List, o => o.NullableInt16Dict, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void RealmSet_WhenManaged_NullableInt16Counter(TestCaseData<short?> testData)
-        {
-            RunManagedTests(o => o.NullableInt16CounterSet, o => o.NullableInt16CounterList, o => o.NullableInt16CounterDict, ToInteger(testData));
         }
 
         [Test]
@@ -325,22 +277,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int32Set, testData);
         }
 
-        [TestCaseSource(nameof(Int32TestValues))]
-        public void RealmSet_WhenUnmanaged_Int32Counter(TestCaseData<int> testData)
-        {
-            RunUnmanagedTests(o => o.Int32CounterSet, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmSet_WhenUnmanaged_NullableInt32(TestCaseData<int?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt32Set, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void RealmSet_WhenUnmanaged_NullableInt32Counter(TestCaseData<int?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt32CounterSet, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
@@ -349,22 +289,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int32Set, o => o.Int32List, o => o.Int32Dict, testData);
         }
 
-        [TestCaseSource(nameof(Int32TestValues))]
-        public void RealmSet_WhenManaged_Int32Counter(TestCaseData<int> testData)
-        {
-            RunManagedTests(o => o.Int32CounterSet, o => o.Int32CounterList, o => o.Int32CounterDict, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmSet_WhenManaged_NullableInt32(TestCaseData<int?> testData)
         {
             RunManagedTests(o => o.NullableInt32Set, o => o.NullableInt32List, o => o.NullableInt32Dict, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void RealmSet_WhenManaged_NullableInt32Counter(TestCaseData<int?> testData)
-        {
-            RunManagedTests(o => o.NullableInt32CounterSet, o => o.NullableInt32CounterList, o => o.NullableInt32CounterDict, ToInteger(testData));
         }
 
         [Test]
@@ -420,22 +348,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int64Set, testData);
         }
 
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void RealmSet_WhenUnmanaged_Int64Counter(TestCaseData<long> testData)
-        {
-            RunUnmanagedTests(o => o.Int64CounterSet, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmSet_WhenUnmanaged_NullableInt64(TestCaseData<long?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt64Set, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void RealmSet_WhenUnmanaged_NullableInt64Counter(TestCaseData<long?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt64CounterSet, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -444,22 +360,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int64Set, o => o.Int64List, o => o.Int64Dict, testData);
         }
 
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void RealmSet_WhenManaged_Int64Counter(TestCaseData<long> testData)
-        {
-            RunManagedTests(o => o.Int64CounterSet, o => o.Int64CounterList, o => o.Int64CounterDict, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmSet_WhenManaged_NullableInt64(TestCaseData<long?> testData)
         {
             RunManagedTests(o => o.NullableInt64Set, o => o.NullableInt64List, o => o.NullableInt64Dict, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void RealmSet_WhenManaged_NullableInt64Counter(TestCaseData<long?> testData)
-        {
-            RunManagedTests(o => o.NullableInt64CounterSet, o => o.NullableInt64CounterList, o => o.NullableInt64CounterDict, ToInteger(testData));
         }
 
         [Test]
