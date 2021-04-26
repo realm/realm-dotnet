@@ -213,6 +213,8 @@ namespace SetupUnityPackage
                     .OrderByDescending(f => f.Match.Groups.Count(g => g.Success))
                     .Select(f => f.File)
                     .First();
+
+                Console.WriteLine($"Inferred package path for {info.Id} is {path}");
             }
 
             using var stream = File.OpenRead(path);

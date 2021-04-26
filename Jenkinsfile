@@ -202,6 +202,7 @@ stage('Unity Package') {
     unstash 'dotnet-source'
     dir('Realm/packages') {
       unstash 'packages'
+      bat 'dir'
     }
 
     bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
