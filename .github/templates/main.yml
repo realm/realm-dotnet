@@ -106,7 +106,7 @@ steps:
 =======
 #@ def fetchNugetPkgs():
 #@ for pkgName in nugetPackages:
-#@ finalPkgName = "${{ needs.build-nuget-packages.outputs.build_suffix }}" + pkgName + ".${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
+#@ finalPkgName = pkgName + ".${{ needs.build-nuget-packages.outputs.nuget_pkg_version }}.nupkg"
   - name: #@ "Fetch " + pkgName
     uses: actions/download-artifact@v2
     with:
