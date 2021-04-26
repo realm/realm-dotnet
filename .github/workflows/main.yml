@@ -205,8 +205,7 @@ jobs:
     - build-wrappers-linux
     - build-wrappers-windows-uwp
     outputs:
-      nuget_pkg_version: ${{ steps.find-nupkg-version.outpus.NUGET_PKG_VERSION }}
-      build_suffix: ${{ github.event_name == 'pull_request' && format('PR-{0}.{1}', github.event.number, env.GITHUB_RUN_NUMBER) || format('alpha.{0}', env.GITHUB_RUN_NUMBER)}}
+      nuget_pkg_version: ${{ steps.find-nupkg-version.outpus.nuget_pkg_version }}
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -214,6 +213,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Set version suffix
+      id: set-version-suffix
+      outputs:
+        build_suffix: ${{ github.event_name == 'pull_request' && format('PR-{0}.{1}', github.event.number, env.GITHUB_RUN_NUMBER) || format('alpha.{0}', env.GITHUB_RUN_NUMBER)}}
     - name: Fetch artifacts MacOS
       uses: actions/download-artifact@v2
       with:
@@ -275,42 +278,42 @@ jobs:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Build nuget package Realm.Fody
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ needs.build-nuget-packages.outputs.build_suffix }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
     - name: Build nuget package Realm
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ needs.build-nuget-packages.outputs.build_suffix }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
     - name: Build nuget package Realm.UnityUtils
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ needs.build-nuget-packages.outputs.build_suffix }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
     - name: Build nuget package Realm.UnityWeaver
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ needs.build-nuget-packages.outputs.build_suffix }} -restore
+      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
         cd Realm/packages
         tmpName=$(basename Realm.Fody* .nupkg)
         pkgName=${tmpName#"Realm.Fody."}
-        echo "::set-output name=NUGET_PKG_VERSION::$pkgName"
+        echo "::set-output name=nuget_pkg_version::$pkgName"
       shell: bash
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.Fody.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
+        name: Realm.Fody.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
+        name: Realm.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm.UnityUtils
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
+        name: Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm.UnityWeaver
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.NUGET_PKG_VERSION }}.nupkg
+        name: Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.nuget_pkg_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
