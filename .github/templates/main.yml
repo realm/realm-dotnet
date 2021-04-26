@@ -93,17 +93,6 @@ steps:
 #@ end
 #@ end
 
-#@ def findPackageVersion():
-name: Find nupkg version
-id: find-nupkg-version
-run: |
-  cd Realm/packages
-  tmpName=$(basename Realm.Fody* .nupkg)
-  pkgName=${tmpName#"Realm.Fody."}
-  echo "::set-output name=package_version::$pkgName"
-shell: bash
-#@ end
-
 #@ def fetchPackageArtifacts():
 #@ for pkgName in nugetPackages:
 #@ finalPkgName = pkgName + ".${{ needs.build-nuget-packages.outputs.package_version }}.nupkg"
@@ -113,6 +102,17 @@ shell: bash
       name: #@ finalPkgName
       path: ${{ github.workspace }}/Realm/packages/
 #@ end
+#@ end
+
+#@ def findPackageVersion():
+name: Find nupkg version
+id: find-nupkg-version
+run: |
+  cd Realm/packages
+  tmpName=$(basename Realm.Fody* .nupkg)
+  pkgName=${tmpName#"Realm.Fody."}
+  echo "::set-output name=package_version::$pkgName"
+shell: bash
 #@ end
 
 ---
@@ -248,7 +248,7 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
-      - #@ template.replace(fetchPackageArtifacts())
+#!      - #@ template.replace(fetchPackageArtifacts())
       - name: Build the tests
         run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.package_version }} -restore"
       - name: Run the tests #! TODO don't hardcode Release
@@ -259,4 +259,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         if: always()
         with:
-          files: ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml
+          files: Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml
