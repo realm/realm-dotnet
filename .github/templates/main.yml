@@ -157,7 +157,7 @@ jobs:
       matrix:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
-  build-nuget-packages:
+  build-packages:
     runs-on: windows-latest
     name: Build packages
     needs:

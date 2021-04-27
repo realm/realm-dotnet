@@ -194,7 +194,7 @@ jobs:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: wrappers/build/**
         retention-days: 1
-  build-nuget-packages:
+  build-packages:
     runs-on: windows-latest
     name: Build packages
     needs:
