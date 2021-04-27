@@ -226,7 +226,7 @@ stage('Test') {
     '.NET Core Linux 2': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
-    '.NET 5 Linux 2': NetCoreTest('docker', 'net5.0')
+    '.NET 5 Linux 2': NetCoreTest('docker', 'net5.0'),
     '.NET 5 Linux 3': NetCoreTest('docker', 'net5.0')
   ]
 
