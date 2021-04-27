@@ -93,10 +93,10 @@ steps:
 #@ end
 #@ end
 
-#@ def fetchPackageArtifacts():
-#@ for pkgName in nugetPackages:
-#@ finalPkgName = pkgName + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
-  - name: #@ "Fetch " + pkgName
+#@ def fetchPackageArtifacts(pkgs):
+#@ for pkg in pkgs:
+#@ finalPkgName = pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+  - name: #@ "Fetch " + pkg
     uses: actions/download-artifact@v2
     with:
       name: #@ finalPkgName
@@ -248,7 +248,7 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - name: Build the tests
         run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
       - name: Run the tests
