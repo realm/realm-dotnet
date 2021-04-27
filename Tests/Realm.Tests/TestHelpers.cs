@@ -168,6 +168,7 @@ namespace Realms.Tests
                     disposable.Dispose();
                 }
 
+                preserverReference = new WeakReference(preserver);
                 preserver = default;
             })();
 
