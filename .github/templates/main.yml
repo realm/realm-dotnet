@@ -165,7 +165,7 @@ jobs:
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
-        run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}.{1}', github.event.number, github.run_number) || format('alpha.{0}', github.run_number)}}"
+        run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
       - name: Fetch artifacts MacOS
         uses: actions/download-artifact@v2
         with:
