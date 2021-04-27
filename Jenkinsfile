@@ -372,7 +372,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
         dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
-        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+        ./bin/${configuration}/${targetFramework}/Realm.Tests --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
       if (isUnix()) {
@@ -386,13 +386,25 @@ def NetCoreTest(String nodeName, String targetFramework) {
               "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
               "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
-            test_runner_image.inside("--network=${networkName} --ulimit core=-1") {
+            test_runner_image.inside("--network=${networkName} --ulimit core=-1:-1") {
               script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
-              sh """
-                export HOME=/tmp
-                ${script}
-              """
+              try {
+                sh """
+                  export HOME=/tmp
+                  ${script}
+                """
+              } finally {
+                dir('Tests/Realm.Tests') {
+                  if (fileExists('core')) {
+                    sh "/usr/bin/gdb ./bin/${configuration}/${targetFramework}/Realm.Tests -c ./core -batch -ex bt"
+
+                    sh "gzip -S _${targetFramework}_${coreSuffix}.gz core"
+                    archiveArtifacts "core_${targetFramework}_${coreSuffix}.gz"
+                    error 'Unit tests crashed and a core file was produced. It is available as a build artifact.'
+                  }
+                }
+              }
             }
           }
         } else {
