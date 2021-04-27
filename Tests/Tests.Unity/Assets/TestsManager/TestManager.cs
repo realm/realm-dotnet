@@ -39,7 +39,7 @@ public class TestManager : ITestRunCallback
         public static void Log(string message, bool important = false)
         {
             var logType = important && !Application.isEditor ? LogType.Error : LogType.Log;
-            Debug.LogFormat(logType, LogOption.NoStacktrace, null, message);
+            Debug.LogFormat(logType, LogOption.NoStacktrace, null, message.Replace("{", "{{").Replace("}", "}}"));
         }
     }
 }
