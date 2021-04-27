@@ -387,7 +387,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
               "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
               "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
-            test_runner_image.inside("--network=${networkName}") {
+            test_runner_image.inside("--network=${networkName} --ulimit core=-1") {
               script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
               sh """
