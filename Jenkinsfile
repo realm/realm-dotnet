@@ -41,193 +41,15 @@ stage('Checkout') {
   }
 }
 
-stage('Build wrappers') {
-  def bashExtraArgs = ''
-  def psExtraArgs = ''
-
-  if (enableLTO) {
-    bashExtraArgs = '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
-    psExtraArgs = '-EnableLTO'
-  }
-
-  def jobs = [
-    'iOS': {
-      rlmNode('osx || macos-catalina') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          sh "./build-ios.sh --configuration=${configuration} ${bashExtraArgs}"
-        }
-        stash includes: 'wrappers/build/**', name: 'ios-wrappers'
-      }
-    },
-    'macOS': {
-      rlmNode('osx || macos-catalina') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          sh "./build-macos.sh --configuration=${configuration} ${bashExtraArgs}"
-        }
-        stash includes: 'wrappers/build/**', name: 'macos-wrappers'
-      }
-    },
-    'Linux': {
-      rlmNode('docker') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "./build.sh --configuration=${configuration} ${bashExtraArgs}")
-        }
-        stash includes: 'wrappers/build/**', name: 'linux-wrappers'
-      }
-    }
-  ]
-
-  for(abi in AndroidABIs) {
-    def localAbi = abi
-    jobs["Android ${localAbi}"] = {
-      rlmNode('docker') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi} ${bashExtraArgs}")
-        }
-        stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
-      }
-    }
-  }
-
-  for(platform in WindowsPlatforms) {
-    def localPlatform = platform
-    jobs["Windows ${localPlatform}"] = {
-      rlmNode('windows') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform} ${psExtraArgs}"
-        }
-        stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
-        if (shouldPublishPackage()) {
-          archiveArtifacts 'wrappers/build/**/*.pdb'
-        }
-      }
-    }
-  }
-
-  for(platform in WindowsUniversalPlatforms) {
-    def localPlatform = platform
-    jobs["WindowsUniversal ${localPlatform}"] = {
-      rlmNode('windows') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform} ${psExtraArgs}"
-        }
-        stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
-        if (shouldPublishPackage()) {
-          archiveArtifacts 'wrappers/build/**/*.pdb'
-        }
-      }
-    }
-  }
-
-  parallel jobs
-}
-
-packageVersion = ''
-stage('Package') {
-  rlmNode('windows && dotnet') {
-    unstash 'dotnet-source'
-    unstash 'ios-wrappers'
-    unstash 'macos-wrappers'
-    unstash 'linux-wrappers'
-    for(abi in AndroidABIs) {
-      unstash "android-wrappers-${abi}"
-    }
-    for(platform in WindowsPlatforms) {
-      unstash "windows-wrappers-${platform}"
-    }
-    for(platform in WindowsUniversalPlatforms) {
-      unstash "windowsuniversal-wrappers-${platform}"
-    }
-
-    dir('Realm') {
-      def props = [ Configuration: configuration, PackageOutputPath: "${env.WORKSPACE}/Realm/packages", VersionSuffix: versionSuffix]
-      dir('Realm.Fody') {
-        msbuild target: 'Pack', properties: props, restore: true
-      }
-      dir('Realm') {
-        msbuild target: 'Pack', properties: props, restore: true
-      }
-      dir('Realm.UnityUtils') {
-        msbuild target: 'Pack', properties: props, restore: true
-      }
-      dir('Realm.UnityWeaver') {
-        msbuild target: 'Pack', properties: props, restore: true
-      }
-
-      recordIssues (
-        tool: msBuild(),
-        ignoreQualityGate: false,
-        ignoreFailedBuilds: true,
-        filters: [
-          excludeFile(".*/wrappers/.*"), // warnings produced by building the wrappers dll
-          excludeFile(".*zlib.lib.*"), // warning due to linking zlib without debug info
-          excludeFile(".*Microsoft.Build.Tasks.Git.targets.*") // warning due to sourcelink not finding objectstore
-        ]
-      )
-
-      dir('packages') {
-        stash includes: '*.nupkg', name: 'packages'
-        archiveArtifacts '*.nupkg'
-
-        // extract the package version from the weaver package because it has the most definite name
-        def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
-        packageVersion = getVersion(packages[0].name);
-        echo "Inferred version is ${packageVersion}"
-
-        // Disable github packages because it fails to push with:
-        //    Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
-        //    An existing connection was forcibly closed by the remote host.
-        // if (shouldPublishPackage()) {
-        //   withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
-        //     echo "Publishing Realm.Fody.${packageVersion} to github packages"
-        //     bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
-        //     bat "dotnet nuget update source github -s https://nuget.pkg.github.com/realm/index.json -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
-        //     bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -s \"github\""
-        //     bat "dotnet nuget push \"Realm.${packageVersion}.nupkg\" -s \"github\""
-        //   }
-        // }
-      }
-    }
-  }
-}
-
-stage('Unity Package') {
-  rlmNode('dotnet && windows') {
-    unstash 'dotnet-source'
-    unstash 'packages'
-
-    def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
-    def utilsPackagePath = findFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
-    def weaverPackagePath = findFiles(glob: "Realm.UnityWeaver.${packageVersion}.nupkg")[0].path
-
-    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
-    dir('Realm/Realm.Unity') {
-      archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
-      bat "del io.realm.unity-${packageVersion}.tgz"
-    }
-
-    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
-    dir('Realm/Realm.Unity') {
-      archiveArtifacts "*.tgz"
-    }
-  }
-}
-
 stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
-    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
-    '.NET Core Linux 2': NetCoreTest('docker', 'netcoreapp3.1'),
-    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1'),
-    '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
-    '.NET 5 Linux 2': NetCoreTest('docker', 'net5.0'),
-    '.NET 5 Linux 3': NetCoreTest('docker', 'net5.0')
+    '.NET Core Linux': NetCoreTest('coredump', 'netcoreapp3.1'),
+    '.NET Core Linux 2': NetCoreTest('coredump', 'netcoreapp3.1'),
+    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1'),
+    '.NET 5 Linux': NetCoreTest('coredump', 'net5.0'),
+    '.NET 5 Linux 2': NetCoreTest('coredump', 'net5.0'),
+    '.NET 5 Linux 3': NetCoreTest('coredump', 'net5.0')
   ]
 
   timeout(time: 30, unit: 'MINUTES') {
@@ -239,7 +61,14 @@ def NetCoreTest(String nodeName, String targetFramework) {
   return {
     rlmNode(nodeName) {
       unstash 'dotnet-source'
-      dir('Realm/packages') { unstash 'packages' }
+      packageVersion = '10.2.0-PR-2331.29'
+
+      dir('Realm/packages') {
+        sh """
+          wget https://s3.amazonaws.com/static.realm.io/downloads/dotnet/Realm.10.2.0-PR-2331.29.nupkg
+          wget https://s3.amazonaws.com/static.realm.io/downloads/dotnet/Realm.Fody.10.2.0-PR-2331.29.nupkg
+        """
+      }
 
       def addNet5Framework = targetFramework == 'net5.0'
 
@@ -250,7 +79,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
       """.trim()
 
       if (isUnix()) {
-        if (nodeName == 'docker') {
+        if (nodeName == 'coredump') {
           def test_runner_image = CreateDockerContainer(targetFramework)
           withRealmCloud(
             version: '2021-04-08',
@@ -269,12 +98,14 @@ def NetCoreTest(String nodeName, String targetFramework) {
                   ${script}
                 """
               } finally {
-                sh 'ls'
+                dir('Tests/Realm.Tests') {
+                  sh 'ls'
 
-                if (fileExists('core')) {
-                  sh "gzip core"
-                  archiveArtifacts "core.gz"
-                  error 'Unit tests crashed and a core file was produced. It is available as a build artifact.'
+                  if (fileExists('core')) {
+                    sh "gzip core"
+                    archiveArtifacts "core.gz"
+                    error 'Unit tests crashed and a core file was produced. It is available as a build artifact.'
+                  }
                 }
               }
             }
