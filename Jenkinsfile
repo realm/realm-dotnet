@@ -10,6 +10,7 @@ def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
 String versionSuffix = ''
 boolean enableLTO = true
+packageVersion = ''
 
 stage('Checkout') {
   rlmNode('docker') {
@@ -42,14 +43,18 @@ stage('Checkout') {
 }
 
 stage('Test') {
+  packageVersion = '10.2.0-PR-2331.29'
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
-    '.NET Core Linux': NetCoreTest('coredump', 'netcoreapp3.1'),
-    '.NET Core Linux 2': NetCoreTest('coredump', 'netcoreapp3.1'),
-    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1'),
-    '.NET 5 Linux': NetCoreTest('coredump', 'net5.0'),
-    '.NET 5 Linux 2': NetCoreTest('coredump', 'net5.0'),
-    '.NET 5 Linux 3': NetCoreTest('coredump', 'net5.0')
+    '.NET Core Linux': NetCoreTest('coredump', 'netcoreapp3.1', "0"),
+    '.NET Core Linux 2': NetCoreTest('coredump', 'netcoreapp3.1', "1"),
+    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "2"),
+    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "3"),
+    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "4"),
+    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "5"),
+    // '.NET 5 Linux': NetCoreTest('coredump', 'net5.0', "0"),
+    // '.NET 5 Linux 2': NetCoreTest('coredump', 'net5.0', "1"),
+    // '.NET 5 Linux 3': NetCoreTest('coredump', 'net5.0', "2"),
   ]
 
   timeout(time: 30, unit: 'MINUTES') {
@@ -57,11 +62,10 @@ stage('Test') {
   }
 }
 
-def NetCoreTest(String nodeName, String targetFramework) {
+def NetCoreTest(String nodeName, String targetFramework, String coreSuffix) {
   return {
     rlmNode(nodeName) {
       unstash 'dotnet-source'
-      packageVersion = '10.2.0-PR-2331.29'
 
       dir('Realm/packages') {
         sh """
@@ -75,7 +79,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
         dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
-        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml --where=test=~Realms.Tests.Sync*
       """.trim()
 
       if (isUnix()) {
@@ -99,11 +103,11 @@ def NetCoreTest(String nodeName, String targetFramework) {
                 """
               } finally {
                 dir('Tests/Realm.Tests') {
-                  sh 'ls'
-
                   if (fileExists('core')) {
-                    sh "gzip core"
-                    archiveArtifacts "core.gz"
+                    sh '/usr/bin/gdb -c ./core -batch -ex bt'
+
+                    sh "gzip -S _${targetFramework}_${coreSuffix}.gz core"
+                    archiveArtifacts "core_${targetFramework}_${coreSuffix}.gz"
                     error 'Unit tests crashed and a core file was produced. It is available as a build artifact.'
                   }
                 }
