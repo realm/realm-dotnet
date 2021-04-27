@@ -222,139 +222,10 @@ stage('Unity Package') {
 stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
-    'Xamarin iOS': {
-      rlmNode('xamarin.ios') {
-        unstash 'dotnet-source'
-        dir('Realm/packages') { unstash 'packages' }
-
-        sh 'mkdir -p temp'
-        dir('Tests/Tests.iOS') {
-          msbuild restore: true,
-                  properties: [ Platform: 'iPhoneSimulator', TargetFrameworkVersion: 'v1.0', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
-          dir("bin/iPhoneSimulator/${configuration}") {
-            runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
-          }
-        }
-
-        junit 'temp/TestResults.iOS.xml'
-      }
-    },
-    'Xamarin macOS': {
-      rlmNode('xamarin.mac') {
-        unstash 'dotnet-source'
-        dir('Realm/packages') { unstash 'packages' }
-
-        sh 'mkdir -p temp'
-        dir('Tests/Tests.XamarinMac') {
-          msbuild restore: true,
-                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFrameworkVersion: 'v2.0' ] << props
-          dir("bin/${configuration}/Tests.XamarinMac.app/Contents") {
-            sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/temp/TestResults.macOS.xml"
-          }
-        }
-
-        junit 'temp/TestResults.macOS.xml'
-      }
-    },
-    'Xamarin Android': {
-      rlmNode('windows && xamarin.android') {
-        unstash 'dotnet-source'
-        dir('Realm/packages') { unstash 'packages' }
-
-        dir('Tests/Tests.Android') {
-          msbuild target: 'SignAndroidPackage', restore: true,
-                  properties: [ AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
-          dir("bin/${configuration}") {
-            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
-          }
-        }
-      }
-      // The android tests fail on CI due to a CompilerServices.Unsafe issue. Uncomment when resolved
-      rlmNode('android-hub') {
-        unstash 'android-tests'
-
-        lock("${env.NODE_NAME}-android") {
-          boolean archiveLog = true
-
-          try {
-            // start logcat
-            sh '''
-              adb logcat -c
-              adb logcat -v time > "logcat.txt" &
-              echo $! > logcat.pid
-            '''
-
-            sh '''
-              adb uninstall io.realm.xamarintests
-              adb install io.realm.xamarintests-Signed.apk
-              adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
-              adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
-            '''
-
-            def instrumentationOutput = sh script: '''
-              adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-              adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml TestResults.Android.xml
-              adb shell rm /sdcard/Realmtests/TestResults.Android.xml
-            ''', returnStdout: true
-
-            def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
-            if (result.INSTRUMENTATION_CODE != '-1') {
-              echo instrumentationOutput
-              error result.INSTRUMENTATION_RESULT
-            }
-            archiveLog = false
-          } finally {
-            // stop logcat
-            sh 'kill `cat logcat.pid`'
-            if (archiveLog) {
-              zip([
-                zipFile: 'android-logcat.zip',
-                archive: true,
-                glob: 'logcat.txt'
-              ])
-            }
-          }
-        }
-
-        junit 'TestResults.Android.xml'
-      }
-    },
-    '.NET Framework Windows': {
-      rlmNode('windows && dotnet') {
-        unstash 'dotnet-source'
-        dir('Realm/packages') { unstash 'packages' }
-
-        dir('Tests/Realm.Tests') {
-          msbuild restore: true,
-                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFramework: 'net461' ] << props
-          dir("bin/${configuration}/net461") {
-            withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
-              bat '''
-                mkdir "%TMP%"
-                Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
-              '''
-            }
-
-            junit 'TestResults.Windows.xml'
-          }
-        }
-      }
-    },
-    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp3.1'),
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
-    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
-    '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
+    '.NET Core Linux 2': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
-    '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
-    'Weaver': {
-      rlmNode('dotnet && windows') {
-        unstash 'dotnet-source'
-        dir('Tests/Weaver/Realm.Fody.Tests') {
-          bat "dotnet run -f netcoreapp3.1 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
-          reportTests 'TestResults.Weaver.xml'
-        }
-      }
-    }
+    '.NET 5 Linux 2': NetCoreTest('docker', 'net5.0')
   ]
 
   timeout(time: 30, unit: 'MINUTES') {
@@ -387,13 +258,21 @@ def NetCoreTest(String nodeName, String targetFramework) {
               "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
               "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
-            test_runner_image.inside("--network=${networkName} --ulimit core=-1") {
+            test_runner_image.inside("--network=${networkName} --ulimit core=-1:-1") {
               script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
-              sh """
-                export HOME=/tmp
-                ${script}
-              """
+              try {
+                sh """
+                  export HOME=/tmp
+                  ${script}
+                """
+              } finally {
+                if (fileExists('core')) {
+                  sh "gzip core"
+                  archiveArtifacts "core.gz"
+                  error 'Unit tests crashed and a core file was produced. It is available as a build artifact.'
+                }
+              }
             }
           }
         } else {
