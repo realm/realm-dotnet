@@ -115,6 +115,11 @@ run: |
 shell: bash
 #@ end
 
+#@ def buildNetFrameworkTest():
+name: Build the tests
+run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
+#@ end
+
 ---
 name: build and test
 "on":
@@ -249,8 +254,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - name: Build the tests
-        run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
+      - #@ buildNetFrameworkTest()
       - name: Run the tests
         run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461\n./Realm.Tests.exe --result=TestResults.Windows.xml --labels=After\n"
       - name: Publish Unit Test Results
