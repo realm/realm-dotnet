@@ -224,8 +224,10 @@ stage('Test') {
   def jobs = [
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET Core Linux 2': NetCoreTest('docker', 'netcoreapp3.1'),
+    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
     '.NET 5 Linux 2': NetCoreTest('docker', 'net5.0')
+    '.NET 5 Linux 3': NetCoreTest('docker', 'net5.0')
   ]
 
   timeout(time: 30, unit: 'MINUTES') {
@@ -267,6 +269,8 @@ def NetCoreTest(String nodeName, String targetFramework) {
                   ${script}
                 """
               } finally {
+                sh 'ls'
+
                 if (fileExists('core')) {
                   sh "gzip core"
                   archiveArtifacts "core.gz"
