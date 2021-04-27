@@ -105,7 +105,7 @@ namespace Realms.Tests
             return destPath;
         }
 
-        public static Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
+        public static async Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
         {
             var references = new Func<WeakReference[]>(() =>
             {
@@ -120,75 +120,46 @@ namespace Realms.Tests
                 return result;
             })();
 
-            return WaitUntilReferenceIsCollected(references);
+            await WaitUntilReferencesAreCollected(10000, references);
+
+            Assert.That(references.All(r => !r.IsAlive), "Expected all references to be GC-ed within 10 seconds but they weren't");
         }
 
-        private static async Task WaitUntilReferenceIsCollected(params WeakReference[] references)
+        private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
         {
-            using var cts = new CancellationTokenSource(10000);
+            using var cts = new CancellationTokenSource(milliseconds);
 
             try
             {
                 await Task.Run(async () =>
                 {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
                     while (references.Any(r => r.IsAlive))
                     {
                         cts.Token.ThrowIfCancellationRequested();
 
+                        await Task.Yield();
+
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
-
-                        await Task.Delay(100);
                     }
                 });
             }
             catch (OperationCanceledException)
             {
             }
-
-            Assert.That(references.All(r => !r.IsAlive), "Expected all references to be collected after 10 sec. but some of them were alive.");
-        }
-
-        private static async Task EnsureThatReferenceIsAlive(params WeakReference[] references)
-        {
-            using var cts = new CancellationTokenSource(2000);
-
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
-                    while (references.All(r => r.IsAlive))
-                    {
-                        cts.Token.ThrowIfCancellationRequested();
-
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-
-                        await Task.Delay(100);
-                    }
-                });
-            }
-            catch (OperationCanceledException)
-            {
-            }
-
-            Assert.That(references.All(r => r.IsAlive), "Expected all references to be alive after 2000 ms, but at least one was dead.");
         }
 
         public static async Task EnsurePreserverKeepsObjectAlive<T>(Func<(T Preserver, WeakReference Reference)> func, Action<(T Preserver, WeakReference Reference)> assertReferenceIsAlive = null)
         {
             WeakReference reference = null;
+            WeakReference preserverReference = null;
             await new Func<Task>(async () =>
             {
                 T preserver;
                 (preserver, reference) = func();
-                await EnsureThatReferenceIsAlive(reference);
+                await WaitUntilReferencesAreCollected(2000, reference);
+
+                Assert.That(reference.IsAlive, "Preserver hasn't been disposed so expected object to still be alive.");
 
                 assertReferenceIsAlive?.Invoke((preserver, reference));
 
@@ -200,7 +171,10 @@ namespace Realms.Tests
                 preserver = default;
             })();
 
-            await WaitUntilReferenceIsCollected(reference);
+            await WaitUntilReferencesAreCollected(10000, reference, preserverReference);
+
+            Assert.That(preserverReference.IsAlive, Is.False, "Expected the preserver instance to be GC-ed but it wasn't.");
+            Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
         public static bool IsWindows
