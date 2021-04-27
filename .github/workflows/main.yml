@@ -368,6 +368,16 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Run the test
       run: |
         cd ${{ github.workspace }}/Tests/Realm.Tests
