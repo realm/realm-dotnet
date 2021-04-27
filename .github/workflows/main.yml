@@ -364,7 +364,11 @@ jobs:
         - netcoreapp3.1
         - net5.0
     steps:
-    - name: Just run it
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Run the test
       run: |
         cd ${{ github.workspace }}/Tests/Realm.Tests
         dotnet build -c Release -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
