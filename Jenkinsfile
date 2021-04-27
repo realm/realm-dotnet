@@ -49,9 +49,9 @@ stage('Test') {
     '.NET Core Linux': NetCoreTest('coredump', 'netcoreapp3.1', "0"),
     '.NET Core Linux 2': NetCoreTest('coredump', 'netcoreapp3.1', "1"),
     '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "2"),
-    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "3"),
-    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "4"),
-    '.NET Core Linux 3': NetCoreTest('coredump', 'netcoreapp3.1', "5"),
+    '.NET Core Linux 4': NetCoreTest('coredump', 'netcoreapp3.1', "3"),
+    '.NET Core Linux 5': NetCoreTest('coredump', 'netcoreapp3.1', "4"),
+    '.NET Core Linux 6': NetCoreTest('coredump', 'netcoreapp3.1', "5"),
     // '.NET 5 Linux': NetCoreTest('coredump', 'net5.0', "0"),
     // '.NET 5 Linux 2': NetCoreTest('coredump', 'net5.0', "1"),
     // '.NET 5 Linux 3': NetCoreTest('coredump', 'net5.0', "2"),
@@ -79,7 +79,7 @@ def NetCoreTest(String nodeName, String targetFramework, String coreSuffix) {
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
         dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
-        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml --where=test=~Realms.Tests.Sync*
+        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
       if (isUnix()) {
@@ -104,7 +104,7 @@ def NetCoreTest(String nodeName, String targetFramework, String coreSuffix) {
               } finally {
                 dir('Tests/Realm.Tests') {
                   if (fileExists('core')) {
-                    sh '/usr/bin/gdb -c ./core -batch -ex bt'
+                    sh '/usr/bin/gdb $(which dotnet) -c ./core -batch -ex bt'
 
                     sh "gzip -S _${targetFramework}_${coreSuffix}.gz core"
                     archiveArtifacts "core_${targetFramework}_${coreSuffix}.gz"

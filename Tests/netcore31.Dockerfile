@@ -6,3 +6,5 @@ RUN ABS_PATH_TO_FIX=/usr/share/dotnet/sdk/$(dotnet --version)/Sdks/Microsoft.NET
     mv $ABS_PATH_TO_FIX/Microsoft.WinFx.targets $ABS_PATH_TO_FIX/Microsoft.WinFX.targets
 
 RUN apt-get update && apt-get install -y gdb
+
+ADD .gdbinit /root/
