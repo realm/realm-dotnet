@@ -7,4 +7,4 @@ RUN ABS_PATH_TO_FIX=/usr/share/dotnet/sdk/$(dotnet --version)/Sdks/Microsoft.NET
 
 RUN apt-get update && apt-get install -y gdb
 
-ADD .gdbinit /root/
+ADD Tests/.gdbinit /root/
