@@ -436,6 +436,8 @@ namespace Realms.Tests
 
         public ISet<long> Int64Set { get; }
 
+        public ISet<float> FloatSet { get; }
+
         public ISet<double> DoubleSet { get; }
 
         public ISet<bool> BooleanSet { get; }
@@ -467,6 +469,8 @@ namespace Realms.Tests
         public IDictionary<string, int> Int32Dict { get; }
 
         public IDictionary<string, long> Int64Dict { get; }
+
+        public IDictionary<string, float> FloatDict { get; }
 
         public IDictionary<string, double> DoubleDict { get; }
 
@@ -510,6 +514,8 @@ namespace Realms.Tests
         public int Int32Property { get; set; }
 
         public long Int64Property { get; set; }
+
+        public float FloatProperty { get; set; }
 
         public double DoubleProperty { get; set; }
 

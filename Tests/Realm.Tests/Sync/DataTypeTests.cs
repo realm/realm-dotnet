@@ -88,6 +88,16 @@ namespace Realms.Tests.Sync
 
         #endregion
 
+        #region Float
+
+        [Test]
+        public void Set_Float() => TestSetCore(o => o.FloatSet, 43.24f, 0.4f);
+
+        [Test]
+        public void Dict_Float() => TestDictionaryCore(o => o.FloatDict, 43.24f, 0.4f);
+
+        #endregion
+
         #region Decimal
 
         // TODO: use more precise numbers once https://jira.mongodb.org/browse/REALMC-8475 is done.
@@ -169,7 +179,7 @@ namespace Realms.Tests.Sync
             yield return (new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
             yield return (true, new IntPropertyObject { Int = 10 });
             yield return (RealmValue.Null, 5m);
-            yield return (12, 15d);
+            yield return (12.5f, 15d);
         }
 
         [TestCaseSource(nameof(RealmTestValues))]
