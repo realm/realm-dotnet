@@ -96,6 +96,9 @@ namespace Realms.Tests.Sync
         [Test]
         public void Dict_Float() => TestDictionaryCore(o => o.FloatDict, 43.24f, 0.4f);
 
+        [Test]
+        public void Property_Float() => TestPropertyCore(o => o.FloatProperty, (o, rv) => o.FloatProperty = rv, 43.24f, 0.4f);
+
         #endregion
 
         #region Decimal
