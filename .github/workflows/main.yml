@@ -330,25 +330,25 @@ jobs:
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
       uses: actions/download-artifact@v2
       with:
-        name: Realm.UnityUtils.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityWeaver
       uses: actions/download-artifact@v2
       with:
-        name: Realm.UnityWeaver.${{ needs.build-nuget-packages.outputs.package_version }}.nupkg
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build the tests
-      run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-nuget-packages.outputs.package_version }} -restore
+      run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore
     - name: Run the tests
       run: |
         cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
