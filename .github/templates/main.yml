@@ -104,6 +104,16 @@ steps:
 #@ end
 #@ end
 
+#@ def publishTestsResults(files, test_title):
+  - name: Publish Unit Test Results
+    uses: EnricoMi/publish-unit-test-result-action/composite@v1
+    if: always()
+    with:
+      files: #@ files
+      comment_on_pr: false
+      check_name: #@ test_title
+#@ end
+
 #@ def findPackageVersion():
 name: Find nupkg version
 id: find-nupkg-version
@@ -257,13 +267,7 @@ jobs:
       - #@ buildNetFrameworkTest()
       - name: Run the tests
         run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461\n./Realm.Tests.exe --result=TestResults.Windows.xml --labels=After\n"
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
-        if: always()
-        with:
-          files: #@ "Tests/Realm.Tests/bin/" + configuration + "/net461/TestResults.Windows.xml"
-          comment_on_pr: false
-          check_name: Windows .NET framework tests results
+      - #@ template.replace(publishTestsResults("Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml", "Windows .NET framework tests results"))
   run-tests-netcore-net5:
     name: Run tests for .NetCore and .Net5
     needs: build-packages
@@ -275,12 +279,8 @@ jobs:
     steps:
     - #@ checkoutCode()
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - name: Run the test
-      run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet build -c " + configuration + " -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}\ndotnet run -c " + configuration + " -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml\n"
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
-      if: always()
-      with:
-        files: TestResults.NetCore.xml
-        comment_on_pr: false
-        check_name: "${{ matrix.os }} ${{ matrix.targetFramework }} tests results"
+    - name: Build the test
+      run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet build -c " + configuration + " -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}\n"
+    - name: Run the tests
+      run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet run -c " + configuration + " -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml\n"
+    - #@ template.replace(publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results"))
