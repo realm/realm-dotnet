@@ -416,7 +416,7 @@ jobs:
       run: msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:TargetFrameworkVersion=v2.0 -restore
     - name: Run the tests
       run: |-
-        cd bin/Release/Tests.XamarinMac.app/Contents
+        cd ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents
         MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
