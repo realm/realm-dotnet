@@ -43,7 +43,7 @@ stage('Checkout') {
 }
 
 stage('Test') {
-  packageVersion = '10.2.0-PR-2331.29'
+  packageVersion = '10.2.0-PR-2331.36'
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
     '.NET Core Linux': NetCoreTest('coredump', 'netcoreapp3.1', "0"),
@@ -69,8 +69,8 @@ def NetCoreTest(String nodeName, String targetFramework, String coreSuffix) {
 
       dir('Realm/packages') {
         sh """
-          wget https://s3.amazonaws.com/static.realm.io/downloads/dotnet/Realm.10.2.0-PR-2331.29.nupkg
-          wget https://s3.amazonaws.com/static.realm.io/downloads/dotnet/Realm.Fody.10.2.0-PR-2331.29.nupkg
+          wget https://s3.amazonaws.com/static.realm.io/downloads/dotnet/Realm.${packageVersion}.nupkg
+          wget https://s3.amazonaws.com/static.realm.io/downloads/dotnet/Realm.Fody.${packageVersion}.nupkg
         """
       }
 
@@ -79,7 +79,7 @@ def NetCoreTest(String nodeName, String targetFramework, String coreSuffix) {
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
         dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
-        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+        ./bin/${configuration}/${targetFramework}/Realm.Tests --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
       if (isUnix()) {
@@ -104,7 +104,7 @@ def NetCoreTest(String nodeName, String targetFramework, String coreSuffix) {
               } finally {
                 dir('Tests/Realm.Tests') {
                   if (fileExists('core')) {
-                    sh '/usr/bin/gdb $(which dotnet) -c ./core -batch -ex bt'
+                    sh "/usr/bin/gdb ./bin/${configuration}/${targetFramework}/Realm.Tests -c ./core -batch -ex bt"
 
                     sh "gzip -S _${targetFramework}_${coreSuffix}.gz core"
                     archiveArtifacts "core_${targetFramework}_${coreSuffix}.gz"
