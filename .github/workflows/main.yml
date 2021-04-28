@@ -378,7 +378,7 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Build the test
+    - name: Build the tests
       run: |
         cd ${{ github.workspace }}/Tests/Realm.Tests
         dotnet build -c Release -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
@@ -393,3 +393,35 @@ jobs:
         files: TestResults.NetCore.xml
         comment_on_pr: false
         check_name: ${{ matrix.os }} ${{ matrix.targetFramework }} tests results
+  run-tests-xamarin-macos:
+    runs-on: macos-latest
+    name: Run tests for Xamarin on MacOS
+    needs: build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build the tests
+      run: msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:TargetFrameworkVersion=v2.0
+    - name: Run the tests
+      run: |-
+        cd bin/Release/Tests.XamarinMac.app/Contents
+        MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: TestResults.macOS.xml
+        comment_on_pr: false
+        check_name: Xamarin MacOs tests results

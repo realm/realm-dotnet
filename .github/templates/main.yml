@@ -277,10 +277,22 @@ jobs:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
         targetFramework: [ netcoreapp3.1, net5.0 ]
     steps:
-    - #@ checkoutCode()
-    - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - name: Build the test
-      run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet build -c " + configuration + " -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}\n"
-    - name: Run the tests
-      run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet run -c " + configuration + " -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml\n"
-    - #@ template.replace(publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results"))
+      - #@ checkoutCode()
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - name: Build the tests
+        run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet build -c " + configuration + " -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}\n"
+      - name: Run the tests
+        run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests\ndotnet run -c " + configuration + " -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml\n"
+      - #@ template.replace(publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results"))
+  run-tests-xamarin-macos:
+    runs-on: macos-latest
+    name: Run tests for Xamarin on MacOS
+    needs: build-packages
+    steps:
+      - #@ checkoutCode()
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - name: Build the tests
+        run: #@ "msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:TargetFrameworkVersion=v2.0"
+      - name: Run the tests
+        run: #@ "cd bin/" + configuration + "/Tests.XamarinMac.app/Contents\nMacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
+      - #@ template.replace(publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results"))
