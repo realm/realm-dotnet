@@ -183,7 +183,7 @@ namespace Realms.Sync
             var platform = InteropConfig.Platform;
             var platformVersion = RuntimeInformation.OSDescription;
 
-            // TODO: temp - remove that once we're out of beta
+            // TODO: https://github.com/realm/realm-dotnet/issues/2218 remove that once we're out of beta or fix the issue.
             var sdkVersion = "10.2.0-beta.2"; // InteropConfig.SDKVersion.ToString(3);
 
             NativeMethods.initialize(
