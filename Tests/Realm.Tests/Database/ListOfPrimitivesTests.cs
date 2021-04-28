@@ -404,12 +404,6 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Test_ManagedByteCounterList(byte[] values)
-        {
-            RunManagedTests(obj => obj.ByteCounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(ByteTestValues))]
         public void Test_ManagedByteList(byte[] values)
         {
             RunManagedTests(obj => obj.ByteList, values);
@@ -428,33 +422,15 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Test_ManagedInt16CounterList(short[] values)
-        {
-            RunManagedTests(obj => obj.Int16CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(Int16TestValues))]
         public void Test_ManagedInt16List(short[] values)
         {
             RunManagedTests(obj => obj.Int16List, values);
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Test_ManagedInt32CounterList(int[] values)
-        {
-            RunManagedTests(obj => obj.Int32CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(Int32TestValues))]
         public void Test_ManagedInt32List(int[] values)
         {
             RunManagedTests(obj => obj.Int32List, values);
-        }
-
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void Test_ManagedInt64CounterList(long[] values)
-        {
-            RunManagedTests(obj => obj.Int64CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -500,12 +476,6 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void Test_ManagedNullableByteCounterList(byte?[] values)
-        {
-            RunManagedTests(obj => obj.NullableByteCounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
         public void Test_ManagedNullableByteList(byte?[] values)
         {
             RunManagedTests(obj => obj.NullableByteList, values);
@@ -524,33 +494,15 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void Test_ManagedNullableInt16CounterList(short?[] values)
-        {
-            RunManagedTests(obj => obj.NullableInt16CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
         public void Test_ManagedNullableInt16List(short?[] values)
         {
             RunManagedTests(obj => obj.NullableInt16List, values);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void Test_ManagedNullableInt32CounterList(int?[] values)
-        {
-            RunManagedTests(obj => obj.NullableInt32CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
         public void Test_ManagedNullableInt32List(int?[] values)
         {
             RunManagedTests(obj => obj.NullableInt32List, values);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void Test_ManagedNullableInt64CounterList(long?[] values)
-        {
-            RunManagedTests(obj => obj.NullableInt64CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
@@ -663,12 +615,6 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Test_UnmanagedByteCounterList(byte[] values)
-        {
-            RunUnmanagedTests(o => o.ByteCounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(ByteTestValues))]
         public void Test_UnmanagedByteList(byte[] values)
         {
             RunUnmanagedTests(o => o.ByteList, values);
@@ -687,33 +633,15 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Test_UnmanagedInt16CounterList(short[] values)
-        {
-            RunUnmanagedTests(o => o.Int16CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(Int16TestValues))]
         public void Test_UnmanagedInt16List(short[] values)
         {
             RunUnmanagedTests(o => o.Int16List, values);
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Test_UnmanagedInt32CounterList(int[] values)
-        {
-            RunUnmanagedTests(o => o.Int32CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(Int32TestValues))]
         public void Test_UnmanagedInt32List(int[] values)
         {
             RunUnmanagedTests(o => o.Int32List, values);
-        }
-
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void Test_UnmanagedInt64CounterList(long[] values)
-        {
-            RunUnmanagedTests(o => o.Int64CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -759,12 +687,6 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void Test_UnmanagedNullableByteCounterList(byte?[] values)
-        {
-            RunUnmanagedTests(o => o.NullableByteCounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
         public void Test_UnmanagedNullableByteList(byte?[] values)
         {
             RunUnmanagedTests(o => o.NullableByteList, values);
@@ -783,33 +705,15 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void Test_UnmanagedNullableInt16CounterList(short?[] values)
-        {
-            RunUnmanagedTests(o => o.NullableInt16CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
         public void Test_UnmanagedNullableInt16List(short?[] values)
         {
             RunUnmanagedTests(o => o.NullableInt16List, values);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void Test_UnmanagedNullableInt32CounterList(int?[] values)
-        {
-            RunUnmanagedTests(o => o.NullableInt32CounterList, values.ToInteger());
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
         public void Test_UnmanagedNullableInt32List(int?[] values)
         {
             RunUnmanagedTests(o => o.NullableInt32List, values);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void Test_UnmanagedNullableInt64CounterList(long?[] values)
-        {
-            RunUnmanagedTests(o => o.NullableInt64CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
