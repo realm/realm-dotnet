@@ -604,9 +604,6 @@ Analytics payload
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.
-
-            // Let Cecil optimize things for us.
-            // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
         // WARNING
@@ -660,9 +657,6 @@ Analytics payload
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.
-
-            // Let Cecil optimize things for us.
-            // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
         private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)

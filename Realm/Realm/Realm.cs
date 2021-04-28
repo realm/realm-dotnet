@@ -52,7 +52,7 @@ namespace Realms
         // Theoretically we could use trackAllValues: true, but that would create locking issues.
         private static readonly ThreadLocal<IDictionary<string, WeakReference<State>>> _states = new ThreadLocal<IDictionary<string, WeakReference<State>>>(DictionaryConstructor<string, WeakReference<State>>);
 
-        // TODO: due to a Mono bug, this needs to be a function rather than a lambda
+        // TODO: this will go away once https://github.com/realm/realm-dotnet/pull/2251 is merged, but due to a Mono bug, this needs to be a function rather than a lambda
         private static IDictionary<TKey, TValue> DictionaryConstructor<TKey, TValue>() => new Dictionary<TKey, TValue>();
 
         /// <summary>
