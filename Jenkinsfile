@@ -2,7 +2,7 @@
 
 @Library('realm-ci') _
 
-configuration = 'Release'
+configuration = 'Debug'
 
 def AndroidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 def WindowsPlatforms = [ 'Win32', 'x64' ]
@@ -464,7 +464,7 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 }
 
 boolean shouldPublishPackage() {
-  return env.BRANCH_NAME == 'master'
+  return true
 }
 
 def CreateDockerContainer(String targetFramework) {
