@@ -54,16 +54,5 @@ namespace Realms
 
             throw Convert(overrider);
         }
-
-        internal void ThrowIfNecessary(GCHandle handleToFree)
-        {
-            if (type == RealmExceptionCodes.NoError)
-            {
-                return;
-            }
-
-            handleToFree.Free();
-            throw Convert();
-        }
     }
 }

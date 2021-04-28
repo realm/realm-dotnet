@@ -208,8 +208,8 @@ stage('Unity Package') {
 
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
     dir('Realm/Realm.Unity') {
-      archiveArtifacts "realm.unity-${packageVersion}.tgz"
-      bat "del realm.unity-${packageVersion}.tgz"
+      archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
+      bat "del io.realm.unity-${packageVersion}.tgz"
     }
 
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
@@ -387,7 +387,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
               "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
               "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
-            test_runner_image.inside("--network=${networkName}") {
+            test_runner_image.inside("--network=${networkName} --ulimit core=-1") {
               script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
               sh """

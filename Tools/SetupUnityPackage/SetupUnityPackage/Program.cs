@@ -42,8 +42,8 @@ namespace SetupUnityPackage
         private const string RealmPackageId = "Realm";
         private const string UnityUtilsPackageId = "Realm.UnityUtils";
         private const string UnityWeaverPackageId = "Realm.UnityWeaver";
-        private const string RealmPackagaName = "realm.unity";
-        private const string RealmBundlePackageName = "realm.unity.bundle";
+        private const string RealmPackagaName = "io.realm.unity";
+        private const string RealmBundlePackageName = "io.realm.unity-bundled";
 
         private static readonly string _buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
@@ -52,7 +52,6 @@ namespace SetupUnityPackage
             [RealmPackageId] = new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.dll", "Realm.dll" },
-                { "native/ios/Realm.dll.config", "Realm.dll.config" },
                 { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "iOS/realm-wrappers.framework/realm-wrappers" },
                 { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/Info.plist" },
                 { "runtimes/osx-x64/native/librealm-wrappers.dylib", "macOS/librealm-wrappers.dylib" },
