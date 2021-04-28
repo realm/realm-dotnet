@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
+using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
@@ -480,15 +481,7 @@ namespace Realms
             if (expr.NodeType == ExpressionType.Convert)
             {
                 var operand = ((UnaryExpression)expr).Operand;
-                if (TryExtractConstantValue(operand, out var innerValue))
-                {
-                    var parameter = Expression.Parameter(operand.Type, "op");
-                    value = Expression.Lambda(expr, parameter).Compile().DynamicInvoke(innerValue);
-                    return true;
-                }
-
-                value = null;
-                return false;
+                return TryExtractConstantValue(operand, out value);
             }
 
             if (expr is ConstantExpression constant)
@@ -579,7 +572,10 @@ namespace Realms
                         throw new NotSupportedException($"Only expressions of type Equal and NotEqual can be used with RealmValueType.");
                     }
 
-                    rightValue = (RealmValueType)(int)rightValue;
+                    if (rightValue is int intValue)
+                    {
+                        rightValue = (RealmValueType)intValue;
+                    }
                 }
                 else
                 {
@@ -771,57 +767,51 @@ namespace Realms
                 columnType == typeof(RealmInteger<int>) ||
                 columnType == typeof(RealmInteger<long>))
             {
-                action(realm, propertyIndex, (long)Convert.ChangeType(value, typeof(long)));
+                action(realm, propertyIndex, Operator.Convert<long>(value));
             }
             else if (columnType == typeof(float))
             {
-                action(realm, propertyIndex, (float)Convert.ChangeType(value, typeof(float)));
+                action(realm, propertyIndex, Operator.Convert<float>(value));
             }
             else if (columnType == typeof(double))
             {
-                action(realm, propertyIndex, (double)Convert.ChangeType(value, typeof(double)));
+                action(realm, propertyIndex, Operator.Convert<double>(value));
             }
             else if (columnType == typeof(Decimal128))
             {
-                // This is needed, because Convert.ChangeType will throw if value is Decimal128
-                if (!(value is Decimal128 decimalValue))
-                {
-                    decimalValue = (Decimal128)Convert.ChangeType(value, typeof(Decimal128));
-                }
-
-                action(realm, propertyIndex, decimalValue);
+                action(realm, propertyIndex, Operator.Convert<Decimal128>(value));
             }
             else if (columnType == typeof(decimal))
             {
-                action(realm, propertyIndex, (decimal)Convert.ChangeType(value, typeof(decimal)));
+                action(realm, propertyIndex, Operator.Convert<decimal>(value));
             }
             else if (columnType == typeof(ObjectId))
             {
-                action(realm, propertyIndex, (ObjectId)Convert.ChangeType(value, typeof(ObjectId)));
+                action(realm, propertyIndex, Operator.Convert<ObjectId>(value));
             }
             else if (columnType == typeof(Guid))
             {
-                action(realm, propertyIndex, (Guid)Convert.ChangeType(value, typeof(Guid)));
+                action(realm, propertyIndex, Operator.Convert<Guid>(value));
             }
             else if (columnType == typeof(byte[]))
             {
-                action(realm, propertyIndex, (byte[])value);
+                action(realm, propertyIndex, Operator.Convert<byte[]>(value));
             }
             else if (columnType == typeof(bool))
             {
-                action(realm, propertyIndex, (bool)value);
+                action(realm, propertyIndex, Operator.Convert<bool>(value));
             }
             else if (columnType == typeof(DateTimeOffset))
             {
-                action(realm, propertyIndex, (DateTimeOffset)value);
+                action(realm, propertyIndex, Operator.Convert<DateTimeOffset>(value));
             }
             else if (typeof(RealmObjectBase).IsAssignableFrom(columnType))
             {
-                action(realm, propertyIndex, (RealmObjectBase)value);
+                action(realm, propertyIndex, Operator.Convert<RealmObjectBase>(value));
             }
             else if (columnType == typeof(RealmValue))
             {
-                action(realm, propertyIndex, (RealmValue)value);
+                action(realm, propertyIndex, Operator.Convert<RealmValue>(value));
             }
             else
             {

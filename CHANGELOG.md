@@ -11,6 +11,13 @@
 
 ### Internal
 * Using Core 11.x.y. (it's in flux)
+* Removed Lambda compilation in ResultsVisitor when we encounter a conversion operator. This
+  is needed because IL2CPP cannot comiple lambdas dynamically. Instead, we're now using
+  `Operator.Convert<TTarget>(object)` which is slightly less efficient than `Operator.Convert<TSource, TTarget>`
+  but still quite a bit faster than `Convert.ChangeType` and also doesn't suffer from the
+  deficiencies around `Decimal128` conversion. The main downside is that we'll no longer
+  support queries with an argument that is a custom user type with an implicit conversion
+  operator defined.
 
 ## 10.2.0-beta.1 (2021-04-12)
 
