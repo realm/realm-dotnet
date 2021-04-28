@@ -48,7 +48,7 @@ namespace Realms.Logging
         /// <param name="filePath">Path of the file to save messages to. The file is created if it does not already exists.</param>
         /// <param name="encoding">Character encoding to use. Defaults to <see cref="System.Text.Encoding.UTF8"/> if not specified.</param>
         /// <returns>
-        /// A <see cref="Logger"/> instance that swill save log messages to a file.
+        /// A <see cref="Logger"/> instance that will save log messages to a file.
         /// </returns>
         public static Logger File(string filePath, Encoding encoding = null) => new FileLogger(filePath, encoding);
 
