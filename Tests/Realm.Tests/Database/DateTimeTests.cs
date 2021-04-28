@@ -26,29 +26,9 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class DateTimeTests : RealmInstanceTest
     {
-        [Test]
-        [TestCaseSource(nameof(SetAndGetPropertyTestCases))]
-        public void SetAndGetPropertyTest(int hour, int mins, int secs, int ms)
-        {
-            var turingsBirthday = new DateTimeOffset(1912, 6, 23, hour, mins, secs, ms, TimeSpan.Zero);
+        public static object[] SetAndGetPropertyTestCases;
 
-            _realm.Write(() =>
-            {
-                _realm.Add(new Person
-                {
-                    FirstName = "Alan",
-                    LastName = "Turing",
-                    Birthday = turingsBirthday
-                });
-            });
-
-            // perform a db fetch
-            var turingAgain = _realm.All<Person>().First();
-
-            Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
-        }
-
-        public static object[] SetAndGetPropertyTestCases()
+        static DateTimeTests()
         {
             var result = new List<object>();
 
@@ -71,8 +51,35 @@ namespace Realms.Tests.Database
                 }
             }
 
-            return result.ToArray();
+            SetAndGetPropertyTestCases = result.ToArray();
         }
+
+        [Test]
+        public void SetAndGetPropertyTest(
+            [Values(0, 11, 23)] int hour,
+            [Values(0, 6, 30, 59)] int mins,
+            [Values(0, 6, 30, 59)] int secs,
+            [Values(0, 1, 999)] int ms)
+        {
+            var turingsBirthday = new DateTimeOffset(1912, 6, 23, hour, mins, secs, ms, TimeSpan.Zero);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new Person
+                {
+                    FirstName = "Alan",
+                    LastName = "Turing",
+                    Birthday = turingsBirthday
+                });
+            });
+
+            // perform a db fetch
+            var turingAgain = _realm.All<Person>().First();
+
+            Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
+        }
+
+
 
         [Test]
         public void SortingFinelyDifferentDateTimes()

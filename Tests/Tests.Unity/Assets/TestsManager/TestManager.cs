@@ -9,7 +9,7 @@ public class TestManager : ITestRunCallback
     public void RunFinished(ITestResult result)
     {
         var total = result.FailCount + result.PassCount + result.InconclusiveCount;
-        var message = $"Test run finished: {total} Passed: {result.PassCount} Failed: {result.FailCount} Inconclusive: {result.InconclusiveCount}";
+        var message = $"Test run finished: {total} Passed: {result.PassCount} Failed: {result.FailCount} Inconclusive: {result.InconclusiveCount} ({result.EndTime - result.StartTime:c})";
         HackyLogger.Log(message, important: true);
     }
 
@@ -24,7 +24,7 @@ public class TestManager : ITestRunCallback
         {
             var className = result.Test.ClassName?.Split('.').LastOrDefault();
             var status = result.ResultState.Status.ToString().ToUpper();
-            var message = $"\t[{status}] {className}.{result.Test.Name}";
+            var message = $"\t[{status}] {className}.{result.Test.Name} ({(result.EndTime - result.StartTime).TotalMilliseconds} ms)";
 
             HackyLogger.Log(message);
         }

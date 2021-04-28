@@ -42,7 +42,7 @@ When running the tests in the editor, you can use the built-in test explorer to 
 If you want to build the player but not run it, you can invoke the editor from the command line like:
 
 ```powershell
-Start-Process -Wait 'C:\Program Files\Unity\Hub\Editor\2021.2.0a8\Editor\Unity.exe' "-runTests -batchmode -projectPath Tests\Tests.Unity -testPlatform StandaloneWindows64 testSettingsFile .\.TestConfigs\Mono-Net4.json"
+Start-Process -Wait 'C:\Program Files\Unity\Hub\Editor\2021.2.0a14\Editor\Unity.exe' "-runTests -batchmode -projectPath Tests\Tests.Unity -testPlatform StandaloneWindows64 -testSettingsFile .\.TestConfigs\Mono-Net4.json"
 ```
 
 The important arguments here are:

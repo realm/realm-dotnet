@@ -17,8 +17,12 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
         playerOptions.options &= ~BuildOptions.AutoRunPlayer;
         playerOptions.options |= BuildOptions.AllowDebugging;
 
+        // The settings file controls things like the backend or API compatibility, so we want to put
+        // artifacts with different settings files in different folders.
+        var buildDifferentiatior = GetBuildDifferentiatorSettingsFileName();
+
         // Set the headlessBuildLocation to the output directory you desire. It does not need to be inside the project.
-        var headlessBuildLocation = Path.GetFullPath(Path.Combine(Application.dataPath, ".//..//PlayModeTestPlayer"));
+        var headlessBuildLocation = Path.GetFullPath(Path.Combine(Application.dataPath, $".//..//PlayModeTestPlayer_{buildDifferentiatior}"));
         var fileName = Path.GetFileName(playerOptions.locationPathName);
         if (!string.IsNullOrEmpty(fileName))
         {
@@ -26,6 +30,8 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
         }
 
         playerOptions.locationPathName = headlessBuildLocation;
+
+        Debug.Log($"Build artifacts will be output to {playerOptions.locationPathName}");
 
         // Instruct the cleanup to exit the Editor if the run came from the command line. 
         // The variable is static because the cleanup is being invoked in a new instance of the class.
@@ -46,5 +52,21 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
     {
         var commandLineArgs = Environment.GetCommandLineArgs();
         return commandLineArgs.Any(value => value == "-runTests");
+    }
+
+    private static string GetBuildDifferentiatorSettingsFileName()
+    {
+        var commandLineArgs = Environment.GetCommandLineArgs();
+
+        for (var i = 0; i < commandLineArgs.Length; i++)
+        {
+            if (commandLineArgs[i] == "-testSettingsFile" && (i + 1) < commandLineArgs.Length)
+            {
+                var settings = commandLineArgs[i + 1].Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+                return Path.GetFileNameWithoutExtension(settings);
+            }
+        }
+
+        return "unknown";
     }
 }
