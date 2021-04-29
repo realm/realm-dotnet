@@ -1,4 +1,4 @@
-FROM ubuntu:21.04
+FROM ubuntu:20.04
 
 # Keep the packages in alphabetical order to make it easy to avoid duplication
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -qq \
