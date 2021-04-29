@@ -125,9 +125,13 @@ run: |
 shell: bash
 #@ end
 
-#@ def buildNetFrameworkTest():
+#@ def buildNetFrameworkTest(solutionPath, properties = []):
+#@ parsedProps = ""
+#@ for prop in properties:
+#@ parsedProps += " -p:" + prop
+#@ end
 name: Build the tests
-run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
+run: #@ "msbuild " + solutionPath + " -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore" + parsedProps
 #@ end
 
 ---
@@ -264,9 +268,9 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ buildNetFrameworkTest()
+      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Realm.Tests", [ "TargetFramework=net461" ])
       - name: Run the tests
-        run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461\n./Realm.Tests.exe --result=TestResults.Windows.xml --labels=After\n"
+        run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - #@ template.replace(publishTestsResults("Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml", "Windows .NET framework tests results"))
   run-tests-netcore-net5:
     name: Run tests for .NetCore and .Net5
