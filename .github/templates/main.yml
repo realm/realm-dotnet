@@ -271,7 +271,7 @@ jobs:
       - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Realm.Tests", [ "TargetFramework=net461" ])
       - name: Run the tests
         run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
-      - #@ template.replace(publishTestsResults("Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml", "Windows .NET framework tests results"))
+      - #@ template.replace(publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results"))
   run-tests-netcore-net5:
     name: Run tests for .NetCore and .Net5
     needs: build-packages
