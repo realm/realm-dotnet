@@ -377,13 +377,9 @@ jobs:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build the test
-      run: |
-        cd ${{ github.workspace }}/Tests/Realm.Tests
-        dotnet build -c Release -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
+      run: dotnet build ${{ github.workspace }}/Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
     - name: Run the tests
-      run: |
-        cd ${{ github.workspace }}/Tests/Realm.Tests
-        dotnet run -c Release -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml
+      run: dotnet run ${{ github.workspace }}/Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -423,3 +419,20 @@ jobs:
         files: TestResults.macOS.xml
         comment_on_pr: false
         check_name: Xamarin MacOs tests results
+  run-tests-weaver:
+    runs-on: windows-latest
+    name: Run tests for the weaver
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Run the tests
+      run: dotnet run ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c Release --result=TestResults.Weaver.xml --labels=After
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: TestResults.Weaver.xml
+        comment_on_pr: false
+        check_name: Weaver tests results
