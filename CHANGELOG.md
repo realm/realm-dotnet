@@ -2,7 +2,7 @@
 ------------------
 
 ### Fixed
-* Fix a compiler bug that would result in an `"Access violation"` error being thrown when using sync on Windows.
+* Fixed a compiler bug that would result in an `"Access violation"` error being thrown when using sync on Windows.
 
 ### Enhancements
 * None
