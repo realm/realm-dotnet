@@ -117,7 +117,7 @@ shell: bash
 
 #@ def buildNetFrameworkTest(solutionPath, restoreConfPath, targetFramework):
 name: Build the tests
-run: #@ "MSBuild.exe " + solutionPath + " -p:RestoreConfigFile=" + restoreConfPath + " -p:TargetFramework=" + targetFramework + " -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
+run: #@ "msbuild " + solutionPath + " -p:RestoreConfigFile=" + restoreConfPath + " -p:TargetFramework=" + targetFramework + " -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
 #@ end
 
 ---
