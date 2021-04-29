@@ -125,10 +125,13 @@ run: |
 shell: bash
 #@ end
 
-#! targetFramework wants the full property name, the one after -p:
-#@ def buildNetFrameworkTest(solutionPath, targetFramework):
+#@ def buildNetFrameworkTest(solutionPath, properties = []):
+#@ parsedProps = ""
+#@ for prop in properties:
+#@ parsedProps += " -p:" + prop
+#@ end
 name: Build the tests
-run: #@ "msbuild " + solutionPath + " -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore -p:" + targetFramework
+run: #@ "msbuild " + solutionPath + " -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore" + parsedProps
 #@ end
 
 ---
@@ -265,7 +268,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Realm.Tests", "TargetFramework=net461")
+      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Realm.Tests", [ "TargetFramework=net461" ])
       - name: Run the tests
         run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - #@ template.replace(publishTestsResults("Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml", "Windows .NET framework tests results"))
@@ -292,7 +295,7 @@ jobs:
     steps:
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Tests.XamarinMac", "TargetFrameworkVersion=v2.0")
+      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Tests.XamarinMac", [ "TargetFrameworkVersion=v2.0" ])
       - name: Run the tests
         run: #@ "cd ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents\nMacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ template.replace(publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results"))
