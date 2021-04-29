@@ -265,6 +265,6 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         if: always()
         with:
-          files: #@ "Tests/Realm.Tests/bin/" + configuration + "/net461/TestResults.Windows.xml"
+          files: TestResults.Windows.xml
           comment_on_pr: false
           check_name: Windows .NET framework tests results
