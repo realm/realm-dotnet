@@ -1,8 +1,8 @@
-## vNext (TBD)
+## 10.1.3 (2021-04-29)
 ------------------
 
 ### Fixed
-* None
+* Fixed a compiler bug that would result in an `"Access violation"` error being thrown when using sync on Windows.
 
 ### Enhancements
 * None
