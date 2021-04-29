@@ -340,9 +340,7 @@ jobs:
     - name: Build the tests
       run: MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore
     - name: Run the tests
-      run: |
-        cd ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461
-        ./Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+      run: ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
