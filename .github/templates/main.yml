@@ -125,9 +125,9 @@ run: |
 shell: bash
 #@ end
 
-#@ def buildNetFrameworkTest():
+#@ def buildNetFrameworkTest(solutionPath, restoreConfPath, targetFramework):
 name: Build the tests
-run: #@ "MSBuild.exe ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.Nuget.Config -p:TargetFramework=net461 -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
+run: #@ "msbuild " + solutionPath + " -p:RestoreConfigFile=" + restoreConfPath + " -p:TargetFramework=" + targetFramework + " -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore"
 #@ end
 
 ---
@@ -264,9 +264,9 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ buildNetFrameworkTest()
+      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Realm.Tests", "${{ github.workspace }}/Tests/Test.Nuget.Config", "net461")
       - name: Run the tests
-        run: #@ "cd ${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461\n./Realm.Tests.exe --result=TestResults.Windows.xml --labels=After\n"
+        run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - #@ template.replace(publishTestsResults("Tests/Realm.Tests/bin/Release/net461/TestResults.Windows.xml", "Windows .NET framework tests results"))
   run-tests-netcore-net5:
     name: Run tests for .NetCore and .Net5
@@ -296,3 +296,4 @@ jobs:
       - name: Run the tests
         run: #@ "cd ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents\nMacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ template.replace(publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results"))
+

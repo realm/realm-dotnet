@@ -162,22 +162,6 @@ namespace Realms.Tests
 
         public IList<Guid?> NullableGuidList { get; }
 
-        public IList<RealmInteger<byte>> ByteCounterList { get; }
-
-        public IList<RealmInteger<short>> Int16CounterList { get; }
-
-        public IList<RealmInteger<int>> Int32CounterList { get; }
-
-        public IList<RealmInteger<long>> Int64CounterList { get; }
-
-        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
-
-        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
-
-        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
-
-        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
-
         public IList<RealmValue> RealmValueList { get; }
     }
 
@@ -241,22 +225,6 @@ namespace Realms.Tests
 
         public ISet<ObjectId?> NullableObjectIdSet { get; }
 
-        public ISet<RealmInteger<byte>> ByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>> Int16CounterSet { get; }
-
-        public ISet<RealmInteger<int>> Int32CounterSet { get; }
-
-        public ISet<RealmInteger<long>> Int64CounterSet { get; }
-
-        public ISet<RealmInteger<byte>?> NullableByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>?> NullableInt16CounterSet { get; }
-
-        public ISet<RealmInteger<int>?> NullableInt32CounterSet { get; }
-
-        public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
-
         public ISet<IntPropertyObject> ObjectSet { get; }
 
         public ISet<RealmValue> RealmValueSet { get; }
@@ -319,22 +287,6 @@ namespace Realms.Tests
 
         public IList<ObjectId?> NullableObjectIdList { get; }
 
-        public IList<RealmInteger<byte>> ByteCounterList { get; }
-
-        public IList<RealmInteger<short>> Int16CounterList { get; }
-
-        public IList<RealmInteger<int>> Int32CounterList { get; }
-
-        public IList<RealmInteger<long>> Int64CounterList { get; }
-
-        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
-
-        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
-
-        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
-
-        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
-
         public IList<IntPropertyObject> ObjectList { get; }
 
         public IList<RealmValue> RealmValueList { get; }
@@ -396,22 +348,6 @@ namespace Realms.Tests
         public IDictionary<string, Decimal128?> NullableDecimal128Dict { get; }
 
         public IDictionary<string, ObjectId?> NullableObjectIdDict { get; }
-
-        public IDictionary<string, RealmInteger<byte>> ByteCounterDict { get; }
-
-        public IDictionary<string, RealmInteger<short>> Int16CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<int>> Int32CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<long>> Int64CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDict { get; }
-
-        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDict { get; }
 
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
@@ -588,22 +524,6 @@ namespace Realms.Tests
         public IDictionary<string, Decimal128?> NullableDecimal128Dictionary { get; }
 
         public IDictionary<string, ObjectId?> NullableObjectIdDictionary { get; }
-
-        public IDictionary<string, RealmInteger<byte>> ByteCounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<short>> Int16CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<int>> Int32CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<long>> Int64CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDictionary { get; }
 
         public IDictionary<string, byte[]> NullableBinaryDictionary { get; }
 

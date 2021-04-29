@@ -328,6 +328,30 @@ namespace Realms
             return _hashCode?.Value ?? base.GetHashCode();
         }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var typeString = GetType().Name;
+
+            if (!IsManaged)
+            {
+                return $"{typeString} (unmanaged)";
+            }
+
+            if (!IsValid)
+            {
+                return $"{typeString} (removed)";
+            }
+
+            if (this is RealmObject ro && _metadata.Helper.TryGetPrimaryKeyValue(ro, out var pkValue))
+            {
+                var pkProperty = _metadata.Schema.PrimaryKeyProperty;
+                return $"{typeString} ({pkProperty.Value.Name} = {pkValue})";
+            }
+
+            return typeString;
+        }
+
         /// <summary>
         /// Allows you to raise the PropertyChanged event.
         /// </summary>

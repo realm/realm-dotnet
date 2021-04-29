@@ -58,7 +58,7 @@
   obj.MyValue = 1;
   obj.MyValue = "abc";
 
-  if (obj.Type == RealmValueType.String)
+  if (obj.MyValue.Type == RealmValueType.String)
   {
       var myString = obj.MyValue.AsString();
   }
