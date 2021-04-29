@@ -291,8 +291,7 @@ jobs:
     steps:
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - name: Build the tests
-        run: #@ "msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:TargetFrameworkVersion=v2.0 -restore"
+      - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Tests.XamarinMac", "${{ github.workspace }}/Tests/Test.NuGet.Config", "netstandard2.0")
       - name: Run the tests
         run: #@ "cd ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents\nMacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ template.replace(publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results"))
