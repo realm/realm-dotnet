@@ -286,7 +286,7 @@ jobs:
     - name: Build the test
       run: #@ "dotnet build ${{ github.workspace }}/Tests/Realm.Tests -c " + configuration + " -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"
     - name: Run the tests
-      run: #@ "dotnet run ${{ github.workspace }}/Tests/Realm.Tests -c " + configuration + " -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml"
+      run: #@ "dotnet run -p ${{ github.workspace }}/Tests/Realm.Tests -c " + configuration + " -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml"
     - #@ template.replace(publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results"))
   run-tests-xamarin-macos:
     runs-on: macos-latest
@@ -297,7 +297,7 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - #@ buildNetFrameworkTest("${{ github.workspace }}/Tests/Tests.XamarinMac", [ "TargetFrameworkVersion=v2.0" ])
       - name: Run the tests
-        run: #@ "cd ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents\nMacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
+        run: #@ "${{ github.workspace }}/Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ template.replace(publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results"))
   run-tests-weaver:
     runs-on: windows-latest
@@ -305,5 +305,5 @@ jobs:
     steps:
       - #@ checkoutCode()
       - name: Run the tests
-        run: #@ "dotnet run ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c " + configuration + " --result=TestResults.Weaver.xml --labels=After"
+        run: #@ "dotnet run -p ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c " + configuration + " --result=TestResults.Weaver.xml --labels=After"
       - #@ template.replace(publishTestsResults("TestResults.Weaver.xml", "Weaver tests results"))
