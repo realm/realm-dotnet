@@ -157,6 +157,7 @@ namespace Realms.Logging
 
         private class FileLogger : Logger
         {
+            private readonly object locker = new object();
             private readonly string _filePath;
             private readonly Encoding _encoding;
 
@@ -168,7 +169,10 @@ namespace Realms.Logging
 
             protected override void LogImpl(LogLevel level, string message)
             {
-                System.IO.File.AppendAllText(_filePath, FormatLog(level, message) + Environment.NewLine, _encoding);
+                lock (locker)
+                {
+                    System.IO.File.AppendAllText(_filePath, FormatLog(level, message) + Environment.NewLine, _encoding);
+                }
             }
         }
 
