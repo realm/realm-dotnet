@@ -305,5 +305,5 @@ jobs:
     steps:
       - #@ checkoutCode()
       - name: Run the tests
-        run: #@ "dotnet run -p ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c " + configuration + " --result=TestResults.Weaver.xml --labels=After"
+        run: #@ "dotnet run -p ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c " + configuration + " --result=${{ github.workspace }}/TestResults.Weaver.xml --labels=After"
       - #@ template.replace(publishTestsResults("TestResults.Weaver.xml", "Weaver tests results"))
