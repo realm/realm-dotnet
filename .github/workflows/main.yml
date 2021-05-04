@@ -277,13 +277,13 @@ jobs:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Build nuget package Realm.Fody
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
+      run: msbuild ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build nuget package Realm
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
+      run: msbuild ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build nuget package Realm.UnityUtils
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
+      run: msbuild ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build nuget package Realm.UnityWeaver
-      run: MsBuild.exe ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore
+      run: msbuild ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
@@ -338,7 +338,7 @@ jobs:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build the tests
-      run: msbuild ${{ github.workspace }}/Tests/Realm.Tests -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore -p:TargetFramework=net461
+      run: msbuild ${{ github.workspace }}/Tests/Realm.Tests  -p:Configuration=Release -restore -p:TargetFramework=net461 -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results

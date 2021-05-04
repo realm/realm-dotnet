@@ -75,9 +75,8 @@ steps:
 
 #@ def buildPackages():
 #@ for pkgName in nugetPackages:
-#@ buildCmd = "MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=" + configuration + " -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore"
   - name: #@ "Build nuget package " + pkgName
-    run: #@ buildCmd
+    _: #@ template.replace(msbuild(project="Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
 #@ end
 #@ end
 
@@ -115,13 +114,21 @@ run: |
 shell: bash
 #@ end
 
-#@ def buildNetFrameworkTest(relSolutionPath, **properties):
+#@ def msbuild(**properties):
 #@ parsedProps = ""
+#@ projectPath = ""
+#@ target = ""
 #@ for prop in properties.keys():
-#@ parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  if prop == "project":
+#@    projectPath = properties[prop]
+#@  elif prop == "target":
+#@    target = "-t:" + properties[prop]
+#@  else:
+#@    parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  end
 #@ end
-name: Build the tests
-run: #@ "msbuild ${{ github.workspace }}/" + relSolutionPath + " -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=" + configuration + " -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore" + parsedProps
+
+run: #@ "msbuild ${{ github.workspace }}/" + projectPath + " " + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
 #@ end
 
 ---
@@ -258,7 +265,8 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ buildNetFrameworkTest("Tests/Realm.Tests", TargetFramework="net461" )
+      - name: Build the tests
+        _: #@ template.replace(msbuild(project="Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="${{ github.workspace }}/Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" ))
       - name: Run the tests
         run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - name: Publish Unit Test Results
