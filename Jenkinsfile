@@ -44,10 +44,12 @@ stage('Checkout') {
 stage('Build wrappers') {
   def bashExtraArgs = ''
   def psExtraArgs = ''
+
   if (enableLTO) {
     bashExtraArgs = '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON'
     psExtraArgs = '-EnableLTO'
   }
+
   def jobs = [
     'iOS': {
       rlmNode('osx || macos-catalina') {
@@ -77,6 +79,7 @@ stage('Build wrappers') {
       }
     }
   ]
+
   for(abi in AndroidABIs) {
     def localAbi = abi
     jobs["Android ${localAbi}"] = {
@@ -89,6 +92,7 @@ stage('Build wrappers') {
       }
     }
   }
+
   for(platform in WindowsPlatforms) {
     def localPlatform = platform
     jobs["Windows ${localPlatform}"] = {
@@ -104,6 +108,7 @@ stage('Build wrappers') {
       }
     }
   }
+
   for(platform in WindowsUniversalPlatforms) {
     def localPlatform = platform
     jobs["WindowsUniversal ${localPlatform}"] = {
@@ -119,8 +124,10 @@ stage('Build wrappers') {
       }
     }
   }
+
   parallel jobs
 }
+
 packageVersion = ''
 stage('Package') {
   rlmNode('windows && dotnet') {
@@ -137,6 +144,7 @@ stage('Package') {
     for(platform in WindowsUniversalPlatforms) {
       unstash "windowsuniversal-wrappers-${platform}"
     }
+
     dir('Realm') {
       def props = [ Configuration: configuration, PackageOutputPath: "${env.WORKSPACE}/Realm/packages", VersionSuffix: versionSuffix]
       dir('Realm.Fody') {
@@ -151,6 +159,7 @@ stage('Package') {
       dir('Realm.UnityWeaver') {
         msbuild target: 'Pack', properties: props, restore: true
       }
+
       recordIssues (
         tool: msBuild(),
         ignoreQualityGate: false,
@@ -161,13 +170,16 @@ stage('Package') {
           excludeFile(".*Microsoft.Build.Tasks.Git.targets.*") // warning due to sourcelink not finding objectstore
         ]
       )
+
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
         archiveArtifacts '*.nupkg'
+
         // extract the package version from the weaver package because it has the most definite name
         def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
         packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
+
         // Disable github packages because it fails to push with:
         //    Unable to write data to the transport connection: An existing connection was forcibly closed by the remote host..
         //    An existing connection was forcibly closed by the remote host.
@@ -184,18 +196,22 @@ stage('Package') {
     }
   }
 }
+
 stage('Unity Package') {
   rlmNode('dotnet && windows') {
     unstash 'dotnet-source'
     unstash 'packages'
+
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
     def utilsPackagePath = findFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
     def weaverPackagePath = findFiles(glob: "Realm.UnityWeaver.${packageVersion}.nupkg")[0].path
+
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
       bat "del io.realm.unity-${packageVersion}.tgz"
     }
+
     bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "*.tgz"
@@ -361,7 +377,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
       """.trim()
 
       if (isUnix()) {
-        if (nodeName == 'coredump') {
+        if (nodeName == 'docker') {
           def test_runner_image = CreateDockerContainer(targetFramework)
           withRealmCloud(
             version: '2021-04-08',
