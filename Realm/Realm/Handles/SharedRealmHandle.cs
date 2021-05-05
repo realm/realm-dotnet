@@ -154,7 +154,7 @@ namespace Realms
                 GetNativeSchemaCallback native_schema_callback,
                 OpenRealmCallback open_callback,
                 OnBindingContextDestructedCallback context_destructed_callback,
-                LogMessageCallback log_mssage_callback,
+                LogMessageCallback log_message_callback,
                 NotifiableObjectHandleBase.NotificationCallback notify_object,
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
                 MigrationCallback migration_callback,
@@ -279,9 +279,12 @@ namespace Realms
             }
         }
 
-        public void SetManagedStateHandle(IntPtr managedStateHandle)
+        public void SetManagedStateHandle(Realm.State managedState)
         {
-            NativeMethods.set_managed_state_handle(this, managedStateHandle, out var nativeException);
+            // This is freed in OnBindingContextDestructed
+            var handle = GCHandle.Alloc(managedState);
+
+            NativeMethods.set_managed_state_handle(this, GCHandle.ToIntPtr(handle), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -481,7 +484,7 @@ namespace Realms
 
             if (ex.type == RealmExceptionCodes.NoError)
             {
-                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
+                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference));
             }
             else
             {
@@ -496,8 +499,7 @@ namespace Realms
         {
             if (handle != IntPtr.Zero)
             {
-                var gch = GCHandle.FromIntPtr(handle);
-                ((Realm.State)gch.Target).Dispose();
+                GCHandle.FromIntPtr(handle).Free();
             }
         }
 

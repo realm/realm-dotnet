@@ -1,5 +1,5 @@
 {
-    "name": "io.realm.unity",
+    "name": "io.realm.unity-bundled",
     "version": "10.2.0-beta.2",
     "displayName": "Realm",
     "description": "Realm is a mobile database: a replacement for SQLite",

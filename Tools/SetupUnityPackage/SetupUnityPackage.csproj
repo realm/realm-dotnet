@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,23 +11,22 @@
     <PackageReference Include="NuGet.Protocol" Version="5.7.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="MetaFiles\" />
-    <Folder Include="MetaFiles\Dependencies\" />
+    <Folder Include="MetaFiles\Realm\Runtime\Dependencies\" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="MetaFiles\Dependencies.meta">
+    <None Update="MetaFiles\Realm\Runtime\Dependencies.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MetaFiles\Dependencies\MongoDB.Bson.dll.meta">
+    <None Update="MetaFiles\Realm\Runtime\Dependencies\MongoDB.Bson.dll.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MetaFiles\Dependencies\Remotion.Linq.dll.meta">
+    <None Update="MetaFiles\Realm\Runtime\Dependencies\Remotion.Linq.dll.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MetaFiles\Dependencies\System.Buffers.dll.meta">
+    <None Update="MetaFiles\Realm\Runtime\Dependencies\System.Buffers.dll.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MetaFiles\Dependencies\System.Runtime.CompilerServices.Unsafe.dll.meta">
+    <None Update="MetaFiles\Realm\Runtime\Dependencies\System.Runtime.CompilerServices.Unsafe.dll.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

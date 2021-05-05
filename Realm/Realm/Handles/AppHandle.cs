@@ -45,7 +45,7 @@ namespace Realms.Sync
             public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void BsonCallback(IntPtr tcs_ptr, BsonPayload response, AppError error);
+            public unsafe delegate void BsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, int api_keys_len, AppError error);
@@ -366,13 +366,13 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.BsonCallback))]
-        private static unsafe void HandleBsonCallback(IntPtr tcs_ptr, BsonPayload response, AppError error)
+        private static unsafe void HandleBsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            var tcs = (TaskCompletionSource<BsonPayload>)tcsHandle.Target;
+            var tcs = (TaskCompletionSource<string>)tcsHandle.Target;
             if (error.is_null)
             {
-                tcs.TrySetResult(response);
+                tcs.TrySetResult(response.AsString());
             }
             else
             {

@@ -200,19 +200,18 @@ stage('Package') {
 stage('Unity Package') {
   rlmNode('dotnet && windows') {
     unstash 'dotnet-source'
-    unstash 'packages'
+    dir('Realm/packages') {
+      unstash 'packages'
+      bat 'dir'
+    }
 
-    def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
-    def utilsPackagePath = findFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
-    def weaverPackagePath = findFiles(glob: "Realm.UnityWeaver.${packageVersion}.nupkg")[0].path
-
-    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
+    bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
       bat "del io.realm.unity-${packageVersion}.tgz"
     }
 
-    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
+    bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --include-dependencies --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "*.tgz"
     }

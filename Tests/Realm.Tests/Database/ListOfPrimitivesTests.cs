@@ -22,7 +22,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -378,7 +377,8 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<object> RealmValueTestValues()
         {
-            yield return new RealmValue[] {
+            yield return new RealmValue[]
+            {
                 RealmValue.Null,
                 RealmValue.Create(10, RealmValueType.Int),
                 RealmValue.Create(true, RealmValueType.Bool),
@@ -390,7 +390,8 @@ namespace Realms.Tests.Database
                 RealmValue.Create(5m, RealmValueType.Decimal128),
                 RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
                 RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
-                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object) };
+                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object)
+            };
         }
 
         #endregion TestCaseSources
@@ -797,7 +798,7 @@ namespace Realms.Tests.Database
             }, timeout: 100000);
         }
 
-        private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
+        private static void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
         {
             var listObject = new ListsObject();
             var list = listGetter(listObject);
@@ -808,7 +809,7 @@ namespace Realms.Tests.Database
             RunTestsCore(testData, list);
         }
 
-        private void RunTestsCore<T>(ListTestCaseData<T> testData, IList<T> list)
+        private static void RunTestsCore<T>(ListTestCaseData<T> testData, IList<T> list)
         {
             testData.AssertEquality(list);
             testData.AssertCount(list);

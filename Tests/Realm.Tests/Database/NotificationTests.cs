@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Logging;
 
 namespace Realms.Tests.Database
 {
@@ -67,12 +68,13 @@ namespace Realms.Tests.Database
         public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
         {
             using var sw = new StringWriter();
-            var original = Console.Out;
-            Console.SetOut(sw);
+            var original = Logger.Default;
+
+            Logger.Default = Logger.Function(sw.WriteLine);
             _realm.NotifyError(new Exception());
 
             Assert.That(sw.ToString(), Does.Contain("exception").And.Contains("Realm.Error"));
-            Console.SetOut(original);
+            Logger.Default = original;
         }
 
         [Test]
@@ -188,41 +190,18 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var dictionary = _realm.Write(() =>
+                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
                 {
-                    return _realm.Add(new OrderedContainer()).ItemsDictionary;
-                });
-
-                var weakRef = new WeakReference(dictionary);
-                var token = dictionary.SubscribeForKeyNotifications(delegate { });
-
-                dictionary = null;
-
-                for (var i = 0; i < 10; i++)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
-
-                Assert.That(weakRef.IsAlive);
-
-                token.Dispose();
-                token = null;
-
-                for (var i = 0; i < 10; i++)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-
-                    if (!weakRef.IsAlive)
+                    var dictionary = _realm.Write(() =>
                     {
-                        break;
-                    }
-                }
+                        return _realm.Add(new OrderedContainer()).ItemsDictionary;
+                    });
 
-                Assert.That(weakRef.IsAlive, Is.False);
+                    var dictReference = new WeakReference(dictionary);
+                    var token = dictionary.SubscribeForKeyNotifications(delegate { });
+
+                    return (token, dictReference);
+                });
             });
         }
 

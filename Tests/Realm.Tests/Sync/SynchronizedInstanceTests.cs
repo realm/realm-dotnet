@@ -139,12 +139,7 @@ namespace Realms.Tests.Sync
 
                 config = await GetIntegrationConfigAsync((string)config.Partition);
 
-                using var cts = new CancellationTokenSource();
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(10);
-                    cts.Cancel();
-                });
+                using var cts = new CancellationTokenSource(10);
 
                 try
                 {

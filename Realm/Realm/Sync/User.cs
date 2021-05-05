@@ -468,7 +468,7 @@ namespace Realms.Sync
 
                 var response = await _user.Handle.CallFunctionAsync(_user.App.Handle, name, args.ToNativeJson());
 
-                return response.GetValue<T>();
+                return BsonSerializer.Deserialize<T>(response);
             }
         }
 

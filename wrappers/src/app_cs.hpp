@@ -119,11 +119,6 @@ namespace binding {
         }
     };
 
-    struct BsonPayload {
-        const char* serialized;
-        size_t serialized_len;
-    };
-
     struct UserApiKey {
         const char* id;
         size_t id_len;
@@ -139,7 +134,7 @@ namespace binding {
 
     using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
     using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
-    using BsonCallbackT = void(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+    using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
     using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
 
     extern std::function<VoidCallbackT> s_void_callback;
@@ -180,17 +175,17 @@ namespace binding {
                 std::string error_category = err->error_code.message();
                 MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
-                s_bson_callback(tcs_ptr, BsonPayload(), app_error);
+                s_bson_callback(tcs_ptr, realm_value_t{}, app_error);
             }
             else if (response) {
-                BsonPayload payload;
                 std::string serialized = response->to_string();
-                payload.serialized = serialized.c_str();
-                payload.serialized_len = serialized.size();
+                realm_value_t payload{};
+                payload.string = to_capi(serialized);
+                payload.type = realm_value_type::RLM_TYPE_STRING;
                 s_bson_callback(tcs_ptr, payload, MarshaledAppError());
             }
             else {
-                s_bson_callback(tcs_ptr, BsonPayload(), MarshaledAppError());
+                s_bson_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
             }
         };
     }
@@ -208,7 +203,7 @@ namespace binding {
 
             for (auto i = 0; i < keys.size(); i++) {
                 auto& api_key = keys[i];
-                UserApiKey marshaled_key;
+                UserApiKey marshaled_key{};
 
                 id_storage[i] = api_key.id.to_string();
                 marshaled_key.id = id_storage[i].c_str();

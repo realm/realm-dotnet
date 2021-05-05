@@ -166,9 +166,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(doc, nameof(doc));
 
-                var result = await _handle.InsertOne(doc.ToNativeJson());
-
-                return result.GetValue<InsertResult>();
+                return await _handle.InsertOne<InsertResult>(doc.ToNativeJson());
             }
 
             /// <summary>
@@ -185,8 +183,7 @@ namespace Realms.Sync
                 Argument.NotNull(docs, nameof(docs));
                 Argument.Ensure(docs.All(d => d != null), "Collection must not contain null elements.", nameof(docs));
 
-                var result = await _handle.InsertMany(docs.ToNativeJson());
-                return result.GetValue<InsertManyResult>();
+                return await _handle.InsertMany<InsertManyResult>(docs.ToNativeJson());
             }
 
             /// <summary>
@@ -216,8 +213,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                var result = await _handle.UpdateOne(filter?.ToNativeJson(), updateDocument?.ToNativeJson(), upsert);
-                return result.GetValue<UpdateResult>();
+                return await _handle.UpdateOne<UpdateResult>(filter?.ToNativeJson(), updateDocument?.ToNativeJson(), upsert);
             }
 
             /// <summary>
@@ -247,8 +243,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                var result = await _handle.UpdateMany(filter?.ToNativeJson(), updateDocument.ToNativeJson(), upsert);
-                return result.GetValue<UpdateResult>();
+                return await _handle.UpdateMany<UpdateResult>(filter?.ToNativeJson(), updateDocument.ToNativeJson(), upsert);
             }
 
             /// <summary>
@@ -263,11 +258,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne/"/>
-            public async Task<DeleteResult> DeleteOneAsync(object filter = null)
-            {
-                var result = await _handle.DeleteOne(filter?.ToNativeJson());
-                return result.GetValue<DeleteResult>();
-            }
+            public Task<DeleteResult> DeleteOneAsync(object filter = null) => _handle.DeleteOne<DeleteResult>(filter?.ToNativeJson());
 
             /// <summary>
             /// Removes one or more documents from a collection. If no documents match the <paramref name="filter"/>, the collection is not modified.
@@ -281,11 +272,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/"/>
-            public async Task<DeleteResult> DeleteManyAsync(object filter = null)
-            {
-                var result = await _handle.DeleteMany(filter?.ToNativeJson());
-                return result.GetValue<DeleteResult>();
-            }
+            public Task<DeleteResult> DeleteManyAsync(object filter = null) => _handle.DeleteMany<DeleteResult>(filter?.ToNativeJson());
 
             /// <summary>
             /// Finds the all documents in the collection up to <paramref name="limit"/>.
@@ -303,11 +290,8 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public async Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
-            {
-                var result = await _handle.Find(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort, limit));
-                return result.GetValue<TDocument[]>();
-            }
+            public Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
+                => _handle.Find<TDocument[]>(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort, limit));
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -324,11 +308,8 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public async Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
-            {
-                var result = await _handle.FindOne(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort));
-                return result.GetValue<TDocument>();
-            }
+            public Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
+                => _handle.FindOne<TDocument>(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort));
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -361,8 +342,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                var result = await _handle.FindOneAndUpdate(filter?.ToNativeJson(), updateDocument.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
-                return result.GetValue<TDocument>();
+                return await _handle.FindOneAndUpdate<TDocument>(filter?.ToNativeJson(), updateDocument.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
             }
 
             /// <summary>
@@ -400,8 +380,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(replacementDoc, nameof(replacementDoc));
 
-                var result = await _handle.FindOneAndReplace(filter?.ToNativeJson(), replacementDoc.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
-                return result.GetValue<TDocument>();
+                return await _handle.FindOneAndReplace<TDocument>(filter?.ToNativeJson(), replacementDoc.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
             }
 
             /// <summary>
@@ -419,11 +398,8 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndDelete/"/>
-            public async Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
-            {
-                var result = await _handle.FindOneAndDelete(filter?.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort));
-                return result.GetValue<TDocument>();
-            }
+            public Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
+                => _handle.FindOneAndDelete<TDocument>(filter?.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort));
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <typeparamref name="TProjection"/> array.
@@ -437,11 +413,7 @@ namespace Realms.Sync
             /// by executing the aggregation <paramref name="pipeline"/>.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/aggregation/"/>
-            public async Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline)
-            {
-                var result = await _handle.Aggregate(pipeline.ToNativeJson());
-                return result.GetValue<TProjection[]>();
-            }
+            public Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline) => _handle.Aggregate<TProjection[]>(pipeline.ToNativeJson());
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <see cref="BsonDocument"/> array.
@@ -468,11 +440,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
             /// <paramref name="filter"/> and <paramref name="limit"/> criteria.
             /// </returns>
-            public async Task<long> CountAsync(object filter = null, long? limit = null)
-            {
-                var result = await _handle.Count(filter?.ToNativeJson(), limit);
-                return result.GetValue<long>();
-            }
+            public Task<long> CountAsync(object filter = null, long? limit = null) => _handle.Count(filter?.ToNativeJson(), limit);
         }
 
         /// <summary>

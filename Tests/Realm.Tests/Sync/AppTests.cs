@@ -30,6 +30,8 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCreate_CreatesApp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+
             // This is mostly a smoke test to ensure that nothing blows up when setting all properties.
             var config = new AppConfiguration("abc-123")
             {
@@ -43,6 +45,8 @@ namespace Realms.Tests.Sync
                 CustomLogger = (message, level) => { },
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
+
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
@@ -66,6 +70,7 @@ namespace Realms.Tests.Sync
                 var logBuilder = new StringBuilder();
 
                 var appConfig = SyncTestHelpers.GetAppConfig();
+#pragma warning disable CS0618 // Type or member is obsolete
                 appConfig.LogLevel = logLevel;
                 appConfig.CustomLogger = (message, level) =>
                 {
@@ -74,6 +79,7 @@ namespace Realms.Tests.Sync
                         logBuilder.AppendLine($"[{level}] {message}");
                     }
                 };
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 var app = CreateApp(appConfig);
 

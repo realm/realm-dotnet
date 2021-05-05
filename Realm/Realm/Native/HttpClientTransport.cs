@@ -137,8 +137,7 @@ namespace Realms.Native
                         message.Content = new StringContent(request.Body, Encoding.UTF8, "application/json");
                     }
 
-                    using var cts = new CancellationTokenSource();
-                    cts.CancelAfter((int)request.timeout_ms);
+                    using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
                     var response = await _httpClient.SendAsync(message, cts.Token);
                     var headers = new List<StringStringPair>(response.Headers.Count());

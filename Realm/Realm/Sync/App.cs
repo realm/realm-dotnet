@@ -110,6 +110,7 @@ namespace Realms.Sync
         /// Gets the currently user. If none exists, null is returned.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
 
         /// <summary>

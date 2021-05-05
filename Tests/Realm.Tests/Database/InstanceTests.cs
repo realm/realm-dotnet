@@ -820,22 +820,11 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference frozenRealmRef = null;
-                using (var realm = GetRealm())
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    new Action(() =>
-                    {
-                        var frozenRealm = realm.Freeze();
-                        frozenRealmRef = new WeakReference(frozenRealm);
-                    })();
-                }
-
-                while (frozenRealmRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                    using var realm = GetRealm();
+                    return new[] { realm.Freeze() };
+                });
 
                 // This will throw on Windows if the Realm wasn't really disposed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -877,34 +866,15 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                var realm = Realm.GetInstance();
-                var state = stateAccessor.GetValue(realm);
-
-                var realmRef = new WeakReference(realm);
-                var stateRef = new WeakReference(state);
-
-                realm = null;
-                state = null;
-
-                var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                var token = cts.Token;
-
-                while (realmRef.IsAlive || stateRef.IsAlive)
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
+                    var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    if (token.IsCancellationRequested)
-                    {
-                        Assert.Fail($"Some references are still alive: RealmRef.IsAlive={realmRef.IsAlive}, StateRef.IsAlive={stateRef.IsAlive}");
-                    }
-                }
+                    using var realm = Realm.GetInstance();
+                    var state = stateAccessor.GetValue(realm);
 
-                Assert.That(realmRef.IsAlive, Is.False);
-                Assert.That(stateRef.IsAlive, Is.False);
+                    return new object[] { state };
+                });
             });
         }
 

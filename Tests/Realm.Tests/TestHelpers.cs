@@ -20,7 +20,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
+#if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
+#endif
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -85,6 +88,8 @@ namespace Realms.Tests
 
         public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
         {
+            destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
+
             var assembly = typeof(TestHelpers).Assembly;
             var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
             if (resourceName == null)
@@ -92,15 +97,85 @@ namespace Realms.Tests
                 throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
             }
 
-            destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
 
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-            {
-                stream.CopyTo(destination);
-            }
+            stream.CopyTo(destination);
 
             return destPath;
+        }
+
+        public static async Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
+        {
+            var references = new Func<WeakReference[]>(() =>
+            {
+                var objects = objectsGetter();
+                var result = new WeakReference[objects.Length];
+
+                for (var i = 0; i < objects.Length; i++)
+                {
+                    result[i] = new WeakReference(objects[i]);
+                }
+
+                return result;
+            })();
+
+            await WaitUntilReferencesAreCollected(10000, references);
+
+            Assert.That(references.All(r => !r.IsAlive), "Expected all references to be GC-ed within 10 seconds but they weren't");
+        }
+
+        private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
+        {
+            using var cts = new CancellationTokenSource(milliseconds);
+
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    while (references.Any(r => r.IsAlive))
+                    {
+                        cts.Token.ThrowIfCancellationRequested();
+
+                        await Task.Yield();
+
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        public static async Task EnsurePreserverKeepsObjectAlive<T>(Func<(T Preserver, WeakReference Reference)> func, Action<(T Preserver, WeakReference Reference)> assertReferenceIsAlive = null)
+        {
+            WeakReference reference = null;
+            WeakReference preserverReference = null;
+            await new Func<Task>(async () =>
+            {
+                T preserver;
+                (preserver, reference) = func();
+                await WaitUntilReferencesAreCollected(2000, reference);
+
+                Assert.That(reference.IsAlive, "Preserver hasn't been disposed so expected object to still be alive.");
+
+                assertReferenceIsAlive?.Invoke((preserver, reference));
+
+                if (preserver is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                preserverReference = new WeakReference(preserver);
+                preserver = default;
+            })();
+
+            await WaitUntilReferencesAreCollected(10000, reference, preserverReference);
+
+            Assert.That(preserverReference.IsAlive, Is.False, "Expected the preserver instance to be GC-ed but it wasn't.");
+            Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
         public static bool IsWindows
@@ -284,6 +359,35 @@ namespace Realms.Tests
             }
 
             return $"<{byteArr[0]}>";
+        }
+
+        public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)
+        {
+            var observer = new FunctionObserver<T>(onNext);
+            return observable.Subscribe(observer);
+        }
+
+        private class FunctionObserver<T> : IObserver<T>
+        {
+            private readonly Action<T> _onNext;
+
+            public FunctionObserver(Action<T> onNext)
+            {
+                _onNext = onNext;
+            }
+
+            public void OnCompleted()
+            {
+            }
+
+            public void OnError(Exception error)
+            {
+            }
+
+            public void OnNext(T value)
+            {
+                _onNext?.Invoke(value);
+            }
         }
     }
 }

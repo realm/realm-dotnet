@@ -179,7 +179,7 @@ namespace Realms
 
             Realm.ExecuteOutsideTransaction(() =>
             {
-                var managedResultsHandle = GCHandle.Alloc(this);
+                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 _keyNotificationToken = _dictionaryHandle.AddKeyNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }
