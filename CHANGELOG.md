@@ -1,3 +1,17 @@
+## 10.2.0-beta.3 (TBD)
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 11.x.y. (it's in flux)
+
 ## 10.2.0-beta.2 (2021-05-05)
 
 ### Fixed
