@@ -75,6 +75,7 @@ stage('Build wrappers') {
           buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}")
         }
         stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
+        archiveArtifacts 'wrappers/build/**'
       }
     }
   }
