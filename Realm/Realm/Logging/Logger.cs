@@ -47,6 +47,9 @@ namespace Realms.Logging
         /// </summary>
         /// <param name="filePath">Path of the file to save messages to. The file is created if it does not already exists.</param>
         /// <param name="encoding">Character encoding to use. Defaults to <see cref="System.Text.Encoding.UTF8"/> if not specified.</param>
+        /// <remarks>
+        /// Please note that this logger is not optimized for performance, and could lead to overall sync performance slowdown with more verbose log levels.
+        /// </remarks>
         /// <returns>
         /// A <see cref="Logger"/> instance that will save log messages to a file.
         /// </returns>
