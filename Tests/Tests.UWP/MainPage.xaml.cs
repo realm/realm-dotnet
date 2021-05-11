@@ -66,7 +66,7 @@ namespace Realms.Tests.UWP
                 {
                     _nunit.Options.AutoRun = true;
                     _nunit.Options.CreateXmlResultFile = true;
-                    var extractedPath = TestHelpers.GetResultPath(launchParams);
+                    var extractedPath = TestHelpersUWP.GetResultPath(launchParams);
                     if (extractedPath == string.Empty)
                     {
                         extractedPath = "UWP_results.xml";
@@ -76,7 +76,7 @@ namespace Realms.Tests.UWP
                     _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, extractedPath);
                     _nunit.Options.OnCompletedCallback = async () =>
                     {
-                        await TestHelpers.TransformTestResults(_nunit.Options.ResultFilePath);
+                        await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
                         Console.WriteLine("Test finished, reporting results");
                     };
                 }

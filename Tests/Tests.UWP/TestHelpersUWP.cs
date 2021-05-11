@@ -25,7 +25,7 @@ using Windows.Storage;
 
 namespace Realms.Tests.UWP
 {
-    static class TestHelpers
+    static class TestHelpersUWP
     {
         public static async Task TransformTestResults(string resultsPath)
         {
