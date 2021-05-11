@@ -40,6 +40,20 @@ namespace Realms.Tests
 {
     public static class TestHelpers
     {
+        private static Lazy<bool> _supportsDynamic = new Lazy<bool>(() =>
+        {
+            try
+            {
+                dynamic str = "abc";
+                str.Substring(1);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
         public static readonly Random Random = new Random();
 
         public static byte[] GetBytes(int size, byte? value = null)
@@ -233,6 +247,14 @@ namespace Realms.Tests
             if (IsAOTTarget)
             {
                 Assert.Ignore(message);
+            }
+        }
+
+        public static void IgnoreIfDynamicUnsupported()
+        {
+            if (!_supportsDynamic.Value)
+            {
+                Assert.Ignore("This platform doesn't support dynamic code execution");
             }
         }
 
