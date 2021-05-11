@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Realms.Logging;
 
@@ -88,6 +89,40 @@ namespace Realms.Tests.Database
 
             Assert.That(messages[1], Does.Contain((level + 1).ToString()));
             Assert.That(messages[1], Does.Contain("This is at level + 1"));
+        }
+
+        [Test]
+        public void FileLogger()
+        {
+            var tempFilePath = Path.GetTempFileName();
+
+            Logger.LogLevel = LogLevel.All;
+            Logger.Default = Logger.File(tempFilePath);
+
+            var warnMessage = "This is very dangerous!";
+            var debugMessage = "This is a debug message!";
+            var errorMessage = "This is an error!";
+            var timeString = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
+
+            Logger.LogDefault(LogLevel.Warn, warnMessage);
+            Logger.LogDefault(LogLevel.Debug, debugMessage);
+            Logger.LogDefault(LogLevel.Error, errorMessage);
+
+            var loggedStrings = File.ReadAllLines(tempFilePath);
+
+            Assert.That(loggedStrings.Length, Is.EqualTo(3));
+
+            Assert.That(loggedStrings[0], Does.Contain(LogLevel.Warn.ToString()));
+            Assert.That(loggedStrings[0], Does.Contain(timeString));
+            Assert.That(loggedStrings[0], Does.Contain(warnMessage));
+
+            Assert.That(loggedStrings[1], Does.Contain(LogLevel.Debug.ToString()));
+            Assert.That(loggedStrings[1], Does.Contain(timeString));
+            Assert.That(loggedStrings[1], Does.Contain(debugMessage));
+
+            Assert.That(loggedStrings[2], Does.Contain(LogLevel.Error.ToString()));
+            Assert.That(loggedStrings[2], Does.Contain(timeString));
+            Assert.That(loggedStrings[2], Does.Contain(errorMessage));
         }
     }
 }
