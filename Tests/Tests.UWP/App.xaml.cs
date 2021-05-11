@@ -52,5 +52,36 @@ namespace Realms.Tests.UWP
 
             Window.Current.Activate();
         }
+
+        protected override void OnActivated(IActivatedEventArgs args)
+        {
+            var rootFrame = Window.Current.Content as Frame;
+
+            if (rootFrame == null)
+            {
+                rootFrame = new Frame();
+                var assemblies = new[]
+                {
+                    typeof(NUnit.Runner.App).GetTypeInfo().Assembly
+                };
+                Xamarin.Forms.Forms.Init(args, assemblies);
+                Window.Current.Content = rootFrame;
+            }
+
+            CommandLineActivatedEventArgs commandLineArgs = null;
+            string cmdArgs = string.Empty;
+            if (args.Kind == ActivationKind.CommandLineLaunch)
+            {
+                commandLineArgs = args as CommandLineActivatedEventArgs;
+                cmdArgs = commandLineArgs.Operation.Arguments;
+            }
+
+            if (rootFrame.Content == null)
+            {
+                rootFrame.Navigate(typeof(MainPage), cmdArgs);
+            }
+
+            Window.Current.Activate();
+        }
     }
 }

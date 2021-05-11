@@ -4,11 +4,12 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  IgnorableNamespaces="uap mp uap5">
 
   <Identity
-    Name="032e482b-1a73-46f2-afb7-1c22f2e68be8"
-    Publisher="CN=irinc"
+    Name="realm.uwp.tests"
+    Publisher="CN=andrea"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="032e482b-1a73-46f2-afb7-1c22f2e68be8" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
@@ -40,6 +41,14 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+
+      <Extensions>
+        <uap5:Extension Category="windows.appExecutionAlias">
+          <uap5:AppExecutionAlias>
+            <uap5:ExecutionAlias Alias="Test.UWP.exe" />
+          </uap5:AppExecutionAlias>
+        </uap5:Extension>
+      </Extensions>
     </Application>
   </Applications>
 
