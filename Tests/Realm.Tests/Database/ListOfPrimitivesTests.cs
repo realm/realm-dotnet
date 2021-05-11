@@ -31,6 +31,59 @@ namespace Realms.Tests.Database
     {
         #region TestCaseSources
 
+        private static object[] GetTestCases<T>(IEnumerable<T?[]> values)
+            where T : struct
+        {
+            var cases = new List<object>
+            {
+                new object[] { null }
+            };
+
+            var filteredValues = values.Select(v => v.Where(i => i.HasValue).Select(i => i.Value).ToArray())
+                                       .Where(v => v.Any());
+
+            foreach (var item in filteredValues)
+            {
+                cases.Add(new object[] { item });
+            }
+
+            return cases.ToArray();
+        }
+
+        private static object[] GetTestCases<T>(IEnumerable<T[]> values)
+            where T : class
+        {
+            var cases = new List<object>
+            {
+                new object[] { null }
+            };
+
+            var filteredValues = values.Select(v => v.Where(i => i != null).ToArray())
+                                       .Where(v => v.Any());
+
+            foreach (var item in filteredValues)
+            {
+                cases.Add(new object[] { item });
+            }
+
+            return cases.ToArray();
+        }
+
+        private static object[] GetNullableTestCases<T>(IEnumerable<T[]> values)
+        {
+            var cases = new List<object>
+            {
+                new object[] { null }
+            };
+
+            foreach (var item in values)
+            {
+                cases.Add(new object[] { item });
+            }
+
+            return cases.ToArray();
+        }
+
         private static readonly IEnumerable<bool?[]> _booleanValues = new[]
         {
             new bool?[] { true },
@@ -38,24 +91,9 @@ namespace Realms.Tests.Database
             new bool?[] { true, true, null, false },
         };
 
-        public static IEnumerable<object> BooleanTestValues()
-        {
-            yield return new object[] { null };
-            var values = _booleanValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] BooleanTestValues = GetTestCases(_booleanValues);
 
-        public static IEnumerable<object> NullableBooleanTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var item in _booleanValues)
-            {
-                yield return new object[] { item };
-            }
-        }
+        public static readonly object[] NullableBooleanTestValues = GetNullableTestCases(_booleanValues);
 
         private static readonly IEnumerable<byte?[]> _byteValues = new[]
         {
@@ -65,24 +103,9 @@ namespace Realms.Tests.Database
             new byte?[] { 1, 2, 3, null },
         };
 
-        public static IEnumerable<object> ByteTestValues()
-        {
-            yield return new object[] { null };
-            var values = _byteValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] ByteTestValues = GetTestCases(_byteValues);
 
-        public static IEnumerable<object> NullableByteTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _byteValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableByteTestValues = GetNullableTestCases(_byteValues);
 
         private static readonly IEnumerable<char?[]> _charValues = new[]
         {
@@ -92,24 +115,9 @@ namespace Realms.Tests.Database
             new char?[] { 'a', 'b', 'c', 'b', null }
         };
 
-        public static IEnumerable<object> CharTestValues()
-        {
-            yield return new object[] { null };
-            var values = _charValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] CharTestValues = GetTestCases(_charValues);
 
-        public static IEnumerable<object> NullableCharTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _charValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableCharTestValues = GetNullableTestCases(_charValues);
 
         private static readonly IEnumerable<double?[]> _doubleValues = new[]
         {
@@ -119,24 +127,9 @@ namespace Realms.Tests.Database
             new double?[] { -1, 3.4, null, 5.3, 9 }
         };
 
-        public static IEnumerable<object> DoubleTestValues()
-        {
-            yield return new object[] { null };
-            var values = _doubleValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] DoubleTestValues = GetTestCases(_doubleValues);
 
-        public static IEnumerable<object> NullableDoubleTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _doubleValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableDoubleTestValues = GetNullableTestCases(_doubleValues);
 
         private static readonly IEnumerable<short?[]> _shortValues = new[]
         {
@@ -146,24 +139,9 @@ namespace Realms.Tests.Database
             new short?[] { 3, -1, null, 45, null },
         };
 
-        public static IEnumerable<object> Int16TestValues()
-        {
-            yield return new object[] { null };
-            var values = _shortValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] Int16TestValues = GetTestCases(_shortValues);
 
-        public static IEnumerable<object> NullableInt16TestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _shortValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableInt16TestValues = GetNullableTestCases(_shortValues);
 
         private static readonly IEnumerable<int?[]> _intValues = new[]
         {
@@ -173,24 +151,9 @@ namespace Realms.Tests.Database
             new int?[] { -5, 3, 9, null, 350 },
         };
 
-        public static IEnumerable<object> Int32TestValues()
-        {
-            yield return new object[] { null };
-            var values = _intValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] Int32TestValues = GetTestCases(_intValues);
 
-        public static IEnumerable<object> NullableInt32TestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _intValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableInt32TestValues = GetNullableTestCases(_intValues);
 
         private static readonly IEnumerable<long?[]> _longValues = new[]
         {
@@ -200,24 +163,9 @@ namespace Realms.Tests.Database
             new long?[] { 4, -39, 81, null, -69324 },
         };
 
-        public static IEnumerable<object> Int64TestValues()
-        {
-            yield return new object[] { null };
-            var values = _longValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] Int64TestValues = GetTestCases(_longValues);
 
-        public static IEnumerable<object> NullableInt64TestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _longValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableInt64TestValues = GetNullableTestCases(_longValues);
 
         private static readonly IEnumerable<decimal?[]> _decimalValues = new[]
         {
@@ -227,24 +175,9 @@ namespace Realms.Tests.Database
             new decimal?[] { -1, 3.4M, null, 5.3M, 9.54375843758349634963634M }
         };
 
-        public static IEnumerable<object> DecimalTestValues()
-        {
-            yield return new object[] { null };
-            var values = _decimalValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] DecimalTestValues = GetTestCases(_decimalValues);
 
-        public static IEnumerable<object> NullableDecimalTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _decimalValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableDecimalTestValues = GetNullableTestCases(_decimalValues);
 
         private static readonly IEnumerable<Decimal128?[]> _decimal128Values = new[]
         {
@@ -254,24 +187,9 @@ namespace Realms.Tests.Database
             new Decimal128?[] { -1, 3.4M, null, 5.3M, -23.424389584396384963M }
         };
 
-        public static IEnumerable<object> Decimal128TestValues()
-        {
-            yield return new object[] { null };
-            var values = _decimal128Values.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] Decimal128TestValues = GetTestCases(_decimal128Values);
 
-        public static IEnumerable<object> NullableDecimal128TestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _decimal128Values)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableDecimal128TestValues = GetNullableTestCases(_decimal128Values);
 
         private static readonly IEnumerable<ObjectId?[]> _objectIdValues = new[]
         {
@@ -281,24 +199,9 @@ namespace Realms.Tests.Database
             new ObjectId?[] { new ObjectId("5f651b2930643efeef987e5d"), TestHelpers.GenerateRepetitiveObjectId(byte.MaxValue), null, new ObjectId("5f651c4cf755604f2fbf7440") }
         };
 
-        public static IEnumerable<object> ObjectIdTestValues()
-        {
-            yield return new object[] { null };
-            var values = _objectIdValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] ObjectIdTestValues = GetTestCases(_objectIdValues);
 
-        public static IEnumerable<object> NullableObjectIdTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _objectIdValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableObjectIdTestValues = GetNullableTestCases(_objectIdValues);
 
         private static readonly IEnumerable<Guid?[]> _guidValues = new[]
         {
@@ -308,24 +211,9 @@ namespace Realms.Tests.Database
             new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.NewGuid(), null },
         };
 
-        public static IEnumerable<object> GuidTestValues()
-        {
-            yield return new object[] { null };
-            var values = _guidValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] GuidTestValues = GetTestCases(_guidValues);
 
-        public static IEnumerable<object> NullableGuidTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _guidValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableGuidTestValues = GetNullableTestCases(_guidValues);
 
         private static readonly IEnumerable<DateTimeOffset?[]> _dateValues = new[]
         {
@@ -335,66 +223,69 @@ namespace Realms.Tests.Database
             new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) },
         };
 
-        public static IEnumerable<object> DateTestValues()
-        {
-            yield return new object[] { null };
-            var values = _dateValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
-            foreach (var value in values.Where(a => a.Any()))
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] DateTestValues = GetTestCases(_dateValues);
 
-        public static IEnumerable<object> NullableDateTestValues()
-        {
-            yield return new object[] { null };
-            foreach (var value in _dateValues)
-            {
-                yield return new object[] { value.ToArray() };
-            }
-        }
+        public static readonly object[] NullableDateTestValues = GetNullableTestCases(_dateValues);
 
-        public static IEnumerable<object> StringTestValues()
+        private static readonly IEnumerable<string[]> _stringValues = new[]
         {
-            yield return new object[] { null };
-            yield return new object[] { new string[] { string.Empty } };
-            yield return new object[] { new string[] { null } };
-            yield return new object[] { new string[] { " " } };
-            yield return new object[] { new string[] { "abc", "cdf", "az" } };
-            yield return new object[] { new string[] { "a", null, "foo", "bar", null } };
-        }
+            new string[] { string.Empty },
+            new string[] { null },
+            new string[] { " " },
+            new string[] { "abc", "cdf", "az" },
+            new string[] { "a", null, "foo", "bar", null },
+        };
 
-        public static IEnumerable<object> ByteArrayTestValues()
-        {
-            yield return new object[] { null };
-            yield return new object[] { new byte[][] { Array.Empty<byte>() } };
-            yield return new object[] { new byte[][] { null } };
-            yield return new object[] { new byte[][] { new byte[] { 0 } } };
-            yield return new object[] { new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } } };
-            yield return new object[] { new byte[][] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) } };
-            yield return new object[] { new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null } };
-        }
+        public static readonly object[] StringTestValues = GetTestCases(_stringValues);
 
-        public static IEnumerable<object> RealmValueTestValues()
+        public static readonly object[] NullableStringTestValues = GetNullableTestCases(_stringValues);
+
+        private static readonly IEnumerable<byte[][]> _byteArrayValues = new[]
         {
-            yield return new RealmValue[]
+            new byte[][] { Array.Empty<byte>() },
+            new byte[][] { null },
+            new byte[][] { new byte[] { 0 } },
+            new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } },
+            new byte[][] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) },
+            new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null },
+        };
+
+        public static readonly object[] ByteArrayTestValues = GetTestCases(_byteArrayValues);
+
+        public static readonly object[] NullableByteArrayTestValues = GetNullableTestCases(_byteArrayValues);
+
+        private static readonly IEnumerable<RealmValue[]> _realmValueValues = new[]
+        {
+            new RealmValue[] { RealmValue.Null },
+            new RealmValue[] { RealmValue.Null, 1, true, "abc" },
+            new RealmValue[] { int.MinValue, long.MaxValue, string.Empty },
+            new RealmValue[]
             {
                 RealmValue.Null,
-                RealmValue.Create(10, RealmValueType.Int),
-                RealmValue.Create(true, RealmValueType.Bool),
-                RealmValue.Create("abc", RealmValueType.String),
-                RealmValue.Create(new byte[] { 0, 1, 2 }, RealmValueType.Data),
-                RealmValue.Create(DateTimeOffset.FromUnixTimeSeconds(1616137641), RealmValueType.Date),
-                RealmValue.Create(1.5f, RealmValueType.Float),
-                RealmValue.Create(2.5d, RealmValueType.Double),
-                RealmValue.Create(5m, RealmValueType.Decimal128),
-                RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
-                RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
-                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object)
-            };
-        }
+                10,
+                false,
+                "cde",
+                new byte[] { 0, 1, 2 },
+                DateTimeOffset.FromUnixTimeSeconds(1616137641),
+                1.5f,
+                3.5d,
+                5m,
+                new ObjectId("5f63e882536de46d71877979"),
+                new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"),
+                new IntPropertyObject { Int = 10 },
+            }
+        };
+
+        // Technically RealmValue can't be nullable and _realmValueValues will not contain null
+        public static readonly object[] RealmValueTestValues = GetNullableTestCases(_realmValueValues);
 
         #endregion TestCaseSources
+
+        static ListOfPrimitivesTests()
+        {
+            BooleanTestValues = GetTestCases(_booleanValues);
+            NullableBooleanTestValues = GetNullableTestCases(_booleanValues);
+        }
 
         #region Managed Tests
 
@@ -470,6 +361,18 @@ namespace Realms.Tests.Database
             RunManagedTests(obj => obj.DateTimeOffsetList, values);
         }
 
+        [TestCaseSource(nameof(StringTestValues))]
+        public void Test_ManagedStringList(string[] values)
+        {
+            RunManagedTests(obj => obj.StringList, values);
+        }
+
+        [TestCaseSource(nameof(ByteArrayTestValues))]
+        public void Test_ManagedByteArrayList(byte[][] values)
+        {
+            RunManagedTests(obj => obj.ByteArrayList, values);
+        }
+
         [TestCaseSource(nameof(NullableBooleanTestValues))]
         public void Test_ManagedNullableBooleanList(bool?[] values)
         {
@@ -542,16 +445,16 @@ namespace Realms.Tests.Database
             RunManagedTests(obj => obj.NullableDateTimeOffsetList, values);
         }
 
-        [TestCaseSource(nameof(StringTestValues))]
-        public void Test_ManagedStringList(string[] values)
+        [TestCaseSource(nameof(NullableStringTestValues))]
+        public void Test_ManagedNullableStringList(string[] values)
         {
-            RunManagedTests(obj => obj.StringList, values);
+            RunManagedTests(obj => obj.NullableStringList, values);
         }
 
-        [TestCaseSource(nameof(ByteArrayTestValues))]
-        public void Test_ManagedByteArrayList(byte[][] values)
+        [TestCaseSource(nameof(NullableByteArrayTestValues))]
+        public void Test_ManagedNullableByteArrayList(byte[][] values)
         {
-            RunManagedTests(obj => obj.ByteArrayList, values);
+            RunManagedTests(obj => obj.NullableByteArrayList, values);
         }
 
         [TestCaseSource(nameof(RealmValueTestValues))]
@@ -753,16 +656,18 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.NullableDateTimeOffsetList, values);
         }
 
-        [TestCaseSource(nameof(StringTestValues))]
+        // Unmanaged string lists can always contain null
+        [TestCaseSource(nameof(NullableStringTestValues))]
         public void Test_UnmanagedStringList(string[] values)
         {
-            RunUnmanagedTests(o => o.StringList, values);
+            RunUnmanagedTests(o => o.NullableStringList, values);
         }
 
-        [TestCaseSource(nameof(ByteArrayTestValues))]
+        // Unmanaged byte[] lists can always contain null
+        [TestCaseSource(nameof(NullableByteArrayTestValues))]
         public void Test_UnmanagedByteArrayList(byte[][] values)
         {
-            RunUnmanagedTests(o => o.ByteArrayList, values);
+            RunUnmanagedTests(o => o.NullableByteArrayList, values);
         }
 
         [TestCaseSource(nameof(RealmValueTestValues))]
@@ -1042,14 +947,12 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
 
-                    using (var bgRealm = Realm.GetInstance(list.AsRealmCollection().Realm.Config))
-                    {
-                        var backgroundList = bgRealm.ResolveReference(tsr);
+                    using var bgRealm = Realm.GetInstance(list.AsRealmCollection().Realm.Config);
+                    var backgroundList = bgRealm.ResolveReference(tsr);
 
-                        for (var i = 0; i < backgroundList.Count; i++)
-                        {
-                            Assert.That(backgroundList[i], Is.EqualTo(referenceList[i]));
-                        }
+                    for (var i = 0; i < backgroundList.Count; i++)
+                    {
+                        Assert.That(backgroundList[i], Is.EqualTo(referenceList[i]));
                     }
                 });
             }

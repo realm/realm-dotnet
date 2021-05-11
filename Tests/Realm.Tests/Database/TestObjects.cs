@@ -130,8 +130,10 @@ namespace Realms.Tests
 
         public IList<Guid> GuidList { get; }
 
+        [Required]
         public IList<string> StringList { get; }
 
+        [Required]
         public IList<byte[]> ByteArrayList { get; }
 
         public IList<DateTimeOffset> DateTimeOffsetList { get; }
@@ -161,6 +163,10 @@ namespace Realms.Tests
         public IList<ObjectId?> NullableObjectIdList { get; }
 
         public IList<Guid?> NullableGuidList { get; }
+
+        public IList<string> NullableStringList { get; }
+
+        public IList<byte[]> NullableByteArrayList { get; }
 
         public IList<RealmValue> RealmValueList { get; }
     }
