@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -26,34 +25,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class DateTimeTests : RealmInstanceTest
     {
-        public static object[] SetAndGetPropertyTestCases;
-
-        static DateTimeTests()
-        {
-            var result = new List<object>();
-
-            var hours = new[] { 0, 11, 23 };
-            var minutes = new[] { 0, 6, 30, 59 };
-            var seconds = new[] { 0, 6, 30, 59 };
-            var milliseconds = new[] { 0, 1, 999 };
-
-            foreach (var hour in hours)
-            {
-                foreach (var minute in minutes)
-                {
-                    foreach (var second in seconds)
-                    {
-                        foreach (var millisecond in milliseconds)
-                        {
-                            result.Add(new object[] { hour, minute, second, millisecond });
-                        }
-                    }
-                }
-            }
-
-            SetAndGetPropertyTestCases = result.ToArray();
-        }
-
         [Test]
         public void SetAndGetPropertyTest(
             [Values(0, 11, 23)] int hour,
@@ -78,8 +49,6 @@ namespace Realms.Tests.Database
 
             Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
         }
-
-
 
         [Test]
         public void SortingFinelyDifferentDateTimes()
