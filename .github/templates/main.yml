@@ -75,9 +75,8 @@ steps:
 
 #@ def buildPackages():
 #@ for pkgName in nugetPackages:
-#@ buildCmd = "MsBuild.exe ${{ github.workspace }}/Realm/" + pkgName + " -t:Pack -p:Configuration=" + configuration + " -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }} -restore"
   - name: #@ "Build nuget package " + pkgName
-    run: #@ buildCmd
+    _: #@ template.replace(msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
 #@ end
 #@ end
 
@@ -93,6 +92,17 @@ steps:
 #@ end
 #@ end
 
+#@ def fetchPackageArtifacts(pkgs):
+#@ for pkg in pkgs:
+#@ finalPkgName = pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+  - name: #@ "Fetch " + pkg
+    uses: actions/download-artifact@v2
+    with:
+      name: #@ finalPkgName
+      path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end
+
 #@ def findPackageVersion():
 name: Find nupkg version
 id: find-nupkg-version
@@ -102,6 +112,20 @@ run: |
   pkgName=${tmpName#"Realm.Fody."}
   echo "::set-output name=package_version::$pkgName"
 shell: bash
+#@ end
+
+#@ def msbuild(projectPath, **properties):
+#@ parsedProps = ""
+#@ target = ""
+#@ for prop in properties.keys():
+#@  if prop == "target":
+#@    target = "-t:" + properties[prop]
+#@  else:
+#@    parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  end
+#@ end
+
+run: #@ "msbuild ${{ github.workspace }}/" + projectPath + " " + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
 #@ end
 
 ---
@@ -146,7 +170,7 @@ jobs:
       matrix:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
-  build-package:
+  build-packages:
     runs-on: windows-latest
     name: Build packages
     needs:
@@ -229,3 +253,23 @@ jobs:
       - #@ template.replace(buildPackages())
       - #@ findPackageVersion()
       - #@ template.replace(uploadPackageArtifacts())
+  run-tests-net-framework:
+    runs-on: windows-latest
+    name: Run tests for NET framework
+    needs: build-packages
+    steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - #@ checkoutCode()
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - name: Build the tests
+        _: #@ template.replace(msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="${{ github.workspace }}/Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" ))
+      - name: Run the tests
+        run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        if: always()
+        with:
+          files: TestResults.Windows.xml
+          comment_on_pr: false
+          check_name: Windows .NET framework tests results
