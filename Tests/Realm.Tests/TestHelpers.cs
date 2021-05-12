@@ -258,12 +258,20 @@ namespace Realms.Tests
             }
         }
 
-        private static readonly decimal decimalValue = 1.23456789M;
+        private static readonly decimal _decimalValue = 1.23456789M;
+
         static TestHelpers()
         {
             // Preserve the >= and <= operators on System.decimal as IL2CPP will strip them otherwise.
-            _ = decimal.MaxValue >= decimalValue;
-            _ = decimal.MinValue <= decimalValue;
+            _ = decimal.MaxValue >= _decimalValue;
+            _ = decimal.MinValue <= _decimalValue;
+
+            // Preserve all the realm.Find<T> overloads
+            using var r = Realm.GetInstance(Guid.NewGuid().ToString());
+            _ = r.Find<PrimaryKeyStringObject>(string.Empty);
+            _ = r.Find<PrimaryKeyObjectIdObject>(ObjectId.GenerateNewId());
+            _ = r.Find<PrimaryKeyGuidObject>(Guid.NewGuid());
+            _ = r.Find<PrimaryKeyInt64Object>(123L);
         }
 
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
