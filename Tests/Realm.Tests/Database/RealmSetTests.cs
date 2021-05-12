@@ -32,31 +32,31 @@ namespace Realms.Tests.Database
     {
         #region Boolean
 
-        public static IEnumerable<TestCaseData<bool>> BoolTestValues()
+        public static readonly object[] BoolTestValues = new[]
         {
-            yield return new TestCaseData<bool>(new bool[] { true }, new bool[] { false });
-            yield return new TestCaseData<bool>(new bool[] { true, false }, new bool[] { true, false });
-            yield return new TestCaseData<bool>(new bool[] { true }, Array.Empty<bool>());
-            yield return new TestCaseData<bool>(Array.Empty<bool>(), new bool[] { false });
-            yield return new TestCaseData<bool>(new bool[] { true, true, true, true, true }, new bool[] { true });
-            yield return new TestCaseData<bool>(new bool[] { true, true, true, true }, new bool[] { true, false });
-            yield return new TestCaseData<bool>(new bool[] { true, true, true, true, true, true, false, false, true }, new bool[] { false });
-        }
+            new object[] { new TestCaseData<bool>(new bool[] { true }, new bool[] { false }) },
+            new object[] { new TestCaseData<bool>(new bool[] { true, false }, new bool[] { true, false }) },
+            new object[] { new TestCaseData<bool>(new bool[] { true }, Array.Empty<bool>()) },
+            new object[] { new TestCaseData<bool>(Array.Empty<bool>(), new bool[] { false }) },
+            new object[] { new TestCaseData<bool>(new bool[] { true, true, true, true, true }, new bool[] { true }) },
+            new object[] { new TestCaseData<bool>(new bool[] { true, true, true, true }, new bool[] { true, false }) },
+            new object[] { new TestCaseData<bool>(new bool[] { true, true, true, true, true, true, false, false, true }, new bool[] { false }) },
+        };
 
-        public static IEnumerable<TestCaseData<bool?>> NullableBoolTestValues()
+        public static readonly object[] NullableBoolTestValues = new[]
         {
-            yield return new TestCaseData<bool?>(new bool?[] { true }, new bool?[] { false });
-            yield return new TestCaseData<bool?>(new bool?[] { true, false, null }, new bool?[] { true, false, null });
-            yield return new TestCaseData<bool?>(new bool?[] { true }, Array.Empty<bool?>());
-            yield return new TestCaseData<bool?>(Array.Empty<bool?>(), new bool?[] { null });
-            yield return new TestCaseData<bool?>(new bool?[] { true, true, true }, new bool?[] { false, true, false, true, false });
-            yield return new TestCaseData<bool?>(new bool?[] { true, true, true, true, true }, new bool?[] { true, true });
-            yield return new TestCaseData<bool?>(new bool?[] { true, true, true, true, true, true }, new bool?[] { true, true, false });
-            yield return new TestCaseData<bool?>(new bool?[] { true, true, true, true, true, true, false, false, true }, new bool?[] { true, true });
-            yield return new TestCaseData<bool?>(new bool?[] { true, true, false, true, null, null, null }, new bool?[] { true, null });
-            yield return new TestCaseData<bool?>(new bool?[] { null }, new bool?[] { null, null });
-            yield return new TestCaseData<bool?>(new bool?[] { null, null }, new bool?[] { null, false });
-        }
+            new object[] { new TestCaseData<bool?>(new bool?[] { true }, new bool?[] { false }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true, false, null }, new bool?[] { true, false, null }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true }, Array.Empty<bool?>()) },
+            new object[] { new TestCaseData<bool?>(Array.Empty<bool?>(), new bool?[] { null }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true, true, true }, new bool?[] { false, true, false, true, false }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true, true, true, true, true }, new bool?[] { true, true }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true, true, true, true, true, true }, new bool?[] { true, true, false }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true, true, true, true, true, true, false, false, true }, new bool?[] { true, true }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { true, true, false, true, null, null, null }, new bool?[] { true, null }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { null }, new bool?[] { null, null }) },
+            new object[] { new TestCaseData<bool?>(new bool?[] { null, null }, new bool?[] { null, false }) },
+        };
 
         [TestCaseSource(nameof(BoolTestValues))]
         public void RealmSet_WhenUnmanaged_Bool(TestCaseData<bool> testData)
@@ -100,34 +100,34 @@ namespace Realms.Tests.Database
 
         #region Byte
 
-        public static IEnumerable<TestCaseData<byte>> ByteTestValues()
+        public static readonly object[] ByteTestValues = new[]
         {
-            yield return new TestCaseData<byte>(new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 });
-            yield return new TestCaseData<byte>(new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 });
-            yield return new TestCaseData<byte>(new byte[] { byte.MinValue, byte.MaxValue }, new byte[] { 0 });
-            yield return new TestCaseData<byte>(new byte[] { 2, 0, 1 }, Array.Empty<byte>());
-            yield return new TestCaseData<byte>(Array.Empty<byte>(), new byte[] { 0 });
-            yield return new TestCaseData<byte>(new byte[] { 4, 6, 8 }, new byte[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<byte>(new byte[] { 1, 1, 1, 1, 1, 1, 1 }, new byte[] { 1, 1, 1 });
-            yield return new TestCaseData<byte>(new byte[] { 1, 1, 1, 1, 1, 1, 1 }, new byte[] { 1, 2, 1 });
-            yield return new TestCaseData<byte>(new byte[] { 1, 2, 2, 1, 1, 1, 1 }, new byte[] { 1, 1, 1 });
-        }
+            new object[] { new TestCaseData<byte>(new byte[] { 1, 2, 3 }, new byte[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { byte.MinValue, byte.MaxValue }, new byte[] { 0 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { 2, 0, 1 }, Array.Empty<byte>()) },
+            new object[] { new TestCaseData<byte>(Array.Empty<byte>(), new byte[] { 0 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { 4, 6, 8 }, new byte[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { 1, 1, 1, 1, 1, 1, 1 }, new byte[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { 1, 1, 1, 1, 1, 1, 1 }, new byte[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<byte>(new byte[] { 1, 2, 2, 1, 1, 1, 1 }, new byte[] { 1, 1, 1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<byte?>> NullableByteTestValues()
+        public static readonly object[] NullableByteTestValues = new[]
         {
-            yield return new TestCaseData<byte?>(new byte?[] { 1, 2, 3 }, new byte?[] { 4, 5, 6 });
-            yield return new TestCaseData<byte?>(new byte?[] { 1, 2, 3, null }, new byte?[] { 1, 2, 3, null });
-            yield return new TestCaseData<byte?>(new byte?[] { byte.MinValue, byte.MaxValue }, new byte?[] { 0 });
-            yield return new TestCaseData<byte?>(new byte?[] { 2, 0, 1 }, Array.Empty<byte?>());
-            yield return new TestCaseData<byte?>(Array.Empty<byte?>(), new byte?[] { 0 });
-            yield return new TestCaseData<byte?>(new byte?[] { 4, 6, 8 }, new byte?[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<byte?>(new byte?[] { 1, 1, 1, 1, 1, 1, 1 }, new byte?[] { 1, 1, 1 });
-            yield return new TestCaseData<byte?>(new byte?[] { 1, 1, 1, 1, 1, 1, 1 }, new byte?[] { 1, 2, 1 });
-            yield return new TestCaseData<byte?>(new byte?[] { 1, 2, 2, 1, 1, 1, 1 }, new byte?[] { 1, 1, 1 });
-            yield return new TestCaseData<byte?>(new byte?[] { 1, 2, 2, 1, null, null, null }, new byte?[] { 1, 1, 1, null });
-            yield return new TestCaseData<byte?>(new byte?[] { null }, new byte?[] { null, null });
-            yield return new TestCaseData<byte?>(new byte?[] { null, null }, new byte?[] { null, 6 });
-        }
+            new object[] { new TestCaseData<byte?>(new byte?[] { 1, 2, 3 }, new byte?[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 1, 2, 3, null }, new byte?[] { 1, 2, 3, null }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { byte.MinValue, byte.MaxValue }, new byte?[] { 0 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 2, 0, 1 }, Array.Empty<byte?>()) },
+            new object[] { new TestCaseData<byte?>(Array.Empty<byte?>(), new byte?[] { 0 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 4, 6, 8 }, new byte?[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 1, 1, 1, 1, 1, 1, 1 }, new byte?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 1, 1, 1, 1, 1, 1, 1 }, new byte?[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 1, 2, 2, 1, 1, 1, 1 }, new byte?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { 1, 2, 2, 1, null, null, null }, new byte?[] { 1, 1, 1, null }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { null }, new byte?[] { null, null }) },
+            new object[] { new TestCaseData<byte?>(new byte?[] { null, null }, new byte?[] { null, 6 }) },
+        };
 
         [TestCaseSource(nameof(ByteTestValues))]
         public void RealmSet_WhenUnmanaged_Byte(TestCaseData<byte> testData)
@@ -171,34 +171,34 @@ namespace Realms.Tests.Database
 
         #region Int16
 
-        public static IEnumerable<TestCaseData<short>> Int16TestValues()
+        public static readonly object[] Int16TestValues = new[]
         {
-            yield return new TestCaseData<short>(new short[] { 1, 2, 3 }, new short[] { 4, 5, 6 });
-            yield return new TestCaseData<short>(new short[] { 1, 2, 3 }, new short[] { 1, 2, 3 });
-            yield return new TestCaseData<short>(new short[] { short.MinValue, short.MaxValue }, new short[] { 0 });
-            yield return new TestCaseData<short>(new short[] { -1, 0, 1 }, Array.Empty<short>());
-            yield return new TestCaseData<short>(Array.Empty<short>(), new short[] { 0 });
-            yield return new TestCaseData<short>(new short[] { 4, 6, 8 }, new short[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<short>(new short[] { 1, 1, 1, 1, 1, 1, 1 }, new short[] { 1, 1, 1 });
-            yield return new TestCaseData<short>(new short[] { 1, 1, 1, 1, 1, 1, 1 }, new short[] { 1, 2, 1 });
-            yield return new TestCaseData<short>(new short[] { 1, 2, 2, 1, 1, 1, 1 }, new short[] { 1, 1, 1 });
-        }
+            new object[] { new TestCaseData<short>(new short[] { 1, 2, 3 }, new short[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<short>(new short[] { 1, 2, 3 }, new short[] { 1, 2, 3 }) },
+            new object[] { new TestCaseData<short>(new short[] { short.MinValue, short.MaxValue }, new short[] { 0 }) },
+            new object[] { new TestCaseData<short>(new short[] { -1, 0, 1 }, Array.Empty<short>()) },
+            new object[] { new TestCaseData<short>(Array.Empty<short>(), new short[] { 0 }) },
+            new object[] { new TestCaseData<short>(new short[] { 4, 6, 8 }, new short[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<short>(new short[] { 1, 1, 1, 1, 1, 1, 1 }, new short[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<short>(new short[] { 1, 1, 1, 1, 1, 1, 1 }, new short[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<short>(new short[] { 1, 2, 2, 1, 1, 1, 1 }, new short[] { 1, 1, 1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<short?>> NullableInt16TestValues()
+        public static readonly object[] NullableInt16TestValues = new[]
         {
-            yield return new TestCaseData<short?>(new short?[] { 1, 2, 3 }, new short?[] { 4, 5, 6 });
-            yield return new TestCaseData<short?>(new short?[] { 1, 2, 3, null }, new short?[] { 1, 2, 3, null });
-            yield return new TestCaseData<short?>(new short?[] { short.MinValue, short.MaxValue }, new short?[] { 0 });
-            yield return new TestCaseData<short?>(new short?[] { -1, 0, 1 }, Array.Empty<short?>());
-            yield return new TestCaseData<short?>(Array.Empty<short?>(), new short?[] { 0 });
-            yield return new TestCaseData<short?>(new short?[] { 4, 6, 8 }, new short?[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<short?>(new short?[] { 1, 1, 1, 1, 1, 1, 1 }, new short?[] { 1, 1, 1 });
-            yield return new TestCaseData<short?>(new short?[] { 1, 1, 1, 1, 1, 1, 1 }, new short?[] { 1, 2, 1 });
-            yield return new TestCaseData<short?>(new short?[] { 1, 2, 2, 1, 1, 1, 1 }, new short?[] { 1, 1, 1 });
-            yield return new TestCaseData<short?>(new short?[] { 1, 2, 2, 1, null, null, null }, new short?[] { 1, 1, 1, null });
-            yield return new TestCaseData<short?>(new short?[] { null }, new short?[] { null, null });
-            yield return new TestCaseData<short?>(new short?[] { null, null }, new short?[] { null, 6 });
-        }
+            new object[] { new TestCaseData<short?>(new short?[] { 1, 2, 3 }, new short?[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { 1, 2, 3, null }, new short?[] { 1, 2, 3, null }) },
+            new object[] { new TestCaseData<short?>(new short?[] { short.MinValue, short.MaxValue }, new short?[] { 0 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { -1, 0, 1 }, Array.Empty<short?>()) },
+            new object[] { new TestCaseData<short?>(Array.Empty<short?>(), new short?[] { 0 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { 4, 6, 8 }, new short?[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { 1, 1, 1, 1, 1, 1, 1 }, new short?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { 1, 1, 1, 1, 1, 1, 1 }, new short?[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { 1, 2, 2, 1, 1, 1, 1 }, new short?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<short?>(new short?[] { 1, 2, 2, 1, null, null, null }, new short?[] { 1, 1, 1, null }) },
+            new object[] { new TestCaseData<short?>(new short?[] { null }, new short?[] { null, null }) },
+            new object[] { new TestCaseData<short?>(new short?[] { null, null }, new short?[] { null, 6 }) },
+        };
 
         [TestCaseSource(nameof(Int16TestValues))]
         public void RealmSet_WhenUnmanaged_Int16(TestCaseData<short> testData)
@@ -242,34 +242,34 @@ namespace Realms.Tests.Database
 
         #region Int32
 
-        public static IEnumerable<TestCaseData<int>> Int32TestValues()
+        public static object[] Int32TestValues = new[]
         {
-            yield return new TestCaseData<int>(new int[] { 1, 2, 3 }, new int[] { 4, 5, 6 });
-            yield return new TestCaseData<int>(new int[] { 1, 2, 3 }, new int[] { 1, 2, 3 });
-            yield return new TestCaseData<int>(new int[] { int.MinValue, int.MaxValue }, new int[] { 0 });
-            yield return new TestCaseData<int>(new int[] { -1, 0, 1 }, Array.Empty<int>());
-            yield return new TestCaseData<int>(Array.Empty<int>(), new int[] { 0 });
-            yield return new TestCaseData<int>(new int[] { 4, 6, 8 }, new int[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<int>(new int[] { 1, 1, 1, 1, 1, 1, 1 }, new int[] { 1, 1, 1 });
-            yield return new TestCaseData<int>(new int[] { 1, 1, 1, 1, 1, 1, 1 }, new int[] { 1, 2, 1 });
-            yield return new TestCaseData<int>(new int[] { 1, 2, 2, 1, 1, 1, 1 }, new int[] { 1, 1, 1 });
-        }
+            new object[] { new TestCaseData<int>(new int[] { 1, 2, 3 }, new int[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<int>(new int[] { 1, 2, 3 }, new int[] { 1, 2, 3 }) },
+            new object[] { new TestCaseData<int>(new int[] { int.MinValue, int.MaxValue }, new int[] { 0 }) },
+            new object[] { new TestCaseData<int>(new int[] { -1, 0, 1 }, Array.Empty<int>()) },
+            new object[] { new TestCaseData<int>(Array.Empty<int>(), new int[] { 0 }) },
+            new object[] { new TestCaseData<int>(new int[] { 4, 6, 8 }, new int[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<int>(new int[] { 1, 1, 1, 1, 1, 1, 1 }, new int[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<int>(new int[] { 1, 1, 1, 1, 1, 1, 1 }, new int[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<int>(new int[] { 1, 2, 2, 1, 1, 1, 1 }, new int[] { 1, 1, 1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<int?>> NullableInt32TestValues()
+        public static object[] NullableInt32TestValues = new[]
         {
-            yield return new TestCaseData<int?>(new int?[] { 1, 2, 3 }, new int?[] { 4, 5, 6 });
-            yield return new TestCaseData<int?>(new int?[] { 1, 2, 3, null }, new int?[] { 1, 2, 3, null });
-            yield return new TestCaseData<int?>(new int?[] { int.MinValue, int.MaxValue }, new int?[] { 0 });
-            yield return new TestCaseData<int?>(new int?[] { -1, 0, 1 }, Array.Empty<int?>());
-            yield return new TestCaseData<int?>(Array.Empty<int?>(), new int?[] { 0 });
-            yield return new TestCaseData<int?>(new int?[] { 4, 6, 8 }, new int?[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<int?>(new int?[] { 1, 1, 1, 1, 1, 1, 1 }, new int?[] { 1, 1, 1 });
-            yield return new TestCaseData<int?>(new int?[] { 1, 1, 1, 1, 1, 1, 1 }, new int?[] { 1, 2, 1 });
-            yield return new TestCaseData<int?>(new int?[] { 1, 2, 2, 1, 1, 1, 1 }, new int?[] { 1, 1, 1 });
-            yield return new TestCaseData<int?>(new int?[] { 1, 2, 2, 1, null, null, null }, new int?[] { 1, 1, 1, null });
-            yield return new TestCaseData<int?>(new int?[] { null }, new int?[] { null, null });
-            yield return new TestCaseData<int?>(new int?[] { null, null }, new int?[] { null, 6 });
-        }
+            new object[] { new TestCaseData<int?>(new int?[] { 1, 2, 3 }, new int?[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { 1, 2, 3, null }, new int?[] { 1, 2, 3, null }) },
+            new object[] { new TestCaseData<int?>(new int?[] { int.MinValue, int.MaxValue }, new int?[] { 0 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { -1, 0, 1 }, Array.Empty<int?>()) },
+            new object[] { new TestCaseData<int?>(Array.Empty<int?>(), new int?[] { 0 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { 4, 6, 8 }, new int?[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { 1, 1, 1, 1, 1, 1, 1 }, new int?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { 1, 1, 1, 1, 1, 1, 1 }, new int?[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { 1, 2, 2, 1, 1, 1, 1 }, new int?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<int?>(new int?[] { 1, 2, 2, 1, null, null, null }, new int?[] { 1, 1, 1, null }) },
+            new object[] { new TestCaseData<int?>(new int?[] { null }, new int?[] { null, null }) },
+            new object[] { new TestCaseData<int?>(new int?[] { null, null }, new int?[] { null, 6 }) },
+        };
 
         [TestCaseSource(nameof(Int32TestValues))]
         public void RealmSet_WhenUnmanaged_Int32(TestCaseData<int> testData)
@@ -313,34 +313,34 @@ namespace Realms.Tests.Database
 
         #region Int64
 
-        public static IEnumerable<TestCaseData<long>> Int64TestValues()
+        public static readonly object[] Int64TestValues = new[]
         {
-            yield return new TestCaseData<long>(new long[] { 1, 2, 3 }, new long[] { 4, 5, 6 });
-            yield return new TestCaseData<long>(new long[] { 1, 2, 3 }, new long[] { 1, 2, 3 });
-            yield return new TestCaseData<long>(new long[] { long.MinValue, long.MaxValue }, new long[] { 0 });
-            yield return new TestCaseData<long>(new long[] { -1, 0, 1 }, Array.Empty<long>());
-            yield return new TestCaseData<long>(Array.Empty<long>(), new long[] { 0 });
-            yield return new TestCaseData<long>(new long[] { 4, 6, 8 }, new long[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<long>(new long[] { 1, 1, 1, 1, 1, 1, 1 }, new long[] { 1, 1, 1 });
-            yield return new TestCaseData<long>(new long[] { 1, 1, 1, 1, 1, 1, 1 }, new long[] { 1, 2, 1 });
-            yield return new TestCaseData<long>(new long[] { 1, 2, 2, 1, 1, 1, 1 }, new long[] { 1, 1, 1 });
-        }
+            new object[] { new TestCaseData<long>(new long[] { 1, 2, 3 }, new long[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<long>(new long[] { 1, 2, 3 }, new long[] { 1, 2, 3 }) },
+            new object[] { new TestCaseData<long>(new long[] { long.MinValue, long.MaxValue }, new long[] { 0 }) },
+            new object[] { new TestCaseData<long>(new long[] { -1, 0, 1 }, Array.Empty<long>()) },
+            new object[] { new TestCaseData<long>(Array.Empty<long>(), new long[] { 0 }) },
+            new object[] { new TestCaseData<long>(new long[] { 4, 6, 8 }, new long[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<long>(new long[] { 1, 1, 1, 1, 1, 1, 1 }, new long[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<long>(new long[] { 1, 1, 1, 1, 1, 1, 1 }, new long[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<long>(new long[] { 1, 2, 2, 1, 1, 1, 1 }, new long[] { 1, 1, 1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<long?>> NullableInt64TestValues()
+        public static readonly object[] NullableInt64TestValues = new[]
         {
-            yield return new TestCaseData<long?>(new long?[] { 1, 2, 3 }, new long?[] { 4, 5, 6 });
-            yield return new TestCaseData<long?>(new long?[] { 1, 2, 3, null }, new long?[] { 1, 2, 3, null });
-            yield return new TestCaseData<long?>(new long?[] { long.MinValue, long.MaxValue }, new long?[] { 0 });
-            yield return new TestCaseData<long?>(new long?[] { -1, 0, 1 }, Array.Empty<long?>());
-            yield return new TestCaseData<long?>(Array.Empty<long?>(), new long?[] { 0 });
-            yield return new TestCaseData<long?>(new long?[] { 4, 6, 8 }, new long?[] { 12, 43, 2, 5, 6, 4, 8 });
-            yield return new TestCaseData<long?>(new long?[] { 1, 1, 1, 1, 1, 1, 1 }, new long?[] { 1, 1, 1 });
-            yield return new TestCaseData<long?>(new long?[] { 1, 1, 1, 1, 1, 1, 1 }, new long?[] { 1, 2, 1 });
-            yield return new TestCaseData<long?>(new long?[] { 1, 2, 2, 1, 1, 1, 1 }, new long?[] { 1, 1, 1 });
-            yield return new TestCaseData<long?>(new long?[] { 1, 2, 2, 1, null, null, null }, new long?[] { 1, 1, 1, null });
-            yield return new TestCaseData<long?>(new long?[] { null }, new long?[] { null, null });
-            yield return new TestCaseData<long?>(new long?[] { null, null }, new long?[] { null, 6 });
-        }
+            new object[] { new TestCaseData<long?>(new long?[] { 1, 2, 3 }, new long?[] { 4, 5, 6 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { 1, 2, 3, null }, new long?[] { 1, 2, 3, null }) },
+            new object[] { new TestCaseData<long?>(new long?[] { long.MinValue, long.MaxValue }, new long?[] { 0 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { -1, 0, 1 }, Array.Empty<long?>()) },
+            new object[] { new TestCaseData<long?>(Array.Empty<long?>(), new long?[] { 0 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { 4, 6, 8 }, new long?[] { 12, 43, 2, 5, 6, 4, 8 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { 1, 1, 1, 1, 1, 1, 1 }, new long?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { 1, 1, 1, 1, 1, 1, 1 }, new long?[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { 1, 2, 2, 1, 1, 1, 1 }, new long?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<long?>(new long?[] { 1, 2, 2, 1, null, null, null }, new long?[] { 1, 1, 1, null }) },
+            new object[] { new TestCaseData<long?>(new long?[] { null }, new long?[] { null, null }) },
+            new object[] { new TestCaseData<long?>(new long?[] { null, null }, new long?[] { null, 6 }) },
+        };
 
         [TestCaseSource(nameof(Int64TestValues))]
         public void RealmSet_WhenUnmanaged_Int64(TestCaseData<long> testData)
@@ -384,34 +384,34 @@ namespace Realms.Tests.Database
 
         #region Float
 
-        public static IEnumerable<TestCaseData<float>> FloatTestValues()
+        public static readonly object[] FloatTestValues = new[]
         {
-            yield return new TestCaseData<float>(new float[] { 1.1f, 2.2f, 3.3f }, new float[] { 4.4f, 5.5f, 6.6f });
-            yield return new TestCaseData<float>(new float[] { 1, 2.3f, 3 }, new float[] { 1, 2.3f, 3 });
-            yield return new TestCaseData<float>(new float[] { float.MinValue, float.MaxValue }, new float[] { 0 });
-            yield return new TestCaseData<float>(new float[] { -1, 0, 1.5f }, Array.Empty<float>());
-            yield return new TestCaseData<float>(Array.Empty<float>(), new float[] { 0 });
-            yield return new TestCaseData<float>(new float[] { 4, 6.6f, 8 }, new float[] { 12, 43, 2.2f, 5, 6.6f, 4, 8 });
-            yield return new TestCaseData<float>(new float[] { 1, 1, 1, 1, 1, 1, 1.0f }, new float[] { 1, 1, 1 });
-            yield return new TestCaseData<float>(new float[] { 1, 1, 1, 1, 1, 1, 1 }, new float[] { 1.0f, 2, 1.0f });
-            yield return new TestCaseData<float>(new float[] { 1, 2f, 2f, 1, 1, 1, 1 }, new float[] { 1, 1f, 1 });
-        }
+            new object[] { new TestCaseData<float>(new float[] { 1.1f, 2.2f, 3.3f }, new float[] { 4.4f, 5.5f, 6.6f }) },
+            new object[] { new TestCaseData<float>(new float[] { 1, 2.3f, 3 }, new float[] { 1, 2.3f, 3 }) },
+            new object[] { new TestCaseData<float>(new float[] { float.MinValue, float.MaxValue }, new float[] { 0 }) },
+            new object[] { new TestCaseData<float>(new float[] { -1, 0, 1.5f }, Array.Empty<float>()) },
+            new object[] { new TestCaseData<float>(Array.Empty<float>(), new float[] { 0 }) },
+            new object[] { new TestCaseData<float>(new float[] { 4, 6.6f, 8 }, new float[] { 12, 43, 2.2f, 5, 6.6f, 4, 8 }) },
+            new object[] { new TestCaseData<float>(new float[] { 1, 1, 1, 1, 1, 1, 1.0f }, new float[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<float>(new float[] { 1, 1, 1, 1, 1, 1, 1 }, new float[] { 1.0f, 2, 1.0f }) },
+            new object[] { new TestCaseData<float>(new float[] { 1, 2f, 2f, 1, 1, 1, 1 }, new float[] { 1, 1f, 1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<float?>> NullableFloatTestValues()
+        public static readonly object[] NullableFloatTestValues = new[]
         {
-            yield return new TestCaseData<float?>(new float?[] { 1.1f, 2.2f, 3.3f }, new float?[] { 1.1f, 2.2f, 3.3f });
-            yield return new TestCaseData<float?>(new float?[] { 1, 2.3f, 3, null }, new float?[] { 1, 2.3f, 3, null });
-            yield return new TestCaseData<float?>(new float?[] { float.MinValue, float.MaxValue }, new float?[] { 0 });
-            yield return new TestCaseData<float?>(new float?[] { -1, 0, 1.5f }, Array.Empty<float?>());
-            yield return new TestCaseData<float?>(Array.Empty<float?>(), new float?[] { 0 });
-            yield return new TestCaseData<float?>(new float?[] { 4, 6.6f, 8 }, new float?[] { 12, 43, 2.2f, 5, 6.6f, 4, 8 });
-            yield return new TestCaseData<float?>(new float?[] { 1, 1, 1, 1, 1, 1, 1.0f }, new float?[] { 1, 1, 1 });
-            yield return new TestCaseData<float?>(new float?[] { 1, 1, 1, 1, 1, 1, 1 }, new float?[] { 1.0f, 2, 1.0f });
-            yield return new TestCaseData<float?>(new float?[] { 1, 2, 2, 1, 1, 1, 1 }, new float?[] { 1f, 1f, 1f });
-            yield return new TestCaseData<float?>(new float?[] { 1, 2, 2, 1, null, null, null }, new float?[] { 1.0f, 1.0f, 1.0f, null });
-            yield return new TestCaseData<float?>(new float?[] { null }, new float?[] { null, null });
-            yield return new TestCaseData<float?>(new float?[] { null, null }, new float?[] { null, 6 });
-        }
+            new object[] { new TestCaseData<float?>(new float?[] { 1.1f, 2.2f, 3.3f }, new float?[] { 1.1f, 2.2f, 3.3f }) },
+            new object[] { new TestCaseData<float?>(new float?[] { 1, 2.3f, 3, null }, new float?[] { 1, 2.3f, 3, null }) },
+            new object[] { new TestCaseData<float?>(new float?[] { float.MinValue, float.MaxValue }, new float?[] { 0 }) },
+            new object[] { new TestCaseData<float?>(new float?[] { -1, 0, 1.5f }, Array.Empty<float?>()) },
+            new object[] { new TestCaseData<float?>(Array.Empty<float?>(), new float?[] { 0 }) },
+            new object[] { new TestCaseData<float?>(new float?[] { 4, 6.6f, 8 }, new float?[] { 12, 43, 2.2f, 5, 6.6f, 4, 8 }) },
+            new object[] { new TestCaseData<float?>(new float?[] { 1, 1, 1, 1, 1, 1, 1.0f }, new float?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<float?>(new float?[] { 1, 1, 1, 1, 1, 1, 1 }, new float?[] { 1.0f, 2, 1.0f }) },
+            new object[] { new TestCaseData<float?>(new float?[] { 1, 2, 2, 1, 1, 1, 1 }, new float?[] { 1f, 1f, 1f }) },
+            new object[] { new TestCaseData<float?>(new float?[] { 1, 2, 2, 1, null, null, null }, new float?[] { 1.0f, 1.0f, 1.0f, null }) },
+            new object[] { new TestCaseData<float?>(new float?[] { null }, new float?[] { null, null }) },
+            new object[] { new TestCaseData<float?>(new float?[] { null, null }, new float?[] { null, 6 }) },
+        };
 
         [TestCaseSource(nameof(FloatTestValues))]
         public void RealmSet_WhenUnmanaged_Float(TestCaseData<float> testData)
@@ -455,34 +455,34 @@ namespace Realms.Tests.Database
 
         #region Double
 
-        public static IEnumerable<TestCaseData<double>> DoubleTestValues()
+        public static readonly object[] DoubleTestValues = new[]
         {
-            yield return new TestCaseData<double>(new double[] { 1.1, 2.2, 3.3 }, new double[] { 4.4, 5.5, 6.6 });
-            yield return new TestCaseData<double>(new double[] { 1, 2.3, 3 }, new double[] { 1, 2.3, 3 });
-            yield return new TestCaseData<double>(new double[] { double.MinValue, double.MaxValue }, new double[] { 0 });
-            yield return new TestCaseData<double>(new double[] { -1, 0, 1.5 }, Array.Empty<double>());
-            yield return new TestCaseData<double>(Array.Empty<double>(), new double[] { 0 });
-            yield return new TestCaseData<double>(new double[] { 4, 6.6, 8 }, new double[] { 12, 43, 2.2, 5, 6.6, 4, 8 });
-            yield return new TestCaseData<double>(new double[] { 1, 1, 1, 1, 1, 1, 1.0 }, new double[] { 1, 1, 1 });
-            yield return new TestCaseData<double>(new double[] { 1, 1, 1, 1, 1, 1, 1 }, new double[] { 1.0, 2, 1.0 });
-            yield return new TestCaseData<double>(new double[] { 1, 2, 2, 1, 1, 1, 1 }, new double[] { 1, 1, 1 });
-        }
+            new object[] { new TestCaseData<double>(new double[] { 1.1, 2.2, 3.3 }, new double[] { 4.4, 5.5, 6.6 }) },
+            new object[] { new TestCaseData<double>(new double[] { 1, 2.3, 3 }, new double[] { 1, 2.3, 3 }) },
+            new object[] { new TestCaseData<double>(new double[] { double.MinValue, double.MaxValue }, new double[] { 0 }) },
+            new object[] { new TestCaseData<double>(new double[] { -1, 0, 1.5 }, Array.Empty<double>()) },
+            new object[] { new TestCaseData<double>(Array.Empty<double>(), new double[] { 0 }) },
+            new object[] { new TestCaseData<double>(new double[] { 4, 6.6, 8 }, new double[] { 12, 43, 2.2, 5, 6.6, 4, 8 }) },
+            new object[] { new TestCaseData<double>(new double[] { 1, 1, 1, 1, 1, 1, 1.0 }, new double[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<double>(new double[] { 1, 1, 1, 1, 1, 1, 1 }, new double[] { 1.0, 2, 1.0 }) },
+            new object[] { new TestCaseData<double>(new double[] { 1, 2, 2, 1, 1, 1, 1 }, new double[] { 1, 1, 1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<double?>> NullableDoubleTestValues()
+        public static readonly object[] NullableDoubleTestValues = new[]
         {
-            yield return new TestCaseData<double?>(new double?[] { 1.1, 2.2, 3.3 }, new double?[] { 1.1, 2.2, 3.3 });
-            yield return new TestCaseData<double?>(new double?[] { 1, 2.3, 3, null }, new double?[] { 1, 2.3, 3, null });
-            yield return new TestCaseData<double?>(new double?[] { double.MinValue, double.MaxValue }, new double?[] { 0 });
-            yield return new TestCaseData<double?>(new double?[] { -1, 0, 1.5 }, Array.Empty<double?>());
-            yield return new TestCaseData<double?>(Array.Empty<double?>(), new double?[] { 0 });
-            yield return new TestCaseData<double?>(new double?[] { 4, 6.6, 8 }, new double?[] { 12, 43, 2.2, 5, 6.6, 4, 8 });
-            yield return new TestCaseData<double?>(new double?[] { 1, 1, 1, 1, 1, 1, 1.0 }, new double?[] { 1, 1, 1 });
-            yield return new TestCaseData<double?>(new double?[] { 1, 1, 1, 1, 1, 1, 1 }, new double?[] { 1.0, 2, 1.0 });
-            yield return new TestCaseData<double?>(new double?[] { 1, 2, 2, 1, 1, 1, 1 }, new double?[] { 1, 1, 1 });
-            yield return new TestCaseData<double?>(new double?[] { 1, 2, 2, 1, null, null, null }, new double?[] { 1.0, 1.0, 1.0, null });
-            yield return new TestCaseData<double?>(new double?[] { null }, new double?[] { null, null });
-            yield return new TestCaseData<double?>(new double?[] { null, null }, new double?[] { null, 6 });
-        }
+            new object[] { new TestCaseData<double?>(new double?[] { 1.1, 2.2, 3.3 }, new double?[] { 1.1, 2.2, 3.3 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { 1, 2.3, 3, null }, new double?[] { 1, 2.3, 3, null }) },
+            new object[] { new TestCaseData<double?>(new double?[] { double.MinValue, double.MaxValue }, new double?[] { 0 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { -1, 0, 1.5 }, Array.Empty<double?>()) },
+            new object[] { new TestCaseData<double?>(Array.Empty<double?>(), new double?[] { 0 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { 4, 6.6, 8 }, new double?[] { 12, 43, 2.2, 5, 6.6, 4, 8 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { 1, 1, 1, 1, 1, 1, 1.0 }, new double?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { 1, 1, 1, 1, 1, 1, 1 }, new double?[] { 1.0, 2, 1.0 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { 1, 2, 2, 1, 1, 1, 1 }, new double?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<double?>(new double?[] { 1, 2, 2, 1, null, null, null }, new double?[] { 1.0, 1.0, 1.0, null }) },
+            new object[] { new TestCaseData<double?>(new double?[] { null }, new double?[] { null, null }) },
+            new object[] { new TestCaseData<double?>(new double?[] { null, null }, new double?[] { null, 6 }) },
+        };
 
         [TestCaseSource(nameof(DoubleTestValues))]
         public void RealmSet_WhenUnmanaged_Double(TestCaseData<double> testData)
@@ -526,38 +526,38 @@ namespace Realms.Tests.Database
 
         #region Decimal
 
-        public static IEnumerable<TestCaseData<decimal>> DecimalTestValues()
+        public static readonly object[] DecimalTestValues = new[]
         {
-            yield return new TestCaseData<decimal>(new decimal[] { 1.1m, 2.2m, 3.3m }, new decimal[] { 4.4m, 5.5m, 6.6m });
-            yield return new TestCaseData<decimal>(new decimal[] { 1, 2.3m, 3 }, new decimal[] { 1, 2.3m, 3 });
-            yield return new TestCaseData<decimal>(new decimal[] { decimal.MinValue, decimal.MaxValue }, new decimal[] { 0 });
-            yield return new TestCaseData<decimal>(new decimal[] { -1, 0, 1.5m }, Array.Empty<decimal>());
-            yield return new TestCaseData<decimal>(Array.Empty<decimal>(), new decimal[] { 0 });
-            yield return new TestCaseData<decimal>(new decimal[] { 4, 6.6m, 8 }, new decimal[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 });
-            yield return new TestCaseData<decimal>(new decimal[] { 1, 1, 1, 1, 1, 1, 1.0m }, new decimal[] { 1, 1, 1 });
-            yield return new TestCaseData<decimal>(new decimal[] { 1, 1, 1, 1, 1, 1, 1 }, new decimal[] { 1.0m, 2, 1.0m });
-            yield return new TestCaseData<decimal>(new decimal[] { 1, 2, 2, 1, 1, 1, 1 }, new decimal[] { 1, 1, 1 });
-            yield return new TestCaseData<decimal>(new decimal[] { 1.9357683758257382523m }, new decimal[] { 1.9357683758257382524m, 1.9357683758257382522m });
-            yield return new TestCaseData<decimal>(new decimal[] { 1.9357683758257382523m, 3.5743857348m, 8.75878832943928m }, new decimal[] { 1.9357683758257382523m, 8.75878832943928m });
-        }
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1.1m, 2.2m, 3.3m }, new decimal[] { 4.4m, 5.5m, 6.6m }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1, 2.3m, 3 }, new decimal[] { 1, 2.3m, 3 }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { decimal.MinValue, decimal.MaxValue }, new decimal[] { 0 }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { -1, 0, 1.5m }, Array.Empty<decimal>()) },
+            new object[] { new TestCaseData<decimal>(Array.Empty<decimal>(), new decimal[] { 0 }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 4, 6.6m, 8 }, new decimal[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1, 1, 1, 1, 1, 1, 1.0m }, new decimal[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1, 1, 1, 1, 1, 1, 1 }, new decimal[] { 1.0m, 2, 1.0m }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1, 2, 2, 1, 1, 1, 1 }, new decimal[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1.9357683758257382523m }, new decimal[] { 1.9357683758257382524m, 1.9357683758257382522m }) },
+            new object[] { new TestCaseData<decimal>(new decimal[] { 1.9357683758257382523m, 3.5743857348m, 8.75878832943928m }, new decimal[] { 1.9357683758257382523m, 8.75878832943928m }) },
+        };
 
-        public static IEnumerable<TestCaseData<decimal?>> NullableDecimalTestValues()
+        public static readonly object[] NullableDecimalTestValues = new[]
         {
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1.1m, 2.2m, 3.3m }, new decimal?[] { 4.4m, 5.5m, 6.6m });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1, 2.3m, 3, null }, new decimal?[] { 1, 2.3m, 3, null });
-            yield return new TestCaseData<decimal?>(new decimal?[] { decimal.MinValue, decimal.MaxValue }, new decimal?[] { 0 });
-            yield return new TestCaseData<decimal?>(new decimal?[] { -1, 0, 1.5m }, Array.Empty<decimal?>());
-            yield return new TestCaseData<decimal?>(Array.Empty<decimal?>(), new decimal?[] { 0 });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 4, 6.6m, 8 }, new decimal?[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1, 1, 1, 1, 1, 1, 1.0m }, new decimal?[] { 1, 1, 1 });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1, 1, 1, 1, 1, 1, 1 }, new decimal?[] { 1.0m, 2, 1.0m });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1, 2, 2, 1, 1, 1, 1 }, new decimal?[] { 1, 1, 1 });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1, 2, 2, 1, null, null, null }, new decimal?[] { 1.0m, 1.0m, 1.0m, null });
-            yield return new TestCaseData<decimal?>(new decimal?[] { null }, new decimal?[] { null, null });
-            yield return new TestCaseData<decimal?>(new decimal?[] { null, null }, new decimal?[] { null, 6 });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1.9357683758257382523m }, new decimal?[] { 1.9357683758257382524m, 1.9357683758257382522m });
-            yield return new TestCaseData<decimal?>(new decimal?[] { 1.9357683758257382523m, null, 8.75878832943928m }, new decimal?[] { 1.9357683758257382523m, 8.75878832943928m });
-        }
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1.1m, 2.2m, 3.3m }, new decimal?[] { 4.4m, 5.5m, 6.6m }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1, 2.3m, 3, null }, new decimal?[] { 1, 2.3m, 3, null }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { decimal.MinValue, decimal.MaxValue }, new decimal?[] { 0 }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { -1, 0, 1.5m }, Array.Empty<decimal?>()) },
+            new object[] { new TestCaseData<decimal?>(Array.Empty<decimal?>(), new decimal?[] { 0 }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 4, 6.6m, 8 }, new decimal?[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1, 1, 1, 1, 1, 1, 1.0m }, new decimal?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1, 1, 1, 1, 1, 1, 1 }, new decimal?[] { 1.0m, 2, 1.0m }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1, 2, 2, 1, 1, 1, 1 }, new decimal?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1, 2, 2, 1, null, null, null }, new decimal?[] { 1.0m, 1.0m, 1.0m, null }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { null }, new decimal?[] { null, null }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { null, null }, new decimal?[] { null, 6 }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1.9357683758257382523m }, new decimal?[] { 1.9357683758257382524m, 1.9357683758257382522m }) },
+            new object[] { new TestCaseData<decimal?>(new decimal?[] { 1.9357683758257382523m, null, 8.75878832943928m }, new decimal?[] { 1.9357683758257382523m, 8.75878832943928m }) },
+        };
 
         [TestCaseSource(nameof(DecimalTestValues))]
         public void RealmSet_WhenUnmanaged_Decimal(TestCaseData<decimal> testData)
@@ -601,49 +601,49 @@ namespace Realms.Tests.Database
 
         #region Decimal128
 
-        public static IEnumerable<TestCaseData<Decimal128>> Decimal128TestValues()
+        public static readonly object[] Decimal128TestValues = new[]
         {
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1.1m, 2.2m, 3.3m }, new Decimal128[] { 4.4m, 5.5m, 6.6m });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1, 2.3m, 3 }, new Decimal128[] { 1, 2.3m, 3 });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { Decimal128.MinValue, Decimal128.MaxValue }, new Decimal128[] { 0 });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { -1, 0, 1.5m }, Array.Empty<Decimal128>());
-            yield return new TestCaseData<Decimal128>(Array.Empty<Decimal128>(), new Decimal128[] { 0 });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 4, 6.6m, 8 }, new Decimal128[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 });
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1.1m, 2.2m, 3.3m }, new Decimal128[] { 4.4m, 5.5m, 6.6m }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1, 2.3m, 3 }, new Decimal128[] { 1, 2.3m, 3 }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { Decimal128.MinValue, Decimal128.MaxValue }, new Decimal128[] { 0 }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { -1, 0, 1.5m }, Array.Empty<Decimal128>()) },
+            new object[] { new TestCaseData<Decimal128>(Array.Empty<Decimal128>(), new Decimal128[] { 0 }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 4, 6.6m, 8 }, new Decimal128[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 }) },
 
             // There is a bug in the Decimal128 implementation of GetHashCode, so we can't use the tests below. https://jira.mongodb.org/browse/CSHARP-3288
             // Once fixed, we should uncomment.
-            // yield return new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1.0m }, new Decimal128[] { 1, 1, 1 });
-            // yield return new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128[] { 1.0m, 2, 1.0m });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128[] { 1, 1, 1 });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128[] { 1, 2, 1 });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1, 2, 2, 1, 1, 1, 1 }, new Decimal128[] { 1, 1, 1 });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1.9357683758257382523m }, new Decimal128[] { 1.9357683758257382524m, 1.9357683758257382522m });
-            yield return new TestCaseData<Decimal128>(new Decimal128[] { 1.9357683758257382523m, 3.5743857348m, 8.75878832943928m }, new Decimal128[] { 1.9357683758257382523m, 8.75878832943928m });
-        }
+            // new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1.0m }, new Decimal128[] { 1, 1, 1 }) },
+            // new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128[] { 1.0m, 2, 1.0m }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1, 2, 2, 1, 1, 1, 1 }, new Decimal128[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1.9357683758257382523m }, new Decimal128[] { 1.9357683758257382524m, 1.9357683758257382522m }) },
+            new object[] { new TestCaseData<Decimal128>(new Decimal128[] { 1.9357683758257382523m, 3.5743857348m, 8.75878832943928m }, new Decimal128[] { 1.9357683758257382523m, 8.75878832943928m }) },
+        };
 
-        public static IEnumerable<TestCaseData<Decimal128?>> NullableDecimal128TestValues()
+        public static readonly object[] NullableDecimal128TestValues = new[]
         {
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1.1m, 2.2m, 3.3m }, new Decimal128?[] { 4.4m, 5.5m, 6.6m });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2.3m, 3, null }, new Decimal128?[] { 1, 2.3m, 3, null });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { Decimal128.MinValue, Decimal128.MaxValue }, new Decimal128?[] { 0 });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { -1, 0, 1.5m }, Array.Empty<Decimal128?>());
-            yield return new TestCaseData<Decimal128?>(Array.Empty<Decimal128?>(), new Decimal128?[] { 0 });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 4, 6.6m, 8 }, new Decimal128?[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 });
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1.1m, 2.2m, 3.3m }, new Decimal128?[] { 4.4m, 5.5m, 6.6m }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2.3m, 3, null }, new Decimal128?[] { 1, 2.3m, 3, null }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { Decimal128.MinValue, Decimal128.MaxValue }, new Decimal128?[] { 0 }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { -1, 0, 1.5m }, Array.Empty<Decimal128?>()) },
+            new object[] { new TestCaseData<Decimal128?>(Array.Empty<Decimal128?>(), new Decimal128?[] { 0 }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 4, 6.6m, 8 }, new Decimal128?[] { 12, 43, 2.2m, 5, 6.6m, 4, 8 }) },
 
             // There is a bug in the Decimal128 implementation of GetHashCode, so we can't use the tests below. https://jira.mongodb.org/browse/CSHARP-3288
             // Once fixed, we should uncomment.
-            // yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1.0m }, new Decimal128?[] { 1, 1, 1 });
-            // yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128?[] { 1.0m, 2, 1.0m });
-            // yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2, 2, 1, null, null, null }, new Decimal128?[] { 1.0m, 1.0m, 1.0m, null });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128?[] { 1, 1, 1 });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128?[] { 1, 2, 1 });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2, 2, 1, null, null, null }, new Decimal128?[] { 1, 1, 1, null });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2, 2, 1, 1, 1, 1 }, new Decimal128?[] { 1, 1, 1 });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { null }, new Decimal128?[] { null, null });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { null, null }, new Decimal128?[] { null, 6 });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1.9357683758257382523m }, new Decimal128?[] { 1.9357683758257382524m, 1.9357683758257382522m });
-            yield return new TestCaseData<Decimal128?>(new Decimal128?[] { 1.9357683758257382523m, null, 8.75878832943928m }, new Decimal128?[] { 1.9357683758257382523m, 8.75878832943928m });
-        }
+            // new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1.0m }, new Decimal128?[] { 1, 1, 1 }) },
+            // new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128?[] { 1.0m, 2, 1.0m }) },
+            // new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2, 2, 1, null, null, null }, new Decimal128?[] { 1.0m, 1.0m, 1.0m, null }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 1, 1, 1, 1, 1, 1 }, new Decimal128?[] { 1, 2, 1 }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2, 2, 1, null, null, null }, new Decimal128?[] { 1, 1, 1, null }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1, 2, 2, 1, 1, 1, 1 }, new Decimal128?[] { 1, 1, 1 }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { null }, new Decimal128?[] { null, null }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { null, null }, new Decimal128?[] { null, 6 }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1.9357683758257382523m }, new Decimal128?[] { 1.9357683758257382524m, 1.9357683758257382522m }) },
+            new object[] { new TestCaseData<Decimal128?>(new Decimal128?[] { 1.9357683758257382523m, null, 8.75878832943928m }, new Decimal128?[] { 1.9357683758257382523m, 8.75878832943928m }) },
+        };
 
         [TestCaseSource(nameof(Decimal128TestValues))]
         public void RealmSet_WhenUnmanaged_Decimal128(TestCaseData<Decimal128> testData)
@@ -696,34 +696,34 @@ namespace Realms.Tests.Database
         private static readonly ObjectId ObjectId6 = TestHelpers.GenerateRepetitiveObjectId(6);
         private static readonly ObjectId ObjectIdMax = TestHelpers.GenerateRepetitiveObjectId(3);
 
-        public static IEnumerable<TestCaseData<ObjectId>> ObjectIdTestValues()
+        public static readonly object[] ObjectIdTestValues = new[]
         {
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2, ObjectId3 }, new ObjectId[] { ObjectId4, ObjectId5, ObjectId6 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2, ObjectId3 }, new ObjectId[] { ObjectId1, ObjectId2, ObjectId3 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectIdMax }, new ObjectId[] { ObjectId0 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId0, ObjectId1, ObjectIdMax }, Array.Empty<ObjectId>());
-            yield return new TestCaseData<ObjectId>(Array.Empty<ObjectId>(), new ObjectId[] { ObjectId0 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2 }, new ObjectId[] { ObjectIdMax, ObjectId.GenerateNewId(), ObjectId1, ObjectId2, ObjectId3, ObjectId2 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId[] { ObjectId1, ObjectId1 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId[] { ObjectId1, ObjectId2 });
-            yield return new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId2, ObjectId2 }, new ObjectId[] { ObjectId1, ObjectId1 });
-        }
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2, ObjectId3 }, new ObjectId[] { ObjectId4, ObjectId5, ObjectId6 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2, ObjectId3 }, new ObjectId[] { ObjectId1, ObjectId2, ObjectId3 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectIdMax }, new ObjectId[] { ObjectId0 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId0, ObjectId1, ObjectIdMax }, Array.Empty<ObjectId>()) },
+            new object[] { new TestCaseData<ObjectId>(Array.Empty<ObjectId>(), new ObjectId[] { ObjectId0 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2 }, new ObjectId[] { ObjectIdMax, ObjectId.GenerateNewId(), ObjectId1, ObjectId2, ObjectId3, ObjectId2 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId[] { ObjectId1, ObjectId1 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId[] { ObjectId1, ObjectId2 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId2, ObjectId2 }, new ObjectId[] { ObjectId1, ObjectId1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<ObjectId?>> NullableObjectIdTestValues()
+        public static readonly object[] NullableObjectIdTestValues = new[]
         {
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2, ObjectId3 }, new ObjectId?[] { ObjectId4, ObjectId5, ObjectId6 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2, ObjectId3, null }, new ObjectId?[] { ObjectId1, ObjectId2, ObjectId3, null });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectIdMax }, new ObjectId?[] { ObjectId0 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId0, ObjectId1, ObjectIdMax }, Array.Empty<ObjectId?>());
-            yield return new TestCaseData<ObjectId?>(Array.Empty<ObjectId?>(), new ObjectId?[] { ObjectId0 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2 }, new ObjectId?[] { ObjectIdMax, ObjectId.GenerateNewId(), ObjectId1, ObjectId2, ObjectId3, ObjectId2 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId?[] { ObjectId1, ObjectId1 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId?[] { ObjectId1, ObjectId2 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId2, ObjectId2 }, new ObjectId?[] { ObjectId1, ObjectId1 });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2, ObjectId1, ObjectId2, null, null, null }, new ObjectId?[] { ObjectId1, ObjectId1, null });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { null }, new ObjectId?[] { null, null });
-            yield return new TestCaseData<ObjectId?>(new ObjectId?[] { null, null }, new ObjectId?[] { null, ObjectId6 });
-        }
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2, ObjectId3 }, new ObjectId?[] { ObjectId4, ObjectId5, ObjectId6 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2, ObjectId3, null }, new ObjectId?[] { ObjectId1, ObjectId2, ObjectId3, null }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectIdMax }, new ObjectId?[] { ObjectId0 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId0, ObjectId1, ObjectIdMax }, Array.Empty<ObjectId?>()) },
+            new object[] { new TestCaseData<ObjectId?>(Array.Empty<ObjectId?>(), new ObjectId?[] { ObjectId0 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2 }, new ObjectId?[] { ObjectIdMax, ObjectId.GenerateNewId(), ObjectId1, ObjectId2, ObjectId3, ObjectId2 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId?[] { ObjectId1, ObjectId1 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId?[] { ObjectId1, ObjectId2 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId2, ObjectId2 }, new ObjectId?[] { ObjectId1, ObjectId1 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2, ObjectId1, ObjectId2, null, null, null }, new ObjectId?[] { ObjectId1, ObjectId1, null }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { null }, new ObjectId?[] { null, null }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { null, null }, new ObjectId?[] { null, ObjectId6 }) },
+        };
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
         public void RealmSet_WhenUnmanaged_ObjectId(TestCaseData<ObjectId> testData)
@@ -775,34 +775,34 @@ namespace Realms.Tests.Database
         private static readonly DateTimeOffset Date5 = new DateTimeOffset(2034, 12, 24, 4, 0, 14, TimeSpan.FromHours(-3));
         private static readonly DateTimeOffset Date6 = new DateTimeOffset(2020, 10, 11, 19, 17, 10, TimeSpan.Zero);
 
-        public static IEnumerable<TestCaseData<DateTimeOffset>> DateTimeOffsetTestValues()
+        public static readonly object[] DateTimeOffsetTestValues = new[]
         {
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2, Date3 }, new DateTimeOffset[] { Date4, Date5, Date6 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2, Date3 }, new DateTimeOffset[] { Date1, Date2, Date3 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new DateTimeOffset[] { Date0 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset>());
-            yield return new TestCaseData<DateTimeOffset>(Array.Empty<DateTimeOffset>(), new DateTimeOffset[] { Date0 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2 }, new DateTimeOffset[] { DateTimeOffset.MaxValue, DateTimeOffset.UtcNow, Date1, Date2, Date3, Date2 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset[] { Date1, Date1 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset[] { Date1, Date2 });
-            yield return new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new DateTimeOffset[] { Date1, Date1 });
-        }
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2, Date3 }, new DateTimeOffset[] { Date4, Date5, Date6 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2, Date3 }, new DateTimeOffset[] { Date1, Date2, Date3 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new DateTimeOffset[] { Date0 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset>()) },
+            new object[] { new TestCaseData<DateTimeOffset>(Array.Empty<DateTimeOffset>(), new DateTimeOffset[] { Date0 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2 }, new DateTimeOffset[] { DateTimeOffset.MaxValue, DateTimeOffset.UtcNow, Date1, Date2, Date3, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset[] { Date1, Date1 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset[] { Date1, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new DateTimeOffset[] { Date1, Date1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<DateTimeOffset?>> NullableDateTimeOffsetTestValues()
+        public static readonly object[] NullableDateTimeOffsetTestValues = new object[]
         {
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2, Date3 }, new DateTimeOffset?[] { Date4, Date5, Date6 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2, Date3, null }, new DateTimeOffset?[] { Date1, Date2, Date3, null });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new DateTimeOffset?[] { Date0 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset?>());
-            yield return new TestCaseData<DateTimeOffset?>(Array.Empty<DateTimeOffset?>(), new DateTimeOffset?[] { Date0 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2 }, new DateTimeOffset?[] { DateTimeOffset.MaxValue, DateTimeOffset.UtcNow, Date1, Date2, Date3, Date2 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset?[] { Date1, Date1 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset?[] { Date1, Date2 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new DateTimeOffset?[] { Date1, Date1 });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2, Date1, Date2, null, null, null }, new DateTimeOffset?[] { Date1, Date1, null });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { null }, new DateTimeOffset?[] { null, null });
-            yield return new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { null, null }, new DateTimeOffset?[] { null, Date6 });
-        }
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2, Date3 }, new DateTimeOffset?[] { Date4, Date5, Date6 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2, Date3, null }, new DateTimeOffset?[] { Date1, Date2, Date3, null }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new DateTimeOffset?[] { Date0 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset?>()) },
+            new object[] { new TestCaseData<DateTimeOffset?>(Array.Empty<DateTimeOffset?>(), new DateTimeOffset?[] { Date0 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2 }, new DateTimeOffset?[] { DateTimeOffset.MaxValue, DateTimeOffset.UtcNow, Date1, Date2, Date3, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset?[] { Date1, Date1 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset?[] { Date1, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new DateTimeOffset?[] { Date1, Date1 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2, Date1, Date2, null, null, null }, new DateTimeOffset?[] { Date1, Date1, null }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { null }, new DateTimeOffset?[] { null, null }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { null, null }, new DateTimeOffset?[] { null, Date6 }) },
+        };
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
         public void RealmSet_WhenUnmanaged_DateTimeOffset(TestCaseData<DateTimeOffset> testData)
@@ -846,34 +846,34 @@ namespace Realms.Tests.Database
 
         #region String
 
-        public static IEnumerable<TestCaseData<string>> StringTestValues()
+        public static readonly object[] StringTestValues = new[]
         {
-            yield return new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "d", "e", "f" });
-            yield return new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "a", "b", "c" });
-            yield return new TestCaseData<string>(new string[] { "bla bla bla", string.Empty }, new string[] { " " });
-            yield return new TestCaseData<string>(new string[] { " ", "a", "bla bla bla" }, Array.Empty<string>());
-            yield return new TestCaseData<string>(Array.Empty<string>(), new string[] { " " });
-            yield return new TestCaseData<string>(new string[] { "a", "b" }, new string[] { "bla bla bla", "a", "b", "c", "b" });
-            yield return new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "a" });
-            yield return new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "b" });
-            yield return new TestCaseData<string>(new string[] { "a", "a", "a", "a", "b", "b" }, new string[] { "a", "a" });
-        }
+            new object[] { new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "d", "e", "f" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "a", "b", "c" }) },
+            new object[] { new TestCaseData<string>(new string[] { "bla bla bla", string.Empty }, new string[] { " " }) },
+            new object[] { new TestCaseData<string>(new string[] { " ", "a", "bla bla bla" }, Array.Empty<string>()) },
+            new object[] { new TestCaseData<string>(Array.Empty<string>(), new string[] { " " }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "b" }, new string[] { "bla bla bla", "a", "b", "c", "b" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "a" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "b" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "b", "b" }, new string[] { "a", "a" }) },
+        };
 
-        public static IEnumerable<TestCaseData<string>> NullableStringTestValues()
+        public static readonly object[] NullableStringTestValues = new[]
         {
-            yield return new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "d", "e", "f" });
-            yield return new TestCaseData<string>(new string[] { "a", "b", "c", null }, new string[] { "a", "b", "c", null });
-            yield return new TestCaseData<string>(new string[] { "bla bla bla" }, new string[] { " " });
-            yield return new TestCaseData<string>(new string[] { " ", "a", "bla bla bla" }, Array.Empty<string>());
-            yield return new TestCaseData<string>(Array.Empty<string>(), new string[] { " " });
-            yield return new TestCaseData<string>(new string[] { "a", "b" }, new string[] { "bla bla bla", "a", "b", "c", "b" });
-            yield return new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "a" });
-            yield return new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "b" });
-            yield return new TestCaseData<string>(new string[] { "a", "a", "a", "a", "b", "b" }, new string[] { "a", "a" });
-            yield return new TestCaseData<string>(new string[] { "a", "b", "a", "b", null, null, null }, new string[] { "a", "a", null });
-            yield return new TestCaseData<string>(new string[] { null }, new string[] { null, null });
-            yield return new TestCaseData<string>(new string[] { null, null }, new string[] { null, "f" });
-        }
+            new object[] { new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "d", "e", "f" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "b", "c", null }, new string[] { "a", "b", "c", null }) },
+            new object[] { new TestCaseData<string>(new string[] { "bla bla bla" }, new string[] { " " }) },
+            new object[] { new TestCaseData<string>(new string[] { " ", "a", "bla bla bla" }, Array.Empty<string>()) },
+            new object[] { new TestCaseData<string>(Array.Empty<string>(), new string[] { " " }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "b" }, new string[] { "bla bla bla", "a", "b", "c", "b" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "a" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "b" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "b", "b" }, new string[] { "a", "a" }) },
+            new object[] { new TestCaseData<string>(new string[] { "a", "b", "a", "b", null, null, null }, new string[] { "a", "a", null }) },
+            new object[] { new TestCaseData<string>(new string[] { null }, new string[] { null, null }) },
+            new object[] { new TestCaseData<string>(new string[] { null, null }, new string[] { null, "f" }) },
+        };
 
         [TestCaseSource(nameof(StringTestValues))]
         public void RealmSet_WhenUnmanaged_String(TestCaseData<string> testData)
@@ -933,34 +933,34 @@ namespace Realms.Tests.Database
 
         private static byte[] BinaryMax => TestHelpers.GetBytes(5, 255);
 
-        public static IEnumerable<TestCaseData<byte[]>> BinaryTestValues()
+        public static readonly object[] BinaryTestValues = new[]
         {
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary1, Binary2, Binary3 });
-            yield return new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>());
-            yield return new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 });
-        }
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary1, Binary2, Binary3 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>()) },
+            new object[] { new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 }) },
+        };
 
-        public static IEnumerable<TestCaseData<byte[]>> NullableBinaryTestValues()
+        public static readonly object[] NullableBinaryTestValues = new[]
         {
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3, null }, new byte[][] { Binary1, Binary2, Binary3, null });
-            yield return new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>());
-            yield return new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 });
-            yield return new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary1, Binary2, null, null, null }, new byte[][] { Binary1, Binary1, null });
-            yield return new TestCaseData<byte[]>(new byte[][] { null }, new byte[][] { null, null });
-            yield return new TestCaseData<byte[]>(new byte[][] { null, null }, new byte[][] { null, Binary6 });
-        }
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3, null }, new byte[][] { Binary1, Binary2, Binary3, null }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>()) },
+            new object[] { new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary1, Binary2, null, null, null }, new byte[][] { Binary1, Binary1, null }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { null }, new byte[][] { null, null }) },
+            new object[] { new TestCaseData<byte[]>(new byte[][] { null, null }, new byte[][] { null, Binary6 }) },
+        };
 
         [TestCaseSource(nameof(BinaryTestValues))]
         public void RealmSet_WhenUnmanaged_Binary(TestCaseData<byte[]> testData)
@@ -1004,34 +1004,40 @@ namespace Realms.Tests.Database
 
         #region IntPropertyObject
 
-        public static IEnumerable<TestCaseData<IntPropertyObject>> ObjectTestValues()
+        public static readonly object[] ObjectTestValues;
+
+        private static List<object> GetObjectTestValues()
         {
+            var result = new List<object>();
+
             var objs = GenerateObjects(1, 2, 3, 4, 5, 6);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[3], objs[4], objs[5] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[3], objs[4], objs[5] }) });
 
             objs = GenerateObjects(1, 2, 3);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[0], objs[1], objs[2] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[0], objs[1], objs[2] }) });
 
             objs = GenerateObjects(0, int.MaxValue);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[1] }, new IntPropertyObject[] { objs[0] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[1] }, new IntPropertyObject[] { objs[0] }) });
 
             objs = GenerateObjects(0, int.MaxValue);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[1] }, Array.Empty<IntPropertyObject>());
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[1] }, Array.Empty<IntPropertyObject>()) });
 
             objs = GenerateObjects(1);
-            yield return new TestCaseData<IntPropertyObject>(Array.Empty<IntPropertyObject>(), new IntPropertyObject[] { objs[0] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(Array.Empty<IntPropertyObject>(), new IntPropertyObject[] { objs[0] }) });
 
             objs = GenerateObjects(1, 2, 3, int.MaxValue);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1] }, new IntPropertyObject[] { objs[3], objs[0], objs[1], objs[2], objs[1] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1] }, new IntPropertyObject[] { objs[3], objs[0], objs[1], objs[2], objs[1] }) });
 
             objs = GenerateObjects(1);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[0] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[0] }) });
 
             objs = GenerateObjects(1, 2);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[1] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[1] }) });
 
             objs = GenerateObjects(1, 2);
-            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[1], objs[1] }, new IntPropertyObject[] { objs[0], objs[0] });
+            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[1], objs[1] }, new IntPropertyObject[] { objs[0], objs[0] }) });
+
+            return result;
         }
 
         private static IntPropertyObject[] GenerateObjects(params int[] values)
@@ -1068,7 +1074,9 @@ namespace Realms.Tests.Database
 
         #region RealmValue
 
-        public static IEnumerable<TestCaseData<RealmValue>> RealmTestValues()
+        public static readonly object[] RealmTestValues;
+
+        private static IEnumerable<TestCaseData<RealmValue>> GetRealmTestValues()
         {
             var rv0 = RealmValue.Null;
             var rv1 = RealmValue.Create(10, RealmValueType.Int);
@@ -1153,6 +1161,12 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+
+        static RealmSetTests()
+        {
+            ObjectTestValues = GetObjectTestValues().ToArray();
+            RealmTestValues = GetRealmTestValues().ToArray();
+        }
 
         private static void RunUnmanagedTests<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData)
         {
