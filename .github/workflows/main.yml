@@ -276,14 +276,14 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
-    - name: Build nuget package Realm.Fody
-      run: msbuild ${{ github.workspace }}/Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Build nuget package Realm
-      run: msbuild ${{ github.workspace }}/Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Build nuget package Realm.UnityUtils
-      run: msbuild ${{ github.workspace }}/Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Build nuget package Realm.UnityWeaver
-      run: msbuild ${{ github.workspace }}/Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.Fody
+      run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm
+      run: msbuild Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
@@ -337,10 +337,10 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Build the tests
-      run: msbuild ${{ github.workspace }}/Tests/Realm.Tests  -p:Configuration=Release -restore -p:TargetFramework=net461 -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Build Tests/Realm.Tests
+      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: ${{ github.workspace }}/Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+      run: Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -349,7 +349,7 @@ jobs:
         comment_mode: update last
         check_name: Windows .NET framework tests results
   run-tests-netcore-net5:
-    name: Run tests for .NetCore and .Net5
+    name: Run tests for .NET Core and .NET 5
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -376,10 +376,10 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Build the test
-      run: dotnet build ${{ github.workspace }}/Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
+    - name: Build Tests/Realm.Tests
+      run: dotnet build Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
     - name: Run the tests
-      run: dotnet run -p ${{ github.workspace }}/Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} --no-build -- --labels=After --result=${{ github.workspace }}/TestResults.NetCore.xml
+      run: Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/Realm.Tests.exe --result=TestResults.NetCore.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -406,10 +406,10 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Build the tests
-      run: msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac  -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Build Tests/Tests.XamarinMac
+      run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=TestResults.macOS.xml
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -426,7 +426,7 @@ jobs:
       with:
         submodules: recursive
     - name: Run the tests
-      run: dotnet run -p ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c Release --result=${{ github.workspace }}/TestResults.Weaver.xml --labels=After
+      run: dotnet run -p Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c Release --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
