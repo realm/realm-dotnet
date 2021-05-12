@@ -458,6 +458,8 @@ namespace Realms.Tests
 
         public IList<IntPropertyObject> ObjectList { get; }
 
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+
         public IList<RealmValue> RealmValueList { get; }
 
         public ISet<char> CharSet { get; }
@@ -526,7 +528,7 @@ namespace Realms.Tests
 
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
 
         public IDictionary<string, RealmValue> RealmValueDict { get; }
     }
