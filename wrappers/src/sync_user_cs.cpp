@@ -33,69 +33,8 @@ using namespace app;
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
-struct UserApiKey {
-    const char* id;
-    size_t id_len;
-
-    const char* key;
-    size_t key_len;
-
-    const char* name;
-    size_t name_len;
-
-    bool disabled;
-};
-
 namespace realm {
     namespace binding {
-        void (*s_api_key_callback)(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
-
-        inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
-            if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
-
-                s_api_key_callback(tcs_ptr, nullptr, 0, app_error);
-            }
-            else {
-                std::vector<UserApiKey> marshalled_keys(keys.size());
-                std::vector<std::string> id_storage(keys.size());
-
-                for (auto i = 0; i < keys.size(); i++) {
-                    auto& api_key = keys[i];
-                    UserApiKey marshaled_key;
-
-                    id_storage[i] = api_key.id.to_string();
-                    marshaled_key.id = id_storage[i].c_str();
-                    marshaled_key.id_len = id_storage[i].size();
-
-                    if (api_key.key) {
-                        marshaled_key.key = api_key.key->c_str();
-                        marshaled_key.key_len = api_key.key->size();
-                    }
-                    else {
-                        marshaled_key.key = nullptr;
-                        marshaled_key.key_len = 0;
-                    }
-
-                    marshaled_key.name = api_key.name.c_str();
-                    marshaled_key.name_len = api_key.name.size();
-                    marshaled_key.disabled = api_key.disabled;
-
-                    marshalled_keys[i] = marshaled_key;
-                }
-
-                s_api_key_callback(tcs_ptr, marshalled_keys.data(), static_cast<int>(marshalled_keys.size()), MarshaledAppError());
-            }
-        }
-
-        inline void invoke_api_key_callback(void* tcs_ptr, App::UserAPIKey key, util::Optional<AppError> err) {
-            std::vector<App::UserAPIKey> api_keys;
-            api_keys.push_back(key);
-
-            invoke_api_key_callback(tcs_ptr, api_keys, err);
-        }
-
         inline AuthProvider to_auth_provider(const std::string& provider) {
             if (provider == IdentityProviderAnonymous) {
                 return AuthProvider::ANONYMOUS;
@@ -147,11 +86,6 @@ namespace realm {
 }
 
 extern "C" {
-    REALM_EXPORT void realm_sync_user_initialize(decltype(s_api_key_callback) api_key_callback)
-    {
-        s_api_key_callback = api_key_callback;
-    }
-
     REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&] {

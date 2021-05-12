@@ -1,10 +1,10 @@
 {
-    "name": "realm.unity",
-    "version": "10.2.0-beta.2",
+    "name": "io.realm.unity-bundled",
+    "version": "10.2.0-beta.3",
     "displayName": "Realm",
     "description": "Realm is a mobile database: a replacement for SQLite",
-    "unity": "2019.1",
-    "unityRelease": "0b5",
+    "unity": "2021.1",
+    "unityRelease": "3f1",
     "dependencies": {
     },
     "keywords": [

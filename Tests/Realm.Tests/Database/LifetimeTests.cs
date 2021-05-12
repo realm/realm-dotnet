@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -25,56 +24,55 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class LifetimeTests : RealmTest
     {
-        // This method was extracted to ensure that the actual realm instance
-        // isn't preserved in the scope of the test, even when the debugger is running.
-        private static WeakReference GetWeakRealm()
-        {
-            return new WeakReference(Realm.GetInstance());
-        }
-
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
-            // Arrange
-            var realm = GetWeakRealm();
-            Person person = null;
-            ((Realm)realm.Target).Write(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                person = ((Realm)realm.Target).Add(new Person());
+                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
+                {
+                    var realm = Realm.GetInstance();
+                    var person = realm.Write(() =>
+                    {
+                        return realm.Add(new Person());
+                    });
+                    var realmReference = new WeakReference(realm);
+
+                    return (person, realmReference);
+                }, x =>
+                {
+                    Assert.That(x.Reference.IsAlive);
+                    Assert.That(((Realm)x.Reference.Target).IsClosed, Is.False);
+                    Assert.That(x.Preserver.IsValid);
+                });
             });
-
-            // Act
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            // Assert
-            Assert.That(realm.IsAlive);
-            Assert.That(((Realm)realm.Target).IsClosed, Is.False);
-            Assert.That(person.IsValid);
-
-            // TearDown
-            ((Realm)realm.Target).Dispose();
         }
 
         [Test]
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
-            // Arrange
-            using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
-            var realmThatWillBeFinalized = GetWeakRealm();
-            Person person = null;
-            realm.Write(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                person = realm.Add(new Person());
+                using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
+
+                Person person = null;
+                await TestHelpers.EnsureObjectsAreCollected(() =>
+                {
+                    var secondRealm = Realm.GetInstance(realm.Config);
+
+                    // Create a person in the first Realm instance and let the second one get garbage collected.
+                    // We expect this not to close the first one or invalidate the person instance.
+                    realm.Write(() =>
+                    {
+                        person = realm.Add(new Person());
+                    });
+
+                    return new[] { secondRealm };
+                });
+
+                // Assert
+                Assert.That(person.IsValid);
             });
-
-            // Act
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            // Assert
-            Assert.That(realmThatWillBeFinalized.IsAlive, Is.False);
-            Assert.That(person.IsValid);
         }
 
         [Test]
@@ -82,21 +80,14 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var realm = GetWeakRealm();
-                var transaction = CreateTransaction();
+                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
+                {
+                    var realm = Realm.GetInstance();
+                    var transaction = realm.BeginWrite();
+                    var realmReference = new WeakReference(realm);
 
-                await Task.Yield();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-
-                Assert.DoesNotThrow(transaction.Dispose);
-                Assert.That(realm.IsAlive);
-
-                // TearDown
-                ((Realm)realm.Target).Dispose();
-
-                Transaction CreateTransaction() => ((Realm)realm.Target).BeginWrite();
+                    return (transaction, realmReference);
+                });
             });
         }
     }

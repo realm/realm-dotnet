@@ -20,5 +20,6 @@ using System.Runtime.CompilerServices;
 
 [assembly: Realms.Explicit]
 [assembly: InternalsVisibleTo("Realm.Tests")]
+[assembly: InternalsVisibleTo("Tests.Unity")]
 [assembly: InternalsVisibleTo("Realm.UnityUtils")]
 [assembly: InternalsVisibleTo("PerformanceTests")]

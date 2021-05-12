@@ -1091,7 +1091,7 @@ namespace Realms.Tests.Database
 
             rv11 = GetRealmValueObject();
 
-            yield return new TestCaseData<RealmValue>( Array.Empty<RealmValue>(), new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
+            yield return new TestCaseData<RealmValue>(Array.Empty<RealmValue>(), new[] { rv0, rv1, rv2, rv3, rv4, rv5, rv6, rv7, rv8, rv9, rv10, rv11 });
 
             static RealmValue GetRealmValueObject() => RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object);
 
@@ -1133,7 +1133,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSet_WhenManaged_RealmValue_Notifications()
         {
-            var testData = new TestCaseData<RealmValue>(new RealmValue[] {
+            var testData = new TestCaseData<RealmValue>(new RealmValue[]
+            {
                 RealmValue.Null,
                 RealmValue.Create(10, RealmValueType.Int),
                 RealmValue.Create(true, RealmValueType.Bool),
@@ -1145,7 +1146,8 @@ namespace Realms.Tests.Database
                 RealmValue.Create(5m, RealmValueType.Decimal128),
                 RealmValue.Create(new ObjectId("5f63e882536de46d71877979"), RealmValueType.ObjectId),
                 RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
-                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object) });
+                RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object)
+            });
 
             RunManagedNotificationsTests(o => o.RealmValueSet, testData, newValue: "newValue");
         }

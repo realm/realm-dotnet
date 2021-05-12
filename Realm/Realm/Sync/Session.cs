@@ -106,24 +106,14 @@ namespace Realms.Sync
         /// </summary>
         /// <returns>An awaitable <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
-        public Task WaitForUploadAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            Handle.Wait(tcs, ProgressDirection.Upload);
-            return tcs.Task;
-        }
+        public Task WaitForUploadAsync() => Handle.WaitAsync(ProgressDirection.Upload);
 
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending downloads.
         /// </summary>
         /// <returns>An awaitable <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
-        public Task WaitForDownloadAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            Handle.Wait(tcs, ProgressDirection.Download);
-            return tcs.Task;
-        }
+        public Task WaitForDownloadAsync() => Handle.WaitAsync(ProgressDirection.Download);
 
         /// <summary>
         /// Stops any synchronization with the server until the Realm is re-opened again

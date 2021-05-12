@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
@@ -117,7 +116,7 @@ namespace Realms.Tests.Sync
 
                         if (p.TransferredBytes > p.TransferableBytes)
                         {
-                            // TODO: this seems to be a regression in Sync.
+                            // TODO https://github.com/realm/realm-dotnet/issues/2360: this seems to be a regression in Sync.
                             // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
                         }
 
