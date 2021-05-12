@@ -8,12 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <None Remove="EmbeddedResources\nunit3-junit.xslt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
