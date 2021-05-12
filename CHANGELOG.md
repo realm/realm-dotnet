@@ -2,7 +2,14 @@
 ------------------
 
 ### Fixed
-* None
+* Fixed a bug that could lead to crashes with a message similar to `Invalid ref translation entry [0, 78187493520]`. (Core upgrade)
+* Fix assertion failures such as `!m_notifier_skip_version.version` or `m_notifier_sg->get_version() + 1 == new_version.version` when performing writes inside change notification callbacks. (Core upgrade)
+* Fix collection notification reporting for modifications. This could be observed by receiving the wrong indices of modifications on sorted or distinct results, or notification blocks sometimes not being called when only modifications have occured. (Core upgrade)
+* Proactively check the expiry time on the access token and refresh it before attempting to initiate a sync session. This prevents some error logs from appearing on the client such as: `ERROR: Connection[1]: Websocket: Expected HTTP response 101 Switching Protocols, but received: HTTP/1.1 401 Unauthorized`. (Core upgrade)
+* Destruction of the TableRecycler at exit was unordered compared to other threads running. This could lead to crashes, some with the TableRecycler at the top of the stack. (Core upgrade)
+* Fixed errors related to `uncaught exception in notifier thread: N5realm11KeyNotFoundE: No such object`. This could happen in a synchronized app when a linked object was deleted by another client. (Core upgrade)
+* Opening a metadata realm with the wrong encryption key or different encryption configuration will remove that metadata realm and create a new metadata realm using the new key or configuration. (Core upgrade)
+* Creting a `ThreadSafeReference` to a readonly Realm would result in a crash. (Core upgrade)
 
 ### Enhancements
 * None
@@ -11,7 +18,7 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.5.6.
+* Using Core 10.7.2.
 
 ## 10.1.3 (2021-04-29)
 ------------------
