@@ -10,7 +10,6 @@
   <ItemGroup>
     <None Remove="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <None Remove="EmbeddedResources\nunit3-junit.xslt" />
-    <None Remove="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,7 +17,6 @@
     <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
 
   <ItemGroup>

@@ -157,6 +157,27 @@ name: #@ "Build " + projectPath
 run: #@ "dotnet build " + projectPath + " -c " + configuration + targetFramework + commonProps + parsedProps
 #@ end
 
+#@ def dotnetRun(projectPath, **properties):
+#@ parsedProps = ""
+#@ targetFramework = ""
+#@ resultsPath = ""
+#@ labels = ""
+#@ for prop in properties.keys():
+#@  if prop == "TargetFramework":
+#@    targetFramework = " -f " + properties[prop]
+#@  elif prop == "ResultsFile":
+#@    resultsPath = " --result=" + properties[prop]
+#@  elif prop == "Labels":
+#@    labels = " --labels=" + properties[prop]
+#@  else:
+#@    parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  end
+#@ end
+#@
+name: #@ "Run " + projectPath
+run: #@ "dotnet run -p " + projectPath + " -c " + configuration + targetFramework + resultsPath + labels + parsedProps
+#@ end
+
 ---
 name: build and test
 "on":
@@ -291,7 +312,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" )
+      - #@ msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - #@ publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results")
@@ -317,7 +338,7 @@ jobs:
     steps:
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" )
+      - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=TestResults.macOS.xml"
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results")
@@ -326,6 +347,5 @@ jobs:
     name: Run tests for the weaver
     steps:
       - #@ checkoutCode()
-      - name: Run the tests
-        run: #@ "dotnet run -p Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c " + configuration + " --result=TestResults.Weaver.xml --labels=After"
+      - #@ dotnetRun("Tests/Weaver/Realm.Fody.Tests", TargetFramework="netcoreapp3.1", ResultsFile="TestResults.Weaver.xml", Labels="After")
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")

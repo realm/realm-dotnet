@@ -425,8 +425,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Run the tests
-      run: dotnet run -p Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c Release --result=TestResults.Weaver.xml --labels=After
+    - name: Run Tests/Weaver/Realm.Fody.Tests
+      run: dotnet run -p Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
