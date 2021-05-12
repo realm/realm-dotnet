@@ -109,7 +109,7 @@ steps:
     if: always()
     with:
       files: #@ files
-      comment_on_pr: false
+      comment_mode: update last
       check_name: #@ test_title
 #@ end
 

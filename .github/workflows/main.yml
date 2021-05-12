@@ -346,7 +346,7 @@ jobs:
       if: always()
       with:
         files: TestResults.Windows.xml
-        comment_on_pr: false
+        comment_mode: update last
         check_name: Windows .NET framework tests results
   run-tests-netcore-net5:
     name: Run tests for .NetCore and .Net5
@@ -385,7 +385,7 @@ jobs:
       if: always()
       with:
         files: TestResults.NetCore.xml
-        comment_on_pr: false
+        comment_mode: update last
         check_name: ${{ matrix.os }} ${{ matrix.targetFramework }} tests results
   run-tests-xamarin-macos:
     runs-on: macos-latest
@@ -415,7 +415,7 @@ jobs:
       if: always()
       with:
         files: TestResults.macOS.xml
-        comment_on_pr: false
+        comment_mode: update last
         check_name: Xamarin MacOs tests results
   run-tests-weaver:
     runs-on: windows-latest
@@ -432,5 +432,5 @@ jobs:
       if: always()
       with:
         files: TestResults.Weaver.xml
-        comment_on_pr: false
+        comment_mode: update last
         check_name: Weaver tests results
