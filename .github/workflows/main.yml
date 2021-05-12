@@ -407,7 +407,7 @@ jobs:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build the tests
-      run: msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac  -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0
+      run: msbuild ${{ github.workspace }}/Tests/Tests.XamarinMac  -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: ${{ github.workspace }}/Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
