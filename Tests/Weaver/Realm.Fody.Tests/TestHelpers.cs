@@ -41,7 +41,7 @@ namespace Realms.Fody.Tests
             }
         }
 
-        public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
+        public static string CopyBundledFileToDocuments(string realmName, string destPath)
         {
             var assembly = typeof(Program).Assembly;
             var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
