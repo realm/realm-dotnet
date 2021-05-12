@@ -76,7 +76,7 @@ steps:
 #@ def buildPackages():
 #@ for pkgName in nugetPackages:
   - name: #@ "Build nuget package " + pkgName
-    _: #@ template.replace(msbuild(project="Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
+    _: #@ template.replace(msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
 #@ end
 #@ end
 
@@ -114,14 +114,11 @@ run: |
 shell: bash
 #@ end
 
-#@ def msbuild(**properties):
+#@ def msbuild(projectPath, **properties):
 #@ parsedProps = ""
-#@ projectPath = ""
 #@ target = ""
 #@ for prop in properties.keys():
-#@  if prop == "project":
-#@    projectPath = properties[prop]
-#@  elif prop == "target":
+#@  if prop == "target":
 #@    target = "-t:" + properties[prop]
 #@  else:
 #@    parsedProps += " -p:" + prop + "=" + properties[prop]
@@ -266,7 +263,7 @@ jobs:
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - name: Build the tests
-        _: #@ template.replace(msbuild(project="Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="${{ github.workspace }}/Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" ))
+        _: #@ template.replace(msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="${{ github.workspace }}/Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" ))
       - name: Run the tests
         run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - name: Publish Unit Test Results
