@@ -50,7 +50,8 @@ public class TestManager : ITestRunCallback
         public static void Log(string message, bool important = false)
         {
             var logType = important && !Application.isEditor ? LogType.Error : LogType.Log;
-            Debug.LogFormat(logType, LogOption.NoStacktrace, null, message.Replace("{", "{{").Replace("}", "}}"));
+            var timePrefix = DateTimeOffset.UtcNow.ToString("HH:mm:ss");
+            Debug.LogFormat(logType, LogOption.NoStacktrace, null, $"{timePrefix} {message.Replace("{", "{{").Replace("}", "}}")}");
         }
     }
 }

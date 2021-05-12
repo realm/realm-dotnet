@@ -15,7 +15,14 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
     {
         // Do not launch the player after the build completes.
         playerOptions.options &= ~BuildOptions.AutoRunPlayer;
-        playerOptions.options |= BuildOptions.AllowDebugging;
+        if (IsDebugBuild)
+        {
+            playerOptions.options |= BuildOptions.AllowDebugging;
+        }
+        else
+        {
+            playerOptions.options &= ~BuildOptions.AllowDebugging;
+        }
 
         // The settings file controls things like the backend or API compatibility, so we want to put
         // artifacts with different settings files in different folders.
@@ -69,4 +76,6 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
 
         return "unknown";
     }
+
+    private static bool IsDebugBuild => Environment.GetCommandLineArgs().Any(a => a == "-debugBuild");
 }
