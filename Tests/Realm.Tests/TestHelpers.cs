@@ -258,6 +258,14 @@ namespace Realms.Tests
             }
         }
 
+        private static readonly decimal decimalValue = 1.23456789M;
+        static TestHelpers()
+        {
+            // Preserve the >= and <= operators on System.decimal as IL2CPP will strip them otherwise.
+            _ = decimal.MaxValue >= decimalValue;
+            _ = decimal.MinValue <= decimalValue;
+        }
+
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
 
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
