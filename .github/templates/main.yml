@@ -338,7 +338,7 @@ jobs:
       run: echo "runtime=linux-x64" >> $GITHUB_ENV
     - #@ dotnetPublish("Tests/Realm.Tests", Runtime="${{ env.runtime }}", TargetFramework="${{ matrix.targetFramework }}", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}")
     - name: Run the tests
-      run: #@ "ls Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/publish\n./Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/publish/Realm.Tests --result=TestResults.NetCore.xml --labels=After\n"
+      run: #@ "ls Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/${{ env.runtime }}\n./Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/${{ env.runtime }}/Realm.Tests --result=TestResults.NetCore.xml --labels=After\n"
     - #@ publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
   run-tests-xamarin-macos:
     runs-on: macos-latest
