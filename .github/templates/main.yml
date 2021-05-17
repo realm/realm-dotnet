@@ -330,11 +330,11 @@ jobs:
     steps:
     - #@ checkoutCode()
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - if: ${{ matrix.os == macos-latest }}
+    - if: ${{ matrix.os == 'macos-latest' }}
       run: echo "runtime=osx-x64" >> $GITHUB_ENV
-    - if: ${{ matrix.os == windows-latest }}
+    - if: ${{ matrix.os == 'windows-latest' }}
       run: echo "runtime=win-x64" >> $GITHUB_ENV
-    - if: ${{ matrix.os == ubuntu-latest }}
+    - if: ${{ matrix.os == 'ubuntu-latest' }}
       run: echo "runtime=linux-x64" >> $GITHUB_ENV
     - #@ dotnetPublish("Tests/Realm.Tests", Runtime="${{ env.runtime }}", TargetFramework="${{ matrix.targetFramework }}", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}")
     - name: Run the tests
