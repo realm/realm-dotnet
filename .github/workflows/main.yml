@@ -381,7 +381,7 @@ jobs:
     - name: Run the tests
       run: |
         ls Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}
-        ./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/Realm.Tests --result=TestResults.NetCore.xml --labels=After
+        ./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/publish/Realm.Tests --result=TestResults.NetCore.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
