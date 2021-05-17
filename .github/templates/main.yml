@@ -141,7 +141,7 @@ name: #@ "Build " + projectPath
 run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
 #@ end
 
-#@ def dotnetBuild(projectPath, **properties):
+#@ def dotnetPublish(projectPath, **properties):
 #@ parsedProps = ""
 #@ targetFramework = ""
 #@ commonProps = " -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}"
@@ -154,7 +154,7 @@ run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration
 #@ end
 #@
 name: #@ "Build " + projectPath
-run: #@ "dotnet build " + projectPath + " -c " + configuration + targetFramework + commonProps + parsedProps
+run: #@ "dotnet publish " + projectPath + " -c " + configuration + targetFramework + commonProps + parsedProps
 #@ end
 
 #@ def dotnetRun(projectPath, **properties):
@@ -327,9 +327,9 @@ jobs:
     steps:
     - #@ checkoutCode()
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - #@ dotnetBuild("Tests/Realm.Tests", TargetFramework="${{ matrix.targetFramework }}", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}")
+    - #@ dotnetPublish("Tests/Realm.Tests", TargetFramework="${{ matrix.targetFramework }}", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}")
     - name: Run the tests
-      run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/Realm.Tests.exe --result=TestResults.NetCore.xml --labels=After"
+      run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/Realm.Tests.exe --result=TestResults.NetCore.xml --labels=After"
     - #@ publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
   run-tests-xamarin-macos:
     runs-on: macos-latest
