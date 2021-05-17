@@ -34,7 +34,7 @@ namespace Realms.Tests
             var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
             if (!string.IsNullOrEmpty(resultPath))
             {
-                TestHelpers.TransformTestResults(resultPath);
+                TransformHelpers.TransformTestResults(resultPath, typeof(TestHelpers).Assembly, RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt"));
             }
 
             return 0;

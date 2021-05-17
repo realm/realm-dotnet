@@ -8,13 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="EmbeddedResources\nunit3-junit.xslt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="..\..\Realm.Tests\EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+
+    <Compile Include="..\..\Realm.Tests\TransformHelpers.cs" Link="TransformHelpers.cs" />
   </ItemGroup>
 
   <ItemGroup>

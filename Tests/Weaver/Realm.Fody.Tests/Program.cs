@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnitLite;
@@ -32,7 +33,8 @@ namespace Realms.Fody.Tests
             var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
             if (!string.IsNullOrEmpty(resultPath))
             {
-                TestHelpers.TransformTestResults(resultPath);
+                var transformFilename = Path.Combine(Directory.GetCurrentDirectory(), "nunit3-junit.xslt");
+                Realms.Tests.TransformHelpers.TransformTestResults(resultPath, typeof(Program).Assembly, transformFilename);
             }
 
             return 0;

@@ -55,7 +55,7 @@ namespace Realms.Tests.Android
                 options.ResultFilePath = Intent.GetStringExtra("resultPath");
                 options.OnCompletedCallback = () =>
                 {
-                    TestHelpers.TransformTestResults(options.ResultFilePath);
+                    TransformHelpers.TransformTestResults(options.ResultFilePath, typeof(TestHelpers).Assembly, RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt"));
                     Console.WriteLine("Activity finished...");
                     OnFinished(Result.Ok);
                     Finish();

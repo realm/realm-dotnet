@@ -17,17 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Threading;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.XPath;
-using System.Xml.Xsl;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -84,25 +79,6 @@ namespace Realms.Tests
         public static T GetPropertyValue<T>(this object obj, string propertyName)
         {
             return (T)GetPropertyValue(obj, propertyName);
-        }
-
-        public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
-        {
-            destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
-
-            var assembly = typeof(TestHelpers).Assembly;
-            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
-            if (resourceName == null)
-            {
-                throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
-            }
-
-            using var stream = assembly.GetManifestResourceStream(resourceName);
-            using var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-
-            stream.CopyTo(destination);
-
-            return destPath;
         }
 
         public static async Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
@@ -328,20 +304,6 @@ namespace Realms.Tests
 
             Assert.Fail($"Exception of type {typeof(T)} expected.");
             return null;
-        }
-
-        [SuppressMessage("Security", "CA3075:Insecure DTD processing in XML", Justification = "The xml is static and trusted.")]
-        [SuppressMessage("Security", "CA5372:Use XmlReader For XPathDocument", Justification = "The xml is static and trusted.")]
-        public static void TransformTestResults(string resultPath)
-        {
-            CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-            var transformFile = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
-
-            var xpathDocument = new XPathDocument(resultPath);
-            var transform = new XslCompiledTransform();
-            transform.Load(transformFile);
-            using var writer = new XmlTextWriter(resultPath, null);
-            transform.Transform(xpathDocument, null, writer);
         }
 
         public static string ByteArrayToTestDescription<T>(T arr)
