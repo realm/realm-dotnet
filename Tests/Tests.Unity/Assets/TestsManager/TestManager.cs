@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework.Interfaces;
 using UnityEngine;
@@ -9,8 +10,13 @@ public class TestManager : ITestRunCallback
     public void RunFinished(ITestResult result)
     {
         var total = result.FailCount + result.PassCount + result.InconclusiveCount;
-        var message = $"Test run finished: {total} Passed: {result.PassCount} Failed: {result.FailCount} Inconclusive: {result.InconclusiveCount}";
+        var message = $"Test run finished: {total} Passed: {result.PassCount} Failed: {result.FailCount} Inconclusive: {result.InconclusiveCount} ({result.EndTime - result.StartTime:c})";
         HackyLogger.Log(message, important: true);
+
+        if (!Application.isEditor)
+        {
+            Application.Quit();
+        }
     }
 
     public void RunStarted(ITest testsToRun)
@@ -24,7 +30,12 @@ public class TestManager : ITestRunCallback
         {
             var className = result.Test.ClassName?.Split('.').LastOrDefault();
             var status = result.ResultState.Status.ToString().ToUpper();
-            var message = $"\t[{status}] {className}.{result.Test.Name}";
+            var message = $"\t[{status}] {className}.{result.Test.Name} ({(result.EndTime - result.StartTime).TotalMilliseconds} ms)";
+
+            if (result.ResultState.Status == TestStatus.Failed)
+            {
+                message += $"{Environment.NewLine}{result.Message} - {result.StackTrace}";
+            }
 
             HackyLogger.Log(message);
         }
@@ -39,7 +50,8 @@ public class TestManager : ITestRunCallback
         public static void Log(string message, bool important = false)
         {
             var logType = important && !Application.isEditor ? LogType.Error : LogType.Log;
-            Debug.LogFormat(logType, LogOption.NoStacktrace, null, message.Replace("{", "{{").Replace("}", "}}"));
+            var timePrefix = DateTimeOffset.UtcNow.ToString("HH:mm:ss");
+            Debug.LogFormat(logType, LogOption.NoStacktrace, null, $"{timePrefix} {message.Replace("{", "{{").Replace("}", "}}")}");
         }
     }
 }

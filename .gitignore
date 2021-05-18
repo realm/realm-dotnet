@@ -212,3 +212,5 @@ Tests/Tests.Unity/Assets/InitTestScene*.unity*
 Tests/Tests.Unity/UserSettings/Search.settings
 Tests/Tests.Unity/Assets/Tests/*.dll
 Tests/Tests.Unity/PlayModeTestPlayer/
+Tests/Tests.Unity/*.xml
+Tests/Tests.Unity/PlayModeTestPlayer*

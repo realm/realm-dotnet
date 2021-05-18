@@ -17,9 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -93,148 +91,64 @@ namespace Realms.Tests.Database
             Assert.That(counter.NullableInt64Property == defaultValue);
         }
 
-        [TestCaseSource(nameof(ByteIncrementTestCases))]
-        public void RealmInteger_WhenByte_IncrementTests(byte original, byte value, bool managed)
-        {
-            var counter = new CounterObject
-            {
-                ByteProperty = original,
-            };
+        public static byte[] ByteValues = new[] { (byte)0, (byte)1, byte.MaxValue };
 
-            var sum = (byte)(original + value);
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(counter));
-                _realm.Write(() => counter.ByteProperty.Increment(value));
-                Assert.That((byte)counter.ByteProperty, Is.EqualTo(sum));
-            }
-            else
-            {
-                Assert.That(() => counter.ByteProperty.Increment(value), Throws.TypeOf<NotSupportedException>());
-            }
+        [Test]
+        public void RealmInteger_WhenByte_IncrementTests(
+           [ValueSource(nameof(ByteValues))] byte original,
+           [ValueSource(nameof(ByteValues))] byte value)
+        {
+            var managedCounter = _realm.Write(() => _realm.Add(new CounterObject { ByteProperty = original }));
+            _realm.Write(() => managedCounter.ByteProperty.Increment(value));
+            Assert.That((byte)managedCounter.ByteProperty, Is.EqualTo((byte)(original + value)));
+
+            var unmanagedCounter = new CounterObject { ByteProperty = original };
+            Assert.That(() => unmanagedCounter.ByteProperty.Increment(value), Throws.TypeOf<NotSupportedException>());
         }
 
-        [TestCaseSource(nameof(ShortIncrementTestCases))]
-        public void RealmInteger_WhenShort_IncrementTests(short original, short value, bool managed)
-        {
-            var counter = new CounterObject
-            {
-                Int16Property = original,
-            };
+        public static short[] ShortValues = new[] { (short)0, (short)1, (short)-1, short.MinValue, short.MaxValue };
 
-            var sum = (short)(original + value);
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(counter));
-                _realm.Write(() => counter.Int16Property.Increment(value));
-                Assert.That((short)counter.Int16Property, Is.EqualTo(sum));
-            }
-            else
-            {
-                Assert.That(() => counter.Int16Property.Increment(value), Throws.TypeOf<NotSupportedException>());
-            }
+        [Test]
+        public void RealmInteger_WhenShort_IncrementTests(
+           [ValueSource(nameof(ShortValues))] short original,
+           [ValueSource(nameof(ShortValues))] short value)
+        {
+            var managedCounter = _realm.Write(() => _realm.Add(new CounterObject { Int16Property = original }));
+            _realm.Write(() => managedCounter.Int16Property.Increment(value));
+            Assert.That((short)managedCounter.Int16Property, Is.EqualTo((short)(original + value)));
+
+            var unmanagedCounter = new CounterObject { Int16Property = original };
+            Assert.That(() => unmanagedCounter.Int16Property.Increment(value), Throws.TypeOf<NotSupportedException>());
         }
 
-        [TestCaseSource(nameof(IntIncrementTestCases))]
-        public void RealmInteger_WhenInt_IncrementTests(int original, int value, bool managed)
-        {
-            var counter = new CounterObject
-            {
-                Int32Property = original,
-            };
+        public static int[] IntValues = new[] { 0, 1, -1, int.MinValue, int.MaxValue };
 
-            var sum = original + value;
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(counter));
-                _realm.Write(() => counter.Int32Property.Increment(value));
-                Assert.That((int)counter.Int32Property, Is.EqualTo(sum));
-            }
-            else
-            {
-                Assert.That(() => counter.Int32Property.Increment(value), Throws.TypeOf<NotSupportedException>());
-            }
+        [Test]
+        public void RealmInteger_WhenInt_IncrementTests(
+           [ValueSource(nameof(IntValues))] int original,
+           [ValueSource(nameof(IntValues))] int value)
+        {
+            var managedCounter = _realm.Write(() => _realm.Add(new CounterObject { Int32Property = original }));
+            _realm.Write(() => managedCounter.Int32Property.Increment(value));
+            Assert.That((int)managedCounter.Int32Property, Is.EqualTo(original + value));
+
+            var unmanagedCounter = new CounterObject { Int32Property = original };
+            Assert.That(() => unmanagedCounter.Int32Property.Increment(value), Throws.TypeOf<NotSupportedException>());
         }
 
-        [TestCaseSource(nameof(LongIncrementTestCases))]
-        public void RealmInteger_WhenLong_IncrementTests(long original, long value, bool managed)
-        {
-            var counter = new CounterObject
-            {
-                Int64Property = original,
-            };
+        public static long[] LongValues = new[] { 0L, 1L, -1L, long.MaxValue, long.MinValue };
 
-            var sum = original + value;
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(counter));
-                _realm.Write(() => counter.Int64Property.Increment(value));
-                Assert.That((long)counter.Int64Property, Is.EqualTo(sum));
-            }
-            else
-            {
-                Assert.That(() => counter.Int64Property.Increment(value), Throws.TypeOf<NotSupportedException>());
-            }
-        }
-
-        private static IEnumerable<object> ByteIncrementTestCases()
+        [Test]
+        public void RealmInteger_WhenLong_IncrementTests(
+            [ValueSource(nameof(LongValues))] long original,
+            [ValueSource(nameof(LongValues))] long value)
         {
-            var values = new byte[] { 0, 1, byte.MaxValue };
-            foreach (var original in values)
-            {
-                foreach (var value in values)
-                {
-                    for (var i = 0; i < 2; i++)
-                    {
-                        yield return new object[] { original, value, i == 0 };
-                    }
-                }
-            }
-        }
+            var managedCounter = _realm.Write(() => _realm.Add(new CounterObject { Int64Property = original }));
+            _realm.Write(() => managedCounter.Int64Property.Increment(value));
+            Assert.That((long)managedCounter.Int64Property, Is.EqualTo(original + value));
 
-        private static IEnumerable<object> ShortIncrementTestCases()
-        {
-            var values = new short[] { 0, 1, -1, short.MaxValue, short.MinValue };
-            foreach (var original in values)
-            {
-                foreach (var value in values)
-                {
-                    for (var i = 0; i < 2; i++)
-                    {
-                        yield return new object[] { original, value, i == 0 };
-                    }
-                }
-            }
-        }
-
-        private static IEnumerable<object> IntIncrementTestCases()
-        {
-            var values = new int[] { 0, 1, -1, int.MaxValue, int.MinValue };
-            foreach (var original in values)
-            {
-                foreach (var value in values)
-                {
-                    for (var i = 0; i < 2; i++)
-                    {
-                        yield return new object[] { original, value, i == 0 };
-                    }
-                }
-            }
-        }
-
-        private static IEnumerable<object> LongIncrementTestCases()
-        {
-            var values = new long[] { 0, 1, -1, long.MaxValue, long.MinValue };
-            foreach (var original in values)
-            {
-                foreach (var value in values)
-                {
-                    for (var i = 0; i < 2; i++)
-                    {
-                        yield return new object[] { original, value, i == 0 };
-                    }
-                }
-            }
+            var unmanagedCounter = new CounterObject { Int64Property = original };
+            Assert.That(() => unmanagedCounter.Int64Property.Increment(value), Throws.TypeOf<NotSupportedException>());
         }
     }
 }
