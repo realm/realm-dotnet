@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mono.Cecil.Cil;
 using UnityEditor;
@@ -69,7 +68,7 @@ namespace RealmWeaver
                     return;
                 }
 
-                var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
+                var assembly = CompilationPipeline.GetAssemblies()
                                       .FirstOrDefault(p => p.outputPath == assemblyPath);
 
                 if (assembly == null)
@@ -118,7 +117,7 @@ namespace RealmWeaver
             try
             {
                 EditorApplication.LockReloadAssemblies();
-                var weavingTasks = CompilationPipeline.GetAssemblies(AssembliesType.Player)
+                var weavingTasks = CompilationPipeline.GetAssemblies()
                     .Select(assembly => Task.Run(() =>
                     {
                         if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
@@ -177,8 +176,8 @@ namespace RealmWeaver
                 using (resolutionResult)
                 {
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
-                    // using NETStandard2, so we just hardcode this.
-                    var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, new FrameworkName(".NETStandard,Version=v2.0"));
+                    // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
+                    var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
 
                     var analyticsConfig = new Analytics.Config
                     {

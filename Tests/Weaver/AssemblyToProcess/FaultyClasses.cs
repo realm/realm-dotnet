@@ -23,6 +23,27 @@ using Realms;
 
 namespace AssemblyToProcess
 {
+    public class LambdaPropertyObject : RealmObject
+    {
+        public IList<Person> ListProperty { get; }
+
+        public Person FirstPropertyObject => ListProperty.First();
+
+        public int IntProperty => ListProperty.Count();
+    }
+
+    public class RealmCollectionsWithCounter : RealmObject
+    {
+        public int Id { get; set; }
+
+        public IList<RealmInteger<int>> CounterList { get; set; }
+
+        public ISet<RealmInteger<int>> CounterSet { get; set; }
+
+        public IDictionary<string, RealmInteger<int>> CounterDict { get; set; }
+
+    }
+
     public class RealmListWithSetter : RealmObject
     {
         public IList<Person> People { get; set; }

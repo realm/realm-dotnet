@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -134,7 +133,6 @@ namespace RealmWeaver
         private readonly ImportedReferences _references;
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
-        private readonly FrameworkName _frameworkName;
 
         private IEnumerable<TypeDefinition> GetMatchingTypes()
         {
@@ -155,12 +153,11 @@ namespace RealmWeaver
             }
         }
 
-        public Weaver(ModuleDefinition module, ILogger logger, FrameworkName frameworkName)
+        public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
             _moduleDefinition = module;
             _logger = logger;
-            _frameworkName = frameworkName;
-            _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
+            _references = ImportedReferences.Create(_moduleDefinition, framework);
         }
 
         public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
@@ -390,10 +387,18 @@ Analytics payload
             {
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
-                if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_realmValueTypes.Contains(elementType.FullName))
+
+                if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references))
                 {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
+                    if (elementType.IsRealmInteger(out _, out _))
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<RealmInteger> which is not supported.");
+                    }
+
+                    if (!_realmValueTypes.Contains(elementType.FullName))
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
+                    }
                 }
 
                 if (prop.SetMethod != null)
@@ -599,9 +604,6 @@ Analytics payload
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.
-
-            // Let Cecil optimize things for us.
-            // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
         // WARNING
@@ -655,9 +657,6 @@ Analytics payload
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.
-
-            // Let Cecil optimize things for us.
-            // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
         private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)

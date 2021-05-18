@@ -504,13 +504,8 @@ namespace Realms.Tests.Sync
             }, ensureNoSessionErrors: true);
         }
 
-        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T,  bool> equalsOverride = null)
+        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partition = Guid.NewGuid().ToString();
@@ -537,8 +532,8 @@ namespace Realms.Tests.Sync
                 var prop1 = getter(obj1);
                 var prop2 = getter(obj2);
 
-                Assert.That(prop1, Is.EqualTo(prop2).Using<T>(equalsOverride));
-                Assert.That(prop1, Is.EqualTo(item1).Using<T>(equalsOverride));
+                Assert.That(prop1, Is.EqualTo(prop2));
+                Assert.That(prop1, Is.EqualTo(item1));
 
                 realm2.Write(() =>
                 {
@@ -550,8 +545,8 @@ namespace Realms.Tests.Sync
                 prop1 = getter(obj1);
                 prop2 = getter(obj2);
 
-                Assert.That(prop1, Is.EqualTo(prop2).Using<T>(equalsOverride));
-                Assert.That(prop2, Is.EqualTo(item2).Using<T>(equalsOverride));
+                Assert.That(prop1, Is.EqualTo(prop2));
+                Assert.That(prop2, Is.EqualTo(item2));
             }, ensureNoSessionErrors: true);
         }
 

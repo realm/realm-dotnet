@@ -225,7 +225,7 @@ namespace Realms
 
             Realm.ExecuteOutsideTransaction(() =>
             {
-                var managedResultsHandle = GCHandle.Alloc(this);
+                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }

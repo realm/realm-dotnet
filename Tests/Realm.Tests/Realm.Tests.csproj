@@ -1,18 +1,48 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
-    <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
+    <LocalDev>false</LocalDev>
+    <UnityBuild>false</UnityBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
+    <PackageId>Realm.Tests</PackageId>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UnityBuild)' != 'true'">
+    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
+    <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
+  
+    <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <LangVersion>8.0</LangVersion>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(UnityBuild)' != 'true'">
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnitLite" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UnityBuild)' == 'true'">
+    <Reference Include="nunit.framework">
+      <HintPath>..\Tests.Unity\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom\nunit.framework.dll</HintPath>
+    </Reference>
+    
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
@@ -20,16 +50,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnitLite" Version="3.12.0" />
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Reactive" Version="4.1.6" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
@@ -83,7 +108,6 @@
     <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />

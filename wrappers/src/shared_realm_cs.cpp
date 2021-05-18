@@ -30,6 +30,7 @@
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/object-store/sync/async_open_task.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
+#include <realm/object-store/sync/app.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -46,7 +47,7 @@ using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback
 using OnBindingContextDestructedT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
-
+using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
     std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
@@ -58,6 +59,7 @@ namespace binding {
     std::function<OnBindingContextDestructedT> s_on_binding_context_destructed;
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
+    std::function<ShouldCompactCallbackT> s_should_compact;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -136,7 +138,8 @@ REALM_EXPORT void shared_realm_install_callbacks(
     LogMessageT* log_message,
     ObjectNotificationCallbackT* notify_object,
     DictionaryNotificationCallbackT* notify_dictionary,
-    MigrationCallbackT* on_migration)
+    MigrationCallbackT* on_migration,
+    ShouldCompactCallbackT* should_compact)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
@@ -146,6 +149,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     realm::s_object_notification_callback = wrap_managed_callback(notify_object);
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
     s_on_migration = wrap_managed_callback(on_migration);
+    s_should_compact = wrap_managed_callback(should_compact);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -200,7 +204,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         if (configuration.managed_should_compact_delegate) {
             config.should_compact_on_launch_function = [&configuration](uint64_t total_bytes, uint64_t used_bytes) {
-                return configuration.should_compact_callback(configuration.managed_should_compact_delegate, total_bytes, used_bytes);
+                return s_should_compact(configuration.managed_should_compact_delegate, total_bytes, used_bytes);
             };
         }
 
@@ -286,6 +290,7 @@ REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& e
 
     handle_errors(ex, [&]() {
         realm::_impl::RealmCoordinator::clear_all_caches();
+        app::App::clear_cached_apps();
     });
 }
 

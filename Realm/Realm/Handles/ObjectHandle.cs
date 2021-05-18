@@ -174,11 +174,17 @@ namespace Realms
         {
             RealmSchema result = null;
             Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
-
-            // The callbackHandle will get freed in SharedRealmHandle.GetNativeSchema.
             var callbackHandle = GCHandle.Alloc(callback);
-            NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
-            nativeException.ThrowIfNecessary();
+
+            try
+            {
+                NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
+                nativeException.ThrowIfNecessary();
+            }
+            finally
+            {
+                callbackHandle.Free();
+            }
 
             return result;
         }

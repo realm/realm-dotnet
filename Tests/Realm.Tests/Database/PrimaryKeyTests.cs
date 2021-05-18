@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -70,7 +69,7 @@ namespace Realms.Tests.Database
             new object[] { typeof(PrimaryKeyNullableGuidObject), null, PKType.Guid },
         };
 
-        private readonly IEnumerable<dynamic> _primaryKeyValues = new dynamic[] { "42", 123L, ObjectId.GenerateNewId(), Guid.NewGuid() };
+        private readonly IEnumerable<object> _primaryKeyValues = new object[] { "42", 123L, ObjectId.GenerateNewId(), Guid.NewGuid() };
 
         [TestCaseSource(nameof(PKTestCases))]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
@@ -97,7 +96,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(PKTestCases))]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
         {
-            _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
+            _realm.Write(() => (object)_realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
 
             Assert.That(() =>
             {
@@ -137,16 +136,18 @@ namespace Realms.Tests.Database
                         castPKValue = Convert.ToInt64(primaryKeyValue);
                     }
 
-                    return _realm.DynamicApi.Find(type.Name, castPKValue);
+                    // The double cast is necessary to avoid creating a callsite.
+                    // TODO: remove the casts when https://github.com/realm/realm-dotnet/issues/2373 is done
+                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, castPKValue);
 
                 case PKType.String:
-                    return _realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
+                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
 
                 case PKType.ObjectId:
-                    return _realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
+                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
 
                 case PKType.Guid:
-                    return _realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
 
                 default:
                     throw new NotSupportedException($"Unsupported pk type: {pkType}");
@@ -177,22 +178,33 @@ namespace Realms.Tests.Database
 
         private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
         {
-            var genericArgument = pkType switch
+            try
             {
-                PKType.Int => typeof(long?),
-                PKType.String => typeof(string),
-                PKType.ObjectId => typeof(ObjectId?),
-                PKType.Guid => typeof(Guid?),
-                _ => throw new NotSupportedException(),
-            };
+                var pkArgumentType = pkType switch
+                {
+                    PKType.Int => typeof(long?),
+                    PKType.String => typeof(string),
+                    PKType.ObjectId => typeof(ObjectId?),
+                    PKType.Guid => typeof(Guid?),
+                    _ => throw new NotSupportedException(),
+                };
 
-            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
-            if (pkType == PKType.Int && primaryKeyValue != null)
-            {
-                primaryKeyValue = Convert.ToInt64(primaryKeyValue);
+                // We're using .GetMethods and manually finding the type because .GetMethod with a type argument will use
+                // Type.IsAssignableFrom to determine if a candidate method is a match. Type.IsAssignableFrom is not implemented
+                // for nullable types in IL2CPP.
+                var genericMethod = typeof(Realm).GetMethods()
+                    .Single(m => m.Name == nameof(Realm.Find) && m.GetParameters().Single().ParameterType == pkArgumentType);
+                if (pkType == PKType.Int && primaryKeyValue != null)
+                {
+                    primaryKeyValue = Convert.ToInt64(primaryKeyValue);
+                }
+
+                return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
             }
-
-            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
         }
 
         [Test]
@@ -242,8 +254,10 @@ namespace Realms.Tests.Database
             var keysWithIncorrectType = _primaryKeyValues.Where(pk => pk.GetType() != pkType);
             foreach (var pk in keysWithIncorrectType)
             {
-                Assert.That(() => _realm.Find<T>(pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
-                Assert.That(() => _realm.DynamicApi.Find(typeof(T).Name, pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+                var keyType = GetPKType(pk);
+
+                Assert.That(() => FindByPKGeneric(typeof(T), pk, keyType), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+                Assert.That(() => FindByPKDynamic(typeof(T), pk, keyType), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
             }
         }
 
@@ -340,6 +354,17 @@ namespace Realms.Tests.Database
         public void StringPrimaryKey_WhenRequiredDoesntAllowNull()
         {
             Assert.That(() => _realm.Write(() => _realm.Add(new RequiredPrimaryKeyStringObject())), Throws.TypeOf<ArgumentException>());
+        }
+
+        private static PKType GetPKType(object obj)
+        {
+            return obj switch
+            {
+                string _ => PKType.String,
+                ObjectId _ => PKType.ObjectId,
+                Guid _ => PKType.Guid,
+                _ => PKType.Int
+            };
         }
     }
 }

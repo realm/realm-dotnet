@@ -56,7 +56,6 @@ struct Configuration
     
     void* managed_migration_handle;
     
-    bool (*should_compact_callback)(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
     void* managed_should_compact_delegate;
     
     bool enable_cache;

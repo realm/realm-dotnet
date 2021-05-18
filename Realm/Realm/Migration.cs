@@ -18,7 +18,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -34,6 +33,10 @@ namespace Realms
     /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
     public class Migration
     {
+        private GCHandle? _handle;
+
+        internal GCHandle MigrationHandle => _handle ?? throw new ObjectDisposedException(nameof(Migration));
+
         internal RealmConfiguration Configuration { get; }
 
         internal RealmSchema Schema { get; }
@@ -56,12 +59,7 @@ namespace Realms
         {
             Configuration = configuration;
             Schema = schema;
-        }
-
-        internal void PopulateConfiguration(ref Configuration configuration)
-        {
-            var migrationHandle = GCHandle.Alloc(this);
-            configuration.managed_migration_handle = GCHandle.ToIntPtr(migrationHandle);
+            _handle = GCHandle.Alloc(this);
         }
 
         internal bool Execute(Realm oldRealm, Realm newRealm)
@@ -88,6 +86,12 @@ namespace Realms
             }
 
             return true;
+        }
+
+        internal void ReleaseHandle()
+        {
+            _handle?.Free();
+            _handle = null;
         }
     }
 }

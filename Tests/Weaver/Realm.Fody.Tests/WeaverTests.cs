@@ -83,7 +83,7 @@ namespace RealmWeaver
                 Config = config
             };
 
-            return weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" });
+            return weaver.ExecuteTestRun(assemblyPath, runPeVerify: false, ignoreCodes: new[] { "80131869" });
         }
 
         #endregion helpers
@@ -486,10 +486,16 @@ namespace RealmWeaver
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
             // were produced, we make one assertion on all of them here.
 
-            var expectedWarnings = Array.Empty<string>();
+            var expectedWarnings = new[]
+            {
+                "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship."
+            };
 
             var expectedErrors = new[]
             {
+                "RealmCollectionsWithCounter.CounterList is an IList<RealmInteger> which is not supported.",
+                "RealmCollectionsWithCounter.CounterSet is an ISet<RealmInteger> which is not supported.",
+                "RealmCollectionsWithCounter.CounterDict is an IDictionary<RealmInteger> which is not supported.",
                 "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
                 "Class EmbeddedWithPrimaryKey is an EmbeddedObject but has a primary key NotAllowed defined.",
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",

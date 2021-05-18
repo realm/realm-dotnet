@@ -531,6 +531,30 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Equal_WhenVariableIsEnum()
+        {
+            var enumQuery = _realm.All<AllTypesObject>().Where(o => o.Int32Property == (int)MyEnum.One).ToArray();
+            Assert.That(enumQuery.Length, Is.EqualTo(1));
+            Assert.That(enumQuery[0].Int32Property, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Equal_WhenVariableIsClassWithImplicitOperator_Fails()
+        {
+            var one = new MyOneClass();
+            Assert.Throws<NotSupportedException>(() => _realm.All<AllTypesObject>().Where(o => o.Int32Property == one).ToArray());
+        }
+
+        [Test]
+        public void Equal_WhenVariableIsClassWithImplicitOperator_WhenCastToCorrectType_Succeeds()
+        {
+            int one = new MyOneClass();
+            var classQuery = _realm.All<AllTypesObject>().Where(o => o.Int32Property == one).ToArray();
+            Assert.That(classQuery.Length, Is.EqualTo(1));
+            Assert.That(classQuery[0].Int32Property, Is.EqualTo(1));
+        }
+
+        [Test]
         public void GreaterThan_WhenPropertyIsNullable()
         {
             var intQuery = _realm.All<AllTypesObject>().Where(o => o.NullableInt32Property > 0).ToArray();
@@ -608,6 +632,17 @@ namespace Realms.Tests.Database
             var intQuery = _realm.All<AllTypesObject>().Where(o => o.Int32Property != NullableZero).ToArray();
             Assert.That(intQuery.Length, Is.EqualTo(1));
             Assert.That(intQuery[0].Int32Property, Is.EqualTo(1));
+        }
+
+        private enum MyEnum
+        {
+            Zero,
+            One
+        }
+
+        private class MyOneClass
+        {
+            public static implicit operator int(MyOneClass _) => 1;
         }
     }
 }

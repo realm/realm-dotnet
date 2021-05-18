@@ -200,19 +200,18 @@ stage('Package') {
 stage('Unity Package') {
   rlmNode('dotnet && windows') {
     unstash 'dotnet-source'
-    unstash 'packages'
-
-    def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
-    def utilsPackagePath = findFiles(glob: "Realm.UnityUtils.${packageVersion}.nupkg")[0].path
-    def weaverPackagePath = findFiles(glob: "Realm.UnityWeaver.${packageVersion}.nupkg")[0].path
-
-    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --pack"
-    dir('Realm/Realm.Unity') {
-      archiveArtifacts "realm.unity-${packageVersion}.tgz"
-      bat "del realm.unity-${packageVersion}.tgz"
+    dir('Realm/packages') {
+      unstash 'packages'
+      bat 'dir'
     }
 
-    bat "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --utils-path ${utilsPackagePath} --weaver-path ${weaverPackagePath} --include-dependencies --pack"
+    bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
+    dir('Realm/Realm.Unity') {
+      archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
+      bat "del io.realm.unity-${packageVersion}.tgz"
+    }
+
+    bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --include-dependencies --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "*.tgz"
     }
@@ -387,7 +386,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
               "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
               "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
             ]) { networkName ->
-            test_runner_image.inside("--network=${networkName}") {
+            test_runner_image.inside("--network=${networkName} --ulimit core=-1") {
               script += " --baasurl http://mongodb-realm:9090"
               // see https://stackoverflow.com/a/53782505
               sh """

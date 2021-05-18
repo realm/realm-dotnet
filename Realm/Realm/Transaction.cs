@@ -28,14 +28,12 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-        private readonly Realm _realm;
-        private bool _isOpen;
+        private Realm _realm;
 
         internal Transaction(Realm realm)
         {
             _realm = realm;
             realm.SharedRealmHandle.BeginTransaction();
-            _isOpen = true;
         }
 
         /// <summary>
@@ -43,8 +41,7 @@ namespace Realms
         /// </summary>
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-            if (!_isOpen)
+            if (_realm == null)
             {
                 return;
             }
@@ -58,14 +55,14 @@ namespace Realms
         /// </summary>
         public void Rollback()
         {
-            if (!_isOpen)
+            if (_realm == null)
             {
                 throw new Exception("Transaction was already closed. Cannot roll back");
             }
 
             _realm.SharedRealmHandle.CancelTransaction();
-            _isOpen = false;
             _realm.DrainTransactionQueue();
+            _realm = null;
         }
 
         /// <summary>
@@ -74,14 +71,14 @@ namespace Realms
         /// </summary>
         public void Commit()
         {
-            if (!_isOpen)
+            if (_realm == null)
             {
                 throw new Exception("Transaction was already closed. Cannot commit");
             }
 
             _realm.SharedRealmHandle.CommitTransaction();
-            _isOpen = false;
             _realm.DrainTransactionQueue();
+            _realm = null;
         }
     }
 }

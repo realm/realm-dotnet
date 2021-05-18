@@ -6,6 +6,7 @@
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
+#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver']
 
 #@ def checkoutCode():
 name: Checkout code
@@ -72,6 +73,61 @@ steps:
       retention-days: 1
 #@ end
 
+#@ def buildPackages():
+#@ for pkgName in nugetPackages:
+  - name: #@ "Build nuget package " + pkgName
+    _: #@ template.replace(msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
+#@ end
+#@ end
+
+#@ def uploadPackageArtifacts():
+#@ for pkgName in nugetPackages:
+#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
+  - name: #@ "Store artifacts for " + pkgName
+    uses: actions/upload-artifact@v2
+    with:
+      name: #@ finalPkgName
+      path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName
+      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+#@ end
+#@ end
+
+#@ def fetchPackageArtifacts(pkgs):
+#@ for pkg in pkgs:
+#@ finalPkgName = pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+  - name: #@ "Fetch " + pkg
+    uses: actions/download-artifact@v2
+    with:
+      name: #@ finalPkgName
+      path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end
+
+#@ def findPackageVersion():
+name: Find nupkg version
+id: find-nupkg-version
+run: |
+  cd Realm/packages
+  tmpName=$(basename Realm.Fody* .nupkg)
+  pkgName=${tmpName#"Realm.Fody."}
+  echo "::set-output name=package_version::$pkgName"
+shell: bash
+#@ end
+
+#@ def msbuild(projectPath, **properties):
+#@ parsedProps = ""
+#@ target = ""
+#@ for prop in properties.keys():
+#@  if prop == "target":
+#@    target = "-t:" + properties[prop]
+#@  else:
+#@    parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  end
+#@ end
+
+run: #@ "msbuild ${{ github.workspace }}/" + projectPath + " " + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
+#@ end
+
 ---
 name: build and test
 "on":
@@ -114,7 +170,7 @@ jobs:
       matrix:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
-  build-package:
+  build-packages:
     runs-on: windows-latest
     name: Build packages
     needs:
@@ -124,64 +180,96 @@ jobs:
       - build-wrappers-android
       - build-wrappers-linux
       - build-wrappers-windows-uwp
+    outputs:
+      package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
-      - name: Fetch Artifacts MacOS
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - #@ checkoutCode()
+      - name: Set version suffix
+        id: set-version-suffix
+        #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
+        run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
+      - name: Fetch artifacts MacOS
         uses: actions/download-artifact@v2
         with:
           name: wrappers-macos
           path: wrappers/build
-      - name: Fetch Artifacts iOS
+      - name: Fetch artifacts iOS
         uses: actions/download-artifact@v2
         with:
           name: wrappers-ios
           path: wrappers/build
-      - name: Fetch Artifacts Linux
+      - name: Fetch artifacts Linux
         uses: actions/download-artifact@v2
         with:
           name: wrappers-linux
           path: wrappers/build
-      - name: Fetch Artifacts Android armeabi-v7a
+      - name: Fetch artifacts Android armeabi-v7a
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-armeabi-v7a
           path: wrappers/build
-      - name: Fetch Artifacts Android arm64-v8a
+      - name: Fetch artifacts Android arm64-v8a
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-arm64-v8a
           path: wrappers/build
-      - name: Fetch Artifacts Android x86
+      - name: Fetch artifacts Android x86
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-x86
           path: wrappers/build
-      - name: Fetch Artifacts Android x86_64
+      - name: Fetch artifacts Android x86_64
         uses: actions/download-artifact@v2
         with:
           name: wrappers-android-x86_64
           path: wrappers/build
-      - name: Fetch Artifacts Windows 32bit
+      - name: Fetch artifacts Windows 32bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-Win32
           path: wrappers/build
-      - name: Fetch Artifacts Windows 64bit
+      - name: Fetch artifacts Windows 64bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-x64
           path: wrappers/build
-      - name: Fetch Artifacts Windows UWP 32bit
+      - name: Fetch artifacts Windows UWP 32bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-uwp-Win32
           path: wrappers/build
-      - name: Fetch Artifacts Windows UWP 64bit
+      - name: Fetch artifacts Windows UWP 64bit
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-uwp-x64
           path: wrappers/build
-      - name: Fetch Artifacts Windows UWP ARM
+      - name: Fetch artifacts Windows UWP ARM
         uses: actions/download-artifact@v2
         with:
           name: wrappers-windows-uwp-ARM
           path: wrappers/build
+      - #@ template.replace(buildPackages())
+      - #@ findPackageVersion()
+      - #@ template.replace(uploadPackageArtifacts())
+  run-tests-net-framework:
+    runs-on: windows-latest
+    name: Run tests for NET framework
+    needs: build-packages
+    steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - #@ checkoutCode()
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - name: Build the tests
+        _: #@ template.replace(msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="${{ github.workspace }}/Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}" ))
+      - name: Run the tests
+        run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        if: always()
+        with:
+          files: TestResults.Windows.xml
+          comment_on_pr: false
+          check_name: Windows .NET framework tests results
