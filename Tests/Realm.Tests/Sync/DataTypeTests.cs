@@ -251,6 +251,16 @@ namespace Realms.Tests.Sync
 
         #endregion
 
+        #region EmbeddedObject
+
+        [Test]
+        public void List_EmbeddedObject() => TestListCore(o => o.EmbeddedObjectList, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+
+        [Test]
+        public void Dict_EmbeddedObject() => TestDictionaryCore(o => o.EmbeddedObjectDict, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+
+        #endregion
+
         #region RealmValue
 
         public static IEnumerable<(RealmValue Item1, RealmValue Item2)> RealmTestValues()
