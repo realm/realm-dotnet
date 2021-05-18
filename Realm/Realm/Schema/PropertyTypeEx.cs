@@ -174,13 +174,47 @@ namespace Realms.Schema
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 
-        public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+        public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.HasFlag(PropertyType.LinkingObjects);
 
         public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
 
         public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary);
 
-        public static bool IsCollection(this PropertyType propertyType) => propertyType.IsArray() || propertyType.IsSet() || propertyType.IsDictionary();
+        public static bool IsCollection(this PropertyType propertyType, out PropertyType collection)
+        {
+            if (propertyType.IsArray())
+            {
+                collection = PropertyType.Array;
+            }
+            else if (propertyType.IsSet())
+            {
+                collection = PropertyType.Set;
+            }
+            else if (propertyType.IsDictionary())
+            {
+                collection = PropertyType.Dictionary;
+            }
+            else
+            {
+                collection = default;
+            }
+
+            return collection != default;
+        }
+
+        public static string GetDotnetTypeName(this Property property)
+        {
+            _ = property.Type.IsCollection(out var collection);
+            var format = collection switch
+            {
+                PropertyType.Array => "IList<{0}>",
+                PropertyType.Set => "ISet<{0}>",
+                PropertyType.Dictionary => "IDictionary<string, {0}>",
+                _ => "{0}"
+            };
+
+            return string.Format(format, property.ObjectType ?? property.Type.ToType().Name);
+        }
 
         public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
     }

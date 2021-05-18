@@ -105,6 +105,22 @@ namespace Realms
         public bool IsManaged => _realm != null;
 
         /// <summary>
+        /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
+        /// </summary>
+        public Dynamic DynamicApi
+        {
+            get
+            {
+                if (!IsManaged)
+                {
+                    throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
+                }
+
+                return new Dynamic(this);
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this object is managed and represents a row in the database.
         /// If a managed object has been removed from the Realm, it is no longer valid and accessing properties on it
         /// will throw an exception.
@@ -268,19 +284,8 @@ namespace Realms
         /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
-        {
-            Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
-            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
-
-            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, relatedMeta.PropertyIndices[property]);
-            if (relatedMeta.Schema.IsEmbedded)
-            {
-                return new RealmResults<EmbeddedObject>(Realm, resultsHandle, relatedMeta);
-            }
-
-            return new RealmResults<RealmObject>(Realm, resultsHandle, relatedMeta);
-        }
+        [Obsolete("Use realmObject.DynamicApi.GetBacklinks() instead.")]
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinks(objectType, property);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -499,6 +504,100 @@ namespace Realms
                 Helper = helper;
                 PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
                 Schema = schema;
+            }
+        }
+
+        /// <summary>
+        /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
+        /// </summary>
+        public struct Dynamic
+        {
+            private readonly RealmObjectBase _realmObject;
+
+            internal Dynamic(RealmObjectBase ro)
+            {
+                _realmObject = ro;
+            }
+
+            public T Get<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName);
+
+                if (property.Type.HasFlag(PropertyType.LinkingObjects))
+                {
+                    throw new NotSupportedException($"GetValue can't be used to access backlink properties. Use {nameof(GetBacklinks)} instead.");
+                }
+
+                if (property.Type.IsCollection(out var collectionType))
+                {
+                    throw new NotSupportedException($"GetValue can't be used to access collection properties. Use Get{collectionType} instead.");
+                }
+
+                return _realmObject.GetValue(propertyName).As<T>();
+            }
+
+            public IQueryable<RealmObjectBase> GetBacklinks(string objectType, string propertyName)
+            {
+                Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
+
+                if (!relatedMeta.PropertyIndices.TryGetValue(propertyName, out var propertyIndex))
+                {
+                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {objectType}", propertyName);
+                }
+
+                var resultsHandle = _realmObject.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, propertyIndex);
+                if (relatedMeta.Schema.IsEmbedded)
+                {
+                    return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+                }
+
+                return new RealmResults<RealmObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+            }
+
+            public IList<T> GetList<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName);
+
+                if (!property.Type.IsArray())
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetType()} which is not a List.");
+                }
+
+                return _realmObject.GetListValue<T>(propertyName);
+            }
+
+            public ISet<T> GetSet<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName);
+
+                if (!property.Type.IsSet())
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetType()} which is not a Set.");
+                }
+
+                return _realmObject.GetSetValue<T>(propertyName);
+            }
+
+            public IDictionary<string, T> GetDictionary<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName);
+
+                if (!property.Type.IsDictionary())
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetType()} which is not a Dictionary.");
+                }
+
+                return _realmObject.GetDictionaryValue<T>(propertyName);
+            }
+
+            private Property GetProperty(string propertyName)
+            {
+                if (!_realmObject.ObjectSchema.TryFindProperty(propertyName, out var property))
+                {
+                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_realmObject.ObjectSchema.Name}.", propertyName);
+                }
+
+                return property;
             }
         }
     }

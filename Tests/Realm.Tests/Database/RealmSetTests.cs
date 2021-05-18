@@ -1306,18 +1306,6 @@ namespace Realms.Tests.Database
             });
         }
 
-        private static TestCaseData<RealmInteger<T>> ToInteger<T>(TestCaseData<T> data)
-            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
-        {
-            return new TestCaseData<RealmInteger<T>>(data.InitialValues.ToInteger(), data.OtherCollection.ToInteger());
-        }
-
-        private static TestCaseData<RealmInteger<T>?> ToInteger<T>(TestCaseData<T?> data)
-            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
-        {
-            return new TestCaseData<RealmInteger<T>?>(data.InitialValues.ToInteger(), data.OtherCollection.ToInteger());
-        }
-
         public class TestCaseData<T>
         {
             private readonly string _description;

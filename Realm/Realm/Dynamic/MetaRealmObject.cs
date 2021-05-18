@@ -185,7 +185,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
         {
-            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsCollection())
+            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsCollection(out _))
             {
                 return base.BindSetMember(binder, value);
             }
