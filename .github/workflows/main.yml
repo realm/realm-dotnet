@@ -353,6 +353,7 @@ jobs:
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os:
         - macos-latest
