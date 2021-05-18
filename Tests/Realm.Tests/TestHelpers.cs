@@ -81,6 +81,12 @@ namespace Realms.Tests
             return (T)GetPropertyValue(obj, propertyName);
         }
 
+        public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
+        {
+            destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
+            return TransformHelpers.CopyBundledFileToDocuments(realmName, destPath);
+        }
+
         public static async Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
         {
             var references = new Func<WeakReference[]>(() =>
@@ -304,6 +310,12 @@ namespace Realms.Tests
 
             Assert.Fail($"Exception of type {typeof(T)} expected.");
             return null;
+        }
+
+        public static void TransformTestResults(string resultPath)
+        {
+            var transformFile = CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+            TransformHelpers.TransformTestResults(resultPath, transformFile);
         }
 
         public static string ByteArrayToTestDescription<T>(T arr)

@@ -53,8 +53,7 @@ namespace Realms.Tests.XamarinMac
                 var resultPath = MainClass.NUnitArgs.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", "");
                 if (!string.IsNullOrEmpty(resultPath))
                 {
-                    // TODO: I'm really not sure where the transform file is supposed to be located
-                    TransformHelpers.TransformTestResults(resultPath, typeof(TestHelpers).Assembly, Path.Combine(Directory.GetCurrentDirectory(), "nunit3-junit.xslt"));
+                    TestHelpers.TransformTestResults(resultPath);
                 }
 
                 NSApplication.SharedApplication.Terminate(this);

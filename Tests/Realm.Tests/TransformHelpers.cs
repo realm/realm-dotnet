@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,36 +29,34 @@ namespace Realms.Tests
 {
     public static class TransformHelpers
     {
-        public static void TransformTestResults(string resultPath, Assembly assemblyToSearchIn, string transformFilePath)
+        [SuppressMessage("Security", "CA3075:Insecure DTD processing in XML", Justification = "The xml is static and trusted.")]
+        [SuppressMessage("Security", "CA5372:Use XmlReader For XPathDocument", Justification = "The xml is static and trusted.")]
+        public static void TransformTestResults(string resultPath, string transformFilePath)
         {
-            CopyBundledFileToDocuments("nunit3-junit.xslt", assemblyToSearchIn, "nunit3-junit.xslt");
-            //var transformFile = transformFilePath;//RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
-
             var xpathDocument = new XPathDocument(resultPath);
             var transform = new XslCompiledTransform();
             transform.Load(transformFilePath);
-            using (var writer = new XmlTextWriter(resultPath, null))
-            {
-                transform.Transform(xpathDocument, null, writer);
-            }
+            using var writer = new XmlTextWriter(resultPath, null);
+            transform.Transform(xpathDocument, null, writer);
         }
 
-        public static string CopyBundledFileToDocuments(string realmName, Assembly assemblyOrigin, string destPath)
+        public static string CopyBundledFileToDocuments(string realmName, string destPath)
         {
-            // destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
+            if (!Path.IsPathRooted(destPath))
+            {
+                throw new Exception($"You need to provide an absolute path, instead of {destPath}");
+            }
 
-            //var assembly = typeof(TestHelpers).Assembly;
-            var resourceName = assemblyOrigin.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
+            var assembly = typeof(TransformHelpers).Assembly;
+            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
             if (resourceName == null)
             {
                 throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
             }
 
-            using (var stream = assemblyOrigin.GetManifestResourceStream(resourceName))
-            using (var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-            {
-                stream.CopyTo(destination);
-            }
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            stream.CopyTo(destination);
 
             return destPath;
         }

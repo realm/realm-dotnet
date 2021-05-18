@@ -57,8 +57,7 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var transformFilePath = RealmConfigurationBase.GetPathToRealm(Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-            var path = TransformHelpers.CopyBundledFileToDocuments(FileToMigrate, typeof(TestHelpers).Assembly, transformFilePath);
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
             var triggersSchemaFieldValue = string.Empty;
 
@@ -96,8 +95,7 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var transformFilePath = RealmConfigurationBase.GetPathToRealm(Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-            var path = TransformHelpers.CopyBundledFileToDocuments(FileToMigrate, typeof(TestHelpers).Assembly, transformFilePath);
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
             var dummyException = new Exception();
 
