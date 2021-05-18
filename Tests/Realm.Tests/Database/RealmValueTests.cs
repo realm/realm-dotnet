@@ -30,99 +30,63 @@ namespace Realms.Tests.Database
     {
         #region Primitive values
 
-        #region TestCaseSources
+        public static char[] CharValues = new[] { (char)0, 'a', char.MaxValue, char.MinValue };
+        public static byte[] ByteValues = new[] { (byte)0, (byte)1, byte.MaxValue, byte.MinValue };
+        public static int[] IntValues = new[] { 0, 1, -1, int.MaxValue, int.MinValue };
+        public static short[] ShortValues = new[] { (short)0, (short)1, (short)-1, short.MaxValue, short.MinValue };
+        public static long[] LongValues = new[] { 0, 1, -1, long.MaxValue, long.MinValue };
+        public static float[] FloatValues = new[] { 0, 1, -1, float.MaxValue, float.MinValue };
+        public static double[] DoubleValues = new[] { 0, 1, -1, double.MaxValue, double.MinValue };
+        public static Decimal128[] Decimal128Values = new[] { 0, 1, -1, Decimal128.MaxValue, Decimal128.MinValue };
+        public static decimal[] DecimalValues = new[] { 0, 1, -1, decimal.MaxValue, decimal.MinValue };
+        public static bool[] BoolValues = new[] { false, true };
+        public static DateTimeOffset[] DateValues = new[] { DateTimeOffset.Now, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
+        public static Guid[] GuidValues = new[] { Guid.NewGuid(), Guid.Empty };
+        public static ObjectId[] ObjectIdValues = new[] { ObjectId.GenerateNewId(), ObjectId.Empty };
+        public static string[] StringValues = new[] { "a", "abc", string.Empty };
+        public static byte[][] DataValues = new[] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
+        public static RealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
-        private static readonly char[] _charValues = new char[] { (char)0, 'a', char.MaxValue, char.MinValue };
-        private static readonly byte[] _byteValues = new byte[] { 0, 1, byte.MaxValue, byte.MinValue };
-        private static readonly int[] _intValues = new int[] { 0, 1, -1, int.MaxValue, int.MinValue };
-        private static readonly short[] _shortValues = new short[] { 0, 1, -1, short.MaxValue, short.MinValue };
-        private static readonly long[] _longValues = new long[] { 0, 1, -1, long.MaxValue, long.MinValue };
-        private static readonly float[] _floatValues = new float[] { 0, 1, -1, float.MaxValue, float.MinValue };
-        private static readonly double[] _doubleValues = new double[] { 0, 1, -1, float.MaxValue, float.MinValue };
-        private static readonly Decimal128[] _decimal128Values = new Decimal128[] { 0, 1, -1, Decimal128.MaxValue, Decimal128.MinValue };
-        private static readonly decimal[] _decimalValues = new decimal[] { 0, 1, -1, decimal.MaxValue, decimal.MinValue };
-        private static readonly bool[] _boolValues = new bool[] { false, true };
-        private static readonly DateTimeOffset[] _dateValues = new DateTimeOffset[] { DateTimeOffset.Now, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
-        private static readonly Guid[] _guidValues = new Guid[] { Guid.NewGuid(), Guid.Empty };
-        private static readonly ObjectId[] _objectIdValues = new ObjectId[] { ObjectId.GenerateNewId(), ObjectId.Empty };
-        private static readonly string[] _stringValues = new string[] { "a", "abc", string.Empty };
-        private static readonly byte[][] _dataValues = new byte[][] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
-        private static readonly RealmObject[] _objectValues = new RealmObject[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
-
-        public static IEnumerable<object> CharTestCases() => GenerateTestCases(_charValues);
-
-        public static IEnumerable<object> ByteTestCases() => GenerateTestCases(_byteValues);
-
-        public static IEnumerable<object> IntTestCases() => GenerateTestCases(_intValues);
-
-        public static IEnumerable<object> ShortTestCases() => GenerateTestCases(_shortValues);
-
-        public static IEnumerable<object> LongTestCases() => GenerateTestCases(_longValues);
-
-        public static IEnumerable<object> FloatTestCases() => GenerateTestCases(_floatValues);
-
-        public static IEnumerable<object> DoubleTestCases() => GenerateTestCases(_doubleValues);
-
-        public static IEnumerable<object> Decimal128TestCases() => GenerateTestCases(_decimal128Values);
-
-        public static IEnumerable<object> DecimalTestCases() => GenerateTestCases(_decimalValues);
-
-        public static IEnumerable<object> BoolTestCases() => GenerateTestCases(_boolValues);
-
-        public static IEnumerable<object> DateTestCases() => GenerateTestCases(_dateValues);
-
-        public static IEnumerable<object> GuidTestCases() => GenerateTestCases(_guidValues);
-
-        public static IEnumerable<object> ObjectIdTestCases() => GenerateTestCases(_objectIdValues);
-
-        public static IEnumerable<object> StringTestCases() => GenerateTestCases(_stringValues);
-
-        public static IEnumerable<object> DataTestCases() => GenerateTestCases(_dataValues);
-
-        public static IEnumerable<object> ObjectTestCases() => GenerateTestCases(_objectValues);
-
-        private static IEnumerable<object> GenerateTestCases<T>(IEnumerable<T> values)
-        {
-            foreach (var val in values)
-            {
-                yield return new object[] { val, false };
-                yield return new object[] { val, true };
-            }
-        }
-
-        #endregion
-
-        [TestCaseSource(nameof(CharTestCases))]
-        public void CharTests(char value, bool isManaged)
+        [Test]
+        public void CharTests(
+            [ValueSource(nameof(CharValues))] char value,
+            [Values(true, false)] bool isManaged)
         {
             RunNumericTests(value, value, isManaged);
         }
 
-        [TestCaseSource(nameof(ByteTestCases))]
-        public void ByteTests(byte value, bool isManaged)
+        [Test]
+        public void ByteTests(
+            [ValueSource(nameof(ByteValues))] byte value,
+            [Values(true, false)] bool isManaged)
         {
             RunNumericTests(value, value, isManaged);
         }
 
-        [TestCaseSource(nameof(IntTestCases))]
-        public void IntTests(int value, bool isManaged)
+        [Test]
+        public void IntTests([ValueSource(nameof(ByteValues))] int value,
+            [Values(true, false)] bool isManaged)
         {
             RunNumericTests(value, value, isManaged);
         }
 
-        [TestCaseSource(nameof(ShortTestCases))]
-        public void ShortTests(short value, bool isManaged)
+        [Test]
+        public void ShortTests(
+            [ValueSource(nameof(ShortValues))] short value,
+            [Values(true, false)] bool isManaged)
         {
             RunNumericTests(value, value, isManaged);
         }
 
-        [TestCaseSource(nameof(LongTestCases))]
-        public void LongTests(long value, bool isManaged)
+        [Test]
+        public void LongTests(
+            [ValueSource(nameof(LongValues))] long value,
+            [Values(true, false)] bool isManaged)
         {
             RunNumericTests(value, value, isManaged);
         }
 
-        public void RunNumericTests(RealmValue rv, long value, bool isManaged)
+        private void RunNumericTests(RealmValue rv, long value, bool isManaged)
         {
             if (isManaged)
             {
@@ -178,8 +142,10 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsNullableInt64RealmInteger() == value);
         }
 
-        [TestCaseSource(nameof(FloatTestCases))]
-        public void FloatTests(float value, bool isManaged)
+        [Test]
+        public void FloatTests(
+            [ValueSource(nameof(FloatValues))] float value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -201,8 +167,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(DoubleTestCases))]
-        public void DoubleTests(double value, bool isManaged)
+        [Test]
+        public void DoubleTests(
+            [ValueSource(nameof(DoubleValues))] double value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -224,8 +192,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(Decimal128TestCases))]
-        public void Decimal128Tests(Decimal128 value, bool isManaged)
+        [Test]
+        public void Decimal128Tests(
+            [ValueSource(nameof(Decimal128Values))] Decimal128 value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -247,8 +217,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(DecimalTestCases))]
-        public void DecimalTests(decimal value, bool isManaged)
+        [Test]
+        public void DecimalTests(
+            [ValueSource(nameof(DecimalValues))] decimal value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -270,8 +242,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(BoolTestCases))]
-        public void BoolTests(bool value, bool isManaged)
+        [Test]
+        public void BoolTests(
+            [ValueSource(nameof(BoolValues))] bool value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -293,8 +267,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(DateTestCases))]
-        public void DateTests(DateTimeOffset value, bool isManaged)
+        [Test]
+        public void DateTests(
+            [ValueSource(nameof(DateValues))] DateTimeOffset value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -316,8 +292,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(ObjectIdTestCases))]
-        public void ObjectIdTests(ObjectId value, bool isManaged)
+        [Test]
+        public void ObjectIdTests(
+            [ValueSource(nameof(ObjectIdValues))] ObjectId value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -339,8 +317,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(GuidTestCases))]
-        public void GuidTests(Guid value, bool isManaged)
+        [Test]
+        public void GuidTests(
+            [ValueSource(nameof(GuidValues))] Guid value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -362,8 +342,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(StringTestCases))]
-        public void StringTests(string value, bool isManaged)
+        [Test]
+        public void StringTests(
+            [ValueSource(nameof(StringValues))] string value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -382,8 +364,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(DataTestCases))]
-        public void DataTests(byte[] value, bool isManaged)
+        [Test]
+        public void DataTests(
+            [ValueSource(nameof(DataValues))] byte[] value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -401,8 +385,10 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCaseSource(nameof(ObjectTestCases))]
-        public void ObjectTests(RealmObjectBase value, bool isManaged)
+        [Test]
+        public void ObjectTests(
+            [ValueSource(nameof(ObjectValues))] RealmObjectBase value,
+            [Values(true, false)] bool isManaged)
         {
             RealmValue rv = value;
 
@@ -420,9 +406,8 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void NullTests(bool isManaged)
+        [Test]
+        public void NullTests([Values(true, false)] bool isManaged)
         {
             RealmValue rv = RealmValue.Null;
 
@@ -644,11 +629,8 @@ namespace Realms.Tests.Database
             }));
         }
 
-        [TestCase(1, true)]
-        [TestCase(1, false)]
-        [TestCase(0, true)]
-        [TestCase(0, false)]
-        public void RealmValue_WhenManaged_BoolNotificationTests(int intValue, bool boolValue)
+        [Test]
+        public void RealmValue_WhenManaged_BoolNotificationTests([Values(0, 1)] int intValue, [Values(true, false)] bool boolValue)
         {
             var notifiedPropertyNames = new List<string>();
 
@@ -739,10 +721,10 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueProperty;
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            dynamic d = rv.AsRealmObject();
+            var d = rv.AsRealmObject();
 
-            Assert.That(d.IntProperty, Is.EqualTo(10));
-            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+            Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
+            Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
         }
 
         [Test]
@@ -765,10 +747,10 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueList.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            dynamic d = rv.AsRealmObject();
+            var d = rv.AsRealmObject();
 
-            Assert.That(d.IntProperty, Is.EqualTo(10));
-            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+            Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
+            Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
         }
 
         [Test]
@@ -791,10 +773,10 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueSet.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            dynamic d = rv.AsRealmObject();
+            var d = rv.AsRealmObject();
 
-            Assert.That(d.IntProperty, Is.EqualTo(10));
-            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+            Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
+            Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
         }
 
         [Test]
@@ -817,10 +799,10 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueDictionary["foo"];
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            dynamic d = rv.AsRealmObject();
+            var d = rv.AsRealmObject();
 
-            Assert.That(d.IntProperty, Is.EqualTo(10));
-            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+            Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
+            Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
         }
 
         [Test]
@@ -846,19 +828,20 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueDictionary.Values.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            dynamic d = rv.AsRealmObject();
+            var d = rv.AsRealmObject();
 
-            Assert.That(d.IntProperty, Is.EqualTo(10));
-            Assert.That(d.StringProperty, Is.EqualTo("brown"));
+            Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
+            Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
         }
 
         #endregion
 
         #region Queries
 
-        public static IEnumerable<RealmValue[]> QueryTestValues()
+        [Test]
+        public void Query_Generic()
         {
-            yield return new RealmValue[]
+            var realmValues = new[]
             {
                 RealmValue.Null,
                 RealmValue.Create(10, RealmValueType.Int),
@@ -873,11 +856,7 @@ namespace Realms.Tests.Database
                 RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
                 RealmValue.Create(new InternalObject { IntProperty = 10, StringProperty = "brown" }, RealmValueType.Object),
             };
-        }
 
-        [TestCaseSource(nameof(QueryTestValues))]
-        public void Query_Generic(RealmValue[] realmValues)
-        {
             var rvObjects = realmValues.Select((rv, index) => new RealmValueObject { Id = index, RealmValueProperty = rv }).ToList();
 
             _realm.Write(() =>

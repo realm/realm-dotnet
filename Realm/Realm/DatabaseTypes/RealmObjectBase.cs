@@ -560,7 +560,7 @@ namespace Realms
 
                 if (!property.Type.IsArray())
                 {
-                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetType()} which is not a List.");
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not a List.");
                 }
 
                 return _realmObject.GetListValue<T>(propertyName);
@@ -572,7 +572,7 @@ namespace Realms
 
                 if (!property.Type.IsSet())
                 {
-                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetType()} which is not a Set.");
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not a Set.");
                 }
 
                 return _realmObject.GetSetValue<T>(propertyName);
@@ -584,7 +584,7 @@ namespace Realms
 
                 if (!property.Type.IsDictionary())
                 {
-                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetType()} which is not a Dictionary.");
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not a Dictionary.");
                 }
 
                 return _realmObject.GetDictionaryValue<T>(propertyName);
