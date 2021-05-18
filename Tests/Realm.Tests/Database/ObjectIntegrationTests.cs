@@ -44,6 +44,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void AccessObjectAfterDeleteRollback()
+        {
+            var person = new Person { FirstName = "Mike" };
+            _realm.Write(() => _realm.Add(person));
+
+            using (var transaction = _realm.BeginWrite())
+            {
+                _realm.Remove(person);
+                transaction.Rollback();
+            }
+
+            Assert.That(person.FirstName, Is.EqualTo("Mike"));
+        }
+
+        [Test]
         public void ReadAndWriteEqualityTest()
         {
             // Arrange
