@@ -523,17 +523,49 @@ namespace Realms
             {
                 var property = GetProperty(propertyName);
 
-                if (property.Type.HasFlag(PropertyType.LinkingObjects))
+                if (property.Type.IsComputed())
                 {
-                    throw new NotSupportedException($"GetValue can't be used to access backlink properties. Use {nameof(GetBacklinks)} instead.");
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
                 }
 
                 if (property.Type.IsCollection(out var collectionType))
                 {
-                    throw new NotSupportedException($"GetValue can't be used to access collection properties. Use Get{collectionType} instead.");
+                    var collectionMethodName = collectionType == PropertyType.Array ? "GetList" : $"Get{collectionType}";
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
                 }
 
                 return _realmObject.GetValue(propertyName).As<T>();
+            }
+
+            public void Set(string propertyName, RealmValue value)
+            {
+                var property = GetProperty(propertyName);
+
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
+                }
+
+                if (property.Type.IsCollection(out _))
+                {
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
+                }
+
+                if (!property.Type.IsNullable() && value.Type == RealmValueType.Null)
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
+                }
+
+                if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
+                }
+
+                _realmObject.SetValue(propertyName, value);
             }
 
             public IQueryable<RealmObjectBase> GetBacklinks(string objectType, string propertyName)

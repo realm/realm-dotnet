@@ -202,6 +202,8 @@ namespace Realms.Schema
             return collection != default;
         }
 
+        public static bool IsRealmValue(this PropertyType propertyType) => propertyType == (PropertyType.RealmValue | PropertyType.Nullable);
+
         public static string GetDotnetTypeName(this Property property)
         {
             _ = property.Type.IsCollection(out var collection);
@@ -212,6 +214,11 @@ namespace Realms.Schema
                 PropertyType.Dictionary => "IDictionary<string, {0}>",
                 _ => "{0}"
             };
+
+            if (property.Type.IsComputed())
+            {
+                format = "IQueryable<{0}>";
+            }
 
             return string.Format(format, property.ObjectType ?? property.Type.ToType().Name);
         }
