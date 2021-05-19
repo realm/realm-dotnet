@@ -17,103 +17,199 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Dynamic;
+using Realms.Helpers;
 
 namespace Realms.Tests.Database
 {
-    [TestFixture(DynamicTestObjectType.RealmObject)]
-    [TestFixture(DynamicTestObjectType.DynamicRealmObject)]
+    [TestFixture]
     [Preserve(AllMembers = true)]
     public class DynamicAccessTests : RealmInstanceTest
     {
-        private readonly DynamicTestObjectType _mode;
-
-        public DynamicAccessTests(DynamicTestObjectType mode)
+        private static readonly DynamicTestObjectType[] _testModes = new[]
         {
-            _mode = mode;
-        }
+            DynamicTestObjectType.DynamicRealmObject,
+            DynamicTestObjectType.RealmObject
+        };
 
-        protected override RealmConfiguration CreateConfiguration(string path)
+        private void RunTestsWithParameters(Action<Realm, DynamicTestObjectType> test)
         {
-            return new RealmConfiguration(path)
+            foreach (var mode in _testModes)
             {
-                ObjectClasses = new[] { typeof(AllTypesObject), typeof(IntPropertyObject) },
-                IsDynamic = _mode == DynamicTestObjectType.DynamicRealmObject
-            };
+                var config = new RealmConfiguration(Guid.NewGuid().ToString())
+                {
+                    ObjectClasses = new[] { typeof(AllTypesObject), typeof(IntPropertyObject) },
+                    IsDynamic = mode == DynamicTestObjectType.DynamicRealmObject
+                };
+
+                using var realm = GetRealm(config);
+                test(realm, mode);
+            }
         }
 
         [Test]
         public void SimpleTest()
         {
-            dynamic allTypesObject;
-            using (var transaction = _realm.BeginWrite())
+            TestHelpers.IgnoreOnUnity();
+
+            RunTestsWithParameters((realm, mode) =>
             {
-                allTypesObject = _realm.DynamicApi.CreateObject("AllTypesObject", null);
-                if (_mode == DynamicTestObjectType.DynamicRealmObject)
+                var allTypesObject = realm.Write(() =>
                 {
-                    Assert.That(allTypesObject, Is.InstanceOf<DynamicRealmObject>());
-                }
-                else
+                    dynamic ato = realm.DynamicApi.CreateObject("AllTypesObject", null);
+                    if (mode == DynamicTestObjectType.DynamicRealmObject)
+                    {
+                        Assert.That(ato, Is.InstanceOf<DynamicRealmObject>());
+                    }
+                    else
+                    {
+                        Assert.That(ato, Is.InstanceOf<AllTypesObject>());
+                    }
+
+                    ato.CharProperty = 'F';
+                    ato.NullableCharProperty = 'o';
+                    ato.StringProperty = "o";
+
+                    return ato;
+                });
+
+                Assert.That((char)allTypesObject.CharProperty, Is.EqualTo('F'));
+                Assert.That((char)allTypesObject.NullableCharProperty, Is.EqualTo('o'));
+                Assert.That(allTypesObject.StringProperty, Is.EqualTo("o"));
+            });
+        }
+
+        [Test]
+        public void SimpleTest_NewAPI()
+        {
+            RunTestsWithParameters((realm, mode) =>
+            {
+                var allTypesObject = realm.Write(() =>
                 {
-                    Assert.That(allTypesObject, Is.InstanceOf<AllTypesObject>());
+                    var ato = (RealmObject)(object)realm.DynamicApi.CreateObject("AllTypesObject", null);
+                    if (mode == DynamicTestObjectType.DynamicRealmObject)
+                    {
+                        Assert.That(ato, Is.InstanceOf<DynamicRealmObject>());
+                    }
+                    else
+                    {
+                        Assert.That(ato, Is.InstanceOf<AllTypesObject>());
+                    }
+
+                    ato.DynamicApi.Set(nameof(AllTypesObject.CharProperty), 'F');
+                    ato.DynamicApi.Set(nameof(AllTypesObject.NullableCharProperty), 'o');
+                    ato.DynamicApi.Set(nameof(AllTypesObject.StringProperty), "o");
+
+                    return ato;
+                });
+
+                Assert.That(allTypesObject.DynamicApi.Get<char>(nameof(AllTypesObject.CharProperty)), Is.EqualTo('F'));
+                Assert.That(allTypesObject.DynamicApi.Get<char?>(nameof(AllTypesObject.NullableCharProperty)), Is.EqualTo('o'));
+                Assert.That(allTypesObject.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
+            });
+        }
+
+#if !UNITY
+        [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndGetValueCases))]
+#endif
+        public void SetAndGetValue<T>(string propertyName, T propertyValue)
+        {
+            TestHelpers.IgnoreOnUnity();
+
+            RunTestsWithParameters((realm, mode) =>
+            {
+                object allTypesObject;
+                using (var transaction = realm.BeginWrite())
+                {
+                    allTypesObject = realm.DynamicApi.CreateObject("AllTypesObject", null);
+
+                    InvokeSetter(allTypesObject, propertyName, propertyValue, mode);
+                    transaction.Commit();
                 }
 
-                allTypesObject.CharProperty = 'F';
-                allTypesObject.NullableCharProperty = 'o';
-                allTypesObject.StringProperty = "o";
-
-                transaction.Commit();
-            }
-
-            Assert.That((char)allTypesObject.CharProperty, Is.EqualTo('F'));
-            Assert.That((char)allTypesObject.NullableCharProperty, Is.EqualTo('o'));
-            Assert.That(allTypesObject.StringProperty, Is.EqualTo("o"));
+                Assert.That((T)InvokeGetter(allTypesObject, propertyName, mode), Is.EqualTo(propertyValue));
+            });
         }
 
         [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndGetValueCases))]
-        public void SetAndGetValue<T>(string propertyName, T propertyValue)
+        public void SetAndGetValue_NewAPI(string propertyName, object propertyValue)
         {
-            object allTypesObject;
-            using (var transaction = _realm.BeginWrite())
+            var realmValue = Operator.Convert<RealmValue>(propertyValue);
+
+            RunTestsWithParameters((realm, mode) =>
             {
-                allTypesObject = _realm.DynamicApi.CreateObject("AllTypesObject", null);
+                var allTypesObject = realm.Write(() =>
+                {
+                    var ato = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
 
-                InvokeSetter(allTypesObject, propertyName, propertyValue);
-                transaction.Commit();
-            }
+                    ato.DynamicApi.Set(propertyName, realmValue);
 
-            Assert.That((T)InvokeGetter(allTypesObject, propertyName), Is.EqualTo(propertyValue));
+                    return ato;
+                });
+
+                Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(propertyName), Is.EqualTo(realmValue));
+            });
+        }
+
+#if !UNITY
+        [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndReplaceWithNullCases))]
+#endif
+        public void SetValueAndReplaceWithNull<T>(string propertyName, T propertyValue)
+        {
+            RunTestsWithParameters((realm, mode) =>
+            {
+                var allTypesObject = realm.Write(() =>
+                {
+                    dynamic ato = realm.DynamicApi.CreateObject("AllTypesObject", null);
+
+                    InvokeSetter(ato, propertyName, propertyValue, mode);
+
+                    return ato;
+                });
+
+                Assert.That((T)InvokeGetter(allTypesObject, propertyName, mode), Is.EqualTo(propertyValue));
+
+                realm.Write(() =>
+                {
+                    InvokeSetter<object>(allTypesObject, propertyName, null, mode);
+                });
+
+                Assert.That(InvokeGetter(allTypesObject, propertyName, mode), Is.EqualTo(null));
+            });
         }
 
         [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndReplaceWithNullCases))]
-        public void SetValueAndReplaceWithNull<T>(string propertyName, T propertyValue)
+        public void SetValueAndReplaceWithNull_NewAPI(string propertyName, object propertyValue)
         {
-            object allTypesObject;
-            using (var transaction = _realm.BeginWrite())
+            var realmValue = Operator.Convert<RealmValue>(propertyValue);
+
+            RunTestsWithParameters((realm, mode) =>
             {
-                allTypesObject = _realm.DynamicApi.CreateObject("AllTypesObject", null);
+                var allTypesObject = realm.Write(() =>
+                {
+                    var ato = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
 
-                InvokeSetter(allTypesObject, propertyName, propertyValue);
-                transaction.Commit();
-            }
+                    ato.DynamicApi.Set(propertyName, realmValue);
 
-            Assert.That((T)InvokeGetter(allTypesObject, propertyName), Is.EqualTo(propertyValue));
+                    return ato;
+                });
 
-            using (var transaction = _realm.BeginWrite())
-            {
-                InvokeSetter<object>(allTypesObject, propertyName, null);
-                transaction.Commit();
-            }
+                Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(propertyName), Is.EqualTo(realmValue));
 
-            Assert.That(InvokeGetter(allTypesObject, propertyName), Is.EqualTo(null));
+                realm.Write(() =>
+                {
+                    allTypesObject.DynamicApi.Set(propertyName, RealmValue.Null);
+                });
+
+                Assert.That(allTypesObject.DynamicApi.Get<object>(propertyName), Is.EqualTo(null));
+            });
         }
 
-        public static IEnumerable<RealmValue> RealmValues = new[]
+        public static RealmValue[] RealmValues = new[]
         {
             RealmValue.Null,
             RealmValue.Create(10, RealmValueType.Int),
@@ -128,43 +224,74 @@ namespace Realms.Tests.Database
             RealmValue.Create(new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"), RealmValueType.Guid),
         };
 
-        [TestCaseSource(nameof(RealmValues))]
-        public void RealmValueTests(RealmValue rv)
+        [Test]
+        public void RealmValueTests([ValueSource(nameof(RealmValues))] RealmValue rv)
         {
-            dynamic ato = null;
-
-            _realm.Write(() =>
+            RunTestsWithParameters((realm, mode) =>
             {
-                ato = _realm.DynamicApi.CreateObject("AllTypesObject", null);
+                var allTypesObject = realm.Write(() =>
+                {
+                    var ato = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
 
-                ato.RealmValueProperty = rv;
+                    ato.DynamicApi.Set(nameof(AllTypesObject.RealmValueProperty), rv);
+
+                    return ato;
+                });
+
+                Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
+
+#if !UNITY
+                var dynamicAto = realm.Write(() =>
+                {
+                    dynamic ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
+
+                    ato.RealmValueProperty = rv;
+
+                    return ato;
+                });
+
+                Assert.That((RealmValue)dynamicAto.RealmValueProperty, Is.EqualTo(rv));
+#endif
             });
-
-            Assert.That((RealmValue)ato.RealmValueProperty, Is.EqualTo(rv));
         }
 
         [Test]
         public void RealmValueTests_WithObject()
         {
-            dynamic ato = null;
-            RealmValue rv = RealmValue.Null;
-
-            _realm.Write(() =>
+            RunTestsWithParameters((realm, mode) =>
             {
-                var intObject = _realm.DynamicApi.CreateObject("IntPropertyObject", ObjectId.GenerateNewId());
-                intObject.Int = 10;
-                rv = intObject;
+                var (ato, rv) = realm.Write(() =>
+                {
+                    var intObject = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
+                    intObject.DynamicApi.Set(nameof(IntPropertyObject.Int), 10);
 
-                ato = _realm.DynamicApi.CreateObject("AllTypesObject", null);
-                ato.RealmValueProperty = rv;
+                    var allTypesObject = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
+                    allTypesObject.DynamicApi.Set(nameof(AllTypesObject.RealmValueProperty), intObject);
+                    return (allTypesObject, (RealmValue)intObject);
+                });
+
+                Assert.That(ato.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
+
+#if !UNITY
+                var (dynamicAto, dynamicRV) = realm.Write(() =>
+                {
+                    dynamic intObject = realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
+                    intObject.Int = 10;
+                    RealmValue intObjectRV = intObject;
+
+                    dynamic ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
+                    ato.RealmValueProperty = intObjectRV;
+                    return (ato, intObjectRV);
+                });
+
+                Assert.That((RealmValue)dynamicAto.RealmValueProperty, Is.EqualTo(dynamicRV));
+#endif
             });
-
-            Assert.That((RealmValue)ato.RealmValueProperty, Is.EqualTo(rv));
         }
 
-        private object InvokeGetter(object o, string propertyName)
+        private static object InvokeGetter(object o, string propertyName, DynamicTestObjectType mode)
         {
-            if (_mode == DynamicTestObjectType.DynamicRealmObject)
+            if (mode == DynamicTestObjectType.DynamicRealmObject)
             {
                 var binder = Binder.GetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
                 var callsite = CallSite<Func<CallSite, object, object>>.Create(binder);
@@ -174,9 +301,9 @@ namespace Realms.Tests.Database
             return TestHelpers.GetPropertyValue(o, propertyName);
         }
 
-        private void InvokeSetter<T>(object o, string propertyName, T propertyValue)
+        private static void InvokeSetter<T>(object o, string propertyName, T propertyValue, DynamicTestObjectType mode)
         {
-            if (_mode == DynamicTestObjectType.DynamicRealmObject)
+            if (mode == DynamicTestObjectType.DynamicRealmObject)
             {
                 var binder = Binder.SetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null), CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null) });
                 var callsite = CallSite<Func<CallSite, object, T, object>>.Create(binder);

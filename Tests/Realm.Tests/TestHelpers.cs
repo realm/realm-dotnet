@@ -211,9 +211,29 @@ namespace Realms.Tests
             }
         }
 
+        public static bool IsUnity
+        {
+            get
+            {
+#if UNITY
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         public static void IgnoreOnAOT(string message)
         {
             if (IsAOTTarget)
+            {
+                Assert.Ignore(message);
+            }
+        }
+
+        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
+        {
+            if (IsUnity)
             {
                 Assert.Ignore(message);
             }
