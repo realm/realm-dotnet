@@ -102,8 +102,19 @@ steps:
 #@ end
 #@ end
 
-#@ def dotnetPublishAndRun(projectPath, framework, executeCommand, **properties):
-#@ propsArg = " -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}"
+#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand, addNet5):
+#@ properties = {
+#@   "AddNet5Framework": addNet5,
+#@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
+#@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
+#@ }
+#@
+#@ return dotnetPublishAndRun(projectPath, framework, executeCommand, properties)
+#@
+#@ end
+
+#@ def dotnetPublishAndRun(projectPath, framework, executeCommand, properties = {}):
+#@ propsArg = ""
 #@ for prop in properties.keys():
 #@   propsArg += " -p:" + prop + "=" + properties[prop]
 #@ end
@@ -303,8 +314,8 @@ jobs:
     steps:
     - #@ checkoutCode()
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - #@ template.replace(dotnetPublishAndRun("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.NetCore.xml --labels=After", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
-    - #@ publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
+    - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
+    - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Run tests for Xamarin on MacOS
