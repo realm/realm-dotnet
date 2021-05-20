@@ -74,12 +74,9 @@ steps:
 #@ end
 
 #@ def buildPackages():
-#@ finalList = []
 #@ for pkgName in nugetPackages:
-#@  finalList.append(msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
+  - #@ msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}")
 #@ end
-#@
-#@ return finalList
 #@ end
 
 #@ def uploadPackageArtifacts():
@@ -103,6 +100,21 @@ steps:
       name: #@ finalPkgName
       path: ${{ github.workspace }}/Realm/packages/
 #@ end
+#@ end
+
+#@ def dotnetPublishAndRun(projectPath, framework, executeCommand, **properties):
+#@ propsArg = " -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}"
+#@ for prop in properties.keys():
+#@   propsArg += " -p:" + prop + "=" + properties[prop]
+#@ end
+#@
+#@ runtime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runmner.os == 'Linux' && 'linux-x64') || '???' }}"
+  - name: #@ "Publish " + projectPath
+    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg
+    shell: bash
+  - name: Run the tests
+    run: #@ "./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "/" + executeCommand
+    shell: bash
 #@ end
 
 #@ def publishTestsResults(files, test_title):
@@ -139,47 +151,6 @@ shell: bash
 #@
 name: #@ "Build " + projectPath
 run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
-#@ end
-
-#@ def dotnetPublish(projectPath, **properties):
-#@ parsedProps = ""
-#@ targetFramework = ""
-#@ runtime = ""
-#@ commonProps = " -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}"
-#@ for prop in properties.keys():
-#@  if prop == "TargetFramework":
-#@    targetFramework = " -f " + properties[prop]
-#@  elif prop == "Runtime":
-#@    runtime = " -r " + properties[prop]
-#@  else:
-#@    parsedProps += " -p:" + prop + "=" + properties[prop]
-#@  end
-#@ end
-#@
-name: #@ "Build " + projectPath
-run: #@ "dotnet publish " + projectPath + " -c " + configuration + runtime + targetFramework + commonProps + parsedProps
-shell: bash
-#@ end
-
-#@ def dotnetRun(projectPath, **properties):
-#@ parsedProps = ""
-#@ targetFramework = ""
-#@ resultsPath = ""
-#@ labels = ""
-#@ for prop in properties.keys():
-#@  if prop == "TargetFramework":
-#@    targetFramework = " -f " + properties[prop]
-#@  elif prop == "ResultsFile":
-#@    resultsPath = " --result=" + properties[prop]
-#@  elif prop == "Labels":
-#@    labels = " --labels=" + properties[prop]
-#@  else:
-#@    parsedProps += " -p:" + prop + "=" + properties[prop]
-#@  end
-#@ end
-#@
-name: #@ "Run " + projectPath
-run: #@ "dotnet run -p " + projectPath + " -c " + configuration + targetFramework + resultsPath + labels + parsedProps
 #@ end
 
 ---
@@ -332,17 +303,7 @@ jobs:
     steps:
     - #@ checkoutCode()
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - if: ${{ matrix.os == 'macos-latest' }}
-      run: echo "runtime=osx-x64" >> $GITHUB_ENV
-    - if: ${{ matrix.os == 'windows-latest' }}
-      run: echo "runtime=win-x64" >> $GITHUB_ENV
-      shell: bash
-    - if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: echo "runtime=linux-x64" >> $GITHUB_ENV
-    - #@ dotnetPublish("Tests/Realm.Tests", Runtime="${{ env.runtime }}", TargetFramework="${{ matrix.targetFramework }}", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}")
-    - name: Run the tests
-      run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/${{ matrix.targetFramework }}/${{ env.runtime }}/Realm.Tests --result=TestResults.NetCore.xml --labels=After"
-      shell: bash
+    - #@ template.replace(dotnetPublishAndRun("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.NetCore.xml --labels=After", AddNet5Framework="${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
     - #@ publishTestsResults("TestResults.NetCore.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
   run-tests-xamarin-macos:
     runs-on: macos-latest
@@ -360,5 +321,5 @@ jobs:
     name: Run tests for the weaver
     steps:
       - #@ checkoutCode()
-      - #@ dotnetRun("Tests/Weaver/Realm.Fody.Tests", TargetFramework="netcoreapp3.1", ResultsFile="TestResults.Weaver.xml", Labels="After")
+      - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")
