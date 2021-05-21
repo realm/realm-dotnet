@@ -1,4 +1,4 @@
-## 10.2.0-beta.2 (TBD)
+## 10.2.0-beta.3 (TBD)
 
 ### Fixed
 * None
@@ -11,6 +11,31 @@
 
 ### Internal
 * Using Core 11.x.y. (it's in flux)
+
+## 10.2.0-beta.2 (2021-05-05)
+
+### Fixed
+* Fixed a bug that would result in an error similar to `Undefined symbols for architecture xxx: "_realm_thread_safe_reference_destroy"` when building a Unity project for iOS. (Issue [#2318](https://github.com/realm/realm-dotnet/issues/2318))
+* The weaver will now emit an error if you try to define a collection of `RealmInteger` values. This has never been supported, but previously it would fail silently whereas now it'll be a compile time error. (Issue [#2308](https://github.com/realm/realm-dotnet/issues/2308))
+* Fixed an issue where using collections of managed objects (lists or results) in a Unity project would result in an invalid compiled binary. (PR [#2340](https://github.com/realm/realm-dotnet/pull/2340))
+* Fixed a memory leak when a migration callback is defined, but the Realm didn't actually need to run it (PR [#2331](https://github.com/realm/realm-dotnet/pull/2331))
+
+
+### Enhancements
+* Added an override of `RealmObject.ToString()` to output more meaningful information about the object content. It will output the type of the object, the primary key (if one is defined), as well as information whether the object is managed or deleted. (Issue [#2347](https://github.com/realm/realm-dotnet/pull/2347))
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 11.x.y. (it's in flux)
+* Removed Lambda compilation in ResultsVisitor when we encounter a conversion operator. This
+  is needed because IL2CPP cannot comiple lambdas dynamically. Instead, we're now using
+  `Operator.Convert<TTarget>(object)` which is slightly less efficient than `Operator.Convert<TSource, TTarget>`
+  but still quite a bit faster than `Convert.ChangeType` and also doesn't suffer from the
+  deficiencies around `Decimal128` conversion. The main downside is that we'll no longer
+  support queries with an argument that is a custom user type with an implicit conversion
+  operator defined.
 
 ## 10.2.0-beta.1 (2021-04-12)
 

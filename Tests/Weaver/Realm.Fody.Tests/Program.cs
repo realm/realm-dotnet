@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnitLite;
+using Realms.Tests;
 
 namespace Realms.Fody.Tests
 {
@@ -32,7 +34,9 @@ namespace Realms.Fody.Tests
             var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
             if (!string.IsNullOrEmpty(resultPath))
             {
-                TestHelpers.TransformTestResults(resultPath);
+                var transformPath = Path.Combine(Directory.GetCurrentDirectory(), "nunit3-junit.xslt");
+                TransformHelpers.ExtractBundledFile("nunit3-junit.xslt", transformPath);
+                TransformHelpers.TransformTestResults(resultPath, transformPath);
             }
 
             return 0;

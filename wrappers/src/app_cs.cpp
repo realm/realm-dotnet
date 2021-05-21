@@ -43,7 +43,8 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
 using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
-using BsonCallbackT = void(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
+using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
 
 namespace realm {
     namespace binding {
@@ -55,6 +56,7 @@ namespace realm {
         std::function<UserCallbackT> s_user_callback;
         std::function<VoidCallbackT> s_void_callback;
         std::function<BsonCallbackT> s_bson_callback;
+        std::function<ApiKeysCallbackT> s_api_keys_callback;
 
         struct AppConfiguration
         {
@@ -124,7 +126,8 @@ extern "C" {
         UserCallbackT* user_callback,
         VoidCallbackT* void_callback,
         BsonCallbackT* bson_callback,
-        LogMessageCallbackT* log_message_callback)
+        LogMessageCallbackT* log_message_callback,
+        ApiKeysCallbackT* api_keys_callback)
     {
         s_platform = Utf16StringAccessor(platform, platform_len);
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
@@ -134,6 +137,7 @@ extern "C" {
         s_void_callback = wrap_managed_callback(void_callback);
         s_bson_callback = wrap_managed_callback(bson_callback);
         s_log_message_callback = wrap_managed_callback(log_message_callback);
+        s_api_keys_callback = wrap_managed_callback(api_keys_callback);
 
         realm::binding::s_can_call_managed = true;
     }
@@ -200,7 +204,7 @@ extern "C" {
                 return nullptr;
             }
 
-            return new SharedSyncUser(std::move(ptr));
+            return new SharedSyncUser(ptr);
         });
     }
 

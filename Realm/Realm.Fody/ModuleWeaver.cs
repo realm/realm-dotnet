@@ -29,7 +29,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         var targetFramework = ModuleDefinition.Assembly.CustomAttributes.SingleOrDefault(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
-        var weaver = new Weaver(ModuleDefinition, this, frameworkName);
+        var weaver = new Weaver(ModuleDefinition, this, frameworkName.Identifier);
 
         var executionResult = weaver.Execute(GetAnalyticsConfig(frameworkName));
         WriteInfo(executionResult.ToString());

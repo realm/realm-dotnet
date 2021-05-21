@@ -18,7 +18,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Versioning;
 using Mono.Cecil;
 
 namespace RealmWeaver
@@ -27,8 +26,6 @@ namespace RealmWeaver
 
     internal abstract class ImportedReferences
     {
-        public FrameworkName Framework { get; }
-
         public TypeReference IEnumerableOfT { get; }
 
         public TypeReference ICollectionOfT { get; }
@@ -155,11 +152,10 @@ namespace RealmWeaver
 
         public TypeSystem Types { get; }
 
-        protected ImportedReferences(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName)
+        protected ImportedReferences(ModuleDefinition module, TypeSystem types)
         {
             Module = module;
             Types = types;
-            Framework = frameworkName;
 
             IEnumerableOfT = new TypeReference("System.Collections.Generic", "IEnumerable`1", Module, Module.TypeSystem.CoreLibrary);
             IEnumerableOfT.GenericParameters.Add(new GenericParameter(IEnumerableOfT));
@@ -449,7 +445,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NETFramework(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NETFramework(ModuleDefinition module, TypeSystem types) : base(module, types)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -488,7 +484,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NETPortable(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NETPortable(ModuleDefinition module, TypeSystem types) : base(module, types)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Linq.Expressions"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -527,7 +523,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NetStandard2(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NetStandard2(ModuleDefinition module, TypeSystem types) : base(module, types)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, Module.TypeSystem.CoreLibrary);
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -550,35 +546,28 @@ namespace RealmWeaver
             }
         }
 
-        public static ImportedReferences Create(ModuleDefinition module, FrameworkName frameworkName)
+        public static ImportedReferences Create(ModuleDefinition module, string framework)
         {
             ImportedReferences references;
-            switch (frameworkName.Identifier)
+            switch (framework)
             {
                 case ".NETFramework":
                 case "Xamarin.iOS":
                 case "MonoAndroid":
                 case "Xamarin.Mac":
-                    references = new NETFramework(module, module.TypeSystem, frameworkName);
+                case "Unity":
+                    references = new NETFramework(module, module.TypeSystem);
                     break;
                 case ".NETStandard":
-                    if (frameworkName.Version >= new Version(2, 0))
-                    {
-                        references = new NetStandard2(module, module.TypeSystem, frameworkName);
-                    }
-                    else
-                    {
-                        references = new NETPortable(module, module.TypeSystem, frameworkName);
-                    }
-
+                    references = new NetStandard2(module, module.TypeSystem);
                     break;
                 case ".NETPortable":
                 case ".NETCore":
                 case ".NETCoreApp":
-                    references = new NETPortable(module, module.TypeSystem, frameworkName);
+                    references = new NETPortable(module, module.TypeSystem);
                     break;
                 default:
-                    throw new Exception($"Unsupported target framework: {frameworkName}");
+                    throw new Exception($"Unsupported target framework: {framework}");
             }
 
             references.InitializeFrameworkMethods();

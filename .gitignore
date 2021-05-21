@@ -200,3 +200,17 @@ Tests/PerformanceTests/BenchmarkDotNet.Artifacts/
 Realm/Realm.Unity/**/*.tgz
 Tests/Tests.UWP/AppPackages/
 Tests/Tests.UWP/BundleArtifacts/
+Tests/Tests.Unity/Library/
+Tests/Tests.Unity/Temp/
+Tests/Tests.Unity/Assets/Tests/**/*.cs
+Tests/Tests.Unity/Assets/Tests/**/*.meta
+!Tests/Tests.Unity/Assets/Tests/**/*.asmdef.meta
+Tests/Tests.Unity/Assets/Dependencies/**/*.dll
+Tests/Tests.Unity/Assets/Dependencies/**/*.dll.meta
+launchSettings.json
+Tests/Tests.Unity/Assets/StreamingAssets/
+Tests/Tests.Unity/Assets/StreamingAssets.meta
+Tests/Tests.Unity/Assets/InitTestScene*.unity*
+Tests/Tests.Unity/UserSettings/Search.settings
+Tests/Tests.Unity/Assets/Tests/*.dll
+Tests/Tests.Unity/PlayModeTestPlayer/

@@ -5,21 +5,20 @@
     <DisableFody>true</DisableFody>
     <IsTestProject>true</IsTestProject>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
-    <None Remove="EmbeddedResources\nunit3-junit.xslt" />
-    <None Remove="EmbeddedResources\trusted_ca.pem" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
-    <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">
+    <EmbeddedResource Include="..\..\Realm.Tests\EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
+
+    <Compile Include="..\..\Realm.Tests\TransformHelpers.cs" Link="TransformHelpers.cs" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />

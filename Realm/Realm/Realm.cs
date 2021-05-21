@@ -52,7 +52,7 @@ namespace Realms
         // Theoretically we could use trackAllValues: true, but that would create locking issues.
         private static readonly ThreadLocal<IDictionary<string, WeakReference<State>>> _states = new ThreadLocal<IDictionary<string, WeakReference<State>>>(DictionaryConstructor<string, WeakReference<State>>);
 
-        // TODO: due to a Mono bug, this needs to be a function rather than a lambda
+        // TODO: this will go away once https://github.com/realm/realm-dotnet/pull/2251 is merged, but due to a Mono bug, this needs to be a function rather than a lambda
         private static IDictionary<TKey, TValue> DictionaryConstructor<TKey, TValue>() => new Dictionary<TKey, TValue>();
 
         /// <summary>
@@ -206,7 +206,6 @@ namespace Realms
 
         #endregion static
 
-        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "A State can be shared between multiple Realm instances. It is disposed when the native instance and its BindingContext is destroyed")]
         private State _state;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
@@ -268,7 +267,7 @@ namespace Realms
             if (_state == null)
             {
                 _state = new State();
-                sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(_state.GCHandle));
+                sharedRealmHandle.SetManagedStateHandle(_state);
 
                 if (config.EnableCache && sharedRealmHandle.CanCache)
                 {
@@ -1442,18 +1441,11 @@ namespace Realms
             }
         }
 
-        internal class State : IDisposable
+        internal class State
         {
             private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
 
-            public readonly GCHandle GCHandle;
             public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
-
-            public State()
-            {
-                // this is freed in a native callback when the CSharpBindingContext is destroyed
-                GCHandle = GCHandle.Alloc(this);
-            }
 
             internal void NotifyChanged(EventArgs e)
             {
@@ -1527,11 +1519,6 @@ namespace Realms
                         }
                     }
                 }
-            }
-
-            public void Dispose()
-            {
-                GCHandle.Free();
             }
         }
 

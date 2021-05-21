@@ -486,7 +486,10 @@ namespace RealmWeaver
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
             // were produced, we make one assertion on all of them here.
 
-            var expectedWarnings = Array.Empty<string>();
+            var expectedWarnings = new[]
+            {
+                "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship."
+            };
 
             var expectedErrors = new[]
             {

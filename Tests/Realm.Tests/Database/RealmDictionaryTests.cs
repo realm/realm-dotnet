@@ -1695,7 +1695,9 @@ namespace Realms.Tests.Database
                     return Is.EqualTo(other);
                 }
 
-                return Is.EqualTo(other).Using<T>(_equalityFunc);
+                return Is.EqualTo(other).Using((Comparison<T>)comparison);
+
+                int comparison(T a, T b) => _equalityFunc(a, b) ? 0 : 1;
             }
 
             private CollectionItemsEqualConstraint IsEquivalentTo(IDictionary<string, T> dict)
@@ -1705,7 +1707,9 @@ namespace Realms.Tests.Database
                     return Is.EquivalentTo(dict);
                 }
 
-                return Is.EquivalentTo(dict).Using<KeyValuePair<string, T>>((first, second) => first.Key == second.Key && _equalityFunc(first.Value, second.Value));
+                var comparer = new Func<KeyValuePair<string, T>, KeyValuePair<string, T>, bool>((first, second) => first.Key == second.Key && _equalityFunc(first.Value, second.Value));
+
+                return Is.EquivalentTo(dict).Using(comparer);
             }
 
             private CollectionItemsEqualConstraint IsEquivalentTo(IEnumerable<T> other)
@@ -1715,7 +1719,7 @@ namespace Realms.Tests.Database
                     return Is.EquivalentTo(other);
                 }
 
-                return Is.EquivalentTo(other).Using<T>(_equalityFunc);
+                return Is.EquivalentTo(other).Using(_equalityFunc);
             }
 
             private static void WriteIfNecessary(IDictionary<string, T> collection, Action writeAction)
