@@ -29,7 +29,7 @@ namespace Realms.Tests.UWP
     {
         public static async Task TransformTestResults(string resultsPath)
         {
-            Tests.TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+            TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
             var xsltPath = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
             var xsltSf = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(xsltPath));
             var localFolderSf = ApplicationData.Current.LocalFolder;
