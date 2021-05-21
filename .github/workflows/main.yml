@@ -377,24 +377,17 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - if: ${{ matrix.os == 'macos-latest' }}
-      run: echo "runtime=osx-x64" >> $GITHUB_ENV
-    - if: ${{ matrix.os == 'windows-latest' }}
-      run: echo "runtime=win-x64" >> $GITHUB_ENV
-      shell: bash
-    - if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: echo "runtime=linux-x64" >> $GITHUB_ENV
-    - name: Build Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -r ${{ env.runtime }} -f ${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
       shell: bash
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ env.runtime }}/Realm.Tests --result=TestResults.NetCore.xml --labels=After
+      run: ./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/Realm.Tests --result=TestResults.xml --labels=After
       shell: bash
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
-        files: TestResults.NetCore.xml
+        files: TestResults.xml
         comment_mode: update last
         check_name: ${{ matrix.os }} ${{ matrix.targetFramework }} tests results
   run-tests-xamarin-macos:
@@ -435,8 +428,12 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Run Tests/Weaver/Realm.Fody.Tests
-      run: dotnet run -p Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 --result=TestResults.Weaver.xml --labels=After
+    - name: Publish Tests/Weaver/Realm.Fody.Tests
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}
+      shell: bash
+    - name: Run the tests
+      run: ./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
+      shell: bash
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
