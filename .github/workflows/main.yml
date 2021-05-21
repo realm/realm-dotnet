@@ -367,8 +367,8 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Build the tests
-      run: msbuild ${{ github.workspace }}/Tests/Tests.UWP -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore -p:AppxBundlePlatforms=x64 -p:Platform=x64
+    - name: Build Tests/Tests.UWP
+      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:AppxBundlePlatforms=x64 -p:Platform=x64
     - name: Install the UWP test app
       run: Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
     - name: Some debug things
@@ -382,7 +382,7 @@ jobs:
       if: always()
       with:
         files: "$env:LOCALAPPDATA\\Packages\realm.uwp.tests_dnf38210mrefr\\LocalState\\TestResults.UWP.xml"
-        comment_on_pr: false
+        comment_mode: "off"
         check_name: UWP tests results
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
