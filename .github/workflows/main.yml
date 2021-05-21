@@ -453,20 +453,20 @@ jobs:
         files: TestResults.macOS.xml
         comment_on_pr: false
         check_name: Xamarin MacOs tests results
-  run-tests-weaver:
-    runs-on: windows-latest
-    name: Run tests for the weaver
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Run the tests
-      run: dotnet run -p ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c Release --result=${{ github.workspace }}/TestResults.Weaver.xml --labels=After
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
-      if: always()
-      with:
-        files: TestResults.Weaver.xml
-        comment_on_pr: false
-        check_name: Weaver tests results
+  # run-tests-weaver:
+  #   runs-on: windows-latest
+  #   name: Run tests for the weaver
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       submodules: recursive
+  #   - name: Run the tests
+  #     run: dotnet run -p ${{ github.workspace }}/Tests/Weaver/Realm.Fody.Tests -f netcoreapp3.1 -c Release --result=${{ github.workspace }}/TestResults.Weaver.xml --labels=After
+  #   - name: Publish Unit Test Results
+  #     uses: EnricoMi/publish-unit-test-result-action/composite@v1
+  #     if: always()
+  #     with:
+  #       files: TestResults.Weaver.xml
+  #       comment_on_pr: false
+  #       check_name: Weaver tests results
