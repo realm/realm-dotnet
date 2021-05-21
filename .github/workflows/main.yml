@@ -367,16 +367,16 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Build the tests
-      run: msbuild ${{ github.workspace }}/Tests/Tests.UWP -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore -p:AppxBundlePlatforms=x64 -p:Platform=x64
-    - name: Install the UWP test app
-      run: Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
-    - name: Some debug things
-      run: |
-        Get-AppxPackage -Name realm.uwp.tests
-        Write-Output $env:LOCALAPPDATA
-    - name: Run the tests
-      run: Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml
+    # - name: Build the tests
+    #   run: msbuild ${{ github.workspace }}/Tests/Tests.UWP -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore -p:AppxBundlePlatforms=x64 -p:Platform=x64
+    # - name: Install the UWP test app
+    #   run: Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
+    # - name: Some debug things
+    #   run: |
+    #     Get-AppxPackage -Name realm.uwp.tests
+    #     Write-Output $env:LOCALAPPDATA
+    # - name: Run the tests
+    #   run: Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml
     # - name: Publish Unit Test Results
     #   uses: EnricoMi/publish-unit-test-result-action/composite@v1
     #   if: always()
