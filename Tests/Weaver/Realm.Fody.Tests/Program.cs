@@ -35,7 +35,7 @@ namespace Realms.Fody.Tests
             if (!string.IsNullOrEmpty(resultPath))
             {
                 var transformPath = Path.Combine(Directory.GetCurrentDirectory(), "nunit3-junit.xslt");
-                TransformHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", transformPath);
+                TransformHelpers.ExtractBundledFile("nunit3-junit.xslt", transformPath);
                 TransformHelpers.TransformTestResults(resultPath, transformPath);
             }
 

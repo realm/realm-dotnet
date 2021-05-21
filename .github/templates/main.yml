@@ -134,7 +134,7 @@ uses: EnricoMi/publish-unit-test-result-action/composite@v1
 if: always()
 with:
   files: #@ files
-  comment_mode: update last
+  comment_mode: "off"
   check_name: #@ test_title
 #@ end
 

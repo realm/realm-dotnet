@@ -20,7 +20,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml;
 using System.Xml.XPath;
 using System.Xml.Xsl;
@@ -40,7 +39,7 @@ namespace Realms.Tests
             transform.Transform(xpathDocument, null, writer);
         }
 
-        public static string CopyBundledFileToDocuments(string realmName, string destPath)
+        public static void ExtractBundledFile(string filename, string destPath)
         {
             if (!Path.IsPathRooted(destPath))
             {
@@ -48,17 +47,15 @@ namespace Realms.Tests
             }
 
             var assembly = typeof(TransformHelpers).Assembly;
-            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
+            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(filename));
             if (resourceName == null)
             {
-                throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
+                throw new Exception($"Couldn't find embedded resource '{filename}' in the RealmTests assembly");
             }
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
             using var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             stream.CopyTo(destination);
-
-            return destPath;
         }
     }
 }

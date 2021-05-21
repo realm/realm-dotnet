@@ -84,7 +84,8 @@ namespace Realms.Tests
         public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
         {
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
-            return TransformHelpers.CopyBundledFileToDocuments(realmName, destPath);
+            TransformHelpers.ExtractBundledFile(realmName, destPath);
+            return destPath;
         }
 
         public static async Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
