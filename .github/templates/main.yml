@@ -272,6 +272,23 @@ jobs:
       - name: Run the tests
         run: #@ "${{ github.workspace }}/Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - #@ template.replace(publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results"))
+  run-tests-uwp:
+    runs-on: windows-latest
+    name: Run tests for UWP on Windows
+    needs: build-packages
+    steps:
+      - #@ checkoutCode()
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - #@ buildNetFrameworkTest("Tests/Tests.UWP", AppxBundlePlatforms="x64", Platform="x64" )
+      - name: Install the UWP test app
+        run: Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
+      - name: Some debug things
+        run: |
+          Get-AppxPackage -Name realm.uwp.tests
+          Write-Output $env:LOCALAPPDATA
+      - name: Run the tests
+        run: #@ "Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml"
+      - #@ template.replace(publishTestsResults("$env:LOCALAPPDATA\Packages\realm.uwp.tests_dnf38210mrefr\LocalState\TestResults.UWP.xml", "UWP tests results"))
   run-tests-netcore-net5:
     name: Run tests for .NetCore and .Net5
     needs: build-packages

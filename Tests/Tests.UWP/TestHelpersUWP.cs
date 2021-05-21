@@ -42,18 +42,26 @@ namespace Realms.Tests.UWP
             await transformedXmlResults.SaveToFileAsync(resultsSf);
         }
 
+        // TODO revisit this method to see if something smarter can be done about it
         public static string GetResultPath(string cmdParams)
         {
             if (!string.IsNullOrEmpty(cmdParams))
             {
                 var resultStr = "--result=";
-                var indexEndKey = cmdParams.IndexOf(resultStr) + resultStr.Length - 1;
+                var indexEndKey = cmdParams.IndexOf(resultStr);
                 if (indexEndKey != -1)
                 {
+                    // TODO unfortunately this assumes that no space exists in the path, find a better way!
                     var indexEndValue = cmdParams.IndexOf(" ", indexEndKey);
                     if (indexEndValue != -1)
                     {
+                        indexEndKey += resultStr.Length - 1;
                         return cmdParams.Substring(indexEndKey + 1, indexEndValue - indexEndKey);
+                    }
+                    //if result was the last parameter, no space is found after it
+                    else
+                    {
+                        return cmdParams.Substring(indexEndKey + 1, cmdParams.Length -1 - indexEndKey);
                     }
                 }
             }

@@ -45,7 +45,7 @@
       <Extensions>
         <uap5:Extension Category="windows.appExecutionAlias">
           <uap5:AppExecutionAlias>
-            <uap5:ExecutionAlias Alias="Test.UWP.exe" />
+            <uap5:ExecutionAlias Alias="Tests.UWP.exe" />
           </uap5:AppExecutionAlias>
         </uap5:Extension>
       </Extensions>

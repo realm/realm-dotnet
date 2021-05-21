@@ -41,7 +41,7 @@ namespace Realms.Tests.UWP
             };
         }
 
-        // TODO check a workaround to avoid "async void"
+        // TODO check if possible to avoid "async void"
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             #region TO REMOVE BECAUSE OF TESTING
