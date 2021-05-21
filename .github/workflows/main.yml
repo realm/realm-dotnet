@@ -348,25 +348,25 @@ jobs:
         files: TestResults.Windows.xml
         comment_on_pr: false
         check_name: Windows .NET framework tests results
-  run-tests-uwp:
-    runs-on: windows-latest
-    name: Run tests for UWP on Windows
-    needs: build-packages
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/
+  # run-tests-uwp:
+  #   runs-on: windows-latest
+  #   name: Run tests for UWP on Windows
+  #   needs: build-packages
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #     with:
+  #       submodules: recursive
+  #   - name: Fetch Realm
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+  #       path: ${{ github.workspace }}/Realm/packages/
+  #   - name: Fetch Realm.Fody
+  #     uses: actions/download-artifact@v2
+  #     with:
+  #       name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+  #       path: ${{ github.workspace }}/Realm/packages/
     # - name: Build the tests
     #   run: msbuild ${{ github.workspace }}/Tests/Tests.UWP -p:RestoreConfigFile=${{ github.workspace }}/Tests/Test.NuGet.Config -p:Configuration=Release -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -restore -p:AppxBundlePlatforms=x64 -p:Platform=x64
     # - name: Install the UWP test app
