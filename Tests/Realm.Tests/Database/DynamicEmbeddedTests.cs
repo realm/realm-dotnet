@@ -71,20 +71,14 @@ namespace Realms.Tests.Database
             public string Remarks { get; set; }
         }
 
-        private static readonly DynamicTestObjectType[] _testModes = new[]
-        {
-            DynamicTestObjectType.DynamicRealmObject,
-            DynamicTestObjectType.RealmObject
-        };
-
         private void RunTestInAllModes(Action<Realm> test)
         {
-            foreach (var mode in _testModes)
+            foreach (var isDynamic in new[] { true, false })
             {
                 var config = new RealmConfiguration(Guid.NewGuid().ToString())
                 {
                     ObjectClasses = new[] { typeof(DynamicTask), typeof(DynamicSubTask), typeof(CompletionReport), typeof(DynamicSubSubTask) },
-                    IsDynamic = mode == DynamicTestObjectType.DynamicRealmObject
+                    IsDynamic = isDynamic
                 };
 
                 using var realm = GetRealm(config);
