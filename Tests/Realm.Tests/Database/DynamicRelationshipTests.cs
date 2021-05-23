@@ -166,7 +166,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimHasTwoIterableDogs()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
                 var dogNames = new List<string>();
@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimRetiredHisTopDog()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
 
@@ -312,7 +312,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimAddsADogByInsert()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
                 Assert.That(GetDogs(tim).Count, Is.EqualTo(2));
@@ -1270,7 +1270,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Set_Count()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
 
@@ -1294,7 +1294,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Set_Add()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
 
@@ -1382,7 +1382,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Set_Iteration()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
                 var dogNames = new List<string>();
@@ -1440,7 +1440,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Set_Remove()
         {
-            RunDynamicTestInAllModes(realm =>
+            RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
 
