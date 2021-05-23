@@ -804,7 +804,7 @@ namespace Realms.Tests.Database
                 _realm.Add(parent);
             });
 
-            var topLevelBacklinks = parent.RecursiveObject.DynamicApi.GetBacklinks(nameof(ObjectWithEmbeddedProperties), nameof(ObjectWithEmbeddedProperties.RecursiveObject));
+            var topLevelBacklinks = parent.RecursiveObject.DynamicApi.GetBacklinksFromType(nameof(ObjectWithEmbeddedProperties), nameof(ObjectWithEmbeddedProperties.RecursiveObject));
             Assert.That(topLevelBacklinks.Count(), Is.EqualTo(1));
 
             var parentViaBacklinks = topLevelBacklinks.Single();
@@ -826,12 +826,12 @@ namespace Realms.Tests.Database
 
 #endif
 
-            var secondLevelBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinks(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Child));
+            var secondLevelBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinksFromType(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Child));
             Assert.That(secondLevelBacklinks.Count(), Is.EqualTo(1));
             Assert.That(secondLevelBacklinks.Single(), Is.EqualTo(parent.RecursiveObject));
 
             // This should be empty because no objects link to it via .Children
-            var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinks(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
+            var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinksFromType(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
             Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
         }
 

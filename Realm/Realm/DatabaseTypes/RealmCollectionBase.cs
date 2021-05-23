@@ -39,11 +39,13 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
-        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject() || (typeof(T).IsClosedGeneric(typeof(KeyValuePair<,>), out var typeArgs) && typeArgs.Last().IsEmbeddedObject());
+        internal readonly bool _isEmbedded;
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
         internal readonly RealmObjectBase.Metadata Metadata;
+
+        internal bool IsDynamic;
 
         private NotificationTokenHandle _notificationToken;
         private bool _deliveredInitialNotification;
@@ -135,6 +137,7 @@ namespace Realms
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
+            _isEmbedded = metadata?.Schema.IsEmbedded ?? false;
         }
 
         ~RealmCollectionBase()

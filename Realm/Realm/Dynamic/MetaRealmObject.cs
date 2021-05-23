@@ -73,7 +73,7 @@ namespace Realms.Dynamic
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 getter = GetGetMethod(DummyHandle.GetBacklinks);
             }
-            else if (property.Type.IsArray())
+            else if (property.Type.IsList())
             {
                 arguments.Add(Expression.Field(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));

@@ -36,7 +36,7 @@ namespace Realms.Tests.Database
             DynamicTestObjectType.RealmObject
         };
 
-        private void RunTestsWithParameters(Action<Realm, DynamicTestObjectType> test)
+        private void RunTestInAllModes(Action<Realm, DynamicTestObjectType> test)
         {
             foreach (var mode in _testModes)
             {
@@ -56,7 +56,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.IgnoreOnUnity();
 
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var allTypesObject = realm.Write(() =>
                 {
@@ -86,7 +86,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest_NewAPI()
         {
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var allTypesObject = realm.Write(() =>
                 {
@@ -120,7 +120,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.IgnoreOnUnity();
 
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 object allTypesObject;
                 using (var transaction = realm.BeginWrite())
@@ -140,7 +140,7 @@ namespace Realms.Tests.Database
         {
             var realmValue = Operator.Convert<RealmValue>(propertyValue);
 
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var allTypesObject = realm.Write(() =>
                 {
@@ -160,7 +160,7 @@ namespace Realms.Tests.Database
 #endif
         public void SetValueAndReplaceWithNull<T>(string propertyName, T propertyValue)
         {
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var allTypesObject = realm.Write(() =>
                 {
@@ -187,7 +187,7 @@ namespace Realms.Tests.Database
         {
             var realmValue = Operator.Convert<RealmValue>(propertyValue);
 
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var allTypesObject = realm.Write(() =>
                 {
@@ -227,7 +227,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValueTests([ValueSource(nameof(RealmValues))] RealmValue rv)
         {
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var allTypesObject = realm.Write(() =>
                 {
@@ -258,7 +258,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValueTests_WithObject()
         {
-            RunTestsWithParameters((realm, mode) =>
+            RunTestInAllModes((realm, mode) =>
             {
                 var (ato, rv) = realm.Write(() =>
                 {

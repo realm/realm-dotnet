@@ -174,7 +174,7 @@ namespace Realms.Schema
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 
-        public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.HasFlag(PropertyType.LinkingObjects);
+        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.HasFlag(PropertyType.LinkingObjects);
 
         public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
 
@@ -182,7 +182,7 @@ namespace Realms.Schema
 
         public static bool IsCollection(this PropertyType propertyType, out PropertyType collection)
         {
-            if (propertyType.IsArray())
+            if (propertyType.IsList())
             {
                 collection = PropertyType.Array;
             }
