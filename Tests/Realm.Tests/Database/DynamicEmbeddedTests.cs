@@ -208,15 +208,6 @@ namespace Realms.Tests.Database
 
                         var subTasksDictionary = parent.DynamicApi.GetDictionary<EmbeddedObject>(nameof(DynamicTask.SubTasksDictionary));
 
-                        // TODO: this fails the test because we're not replacing dictionary.Add with our custom implementation like we do in
-                        // MetaRealmDictionary. One approach is to set an internal field on the collection denoting that it is dynamic and
-                        // have it throw an exception on Add/Insert/Set:
-                        //
-                        // var dict = _realmObject.GetDictionary<T>(propName);
-                        // dict.IsDynamicMode = true;
-                        // return dict;
-                        //
-                        // We can use the same approach for the actual dynamic collections and remove the MetaRealmCollection classes.
                         subTasksDictionary.Add("foo", new DynamicSubTask());
                     });
                 });

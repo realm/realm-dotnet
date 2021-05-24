@@ -1626,7 +1626,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToList<T>(IList<T> list)
+            public dynamic AddEmbeddedObjectToList(object list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
             }
@@ -1645,7 +1645,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic InsertEmbeddedObjectInList<T>(IList<T> list, int index)
+            public dynamic InsertEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1672,7 +1672,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInList<T>(IList<T> list, int index)
+            public dynamic SetEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1695,7 +1695,7 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="SetEmbeddedObjectInDictionary"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToDictionary<T>(IDictionary<string, T> dictionary, string key)
+            public dynamic AddEmbeddedObjectToDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
 
@@ -1715,7 +1715,7 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="AddEmbeddedObjectToDictionary"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInDictionary<T>(IDictionary<string, T> dictionary, string key)
+            public dynamic SetEmbeddedObjectInDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
 
