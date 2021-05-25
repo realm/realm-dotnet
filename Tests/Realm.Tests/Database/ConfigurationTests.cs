@@ -193,8 +193,7 @@ namespace Realms.Tests.Database
             // Arrange
             _configuration.IsReadOnly = true;
             _configuration.SchemaVersion = 42;
-            TestHelpers.CopyBundledFileToDocuments(
-                "ForMigrationsToCopyAndMigrate.realm", Path.GetFileName(_configuration.DatabasePath));
+            TestHelpers.CopyBundledFileToDocuments("ForMigrationsToCopyAndMigrate.realm", Path.GetFileName(_configuration.DatabasePath));
 
             // Assert
             Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmMigrationNeededException>());
