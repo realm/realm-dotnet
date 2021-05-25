@@ -519,6 +519,20 @@ namespace Realms
                 _realmObject = ro;
             }
 
+            /// <summary>
+            /// Gets the value of the property <paramref name="propertyName"/> and casts it to
+            /// <typeparamref name="T"/>.
+            /// </summary>
+            /// <typeparam name="T">The type of the property.</typeparam>
+            /// <param name="propertyName">The name of the property.</param>
+            /// <returns>The value of the property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting to <see cref="RealmValue"/> is always valid. When the property is of type
+            /// object, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
             public T Get<T>(string propertyName)
             {
                 var property = GetProperty(propertyName);
@@ -539,6 +553,12 @@ namespace Realms
                 return _realmObject.GetValue(propertyName).As<T>();
             }
 
+            /// <summary>
+            /// Sets the value of the property at <paramref name="propertyName"/> to
+            /// <paramref name="value"/>.
+            /// </summary>
+            /// <param name="propertyName">The name of the property to set.</param>
+            /// <param name="value">The new value of the property.</param>
             public void Set(string propertyName, RealmValue value)
             {
                 var property = GetProperty(propertyName);
@@ -568,6 +588,15 @@ namespace Realms
                 _realmObject.SetValue(propertyName, value);
             }
 
+            /// <summary>
+            /// Gets the value of a backlink property. This property must have been declared
+            /// explicitly and annotated with <see cref="BacklinkAttribute"/>.
+            /// </summary>
+            /// <param name="propertyName">The name of the backlink property.</param>
+            /// <returns>
+            /// A queryable collection containing all objects pointing to this one via the
+            /// property specified in <see cref="BacklinkAttribute.Property"/>.
+            /// </returns>
             public IQueryable<RealmObjectBase> GetBacklinks(string propertyName)
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
@@ -579,6 +608,15 @@ namespace Realms
                 return new RealmResults<RealmObjectBase>(_realmObject._realm, resultsHandle, relatedMeta);
             }
 
+            /// <summary>
+            /// Gets a collection of all the objects that link to this object in the specified relationship.
+            /// </summary>
+            /// <param name="fromObjectType">The type of the object that is on the other end of the relationship.</param>
+            /// <param name="fromPropertyName">The property that is on the other end of the relationship.</param>
+            /// <returns>
+            /// A queryable collection containing all objects of <paramref name="fromObjectType"/> that link
+            /// to the current object via <paramref name="fromPropertyName"/>.
+            /// </returns>
             public IQueryable<RealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName)
             {
                 Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
@@ -597,6 +635,19 @@ namespace Realms
                 return new RealmResults<RealmObject>(_realmObject.Realm, resultsHandle, relatedMeta);
             }
 
+            /// <summary>
+            /// Gets a <see cref="IList{T}"/> property.
+            /// </summary>
+            /// <typeparam name="T">The type of the elements in the list.</typeparam>
+            /// <param name="propertyName">The name of the list property.</param>
+            /// <returns>The value of the list property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
+            /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
             public IList<T> GetList<T>(string propertyName)
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
@@ -606,6 +657,19 @@ namespace Realms
                 return result;
             }
 
+            /// <summary>
+            /// Gets a <see cref="ISet{T}"/> property.
+            /// </summary>
+            /// <typeparam name="T">The type of the elements in the Set.</typeparam>
+            /// <param name="propertyName">The name of the Set property.</param>
+            /// <returns>The value of the Set property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
+            /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
             public ISet<T> GetSet<T>(string propertyName)
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
@@ -615,6 +679,19 @@ namespace Realms
                 return result;
             }
 
+            /// <summary>
+            /// Gets a <see cref="IDictionary{TKey, TValue}"/> property.
+            /// </summary>
+            /// <typeparam name="T">The type of the values in the dictionary.</typeparam>
+            /// <param name="propertyName">The name of the dictionary property.</param>
+            /// <returns>The value of the dictionary property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting the values to <see cref="RealmValue"/> is always valid. When the collection
+            /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
             public IDictionary<string, T> GetDictionary<T>(string propertyName)
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
