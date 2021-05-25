@@ -750,6 +750,8 @@ namespace Realms.Tests.Database
         [Test]
         public void DynamicBacklinks()
         {
+            TestHelpers.IgnoreIfDynamicUnsupported();
+
             var parent = new ObjectWithEmbeddedProperties
             {
                 RecursiveObject = new EmbeddedLevel1

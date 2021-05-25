@@ -379,7 +379,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
         if (nodeName == 'docker') {
           def test_runner_image = CreateDockerContainer(targetFramework)
           withRealmCloud(
-            version: '2021-04-08',
+            version: '2021-05-11',
             appsToImport: [
               "dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests",
               "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key",

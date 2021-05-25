@@ -21,7 +21,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -604,6 +603,8 @@ namespace Realms.Tests.Database
         [Test]
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {
+            TestHelpers.IgnoreIfDynamicUnsupported();
+
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(EmbeddedLevel1), typeof(EmbeddedLevel2), typeof(EmbeddedLevel3) }

@@ -464,78 +464,78 @@ namespace Realms.Tests.Database
             return boxed;
         }
 
-        public static IEnumerable<StringQueryTestData> StringQuery_AllTypes()
+        public static object[] StringQuery_AllTypes =
         {
-            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 'b');
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 0x4);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 5, 4);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 34, 42);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 74L, 23L);
-            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 3.0f, 2.0f);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 4.0, 2.0);
-            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, false);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2020, 8, 2, 0, 0, 0, TimeSpan.Zero));
-            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 0.9999999999999999999999999999, 0.3333333333333333333333333333);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new Decimal128(666.42300000003));
-            yield return new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5ffffffffffff22222222222"));
-            yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0ffffffb-dddd-4444-aaaa-70000000000e"));
-            yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello world", "no salute");
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 });
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteCounterProperty), new RealmInteger<byte>(0x6), new RealmInteger<byte>(0x8));
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int16CounterProperty), new RealmInteger<short>(2), new RealmInteger<short>(7));
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int32CounterProperty), new RealmInteger<int>(10), new RealmInteger<int>(24));
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int64CounterProperty), new RealmInteger<long>(5L), new RealmInteger<long>(22L));
-        }
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 'b') },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 0x4) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int16Property), 5, 4) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int32Property), 34, 42) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int64Property), 74L, 23L) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 3.0f, 2.0f) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 4.0, 2.0) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, false) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2020, 8, 2, 0, 0, 0, TimeSpan.Zero)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 0.9999999999999999999999999999, 0.3333333333333333333333333333) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new Decimal128(666.42300000003)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5ffffffffffff22222222222")) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0ffffffb-dddd-4444-aaaa-70000000000e")) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello world", "no salute") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 }) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteCounterProperty), new RealmInteger<byte>(0x6), new RealmInteger<byte>(0x8)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int16CounterProperty), new RealmInteger<short>(2), new RealmInteger<short>(7)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int32CounterProperty), new RealmInteger<int>(10), new RealmInteger<int>(24)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int64CounterProperty), new RealmInteger<long>(5L), new RealmInteger<long>(22L)) },
+        };
 
-        public static IEnumerable<StringQueryNumericData> StringQuery_NumericValues()
+        public static object[] StringQuery_NumericValues =
         {
             // implicit conversion match
-            yield return new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'a', 97, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x6, 6, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0xf, 15.0f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 55, 55.0f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 66, 66.0, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 19, 19.0f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 77L, 77, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 82L, 82m, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 88.8f, 88.8, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 49f, 49, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 106.0, 106m, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 1m, 1f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 5m, 5.0, true);
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'a', 97, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x6, 6, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0xf, 15.0f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 55, 55.0f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 66, 66.0, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 19, 19.0f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 77L, 77, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 82L, 82m, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 88.8f, 88.8, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 49f, 49, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 106.0, 106m, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 1m, 1f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 5m, 5.0, true) },
 
             // implicit conversion no match
-            yield return new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'c', 2555, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x5, 'g', false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 5, 35L, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 34, 563.0f, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 74L, 7435, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 3.0f, 21.0, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 4.0, 'c', false);
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'c', 2555, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x5, 'g', false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 5, 35L, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 34, 563.0f, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 74L, 7435, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 3.0f, 21.0, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 4.0, 'c', false) },
 
             // no implicit conversion no match
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 109.9, 109.9f, false);
-        }
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 109.9, 109.9f, false) },
+        };
 
-        public static IEnumerable<StringQueryTestData> StringQuery_MismatchingTypes_ToThrow()
+        public static object[] StringQuery_MismatchingTypes_ToThrow =
         {
-            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', "who are you");
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 2, "no one is here");
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 3, "go away");
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 32L, "again you?");
-            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 4.0f, "I said go");
-            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 5.0, "I'm getting angry");
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, "I give up");
-            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, "enough");
-            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 1);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), 5);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 7m, new byte[] { 0x1, 0x2, 0x3 });
-            yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new byte[] { 0x3, 0x2, 0x1 });
-            yield return new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), "hello world");
-            yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), 'v');
-            yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello you", 13m);
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, 34L);
-        }
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', "who are you") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int16Property), 2, "no one is here") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int32Property), 3, "go away") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int64Property), 32L, "again you?") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 4.0f, "I said go") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 5.0, "I'm getting angry") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, "I give up") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, "enough") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 1) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), 5) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 7m, new byte[] { 0x1, 0x2, 0x3 }) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new byte[] { 0x3, 0x2, 0x1 }) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), "hello world") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), 'v') },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello you", 13m) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, 34L) },
+        };
 
         [TestCaseSource(nameof(StringQuery_AllTypes))]
         public void QueryFilter_WithAnyArguments_ShouldMatch(StringQueryTestData data)

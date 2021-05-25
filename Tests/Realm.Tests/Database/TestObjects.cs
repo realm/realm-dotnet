@@ -130,8 +130,10 @@ namespace Realms.Tests
 
         public IList<Guid> GuidList { get; }
 
+        [Required]
         public IList<string> StringList { get; }
 
+        [Required]
         public IList<byte[]> ByteArrayList { get; }
 
         public IList<DateTimeOffset> DateTimeOffsetList { get; }
@@ -161,6 +163,10 @@ namespace Realms.Tests
         public IList<ObjectId?> NullableObjectIdList { get; }
 
         public IList<Guid?> NullableGuidList { get; }
+
+        public IList<string> NullableStringList { get; }
+
+        public IList<byte[]> NullableByteArrayList { get; }
 
         public IList<RealmValue> RealmValueList { get; }
     }
@@ -354,13 +360,49 @@ namespace Realms.Tests
         public IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
-    // This is a stripped-down version of SetsObject because Sync doesn't support float
-    // or collections of nullable primitives
+    // This is a stripped-down version of SetsObject because Sync doesn't support
+    // collections of nullable primitives
     public class SyncCollectionsObject : RealmObject
     {
         [MapTo("_id")]
         [PrimaryKey]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public IList<char> CharList { get; }
+
+        public IList<byte> ByteList { get; }
+
+        public IList<short> Int16List { get; }
+
+        public IList<int> Int32List { get; }
+
+        public IList<long> Int64List { get; }
+
+        public IList<float> FloatList { get; }
+
+        public IList<double> DoubleList { get; }
+
+        public IList<bool> BooleanList { get; }
+
+        public IList<decimal> DecimalList { get; }
+
+        public IList<Decimal128> Decimal128List { get; }
+
+        public IList<ObjectId> ObjectIdList { get; }
+
+        [Required]
+        public IList<string> StringList { get; }
+
+        [Required]
+        public IList<byte[]> ByteArrayList { get; }
+
+        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+
+        public IList<IntPropertyObject> ObjectList { get; }
+
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+
+        public IList<RealmValue> RealmValueList { get; }
 
         public ISet<char> CharSet { get; }
 
@@ -371,6 +413,8 @@ namespace Realms.Tests
         public ISet<int> Int32Set { get; }
 
         public ISet<long> Int64Set { get; }
+
+        public ISet<float> FloatSet { get; }
 
         public ISet<double> DoubleSet { get; }
 
@@ -404,6 +448,8 @@ namespace Realms.Tests
 
         public IDictionary<string, long> Int64Dict { get; }
 
+        public IDictionary<string, float> FloatDict { get; }
+
         public IDictionary<string, double> DoubleDict { get; }
 
         public IDictionary<string, bool> BooleanDict { get; }
@@ -424,13 +470,13 @@ namespace Realms.Tests
 
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
 
         public IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
-    // This is a stripped-down version of SetsObject because Sync doesn't support float
-    // or collections of nullable primitives
+    // This is a stripped-down version of SetsObject because Sync doesn't support
+    // collections of nullable primitives
     public class SyncAllTypesObject : RealmObject
     {
         [MapTo("_id")]
@@ -446,6 +492,8 @@ namespace Realms.Tests
         public int Int32Property { get; set; }
 
         public long Int64Property { get; set; }
+
+        public float FloatProperty { get; set; }
 
         public double DoubleProperty { get; set; }
 
