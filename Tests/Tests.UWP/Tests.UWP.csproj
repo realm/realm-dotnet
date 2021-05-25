@@ -177,9 +177,9 @@
       <Name>Realm.Tests</Name>
     </ProjectReference>
   </ItemGroup>
-  <!--<ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)"/>
-  </ItemGroup>-->
+  </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll') and '$(Platform)' == 'x64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
