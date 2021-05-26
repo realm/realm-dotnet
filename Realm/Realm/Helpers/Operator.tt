@@ -165,7 +165,7 @@ namespace Realms.Helpers
 
             if (value is null)
             {
-                return default(TResult) == null ? default(TResult) : throw new NotSupportedException($"Can't convert from null to {targetType.FullName} because the target type is not nullable.");
+                return default(TResult) == null ? default(TResult) : throw new InvalidCastException($"Can't convert from null to {targetType.FullName} because the target type is not nullable.");
             }
 
             var sourceType = value.GetType();
@@ -180,7 +180,7 @@ namespace Realms.Helpers
                 return res;
             }
 
-            throw new NotSupportedException($"No conversion exists from {sourceType.FullName} to {targetType.FullName}");
+            throw new InvalidCastException($"No conversion exists from {sourceType.FullName} to {targetType.FullName}");
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class ThrowingConverter<TSource, TTarget> : SpecializedConverterBase<TSource, TTarget>
         {
-            public override TTarget Convert(TSource source) => throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+            public override TTarget Convert(TSource source) => throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
         }
 
         /// <summary>
@@ -294,9 +294,9 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class InheritanceConverter<TSource, TTarget> : SpecializedConverterBase<TSource, TTarget>
         {
-            public override TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+            public override TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
 
-            public override TTarget Convert(object source) => source is TTarget obj ? obj : throw new NotSupportedException($"No conversion exists from {source?.GetType().FullName} to {typeof(TTarget).FullName}");
+            public override TTarget Convert(object source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {source?.GetType().FullName} to {typeof(TTarget).FullName}");
         }
 
         #region ToRealmValue Converters

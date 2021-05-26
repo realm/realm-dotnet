@@ -838,7 +838,17 @@ namespace Realms.Tests
 
         public int Int { get; set; }
 
+        [Backlink(nameof(CollectionsObject.ObjectList))]
+        public IQueryable<CollectionsObject> ContainingCollections { get; }
+
         public override string ToString() => $"Int: {Int}";
+    }
+
+    public class ObjectWithObjectProperties : RealmObject
+    {
+        public IntPropertyObject StandaloneObject { get; set; }
+
+        public EmbeddedIntPropertyObject EmbeddedObject { get; set; }
     }
 
     public class EmbeddedIntPropertyObject : EmbeddedObject

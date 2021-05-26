@@ -545,7 +545,14 @@ namespace Realms
 
                 if (property.Type.IsCollection(out var collectionType))
                 {
-                    var collectionMethodName = collectionType == PropertyType.Array ? "GetList" : $"Get{collectionType}";
+                    var collectionMethodName = collectionType switch
+                    {
+                        PropertyType.Array => "GetList",
+                        PropertyType.Set => "GetSet",
+                        PropertyType.Dictionary => "GetDictionary",
+                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
+                    };
+
                     throw new NotSupportedException(
                         $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
                 }
@@ -604,8 +611,12 @@ namespace Realms
                 var resultsHandle = _realmObject._objectHandle.GetBacklinks(_realmObject._metadata.PropertyIndices[propertyName]);
 
                 var relatedMeta = _realmObject._realm.Metadata[property.ObjectType];
+                if (relatedMeta.Schema.IsEmbedded)
+                {
+                    return new RealmResults<EmbeddedObject>(_realmObject._realm, resultsHandle, relatedMeta);
+                }
 
-                return new RealmResults<RealmObjectBase>(_realmObject._realm, resultsHandle, relatedMeta);
+                return new RealmResults<RealmObject>(_realmObject._realm, resultsHandle, relatedMeta);
             }
 
             /// <summary>
@@ -715,6 +726,8 @@ namespace Realms
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = null)
             {
+                Argument.NotNull(propertyName, nameof(propertyName));
+
                 if (!_realmObject.ObjectSchema.TryFindProperty(propertyName, out var property))
                 {
                     throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_realmObject.ObjectSchema.Name}", propertyName);

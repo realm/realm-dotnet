@@ -174,7 +174,7 @@ namespace Realms.Schema
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 
-        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.HasFlag(PropertyType.LinkingObjects);
+        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.IsComputed();
 
         public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
 
@@ -220,7 +220,8 @@ namespace Realms.Schema
                 format = "IQueryable<{0}>";
             }
 
-            return string.Format(format, property.ObjectType ?? property.Type.ToType().Name);
+            var elementType = property.Type & ~(PropertyType.Array | PropertyType.Set | PropertyType.Dictionary);
+            return string.Format(format, property.ObjectType ?? elementType.ToType().Name);
         }
 
         public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
