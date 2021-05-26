@@ -167,9 +167,6 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.10</Version>
     </PackageReference>
-    <PackageReference Include="NUnit.Xamarin.Realm">
-      <Version>3.12.1</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
@@ -178,7 +175,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
-    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)"/>
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll') and '$(Platform)' == 'x64'">
@@ -194,6 +191,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Tests.UWP_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NUnit.Xamarin">
+      <HintPath>..\..\dependencies\NUnit.Xamarin.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

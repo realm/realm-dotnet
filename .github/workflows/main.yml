@@ -383,7 +383,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
-        files: "$env:LOCALAPPDATA\\Packages\\realm.uwp.tests_dnf38210mrefr\\LocalState\\TestResults.UWP.xml"
+        files: $env:LOCALAPPDATA/Packages/realm.uwp.tests_dnf38210mrefr/LocalState/TestResults.UWP.xml
         comment_mode: "off"
         check_name: UWP tests results
   run-tests-netcore-net5:
