@@ -79,6 +79,12 @@ steps:
 #@ end
 #@ end
 
+#@ def msbuildOnWin(projectPath, **properties):
+  - name: Add msbuild to PATH
+    uses: microsoft/setup-msbuild@v1.0.2
+  - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
+#@ end
+
 #@ def uploadPackageArtifacts():
 #@ for pkgName in nugetPackages:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
@@ -146,12 +152,6 @@ run: |
   pkgName=${tmpName#"Realm.Fody."}
   echo "::set-output name=package_version::$pkgName"
 shell: bash
-#@ end
-
-#@ def msbuildOnWin(projectPath, **properties):
-- name: Add msbuild to PATH
-  uses: microsoft/setup-msbuild@v1.0.2
-- #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
 #@ end
 
 #@ def msbuild(projectPath, **properties):
