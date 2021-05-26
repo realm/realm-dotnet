@@ -148,6 +148,12 @@ run: |
 shell: bash
 #@ end
 
+#@ def msbuildOnWin(projectPath, **properties):
+- name: Add msbuild to PATH
+  uses: microsoft/setup-msbuild@v1.0.2
+- #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
+#@ end
+
 #@ def msbuild(projectPath, **properties):
 #@ parsedProps = ""
 #@ target = ""
@@ -308,16 +314,20 @@ jobs:
     steps:
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ msbuild("Tests/Tests.UWP", AppxBundlePlatforms="x64", Platform="x64" )
+      #!- name: Import certificate to sign UWP app
+      #!  run: Import-PfxCertificate -FilePath ${{ github.workspace }}/Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx -CertStoreLocation Cert:\CurrentUser\My
+      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundlePlatforms="x64", Platform="x64" ))
       - name: Install the UWP test app
-        run: Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
+        run: |
+          Import-Module Appx
+          Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
       - name: Some debug things
         run: |
           Get-AppxPackage -Name realm.uwp.tests
           Write-Output $env:LOCALAPPDATA
       - name: Run the tests
         run: #@ "Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml"
-      - #@ publishTestsResults("$env:LOCALAPPDATA\Packages\realm.uwp.tests_dnf38210mrefr\LocalState\TestResults.UWP.xml", "UWP tests results")
+      - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/realm.uwp.tests_dnf38210mrefr/LocalState/TestResults.UWP.xml", "UWP tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
     needs: build-packages
