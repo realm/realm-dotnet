@@ -368,7 +368,12 @@ jobs:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Import test certificate
-      run: certutil -f -p Realm123 -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $currentDirectory = Get-Location
+        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+        & certutil -f -p ${{ secrets.Pfx_Password}} -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+      shell: powershell
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
