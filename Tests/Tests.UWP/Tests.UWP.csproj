@@ -192,9 +192,9 @@
       <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
-  <!-- <ItemGroup>
+  <ItemGroup>
     <None Include="Tests.UWP_TemporaryKey.pfx" />
-  </ItemGroup> -->
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="NUnit.Xamarin">
       <HintPath>..\..\dependencies\NUnit.Xamarin.dll</HintPath>
