@@ -375,7 +375,7 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundlePlatforms=x64 -p:Platform=x64
+      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificatePassword=Realm123 -p:UseDotNetNativeToolchain=false
     - name: Install the UWP test app
       run: |
         Import-Module Appx -usewindowspowershell
