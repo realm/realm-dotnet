@@ -171,30 +171,23 @@ namespace Realms
         /// <summary>
         /// Deletes all the files associated with a realm.
         /// </summary>
+        /// <remarks>
+        /// The realm file must not be open on other threads.
+        /// This method must not be called inside a transaction.
+        /// All but the .lock file will be deleted by this.
+        /// </remarks>
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
+        /// <exception cref="RealmPermissionDeniedException">Thrown if the Realm is still open.</exception>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             Argument.NotNull(configuration, nameof(configuration));
 
-            var fullpath = configuration.DatabasePath;
-            if (IsRealmOpen(fullpath))
+            if (IsRealmOpen(configuration.DatabasePath))
             {
                 throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
             }
 
-            var filesToDelete = new[] { string.Empty, ".log_a", ".log_b", ".log", ".lock", ".note" }
-                .Select(ext => fullpath + ext)
-                .Where(File.Exists);
-
-            foreach (var file in filesToDelete)
-            {
-                File.Delete(file);
-            }
-
-            if (Directory.Exists($"{fullpath}.management"))
-            {
-                Directory.Delete($"{fullpath}.management", recursive: true);
-            }
+            SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
         private static bool IsRealmOpen(string path)
