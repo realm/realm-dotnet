@@ -182,11 +182,6 @@ namespace Realms
         {
             Argument.NotNull(configuration, nameof(configuration));
 
-            if (IsRealmOpen(configuration.DatabasePath))
-            {
-                throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
-            }
-
             SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
