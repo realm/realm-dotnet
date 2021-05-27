@@ -370,7 +370,7 @@ jobs:
     - name: Import test certificate
       uses: ./.github/actions/import-certificate-windows
       with:
-        certificate-path: Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
+        certificate-path: ${{ github.workspace }}/Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP

@@ -319,7 +319,7 @@ jobs:
       - name: Import test certificate
         uses: ./.github/actions/import-certificate-windows
         with:
-          certificate-path: Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
+          certificate-path: ${{ github.workspace }}/Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
       - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundlePlatforms="x64", Platform="x64" ))
       - name: Install the UWP test app
         run: |

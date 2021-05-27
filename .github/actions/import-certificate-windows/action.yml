@@ -5,7 +5,7 @@ inputs:
     required: true
   password:
     description: Password for the certificate
-    default: ''
+    default: '$null'
 
 runs:
   using: "composite"
