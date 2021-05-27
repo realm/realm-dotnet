@@ -28,7 +28,7 @@
     <PackageCertificateKeyFile>Tests.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
-    <RestoreConfigFile>..\Test.NuGet.Config</RestoreConfigFile>
+    <RestoreConfigFile>$(MSBuildProjectDirectory)\..\Test.NuGet.Config</RestoreConfigFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartArguments>--headless --labels=After</StartArguments>
