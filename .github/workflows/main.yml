@@ -367,13 +367,17 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Import test certificate
+      uses: ../actions/import-certificate-windows
+      with:
+        certificate-path: Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundlePlatforms=x64 -p:Platform=x64
     - name: Install the UWP test app
       run: |
-        Import-Module Appx
+        Import-Module Appx -usewindowspowershell
         Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
     - name: Some debug things
       run: |
