@@ -367,11 +367,8 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
-    # - name: Import test certificate
-    #   uses: ./.github/actions/import-certificate-windows
-    #   with:
-    #     certificate-path: ${{ github.workspace }}/Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
-    #     password: Realm123
+    - name: Import test certificate
+      run: certutil -f -p Realm123 -importpfx ${{ github.workspace }}/Tests/Tests.UW/PTests.UWP_TemporaryKey.pfx
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
