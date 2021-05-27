@@ -5,6 +5,7 @@ inputs:
     required: true
   password:
     description: Password for the certificate
+    default: ''
 
 runs:
   using: "composite"
