@@ -35,20 +35,6 @@ namespace Realms.Tests
 {
     public static class TestHelpers
     {
-        private static Lazy<bool> _supportsDynamic = new Lazy<bool>(() =>
-        {
-            try
-            {
-                dynamic str = "abc";
-                str.Substring(1);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        });
-
         public static readonly Random Random = new Random();
 
         public static byte[] GetBytes(int size, byte? value = null)
@@ -225,6 +211,18 @@ namespace Realms.Tests
             }
         }
 
+        public static bool IsUnity
+        {
+            get
+            {
+#if UNITY
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         public static void IgnoreOnAOT(string message)
         {
             if (IsAOTTarget)
@@ -233,15 +231,17 @@ namespace Realms.Tests
             }
         }
 
-        public static void IgnoreIfDynamicUnsupported()
+        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
         {
-            if (!_supportsDynamic.Value)
+            if (IsUnity)
             {
-                Assert.Ignore("This platform doesn't support dynamic code execution");
+                Assert.Ignore(message);
             }
         }
 
         private static readonly decimal _decimalValue = 1.23456789M;
+
+        public static readonly Action _preserveAction;
 
         static TestHelpers()
         {
@@ -249,12 +249,15 @@ namespace Realms.Tests
             _ = decimal.MaxValue >= _decimalValue;
             _ = decimal.MinValue <= _decimalValue;
 
-            // Preserve all the realm.Find<T> overloads
-            using var r = Realm.GetInstance(Guid.NewGuid().ToString());
-            _ = r.Find<PrimaryKeyStringObject>(string.Empty);
-            _ = r.Find<PrimaryKeyObjectIdObject>(ObjectId.GenerateNewId());
-            _ = r.Find<PrimaryKeyGuidObject>(Guid.NewGuid());
-            _ = r.Find<PrimaryKeyInt64Object>(123L);
+            _preserveAction = () =>
+            {
+                // Preserve all the realm.Find<T> overloads
+                using var r = Realm.GetInstance(Guid.NewGuid().ToString());
+                _ = r.Find<PrimaryKeyStringObject>(string.Empty);
+                _ = r.Find<PrimaryKeyObjectIdObject>(ObjectId.GenerateNewId());
+                _ = r.Find<PrimaryKeyGuidObject>(Guid.NewGuid());
+                _ = r.Find<PrimaryKeyInt64Object>(123L);
+            };
         }
 
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
@@ -331,7 +334,7 @@ namespace Realms.Tests
         {
             AsyncContext.Run(async () =>
             {
-                await (errorTask == null ? testFunc() : Task.WhenAny(testFunc(), errorTask)).Timeout(timeout);
+                await testFunc().Timeout(timeout, errorTask);
             });
         }
 

@@ -4,7 +4,25 @@
 * None
 
 ### Enhancements
-* None
+* Added new API for dynamically accessing object properties. The intention is to use those on
+ahead-of-time compiled platforms, such as Xamarin.iOS and Unity with IL2CPP compilation. The
+intention is to eventually make these the default API, while also supporting the legacy DLR-based
+API. Example:
+  ```csharp
+  // Make sure to cast away the dynamic immediately.
+  var people = (IQueryable<RealmObject>)realm.DynamicApi.All("Person");
+  foreach (var person in people)
+  {
+    var firstName = person.DynamicApi.Get<string>("FirstName");
+    var address = person.DynamicApi.Get<EmbeddedObject>("Address");
+    var city = address.DynamicApi.Get<string>("City");
+  }
+
+  // When casting a dynamic property, always cast first to object and then
+  // to the actual object type to remove any callsites being generated.
+  var newPerson = (RealmObject)(object)realm.DynamicApi.Create("Person", 123);
+  newPerson.DynamicApi.Set("FirstName", "Peter");
+  ```
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.

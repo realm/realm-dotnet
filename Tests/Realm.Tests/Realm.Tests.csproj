@@ -9,6 +9,7 @@
     <PackageId>Realm.Tests</PackageId>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UnityBuild)' != 'true'">

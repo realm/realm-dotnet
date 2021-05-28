@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 internal static class TaskExtensions
@@ -39,10 +40,16 @@ internal static class TaskExtensions
         });
     }
 
-    public static async Task Timeout(this Task task, int millisecondTimeout)
+    public static async Task Timeout(this Task task, int millisecondTimeout, Task errorTask = null)
     {
-        var completed = await Task.WhenAny(task, Task.Delay(millisecondTimeout));
-        if (completed != task)
+        var tasks = new List<Task> { task, Task.Delay(millisecondTimeout) };
+        if (errorTask != null)
+        {
+            tasks.Add(errorTask);
+        }
+
+        var completed = await Task.WhenAny(tasks);
+        if (completed != task && completed != errorTask)
         {
             throw new TimeoutException("The operation has timed out.");
         }

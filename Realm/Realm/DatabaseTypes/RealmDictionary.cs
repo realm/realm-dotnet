@@ -66,6 +66,11 @@ namespace Realms
 
                 if (_isEmbedded && realmValue.Type != RealmValueType.Null)
                 {
+                    if (IsDynamic)
+                    {
+                        throw new NotSupportedException("Can't set embedded objects directly. Instead use Realm.DynamicApi.SetEmbeddedObjectInDictionary.");
+                    }
+
                     Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.SetEmbedded(key));
                     return;
                 }
@@ -108,6 +113,11 @@ namespace Realms
 
             if (_isEmbedded && realmValue.Type != RealmValueType.Null)
             {
+                if (IsDynamic)
+                {
+                    throw new NotSupportedException("Can't add embedded objects directly. Instead use Realm.DynamicApi.AddEmbeddedObjectToDictionary.");
+                }
+
                 Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.AddEmbedded(key));
                 return;
             }

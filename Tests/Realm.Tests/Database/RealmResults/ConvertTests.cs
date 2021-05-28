@@ -542,7 +542,7 @@ namespace Realms.Tests.Database
         public void Equal_WhenVariableIsClassWithImplicitOperator_Fails()
         {
             var one = new MyOneClass();
-            Assert.Throws<NotSupportedException>(() => _realm.All<AllTypesObject>().Where(o => o.Int32Property == one).ToArray());
+            Assert.Throws<InvalidCastException>(() => _realm.All<AllTypesObject>().Where(o => o.Int32Property == one).ToArray());
         }
 
         [Test]

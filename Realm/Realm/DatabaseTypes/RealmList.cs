@@ -72,6 +72,11 @@ namespace Realms
 
                 if (_isEmbedded)
                 {
+                    if (IsDynamic)
+                    {
+                        throw new NotSupportedException("Can't set embedded objects directly. Instead use Realm.DynamicApi.SetEmbeddedObjectInList.");
+                    }
+
                     Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.SetEmbedded(index));
                     return;
                 }
@@ -89,6 +94,11 @@ namespace Realms
 
             if (_isEmbedded)
             {
+                if (IsDynamic)
+                {
+                    throw new NotSupportedException("Can't add embedded objects directly. Instead use Realm.DynamicApi.AddEmbeddedObjectToList.");
+                }
+
                 Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.AddEmbedded());
                 return;
             }
@@ -120,6 +130,11 @@ namespace Realms
 
             if (_isEmbedded)
             {
+                if (IsDynamic)
+                {
+                    throw new NotSupportedException("Can't insert embedded objects directly. Instead use Realm.DynamicApi.InsertEmbeddedObjectInList.");
+                }
+
                 Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _listHandle.InsertEmbedded(index));
                 return;
             }
