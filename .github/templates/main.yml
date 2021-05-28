@@ -323,6 +323,7 @@ jobs:
       - name: Install the UWP test app
         run: |
           Import-Module Appx -usewindowspowershell
+          Get-AppxPackage Microsoft.UI.Xaml*
           Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
       - name: Some debug things
         run: |
