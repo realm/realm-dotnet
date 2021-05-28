@@ -473,40 +473,6 @@ namespace Realms.Tests
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
 
         public IDictionary<string, RealmValue> RealmValueDict { get; }
-
-        public IList<char> CharList { get; }
-
-        public IList<byte> ByteList { get; }
-
-        public IList<short> Int16List { get; }
-
-        public IList<int> Int32List { get; }
-
-        public IList<long> Int64List { get; }
-
-        //public IList<float> SingleList { get; }
-
-        public IList<double> DoubleList { get; }
-
-        public IList<bool> BooleanList { get; }
-
-        public IList<decimal> DecimalList { get; }
-
-        public IList<Decimal128> Decimal128List { get; }
-
-        public IList<ObjectId> ObjectIdList { get; }
-
-        [Required]
-        public IList<string> StringList { get; }
-
-        [Required]
-        public IList<byte[]> ByteArrayList { get; }
-
-        public IList<DateTimeOffset> DateTimeOffsetList { get; }
-
-        public IList<IntPropertyObject> ObjectList { get; }
-
-        public IList<RealmValue> RealmValueList { get; }
     }
 
     // This is a stripped-down version of SetsObject because Sync doesn't support
