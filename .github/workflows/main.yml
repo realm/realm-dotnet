@@ -381,7 +381,7 @@ jobs:
     - name: Install the UWP test app
       run: |
         Import-Module Appx -usewindowspowershell
-        Add-AppPackage Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Tests.UWP_1.0.0.0_x64.msixbundle
+        Add-AppPackage Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Tests.UWP_1.0.0.0_x86_x64_arm.msixbundle
     - name: Some debug things
       run: |
         Get-AppxPackage -Name realm.uwp.tests
