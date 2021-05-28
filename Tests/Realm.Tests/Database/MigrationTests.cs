@@ -145,5 +145,201 @@ namespace Realms.Tests.Database
                 Assert.That(realm.DynamicApi.All("Person"), Is.Empty);
             }
         }
+
+        [Test]
+        public void EmbeddedObjectWithOneBacklinkPerObject()
+        {
+            var path = RealmConfiguration.DefaultConfiguration.DatabasePath;
+
+            var oldSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                person.Add(new Schema.Property { Name = "Dog", Type = Schema.PropertyType.Object | Schema.PropertyType.Nullable, ObjectType = "Dog" });
+                oldSchema.Add(person.Build());
+
+                var dog = new Schema.ObjectSchema.Builder("Dog", isEmbedded: false);
+                dog.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                oldSchema.Add(dog.Build());
+            }
+
+            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true }, oldSchema.Build()))
+            {
+                realm.Write(() =>
+                {
+                    dynamic scoobyDoo = realm.DynamicApi.CreateObject("Dog", null);
+                    scoobyDoo.Name = "Scooby-Doo";
+
+                    dynamic shaggy = realm.DynamicApi.CreateObject("Person", null);
+                    shaggy.Name = "Shaggy Rogers";
+                    shaggy.Dog = scoobyDoo;
+                });
+            }
+
+            var newSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                person.Add(new Schema.Property
+                {
+                    Name = "Dog",
+                    Type = Schema.PropertyType.Object | Schema.PropertyType.Nullable,
+                    ObjectType = "Dog"
+                });
+                newSchema.Add(person.Build());
+
+                var dog = new Schema.ObjectSchema.Builder("Dog", isEmbedded: true);
+                dog.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                newSchema.Add(dog.Build());
+            }
+
+            // All we need to do to make the change to embedded work IF every embedded object already
+            // has one and only one backlink is to increase the schema version.
+            var configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 42,
+                IsDynamic = true
+            };
+
+            using (var realm = Realm.GetInstance(configuration, newSchema.Build()))
+            {
+                Assert.AreEqual(realm.DynamicApi.All("Person").Count(), 1);
+                Assert.AreEqual(realm.DynamicApi.All("Person").First().Name, "Shaggy Rogers");
+                Assert.NotNull(realm.DynamicApi.All("Person").First().Dog);
+                Assert.AreEqual(realm.DynamicApi.All("Person").First().Dog.Name, "Scooby-Doo");
+            }
+        }
+
+        [Test]
+        public void EmbeddedObjectBecomingOrphaned()
+        {
+            var path = RealmConfiguration.DefaultConfiguration.DatabasePath;
+
+            var oldSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                person.Add(new Schema.Property
+                {
+                    Name = "Dog",
+                    Type = Schema.PropertyType.Object | Schema.PropertyType.Nullable,
+                    ObjectType = "Dog"
+                });
+                oldSchema.Add(person.Build());
+
+                var dog = new Schema.ObjectSchema.Builder("Dog", isEmbedded: false);
+                dog.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                oldSchema.Add(dog.Build());
+            }
+
+            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true }, oldSchema.Build()))
+            {
+                realm.Write(() =>
+                {
+                    dynamic scoobyDoo = realm.DynamicApi.CreateObject("Dog", null);
+                    scoobyDoo.Name = "Scooby-Doo";
+
+                    dynamic shaggy = realm.DynamicApi.CreateObject("Person", null);
+                    shaggy.Name = "Shaggy Rogers";
+                });
+            }
+
+            var newSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                person.Add(new Schema.Property { Name = "Dog", Type = Schema.PropertyType.Object | Schema.PropertyType.Nullable, ObjectType = "Dog" });
+                newSchema.Add(person.Build());
+
+                var dog = new Schema.ObjectSchema.Builder("Dog", isEmbedded: true);
+                dog.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                newSchema.Add(dog.Build());
+            }
+
+            var configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 42,
+                IsDynamic = true,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    Assert.That(oldSchemaVersion, Is.EqualTo(0));
+
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
+                    var newPeople = migration.NewRealm.DynamicApi.All("Person");
+                    Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
+
+                    var oldDogs = migration.OldRealm.DynamicApi.All("Dog");
+                    var newDogs = migration.NewRealm.DynamicApi.All("Dog"); // Throws
+                    Assert.That(newDogs.Count(), Is.EqualTo(oldDogs.Count()));
+                }
+            };
+
+            using (var realm = Realm.GetInstance(configuration, newSchema.Build()))
+            {
+                Assert.AreEqual(realm.DynamicApi.All("Person").Count(), 1);
+                Assert.AreEqual(realm.DynamicApi.All("Person").First().Name, "Shaggy Rogers");
+            }
+        }
+
+        [Test]
+        public void EmbeddedObjectWithMultipleBacklinks()
+        {
+            var path = RealmConfiguration.DefaultConfiguration.DatabasePath;
+
+            var oldSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                person.Add(new Schema.Property { Name = "Dog", Type = Schema.PropertyType.Object | Schema.PropertyType.Nullable, ObjectType = "Dog" });
+                oldSchema.Add(person.Build());
+
+                var dog = new Schema.ObjectSchema.Builder("Dog", isEmbedded: false);
+                dog.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                oldSchema.Add(dog.Build());
+            }
+
+            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true }, oldSchema.Build()))
+            {
+                realm.Write(() =>
+                {
+                    dynamic scoobyDoo = realm.DynamicApi.CreateObject("Dog", null);
+                    scoobyDoo.Name = "Scooby-Doo";
+
+                    dynamic shaggy = realm.DynamicApi.CreateObject("Person", null);
+                    shaggy.Name = "Shaggy Rogers";
+                    shaggy.Dog = scoobyDoo;
+
+                    dynamic charlie = realm.DynamicApi.CreateObject("Person", null);
+                    charlie.Name = "Charlie Brown";
+                    charlie.Dog = scoobyDoo;
+                });
+            }
+
+            var newSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                person.Add(new Schema.Property { Name = "Dog", Type = Schema.PropertyType.Object | Schema.PropertyType.Nullable, ObjectType = "Dog" });
+                newSchema.Add(person.Build());
+
+                var dog = new Schema.ObjectSchema.Builder("Dog", isEmbedded: true);
+                dog.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                newSchema.Add(dog.Build());
+            }
+
+            var configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 42,
+                IsDynamic = true,
+            };
+
+            using (var realm = Realm.GetInstance(configuration, newSchema.Build()))
+            {
+                Assert.AreEqual(realm.DynamicApi.All("Person").Count(), 1);
+                Assert.AreEqual(realm.DynamicApi.All("Person").First().Name, "Shaggy Rogers");
+                Assert.NotNull(realm.DynamicApi.All("Person").First().Dog);
+                Assert.AreEqual(realm.DynamicApi.All("Person").First().Dog.Name, "Scooby-Doo");
+            }
+        }
     }
 }
