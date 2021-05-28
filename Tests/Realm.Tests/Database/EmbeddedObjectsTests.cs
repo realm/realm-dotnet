@@ -747,11 +747,12 @@ namespace Realms.Tests.Database
             Assert.That(parent.AllTypesObject.ContainersObjects.Single(), Is.EqualTo(parent));
         }
 
-#if !UNITY
         [Test]
         [Obsolete("Uses and tests for the obsoleted RealmObjectBase.GetBacklinks")]
         public void DynamicBacklinks()
         {
+            TestHelpers.IgnoreOnUnity();
+
             var parent = new ObjectWithEmbeddedProperties
             {
                 RecursiveObject = new EmbeddedLevel1
@@ -781,8 +782,6 @@ namespace Realms.Tests.Database
             var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
             Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
         }
-
-#endif
 
         [Test]
         public void DynamicBacklinks_NewAPI()
@@ -814,17 +813,16 @@ namespace Realms.Tests.Database
             Assert.That(recursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
             Assert.That(recursiveObjViaBacklinks.DynamicApi.Get<string>(nameof(EmbeddedLevel1.String)), Is.EqualTo("level 1"));
 
-#if !UNITY
+            if (!TestHelpers.IsUnity)
+            {
+                dynamic dynamicParentViaBacklinks = topLevelBacklinks.Single();
+                Assert.That(dynamicParentViaBacklinks, Is.EqualTo(parent));
 
-            dynamic dynamicParentViaBacklinks = topLevelBacklinks.Single();
-            Assert.That(dynamicParentViaBacklinks, Is.EqualTo(parent));
+                var dynamicRecursiveObjViaBacklinks = dynamicParentViaBacklinks.RecursiveObject;
 
-            var dynamicRecursiveObjViaBacklinks = dynamicParentViaBacklinks.RecursiveObject;
-
-            Assert.That(dynamicRecursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
-            Assert.That(dynamicRecursiveObjViaBacklinks.String, Is.EqualTo("level 1"));
-
-#endif
+                Assert.That(dynamicRecursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
+                Assert.That(dynamicRecursiveObjViaBacklinks.String, Is.EqualTo("level 1"));
+            }
 
             var secondLevelBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinksFromType(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Child));
             Assert.That(secondLevelBacklinks.Count(), Is.EqualTo(1));
