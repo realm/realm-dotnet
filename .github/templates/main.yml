@@ -313,10 +313,13 @@ jobs:
       - #@ checkoutCode()
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - name: Import test certificate
-        uses: ./.github/actions/import-certificate-windows
-        with:
-          certificate-path: ${{ github.workspace }}/Tests/Tests.UWP/Tests.UWP_TemporaryKey.pfx
-      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundlePlatforms="x64", Platform="x64" ))
+        run: |
+          $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+          $currentDirectory = Get-Location
+          [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+          & certutil -f -p ${{ secrets.Pfx_Password }} -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+        shell: powershell
+      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false"))
       - name: Install the UWP test app
         run: |
           Import-Module Appx -usewindowspowershell
