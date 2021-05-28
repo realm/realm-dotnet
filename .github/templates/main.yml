@@ -322,7 +322,7 @@ jobs:
       - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false"))
       - name: Install the UWP test app
         run: |
-          Import-Module Appx -usewindowspowershell
+          Import-Module Appx -SkipEditionCheck
           Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
       - name: Some debug things
         run: |

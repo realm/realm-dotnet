@@ -380,7 +380,7 @@ jobs:
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false
     - name: Install the UWP test app
       run: |
-        Import-Module Appx -usewindowspowershell
+        Import-Module Appx -SkipEditionCheck
         Add-AppPackage Tests/Tests.UWP/bin/x64/Release/Tests.UWP_1.0.0.0_x64.msix
     - name: Some debug things
       run: |
