@@ -319,10 +319,10 @@ jobs:
           [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
           & certutil -f -p ${{ secrets.Pfx_Password }} -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
         shell: powershell
-      - name: Install microsoft.ui.xaml
-        run: |
-          Import-Module Appx -usewindowspowershell
-          Add-AppxPackage dependencies/microsoft.ui.xaml.2.4.2_AppX/x64/Release/Microsoft.UI.Xaml.2.4.appx
+      #!- name: Install microsoft.ui.xaml
+      #!  run: |
+      #!    Import-Module Appx -usewindowspowershell
+      #!    Add-AppxPackage dependencies/microsoft.ui.xaml.2.4.2_AppX/x64/Release/Microsoft.UI.Xaml.2.4.appx
       - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false"))
       - name: Install the UWP test app
         run: |
