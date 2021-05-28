@@ -9,7 +9,7 @@
 
   <Identity
     Name="realm.uwp.tests"
-    Publisher="CN=andrea"
+    Publisher="CN=Realm Tests"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="032e482b-1a73-46f2-afb7-1c22f2e68be8" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
