@@ -334,8 +334,10 @@ jobs:
           Get-AppxPackage -Name realm.uwp.tests
           Write-Output $env:LOCALAPPDATA
       - name: Run the tests
-        run: "Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml"
-        shell: cmd
+        run: |
+          Start-Process explorer.exe shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -Wait
+          Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml
+        shell: powershell
       - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/realm.uwp.tests_c5h742swe65v6/LocalState/TestResults.UWP.xml", "UWP tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
