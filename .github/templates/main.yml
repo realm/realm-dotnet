@@ -318,6 +318,7 @@ jobs:
           $currentDirectory = Get-Location
           [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
           & certutil -f -p ${{ secrets.Pfx_Password }} -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+        shell: powershell
       - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false"))
       #! - name: Install the UWP test app
       #!   run: |
@@ -325,8 +326,8 @@ jobs:
       #!     Add-AppPackage Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Tests.UWP_1.0.0.0_x86_x64_arm.msixbundle -DependencyPath Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Dependencies/x64/*
       - name: Install the UWP test app
         run: |
-          Import-Module Appx -usewindowspowershell
           Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
+        shell: powershell
       - name: Some debug things
         run: |
           Import-Module Appx -usewindowspowershell
