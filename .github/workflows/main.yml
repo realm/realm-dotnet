@@ -389,6 +389,7 @@ jobs:
         Write-Output $env:LOCALAPPDATA
     - name: Run the tests
       run: Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml
+      shell: powershell
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
