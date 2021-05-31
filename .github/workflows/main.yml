@@ -378,9 +378,7 @@ jobs:
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false
     - name: Install the UWP test app
-      run: |
-        Import-Module Appx -usewindowspowershell
-        Add-AppPackage Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Tests.UWP_1.0.0.0_x86_x64_arm.msixbundle -DependencyPath Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Dependencies/x64/*
+      run: Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
     - name: Some debug things
       run: |
         Import-Module Appx -usewindowspowershell
@@ -392,7 +390,7 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
       with:
-        files: $env:LOCALAPPDATA/Packages/realm.uwp.tests_dnf38210mrefr/LocalState/TestResults.UWP.xml
+        files: $env:LOCALAPPDATA/Packages/realm.uwp.tests_c5h742swe65v6/LocalState/TestResults.UWP.xml
         comment_mode: "off"
         check_name: UWP tests results
   run-tests-netcore-net5:
