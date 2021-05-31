@@ -327,6 +327,21 @@ jobs:
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results")
+  run-tests-xamarin-ios:
+    runs-on: macos-latest
+    name: Run tests for Xamarin on iOS
+    needs: build-packages
+    steps:
+      - #@ checkoutCode()
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+      #! - name: Run the tests
+      #!  uses: runIOSimulator
+      #!  with:
+      #!   appPath: 'Tests.iOS.app'
+      #!   bundleId: 'io.realm.dotnettests'
+      #!   arguments: '--headless --resultpath TestResults.iOS.xml'
+      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin iOS tests results")
   run-tests-weaver:
     runs-on: windows-latest
     name: Run tests for the weaver
