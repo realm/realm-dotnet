@@ -5,7 +5,8 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  IgnorableNamespaces="uap mp uap3">
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap mp uap3 desktop">
 
   <Identity
     Name="realm.uwp.tests"
@@ -45,7 +46,7 @@
       <Extensions>
         <uap3:Extension Category="windows.appExecutionAlias">
           <uap3:AppExecutionAlias>
-            <uap3:ExecutionAlias Alias="Tests.UWP.exe" />
+            <desktop:ExecutionAlias Alias="Tests.UWP.exe" />
           </uap3:AppExecutionAlias>
         </uap3:Extension>
       </Extensions>
