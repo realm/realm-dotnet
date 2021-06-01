@@ -216,3 +216,4 @@ Tests/Tests.Unity/Assets/Tests/*.dll
 Tests/Tests.Unity/PlayModeTestPlayer/
 Tests/Tests.Unity/*.xml
 Tests/Tests.Unity/PlayModeTestPlayer*
+*.pfx
