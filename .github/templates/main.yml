@@ -319,7 +319,7 @@ jobs:
           [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
           & certutil -f -p ${{ secrets.Pfx_Password }} -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
         shell: powershell
-      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false"))
+      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
       #! - name: Install the UWP test app
       #!   run: |
       #!     Import-Module Appx -usewindowspowershell
@@ -335,10 +335,10 @@ jobs:
           Write-Output $env:LOCALAPPDATA
       - name: Run the tests
         run: |
-          Start-Process explorer.exe shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -Wait
+          Start-Process explorer.exe shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App
           Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml
         shell: powershell
-      - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/realm.uwp.tests_c5h742swe65v6/LocalState/TestResults.UWP.xml", "UWP tests results")
+      - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml", "UWP tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
     needs: build-packages

@@ -195,7 +195,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Tests.UWP_TemporaryKey.pfx" />
+    <None Remove="Tests.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NUnit.Xamarin">
