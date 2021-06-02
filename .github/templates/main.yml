@@ -317,8 +317,8 @@ jobs:
           $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
           $currentDirectory = Get-Location
           [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-          & certutil -f -p ${{ secrets.Pfx_Password }} -importpfx root ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-          & certutil -verifystore root 1fdffc79ab38c769cc864c58591d3fc784aef76d
+          certutil -f -p ${{ secrets.Pfx_Password }} -importpfx ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+          certutil -verifystore my 1fdffc79ab38c769cc864c58591d3fc784aef76d
         shell: powershell
       - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
       #! - name: Install the UWP test app
