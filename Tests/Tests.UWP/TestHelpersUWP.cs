@@ -48,20 +48,20 @@ namespace Realms.Tests.UWP
             if (!string.IsNullOrEmpty(cmdParams))
             {
                 var resultStr = "--result=";
-                var indexEndKey = cmdParams.IndexOf(resultStr);
-                if (indexEndKey != -1)
+                var indexStartKey = cmdParams.IndexOf(resultStr);
+                var indexEndKey = indexStartKey + resultStr.Length - 1;
+                if (indexStartKey != -1)
                 {
                     // TODO unfortunately this assumes that no space exists in the path, find a better way!
-                    var indexEndValue = cmdParams.IndexOf(" ", indexEndKey);
+                    var indexEndValue = cmdParams.IndexOf(" ", indexStartKey);
                     if (indexEndValue != -1)
                     {
-                        indexEndKey += resultStr.Length - 1;
                         return cmdParams.Substring(indexEndKey + 1, indexEndValue - indexEndKey);
                     }
                     //if result was the last parameter, no space is found after it
                     else
                     {
-                        return cmdParams.Substring(indexEndKey + 1, cmdParams.Length -1 - indexEndKey);
+                        return cmdParams.Substring(indexEndKey + 1, cmdParams.Length - 1 - indexEndKey);
                     }
                 }
             }
