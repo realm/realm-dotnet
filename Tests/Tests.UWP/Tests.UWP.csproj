@@ -25,8 +25,6 @@
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <PackageCertificateKeyFile>
-    </PackageCertificateKeyFile>
     <PackageCertificateThumbprint>1FDFFC79AB38C769CC864C58591D3FC784AEF76D</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
