@@ -392,11 +392,11 @@ jobs:
         Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
         do
         {
-            Write-Output $uwp_test_app
             Start-Sleep -s 3
             $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
             $uwp_test_app = Get-Process Tests.UWP
 
+            Write-Output $uwp_test_app
             Write-Output $file_available
         } while ($uwp_test_app -or !$file_available)
       shell: powershell
