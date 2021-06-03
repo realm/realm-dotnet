@@ -336,8 +336,9 @@ jobs:
       - name: Run the tests
         run: |
           Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
-          $uwp-test-app = Get-Process Tests.UWP |select -expandproperty id
-          Wait-Process $uwp-test-app
+          Start-Sleep -s 10
+          $uwp_test_app = Get-Process Tests.UWP |select -expandproperty id
+          Wait-Process $uwp_test_app
         shell: powershell
       - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml", "UWP tests results")
   run-tests-netcore-net5:
