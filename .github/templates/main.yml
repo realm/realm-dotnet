@@ -335,18 +335,19 @@ jobs:
           Write-Output $env:LOCALAPPDATA
       - name: Run the tests
         run: |
+          echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" >> $GITHUB_ENV
           Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
           do
           {
               Start-Sleep -s 3
-              $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+              $file_available = Test-Path -Path ${{ env.test_results }}
               $uwp_test_app = Get-Process Tests.UWP
 
               Write-Output $uwp_test_app
               Write-Output $file_available
           } while ($uwp_test_app -and !$file_available)
         shell: powershell
-      - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml", "UWP tests results")
+      - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
     needs: build-packages
