@@ -390,9 +390,7 @@ jobs:
     - name: Run the tests
       run: |
         Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
-        Start-Sleep -s 10
-        $uwp_test_app = Get-Process Tests.UWP |select -expandproperty id
-        Wait-Process $uwp_test_app
+        Start-Sleep -s 720
       shell: powershell
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
