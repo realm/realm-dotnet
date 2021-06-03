@@ -398,7 +398,7 @@ jobs:
 
             Write-Output $uwp_test_app
             Write-Output $file_available
-        } while ($uwp_test_app -or !$file_available)
+        } while ($uwp_test_app -and !$file_available)
       shell: powershell
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1

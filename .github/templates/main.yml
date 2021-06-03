@@ -344,7 +344,7 @@ jobs:
 
               Write-Output $uwp_test_app
               Write-Output $file_available
-          } while ($uwp_test_app -or !$file_available)
+          } while ($uwp_test_app -and !$file_available)
         shell: powershell
       - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml", "UWP tests results")
   run-tests-netcore-net5:
