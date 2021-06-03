@@ -24,6 +24,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using MongoDB.Bson;
 using Realms.Dynamic;
 using Realms.Helpers;
 
@@ -38,7 +39,23 @@ namespace Realms
         private readonly SetHandle _setHandle;
 
         [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "We need to be on the generic class so that the weaver can use it.")]
-        public static IEqualityComparer<T> Comparer { get; } = typeof(T) == typeof(byte[]) ? (IEqualityComparer<T>)new BinaryEqualityComparer() : EqualityComparer<T>.Default;
+        public static IEqualityComparer<T> Comparer { get; }
+
+        static RealmSet()
+        {
+            if (typeof(T) == typeof(byte[]))
+            {
+                Comparer = (IEqualityComparer<T>)new BinaryEqualityComparer();
+            }
+            else if (typeof(T) == typeof(RealmValue))
+            {
+                Comparer = (IEqualityComparer<T>)new RealmValueEqualityComparer();
+            }
+            else
+            {
+                Comparer = EqualityComparer<T>.Default;
+            }
+        }
 
         internal RealmSet(Realm realm, SetHandle adoptedSet, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
@@ -400,6 +417,31 @@ namespace Realms
                 }
 
                 return obj.Length;
+            }
+        }
+
+        private class RealmValueEqualityComparer : EqualityComparer<RealmValue>
+        {
+            public override bool Equals(RealmValue x, RealmValue y)
+            {
+                if (x.Type.IsNumeric() && y.Type.IsNumeric())
+                {
+                    var decimalX = x.As<Decimal128>();
+                    var decimalY = x.As<Decimal128>();
+                    return decimalX == decimalY;
+                }
+
+                return x == y;
+            }
+
+            public override int GetHashCode(RealmValue obj)
+            {
+                if (obj.Type.IsNumeric())
+                {
+                    return obj.As<double>().GetHashCode();
+                }
+
+                return obj.GetHashCode();
             }
         }
     }
