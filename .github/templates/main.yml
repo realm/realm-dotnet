@@ -340,7 +340,7 @@ jobs:
           do
           {
               Start-Sleep -s 3
-              $file_available = Test-Path -Path ${{ env.test_results }}
+              $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
               $uwp_test_app = Get-Process Tests.UWP
 
               Write-Output $uwp_test_app
