@@ -335,8 +335,7 @@ jobs:
           Write-Output $env:LOCALAPPDATA
       - name: Run the tests
         run: |
-          Start-Process explorer.exe shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App
-          Tests.UWP.exe --headless --labels=All --result=TestResults.UWP.xml
+          Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=All --result=TestResults.UWP.xml"
         shell: powershell
       - #@ publishTestsResults("$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml", "UWP tests results")
   run-tests-netcore-net5:
