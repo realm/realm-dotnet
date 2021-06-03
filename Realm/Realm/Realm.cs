@@ -233,7 +233,7 @@ namespace Realms
         {
             Config = config;
 
-            if (config.EnableCache && sharedRealmHandle.CanCache)
+            if (config.EnableCache && sharedRealmHandle.OwnsNativeRealm)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
@@ -355,7 +355,11 @@ namespace Realms
         {
             if (!IsClosed)
             {
-                _state.RemoveRealm(this);
+                if (SharedRealmHandle.OwnsNativeRealm)
+                {
+                    _state.RemoveRealm(this);
+                }
+
                 _state = null;
                 SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
             }
