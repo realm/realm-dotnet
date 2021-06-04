@@ -472,9 +472,9 @@ namespace Realms.Helpers
                 return ((IGenericConverter<TResult>)converter).Convert(value);
             }
 
-            if (value is TResult res)
+            if (value is IConvertible)
             {
-                return res;
+                return (TResult)System.Convert.ChangeType(value, targetType);
             }
 
             throw new InvalidCastException($"No conversion exists from {sourceType.FullName} to {targetType.FullName}");
