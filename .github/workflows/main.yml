@@ -373,28 +373,7 @@ jobs:
         $currentDirectory = Get-Location
         [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
         certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-        certutil -p ${{ secrets.Pfx_Password }} -dump ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
       shell: powershell
-    - name: Windows write vars
-      run: |
-        echo "hello_var_win=YEY" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
-      shell: powershell
-    - name: Linux write vars
-      run: |
-        echo "hello_linux_var=AY_Linux" >> $GITHUB_ENV
-      shell: bash
-    - name: Win read vars
-      run: |
-        Write-Output "Result path: $env:test_results"
-        Write-Output "hello_var_win: $env:hello_var_win"
-        Write-Output "hello_linux_var: $env:hello_linux_var"
-      shell: powershell
-    - name: Linux write vars
-      run: |
-        echo "Result path: $test_results"
-        echo "hello_var_win: $hello_var_win"
-        echo "hello_linux_var: $hello_linux_var"
-      shell: bash
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
@@ -411,13 +390,10 @@ jobs:
             Start-Sleep -s 3
             $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
             $uwp_test_app = Get-Process Tests.UWP
-
             Write-Output $uwp_test_app
-            Write-Output $file_available
+            Write-Output "Result file create: $file_available"
         } while ($uwp_test_app -and !$file_available)
       shell: powershell
-    - name: Some debug things
-      run: 'Write-Output test_results: $env:test_results'
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
