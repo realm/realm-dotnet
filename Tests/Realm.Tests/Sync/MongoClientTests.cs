@@ -1230,7 +1230,7 @@ namespace Realms.Tests.Sync
                     sort = new { LongValue = -1 };
                     projection = new
                     {
-                        _id = 1,
+                        _id = 0,
                         LongValue = 1,
                         StringValue = 1
                     };
