@@ -28,6 +28,7 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct DictionaryChangeSet
         {
+            public MarshaledVector<PrimitiveValue> Deletions;
             public MarshaledVector<PrimitiveValue> Insertions;
             public MarshaledVector<PrimitiveValue> Modifications;
         }
