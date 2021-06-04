@@ -380,6 +380,11 @@ namespace Realms.Helpers
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
         public static TResult Convert<TFrom, TResult>(TFrom value)
         {
+            if (value is TResult result)
+            {
+                return result;
+            }
+
             if (typeof(TResult) == typeof(RealmValue))
             {
                 /* This is special cased due to a bug in the Xamarin.iOS interpreter. When value
@@ -421,6 +426,11 @@ namespace Realms.Helpers
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
         public static TResult Convert<TResult>(object value)
         {
+            if (value is TResult result)
+            {
+                return result;
+            }
+
             var targetType = typeof(TResult);
             if (targetType == typeof(RealmValue))
             {
