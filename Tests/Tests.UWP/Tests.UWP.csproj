@@ -28,7 +28,7 @@
     <PackageCertificateKeyFile></PackageCertificateKeyFile>
     <PackageCertificateThumbprint Condition=" '$(PackageCertificateKeyFile)' ==  '' ">1FDFFC79AB38C769CC864C58591D3FC784AEF76D</PackageCertificateThumbprint>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+  <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != '' And '$(RestoreConfigFile)' == '' ">
     <RestoreConfigFile>$(MSBuildProjectDirectory)\..\Test.NuGet.Config</RestoreConfigFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">

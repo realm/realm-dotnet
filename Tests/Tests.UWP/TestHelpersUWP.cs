@@ -42,26 +42,40 @@ namespace Realms.Tests.UWP
             await transformedXmlResults.SaveToFileAsync(resultsSf);
         }
 
-        // TODO revisit this method to see if something smarter can be done about it
+        // TODO show nikola the funky behaviour with params from powershell and powershell core, while fine with cmd
         public static string GetResultPath(string cmdParams)
         {
             if (!string.IsNullOrEmpty(cmdParams))
             {
                 var resultStr = "--result=";
-                var indexStartKey = cmdParams.IndexOf(resultStr);
-                var indexEndKey = indexStartKey + resultStr.Length - 1;
-                if (indexStartKey != -1)
+                var indexStartKeyTarget = cmdParams.IndexOf(resultStr);
+                if (indexStartKeyTarget != -1)
                 {
-                    // TODO unfortunately this assumes that no space exists in the path, find a better way!
-                    var indexEndValue = cmdParams.IndexOf(" ", indexStartKey);
-                    if (indexEndValue != -1)
+                    var indexEndKeyTarget = indexStartKeyTarget + resultStr.Length - 1;
+                    // if string is in apexes, don't care about spaces
+                    if (cmdParams.Length > indexEndKeyTarget + 2 && cmdParams[indexEndKeyTarget + 1] == '"')
                     {
-                        return cmdParams.Substring(indexEndKey + 1, indexEndValue - indexEndKey);
+                        var indexEndValueTarget = cmdParams.IndexOf('"', indexEndKeyTarget + 2);
+                        if (indexEndValueTarget != -1)
+                        {
+                            return cmdParams.Substring(indexEndKeyTarget + 2, indexEndValueTarget - indexEndKeyTarget - 2);
+                        }
                     }
-                    //if result was the last parameter, no space is found after it
                     else
                     {
-                        return cmdParams.Substring(indexEndKey + 1, cmdParams.Length - 1 - indexEndKey);
+                        var indexNextParam = cmdParams.IndexOf("--", indexEndKeyTarget);
+                        if (indexNextParam != -1)
+                        {
+                            // search the previous last char
+                            var indexEndValueTarget = indexNextParam;
+                            while (cmdParams[indexEndValueTarget--] == ' ') { }
+                            return cmdParams.Substring(indexEndKeyTarget + 1, indexEndValueTarget - indexEndKeyTarget);
+                        }
+                        //if target was the last parameter
+                        else
+                        {
+                            return cmdParams.Substring(indexEndKeyTarget + 1, cmdParams.Length - 1 - indexEndKeyTarget);
+                        }
                     }
                 }
             }
