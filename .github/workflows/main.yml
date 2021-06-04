@@ -375,6 +375,26 @@ jobs:
         certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
         certutil -p ${{ secrets.Pfx_Password }} -dump ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
       shell: powershell
+    - name: Windows write vars
+      run: |
+        echo "hello_var_win=YEY" >> $GITHUB_ENV
+      shell: powershell
+    - name: Linux write vars
+      run: |
+        echo "hello_linux_var=AY_Linux" >> $GITHUB_ENV
+      shell: bash
+    - name: Win read vars
+      run: |
+        Write-Output "Result path: ${{ env.test_results }}"
+        Write-Output "hello_var_win: ${{ env.hello_var_win }}"
+        Write-Output "hello_linux_var: ${{ env.hello_linux_var }}"
+      shell: powershell
+    - name: Linux write vars
+      run: |
+        echo "Result path: ${{ env.test_results }}"
+        echo "hello_var_win: ${{ env.hello_var_win }}"
+        echo "hello_linux_var: ${{ env.hello_linux_var }}"
+      shell: bash
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
@@ -401,8 +421,6 @@ jobs:
             Write-Output $file_available
         } while ($uwp_test_app -and !$file_available)
       shell: powershell
-    - name: Some more debug
-      run: 'Write-Output "Result path: ${{ env.test_results }}"'
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
