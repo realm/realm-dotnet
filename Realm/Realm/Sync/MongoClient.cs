@@ -446,7 +446,6 @@ namespace Realms.Sync
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.UpdateOneAsync"/> or <see cref="Collection{TDocument}.UpdateManyAsync"/> operation.
         /// </summary>
-        [Preserve(AllMembers = true)]
         public class UpdateResult
         {
             /// <summary>
@@ -454,6 +453,7 @@ namespace Realms.Sync
             /// </summary>
             /// <value>The number of matched documents.</value>
             [BsonElement("matchedCount")]
+            [Preserve]
             public int MatchedCount { get; private set; }
 
             /// <summary>
@@ -461,6 +461,7 @@ namespace Realms.Sync
             /// </summary>
             /// <value>The number of modified documents.</value>
             [BsonElement("modifiedCount")]
+            [Preserve]
             public int ModifiedCount { get; private set; }
 
             /// <summary>
@@ -468,13 +469,13 @@ namespace Realms.Sync
             /// </summary>
             /// <value>The <c>_id</c> of the inserted document or <c>null</c> if the operation didn't result in an insertion.</value>
             [BsonElement("upsertedId")]
+            [Preserve]
             public object UpsertedId { get; private set; }
         }
 
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.InsertOneAsync"/> operation.
         /// </summary>
-        [Preserve(AllMembers = true)]
         public class InsertResult
         {
             /// <summary>
@@ -482,13 +483,13 @@ namespace Realms.Sync
             /// </summary>
             /// <value>The <c>_id</c> of the inserted document.</value>
             [BsonElement("insertedId")]
+            [Preserve]
             public object InsertedId { get; private set; }
         }
 
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.InsertManyAsync"/> operation.
         /// </summary>
-        [Preserve(AllMembers = true)]
         public class InsertManyResult
         {
             /// <summary>
@@ -496,13 +497,13 @@ namespace Realms.Sync
             /// </summary>
             /// <value>The <c>_id</c>s of the inserted documents.</value>
             [BsonElement("insertedIds")]
+            [Preserve]
             public object[] InsertedIds { get; private set; }
         }
 
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.DeleteOneAsync"/> or <see cref="Collection{TDocument}.DeleteManyAsync(object)"/> operation.
         /// </summary>
-        [Preserve(AllMembers = true)]
         public class DeleteResult
         {
             /// <summary>
@@ -510,6 +511,7 @@ namespace Realms.Sync
             /// </summary>
             /// <value>The number of deleted documents.</value>
             [BsonElement("deletedCount")]
+            [Preserve]
             public int DeletedCount { get; private set; }
         }
     }

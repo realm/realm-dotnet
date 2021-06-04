@@ -39,7 +39,7 @@ namespace Realms
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    [Preserve(AllMembers = true, Conditional = false)]
+    [Preserve(AllMembers = true)]
     [Serializable]
     public abstract class RealmObjectBase
         : INotifyPropertyChanged,
