@@ -68,12 +68,10 @@ namespace Realms.Tests.UWP
                 Window.Current.Content = rootFrame;
             }
 
-            CommandLineActivatedEventArgs commandLineArgs = null;
             string cmdArgs = string.Empty;
             if (args.Kind == ActivationKind.CommandLineLaunch)
             {
-                commandLineArgs = args as CommandLineActivatedEventArgs;
-                cmdArgs = commandLineArgs.Operation.Arguments;
+                cmdArgs = ((CommandLineActivatedEventArgs)args).Operation.Arguments;
             }
 
             if (rootFrame.Content == null)

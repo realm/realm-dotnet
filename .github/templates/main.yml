@@ -327,13 +327,12 @@ jobs:
         run: |
           echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml"  | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
           Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
+          Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
           do
           {
               Start-Sleep -s 3
               $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
               $uwp_test_app = Get-Process Tests.UWP
-              Write-Output $uwp_test_app
-              Write-Output "Result file create: $file_available"
           } while ($uwp_test_app -and !$file_available)
         shell: powershell
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
