@@ -472,9 +472,9 @@ namespace Realms.Helpers
                 return ((IGenericConverter<TResult>)converter).Convert(value);
             }
 
-            if (value is TResult res)
+            if (value is IConvertible)
             {
-                return res;
+                return (TResult)System.Convert.ChangeType(value, targetType);
             }
 
             throw new InvalidCastException($"No conversion exists from {sourceType.FullName} to {targetType.FullName}");
@@ -510,6 +510,10 @@ namespace Realms.Helpers
                 else if (targetType.IsAssignableFrom(sourceType) || sourceType == typeof(object))
                 {
                     _converter = new InheritanceConverter<TSource, TTarget>();
+                }
+                else if (typeof(IConvertible).IsAssignableFrom(sourceType))
+                {
+                    _converter = new ConvertChangeTypeConverter<TSource, TTarget>();
                 }
                 else
                 {
@@ -594,6 +598,11 @@ namespace Realms.Helpers
             public override TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
 
             public override TTarget Convert(object source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {source?.GetType().FullName} to {typeof(TTarget).FullName}");
+        }
+
+        private class ConvertChangeTypeConverter<TSource, TTarget> : SpecializedConverterBase<TSource, TTarget>
+        {
+            public override TTarget Convert(TSource source) => (TTarget)System.Convert.ChangeType(source, typeof(TTarget));
         }
 
         #region ToRealmValue Converters
