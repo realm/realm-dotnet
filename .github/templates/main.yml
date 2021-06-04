@@ -348,7 +348,7 @@ jobs:
           } while ($uwp_test_app -and !$file_available)
         shell: powershell
       - name: Some more debug
-        run: 'echo Result path: ${{ env.test_results }}'
+        run: 'Write-Output "Result path: ${{ env.test_results }}"'
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
