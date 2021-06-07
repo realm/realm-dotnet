@@ -79,6 +79,20 @@ steps:
 #@ end
 #@ end
 
+#@ def buildUnityPackage(includeDependencies):
+#@ finalPkgName = "io.realm.unity-" + ("bundled-" if includeDependencies else "") + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
+  - name: #@ "Build Unity" + (" Bundled Dependencies" if includeDependencies else "")
+    run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack" + (" --include-dependencies" if includeDependencies else "")
+  - name: Store Unity artifacts
+    uses: actions/upload-artifact@v2
+    with:
+      name: #@ finalPkgName
+      path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
+      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  - name: Cleanup build folder
+    run: #@ "rm ${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
+#@ end
+
 #@ def uploadPackageArtifacts():
 #@ for pkgName in nugetPackages:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
@@ -99,6 +113,26 @@ steps:
     with:
       name: #@ finalPkgName
       path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end
+
+#@ def fetchWrapperBinaries():
+#@ wrapperPlatforms = [ 'macos', 'ios', 'linux' ]
+#@ for androidABI in androidABIs:
+#@ wrapperPlatforms.append("android-" + androidABI)
+#@ end
+#@ for windowsArch in windowsArchs:
+#@ wrapperPlatforms.append("windows-" + windowsArch)
+#@ end
+#@ for uwpArch in windowsUWPArchs:
+#@ wrapperPlatforms.append("windows-uwp-" + uwpArch)
+#@ end
+#@ for platform in wrapperPlatforms:
+  - name: #@ "Fetch artifacts for " + platform
+    uses: actions/download-artifact@v2
+    with:
+      name: #@ "wrappers-" + platform
+      path: wrappers/build
 #@ end
 #@ end
 
@@ -226,69 +260,12 @@ jobs:
         id: set-version-suffix
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
         run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
-      - name: Fetch artifacts MacOS
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-macos
-          path: wrappers/build
-      - name: Fetch artifacts iOS
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-ios
-          path: wrappers/build
-      - name: Fetch artifacts Linux
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-linux
-          path: wrappers/build
-      - name: Fetch artifacts Android armeabi-v7a
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-armeabi-v7a
-          path: wrappers/build
-      - name: Fetch artifacts Android arm64-v8a
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-arm64-v8a
-          path: wrappers/build
-      - name: Fetch artifacts Android x86
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-x86
-          path: wrappers/build
-      - name: Fetch artifacts Android x86_64
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-x86_64
-          path: wrappers/build
-      - name: Fetch artifacts Windows 32bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-Win32
-          path: wrappers/build
-      - name: Fetch artifacts Windows 64bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-x64
-          path: wrappers/build
-      - name: Fetch artifacts Windows UWP 32bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-uwp-Win32
-          path: wrappers/build
-      - name: Fetch artifacts Windows UWP 64bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-uwp-x64
-          path: wrappers/build
-      - name: Fetch artifacts Windows UWP ARM
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-uwp-ARM
-          path: wrappers/build
+      - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(buildPackages())
       - #@ findPackageVersion()
       - #@ template.replace(uploadPackageArtifacts())
+      - #@ template.replace(buildUnityPackage(False))
+      - #@ template.replace(buildUnityPackage(True))
   run-tests-net-framework:
     runs-on: windows-latest
     name: Run tests for NET framework
