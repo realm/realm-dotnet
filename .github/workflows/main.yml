@@ -14,6 +14,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -37,6 +39,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -60,6 +64,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -90,6 +96,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -118,6 +126,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -163,6 +173,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -213,6 +225,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Set version suffix
       id: set-version-suffix
       run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
@@ -347,6 +361,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -387,6 +403,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -419,6 +437,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -448,6 +468,8 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register problem matchers
+      run: echo "::add-matcher::problem-matchers.json"
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}
       shell: bash
