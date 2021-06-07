@@ -342,11 +342,14 @@ stage('Test') {
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1', '1'),
     '.NET Core Linux 2': NetCoreTest('docker', 'netcoreapp3.1', '2'),
     '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '3'),
+    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '4'),
+    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '5'),
+    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '6'),
+    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '7'),
+    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '8'),
     // '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
     // '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
-    '.NET 5 Linux': NetCoreTest('docker', 'net5.0', '4'),
-    '.NET 5 Linux 2': NetCoreTest('docker', 'net5.0', '5'),
-    '.NET 5 Linux 3': NetCoreTest('docker', 'net5.0', '6'),
+    // '.NET 5 Linux': NetCoreTest('docker', 'net5.0', '4'),
     // '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
