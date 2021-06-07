@@ -334,6 +334,12 @@ jobs:
               $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
               $uwp_test_app = Get-Process Tests.UWP
           } while ($uwp_test_app -and !$file_available)
+
+          $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+          if (!$file_available)
+          {
+            exit 1
+          }
         shell: powershell
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
   run-tests-netcore-net5:

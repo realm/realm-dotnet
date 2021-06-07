@@ -41,25 +41,8 @@ namespace Realms.Tests.UWP
             };
         }
 
-        // TODO check if possible to avoid "async void"
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            #region TO REMOVE BECAUSE OF TESTING
-            //_nunit.Options.AutoRun = true;
-            //_nunit.Options.CreateXmlResultFile = true;
-            //_nunit.Options.ResultFilePath = ".\\UwpTestsResults.xml";//Path.Combine("C:\\Users\\andre\\Development\\realm-dotnet", "UwpTestsResults.xml");//Path.Combine(storageFolder.Path, "UwpTestsResults.xml");//xmlResultFile.Path;//GetResultPath(launchParams);
-            //Debug.WriteLine($"Path = {_nunit.Options.ResultFilePath}");
-            //_nunit.Options.OnCompletedCallback = () =>
-            //{
-            //    if (!string.IsNullOrEmpty(_nunit.Options.ResultFilePath))
-            //    {
-            //        TestHelpers.TransformTestResults(_nunit.Options.ResultFilePath);
-            //    }
-            //    Console.WriteLine("Test finished, reporting results");
-            //    return Task.CompletedTask;
-            //};
-            #endregion
-
             if (e.Parameter != null && e.Parameter is string launchParams)
             {
                 if (launchParams.Contains("--headless"))
