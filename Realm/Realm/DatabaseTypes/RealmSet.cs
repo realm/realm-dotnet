@@ -424,6 +424,8 @@ namespace Realms
         {
             public override bool Equals(RealmValue x, RealmValue y)
             {
+                // We're converting numeric types to Decimal128 as it can hold the entire range
+                // of long, float, and double
                 if (x.Type.IsNumeric() && y.Type.IsNumeric())
                 {
                     var decimalX = x.As<Decimal128>();
@@ -436,6 +438,8 @@ namespace Realms
 
             public override int GetHashCode(RealmValue obj)
             {
+                // We're getting the hashcode of numeric types by casting them to double
+                // because Decimal128's hashcode function is incorrect: https://jira.mongodb.org/browse/CSHARP-3288
                 if (obj.Type.IsNumeric())
                 {
                     return obj.As<double>().GetHashCode();
