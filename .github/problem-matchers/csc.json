@@ -4,7 +4,7 @@
             "owner": "csc",
             "pattern": [
                 {
-                    "regexp": "^((Warning|Error): [^\\s].*)\\((\\d+),(\\d+)(?:,\\d+|,\\d+,\\d+)?\\):\\s+(error|warning)\\s+([a-zA-Z]+(?<!MSB)\\d+):\\s*(.*?)\\s+\\[(.*?)\\]$",
+                    "regexp": "^(?:(?:Warning|Error): )?([^\\s].*)\\((\\d+),(\\d+)(?:,\\d+|,\\d+,\\d+)?\\):\\s+(error|warning)\\s+([a-zA-Z]+(?<!MSB)\\d+):\\s*(.*?)\\s+\\[(.*?)\\]$",
                     "file": 8,
                     "line": 7,
                     "column": 4,
