@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -50,7 +51,7 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = DummyAppId,
         };
 
-        private static Uri _baseUri;
+        private static Uri _baseUri = ConfigurationManager.AppSettings["BaasUrl"] != null ? new Uri(ConfigurationManager.AppSettings["BaasUrl"]) : null;
 
         public static AppConfiguration GetAppConfig(AppConfigType type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
         {
