@@ -253,6 +253,7 @@ namespace Realms.Tests.Database
             Assert.That(objAgain.GetHashCode(), Is.EqualTo(managedHash), "Object that didn't hash its hash code and its row got deleted should still have the same hash code");
         }
 
+#pragma warning disable SYSLIB0001 // We only use BinaryFormatter for serialization
         [Test]
         public void RealmObject_WhenSerialized_ShouldSkipBaseProperties()
         {
@@ -272,6 +273,7 @@ namespace Realms.Tests.Database
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
         }
+#pragma warning restore SYSLIB0001
 
         [Test]
         public void FrozenObject_GetsGarbageCollected()
