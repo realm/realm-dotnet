@@ -5,13 +5,11 @@
             "pattern": [
                 {
                     "regexp": "^((Warning|Error): [^\\s].*)\\((\\d+),(\\d+)(?:,\\d+|,\\d+,\\d+)?\\):\\s+(error|warning)\\s+([a-zA-Z]+(?<!MSB)\\d+):\\s*(.*?)\\s+\\[(.*?)\\]$",
-                    "file": 2,
-                    "line": 3,
+                    "file": 8,
+                    "line": 7,
                     "column": 4,
                     "severity": 5,
-                    "code": 6,
-                    "message": 7,
-                    "fromPath": 8
+                    "code": 6
                 }
             ]
         },
