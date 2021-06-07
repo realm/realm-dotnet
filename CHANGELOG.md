@@ -1,5 +1,8 @@
 ## 10.2.0-beta.3 (TBD)
 
+### Breaking Changes
+* `ISet<RealmValue>` will now consider values holding different numeric types to be equal if the underlying numbers are equal - e.g. `1` is equal to `1.0` and to `1.0f`. (Issue [#2412](https://github.com/realm/realm-dotnet/issues/2412))
+
 ### Fixed
 * Added back 32bit support for iOS builds. (Issue [#2429](https://github.com/realm/realm-dotnet/issues/2429))
 * Removed redundant warnings when building a Unity project for device that mentioned that the schema for Realm and Realm.UnityUtils is empty. (Issue [#2320](https://github.com/realm/realm-dotnet/issues/2320))
