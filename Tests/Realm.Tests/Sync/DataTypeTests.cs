@@ -552,7 +552,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(prop1, Is.EqualTo(prop2).Using<T, T>(equalsOverride));
                 Assert.That(prop2, Is.EqualTo(item2).Using<T, T>(equalsOverride));
-
             }, ensureNoSessionErrors: true);
         }
 
