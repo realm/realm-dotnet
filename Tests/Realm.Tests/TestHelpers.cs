@@ -22,12 +22,12 @@ using System.Threading;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-using System.Collections.Generic;
 #if __ANDROID__
 using Application = Android.App.Application;
 #endif
