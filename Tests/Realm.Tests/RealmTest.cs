@@ -39,6 +39,7 @@ namespace Realms.Tests
 
         static RealmTest()
         {
+
             InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"rt-${System.Diagnostics.Process.GetCurrentProcess().Id}");
             Directory.CreateDirectory(InteropConfig.DefaultStorageFolder);
         }
