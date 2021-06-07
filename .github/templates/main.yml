@@ -71,10 +71,8 @@ steps:
     uses: actions/checkout@v2
     with:
       submodules: recursive
-  - name: Register csc problem matchers
+  - name: Register problem matchers
     run: echo "::add-matcher::.github/problem-matchers/csc.json"
-  - name: Register msvc problem matchers
-    run: echo "::add-matcher::.github/problem-matchers/msvc.json"
 #@ end
 
 #@ def buildPackages():
