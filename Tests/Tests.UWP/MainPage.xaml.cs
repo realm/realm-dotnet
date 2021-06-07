@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NUnit.Runner.Services;
 using Windows.Storage;
 using Windows.UI.Xaml.Navigation;
@@ -45,18 +46,18 @@ namespace Realms.Tests.UWP
         {
             if (e.Parameter != null && e.Parameter is string launchParams)
             {
-                if (launchParams.Contains("--headless"))
+                var args = TestHelpersUWP.SplitArguments(launchParams);
+                if (args.Any(a =>  a == "--headless"))
                 {
                     _nunit.Options.AutoRun = true;
                     _nunit.Options.CreateXmlResultFile = true;
-                    var extractedPath = TestHelpersUWP.GetResultPath(launchParams);
-                    if (extractedPath == string.Empty)
+                    var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
+                    if (resultPath == null)
                     {
-                        extractedPath = "UWP_results.xml";
-                        Debug.WriteLine($"No \"--result\" property was found in the cmd args, so \"{extractedPath}\" filename was used");
+                        throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
                     }
 
-                    _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, extractedPath);
+                    _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
                     _nunit.Options.OnCompletedCallback = async () =>
                     {
                         await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);

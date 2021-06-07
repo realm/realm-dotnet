@@ -42,44 +42,24 @@ namespace Realms.Tests.UWP
             await transformedXmlResults.SaveToFileAsync(resultsSf);
         }
 
-        // TODO show nikola the funky behaviour with params from powershell and powershell core, while fine with cmd
-        public static string GetResultPath(string cmdParams)
+        public static string[] SplitArguments(string commandLine)
         {
-            if (!string.IsNullOrEmpty(cmdParams))
+            var paramChars = commandLine.ToCharArray();
+            var inQuote = false;
+            for (var index = 0; index < paramChars.Length; index++)
             {
-                var resultStr = "--result=";
-                var indexStartKeyTarget = cmdParams.IndexOf(resultStr);
-                if (indexStartKeyTarget != -1)
+                if (paramChars[index] == '"')
                 {
-                    var indexEndKeyTarget = indexStartKeyTarget + resultStr.Length - 1;
-                    // if string is in apexes, don't care about spaces
-                    if (cmdParams.Length > indexEndKeyTarget + 2 && cmdParams[indexEndKeyTarget + 1] == '"')
-                    {
-                        var indexEndValueTarget = cmdParams.IndexOf('"', indexEndKeyTarget + 2);
-                        if (indexEndValueTarget != -1)
-                        {
-                            return cmdParams.Substring(indexEndKeyTarget + 2, indexEndValueTarget - indexEndKeyTarget - 2);
-                        }
-                    }
-                    else
-                    {
-                        var indexNextParam = cmdParams.IndexOf("--", indexEndKeyTarget);
-                        if (indexNextParam != -1)
-                        {
-                            // search the previous last char
-                            var indexEndValueTarget = indexNextParam;
-                            while (cmdParams[indexEndValueTarget--] == ' ') { }
-                            return cmdParams.Substring(indexEndKeyTarget + 1, indexEndValueTarget - indexEndKeyTarget);
-                        }
-                        //if target was the last parameter
-                        else
-                        {
-                            return cmdParams.Substring(indexEndKeyTarget + 1, cmdParams.Length - 1 - indexEndKeyTarget);
-                        }
-                    }
+                    inQuote = !inQuote;
+                }
+
+                if (!inQuote && paramChars[index] == ' ')
+                {
+                    paramChars[index] = '\n';
                 }
             }
-            return string.Empty;
+
+            return new string(paramChars).Replace("\"", string.Empty).Split('\n');
         }
     }
 }
