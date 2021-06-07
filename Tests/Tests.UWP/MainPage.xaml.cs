@@ -36,7 +36,7 @@ namespace Realms.Tests.UWP
             _nunit = new NUnit.Runner.App();
             _nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
 
-            _nunit.Options = new TestOptions()
+            _nunit.Options = new TestOptions
             {
                 LogToOutput = true
             };
