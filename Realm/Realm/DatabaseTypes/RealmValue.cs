@@ -637,6 +637,7 @@ namespace Realms
                 return Operator.Convert<RealmValue, T>(this);
             }
 
+            // This largely copies AsAny to avoid boxing the underlying value in an object
             return Type switch
             {
                 RealmValueType.Null => Operator.Convert<T>(null),
