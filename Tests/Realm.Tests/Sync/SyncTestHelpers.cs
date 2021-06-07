@@ -51,7 +51,18 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = DummyAppId,
         };
 
-        private static Uri _baseUri = ConfigurationManager.AppSettings["BaasUrl"] != null ? new Uri(ConfigurationManager.AppSettings["BaasUrl"]) : null;
+        private static Uri _baseUri;
+
+        static SyncTestHelpers()
+        {
+            try
+            {
+                _baseUri = new Uri(ConfigurationManager.AppSettings["BaasUrl"]);
+            }
+            catch
+            {
+            }
+        }
 
         public static AppConfiguration GetAppConfig(AppConfigType type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
         {
