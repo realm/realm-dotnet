@@ -72,7 +72,7 @@ steps:
     with:
       submodules: recursive
   - name: Register problem matchers
-    run: echo "::add-matcher::problem-matchers.json"
+    run: echo "::add-matcher::.github/workflows/problem-matchers.json"
 #@ end
 
 #@ def buildPackages():
