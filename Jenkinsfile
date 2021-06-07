@@ -2,7 +2,7 @@
 
 @Library('realm-ci') _
 
-configuration = 'Release'
+configuration = 'Debug'
 
 def AndroidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 def WindowsPlatforms = [ 'Win32', 'x64' ]
@@ -342,11 +342,11 @@ stage('Test') {
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1', '1'),
     '.NET Core Linux 2': NetCoreTest('docker', 'netcoreapp3.1', '2'),
     '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '3'),
-    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '4'),
-    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '5'),
-    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '6'),
-    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '7'),
-    '.NET Core Linux 3': NetCoreTest('docker', 'netcoreapp3.1', '8'),
+    '.NET Core Linux 4': NetCoreTest('docker', 'netcoreapp3.1', '4'),
+    '.NET Core Linux 5': NetCoreTest('docker', 'netcoreapp3.1', '5'),
+    '.NET Core Linux 6': NetCoreTest('docker', 'netcoreapp3.1', '6'),
+    '.NET Core Linux 7': NetCoreTest('docker', 'netcoreapp3.1', '7'),
+    '.NET Core Linux 8': NetCoreTest('docker', 'netcoreapp3.1', '8'),
     // '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
     // '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
     // '.NET 5 Linux': NetCoreTest('docker', 'net5.0', '4'),
