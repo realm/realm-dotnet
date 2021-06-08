@@ -409,6 +409,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:

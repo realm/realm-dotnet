@@ -280,7 +280,7 @@ jobs:
     name: Run tests for NET framework
     needs: build-packages
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
       - name: Run the tests
@@ -291,7 +291,7 @@ jobs:
     name: Run tests for UWP on Windows
     needs: build-packages
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - name: Import test certificate
         run: |
