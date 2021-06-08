@@ -158,7 +158,7 @@ namespace Realms.Tests.Database
             using var openRealm = GetRealm();
 
             // Assert
-            Assert.Throws<RealmException>(() => Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration));
+            Assert.Throws<RealmInUseException>(() => Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration));
         }
 
         [Test]
