@@ -26,7 +26,8 @@ function build() {
     -DCMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE=YES \
     -DCMAKE_XCODE_ATTRIBUTE_DYLIB_INSTALL_NAME_BASE="@rpath" \
     -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-    -DCMAKE_IOS_INSTALL_COMBINED=YES
+    -DCMAKE_IOS_INSTALL_COMBINED=YES \
+    -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/realm-core/tools/cmake/ios.toolchain.cmake"
 
   # This is a workaround for CMAKE_IOS_INSTALL_COMBINED removing @rpath from LC_DYLIB_ID.
   # Reported here: https://cmake.org/pipermail/cmake/2018-October/068316.html
