@@ -22,6 +22,7 @@ using System.Threading;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
@@ -372,6 +373,14 @@ namespace Realms.Tests
             }
 
             return $"<{byteArr[0]}>";
+        }
+
+        public static void DrainQueue<T>(this Queue<T> queue, Action<T> action)
+        {
+            while (queue.Count > 0)
+            {
+                action(queue.Dequeue());
+            }
         }
 
         public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)

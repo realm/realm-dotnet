@@ -29,7 +29,7 @@ namespace Realms.Tests
     [Preserve(AllMembers = true)]
     public abstract class RealmTest
     {
-        private readonly List<Realm> _realms = new List<Realm>();
+        private readonly Queue<Realm> _realms = new Queue<Realm>();
         private Logger _originalLogger;
         private LogLevel _originalLogLevel;
 
@@ -67,7 +67,7 @@ namespace Realms.Tests
 
         protected void CleanupOnTearDown(Realm realm)
         {
-            _realms.Add(realm);
+            _realms.Enqueue(realm);
         }
 
         [TearDown]
@@ -98,12 +98,12 @@ namespace Realms.Tests
                 realm.Dispose();
             }
 
-            foreach (var realm in _realms)
+            _realms.DrainQueue(realm =>
             {
                 // TODO: this should be an assertion but fails on our migration tests due to https://github.com/realm/realm-core/issues/4605.
                 // Assert.That(DeleteRealmWithRetries(realm), Is.True, "Couldn't delete a Realm on teardown.");
                 DeleteRealmWithRetries(realm);
-            }
+            });
         }
 
         private static bool DeleteRealmWithRetries(Realm realm)

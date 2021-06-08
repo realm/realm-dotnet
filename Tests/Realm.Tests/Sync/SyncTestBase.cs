@@ -27,8 +27,8 @@ namespace Realms.Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly List<Session> _sessions = new List<Session>();
-        private readonly List<App> _apps = new List<App>();
+        private readonly Queue<Session> _sessions = new Queue<Session>();
+        private readonly Queue<App> _apps = new Queue<App>();
 
         private App _defaultApp;
 
@@ -45,7 +45,7 @@ namespace Realms.Tests.Sync
             config ??= SyncTestHelpers.GetAppConfig();
 
             var app = App.Create(config);
-            _apps.Add(app);
+            _apps.Enqueue(app);
 
             if (_defaultApp == null)
             {
@@ -57,24 +57,18 @@ namespace Realms.Tests.Sync
 
         protected override void CustomTearDown()
         {
-            foreach (var session in _sessions)
-            {
-                session?.CloseHandle();
-            }
+            _sessions.DrainQueue(session => session?.CloseHandle());
 
             base.CustomTearDown();
 
-            foreach (var app in _apps)
-            {
-                app.Handle.ResetForTesting();
-            }
+            _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
         }
 
         protected void CleanupOnTearDown(Session session)
         {
-            _sessions.Add(session);
+            _sessions.Enqueue(session);
         }
 
         protected Session GetSession(Realm realm)
