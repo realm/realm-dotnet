@@ -8,13 +8,6 @@
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver']
 
-#@ def checkoutCode():
-name: Checkout code
-uses: actions/checkout@v2
-with:
-  submodules: recursive
-#@ end
-
 #@ def checkCache(key):
 name: Check cache
 id: check-cache
@@ -57,7 +50,7 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ actualCommand = cmd + configurationParam + ltoParam
 
 steps:
-  - #@ checkoutCode()
+  - #@ template.replace(checkoutCode())
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
   - #@ step
@@ -71,6 +64,17 @@ steps:
       name: #@ outputVar
       path: wrappers/build/**
       retention-days: 1
+#@ end
+
+#@ def checkoutCode():
+  - name: Checkout code
+    uses: actions/checkout@v2
+    with:
+      submodules: recursive
+  - name: Register csc problem matcher
+    run: echo "::add-matcher::.github/problem-matchers/csc.json"
+  - name: Register msvc problem matcher
+    run: echo "::add-matcher::.github/problem-matchers/msvc.json"
 #@ end
 
 #@ def buildPackages():
@@ -255,7 +259,7 @@ jobs:
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
@@ -273,7 +277,7 @@ jobs:
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - #@ msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
@@ -289,7 +293,7 @@ jobs:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
         targetFramework: [ netcoreapp3.1, net5.0 ]
     steps:
-    - #@ checkoutCode()
+    - #@ template.replace(checkoutCode())
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
     - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
     - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
@@ -298,7 +302,7 @@ jobs:
     name: Run tests for Xamarin on MacOS
     needs: build-packages
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
@@ -308,6 +312,6 @@ jobs:
     runs-on: windows-latest
     name: Run tests for the weaver
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")
