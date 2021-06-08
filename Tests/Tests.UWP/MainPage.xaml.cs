@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NUnit.Runner.Services;
@@ -29,21 +28,23 @@ namespace Realms.Tests.UWP
     public sealed partial class MainPage
     {
         private NUnit.Runner.App _nunit;
+
         public MainPage()
         {
             InitializeComponent();
+        }
 
-            _nunit = new NUnit.Runner.App();
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            StreamWriter outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
+            _nunit = new NUnit.Runner.App(outputWriter);
             _nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
 
             _nunit.Options = new TestOptions
             {
                 LogToOutput = true
             };
-        }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
             if (e.Parameter != null && e.Parameter is string launchParams)
             {
                 var args = TestHelpersUWP.SplitArguments(launchParams);
@@ -61,6 +62,7 @@ namespace Realms.Tests.UWP
                     _nunit.Options.OnCompletedCallback = async () =>
                     {
                         await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
+                        outputWriter.Dispose();
                         Console.WriteLine("Test finished, reporting results");
                     };
                 }
