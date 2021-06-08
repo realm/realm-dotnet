@@ -340,10 +340,6 @@ jobs:
           {
             exit 1
           }
-          else
-          {
-            Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
-          }
         shell: powershell
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
   run-tests-netcore-net5:
