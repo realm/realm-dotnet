@@ -8,13 +8,6 @@
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver']
 
-#@ def checkoutCode():
-name: Checkout code
-uses: actions/checkout@v2
-with:
-  submodules: recursive
-#@ end
-
 #@ def checkCache(key):
 name: Check cache
 id: check-cache
@@ -57,7 +50,7 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ actualCommand = cmd + configurationParam + ltoParam
 
 steps:
-  - #@ checkoutCode()
+  - #@ template.replace(checkoutCode())
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
   - #@ step
@@ -73,10 +66,35 @@ steps:
       retention-days: 1
 #@ end
 
+#@ def checkoutCode():
+  - name: Checkout code
+    uses: actions/checkout@v2
+    with:
+      submodules: recursive
+  - name: Register csc problem matcher
+    run: echo "::add-matcher::.github/problem-matchers/csc.json"
+  - name: Register msvc problem matcher
+    run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+#@ end
+
 #@ def buildPackages():
 #@ for pkgName in nugetPackages:
   - #@ msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}")
 #@ end
+#@ end
+
+#@ def buildUnityPackage(includeDependencies):
+#@ finalPkgName = "io.realm.unity-" + ("bundled-" if includeDependencies else "") + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
+  - name: #@ "Build Unity" + (" Bundled Dependencies" if includeDependencies else "")
+    run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack" + (" --include-dependencies" if includeDependencies else "")
+  - name: Store Unity artifacts
+    uses: actions/upload-artifact@v2
+    with:
+      name: #@ finalPkgName
+      path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
+      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  - name: Cleanup build folder
+    run: #@ "rm ${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
 #@ end
 
 #@ def uploadPackageArtifacts():
@@ -99,6 +117,26 @@ steps:
     with:
       name: #@ finalPkgName
       path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end
+
+#@ def fetchWrapperBinaries():
+#@ wrapperPlatforms = [ 'macos', 'ios', 'linux' ]
+#@ for androidABI in androidABIs:
+#@ wrapperPlatforms.append("android-" + androidABI)
+#@ end
+#@ for windowsArch in windowsArchs:
+#@ wrapperPlatforms.append("windows-" + windowsArch)
+#@ end
+#@ for uwpArch in windowsUWPArchs:
+#@ wrapperPlatforms.append("windows-uwp-" + uwpArch)
+#@ end
+#@ for platform in wrapperPlatforms:
+  - name: #@ "Fetch artifacts for " + platform
+    uses: actions/download-artifact@v2
+    with:
+      name: #@ "wrappers-" + platform
+      path: wrappers/build
 #@ end
 #@ end
 
@@ -221,74 +259,17 @@ jobs:
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
         run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
-      - name: Fetch artifacts MacOS
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-macos
-          path: wrappers/build
-      - name: Fetch artifacts iOS
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-ios
-          path: wrappers/build
-      - name: Fetch artifacts Linux
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-linux
-          path: wrappers/build
-      - name: Fetch artifacts Android armeabi-v7a
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-armeabi-v7a
-          path: wrappers/build
-      - name: Fetch artifacts Android arm64-v8a
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-arm64-v8a
-          path: wrappers/build
-      - name: Fetch artifacts Android x86
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-x86
-          path: wrappers/build
-      - name: Fetch artifacts Android x86_64
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-android-x86_64
-          path: wrappers/build
-      - name: Fetch artifacts Windows 32bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-Win32
-          path: wrappers/build
-      - name: Fetch artifacts Windows 64bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-x64
-          path: wrappers/build
-      - name: Fetch artifacts Windows UWP 32bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-uwp-Win32
-          path: wrappers/build
-      - name: Fetch artifacts Windows UWP 64bit
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-uwp-x64
-          path: wrappers/build
-      - name: Fetch artifacts Windows UWP ARM
-        uses: actions/download-artifact@v2
-        with:
-          name: wrappers-windows-uwp-ARM
-          path: wrappers/build
+      - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(buildPackages())
       - #@ findPackageVersion()
       - #@ template.replace(uploadPackageArtifacts())
+      - #@ template.replace(buildUnityPackage(False))
+      - #@ template.replace(buildUnityPackage(True))
   run-tests-net-framework:
     runs-on: windows-latest
     name: Run tests for NET framework
@@ -296,7 +277,7 @@ jobs:
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - #@ msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
@@ -312,7 +293,7 @@ jobs:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
         targetFramework: [ netcoreapp3.1, net5.0 ]
     steps:
-    - #@ checkoutCode()
+    - #@ template.replace(checkoutCode())
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
     - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
     - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
@@ -321,7 +302,7 @@ jobs:
     name: Run tests for Xamarin on MacOS
     needs: build-packages
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
       - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
@@ -331,6 +312,6 @@ jobs:
     runs-on: windows-latest
     name: Run tests for the weaver
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")

@@ -34,7 +34,7 @@ namespace Realms.Tests.XamarinMac
         {
             base.ViewDidAppear();
 
-            RunTests();
+            _ = RunTests();
         }
 
         private async Task RunTests()

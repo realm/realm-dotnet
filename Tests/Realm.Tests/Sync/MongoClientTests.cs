@@ -818,7 +818,7 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
                 var result = await collection.FindOneAsync(sort: sort);
                 Assert.That(result, Is.EqualTo(inserted[2]));
             });
@@ -867,7 +867,7 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var sort = new { StringValue = -1 };
+                var sort = new BsonDocument { { "StringValue", -1 } };
 
                 var result = await collection.FindOneAsync(filter, sort: sort);
                 Assert.That(result, Is.EqualTo(inserted[2]));
@@ -883,10 +883,10 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    StringValue = 1
+                    { "_id", 0 },
+                    { "StringValue", 1 }
                 };
 
                 foreach (var foo in inserted)
@@ -919,10 +919,10 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    LongValue = 1
+                    { "_id", 0 },
+                    { "LongValue", 1 }
                 };
 
                 foreach (var foo in inserted)
@@ -945,13 +945,13 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 1,
-                    LongValue = 1
+                    { "_id", 1 },
+                    { "LongValue", 1 }
                 };
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
 
                 foreach (var foo in inserted)
                 {
@@ -972,11 +972,11 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    LongValue = 1,
-                    StringValue = 1
+                    { "_id", 0 },
+                    { "LongValue", 1 },
+                    { "StringValue", 1 }
                 };
 
                 var filter = new BsonDocument
@@ -989,7 +989,7 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
 
                 foreach (var foo in inserted)
                 {
@@ -1024,7 +1024,7 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
                 var result = await collection.FindAsync(sort: sort);
                 Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
             });
@@ -1073,7 +1073,7 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var sort = new { StringValue = -1 };
+                var sort = new BsonDocument { { "StringValue", -1 } };
 
                 var result = await collection.FindAsync(filter, sort: sort);
                 Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse()));
@@ -1089,10 +1089,10 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    StringValue = 1
+                    { "_id", 0 },
+                    { "StringValue", 1 }
                 };
 
                 foreach (var foo in inserted)
@@ -1125,11 +1125,23 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var projection = new
+                object projection;
+                if (TestHelpers.IsUnity)
                 {
-                    _id = 0,
-                    LongValue = 1
-                };
+                    projection = new BsonDocument
+                    {
+                        { "_id",  0 },
+                        { "LongValue", 1 }
+                    };
+                }
+                else
+                {
+                    projection = new
+                    {
+                        _id = 0,
+                        LongValue = 1
+                    };
+                }
 
                 foreach (var foo in inserted)
                 {
@@ -1151,13 +1163,26 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                object projection;
+                object sort;
+                if (TestHelpers.IsUnity)
                 {
-                    _id = 1,
-                    LongValue = 1
-                };
-
-                var sort = new { LongValue = -1 };
+                    sort = new BsonDocument { { "LongValue", -1 } };
+                    projection = new BsonDocument
+                    {
+                        { "_id", 1 },
+                        { "LongValue", 1 }
+                    };
+                }
+                else
+                {
+                    sort = new { LongValue = -1 };
+                    projection = new
+                    {
+                        _id = 1,
+                        LongValue = 1
+                    };
+                }
 
                 foreach (var foo in inserted)
                 {
@@ -1178,13 +1203,6 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
-                {
-                    _id = 0,
-                    LongValue = 1,
-                    StringValue = 1
-                };
-
                 var filter = new BsonDocument
                 {
                     {
@@ -1195,7 +1213,28 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var sort = new { LongValue = -1 };
+                object projection;
+                object sort;
+                if (TestHelpers.IsUnity)
+                {
+                    sort = new BsonDocument { { "LongValue", -1 } };
+                    projection = new BsonDocument
+                    {
+                        { "_id", 0 },
+                        { "LongValue", 1 },
+                        { "StringValue", 1 },
+                    };
+                }
+                else
+                {
+                    sort = new { LongValue = -1 };
+                    projection = new
+                    {
+                        _id = 0,
+                        LongValue = 1,
+                        StringValue = 1
+                    };
+                }
 
                 foreach (var foo in inserted)
                 {
@@ -1230,7 +1269,7 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
                 var result = await collection.FindAsync(sort: sort, limit: 2);
                 Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(2)));
             });
@@ -1279,7 +1318,7 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var sort = new { StringValue = -1 };
+                var sort = new BsonDocument { { "StringValue", -1 } };
 
                 var result = await collection.FindAsync(filter, sort: sort, limit: 1);
                 Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse().Take(1)));
@@ -1295,10 +1334,10 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    StringValue = 1
+                    { "_id", 0 },
+                    { "StringValue", 1 }
                 };
 
                 foreach (var foo in inserted)
@@ -1331,10 +1370,10 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    LongValue = 1
+                    { "_id", 0 },
+                    { "LongValue", 1 }
                 };
 
                 foreach (var foo in inserted)
@@ -1357,13 +1396,13 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 1,
-                    LongValue = 1
+                    { "_id", 1 },
+                    { "LongValue", 1 }
                 };
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
 
                 foreach (var foo in inserted)
                 {
@@ -1384,11 +1423,11 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var projection = new
+                var projection = new BsonDocument
                 {
-                    _id = 0,
-                    LongValue = 1,
-                    StringValue = 1
+                    { "_id", 0 },
+                    { "LongValue", 1 },
+                    { "StringValue", 1 }
                 };
 
                 var filter = new BsonDocument
@@ -1401,7 +1440,7 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                var sort = new { LongValue = -1 };
+                var sort = new BsonDocument { { "LongValue", -1 } };
 
                 foreach (var foo in inserted)
                 {
@@ -2172,6 +2211,7 @@ namespace Realms.Tests.Sync
         {
             [BsonElement("_id")]
             [BsonIgnoreIfDefault]
+            [Preserve]
             public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
             public string StringValue { get; set; }
@@ -2205,15 +2245,20 @@ namespace Realms.Tests.Sync
 
         private class Sale
         {
+            [Preserve]
             [BsonElement("_id")]
             public int Id { get; set; }
 
+            [Preserve]
             public string Item { get; set; }
 
+            [Preserve]
             public decimal Price { get; set; }
 
+            [Preserve]
             public decimal Quantity { get; set; }
 
+            [Preserve]
             public DateTime Date { get; set; }
 
             public Sale(int id, string item, decimal price, decimal quantity, DateTime date)
@@ -2228,17 +2273,22 @@ namespace Realms.Tests.Sync
 
         private class AggregationResult
         {
+            [Preserve]
             [BsonElement("_id")]
             public IdResult Id { get; set; }
 
+            [Preserve]
             public decimal TotalAmount { get; set; }
 
+            [Preserve]
             public int Count { get; set; }
 
             public class IdResult
             {
+                [Preserve]
                 public int Day { get; set; }
 
+                [Preserve]
                 public int Year { get; set; }
             }
         }

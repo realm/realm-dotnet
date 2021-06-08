@@ -350,7 +350,7 @@ stage('Test') {
         unstash 'dotnet-source'
         dir('Tests/Weaver/Realm.Fody.Tests') {
           bat "dotnet run -f netcoreapp3.1 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
-          reportTests 'TestResults.Weaver.xml'
+          junit 'TestResults.Weaver.xml'
         }
       }
     }
@@ -444,13 +444,6 @@ def msbuild(Map args = [:]) {
       bat invocation
     }
   }
-}
-
-def reportTests(spec) {
-  xunit(
-    tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
-    thresholds: [ failed(unstableThreshold: '0') ]
-  )
 }
 
 def buildWrappersInDocker(String label, String image, String invocation) {

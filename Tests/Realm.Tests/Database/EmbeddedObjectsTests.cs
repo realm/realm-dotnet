@@ -748,9 +748,10 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        [Obsolete("Uses and tests for the obsoleted RealmObjectBase.GetBacklinks")]
         public void DynamicBacklinks()
         {
-            TestHelpers.IgnoreIfDynamicUnsupported();
+            TestHelpers.IgnoreOnUnity();
 
             var parent = new ObjectWithEmbeddedProperties
             {
@@ -779,6 +780,56 @@ namespace Realms.Tests.Database
 
             // This should be empty because no objects link to it via .Children
             var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
+            Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DynamicBacklinks_NewAPI()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                RecursiveObject = new EmbeddedLevel1
+                {
+                    String = "level 1",
+                    Child = new EmbeddedLevel2
+                    {
+                        String = "level 2"
+                    }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            var topLevelBacklinks = parent.RecursiveObject.DynamicApi.GetBacklinksFromType(nameof(ObjectWithEmbeddedProperties), nameof(ObjectWithEmbeddedProperties.RecursiveObject));
+            Assert.That(topLevelBacklinks.Count(), Is.EqualTo(1));
+
+            var parentViaBacklinks = topLevelBacklinks.Single();
+            Assert.That(parentViaBacklinks, Is.EqualTo(parent));
+
+            var recursiveObjViaBacklinks = parentViaBacklinks.DynamicApi.Get<RealmObjectBase>(nameof(ObjectWithEmbeddedProperties.RecursiveObject));
+            Assert.That(recursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
+            Assert.That(recursiveObjViaBacklinks.DynamicApi.Get<string>(nameof(EmbeddedLevel1.String)), Is.EqualTo("level 1"));
+
+            if (!TestHelpers.IsUnity)
+            {
+                dynamic dynamicParentViaBacklinks = topLevelBacklinks.Single();
+                Assert.That(dynamicParentViaBacklinks, Is.EqualTo(parent));
+
+                var dynamicRecursiveObjViaBacklinks = dynamicParentViaBacklinks.RecursiveObject;
+
+                Assert.That(dynamicRecursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
+                Assert.That(dynamicRecursiveObjViaBacklinks.String, Is.EqualTo("level 1"));
+            }
+
+            var secondLevelBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinksFromType(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Child));
+            Assert.That(secondLevelBacklinks.Count(), Is.EqualTo(1));
+            Assert.That(secondLevelBacklinks.Single(), Is.EqualTo(parent.RecursiveObject));
+
+            // This should be empty because no objects link to it via .Children
+            var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinksFromType(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
             Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
         }
 
