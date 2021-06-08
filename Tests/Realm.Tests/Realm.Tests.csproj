@@ -1,7 +1,8 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <Import Project="..\LocalDev.props" Condition="Exists('..\LocalDev.props')" />
 
   <PropertyGroup>
-    <LocalDev>false</LocalDev>
+    <LocalDev Condition="'$(LocalDev)' == ''">false</LocalDev>
     <UnityBuild>false</UnityBuild>
   </PropertyGroup>
   
@@ -56,6 +57,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">

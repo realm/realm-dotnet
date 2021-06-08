@@ -15,11 +15,31 @@ For Xamarin.Mac, we're using a standalone runner that has no functionality other
 For Unity, we're building `Realm.Tests` as a .NET Standard 2.0 application that is referencing Unity's custom NUnit build and we're executing
 it either in the Editor or as a standalone player.
 
-## Test Explorer
+## Local development
 
-If you're using Visual Studio for Windows and running the tests with the test explorer, it might be a good idea to manually modify `Realm.Tests.csproj`
-and set `<LocalDev>true</LocalDev>`. What this will do is exclude all target frameworks except for `net461`. This dramatically speeds up VS builds as
-it forces it to only build for one platform.
+To facilitate local development setups, the following files are ignored, but it might be a good idea to create them manually and add them to your local clone (both should be in the `Tests` folder, adjacent to this Readme):
+- `App.config`: this is a file that holds the config for your local Baas instance. Update `*your-local-ip*` with the local IP address of your docker image (note that `localhost` will not work):
+  ```
+  <?xml version="1.0" encoding="utf-8" ?>
+  <configuration>
+    <appSettings>
+      <add key="BaasUrl" value="http://*your-local-ip*:9090" />
+    </appSettings>
+  </configuration>
+  ```
+- `LocalDev.props`: this file adds `App.config` to `Realm.Tests.csproj` and optionally sets `LocalDev` to `true`, which greatly speeds up msbuild compiles for the TestExplorer as it excludes all platforms except for `net461`:
+  ```
+  <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+      <LocalDev Condition="'$(LocalDev)' == ''">true</LocalDev>
+    </PropertyGroup>
+    <ItemGroup>
+      <None Include="..\App.config" Link="App.config" />
+    </ItemGroup>
+  </Project>
+  ```
+
+After adding them, restart VS (if running) to have it pick up the changes.
 
 ## Unity
 
