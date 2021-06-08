@@ -68,7 +68,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
@@ -78,8 +78,15 @@ namespace Realms.Tests.Database
                         var oldPerson = oldPeople.ElementAt(i);
                         var newPerson = newPeople.ElementAt(i);
 
-                        Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.TriggersSchema));
-                        newPerson.LastName = triggersSchemaFieldValue = oldPerson.TriggersSchema;
+                        Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        newPerson.LastName = triggersSchemaFieldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
+
+                        if (!TestHelpers.IsUnity)
+                        {
+                            // Ensure we can still use the dynamic API during migrations
+                            dynamic dynamicOldPerson = oldPeople.ElementAt(i);
+                            Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        }
                     }
                 }
             };

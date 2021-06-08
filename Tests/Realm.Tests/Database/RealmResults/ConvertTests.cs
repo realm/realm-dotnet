@@ -533,16 +533,33 @@ namespace Realms.Tests.Database
         [Test]
         public void Equal_WhenVariableIsEnum()
         {
+            var one = MyEnum.One;
+            var enumQuery = _realm.All<AllTypesObject>().Where(o => o.Int32Property == (int)one).ToArray();
+            Assert.That(enumQuery.Length, Is.EqualTo(1));
+            Assert.That(enumQuery[0].Int32Property, Is.EqualTo(1));
+
+            var reverseCastEnumQuery = _realm.All<AllTypesObject>().Where(o => (MyEnum)o.Int32Property == one).ToArray();
+            Assert.That(reverseCastEnumQuery.Length, Is.EqualTo(1));
+            Assert.That(reverseCastEnumQuery[0].Int32Property, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Equal_WhenVariableIsInlineEnum()
+        {
             var enumQuery = _realm.All<AllTypesObject>().Where(o => o.Int32Property == (int)MyEnum.One).ToArray();
             Assert.That(enumQuery.Length, Is.EqualTo(1));
             Assert.That(enumQuery[0].Int32Property, Is.EqualTo(1));
+
+            var reverseCastEnumQuery = _realm.All<AllTypesObject>().Where(o => (MyEnum)o.Int32Property == MyEnum.One).ToArray();
+            Assert.That(reverseCastEnumQuery.Length, Is.EqualTo(1));
+            Assert.That(reverseCastEnumQuery[0].Int32Property, Is.EqualTo(1));
         }
 
         [Test]
         public void Equal_WhenVariableIsClassWithImplicitOperator_Fails()
         {
             var one = new MyOneClass();
-            Assert.Throws<NotSupportedException>(() => _realm.All<AllTypesObject>().Where(o => o.Int32Property == one).ToArray());
+            Assert.Throws<InvalidCastException>(() => _realm.All<AllTypesObject>().Where(o => o.Int32Property == one).ToArray());
         }
 
         [Test]

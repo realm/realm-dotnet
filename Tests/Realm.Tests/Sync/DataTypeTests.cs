@@ -19,9 +19,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Helpers;
 
 namespace Realms.Tests.Sync
 {
@@ -263,27 +265,27 @@ namespace Realms.Tests.Sync
 
         #region RealmValue
 
-        public static IEnumerable<(RealmValue Item1, RealmValue Item2)> RealmTestValues()
+        public static readonly object[] RealmTestValues = new[]
         {
-            yield return ("abc", 10);
-            yield return (new ObjectId("5f63e882536de46d71877979"), new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}"));
-            yield return (new byte[] { 0, 1, 2 }, DateTimeOffset.FromUnixTimeSeconds(1616137641));
-            yield return (true, new IntPropertyObject { Int = 10 });
-            yield return (RealmValue.Null, 5m);
-            yield return (12.5f, 15d);
-        }
+            new object[] { (RealmValue)"abc", (RealmValue)10 },
+            new object[] { (RealmValue)new ObjectId("5f63e882536de46d71877979"), (RealmValue)new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}") },
+            new object[] { (RealmValue)new byte[] { 0, 1, 2 }, (RealmValue)DateTimeOffset.FromUnixTimeSeconds(1616137641) },
+            new object[] { (RealmValue)true, (RealmValue)new IntPropertyObject { Int = 10 } },
+            new object[] { RealmValue.Null, (RealmValue)5m },
+            new object[] { (RealmValue)12.5f, (RealmValue)15d },
+        };
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void List_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestListCore(o => o.RealmValueList, values.Item1, values.Item2);
+        public void List_RealmValue(RealmValue first, RealmValue second) => TestListCore(o => o.RealmValueList, Clone(first), Clone(second));
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void Set_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestSetCore(o => o.RealmValueSet, values.Item1, values.Item2);
+        public void Set_RealmValue(RealmValue first, RealmValue second) => TestSetCore(o => o.RealmValueSet, Clone(first), Clone(second));
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void Dict_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestDictionaryCore(o => o.RealmValueDict, values.Item1, values.Item2);
+        public void Dict_RealmValue(RealmValue first, RealmValue second) => TestDictionaryCore(o => o.RealmValueDict, Clone(first), Clone(second));
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void Property_RealmValue((RealmValue Item1, RealmValue Item2) values) => TestPropertyCore(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, values.Item1, values.Item2);
+        public void Property_RealmValue(RealmValue first, RealmValue second) => TestPropertyCore(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, Clone(first), Clone(second));
 
         #endregion
 
@@ -373,10 +375,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                await WaitForUploadAsync(realm1);
-                await WaitForDownloadAsync(realm2);
-
-                var obj2 = realm2.Find<SyncCollectionsObject>(obj1.Id);
+                var obj2 = await WaitForObjectSync(obj1, realm2);
 
                 var set1 = getter(obj1);
                 var set2 = getter(obj2);
@@ -441,10 +440,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                await WaitForUploadAsync(realm1);
-                await WaitForDownloadAsync(realm2);
-
-                var obj2 = realm2.Find<SyncCollectionsObject>(obj1.Id);
+                var obj2 = await WaitForObjectSync(obj1, realm2);
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);
@@ -472,6 +468,11 @@ namespace Realms.Tests.Sync
                 Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
 
                 // Assert Update works
+                if (item2 is EmbeddedObject eobj)
+                {
+                    item2 = Operator.Convert<RealmObjectBase, T>(Clone(eobj).AsRealmObject());
+                }
+
                 realm1.Write(() =>
                 {
                     dict1[key1] = item2;
@@ -522,10 +523,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncAllTypesObject());
                 });
 
-                await WaitForUploadAsync(realm1);
-                await WaitForDownloadAsync(realm2);
-
-                var obj2 = realm2.Find<SyncAllTypesObject>(obj1.Id);
+                var obj2 = await WaitForObjectSync(obj1, realm2);
 
                 realm1.Write(() =>
                 {
@@ -537,8 +535,8 @@ namespace Realms.Tests.Sync
                 var prop1 = getter(obj1);
                 var prop2 = getter(obj2);
 
-                Assert.That(prop1, Is.EqualTo(prop2).Using<T, T>(equalsOverride));
-                Assert.That(prop1, Is.EqualTo(item1).Using<T, T>(equalsOverride));
+                Assert.That(equalsOverride(prop1, prop2), Is.True);
+                Assert.That(equalsOverride(prop1, item1), Is.True);
 
                 realm2.Write(() =>
                 {
@@ -550,10 +548,26 @@ namespace Realms.Tests.Sync
                 prop1 = getter(obj1);
                 prop2 = getter(obj2);
 
-                Assert.That(prop1, Is.EqualTo(prop2).Using<T, T>(equalsOverride));
-                Assert.That(prop2, Is.EqualTo(item2).Using<T, T>(equalsOverride));
-
+                Assert.That(equalsOverride(prop1, prop2), Is.True);
+                Assert.That(equalsOverride(prop2, item2), Is.True);
             }, ensureNoSessionErrors: true);
+        }
+
+        private static RealmValue Clone(RealmValue original)
+        {
+            if (original.Type != RealmValueType.Object)
+            {
+                return original;
+            }
+
+            var robj = original.AsRealmObject();
+            var clone = (RealmObjectBase)Activator.CreateInstance(robj.GetType());
+            foreach (var prop in robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(o => o.CanWrite && o.CanRead))
+            {
+                prop.SetValue(clone, prop.GetValue(robj));
+            }
+
+            return clone;
         }
 
         private static async Task WaitForPropertyChangedAsync(RealmObject realmObject, int timeout = 10 * 1000)
@@ -585,6 +599,22 @@ namespace Realms.Tests.Sync
             });
 
             await tcs.Task.Timeout(timeout);
+        }
+
+        private static async Task<SyncAllTypesObject> WaitForObjectSync(SyncAllTypesObject obj1, Realm realm2)
+        {
+            await WaitForUploadAsync(obj1.Realm);
+            await WaitForDownloadAsync(realm2);
+
+            return await TestHelpers.WaitForConditionAsync(() => realm2.Find<SyncAllTypesObject>(obj1.Id), o => o != null);
+        }
+
+        private static async Task<SyncCollectionsObject> WaitForObjectSync(SyncCollectionsObject obj1, Realm realm2)
+        {
+            await WaitForUploadAsync(obj1.Realm);
+            await WaitForDownloadAsync(realm2);
+
+            return await TestHelpers.WaitForConditionAsync(() => realm2.Find<SyncCollectionsObject>(obj1.Id), o => o != null);
         }
     }
 }

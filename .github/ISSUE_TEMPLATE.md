@@ -36,10 +36,8 @@
 
 ## Version of Realm and Tooling
 
-- Realm Object Server Version: ? (you can see this as well in Studio once connected to a Realm instance) 
 - Flavor:
-  - [ ] Realm Cloud
-  - [ ] Self-Hosted
-- Server OS & Version: ? (e.g. CentOS 6)
+  - [ ] MongoDB Realm
+  - [ ] Local Database only
 - Client SDK Version: ?
 - Client OS & Version: ?

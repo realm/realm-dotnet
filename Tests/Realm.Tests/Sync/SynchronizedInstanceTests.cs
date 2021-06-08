@@ -35,11 +35,8 @@ namespace Realms.Tests.Sync
         private const int OneMegabyte = 1024 * 1024;
         private const int NumberOfObjects = 20;
 
-        [TestCase(true, true)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(false, false)]
-        public void Compact_ShouldReduceSize(bool encrypt, bool populate)
+        [Test]
+        public void Compact_ShouldReduceSize([Values(true, false)] bool encrypt, [Values(true, false)] bool populate)
         {
             var config = GetFakeConfig();
             if (encrypt)
@@ -72,9 +69,8 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void GetInstanceAsync_ShouldDownloadRealm(bool singleTransaction)
+        [Test]
+        public void GetInstanceAsync_ShouldDownloadRealm([Values(true, false)] bool singleTransaction)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -181,8 +177,8 @@ namespace Realms.Tests.Sync
             Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var dynamicObj = dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject)).Single();
-            Assert.That(dynamicObj.StringValue, Is.EqualTo("This is a string!"));
+            var dynamicObj = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject))).Single();
+            Assert.That(dynamicObj.DynamicApi.Get<string>(nameof(IntPrimaryKeyWithValueObject.StringValue)), Is.EqualTo("This is a string!"));
         }
 
         [Test]

@@ -24,19 +24,20 @@ namespace Realms.Sync
     /// A class containing information about an identity associated with a user.
     /// </summary>
     [BsonNoId]
-    [Preserve(AllMembers = true)]
     public class UserIdentity
     {
         /// <summary>
         /// Gets the unique identifier for this identity.
         /// </summary>
         /// <value>The identity's Id.</value>
+        [Preserve]
         public string Id { get; private set; }
 
         /// <summary>
         /// Gets the auth provider defining this identity.
         /// </summary>
         /// <value>The identity's auth provider.</value>
+        [Preserve]
         public Credentials.AuthProvider Provider { get; private set; }
 
         /// <inheritdoc/>

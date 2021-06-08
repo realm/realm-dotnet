@@ -30,31 +30,34 @@ namespace Realms.Sync
     /// This means that it's the caller's responsibility to safely store an API key's value upon creation.
     /// </remarks>
     /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
-    [Preserve(AllMembers = true)]
     public class ApiKey
     {
         /// <summary>
         /// Gets the unique identifier for this key.
         /// </summary>
         /// <value>The id uniquely identifying the key.</value>
+        [Preserve]
         public ObjectId Id { get; }
 
         /// <summary>
         /// Gets the name of the key.
         /// </summary>
         /// <value>The friendly name of the key, specified when calling <see cref="User.ApiKeyClient.CreateAsync"/>.</value>
+        [Preserve]
         public string Name { get; }
 
         /// <summary>
         /// Gets the value for the key. This is only returned when the key is created. After that, it will always be <c>null</c>.
         /// </summary>
         /// <value>The value of the key that needs to be provided when constructing <see cref="Credentials.ApiKey(string)"/>.</value>
+        [Preserve]
         public string Value { get; }
 
         /// <summary>
         /// Gets a value indicating whether or not this key is currently enabled.
         /// </summary>
         /// <value><c>true</c> if the key is enabled; <c>false</c> otherwise.</value>
+        [Preserve]
         public bool IsEnabled { get; }
 
         /// <inheritdoc/>
@@ -72,6 +75,7 @@ namespace Realms.Sync
         /// <returns>A string representation of the value.</returns>
         public override string ToString() => $"ApiKey {Name} ({Id})";
 
+        [Preserve]
         internal ApiKey(UserApiKey nativeKey)
         {
             Id = nativeKey.Id;

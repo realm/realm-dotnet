@@ -731,7 +731,7 @@ namespace Realms.Tests.Database
             testData.AssertClear(list);
         }
 
-        public class ListTestCaseData<T> : TestCaseData
+        public class ListTestCaseData<T>
         {
             private List<T> referenceList = new List<T>();
 

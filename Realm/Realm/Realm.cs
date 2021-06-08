@@ -1626,7 +1626,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToList(IRealmCollection<EmbeddedObject> list)
+            public dynamic AddEmbeddedObjectToList(object list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
             }
@@ -1645,7 +1645,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic InsertEmbeddedObjectInList(IRealmCollection<EmbeddedObject> list, int index)
+            public dynamic InsertEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1672,7 +1672,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInList(IRealmCollection<EmbeddedObject> list, int index)
+            public dynamic SetEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1808,20 +1808,20 @@ namespace Realms
             public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            private dynamic FindCore(string className, RealmValue primaryKey)
+            private RealmObject FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
                 if (_realm.SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
                 {
-                    return _realm.MakeObject(metadata, objectHandle);
+                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
                 }
 
                 return null;
             }
 
-            private dynamic PerformEmbeddedListOperation(IRealmCollection<EmbeddedObject> list, Func<ListHandle, ObjectHandle> getHandle)
+            private EmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1832,7 +1832,7 @@ namespace Realms
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
-                var obj = realmList.Metadata.Helper.CreateInstance();
+                var obj = (EmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
                 obj.OnManaged();
@@ -1840,7 +1840,7 @@ namespace Realms
                 return obj;
             }
 
-            private dynamic PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            private EmbeddedObject PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1851,7 +1851,7 @@ namespace Realms
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }
 
-                var obj = realmDict.Metadata.Helper.CreateInstance();
+                var obj = (EmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata);
                 obj.OnManaged();
