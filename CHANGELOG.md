@@ -1,7 +1,7 @@
 ## 10.2.0-beta.3 (TBD)
 
 ### Fixed
-* None
+* Added back 32bit support for iOS builds. (Issue [#2429](https://github.com/realm/realm-dotnet/issues/2429))
 
 ### Enhancements
 * Added new API for dynamically accessing object properties. The intention is to use those on
