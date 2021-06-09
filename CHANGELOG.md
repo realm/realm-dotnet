@@ -2,6 +2,7 @@
 
 ### Fixed
 * Added back 32bit support for iOS builds. (Issue [#2429](https://github.com/realm/realm-dotnet/issues/2429))
+* Removed redundant warnings when building a Unity project for device that mentioned that the schema for Realm and Realm.UnityUtils is empty. (Issue [#2320](https://github.com/realm/realm-dotnet/issues/2320))
 
 ### Enhancements
 * Added new API for dynamically accessing object properties. The intention is to use those on
