@@ -225,7 +225,7 @@ namespace binding {
                 marshalled_keys[i] = marshaled_key;
             }
 
-            s_api_keys_callback(tcs_ptr, marshalled_keys.data(), static_cast<int>(marshalled_keys.size()), MarshaledAppError());
+            s_api_keys_callback(tcs_ptr, marshalled_keys.data(), marshalled_keys.size(), MarshaledAppError());
         }
     }
 
