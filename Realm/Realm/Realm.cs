@@ -177,7 +177,7 @@ namespace Realms
         /// All but the .lock file will be deleted by this.
         /// </remarks>
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
-        /// <exception cref="RealmPermissionDeniedException">Thrown if the Realm is still open.</exception>
+        /// <exception cref="RealmInUseException">Thrown if the Realm is still open.</exception>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             Argument.NotNull(configuration, nameof(configuration));
