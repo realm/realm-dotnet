@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Runner.Services;
+using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Xaml.Navigation;
 
@@ -64,6 +65,7 @@ namespace Realms.Tests.UWP
                         await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
                         outputWriter.Dispose();
                         Console.WriteLine("Test finished, reporting results");
+                        CoreApplication.Exit();
                     };
                 }
             }

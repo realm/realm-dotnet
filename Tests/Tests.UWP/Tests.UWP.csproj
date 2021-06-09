@@ -202,9 +202,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Tests.UWP_TemporaryKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="NUnit.Xamarin">
       <HintPath>..\..\dependencies\NUnit.Xamarin.dll</HintPath>
     </Reference>
