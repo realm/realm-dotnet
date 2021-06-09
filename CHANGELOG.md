@@ -23,6 +23,7 @@ API. Example:
   var newPerson = (RealmObject)(object)realm.DynamicApi.Create("Person", 123);
   newPerson.DynamicApi.Set("FirstName", "Peter");
   ```
+* Added a Unity Editor option to enable weaving editor assemblies. This should be "off" unless your project has Editor assemblies that reference Realm - for example, an EditMode test assembly that tests Realm-related functionality. Keeping it "on" may slow down builds a little as more assemblies will need to be evaluated for weaving. (Issue [#2346](https://github.com/realm/realm-dotnet/issues/2346))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.

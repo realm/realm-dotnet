@@ -37,6 +37,9 @@ namespace RealmWeaver
         private const string EnableAnalyticsPref = "realm_enable_analytics";
         private const string EnableAnalyticsMenuItemPath = "Realm/Enable build-time analytics";
 
+        private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
+        private const string WeaveEditorAssembliesMenuItemPath = "Realm/Process editor assemblies";
+
         private static bool _analyticsEnabled;
 
         private static bool AnalyticsEnabled
@@ -50,6 +53,19 @@ namespace RealmWeaver
             }
         }
 
+        private static bool _weaveEditorAssemblies;
+
+        private static bool WeaveEditorAssemblies
+        {
+            get => _weaveEditorAssemblies;
+            set
+            {
+                _weaveEditorAssemblies = value;
+                EditorPrefs.SetBool(WeaveEditorAssembliesPref, value);
+                Menu.SetChecked(WeaveEditorAssembliesMenuItemPath, value);
+            }
+        }
+
         public int callbackOrder => 0;
 
         [InitializeOnLoadMethod]
@@ -59,6 +75,8 @@ namespace RealmWeaver
             EditorApplication.delayCall += () =>
             {
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
+                WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
+                WeaveAssembliesOnEditorLaunch();
             };
 
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
@@ -68,8 +86,7 @@ namespace RealmWeaver
                     return;
                 }
 
-                var assembly = CompilationPipeline.GetAssemblies()
-                                      .FirstOrDefault(p => p.outputPath == assemblyPath);
+                var assembly = GetAssemblies().FirstOrDefault(p => p.outputPath == assemblyPath);
 
                 if (assembly == null)
                 {
@@ -78,9 +95,6 @@ namespace RealmWeaver
 
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
             };
-
-            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
-            WeaveAssembliesOnEditorLaunch();
         }
 
         [MenuItem("Realm/Weave Assemblies")]
@@ -93,7 +107,20 @@ namespace RealmWeaver
         [MenuItem(EnableAnalyticsMenuItemPath)]
         public static void DisableAnalyticsMenuItem()
         {
-            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
+            AnalyticsEnabled = !AnalyticsEnabled;
+        }
+
+        [MenuItem(WeaveEditorAssembliesMenuItemPath)]
+        public static void WeaveEditorAssembliesMenuItem()
+        {
+            WeaveEditorAssemblies = !WeaveEditorAssemblies;
+
+            // If we're switching weaving of editor assemblies on, we should re-weave all assemblies
+            // to pick up the editor assemblies as well.
+            if (WeaveEditorAssemblies)
+            {
+                WeaveAllAssembliesMenuItem();
+            }
         }
 
         private static void WeaveAssembliesOnEditorLaunch()
@@ -117,7 +144,7 @@ namespace RealmWeaver
             try
             {
                 EditorApplication.LockReloadAssemblies();
-                var weavingTasks = CompilationPipeline.GetAssemblies()
+                var weavingTasks = GetAssemblies()
                     .Select(assembly => Task.Run(() =>
                     {
                         if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
@@ -244,6 +271,16 @@ namespace RealmWeaver
                     }
                 }
             }
+        }
+
+        private static Assembly[] GetAssemblies()
+        {
+            if (WeaveEditorAssemblies)
+            {
+                return CompilationPipeline.GetAssemblies();
+            }
+
+            return CompilationPipeline.GetAssemblies(AssembliesType.Player);
         }
 
         private static string GetTargetOSName(BuildTarget target)
