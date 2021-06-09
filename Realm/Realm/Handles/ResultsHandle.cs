@@ -213,7 +213,7 @@ namespace Realms
             return new ResultsHandle(this, ptr);
         }
 
-        public unsafe int Find(in RealmValue value)
+        public int Find(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);

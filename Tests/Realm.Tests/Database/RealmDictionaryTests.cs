@@ -1666,12 +1666,10 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
 
-                    using (var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config))
-                    {
-                        var bgDict = bgRealm.ResolveReference(tsr);
+                    using var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config);
+                    var bgDict = bgRealm.ResolveReference(tsr);
 
-                        Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
-                    }
+                    Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
                 });
             }
 

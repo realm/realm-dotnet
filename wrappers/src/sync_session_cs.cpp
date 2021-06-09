@@ -31,7 +31,7 @@ using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
-using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len, bool is_client_reset);
+using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset);
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
 
@@ -49,8 +49,7 @@ namespace binding {
             user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
         }
 
-        // TODOOO
-        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length(), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested());
+        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested());
     }
 }
 }
@@ -137,8 +136,8 @@ REALM_EXPORT void realm_syncsession_wait(const SharedSyncSession& session, void*
 {
     handle_errors(ex, [&] {
         auto waiter = [task_completion_source](std::error_code error) {
-            // TODOOO
-            s_wait_callback(task_completion_source, error.value(), error.message().c_str(), error.message().length());
+            std::string message = error.message();
+            s_wait_callback(task_completion_source, error.value(), to_capi_value(message));
         };
 
         if (direction == CSharpNotifierType::Upload) {

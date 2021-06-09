@@ -119,7 +119,7 @@ namespace Realms
             return new RealmValue(result, realm);
         }
 
-        public unsafe void Add(in RealmValue value)
+        public void Add(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.add_value(this, primitive, out var nativeException);
@@ -134,7 +134,7 @@ namespace Realms
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe void Set(int targetIndex, in RealmValue value)
+        public void Set(int targetIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.set_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
@@ -149,7 +149,7 @@ namespace Realms
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe void Insert(int targetIndex, in RealmValue value)
+        public void Insert(int targetIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.insert_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
@@ -164,7 +164,7 @@ namespace Realms
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe int Find(in RealmValue value)
+        public int Find(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);

@@ -24,7 +24,7 @@ namespace Realms
     /// An attribute that indicates that the assembly has been woven. It is applied automatically by the RealmWeaver and should not be used manually.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
-    public class WovenAssemblyAttribute : Attribute
+    public sealed class WovenAssemblyAttribute : Attribute
     {
     }
 }
