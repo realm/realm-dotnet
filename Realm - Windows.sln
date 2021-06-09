@@ -70,6 +70,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks.iOS", "Tests\Benchmarks\Benchmarks.iOS\Benchmarks.iOS.csproj", "{CE887906-33F1-4B47-8E8F-C6A7A60D1372}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerformanceTests", "Tests\Benchmarks\PerformanceTests\PerformanceTests.csproj", "{4C3282FF-B3FE-40D7-8E74-2E19E9A9D9FC}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{073F6C2D-FECB-41E3-BEA3-1685FAA580DB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetupUnityPackage", "Tools\SetupUnityPackage\SetupUnityPackage.csproj", "{938A575D-07FA-4316-BCB9-17DB5555C12B}"
