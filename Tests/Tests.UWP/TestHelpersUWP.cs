@@ -29,10 +29,10 @@ namespace Realms.Tests.UWP
     {
         public static async Task TransformTestResults(string resultsPath)
         {
-            var xsltPath = TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-            var resultsSf = await StorageFile.GetFileFromPathAsync(xsltPath);
+            var resultsSf = await StorageFile.GetFileFromPathAsync(resultsPath);
             var xmlResults = await XmlDocument.LoadFromFileAsync(resultsSf);
 
+            var xsltPath = TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
             var xsltFileSf = await StorageFile.GetFileFromPathAsync(xsltPath);
             var xsltFile = await XmlDocument.LoadFromFileAsync(xsltFileSf);
             var processor = new XsltProcessor(xsltFile);
