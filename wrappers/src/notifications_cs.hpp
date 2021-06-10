@@ -52,6 +52,7 @@ namespace realm {
             size_t count;
         };
 
+        MarshallableKeySet deletions;
         MarshallableKeySet insertions;
         MarshallableKeySet modifications;
     };

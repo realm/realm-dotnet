@@ -26,6 +26,12 @@ namespace Realms
     public class DictionaryChangeSet
     {
         /// <summary>
+        /// Gets the keys in the <see cref="IDictionary{String, TValue}"/> which were deleted.
+        /// </summary>
+        /// <value>An array, containing the keys of the removed values.</value>
+        public string[] DeletedKeys { get; }
+
+        /// <summary>
         /// Gets the keys in the <see cref="IDictionary{String, TValue}"/> which were newly inserted.
         /// </summary>
         /// <value>An array, containing the keys of the inserted values.</value>
@@ -37,8 +43,9 @@ namespace Realms
         /// <value>An array, containing the keys of the modified values.</value>
         public string[] ModifiedKeys { get; }
 
-        internal DictionaryChangeSet(string[] insertedKeys, string[] modifiedKeys)
+        internal DictionaryChangeSet(string[] deletedKeys, string[] insertedKeys, string[] modifiedKeys)
         {
+            DeletedKeys = deletedKeys;
             InsertedKeys = insertedKeys;
             ModifiedKeys = modifiedKeys;
         }
