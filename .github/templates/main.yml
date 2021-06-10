@@ -313,7 +313,7 @@ jobs:
           {
               Start-Sleep -s 3
               $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
-              $uwp_test_app = Get-Process Tests.UWP
+              $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
           } while ($uwp_test_app -and !$file_available)
 
           $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
