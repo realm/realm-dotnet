@@ -92,8 +92,8 @@ namespace realm {
                 : managed_logger(delegate)
             {
             }
-
-            void do_log(util::Logger::Level level, std::string message) {
+        protected:
+            void do_log(util::Logger::Level level, const std::string& message) override final {
                 s_log_message_callback(managed_logger, to_capi(Mixed(message)), level);
             }
         private:
