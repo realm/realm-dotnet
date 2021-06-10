@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "outDir": "./lib",
+      "rootDir": "./src",
+      "strict": true,
+      "esModuleInterop": true,
+      "sourceMap": false,
+      "experimentalDecorators": true,
+    },
+    "exclude": [
+      "node_modules",
+      "dist",
+      "build",
+      "**/*.spec.ts"
+    ]
+}

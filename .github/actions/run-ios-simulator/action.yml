@@ -1,0 +1,23 @@
+name: run-ios-simulator
+description: Action to run an iOS app in a simulator
+inputs:
+  appPath:
+    description: Path to app
+    required: true
+  bundleId:
+    description: App bundle id
+    required: true
+  iphoneToSimulate:
+    description: iPhone device to simulate
+    required: false
+    default: "iPhone-8"
+  arguments:
+    description: Arguments for the simulator
+    required: false
+    default: ""
+# outputs:
+#   outputValue:
+#     description: A variable that will be set by the action
+runs:
+  using: node12
+  main: ./dist/index.js
