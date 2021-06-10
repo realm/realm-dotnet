@@ -379,6 +379,7 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopyWithoutClientFileId(copyConfig, allowOverwrite);
             });
