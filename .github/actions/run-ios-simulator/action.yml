@@ -10,7 +10,7 @@ inputs:
   iphoneToSimulate:
     description: iPhone device to simulate
     required: false
-    default: "iPhone-8"
+    default: iPhone-8
   arguments:
     description: Arguments for the simulator
     required: false
