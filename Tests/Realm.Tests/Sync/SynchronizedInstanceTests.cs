@@ -320,6 +320,71 @@ namespace Realms.Tests.Sync
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
+        [Test]
+        public void WriteCopy([Values(true, false)] bool originalEncrypted, [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(partition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+
+                originalRealm.WriteCopy(copyConfig);
+            });
+        }
+
+        [Test]
+        public void WriteCopyWithoutFileId_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted,
+                                                                 [Values(true, false)] bool allowOverwrite)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(partition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+
+                originalRealm.WriteCopyWithoutClientFileId(copyConfig, allowOverwrite);
+            });
+        }
+
+
         private const int DummyDataSize = 100;
 
         private static void AddDummyData(Realm realm, bool singleTransaction)

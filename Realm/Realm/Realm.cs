@@ -1367,6 +1367,13 @@ namespace Realms
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
         }
 
+        public void WriteCopyWithoutClientFileId(RealmConfigurationBase config, bool allowOverwrite)
+        {
+            Argument.NotNull(config, nameof(config));
+
+            SharedRealmHandle.WriteCopyWithoutClientFileId(config.DatabasePath, config.EncryptionKey, allowOverwrite);
+        }
+
         #region Transactions
 
         internal void DrainTransactionQueue()
