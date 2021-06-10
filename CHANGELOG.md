@@ -1,6 +1,10 @@
 ## 10.2.0-beta.3 (TBD)
 
+### Breaking Changes
+* `ISet<RealmValue>` will now consider values holding different numeric types to be equal if the underlying numbers are equal - e.g. `1` is equal to `1.0` and to `1.0f`. (Issue [#2412](https://github.com/realm/realm-dotnet/issues/2412))
+
 ### Fixed
+* Added back 32bit support for iOS builds. (Issue [#2429](https://github.com/realm/realm-dotnet/issues/2429))
 * Removed redundant warnings when building a Unity project for device that mentioned that the schema for Realm and Realm.UnityUtils is empty. (Issue [#2320](https://github.com/realm/realm-dotnet/issues/2320))
 
 ### Enhancements
@@ -23,6 +27,7 @@ API. Example:
   var newPerson = (RealmObject)(object)realm.DynamicApi.Create("Person", 123);
   newPerson.DynamicApi.Set("FirstName", "Peter");
   ```
+* Added a Unity Editor option to enable weaving editor assemblies. This should be "off" unless your project has Editor assemblies that reference Realm - for example, an EditMode test assembly that tests Realm-related functionality. Keeping it "on" may slow down builds a little as more assemblies will need to be evaluated for weaving. (Issue [#2346](https://github.com/realm/realm-dotnet/issues/2346))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
