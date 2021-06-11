@@ -2473,15 +2473,15 @@ function run() {
             core.info("iphoneToSimulate: " + iphoneToSimulate);
             // Sample output: iOS 10.3 (10.3 - 14E269) (com.apple.CoreSimulator.SimRuntime.iOS-10-3) - we're looking for '10.3 - 14E269'
             // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
-            let runtimeId = exec.exec("xcrun simctl list runtimes | awk \'/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }\'");
+            let runtimeId = yield exec.exec("xcrun simctl list runtimes | awk \'/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }\'");
             if (!runtimeId) {
-                runtimeId = exec.exec("xcrun simctl list runtimes | awk \'/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /\\([0-9.]+ - [a-zA-Z0-9]+\\)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }\'");
+                runtimeId = yield exec.exec("xcrun simctl list runtimes | awk \'/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /\\([0-9.]+ - [a-zA-Z0-9]+\\)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }\'");
             }
             // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
-            exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()]);
-            exec.exec("xcrun", ["simctl", "boot", id]);
-            exec.exec("xcrun", ["simctl", "install", id, appPath]);
-            exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId, args]);
+            yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()]);
+            yield exec.exec("xcrun", ["simctl", "boot", id]);
+            yield exec.exec("xcrun", ["simctl", "install", id, appPath]);
+            yield exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId, args]);
             // core.info(`The result is: ${sum}`);
             // core.setOutput("output", sum);
         }
@@ -2490,8 +2490,8 @@ function run() {
         }
         finally {
             try {
-                exec.exec("xcrun", ["simctl", "shutdown", id]);
-                exec.exec("xcrun", ["simctl", "delete", id]);
+                yield exec.exec("xcrun", ["simctl", "shutdown", id]);
+                yield exec.exec("xcrun", ["simctl", "delete", id]);
             }
             catch (error) {
                 core.setFailed("An error occurred during cleanup: ${error.toString()}");
