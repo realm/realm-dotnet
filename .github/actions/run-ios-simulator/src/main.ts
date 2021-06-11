@@ -20,7 +20,7 @@ async function run(): Promise<void> {
         }
 
         // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
-        exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()]);
+        exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId]);
         exec.exec("xcrun", ["simctl", "boot", id]);
         exec.exec("xcrun", ["simctl", "install", id, appPath]);
         exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId, args]);
