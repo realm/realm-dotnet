@@ -172,12 +172,14 @@ namespace Realms.Sync
                     }
                 });
 
-                if (OnProgress != null)
+                // Capture OnProgress to avoid having it overwritten while the download is in flight and throwing NRE
+                var onProgress = OnProgress;
+                if (onProgress != null)
                 {
                     progressToken = new ProgressNotificationToken(
                         observer: (progress) =>
                         {
-                            OnProgress(progress);
+                            onProgress(progress);
                         },
                         register: handle.RegisterProgressNotifier,
                         unregister: (token) =>
