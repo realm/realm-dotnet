@@ -83,6 +83,12 @@ steps:
 #@ end
 #@ end
 
+#@ def msbuildOnWin(projectPath, **properties):
+  - name: Add msbuild to PATH
+    uses: microsoft/setup-msbuild@v1.0.2
+  - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
+#@ end
+
 #@ def buildUnityPackage(includeDependencies):
 #@ finalPkgName = "io.realm.unity-" + ("bundled-" if includeDependencies else "") + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
   - name: #@ "Build Unity" + (" Bundled Dependencies" if includeDependencies else "")
@@ -148,7 +154,6 @@ steps:
 #@ }
 #@
 #@ return dotnetPublishAndRun(projectPath, framework, executeCommand, properties)
-#@
 #@ end
 
 #@ def dotnetPublishAndRun(projectPath, framework, executeCommand, properties = {}):
@@ -275,14 +280,53 @@ jobs:
     name: Run tests for NET framework
     needs: build-packages
     steps:
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-      - #@ msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+      - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
       - name: Run the tests
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
       - #@ publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results")
+  run-tests-uwp:
+    runs-on: windows-latest
+    name: Run tests for UWP on Windows
+    needs: build-packages
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - name: Import test certificate
+        run: |
+          $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+          $currentDirectory = Get-Location
+          [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+          certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+        shell: powershell
+      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
+      - name: Install the UWP test app
+        run: Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
+        shell: powershell
+      - name: Run the tests
+        run: |
+          echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml"  | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
+          Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
+          do
+          {
+              Start-Sleep -s 3
+              $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+              $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
+          } while ($uwp_test_app -and !$file_available)
+
+          $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+          if (!$file_available)
+          {
+            exit 1
+          }
+          else
+          {
+            Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
+          }
+        shell: powershell
+      - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
     needs: build-packages

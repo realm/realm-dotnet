@@ -46,7 +46,7 @@ Building Android wrappers
 
 Building for Android uses CMake with a toolchain file. You can either configure CMake with an Android toolchain file manually, or build with `build-android.sh`. By default it will build for armeabi-v7a, arm64-v8a, x86, and x86_64. You can specify a single ABI to build by passing `--arch=$ABI`. You can also choose a build configuration by passing `--configuration=$CONFIG`. The script also accepts CMake arguments like `-GNinja`.
 
-You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK` pointing to its location.
+You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK_HOME` pointing to its location.
 
 Building Windows wrappers
 -------------
