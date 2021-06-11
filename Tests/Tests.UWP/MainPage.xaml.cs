@@ -16,25 +16,63 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.IO;
+using System.Linq;
 using NUnit.Runner.Services;
+using Windows.ApplicationModel.Core;
+using Windows.Storage;
+using Windows.UI.Xaml.Navigation;
 
 namespace Realms.Tests.UWP
 {
     public sealed partial class MainPage
     {
+        private NUnit.Runner.App _nunit;
+
         public MainPage()
         {
             InitializeComponent();
+        }
 
-            var nunit = new NUnit.Runner.App();
-            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            StreamWriter outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
+            _nunit = new NUnit.Runner.App(outputWriter);
+            _nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
 
-            nunit.Options = new TestOptions
+            _nunit.Options = new TestOptions
             {
                 LogToOutput = true
             };
 
-            LoadApplication(nunit);
+            if (e.Parameter != null && e.Parameter is string launchParams)
+            {
+                var args = TestHelpersUWP.SplitArguments(launchParams);
+                if (args.Any(a =>  a == "--headless"))
+                {
+                    _nunit.Options.AutoRun = true;
+                    _nunit.Options.CreateXmlResultFile = true;
+                    var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
+                    if (resultPath == null)
+                    {
+                        throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
+                    }
+
+                    _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
+                    _nunit.Options.OnCompletedCallback = async () =>
+                    {
+                        await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
+                        outputWriter.Dispose();
+                        Console.WriteLine("Test finished, reporting results");
+                        CoreApplication.Exit();
+                    };
+                }
+            }
+
+            LoadApplication(_nunit);
+
+            base.OnNavigatedTo(e);
         }
     }
 }

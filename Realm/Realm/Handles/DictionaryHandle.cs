@@ -28,6 +28,7 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct DictionaryChangeSet
         {
+            public MarshaledVector<PrimitiveValue> Deletions;
             public MarshaledVector<PrimitiveValue> Insertions;
             public MarshaledVector<PrimitiveValue> Modifications;
         }
@@ -210,7 +211,7 @@ namespace Realms
             return new KeyValuePair<string, TValue>(key.AsString(), value.As<TValue>());
         }
 
-        public unsafe void Set(string key, in RealmValue value)
+        public void Set(string key, in RealmValue value)
         {
             var (primitive, valueHandles) = value.ToNative();
 
@@ -223,7 +224,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void Add(string key, in RealmValue value)
+        public void Add(string key, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
 
@@ -260,7 +261,7 @@ namespace Realms
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe bool ContainsKey(string key)
+        public bool ContainsKey(string key)
         {
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();

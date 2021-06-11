@@ -35,30 +35,22 @@ namespace binding {
     struct MarshaledAppError
     {
         bool is_null = true;
-        const char* message_buf = nullptr;
-        size_t message_len = 0;
-        const char* error_category_buf = nullptr;
-        size_t error_category_len = 0;
-        const char* logs_link_buf = nullptr;
-        size_t logs_link_len = 0;
+        realm_value_t message = realm_value_t{};
+        realm_value_t error_category = realm_value_t{};
+        realm_value_t logs_link = realm_value_t{};
         int http_status_code = 0;
 
         MarshaledAppError()
         {
         }
 
-        MarshaledAppError(const std::string& message, const std::string& error_category, const std::string& logs_link, util::Optional<int> http_code)
+        MarshaledAppError(const std::string& message_str, const std::string& error_category_str, const std::string& logs_link_str, util::Optional<int> http_code)
         {
             is_null = false;
 
-            message_buf = message.c_str();
-            message_len = message.size();
-
-            error_category_buf = error_category.c_str();
-            error_category_len = error_category.size();
-
-            logs_link_buf = logs_link.c_str();
-            logs_link_len = logs_link.size();
+            message = to_capi_value(message_str);
+            error_category = to_capi_value(error_category_str);
+            logs_link = to_capi_value(logs_link_str);
 
             http_status_code = http_code.value_or(0);
         }
@@ -120,14 +112,11 @@ namespace binding {
     };
 
     struct UserApiKey {
-        const char* id;
-        size_t id_len;
+        realm_value_t id = realm_value_t{};
 
-        const char* key;
-        size_t key_len;
+        realm_value_t key = realm_value_t{};
 
-        const char* name;
-        size_t name_len;
+        realm_value_t name = realm_value_t{};
 
         bool disabled;
     };
@@ -135,7 +124,7 @@ namespace binding {
     using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
     using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
     using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
-    using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
+    using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, size_t api_keys_len, MarshaledAppError err);
 
     extern std::function<VoidCallbackT> s_void_callback;
     extern std::function<UserCallbackT> s_user_callback;
@@ -179,10 +168,7 @@ namespace binding {
             }
             else if (response) {
                 std::string serialized = response->to_string();
-                realm_value_t payload{};
-                payload.string = to_capi(serialized);
-                payload.type = realm_value_type::RLM_TYPE_STRING;
-                s_bson_callback(tcs_ptr, payload, MarshaledAppError());
+                s_bson_callback(tcs_ptr, to_capi_value(serialized), MarshaledAppError());
             }
             else {
                 s_bson_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
@@ -206,26 +192,19 @@ namespace binding {
                 UserApiKey marshaled_key{};
 
                 id_storage[i] = api_key.id.to_string();
-                marshaled_key.id = id_storage[i].c_str();
-                marshaled_key.id_len = id_storage[i].size();
+                marshaled_key.id = to_capi_value(id_storage[i]);
 
                 if (api_key.key) {
-                    marshaled_key.key = api_key.key->c_str();
-                    marshaled_key.key_len = api_key.key->size();
+                    marshaled_key.key = to_capi_value(api_key.key.value());
                 }
-                else {
-                    marshaled_key.key = nullptr;
-                    marshaled_key.key_len = 0;
-                }
-
-                marshaled_key.name = api_key.name.c_str();
-                marshaled_key.name_len = api_key.name.size();
+ 
+                marshaled_key.name = to_capi_value(api_key.name);
                 marshaled_key.disabled = api_key.disabled;
 
                 marshalled_keys[i] = marshaled_key;
             }
 
-            s_api_keys_callback(tcs_ptr, marshalled_keys.data(), static_cast<int>(marshalled_keys.size()), MarshaledAppError());
+            s_api_keys_callback(tcs_ptr, marshalled_keys.data(), marshalled_keys.size(), MarshaledAppError());
         }
     }
 

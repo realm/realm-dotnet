@@ -113,7 +113,15 @@ static inline realm_string_t to_capi(StringData data)
 
 static inline realm_string_t to_capi(const std::string& str)
 {
-    return to_capi(StringData{ str });
+    return realm_string_t{ str.data(), str.length() };
+}
+
+static inline realm_value_t to_capi_value(const std::string& str)
+{
+    realm_value_t val{};
+    val.string = to_capi(str);
+    val.type = realm_value_type::RLM_TYPE_STRING;
+    return val;
 }
 
 static inline std::string capi_to_std(realm_string_t str)

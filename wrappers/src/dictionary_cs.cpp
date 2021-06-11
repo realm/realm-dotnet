@@ -183,10 +183,12 @@ REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_key_notificat
                 s_dictionary_notification_callback(context->managed_object, nullptr, nullptr);
             }
             else {
+                auto deletions = get_keys_vector(changes.deletions);
                 auto insertions = get_keys_vector(changes.insertions);
                 auto modifications = get_keys_vector(changes.modifications);
 
                 MarshallableDictionaryChangeSet marshallable_changes{
+                    { deletions.data(), deletions.size() },
                     { insertions.data(), insertions.size() },
                     { modifications.data(), modifications.size() },
                 };

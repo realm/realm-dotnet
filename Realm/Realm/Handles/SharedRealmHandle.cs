@@ -44,7 +44,7 @@ namespace Realms
             public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, NativeException ex);
+            public delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, NativeException ex);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void OnBindingContextDestructedCallback(IntPtr handle);
@@ -185,7 +185,7 @@ namespace Realms
 #pragma warning restore IDE1006 // Naming Styles
         }
 
-        static unsafe SharedRealmHandle()
+        static SharedRealmHandle()
         {
             NativeCommon.Initialize();
         }
@@ -412,7 +412,7 @@ namespace Realms
             return new ObjectHandle(this, result);
         }
 
-        public unsafe ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableKey tableKey, string parentType, bool update, out bool isNew)
+        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableKey tableKey, string parentType, bool update, out bool isNew)
         {
             if (primaryKey == null && !pkProperty.Type.IsNullable())
             {
@@ -447,7 +447,7 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public unsafe bool TryFindObject(TableKey tableKey, in RealmValue id, out ObjectHandle objectHandle)
+        public bool TryFindObject(TableKey tableKey, in RealmValue id, out ObjectHandle objectHandle)
         {
             var (primitiveValue, handles) = id.ToNative();
             var result = NativeMethods.get_object_for_primary_key(this, tableKey, primitiveValue, out var ex);
@@ -488,7 +488,7 @@ namespace Realms
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The task awaiter will own the ThreadSafeReference handle.")]
-        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
+        private static void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;

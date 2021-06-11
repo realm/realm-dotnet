@@ -131,9 +131,11 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
     <PackageReference Include="PCLStorage" Version="1.0.2" />
-    <PackageReference Include="NUnit.Xamarin.Realm">
-      <Version>3.12.1</Version>
-    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NUnit.Xamarin">
+      <HintPath>..\..\dependencies\NUnit.Xamarin.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
