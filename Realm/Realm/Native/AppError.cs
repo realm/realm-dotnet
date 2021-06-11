@@ -16,33 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Runtime.InteropServices;
-using System.Text;
+using Realms.Native;
 
 namespace Realms.Sync.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct AppError
+    internal struct AppError
     {
         [MarshalAs(UnmanagedType.U1)]
         public bool is_null;
 
-        private byte* message_buf;
-        private IntPtr message_len;
+        private PrimitiveValue message;
 
-        private byte* error_category_buf;
-        private IntPtr error_category_len;
+        private PrimitiveValue error_category;
 
-        private byte* logs_link_buf;
-        private IntPtr logs_link_len;
+        private PrimitiveValue logs_link;
 
         public int http_status_code;
 
-        public string Message => message_buf == null ? null : Encoding.UTF8.GetString(message_buf, (int)message_len);
+        public string Message => message.Type == RealmValueType.Null ? null : message.AsString();
 
-        public string ErrorCategory => error_category_buf == null ? null : Encoding.UTF8.GetString(error_category_buf, (int)error_category_len);
+        public string ErrorCategory => error_category.Type == RealmValueType.Null ? null : error_category.AsString();
 
-        public string LogsLink => logs_link_buf == null ? null : Encoding.UTF8.GetString(logs_link_buf, (int)logs_link_len);
+        public string LogsLink => logs_link.Type == RealmValueType.Null ? null : logs_link.AsString();
     }
 }

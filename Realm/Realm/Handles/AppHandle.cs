@@ -36,7 +36,7 @@ namespace Realms.Sync
 #pragma warning disable IDE1006 // Naming Styles
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void LogMessageCallback(IntPtr managed_handler, PrimitiveValue messageValue, LogLevel logLevel);
+            public delegate void LogMessageCallback(IntPtr managed_handler, PrimitiveValue messageValue, LogLevel logLevel);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void UserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error);
@@ -45,10 +45,10 @@ namespace Realms.Sync
             public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void BsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
+            public delegate void BsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, int api_keys_len, AppError error);
+            public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, IntPtr api_keys_len, AppError error);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_initialize", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr initialize(
@@ -143,7 +143,7 @@ namespace Realms.Sync
 #pragma warning restore IDE1006 // Naming Styles
         }
 
-        static unsafe AppHandle()
+        static AppHandle()
         {
             NativeCommon.Initialize();
         }
@@ -318,7 +318,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static unsafe void HandleLogMessage(IntPtr managedHandler, PrimitiveValue messageValue, LogLevel level)
+        private static void HandleLogMessage(IntPtr managedHandler, PrimitiveValue messageValue, LogLevel level)
         {
             try
             {
@@ -335,7 +335,7 @@ namespace Realms.Sync
 
         [MonoPInvokeCallback(typeof(NativeMethods.UserCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The user will own its handle.")]
-        private static unsafe void HandleUserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
+        private static void HandleUserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             var tcs = (TaskCompletionSource<SyncUserHandle>)tcsHandle.Target;
@@ -351,7 +351,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.VoidTaskCallback))]
-        private static unsafe void HandleTaskCompletion(IntPtr tcs_ptr, AppError error)
+        private static void HandleTaskCompletion(IntPtr tcs_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             var tcs = (TaskCompletionSource<object>)tcsHandle.Target;
@@ -366,7 +366,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.BsonCallback))]
-        private static unsafe void HandleBsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
+        private static void HandleBsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             var tcs = (TaskCompletionSource<string>)tcsHandle.Target;
@@ -381,14 +381,14 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.ApiKeysCallback))]
-        private static unsafe void HandleApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error)
+        private static void HandleApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, IntPtr api_keys_len, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             var tcs = (TaskCompletionSource<UserApiKey[]>)tcsHandle.Target;
             if (error.is_null)
             {
-                var result = new UserApiKey[api_keys_len];
-                for (var i = 0; i < api_keys_len; i++)
+                var result = new UserApiKey[api_keys_len.ToInt32()];
+                for (var i = 0; i < api_keys_len.ToInt32(); i++)
                 {
                     result[i] = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
                 }

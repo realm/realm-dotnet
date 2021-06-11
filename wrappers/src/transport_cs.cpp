@@ -32,16 +32,14 @@ using namespace realm::binding;
 struct HttpClientRequest {
     HttpMethod method;
 
-    const char* url;
-    size_t url_len;
+    realm_value_t url;
 
     uint64_t timeout_ms;
 
     std::pair<char*, char*>* headers;
-    int headers_len;
+    size_t headers_len;
 
-    const char* body;
-    size_t body_len;
+    realm_value_t body;
 };
 
 using ExecuteRequestT = void(HttpClientRequest request, void* callback);
@@ -72,13 +70,11 @@ public:
 
         HttpClientRequest client_request = {
             request.method,
-            request.url.c_str(),
-            request.url.length(),
+            to_capi_value(request.url),
             request.timeout_ms,
             headers.data(),
-            (int)headers.size(),
-            request.body.c_str(),
-            request.body.length()
+            headers.size(),
+            to_capi_value(request.body)
         };
 
         s_execute_request(std::move(client_request), new ResponseFunction(completionBlock));

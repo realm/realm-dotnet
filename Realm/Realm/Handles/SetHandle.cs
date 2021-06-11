@@ -182,7 +182,7 @@ namespace Realms
             return new RealmValue(result, realm);
         }
 
-        public unsafe bool Add(in RealmValue value)
+        public bool Add(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.add_value(this, primitive, out var nativeException);
@@ -191,7 +191,7 @@ namespace Realms
             return result;
         }
 
-        public unsafe bool Contains(in RealmValue value)
+        public bool Contains(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.contains_value(this, primitive, out var nativeException);
@@ -200,7 +200,7 @@ namespace Realms
             return result;
         }
 
-        public unsafe bool Remove(in RealmValue value)
+        public bool Remove(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.remove_value(this, primitive, out var nativeException);

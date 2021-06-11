@@ -16,34 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using MongoDB.Bson;
 
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct UserApiKey
+    internal struct UserApiKey
     {
         internal static readonly int Size = Marshal.SizeOf<UserApiKey>();
 
-        private byte* id_buf;
-        private IntPtr id_len;
+        private PrimitiveValue id;
 
-        private byte* key_buf;
-        private IntPtr key_len;
+        private PrimitiveValue key;
 
-        private byte* name_buf;
-        private IntPtr name_len;
+        private PrimitiveValue name;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool disabled;
 
-        public ObjectId Id => ObjectId.Parse(Encoding.UTF8.GetString(id_buf, (int)id_len));
+        public ObjectId Id => ObjectId.Parse(id.AsString());
 
-        public string Key => key_buf == null ? null : Encoding.UTF8.GetString(key_buf, (int)key_len);
+        public string Key => key.Type == RealmValueType.Null ? null : key.AsString();
 
-        public string Name => name_buf == null ? null : Encoding.UTF8.GetString(name_buf, (int)name_len);
+        public string Name => name.Type == RealmValueType.Null ? null : name.AsString();
     }
 }

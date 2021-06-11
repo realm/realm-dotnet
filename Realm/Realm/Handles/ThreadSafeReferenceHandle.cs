@@ -38,7 +38,7 @@ namespace Realms
         {
         }
 
-        protected override unsafe void Unbind()
+        protected override void Unbind()
         {
             NativeMethods.destroy(handle);
         }
