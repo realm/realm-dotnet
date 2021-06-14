@@ -2482,6 +2482,7 @@ function run() {
                     runtimeId += data.toString();
                 },
             };
+            core.info(`runtimeId: ${runtimeId}`);
             if ((yield exec.exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'")) != 0)
                 core.setFailed(`create simulator failed`);
             if (!runtimeId) {
