@@ -1,4 +1,4 @@
-## 10.2.0 (TBD)
+## 10.2.0 (2021-06-15)
 
 ### Fixed
 * Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`)
