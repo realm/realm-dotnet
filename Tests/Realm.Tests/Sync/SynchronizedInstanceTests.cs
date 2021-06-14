@@ -320,6 +320,23 @@ namespace Realms.Tests.Sync
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
+        [Test]
+        public void DeleteRealmWorksIfCalledMultipleTimes()
+        {
+            // Arrange
+            var config = GetFakeConfig();
+            var openRealm = GetRealm(config);
+
+            // Act
+            openRealm.Dispose();
+
+            // Assert
+            Assert.That(File.Exists(config.DatabasePath));
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+            Assert.That(File.Exists(config.DatabasePath), Is.False);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+        }
+
         private const int DummyDataSize = 100;
 
         private static void AddDummyData(Realm realm, bool singleTransaction)
