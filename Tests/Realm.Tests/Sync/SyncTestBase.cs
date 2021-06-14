@@ -59,6 +59,9 @@ namespace Realms.Tests.Sync
         {
             _sessions.DrainQueue(session => session?.CloseHandle());
 
+            // 
+            Task.Delay(1).Wait();
+
             base.CustomTearDown();
 
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
