@@ -201,7 +201,6 @@ Analytics payload
             });
 
             var matchingTypes = GetMatchingTypes().ToArray();
-            var WeavePropertyResults = new List<WeaveTypeResult>();
 
             var weaveResults = matchingTypes.Select(type =>
             {
@@ -211,10 +210,16 @@ Analytics payload
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
-                    return null;
+                    _logger.Error($"An unexpected error occurred while weaving '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                    return WeaveTypeResult.Error(type.Name);
                 }
-            }).Where(r => r != null).ToArray();
+            }).ToArray();
+
+            var failedResults = weaveResults.Where(r => !r.IsSuccessful);
+            if (failedResults.Any())
+            {
+                return WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}");
+            }
 
             WeaveSchema(matchingTypes);
 
@@ -247,24 +252,23 @@ Analytics payload
                         {
                             // We only want one error point, so even though there may be more problems, we only log the first one.
                             _logger.Error(weaveResult.ErrorMessage, sequencePoint);
+                            return WeaveTypeResult.Error(type.Name);
                         }
-                        else
+
+                        if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
                         {
-                            if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
-                            {
-                                _logger.Warning(weaveResult.WarningMessage, sequencePoint);
-                            }
+                            _logger.Warning(weaveResult.WarningMessage, sequencePoint);
+                        }
 
-                            var realmAttributeNames = prop.CustomAttributes
-                                                          .Select(a => a.AttributeType.Name)
-                                                          .Intersect(RealmPropertyAttributes)
-                                                          .OrderBy(a => a)
-                                                          .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
+                        var realmAttributeNames = prop.CustomAttributes
+                                                        .Select(a => a.AttributeType.Name)
+                                                        .Intersect(RealmPropertyAttributes)
+                                                        .OrderBy(a => a)
+                                                        .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
 
-                            if (realmAttributeNames.Any())
-                            {
-                                _logger.Error($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
-                            }
+                        if (realmAttributeNames.Any())
+                        {
+                            _logger.Warning($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
                         }
                     }
                 }
@@ -274,26 +278,28 @@ Analytics payload
                     _logger.Error(
                         $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                         sequencePoint);
+
+                    return WeaveTypeResult.Error(type.Name);
                 }
             }
 
             if (!persistedProperties.Any())
             {
-                _logger.Error($"Class {type.Name} is a RealmObject but has no persisted properties.");
-                return null;
+                _logger.Error($"Class {type.Name} is a RealmObject but has no persisted properties.", type.GetSequencePoint());
+                return WeaveTypeResult.Error(type.Name);
             }
 
             var pkProperty = persistedProperties.FirstOrDefault(p => p.IsPrimaryKey);
             if (type.IsEmbeddedObjectInheritor(_references) && pkProperty != null)
             {
-                _logger.Error($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.");
-                return null;
+                _logger.Error($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.", type.GetSequencePoint());
+                return WeaveTypeResult.Error(type.Name);
             }
 
             if (persistedProperties.Count(p => p.IsPrimaryKey) > 1)
             {
-                _logger.Error($"Class {type.Name} has more than one property marked with [PrimaryKey].");
-                return null;
+                _logger.Error($"Class {type.Name} has more than one property marked with [PrimaryKey].", type.GetSequencePoint());
+                return WeaveTypeResult.Error(type.Name);
             }
 
             var objectConstructor = type.GetConstructors()
@@ -303,7 +309,7 @@ Analytics payload
                 var nonDefaultConstructor = type.GetConstructors().First();
                 var sequencePoint = nonDefaultConstructor.DebugInformation.SequencePoints.FirstOrDefault();
                 _logger.Error($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
-                return null;
+                return WeaveTypeResult.Error(type.Name);
             }
 
             var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);

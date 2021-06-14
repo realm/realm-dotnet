@@ -20,11 +20,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -212,8 +210,14 @@ namespace Realms.Schema
             {
                 if (Count == 0)
                 {
-                    throw new InvalidOperationException(
-                        "No RealmObjects. Has linker stripped them? See https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/#linker-stripped-schema");
+                    var message = InteropConfig.Platform switch
+                    {
+                        InteropConfig.UnityPlatform => "Try weaving assemblies again ('Realm' -> 'Weave Assemblies' from the editor or simply make a code change) and make sure you don't have any Realm-related errors in the logs.",
+                        InteropConfig.DotNetPlatform => "Has linker stripped them? See https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/#linker-stripped-schema",
+                        _ => string.Empty
+                    };
+
+                    throw new InvalidOperationException($"No RealmObjects. {message}");
                 }
 
                 return new RealmSchema(this);

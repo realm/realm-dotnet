@@ -216,6 +216,12 @@ namespace RealmWeaver
 
                     var results = weaver.Execute(analyticsConfig);
 
+                    if (results.ErrorMessage != null)
+                    {
+                        UnityLogger.Instance.Error($"[{name}] Weaving failed: {results}");
+                        return false;
+                    }
+
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
                     {
@@ -227,7 +233,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Warning($"[{name}] Weaving failed: {ex}");
+                UnityLogger.Instance.Error($"[{name}] Weaving failed: {ex}");
             }
 
             return false;
