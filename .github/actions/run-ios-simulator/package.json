@@ -15,7 +15,10 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.1.0",
+    "@types/util.promisify": "^1.0.4",
     "@types/uuid": "^8.3.0",
+    "promisify-child-process": "^4.1.1",
+    "util.promisify": "^1.1.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
