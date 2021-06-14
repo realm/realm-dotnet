@@ -268,7 +268,6 @@ stage('Test') {
           }
         }
       }
-      // The android tests fail on CI due to a CompilerServices.Unsafe issue. Uncomment when resolved
       rlmNode('android-hub') {
         unstash 'android-tests'
 
@@ -372,34 +371,47 @@ def NetCoreTest(String nodeName, String targetFramework) {
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
         dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
-        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
-      if (isUnix()) {
-        if (nodeName == 'docker') {
-          def test_runner_image = CreateDockerContainer(targetFramework)
-          withRealmCloud(
-            version: '2021-05-11',
-            appsToImport: [
-              "dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests",
-              "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key",
-              "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
-              "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
-            ]) { networkName ->
-            test_runner_image.inside("--network=${networkName} --ulimit core=-1") {
-              script += " --baasurl http://mongodb-realm:9090"
-              // see https://stackoverflow.com/a/53782505
+      if (isUnix() && nodeName == 'docker') {
+        def test_runner_image = CreateDockerContainer(targetFramework)
+        withRealmCloud(
+          version: '2021-05-11',
+          appsToImport: [
+            "dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests",
+            "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key",
+            "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
+            "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
+          ]) { networkName ->
+          test_runner_image.inside("--network=${networkName} --ulimit core=-1:-1") {
+            // see https://stackoverflow.com/a/53782505
+            try {
               sh """
                 export HOME=/tmp
                 ${script}
+                ./bin/${configuration}/${targetFramework}/Realm.Tests --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml --baasurl http://mongodb-realm:9090
               """
+            } finally {
+              dir('Tests/Realm.Tests') {
+                if (fileExists('core')) {
+                  sh "/usr/bin/gdb ./bin/${configuration}/${targetFramework}/Realm.Tests -c ./core -batch -ex bt"
+
+                  sh "gzip -S _${targetFramework}.gz core"
+                  archiveArtifacts "core_${targetFramework}.gz"
+                  error 'Unit tests crashed and a core file was produced. It is available as a build artifact.'
+                }
+              }
             }
           }
-        } else {
-          sh script
         }
       } else {
-        bat script
+        script += "\ndotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml"
+
+        if (isUnix()) {
+          sh script
+        } else {
+          bat script
+        }
       }
 
       junit 'TestResults.NetCore.xml'
