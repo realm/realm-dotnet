@@ -337,6 +337,16 @@ namespace Realms.Tests.Sync
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
         }
 
+        [Test]
+        public void DeleteRealmWorksIfFolderDoesntExist()
+        {
+            var config = GetFakeConfig();
+            var dbFolder = Path.GetDirectoryName(config.DatabasePath);
+            var nonExistingRealm = Path.Combine(dbFolder, "idontexist", "my.realm");
+            var newConfig = new RealmConfiguration(nonExistingRealm);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
+        }
+
         private const int DummyDataSize = 100;
 
         private static void AddDummyData(Realm realm, bool singleTransaction)
