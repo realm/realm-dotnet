@@ -23,11 +23,11 @@ async function run(): Promise<void> {
             runtimeId += data.toString();
         },
         };
-        core.info(`runtimeId: ${runtimeId}`);
-        if (await exec.exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'") != 0) core.setFailed(`create simulator failed`);
+        if (await exec.exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'", [], options) != 0) core.setFailed(`create simulator failed`);
         if (!runtimeId) {
-            if (await exec.exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /([0-9.]+ - [a-zA-Z0-9]+)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }'") != 0) core.setFailed(`create simulator failed`);
+            if (await exec.exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /([0-9.]+ - [a-zA-Z0-9]+)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }'", [], options) != 0) core.setFailed(`create simulator failed`);
         }
+        core.info(`runtimeId: ${runtimeId}`);
 
         // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
         if (await exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()]) != 0) core.setFailed(`create simulator failed`);
