@@ -407,7 +407,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
       } else {
         script += "\ndotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml"
 
-        if (isUnix())
+        if (isUnix()) {
           sh script
         } else {
           bat script
