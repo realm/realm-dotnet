@@ -342,7 +342,7 @@ stage('Test') {
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp3.1'),
     '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp3.1'),
     '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
-    '.NET 5 Linux': NetCoreTest('docker', 'net5.0', '4'),
+    '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
     '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
