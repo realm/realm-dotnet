@@ -1,72 +1,33 @@
-## 10.2.0-beta.3 (TBD)
-
-### Breaking Changes
-* `ISet<RealmValue>` will now consider values holding different numeric types to be equal if the underlying numbers are equal - e.g. `1` is equal to `1.0` and to `1.0f`. (Issue [#2412](https://github.com/realm/realm-dotnet/issues/2412))
+## 10.2.0 (TBD)
 
 ### Fixed
-* Added back 32bit support for iOS builds. (Issue [#2429](https://github.com/realm/realm-dotnet/issues/2429))
-* Removed redundant warnings when building a Unity project for device that mentioned that the schema for Realm and Realm.UnityUtils is empty. (Issue [#2320](https://github.com/realm/realm-dotnet/issues/2320))
-* Fixed an issue that could cause `NullReferenceException` to be thrown if you set `SyncConfiguration.OnProgress` to `null` shortly after calling `Realm.GetInstanceAsync(syncConfig)`. (Issue [#2400](https://github.com/realm/realm-dotnet/issues/2400))
-
-### Enhancements
-* Added new API for dynamically accessing object properties. The intention is to use those on
-ahead-of-time compiled platforms, such as Xamarin.iOS and Unity with IL2CPP compilation. The
-intention is to eventually make these the default API, while also supporting the legacy DLR-based
-API. Example:
-  ```csharp
-  // Make sure to cast away the dynamic immediately.
-  var people = (IQueryable<RealmObject>)realm.DynamicApi.All("Person");
-  foreach (var person in people)
-  {
-    var firstName = person.DynamicApi.Get<string>("FirstName");
-    var address = person.DynamicApi.Get<EmbeddedObject>("Address");
-    var city = address.DynamicApi.Get<string>("City");
-  }
-
-  // When casting a dynamic property, always cast first to object and then
-  // to the actual object type to remove any callsites being generated.
-  var newPerson = (RealmObject)(object)realm.DynamicApi.Create("Person", 123);
-  newPerson.DynamicApi.Set("FirstName", "Peter");
-  ```
-* Added a Unity Editor option to enable weaving editor assemblies. This should be "off" unless your project has Editor assemblies that reference Realm - for example, an EditMode test assembly that tests Realm-related functionality. Keeping it "on" may slow down builds a little as more assemblies will need to be evaluated for weaving. (Issue [#2346](https://github.com/realm/realm-dotnet/issues/2346))
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Core 11.x.y. (it's in flux)
-
-## 10.2.0-beta.2 (2021-05-05)
-
-### Fixed
-* Fixed a bug that would result in an error similar to `Undefined symbols for architecture xxx: "_realm_thread_safe_reference_destroy"` when building a Unity project for iOS. (Issue [#2318](https://github.com/realm/realm-dotnet/issues/2318))
-* The weaver will now emit an error if you try to define a collection of `RealmInteger` values. This has never been supported, but previously it would fail silently whereas now it'll be a compile time error. (Issue [#2308](https://github.com/realm/realm-dotnet/issues/2308))
+* Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`)
+being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
+* Fixed a bug where applying multiple `OrderBy` clauses on a query would result in the clauses being appended to each other as if they
+were `.ThenBy` rather than the last clause replacing the preceding ones. (PR [#2255](https://github.com/realm/realm-dotnet/issues/2255))
+* When explicitly specifying `SyncConfiguration.ObjectTypes`, added a check to validate the schema and ensure all `EmbeddedObject` classes
+are reachable from a class inheriting from `RealmObject`. More info about this subject can be found
+[here](https://docs.mongodb.com/realm/dotnet/objects/#provide-a-subset-of-classes-to-your-realm-schema). (PR [#2259](https://github.com/realm/realm-dotnet/pull/2259))
+* Fixed a bug that would result in an error similar to `Undefined symbols for architecture xxx: "_realm_thread_safe_reference_destroy"`
+when building a Unity project for iOS. (Issue [#2318](https://github.com/realm/realm-dotnet/issues/2318))
+* The weaver will now emit an error if you try to define a collection of `RealmInteger` values. This has never been supported, but
+previously it would fail silently whereas now it'll be a compile time error. (Issue [#2308](https://github.com/realm/realm-dotnet/issues/2308))
 * Fixed an issue where using collections of managed objects (lists or results) in a Unity project would result in an invalid compiled binary. (PR [#2340](https://github.com/realm/realm-dotnet/pull/2340))
 * Fixed a memory leak when a migration callback is defined, but the Realm didn't actually need to run it (PR [#2331](https://github.com/realm/realm-dotnet/pull/2331))
-
-
-### Enhancements
-* Added an override of `RealmObject.ToString()` to output more meaningful information about the object content. It will output the type of the object, the primary key (if one is defined), as well as information whether the object is managed or deleted. (Issue [#2347](https://github.com/realm/realm-dotnet/pull/2347))
-
-### Compatibility
-* Realm Studio: 10.0.0 or later.
-
-### Internal
-* Using Core 11.x.y. (it's in flux)
-* Removed Lambda compilation in ResultsVisitor when we encounter a conversion operator. This
-  is needed because IL2CPP cannot comiple lambdas dynamically. Instead, we're now using
-  `Operator.Convert<TTarget>(object)` which is slightly less efficient than `Operator.Convert<TSource, TTarget>`
-  but still quite a bit faster than `Convert.ChangeType` and also doesn't suffer from the
-  deficiencies around `Decimal128` conversion. The main downside is that we'll no longer
-  support queries with an argument that is a custom user type with an implicit conversion
-  operator defined.
-
-## 10.2.0-beta.1 (2021-04-12)
-
-### Fixed
-* Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`) being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
-* Fixed a bug where applying multiple `OrderBy` clauses on a query would result in the clauses being appended to each other as if they were `.ThenBy` rather than the last clause replacing the preceding ones. (PR [#2255](https://github.com/realm/realm-dotnet/issues/2255))
-* When explicitly specifying `SyncConfiguration.ObjectTypes`, added a check to validate the schema and ensure all `EmbeddedObject` classes are reachable from a class inheriting from `RealmObject`. More info about this subject can be found [here](https://docs.mongodb.com/realm/dotnet/objects/#provide-a-subset-of-classes-to-your-realm-schema). (PR [#2259](https://github.com/realm/realm-dotnet/pull/2259))
+* Added back 32bit support for iOS builds. (Issue [#2429](https://github.com/realm/realm-dotnet/issues/2429))
+* Removed redundant warnings when building a Unity project for device that mentioned that the schema for Realm and Realm.UnityUtils
+is empty. (Issue [#2320](https://github.com/realm/realm-dotnet/issues/2320))
+* Fixed an issue that could cause `NullReferenceException` to be thrown if you set `SyncConfiguration.OnProgress` to `null` shortly
+after calling `Realm.GetInstanceAsync(syncConfig)`. (Issue [#2400](https://github.com/realm/realm-dotnet/issues/2400))
+* When replacing an embedded object, emit a sync instruction that sets the link to the embedded object to null so that it is properly cleared.
+This resolves an issue that would have manifested itself as `Failed to parse, or apply received changeset: ERROR: ArrayInsert: Invalid prior_size (list size = 4, prior_size = 0)`
+([#4740](https://github.com/realm/realm-core/issues/4740)
+* Made Linux implementation of ExternalCommitHelper work with new versions of Linux that
+[changed epoll behavior](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6a965666b7e7475c2f8c8e724703db58b8a8a445),
+including Android 12 (Issue [#4666](https://github.com/realm/realm-core/issues/4666))
+* The file format is changed in the way that we now - again - have search indexes on primary key columns. This is required as we now stop deriving the
+ObjKeys from the primary key values, but just use an increasing counter value. This has the effect that all new objects will be created in the same
+cluster and not be spread out as they would have been before. It also means that upgrading from file format version 11 and earlier formats will be much faster. (Core upgrade)
 
 ### Enhancements
 * Add support for the `Guid` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
@@ -129,7 +90,9 @@ equal.
   var didAdd = obj.UniqueStrings.Add("foo"); // true
   didAdd = obj.UniqueStrings.Add("foo"); // false
   ```
-* Added support for value substitution in string based queries. This enables expressions following [this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`. (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
+* Added support for value substitution in string based queries. This enables expressions following
+[this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`.
+(Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
 `Logger.Default`. This replaces `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` which will be removed in a future release. The built-in implementations are:
@@ -139,14 +102,81 @@ equal.
 
   Custom loggers can derive from the `Logger` class and provide their own implementation for the `Log` method or use `Function` and provide an `Action<string>`. (PR [#2276](https://github.com/realm/realm-dotnet/pull/2276))
 * `RealmObjectBase` now correctly overrides and implements `GetHashCode()`. (Issue [#1650](https://github.com/realm/realm-dotnet/issues/1650))
+* Added an override of `RealmObject.ToString()` to output more meaningful information about the object content. It will output
+the type of the object, the primary key (if one is defined), as well as information whether the object is managed or deleted.
+(Issue [#2347](https://github.com/realm/realm-dotnet/pull/2347))
+* Added new API for dynamically accessing object properties. The intention is to use those on
+ahead-of-time compiled platforms, such as Xamarin.iOS and Unity with IL2CPP compilation. The
+intention is to eventually make these the default API, while also supporting the legacy DLR-based
+API. Example:
+  ```csharp
+  // Make sure to cast away the dynamic immediately.
+  var people = (IQueryable<RealmObject>)realm.DynamicApi.All("Person");
+  foreach (var person in people)
+  {
+    var firstName = person.DynamicApi.Get<string>("FirstName");
+    var address = person.DynamicApi.Get<EmbeddedObject>("Address");
+    var city = address.DynamicApi.Get<string>("City");
+  }
+
+  // When casting a dynamic property, always cast first to object and then
+  // to the actual object type to remove any callsites being generated.
+  var newPerson = (RealmObject)(object)realm.DynamicApi.Create("Person", 123);
+  newPerson.DynamicApi.Set("FirstName", "Peter");
+  ```
+* Added a Unity Editor option to enable weaving editor assemblies. This should be "off" unless your project has Editor assemblies
+that reference Realm - for example, an EditMode test assembly that tests Realm-related functionality. Keeping it "on" may slow down
+builds a little as more assemblies will need to be evaluated for weaving. (Issue [#2346](https://github.com/realm/realm-dotnet/issues/2346))
+* We now make a backup of the realm file prior to any file format upgrade. The backup is retained for 3 months.
+Backups from before a file format upgrade allows for better analysis of any upgrade failure. We also restore
+a backup, if a) an attempt is made to open a realm file whith a "future" file format and b) a backup file exist
+that fits the current file format. ([#4166](https://github.com/realm/realm-core/pull/4166))
+
+### Compatibility
+* Realm Studio: 11.0.0-alpha.0 or later.
+
+### Internal
+* Using Core 11.0.3. (it's in flux)
+* Enabled LTO builds for all platforms except Android. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
+* Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
+* Removed Lambda compilation in ResultsVisitor when we encounter a conversion operator. This
+  is needed because IL2CPP cannot comiple lambdas dynamically. Instead, we're now using
+  `Operator.Convert<TTarget>(object)` which is slightly less efficient than `Operator.Convert<TSource, TTarget>`
+  but still quite a bit faster than `Convert.ChangeType` and also doesn't suffer from the
+  deficiencies around `Decimal128` conversion. The main downside is that we'll no longer
+  support queries with an argument that is a custom user type with an implicit conversion
+  operator defined.
+
+## 10.1.4 (2021-05-12)
+------------------
+
+### Fixed
+* Fixed a bug that could lead to crashes with a message similar to `Invalid ref translation entry [0, 78187493520]`. (Core upgrade)
+* Fix assertion failures such as `!m_notifier_skip_version.version` or `m_notifier_sg->get_version() + 1 == new_version.version` when performing writes inside change notification callbacks. (Core upgrade)
+* Fix collection notification reporting for modifications. This could be observed by receiving the wrong indices of modifications on sorted or distinct results, or notification blocks sometimes not being called when only modifications have occured. (Core upgrade)
+* Proactively check the expiry time on the access token and refresh it before attempting to initiate a sync session. This prevents some error logs from appearing on the client such as: `ERROR: Connection[1]: Websocket: Expected HTTP response 101 Switching Protocols, but received: HTTP/1.1 401 Unauthorized`. (Core upgrade)
+* Destruction of the TableRecycler at exit was unordered compared to other threads running. This could lead to crashes, some with the TableRecycler at the top of the stack. (Core upgrade)
+* Fixed errors related to `uncaught exception in notifier thread: N5realm11KeyNotFoundE: No such object`. This could happen in a synchronized app when a linked object was deleted by another client. (Core upgrade)
+* Opening a metadata realm with the wrong encryption key or different encryption configuration will remove that metadata realm and create a new metadata realm using the new key or configuration. (Core upgrade)
+* Creting a `ThreadSafeReference` to a readonly Realm would result in a crash. (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 11.x.y. (it's in flux)
-* Enabled LTO builds for all platforms except Android. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
-* Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
+* Using Core 10.7.2.
+
+## 10.1.3 (2021-04-29)
+------------------
+
+### Fixed
+* Fixed a compiler bug that would result in an `"Access violation"` error being thrown when using sync on Windows.
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 10.5.6.
 
 ## 10.1.2 (2021-03-19)
 ------------------
