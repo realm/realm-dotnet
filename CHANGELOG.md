@@ -1,8 +1,6 @@
 ## 10.2.0 (2021-06-15)
 
 ### Fixed
-* Fixed an issue that would result in UWP apps being rejected from the Microsoft Store due to an unsupported API (`__C_specific_handler`)
-being used. (Issue [#2235](https://github.com/realm/realm-dotnet/issues/2235))
 * Fixed a bug where applying multiple `OrderBy` clauses on a query would result in the clauses being appended to each other as if they
 were `.ThenBy` rather than the last clause replacing the preceding ones. (PR [#2255](https://github.com/realm/realm-dotnet/issues/2255))
 * When explicitly specifying `SyncConfiguration.ObjectTypes`, added a check to validate the schema and ensure all `EmbeddedObject` classes
@@ -32,7 +30,7 @@ cluster and not be spread out as they would have been before. It also means that
 ### Enhancements
 * Add support for the `Guid` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
 * Add support for dictionaries. Currently only string keys are supported, while the value
-  type may be any of the supported types (the primitive types or custom types that inherit
+  type may be any of the supported types (the primitive types, `RealmValue`, or custom types that inherit
   from RealmObject/EmbeddedObject). Lists, sets, or other dictionaries may not be used as
   the value type. To add a dictionary to your model, define a getter-only property of type
   `IDictionary<string, T>`:
@@ -49,7 +47,10 @@ cluster and not be spread out as they would have been before. It also means that
   var obj = new MyObject();
   obj.Denominations.Add("quarter", 0.25d);
   ```
-* Add support for `RealmValue` data type. This new type can represent any valid Realm data type, including objects. Collections (lists, sets and dictionaries) of `RealmValue` are also supported, but 'RealmValue' cannot contain collections. Please note that a property of type `RealmValue` cannot be nullable, but can contain null, represented by the value `RealmValue.Null`. (PR [#2252](https://github.com/realm/realm-dotnet/pull/2252))
+* Add support for `RealmValue` data type. This new type can represent any valid Realm data type, including objects. Collections
+(lists, sets and dictionaries) of `RealmValue` are also supported, but `RealmValue` itself cannot contain collections. Please
+note that a property of type `RealmValue` cannot be nullable, but can contain null, represented by the value `RealmValue.Null`.
+(PR [#2252](https://github.com/realm/realm-dotnet/pull/2252))
 
   ```csharp
   public class MyObject : RealmObject
@@ -105,21 +106,21 @@ equal.
 * Added an override of `RealmObject.ToString()` to output more meaningful information about the object content. It will output
 the type of the object, the primary key (if one is defined), as well as information whether the object is managed or deleted.
 (Issue [#2347](https://github.com/realm/realm-dotnet/pull/2347))
-* Added new API for dynamically accessing object properties. The intention is to use those on
+* Added new API for dynamically accessing object properties. These are designed to support
 ahead-of-time compiled platforms, such as Xamarin.iOS and Unity with IL2CPP compilation. The
 intention is to eventually make these the default API, while also supporting the legacy DLR-based
 API. Example:
   ```csharp
-  // Make sure to cast away the dynamic immediately.
+  // Make sure to cast away the dynamic immediately on AOT platforms.
   var people = (IQueryable<RealmObject>)realm.DynamicApi.All("Person");
   foreach (var person in people)
   {
-    var firstName = person.DynamicApi.Get<string>("FirstName");
-    var address = person.DynamicApi.Get<EmbeddedObject>("Address");
-    var city = address.DynamicApi.Get<string>("City");
+      var firstName = person.DynamicApi.Get<string>("FirstName");
+      var address = person.DynamicApi.Get<EmbeddedObject>("Address");
+      var city = address.DynamicApi.Get<string>("City");
   }
 
-  // When casting a dynamic property, always cast first to object and then
+  // When casting a dynamic object, always cast first to object and then
   // to the actual object type to remove any callsites being generated.
   var newPerson = (RealmObject)(object)realm.DynamicApi.Create("Person", 123);
   newPerson.DynamicApi.Set("FirstName", "Peter");
@@ -136,7 +137,7 @@ that fits the current file format. ([#4166](https://github.com/realm/realm-core/
 * Realm Studio: 11.0.0-alpha.0 or later.
 
 ### Internal
-* Using Core 11.0.3. (it's in flux)
+* Using Core 11.0.3.
 * Enabled LTO builds for all platforms except Android. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Test projects updated to dotnetcore 3.1. This means that tests are no longer executed against dotnetcore 2.0.
 * Removed Lambda compilation in ResultsVisitor when we encounter a conversion operator. This
