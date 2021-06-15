@@ -2667,7 +2667,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const id = v4().replace("-", "");
+        const id = v4().split("-").join("");
         try {
             const appPath = core.getInput("appPath", { required: true });
             const bundleId = core.getInput("bundleId", { required: true });
@@ -2697,6 +2697,7 @@ function run() {
                     core.setFailed(stderr.toString());
                 }
             }
+            yield exec.exec("xcrun simctl list devicetypes runtimes");
             // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
             if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()])) != 0)
                 core.setFailed(`create simulator failed`);
