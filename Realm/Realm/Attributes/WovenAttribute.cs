@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 
 namespace Realms
 {
     /// <summary>
     /// An attribute that indicates that a class has been woven. It is applied automatically by the RealmWeaver and should not be used manually.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class)]
     public class WovenAttribute : Attribute
     {
