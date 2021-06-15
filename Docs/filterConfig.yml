@@ -1,12 +1,12 @@
 apiRules:
 - exclude:
-    uidRegex: ^Realms\.RealmObject\.Get.*Value.*$
+    uidRegex: ^Realms\.RealmObjectBase\.Get.*Value.*$
     type: Method
 - exclude:
-    uidRegex: ^Realms\.RealmObject\.Set.*Value.*$
+    uidRegex: ^Realms\.RealmObjectBase\.Set.*Value.*$
     type: Method
 - exclude:
-    uidRegex: ^Realms\.RealmObject\.GetBacklinks.*$
+    uidRegex: ^Realms\.RealmObjectBase\.GetBacklinks.*$
     type: Method
 - exclude:
     uidRegex: ^Realms\.Weaving$
@@ -30,6 +30,12 @@ apiRules:
     uidRegex: ^Realms\.RealmList`1$
     type: Type
 - exclude:
+    uidRegex: ^Realms\.RealmSet`1$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.RealmDictionary`1$
+    type: Type
+- exclude:
     uidRegex: ^System\.Object
     type: Type
 - exclude:
@@ -45,10 +51,16 @@ apiRules:
     uidRegex: Equals\(System\.Object\)$
     type: Method
 - exclude:
-    uidRegex: ^Realms\.RealmObject\.GetTypeInfo
+    uidRegex: ^Realms\.RealmObjectBase\.GetTypeInfo
     type: Method
 - exclude:
-    uidRegex: ^Realms\.RealmObject\.Finalize
+    uidRegex: ^Realms\.RealmObjectBase\.Finalize
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.WovenAssemblyAttribute
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.CollectionExtensions\.PopulateCollection
     type: Method
 - include:
     hasAttribute:

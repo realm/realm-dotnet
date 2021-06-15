@@ -31,6 +31,7 @@ namespace Realms
         /// <summary>
         /// Gets a value indicating the identifier of the Realm that will be opened with this <see cref="InMemoryConfiguration"/>.
         /// </summary>
+        /// <value>The identifier for this configuration.</value>
         public string Identifier { get; }
 
         /// <summary>

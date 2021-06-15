@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 
 namespace Realms
 {
     /// <summary>
     /// Prevents the Xamarin managed linker from removing the target.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public sealed class PreserveAttribute : Attribute
     {

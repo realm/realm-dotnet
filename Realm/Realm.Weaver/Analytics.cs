@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -115,8 +116,7 @@ namespace RealmWeaver
                     .Replace("%SYNC_ENABLED%", _config.IsUsingSync.ToString())
 
                     // Version of weaver is expected to match that of the library.
-                    // TODO: temp - remove that when we're out of beta
-                    .Replace("%REALM_VERSION%", "10.2.0-beta.3") // Assembly.GetExecutingAssembly().GetName().Version.ToString())
+                    .Replace("%REALM_VERSION%", Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)
