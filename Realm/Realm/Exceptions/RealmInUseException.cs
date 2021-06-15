@@ -20,7 +20,7 @@ namespace Realms.Exceptions
 {
     /// <summary>
     /// An exception thrown when an an operation is being performed on an open Realm
-    /// that can only performed on a closed Realm (i.e. deleting Realm files).
+    /// that can only performed on a closed Realm (e.g. deleting Realm files).
     /// </summary>
     public class RealmInUseException : RealmException
     {
