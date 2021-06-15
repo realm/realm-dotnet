@@ -169,10 +169,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// Deletes all the files associated with a realm.
+        /// Deletes all files associated with a given Realm if the Realm exists and is not open.
         /// </summary>
         /// <remarks>
-        /// The realm file must not be open on other threads.
+        /// The Realm file must not be open on other threads.
         /// This method must not be called inside a transaction.
         /// All but the .lock file will be deleted by this.
         /// </remarks>
@@ -184,6 +184,14 @@ namespace Realms
 
             if (File.Exists(configuration.DatabasePath))
             {
+                // Race condition:
+                // When trying to delete the Realm it can in some occasions (usually when Sync is involved)
+                // still be in use. To make sure other threads that use the same Realm get scheduled again
+                // and can finish their work before we actually delete the Realm files, we have to wait for
+                // a moment here.
+                // This can be removed as soon as https://github.com/realm/realm-core/issues/4762 is resolved.
+                Task.Delay(1).Wait();
+
                 SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
             }
         }
