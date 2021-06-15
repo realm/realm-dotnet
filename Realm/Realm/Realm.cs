@@ -182,7 +182,10 @@ namespace Realms
         {
             Argument.NotNull(configuration, nameof(configuration));
 
-            SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
+            if (File.Exists(configuration.DatabasePath))
+            {
+                SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
+            }
         }
 
         private static bool IsRealmOpen(string path)

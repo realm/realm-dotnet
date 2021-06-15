@@ -323,17 +323,13 @@ namespace Realms.Tests.Sync
         [Test]
         public void DeleteRealmWorksIfCalledMultipleTimes()
         {
-            // Arrange
             var config = GetFakeConfig();
             var openRealm = GetRealm(config);
-
-            // Act
             openRealm.Dispose();
-
-            // Assert
             Assert.That(File.Exists(config.DatabasePath));
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
             Assert.That(File.Exists(config.DatabasePath), Is.False);
+
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
         }
 
@@ -344,6 +340,7 @@ namespace Realms.Tests.Sync
             var dbFolder = Path.GetDirectoryName(config.DatabasePath);
             var nonExistingRealm = Path.Combine(dbFolder, "idontexist", "my.realm");
             var newConfig = new RealmConfiguration(nonExistingRealm);
+
             Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
         }
 
