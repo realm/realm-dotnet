@@ -1,0 +1,10 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+publish-to-nuget:
+    runs-on: ubuntu-latest
+    name: Upload nupkg to nuget
+    steps:
+      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - name: Upload nupkg
+        run: dotnet nuget push AppLogger.1.0.0.nupkg --api-key ${{ secrets.Nuget_Api_Key }} --source https://api.nuget.org/v3/index.json
