@@ -2665,7 +2665,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 function run() {
-    var _a, _b;
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const id = v4().split("-").join("");
         try {
@@ -2674,7 +2674,7 @@ function run() {
             const iphoneToSimulate = core.getInput("iphoneToSimulate", { required: false });
             const args = core.getInput("arguments", { required: false });
             core.info(`iphoneToSimulate: ${iphoneToSimulate}`);
-            // Sample output: iOS 10.3 (10.3 - 14E269) (com.apple.CoreSimulator.SimRuntime.iOS-10-3) - we're looking for '10.3 - 14E269'
+            // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
             // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
             // let runtimeId: String = "";
             // const options : exec.ExecOptions = {};
@@ -2690,15 +2690,9 @@ function run() {
                 core.setFailed(stderr.toString());
             }
             core.info(`runtimeId: ${runtimeId}`);
-            if (!runtimeId) {
-                const { stdout, stderr } = yield promisify_child_process_exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /([0-9.]+ - [a-zA-Z0-9]+)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }'");
-                runtimeId = (_b = stdout === null || stdout === void 0 ? void 0 : stdout.toString()) !== null && _b !== void 0 ? _b : "";
-                if (stderr) {
-                    core.setFailed(stderr.toString());
-                }
-            }
             yield exec.exec("xcrun simctl list devicetypes runtimes");
             // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
+            runtimeId = "iOS14.4";
             if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()])) != 0)
                 core.setFailed(`create simulator failed`);
             if ((yield exec.exec("xcrun", ["simctl", "boot", id])) != 0)

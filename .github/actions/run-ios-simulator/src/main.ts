@@ -14,7 +14,7 @@ async function run(): Promise<void> {
         
         core.info(`iphoneToSimulate: ${iphoneToSimulate}`);
         
-        // Sample output: iOS 10.3 (10.3 - 14E269) (com.apple.CoreSimulator.SimRuntime.iOS-10-3) - we're looking for '10.3 - 14E269'
+        // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
         // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
         
         // let runtimeId: String = "";
@@ -33,19 +33,11 @@ async function run(): Promise<void> {
         }
 
         core.info(`runtimeId: ${runtimeId}`);
-        if (!runtimeId) {
-            const { stdout, stderr } = await childProcess.exec("xcrun simctl list runtimes | awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /([0-9.]+ - [a-zA-Z0-9]+)/); print substr($0, RSTART + 1, RLENGTH - 2); exit }'");
-            runtimeId = stdout?.toString() ?? "";
-            if (stderr)
-            {
-                core.setFailed(stderr.toString());
-            }
-        }
 
         await exec.exec("xcrun simctl list devicetypes runtimes");
         // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
         
-        
+        runtimeId = "iOS14.4";
         if (await exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()]) != 0) core.setFailed(`create simulator failed`);
         if (await exec.exec("xcrun", ["simctl", "boot", id]) != 0) core.setFailed(`boot simulator failed`);
         if (await exec.exec("xcrun", ["simctl", "install", id, appPath]) != 0) core.setFailed(`install app on  simulator failed`);
