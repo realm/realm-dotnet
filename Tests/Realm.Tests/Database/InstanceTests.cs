@@ -94,6 +94,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void DeleteRealmWorksIfFolderDoesntExist()
+        {
+            var config = RealmConfiguration.DefaultConfiguration;
+            var dbFolder = Path.GetDirectoryName(config.DatabasePath);
+            var nonExistingRealm = Path.Combine(dbFolder, "idontexist", "my.realm");
+            var newConfig = new RealmConfiguration(nonExistingRealm);
+
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
+        }
+
+        [Test]
         public void GetUniqueInstancesDifferentThreads()
         {
             TestHelpers.RunAsyncTest(async () =>
