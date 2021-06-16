@@ -2673,7 +2673,6 @@ function run() {
             const bundleId = core.getInput("bundleId", { required: true });
             const iphoneToSimulate = core.getInput("iphoneToSimulate", { required: false });
             const args = core.getInput("arguments", { required: false });
-            core.info(`iphoneToSimulate: ${iphoneToSimulate}`);
             // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
             // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
             // let runtimeId: String = "";
@@ -2694,11 +2693,11 @@ function run() {
                 },
             };
             yield exec.exec("xcrun simctl list runtimes", [], options);
-            const matches = runtimeId.match("/iOS \d{1,2}(.\d{1,2})?/g");
+            const matches = runtimeId.match(/(iOS \d{1,2}(.\d{1,2})?)/g);
             if (matches && matches.length > 0) {
                 runtimeId = matches[0].replace(" ", "");
+                core.info(`runtimeId: ${runtimeId}`);
             }
-            core.info(`runtimeId: ${runtimeId}`);
             // await exec.exec("xcrun simctl list devicetypes runtimes");
             try {
                 if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()])) != 0)
