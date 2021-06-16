@@ -208,7 +208,7 @@ run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration
 #@ end
 
 ---
-name: build and test
+name: main
 "on":
   push:
     branches:
