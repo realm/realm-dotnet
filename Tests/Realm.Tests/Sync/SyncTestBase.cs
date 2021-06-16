@@ -64,7 +64,7 @@ namespace Realms.Tests.Sync
             // still be in use. To make sure other threads that use the same Realm get scheduled again
             // and can finish their work before we actually delete the Realm files, we have to wait for
             // a moment here.
-            // This can be removed as soon as https://github.com/realm/realm-core/issues/4762 is resolved.
+            // TODO: remove this when https://github.com/realm/realm-core/issues/4762 is resolved.
             Task.Delay(5).Wait();
 
             base.CustomTearDown();
