@@ -4,6 +4,7 @@ name: lint
 jobs:
   verify-todos:
     runs-on: ubuntu-latest
+    name: Verify TODOs
     steps:
       - uses: actions/checkout@v2
       - uses: nirinchev/verify-todo@v1

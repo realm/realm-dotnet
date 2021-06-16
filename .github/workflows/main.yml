@@ -220,7 +220,7 @@ jobs:
         retention-days: 1
   build-packages:
     runs-on: windows-latest
-    name: Build packages
+    name: Package
     needs:
     - build-wrappers-windows
     - build-wrappers-macos
