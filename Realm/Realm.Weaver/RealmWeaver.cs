@@ -235,6 +235,7 @@ Analytics payload
         {
             _logger.Debug("Weaving " + type.Name);
 
+            var didSucceed = true;
             var persistedProperties = new List<WeavePropertyResult>();
             foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
@@ -252,23 +253,27 @@ Analytics payload
                         {
                             // We only want one error point, so even though there may be more problems, we only log the first one.
                             _logger.Error(weaveResult.ErrorMessage, sequencePoint);
-                            return WeaveTypeResult.Error(type.Name);
+
+                            // We set didSucceed to false, but we want to continue weaving so that if there are multiple problems, they'll all be reported.
+                            didSucceed = false;
                         }
-
-                        if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
+                        else
                         {
-                            _logger.Warning(weaveResult.WarningMessage, sequencePoint);
-                        }
+                            if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
+                            {
+                                _logger.Warning(weaveResult.WarningMessage, sequencePoint);
+                            }
 
-                        var realmAttributeNames = prop.CustomAttributes
-                                                        .Select(a => a.AttributeType.Name)
-                                                        .Intersect(RealmPropertyAttributes)
-                                                        .OrderBy(a => a)
-                                                        .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
+                            var realmAttributeNames = prop.CustomAttributes
+                                                            .Select(a => a.AttributeType.Name)
+                                                            .Intersect(RealmPropertyAttributes)
+                                                            .OrderBy(a => a)
+                                                            .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
 
-                        if (realmAttributeNames.Any())
-                        {
-                            _logger.Warning($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                            if (realmAttributeNames.Any())
+                            {
+                                _logger.Warning($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                            }
                         }
                     }
                 }
@@ -325,7 +330,7 @@ Analytics payload
             wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_references.System_Type, helperType));
             type.CustomAttributes.Add(wovenAttribute);
 
-            return WeaveTypeResult.Success(type.Name, persistedProperties);
+            return didSucceed ? WeaveTypeResult.Success(type.Name, persistedProperties) : WeaveTypeResult.Error(type.Name);
         }
 
         private WeavePropertyResult WeaveProperty(PropertyDefinition prop, TypeDefinition type)
