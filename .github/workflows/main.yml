@@ -447,7 +447,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --resultpath TestResults.iOS.xml
+        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()

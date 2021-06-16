@@ -2684,17 +2684,36 @@ function run() {
             //     },
             // };
             //await exec.exec("xcrun", [ "simctl", "list", "runtimes", "| awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'"], options);
-            const { stdout, stderr } = yield promisify_child_process_exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
-            let runtimeId = (_a = stdout === null || stdout === void 0 ? void 0 : stdout.toString()) !== null && _a !== void 0 ? _a : "";
-            if (stderr) {
-                core.setFailed(stderr.toString());
+            // the working one = no parse from @action/exec
+            // const { stdout, stderr } = await exec.exec("xcrun simctl runtimes");await childProcess.exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
+            let runtimeId = "";
+            const options = {};
+            options.listeners = {
+                stdout: (data) => {
+                    runtimeId += data.toString();
+                },
+            };
+            yield exec.exec("xcrun simctl list runtimes", [], options);
+            const matches = runtimeId.match("/iOS \d{1,2}(.\d{1,2})?/g");
+            if (matches && matches.length > 0) {
+                runtimeId = matches[0].replace(" ", "");
             }
             core.info(`runtimeId: ${runtimeId}`);
-            yield exec.exec("xcrun simctl list devicetypes runtimes");
-            // exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()]);
-            runtimeId = "iOS14.4";
-            if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()])) != 0)
-                core.setFailed(`create simulator failed`);
+            // await exec.exec("xcrun simctl list devicetypes runtimes");
+            try {
+                if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()])) != 0)
+                    core.setFailed(`create simulator failed`);
+            }
+            catch (_b) {
+                // TODO check if this "re-doing" with different runtime name is any useful
+                const { stdout, stderr } = yield promisify_child_process_exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
+                runtimeId = (_a = stdout === null || stdout === void 0 ? void 0 : stdout.toString()) !== null && _a !== void 0 ? _a : "";
+                if (stderr) {
+                    core.setFailed(stderr.toString());
+                }
+                if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()])) != 0)
+                    core.setFailed(`create simulator failed`);
+            }
             if ((yield exec.exec("xcrun", ["simctl", "boot", id])) != 0)
                 core.setFailed(`boot simulator failed`);
             if ((yield exec.exec("xcrun", ["simctl", "install", id, appPath])) != 0)
