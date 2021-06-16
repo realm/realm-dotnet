@@ -340,7 +340,7 @@ jobs:
         with:
          appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
          bundleId: 'io.realm.dotnettests'
-         iphoneToSimulate: 'iPhone8'
+         iphoneToSimulate: 'iPhone-8'
          arguments: '--headless --resultpath TestResults.iOS.xml'
       - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin iOS tests results")
   run-tests-weaver:
