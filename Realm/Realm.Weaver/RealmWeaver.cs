@@ -265,10 +265,10 @@ Analytics payload
                             }
 
                             var realmAttributeNames = prop.CustomAttributes
-                                                            .Select(a => a.AttributeType.Name)
-                                                            .Intersect(RealmPropertyAttributes)
-                                                            .OrderBy(a => a)
-                                                            .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
+                                                          .Select(a => a.AttributeType.Name)
+                                                          .Intersect(RealmPropertyAttributes)
+                                                          .OrderBy(a => a)
+                                                          .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
 
                             if (realmAttributeNames.Any())
                             {
