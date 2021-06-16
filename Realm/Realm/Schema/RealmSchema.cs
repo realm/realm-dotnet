@@ -213,7 +213,7 @@ namespace Realms.Schema
                     var message = InteropConfig.Platform switch
                     {
                         InteropConfig.UnityPlatform => "Try weaving assemblies again ('Realm' -> 'Weave Assemblies' from the editor or simply make a code change) and make sure you don't have any Realm-related errors in the logs.",
-                        InteropConfig.DotNetPlatform => "Has linker stripped them? See https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/#linker-stripped-schema",
+                        InteropConfig.DotNetPlatform => "Has linker stripped them? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/",
                         _ => string.Empty
                     };
 

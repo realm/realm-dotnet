@@ -171,7 +171,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Error($"Failed to weave assemblies: {ex}");
+                UnityLogger.Instance.Error($"[Realm] Failed to weave assemblies. If the error persists, please report it to https://github.com/realm/realm-dotnet/issues: {ex}");
             }
             finally
             {
@@ -233,7 +233,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Error($"[{name}] Weaving failed: {ex}");
+                UnityLogger.Instance.Error($"[{name}] Failed to weave assembly. If the error persists, please report it to https://github.com/realm/realm-dotnet/issues: {ex}");
             }
 
             return false;

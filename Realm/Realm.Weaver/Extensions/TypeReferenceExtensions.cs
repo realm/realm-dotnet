@@ -34,8 +34,8 @@ internal static class TypeReferenceExtensions
         {
             return @this.GetConstructors()
                 .OrderBy(c => c.Parameters.Count)
-                .Select(c => c.DebugInformation.SequencePoints.FirstOrDefault())
-                .FirstOrDefault(sp => sp != null);
+                .SelectMany(c => c.DebugInformation.SequencePoints)
+                .FirstOrDefault();
         }
 
         SequencePoint GetPropSequencePoint()
