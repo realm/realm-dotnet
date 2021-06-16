@@ -215,18 +215,18 @@ Analytics payload
                 }
             }).ToArray();
 
-            var failedResults = weaveResults.Where(r => !r.IsSuccessful);
-            if (failedResults.Any())
-            {
-                return WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}");
-            }
-
             WeaveSchema(matchingTypes);
 
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
             submitAnalytics.Wait();
+
+            var failedResults = weaveResults.Where(r => !r.IsSuccessful);
+            if (failedResults.Any())
+            {
+                return WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}");
+            }
 
             return WeaveModuleResult.Success(weaveResults);
         }
