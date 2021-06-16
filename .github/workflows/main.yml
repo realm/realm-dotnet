@@ -341,6 +341,12 @@ jobs:
       run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+    - name: Store xml result as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults.Windows.xml
+        path: TestResults.Windows.xml
+        retention-days: 2
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -383,6 +389,12 @@ jobs:
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/Realm.Tests --result=TestResults.xml --labels=After
       shell: bash
+    - name: Store xml result as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults.xml
+        path: TestResults.xml
+        retention-days: 2
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -413,6 +425,12 @@ jobs:
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
+    - name: Store xml result as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults.macOS.xml
+        path: TestResults.macOS.xml
+        retention-days: 2
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -448,6 +466,12 @@ jobs:
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
         arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
+    - name: Store xml result as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults.iOS.xml
+        path: TestResults.iOS.xml
+        retention-days: 2
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -469,6 +493,12 @@ jobs:
     - name: Run the tests
       run: ./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       shell: bash
+    - name: Store xml result as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestResults.Weaver.xml
+        path: TestResults.Weaver.xml
+        retention-days: 2
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
