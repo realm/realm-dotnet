@@ -444,7 +444,7 @@ jobs:
     - name: Run the tests
       uses: ./.github/actions/run-ios-simulator
       with:
-        appPath: Tests.iOS.app
+        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone8
         arguments: --headless --resultpath TestResults.iOS.xml
