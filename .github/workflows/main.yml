@@ -8,7 +8,7 @@ name: build and test
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
-    name: Build macOS wrappers
+    name: Wrappers macOS
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
         retention-days: 1
   build-wrappers-ios:
     runs-on: macos-latest
-    name: Build iOS wrappers
+    name: Wrappers iOS
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -62,7 +62,7 @@ jobs:
         retention-days: 1
   build-wrappers-linux:
     runs-on: ubuntu-20.04
-    name: Build Linux wrappers
+    name: Wrappers Linux
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -89,7 +89,7 @@ jobs:
         retention-days: 1
   build-wrappers-android:
     runs-on: ubuntu-20.04
-    name: Build Android wrappers
+    name: Wrappers Android
     strategy:
       matrix:
         arch:
@@ -123,7 +123,7 @@ jobs:
         retention-days: 1
   build-wrappers-windows:
     runs-on: windows-latest
-    name: Build Windows wrappers
+    name: Wrappers Windows
     strategy:
       matrix:
         arch:
@@ -171,7 +171,7 @@ jobs:
         retention-days: 1
   build-wrappers-windows-uwp:
     runs-on: windows-latest
-    name: Build Windows UWP wrappers
+    name: Wrappers UWP
     strategy:
       matrix:
         arch:
@@ -366,7 +366,7 @@ jobs:
       run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
   run-tests-net-framework:
     runs-on: windows-latest
-    name: Run tests for NET framework
+    name: Test .NET Framework
     needs: build-packages
     steps:
     - name: Checkout code
@@ -402,7 +402,7 @@ jobs:
         check_name: Windows .NET framework tests results
   run-tests-uwp:
     runs-on: windows-latest
-    name: Run tests for UWP on Windows
+    name: Test UWP managed
     needs: build-packages
     steps:
     - name: Checkout code
@@ -467,7 +467,7 @@ jobs:
         comment_mode: "off"
         check_name: UWP tests results
   run-tests-netcore-net5:
-    name: Run tests for .NET Core and .NET 5
+    name: Test .NET
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -514,7 +514,7 @@ jobs:
         check_name: ${{ matrix.os }} ${{ matrix.targetFramework }} tests results
   run-tests-xamarin-macos:
     runs-on: macos-latest
-    name: Run tests for Xamarin on MacOS
+    name: Test Xamarin.macOS
     needs: build-packages
     steps:
     - name: Checkout code
@@ -548,7 +548,7 @@ jobs:
         check_name: Xamarin MacOs tests results
   run-tests-weaver:
     runs-on: windows-latest
-    name: Run tests for the weaver
+    name: Test weaver
     steps:
     - name: Checkout code
       uses: actions/checkout@v2

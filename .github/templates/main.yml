@@ -218,33 +218,33 @@ name: build and test
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
-    name: Build macOS wrappers
+    name: Wrappers macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
   build-wrappers-ios:
     runs-on: macos-latest
-    name: Build iOS wrappers
+    name: Wrappers iOS
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
     runs-on: ubuntu-20.04
-    name: Build Linux wrappers
+    name: Wrappers Linux
     _: #@ template.replace(buildWrappers("./wrappers/build.sh", "wrappers-linux"))
   build-wrappers-android:
     runs-on: ubuntu-20.04
-    name: Build Android wrappers
+    name: Wrappers Android
     strategy:
       matrix:
         arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
   build-wrappers-windows:
     runs-on: windows-latest
-    name: Build Windows wrappers
+    name: Wrappers Windows
     strategy:
       matrix:
         arch: #@ windowsArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
-    name: Build Windows UWP wrappers
+    name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
@@ -277,7 +277,7 @@ jobs:
       - #@ template.replace(buildUnityPackage(True))
   run-tests-net-framework:
     runs-on: windows-latest
-    name: Run tests for NET framework
+    name: Test .NET Framework
     needs: build-packages
     steps:
       - #@ template.replace(checkoutCode())
@@ -288,7 +288,7 @@ jobs:
       - #@ publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results")
   run-tests-uwp:
     runs-on: windows-latest
-    name: Run tests for UWP on Windows
+    name: Test UWP managed
     needs: build-packages
     steps:
       - #@ template.replace(checkoutCode())
@@ -328,7 +328,7 @@ jobs:
         shell: powershell
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
   run-tests-netcore-net5:
-    name: Run tests for .NET Core and .NET 5
+    name: Test .NET
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -343,7 +343,7 @@ jobs:
     - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
   run-tests-xamarin-macos:
     runs-on: macos-latest
-    name: Run tests for Xamarin on MacOS
+    name: Test Xamarin.macOS
     needs: build-packages
     steps:
       - #@ template.replace(checkoutCode())
@@ -354,7 +354,7 @@ jobs:
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results")
   run-tests-weaver:
     runs-on: windows-latest
-    name: Run tests for the weaver
+    name: Test weaver
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
