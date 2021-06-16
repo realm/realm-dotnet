@@ -545,7 +545,7 @@ jobs:
       with:
         files: TestResults.macOS.xml
         comment_mode: "off"
-        check_name: Xamarin MacOs tests results
+        check_name: Xamarin macOS tests results
   run-tests-weaver:
     runs-on: windows-latest
     name: Test weaver
@@ -571,3 +571,70 @@ jobs:
         files: TestResults.Weaver.xml
         comment_mode: "off"
         check_name: Weaver tests results
+  run-cleanup:
+    runs-on: ubuntu-latest
+    name: Workflow cleanup
+    needs:
+    - run-tests-net-framework
+    - run-tests-uwp
+    - run-tests-netcore-net5
+    - run-tests-xamarin-macos
+    - run-tests-weaver
+    if: always()
+    steps:
+    - name: Delete artifacts for macos
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-macos
+    - name: Delete artifacts for ios
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-ios
+    - name: Delete artifacts for linux
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-linux
+    - name: Delete artifacts for android-armeabi-v7a
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-armeabi-v7a
+    - name: Delete artifacts for android-arm64-v8a
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-arm64-v8a
+    - name: Delete artifacts for android-x86
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-x86
+    - name: Delete artifacts for android-x86_64
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-x86_64
+    - name: Delete artifacts for windows-Win32
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-Win32
+    - name: Delete artifacts for windows-x64
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-x64
+    - name: Delete artifacts for windows-uwp-Win32
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-uwp-Win32
+    - name: Delete artifacts for windows-uwp-x64
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-uwp-x64
+    - name: Delete artifacts for windows-uwp-ARM
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-uwp-ARM
+    - name: Delete Realm.UnityUtils
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}.nupkg
+    - name: Delete Realm.UnityWeaver
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
