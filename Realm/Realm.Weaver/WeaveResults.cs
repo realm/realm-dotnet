@@ -27,26 +27,39 @@ namespace RealmWeaver
     {
         public static WeaveModuleResult Success(IEnumerable<WeaveTypeResult> types)
         {
-            return new WeaveModuleResult(types.ToArray(), skipReason: null);
+            return new WeaveModuleResult(types.ToArray());
+        }
+
+        public static WeaveModuleResult Error(string message)
+        {
+            return new WeaveModuleResult(errorMessage: message);
         }
 
         public static WeaveModuleResult Skipped(string reason)
         {
-            return new WeaveModuleResult(types: null, skipReason: reason);
+            return new WeaveModuleResult(skipReason: reason);
         }
 
         public WeaveTypeResult[] Types { get; }
 
         public string SkipReason { get; }
 
-        private WeaveModuleResult(WeaveTypeResult[] types, string skipReason)
+        public string ErrorMessage { get; }
+
+        private WeaveModuleResult(WeaveTypeResult[] types = null, string skipReason = null, string errorMessage = null)
         {
             Types = types;
             SkipReason = skipReason;
+            ErrorMessage = errorMessage;
         }
 
         public override string ToString()
         {
+            if (ErrorMessage != null)
+            {
+                return ErrorMessage;
+            }
+
             if (SkipReason != null)
             {
                 return SkipReason;
@@ -71,18 +84,31 @@ namespace RealmWeaver
             return new WeaveTypeResult(type, properties.ToArray());
         }
 
+        public static WeaveTypeResult Error(string type)
+        {
+            return new WeaveTypeResult(type, success: false);
+        }
+
         public string Type { get; }
+
+        public bool IsSuccessful { get; }
 
         public WeavePropertyResult[] Properties { get; }
 
-        private WeaveTypeResult(string type, WeavePropertyResult[] properties)
+        private WeaveTypeResult(string type, WeavePropertyResult[] properties = null, bool success = true)
         {
             Properties = properties;
             Type = type;
+            IsSuccessful = success;
         }
 
         public override string ToString()
         {
+            if (!IsSuccessful)
+            {
+                return $"An error occurred while weaving '{Type}'. Check the logs for more information.";
+            }
+
             var sb = new StringBuilder();
             sb.AppendLine($"<b>{Type}</b>");
             foreach (var prop in Properties)

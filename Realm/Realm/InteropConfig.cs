@@ -32,6 +32,10 @@ namespace Realms
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
+        public const string UnityPlatform = "Realm Unity";
+
+        public const string DotNetPlatform = "Realm .NET";
+
         public static readonly string Platform;
 
         public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version;
