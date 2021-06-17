@@ -580,6 +580,7 @@ jobs:
     - run-tests-netcore-net5
     - run-tests-xamarin-macos
     - run-tests-weaver
+    - build-packages
     if: always()
     steps:
     - name: Delete artifacts for macos
