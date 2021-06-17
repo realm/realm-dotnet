@@ -20,7 +20,7 @@ async function run(): Promise<void> {
             },
         };
 
-        execCmd("xcrun simctl list runtimes", options);
+        await execCmd("xcrun simctl list runtimes", options);
 
         // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
         // and we want to extract "iOS 14.5"
@@ -32,7 +32,7 @@ async function run(): Promise<void> {
         }
 
         try {
-            execCmd(`xcrun simctl create id com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
+            await execCmd(`xcrun simctl create id com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
         }
         catch {
             // Different combinantions of xcode and macOs versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different synxtax. 
@@ -42,18 +42,18 @@ async function run(): Promise<void> {
                 core.setFailed(stderr.toString());
             }
 
-            execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
+            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
         }
 
-        execCmd(`xcrun simctl boot ${id}`);
-        execCmd(`xcrun simctl install ${id} ${appPath}`);
-        execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
+        await execCmd(`xcrun simctl boot ${id}`);
+        await execCmd(`xcrun simctl install ${id} ${appPath}`);
+        await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
     } catch (error) {
         core.setFailed(error.message);
     } finally {
         try {
-            execCmd(`xcrun simctl shutdown ${id}`);
-            execCmd(`xcrun simctl delete${id}`);
+            await execCmd(`xcrun simctl shutdown ${id}`);
+            await execCmd(`xcrun simctl delete${id}`);
         } catch (error) {
             core.setFailed(`An error occurred during cleanup: ${error.toString()}`);
         }

@@ -2680,7 +2680,7 @@ function run() {
                     runtimeId += data.toString();
                 },
             };
-            execCmd("xcrun simctl list runtimes", options);
+            yield execCmd("xcrun simctl list runtimes", options);
             // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
             // and we want to extract "iOS 14.5"
             // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
@@ -2690,7 +2690,7 @@ function run() {
                 core.info(`runtimeId: ${runtimeId}`);
             }
             try {
-                execCmd(`xcrun simctl create id com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
+                yield execCmd(`xcrun simctl create id com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
             }
             catch (_b) {
                 // Different combinantions of xcode and macOs versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different synxtax. 
@@ -2699,19 +2699,19 @@ function run() {
                 if (stderr) {
                     core.setFailed(stderr.toString());
                 }
-                execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
+                yield execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
             }
-            execCmd(`xcrun simctl boot ${id}`);
-            execCmd(`xcrun simctl install ${id} ${appPath}`);
-            execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
+            yield execCmd(`xcrun simctl boot ${id}`);
+            yield execCmd(`xcrun simctl install ${id} ${appPath}`);
+            yield execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
         }
         catch (error) {
             core.setFailed(error.message);
         }
         finally {
             try {
-                execCmd(`xcrun simctl shutdown ${id}`);
-                execCmd(`xcrun simctl delete${id}`);
+                yield execCmd(`xcrun simctl shutdown ${id}`);
+                yield execCmd(`xcrun simctl delete${id}`);
             }
             catch (error) {
                 core.setFailed(`An error occurred during cleanup: ${error.toString()}`);
