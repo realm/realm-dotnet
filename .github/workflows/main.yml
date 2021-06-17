@@ -545,7 +545,7 @@ jobs:
       with:
         files: TestResults.macOS.xml
         comment_mode: "off"
-        check_name: Xamarin macOs tests results
+        check_name: Xamarin macOS tests results
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS

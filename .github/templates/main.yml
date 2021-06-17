@@ -373,7 +373,7 @@ jobs:
       - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
-      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin macOs tests results")
+      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin macOS tests results")
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
