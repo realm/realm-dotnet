@@ -33,6 +33,8 @@ namespace Realms.Tests.iOS
     {
         public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
         {
+            Console.WriteLine("---- FinishedLaunching enter");
+
             Forms.Init();
 
             var nunit = new App();
@@ -45,8 +47,12 @@ namespace Realms.Tests.iOS
             var arguments = NSProcessInfo.ProcessInfo.Arguments
                                          .Select(a => a.Replace("-app-arg=", string.Empty))
                                          .ToArray();
+
+            Console.WriteLine($"---- Arguments: {string.Join(", ", arguments)}");
             if (arguments.Any("--headless".Equals))
             {
+                Console.WriteLine($"---- Inside --headless");
+
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
 
@@ -75,11 +81,14 @@ namespace Realms.Tests.iOS
 
                     return Task.CompletedTask;
                 };
-
             }
+
+            Console.WriteLine($"---- After headless check");
 
             nunit.Options = options;
             LoadApplication(nunit);
+
+            Console.WriteLine($"---- After LoadApplication");
 
             return base.FinishedLaunching(uiApplication, launchOptions);
         }
