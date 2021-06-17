@@ -379,7 +379,7 @@ jobs:
     name: Tests Xamarin.iOS
     needs: build-packages
     steps:
-      - #@ checkoutCode()
+      - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
