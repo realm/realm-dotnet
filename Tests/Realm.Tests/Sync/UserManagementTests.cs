@@ -189,24 +189,30 @@ namespace Realms.Tests.Sync
         private class AccessTokenCustomData
         {
             [BsonElement("name")]
+            [Preserve]
             public string Name { get; set; }
 
             [BsonElement("email")]
+            [Preserve]
             public string Email { get; set; }
 
             [BsonElement("addresses")]
+            [Preserve]
             public Address[] Addresses { get; set; }
 
             [BsonElement("favoriteIds")]
+            [Preserve]
             public long[] FavoriteIds { get; set; }
 
             [Preserve(AllMembers = true)]
             public class Address
             {
                 [BsonElement("city")]
+                [Preserve]
                 public string City { get; set; }
 
                 [BsonElement("street")]
+                [Preserve]
                 public string Street { get; set; }
             }
         }
@@ -918,15 +924,19 @@ namespace Realms.Tests.Sync
 
         private class CustomDataDocument
         {
+            [Preserve]
             [BsonElement("_id")]
             public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
+            [Preserve]
             [BsonElement("user_id")]
             public string UserId { get; set; }
 
+            [Preserve]
             [BsonElement("age")]
             public int Age { get; set; }
 
+            [Preserve]
             [BsonElement("interests")]
             public string[] Interests { get; set; }
         }

@@ -214,6 +214,7 @@ namespace Realms
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm instance.
         /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this Realm.</value>
         [Preserve]
         public Dynamic DynamicApi { get; }
 
@@ -236,6 +237,7 @@ namespace Realms
         /// and will not update when writes are made to the database. Unlike live Realms, frozen
         /// Realms can be used across threads.
         /// </summary>
+        /// <value><c>true</c> if the Realm is frozen and immutable; <c>false</c> otherwise.</value>
         /// <see cref="Freeze"/>
         public bool IsFrozen { get; }
 

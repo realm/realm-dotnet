@@ -44,7 +44,7 @@ using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, u
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
 using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
 using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
-using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
+using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, size_t api_keys_len, MarshaledAppError err);
 
 namespace realm {
     namespace binding {
@@ -92,8 +92,8 @@ namespace realm {
                 : managed_logger(delegate)
             {
             }
-
-            void do_log(util::Logger::Level level, std::string message) {
+        protected:
+            void do_log(util::Logger::Level level, const std::string& message) override final {
                 s_log_message_callback(managed_logger, to_capi(Mixed(message)), level);
             }
         private:

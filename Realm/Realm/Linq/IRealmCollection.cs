@@ -99,6 +99,7 @@ namespace Realms
         /// Gets a value indicating whether this collection is frozen. Frozen collections are immutable and can be accessed
         /// from any thread. The objects read from a frozen collection will also be frozen.
         /// </summary>
+        /// <value><c>true</c> if the collection is frozen and immutable; <c>false</c> otherwise.</value>
         bool IsFrozen { get; }
 
         /// <summary>

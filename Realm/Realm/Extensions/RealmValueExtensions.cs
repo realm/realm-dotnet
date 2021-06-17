@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,16 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 
-using UnityEngine.Scripting;
+namespace Realms
+{
+    internal static class RealmValueExtensions
+    {
+        private static readonly HashSet<RealmValueType> _numericTypes = new HashSet<RealmValueType>
+        {
+            RealmValueType.Int,
+            RealmValueType.Float,
+            RealmValueType.Double,
+            RealmValueType.Decimal128
+        };
 
-// Force UnityLinker to process this assembly regardless of whether or not
-// it is referenced by other assemblies.
-// More info at https://docs.unity3d.com/ScriptReference/Scripting.AlwaysLinkAssemblyAttribute.html
-[assembly: AlwaysLinkAssembly]
-
-// With "Low Stripping Level" this assembly attribute is not needed, but
-// as a measure of precaution it's left since issues could arise at medium
-// and high levels of stripping
-[assembly: Preserve]
-[assembly: Realms.WovenAssembly]
+        public static bool IsNumeric(this RealmValueType type) => _numericTypes.Contains(type);
+    }
+}

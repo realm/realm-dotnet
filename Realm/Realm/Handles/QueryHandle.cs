@@ -196,7 +196,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_equal(this, realm, propertyIndex, primitive, out var nativeException);
@@ -204,7 +204,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_not_equal(this, realm, propertyIndex, primitive, out var nativeException);
@@ -212,7 +212,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueLess(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueLess(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_less(this, realm, propertyIndex, primitive, out var nativeException);
@@ -220,7 +220,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_less_equal(this, realm, propertyIndex, primitive, out var nativeException);
@@ -228,7 +228,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueGreater(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueGreater(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_greater(this, realm, propertyIndex, primitive, out var nativeException);
@@ -236,7 +236,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_greater_equal(this, realm, propertyIndex, primitive, out var nativeException);
@@ -256,13 +256,13 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void RealmValueTypeEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
+        public void RealmValueTypeEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
         {
             NativeMethods.realm_value_type_equal(this, realm, propertyIndex, type, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void RealmValueTypeNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
+        public void RealmValueTypeNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
         {
             NativeMethods.realm_value_type_not_equal(this, realm, propertyIndex, type, out var nativeException);
             nativeException.ThrowIfNecessary();

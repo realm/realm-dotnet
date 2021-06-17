@@ -23,7 +23,6 @@ namespace Realms.Sync
     /// <summary>
     /// A class, representing the credentials used for authenticating a <see cref="User"/>.
     /// </summary>
-    [Preserve(AllMembers = true)]
     public class Credentials
     {
         /// <summary>
@@ -214,10 +213,13 @@ namespace Realms.Sync
         /// Gets a value indicating which <see cref="AuthProvider"/> these Credentials are using.
         /// </summary>
         /// <value>The <see cref="AuthProvider"/> these credentials use.</value>
+        [Preserve]
         public AuthProvider Provider { get; }
 
+        [Preserve]
         internal string Token { get; }
 
+        [Preserve]
         internal string AdditionalInfo { get; }
 
         private Credentials(AuthProvider provider, string token = null, string additionalInfo = null)

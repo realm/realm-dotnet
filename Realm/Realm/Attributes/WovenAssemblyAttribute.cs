@@ -17,14 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 
 namespace Realms
 {
     /// <summary>
     /// An attribute that indicates that the assembly has been woven. It is applied automatically by the RealmWeaver and should not be used manually.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Assembly)]
-    public class WovenAssemblyAttribute : Attribute
+    public sealed class WovenAssemblyAttribute : Attribute
     {
     }
 }

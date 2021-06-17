@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -35,11 +36,8 @@ namespace Realms.Tests.Sync
         private const int OneMegabyte = 1024 * 1024;
         private const int NumberOfObjects = 20;
 
-        [TestCase(true, true)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(false, false)]
-        public void Compact_ShouldReduceSize(bool encrypt, bool populate)
+        [Test]
+        public void Compact_ShouldReduceSize([Values(true, false)] bool encrypt, [Values(true, false)] bool populate)
         {
             var config = GetFakeConfig();
             if (encrypt)
@@ -72,9 +70,8 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void GetInstanceAsync_ShouldDownloadRealm(bool singleTransaction)
+        [Test]
+        public void GetInstanceAsync_ShouldDownloadRealm([Values(true, false)] bool singleTransaction)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -130,6 +127,67 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void GetInstanceAsync_WithOnProgress_DoesntThrowWhenOnProgressIsSetToNull()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                await PopulateData(config, 4);
+
+                var callbacksInvoked = 0;
+
+                var lastProgress = default(SyncProgress);
+                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config.OnProgress = (progress) =>
+                {
+                    callbacksInvoked++;
+                    lastProgress = progress;
+                };
+
+                var realmTask = GetRealmAsync(config);
+                config.OnProgress = null;
+
+                using var realm = await realmTask;
+
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+                Assert.That(callbacksInvoked, Is.GreaterThan(0));
+                Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
+            }, 60000);
+        }
+
+        [Test]
+        public void GetInstanceAsync_WithOnProgressThrowing_ReportsErrorToLogs()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                await PopulateData(config, 4);
+
+                var logger = new Logger.InMemoryLogger();
+                Logger.Default = logger;
+
+                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config.OnProgress = (progress) =>
+                {
+                    throw new Exception("Exception in OnProgress");
+                };
+
+                var realmTask = GetRealmAsync(config);
+                config.OnProgress = null;
+
+                using var realm = await realmTask;
+
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+
+                // Notifications are delivered async, so let's wait a little
+                await TestHelpers.WaitForConditionAsync(() => logger.GetLog().Contains("Exception in OnProgress"));
+                Assert.That(logger.GetLog(), Does.Contain("Exception in OnProgress"));
+            }, 60000);
+        }
+
+        [Test]
         public void GetInstanceAsync_Cancel_ShouldCancelWait()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -181,8 +239,8 @@ namespace Realms.Tests.Sync
             Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var dynamicObj = dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject)).Single();
-            Assert.That(dynamicObj.StringValue, Is.EqualTo("This is a string!"));
+            var dynamicObj = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject))).Single();
+            Assert.That(dynamicObj.DynamicApi.Get<string>(nameof(IntPrimaryKeyWithValueObject.StringValue)), Is.EqualTo("This is a string!"));
         }
 
         [Test]
@@ -312,13 +370,13 @@ namespace Realms.Tests.Sync
             }
         }
 
-        private async Task PopulateData(SyncConfiguration config)
+        private async Task PopulateData(SyncConfiguration config, int numberOfObjects = NumberOfObjects)
         {
             using var realm = GetRealm(config);
 
             // Split in 2 because MDB Realm has a limit of 16 MB per changeset
-            var firstBatch = NumberOfObjects / 2;
-            var secondBatch = NumberOfObjects - firstBatch;
+            var firstBatch = numberOfObjects / 2;
+            var secondBatch = numberOfObjects - firstBatch;
 
             realm.Write(() =>
             {

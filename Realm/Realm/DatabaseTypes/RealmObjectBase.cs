@@ -39,7 +39,7 @@ namespace Realms
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    [Preserve(AllMembers = true, Conditional = false)]
+    [Preserve(AllMembers = true)]
     [Serializable]
     public abstract class RealmObjectBase
         : INotifyPropertyChanged,
@@ -107,6 +107,7 @@ namespace Realms
         /// <summary>
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
         public Dynamic DynamicApi
         {
             get
@@ -134,6 +135,7 @@ namespace Realms
         /// and will not update when writes are made to the Realm. Unlike live objects, frozen
         /// objects can be used across threads.
         /// </summary>
+        /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         public bool IsFrozen => _objectHandle?.IsFrozen == true;
 
@@ -155,6 +157,7 @@ namespace Realms
         /// <remarks>
         /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
         /// </remarks>
+        /// <value>The number of objects referring to this one.</value>
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
         internal RealmObjectBase FreezeImpl()
@@ -333,7 +336,10 @@ namespace Realms
             return _hashCode?.Value ?? base.GetHashCode();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
             var typeString = GetType().Name;

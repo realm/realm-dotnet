@@ -1,4 +1,4 @@
-name: build and test
+name: main
 "on":
   push:
     branches:
@@ -8,12 +8,16 @@ name: build and test
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
-    name: Build macOS wrappers
+    name: Wrappers macOS
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -31,12 +35,16 @@ jobs:
         retention-days: 1
   build-wrappers-ios:
     runs-on: macos-latest
-    name: Build iOS wrappers
+    name: Wrappers iOS
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -54,12 +62,16 @@ jobs:
         retention-days: 1
   build-wrappers-linux:
     runs-on: ubuntu-20.04
-    name: Build Linux wrappers
+    name: Wrappers Linux
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -77,7 +89,7 @@ jobs:
         retention-days: 1
   build-wrappers-android:
     runs-on: ubuntu-20.04
-    name: Build Android wrappers
+    name: Wrappers Android
     strategy:
       matrix:
         arch:
@@ -90,6 +102,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -107,7 +123,7 @@ jobs:
         retention-days: 1
   build-wrappers-windows:
     runs-on: windows-latest
-    name: Build Windows wrappers
+    name: Wrappers Windows
     strategy:
       matrix:
         arch:
@@ -118,6 +134,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -151,7 +171,7 @@ jobs:
         retention-days: 1
   build-wrappers-windows-uwp:
     runs-on: windows-latest
-    name: Build Windows UWP wrappers
+    name: Wrappers UWP
     strategy:
       matrix:
         arch:
@@ -163,6 +183,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
       uses: actions/cache@v2
@@ -196,7 +220,7 @@ jobs:
         retention-days: 1
   build-packages:
     runs-on: windows-latest
-    name: Build packages
+    name: Package
     needs:
     - build-wrappers-windows
     - build-wrappers-macos
@@ -213,65 +237,69 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Set version suffix
       id: set-version-suffix
       run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
-    - name: Fetch artifacts MacOS
+    - name: Fetch artifacts for macos
       uses: actions/download-artifact@v2
       with:
         name: wrappers-macos
         path: wrappers/build
-    - name: Fetch artifacts iOS
+    - name: Fetch artifacts for ios
       uses: actions/download-artifact@v2
       with:
         name: wrappers-ios
         path: wrappers/build
-    - name: Fetch artifacts Linux
+    - name: Fetch artifacts for linux
       uses: actions/download-artifact@v2
       with:
         name: wrappers-linux
         path: wrappers/build
-    - name: Fetch artifacts Android armeabi-v7a
+    - name: Fetch artifacts for android-armeabi-v7a
       uses: actions/download-artifact@v2
       with:
         name: wrappers-android-armeabi-v7a
         path: wrappers/build
-    - name: Fetch artifacts Android arm64-v8a
+    - name: Fetch artifacts for android-arm64-v8a
       uses: actions/download-artifact@v2
       with:
         name: wrappers-android-arm64-v8a
         path: wrappers/build
-    - name: Fetch artifacts Android x86
+    - name: Fetch artifacts for android-x86
       uses: actions/download-artifact@v2
       with:
         name: wrappers-android-x86
         path: wrappers/build
-    - name: Fetch artifacts Android x86_64
+    - name: Fetch artifacts for android-x86_64
       uses: actions/download-artifact@v2
       with:
         name: wrappers-android-x86_64
         path: wrappers/build
-    - name: Fetch artifacts Windows 32bit
+    - name: Fetch artifacts for windows-Win32
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-Win32
         path: wrappers/build
-    - name: Fetch artifacts Windows 64bit
+    - name: Fetch artifacts for windows-x64
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-x64
         path: wrappers/build
-    - name: Fetch artifacts Windows UWP 32bit
+    - name: Fetch artifacts for windows-uwp-Win32
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-uwp-Win32
         path: wrappers/build
-    - name: Fetch artifacts Windows UWP 64bit
+    - name: Fetch artifacts for windows-uwp-x64
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-uwp-x64
         path: wrappers/build
-    - name: Fetch artifacts Windows UWP ARM
+    - name: Fetch artifacts for windows-uwp-ARM
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-uwp-ARM
@@ -316,17 +344,39 @@ jobs:
         name: Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+    - name: Build Unity
+      run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
+    - name: Store Unity artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+        path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+    - name: Cleanup build folder
+      run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+    - name: Build Unity Bundled Dependencies
+      run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack --include-dependencies
+    - name: Store Unity artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+        path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+    - name: Cleanup build folder
+      run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
   run-tests-net-framework:
     runs-on: windows-latest
-    name: Run tests for NET framework
+    name: Test .NET Framework
     needs: build-packages
     steps:
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -337,8 +387,10 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:TargetFramework=net461 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:TargetFramework=net461
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results
@@ -348,8 +400,74 @@ jobs:
         files: TestResults.Windows.xml
         comment_mode: "off"
         check_name: Windows .NET framework tests results
+  run-tests-uwp:
+    runs-on: windows-latest
+    name: Test UWP managed
+    needs: build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Import test certificate
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $currentDirectory = Get-Location
+        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+        certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+      shell: powershell
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Build Tests/Tests.UWP
+      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
+    - name: Install the UWP test app
+      run: Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
+      shell: powershell
+    - name: Run the tests
+      run: |
+        echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml"  | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+        Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
+        Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
+        do
+        {
+            Start-Sleep -s 3
+            $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+            $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
+        } while ($uwp_test_app -and !$file_available)
+
+        $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+        if (!$file_available)
+        {
+          exit 1
+        }
+        else
+        {
+          Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
+        }
+      shell: powershell
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: ${{ env.test_results }}
+        comment_mode: "off"
+        check_name: UWP tests results
   run-tests-netcore-net5:
-    name: Run tests for .NET Core and .NET 5
+    name: Test .NET
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -367,6 +485,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -392,13 +514,17 @@ jobs:
         check_name: ${{ matrix.os }} ${{ matrix.targetFramework }} tests results
   run-tests-xamarin-macos:
     runs-on: macos-latest
-    name: Run tests for Xamarin on MacOS
+    name: Test Xamarin.macOS
     needs: build-packages
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -419,16 +545,20 @@ jobs:
       with:
         files: TestResults.macOS.xml
         comment_mode: "off"
-        check_name: Xamarin MacOs tests results
+        check_name: Xamarin macOs tests results
   run-tests-xamarin-ios:
     runs-on: macos-latest
-    name: Run tests for Xamarin on iOS
+    name: Tests Xamarin.iOS
     needs: build-packages
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
+    - - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Register csc problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/csc.json"
+      - name: Register msvc problem matcher
+        run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -457,12 +587,16 @@ jobs:
         check_name: Xamarin iOS tests results
   run-tests-weaver:
     runs-on: windows-latest
-    name: Run tests for the weaver
+    name: Test weaver
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}
       shell: bash
@@ -476,3 +610,71 @@ jobs:
         files: TestResults.Weaver.xml
         comment_mode: "off"
         check_name: Weaver tests results
+  run-cleanup:
+    runs-on: ubuntu-latest
+    name: Workflow cleanup
+    needs:
+    - run-tests-net-framework
+    - run-tests-uwp
+    - run-tests-netcore-net5
+    - run-tests-xamarin-macos
+    - run-tests-weaver
+    - build-packages
+    if: always()
+    steps:
+    - name: Delete artifacts for macos
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-macos
+    - name: Delete artifacts for ios
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-ios
+    - name: Delete artifacts for linux
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-linux
+    - name: Delete artifacts for android-armeabi-v7a
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-armeabi-v7a
+    - name: Delete artifacts for android-arm64-v8a
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-arm64-v8a
+    - name: Delete artifacts for android-x86
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-x86
+    - name: Delete artifacts for android-x86_64
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-android-x86_64
+    - name: Delete artifacts for windows-Win32
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-Win32
+    - name: Delete artifacts for windows-x64
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-x64
+    - name: Delete artifacts for windows-uwp-Win32
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-uwp-Win32
+    - name: Delete artifacts for windows-uwp-x64
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-uwp-x64
+    - name: Delete artifacts for windows-uwp-ARM
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wrappers-windows-uwp-ARM
+    - name: Delete Realm.UnityUtils
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}.nupkg
+    - name: Delete Realm.UnityWeaver
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg

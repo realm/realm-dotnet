@@ -1399,6 +1399,7 @@ namespace Realms.Tests.Database
 
                 var changes = await EnsureRefreshed(callbacks, 1);
 
+                Assert.That(changes.DeletedKeys.Length, Is.EqualTo(0));
                 Assert.That(changes.InsertedKeys.Length, Is.EqualTo(1));
                 Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(0));
 
@@ -1418,11 +1419,27 @@ namespace Realms.Tests.Database
 
                 changes = await EnsureRefreshed(callbacks, 2);
 
+                Assert.That(changes.DeletedKeys.Length, Is.EqualTo(0));
                 Assert.That(changes.InsertedKeys.Length, Is.EqualTo(0));
                 Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(1));
 
                 Assert.That(changes.ModifiedKeys.Single(), Is.EqualTo(keyToUpdate));
                 Assert.That(target[changes.ModifiedKeys.Single()], IsEqualTo(SampleValue));
+
+                var keyToDelete = result.Key;
+                WriteIfNecessary(target, () =>
+                {
+                    target.Remove(keyToDelete);
+                });
+
+                changes = await EnsureRefreshed(callbacks, 3);
+
+                Assert.That(changes.DeletedKeys.Length, Is.EqualTo(1));
+                Assert.That(changes.InsertedKeys.Length, Is.EqualTo(0));
+                Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(0));
+
+                Assert.That(changes.DeletedKeys.Single(), Is.EqualTo(keyToDelete));
+                Assert.That(target.ContainsKey(keyToDelete), Is.False);
 
                 // Verify we stop receiving notifications after we dispose of the token
                 token.Dispose();
@@ -1434,7 +1451,7 @@ namespace Realms.Tests.Database
 
                 target.AsRealmCollection().Realm.Refresh();
 
-                Assert.That(callbacks.Count, Is.EqualTo(2));
+                Assert.That(callbacks.Count, Is.EqualTo(3));
             }
 
             public async Task AssertNotifications_Realm(IDictionary<string, T> target)
@@ -1649,12 +1666,10 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
 
-                    using (var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config))
-                    {
-                        var bgDict = bgRealm.ResolveReference(tsr);
+                    using var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config);
+                    var bgDict = bgRealm.ResolveReference(tsr);
 
-                        Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
-                    }
+                    Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
                 });
             }
 

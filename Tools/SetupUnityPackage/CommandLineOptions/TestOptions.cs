@@ -14,7 +14,8 @@ namespace SetupUnityPackage
             "Realm.Fody",
             "Fody",
             "Realm",
-            "Microsoft.CSharp"
+            "Microsoft.CSharp",
+            "System.Configuration.ConfigurationManager"
         };
 
         public override PackageInfo[] Files { get; } = new[]
