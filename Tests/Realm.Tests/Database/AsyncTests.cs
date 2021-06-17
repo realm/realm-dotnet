@@ -44,6 +44,7 @@ namespace Realms.Tests.Database
                     realm.Add(new Person());
                 });
 
+                Assert.That(1, Is.EqualTo(2));
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
                 Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
             });

@@ -82,7 +82,7 @@ namespace Realms.Tests.Database
 
             var foundObj = FindByPKDynamic(type, primaryKeyValue, pkType);
 
-            Assert.That(foundObj, Is.Not.Null);
+            Assert.That(foundObj, Is.Null);
             Assert.That(pkProperty.GetValue(foundObj), Is.EqualTo(primaryKeyValue));
         }
 
