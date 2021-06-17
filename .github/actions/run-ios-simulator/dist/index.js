@@ -2673,6 +2673,12 @@ function run() {
             const bundleId = core.getInput("bundleId", { required: true });
             const iphoneToSimulate = core.getInput("iphoneToSimulate", { required: false });
             const args = core.getInput("arguments", { required: false });
+            // TODO just for local tests, remove it!
+            // const appPath = "./";
+            // const bundleId = "2b05fb7c28454760b593a2b2617a64f0";
+            // const iphoneToSimulate = "iPhone-8";
+            // const args = "--headless --resultpath TestResults.iOS.xml";
+            // TODO end
             // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
             // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
             // let runtimeId: String = "";
@@ -2692,7 +2698,8 @@ function run() {
                     runtimeId += data.toString();
                 },
             };
-            yield exec.exec("xcrun simctl list runtimes", [], options);
+            if ((yield exec.exec("xcrun simctl list runtimes", [], options)) != 0)
+                core.setFailed(`listing runtimes failed`);
             const matches = runtimeId.match(/(iOS \d{1,2}(.\d{1,2})?)/g);
             if (matches && matches.length > 0) {
                 runtimeId = matches[0].replace(" ", "");
@@ -2704,20 +2711,20 @@ function run() {
                     core.setFailed(`create simulator failed`);
             }
             catch (_b) {
-                // TODO check if this "re-doing" with different runtime name is any useful
+                // TODO check if this "re-doing" with different runtime syntax is any useful
                 const { stdout, stderr } = yield promisify_child_process_exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
                 runtimeId = (_a = stdout === null || stdout === void 0 ? void 0 : stdout.toString()) !== null && _a !== void 0 ? _a : "";
                 if (stderr) {
                     core.setFailed(stderr.toString());
                 }
-                if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType.iPhone-8", runtimeId.toString()])) != 0)
+                if ((yield exec.exec("xcrun", ["simctl", "create", id, "com.apple.CoreSimulator.SimDeviceType." + iphoneToSimulate, runtimeId.toString()])) != 0)
                     core.setFailed(`create simulator failed`);
             }
             if ((yield exec.exec("xcrun", ["simctl", "boot", id])) != 0)
                 core.setFailed(`boot simulator failed`);
             if ((yield exec.exec("xcrun", ["simctl", "install", id, appPath])) != 0)
                 core.setFailed(`install app on  simulator failed`);
-            if ((yield exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId, args])) != 0)
+            if ((yield exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId].concat(args.split(/(?= --)/g)))) != 0)
                 core.setFailed(`launch app on simulator failed`);
             // core.setOutput("output", sum);
         }
