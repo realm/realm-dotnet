@@ -2724,7 +2724,7 @@ function run() {
                 core.setFailed(`boot simulator failed`);
             if ((yield exec.exec("xcrun", ["simctl", "install", id, appPath])) != 0)
                 core.setFailed(`install app on  simulator failed`);
-            if ((yield exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId].concat(args.split(/(?= --)/g)))) != 0)
+            if ((yield exec.exec(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`)) != 0)
                 core.setFailed(`launch app on simulator failed`);
             // core.setOutput("output", sum);
         }

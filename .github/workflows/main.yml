@@ -548,7 +548,7 @@ jobs:
         check_name: Xamarin macOs tests results
   run-tests-xamarin-ios:
     runs-on: macos-latest
-    name: Tests Xamarin.iOS
+    name: Test Xamarin.iOS
     needs: build-packages
     steps:
     - name: Checkout code

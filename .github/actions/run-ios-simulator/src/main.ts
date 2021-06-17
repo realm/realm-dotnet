@@ -63,7 +63,7 @@ async function run(): Promise<void> {
         }
         if (await exec.exec("xcrun", ["simctl", "boot", id]) != 0) core.setFailed(`boot simulator failed`);
         if (await exec.exec("xcrun", ["simctl", "install", id, appPath]) != 0) core.setFailed(`install app on  simulator failed`);
-        if (await exec.exec("xcrun", ["simctl", "launch", "--console-pty", id, bundleId].concat(args.split(/(?= --)/g))) != 0) core.setFailed(`launch app on simulator failed`);
+        if (await exec.exec(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`) != 0) core.setFailed(`launch app on simulator failed`);
         
         // core.setOutput("output", sum);
     } catch (error) {
