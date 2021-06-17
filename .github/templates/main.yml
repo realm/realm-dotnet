@@ -138,6 +138,15 @@ with:
   check_name: #@ test_title
 #@ end
 
+#@ def storeXmlTestResults(xmlFile):
+name: Store xml result as artifact
+uses: actions/upload-artifact@v2
+with:
+  name: #@ xmlFile
+  path: #@ xmlFile
+  retention-days: 2
+#@ end
+
 #@ def findPackageVersion():
 name: Find nupkg version
 id: find-nupkg-version
@@ -301,6 +310,7 @@ jobs:
       - #@ msbuild("Tests/Realm.Tests", TargetFramework="net461", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
+      - #@ storeXmlTestResults("TestResults.Windows.xml")
       - #@ publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results")
   run-tests-netcore-net5:
     name: Run tests for .NET Core and .NET 5
@@ -315,6 +325,7 @@ jobs:
     - #@ checkoutCode()
     - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
     - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
+    - #@ storeXmlTestResults("TestResults.xml")
     - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
   run-tests-xamarin-macos:
     runs-on: macos-latest
@@ -326,6 +337,7 @@ jobs:
       - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
+      - #@ storeXmlTestResults("TestResults.macOS.xml")
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results")
   run-tests-xamarin-ios:
     runs-on: macos-latest
@@ -342,6 +354,7 @@ jobs:
          bundleId: 'io.realm.dotnettests'
          iphoneToSimulate: 'iPhone-8'
          arguments: '--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml'
+      - #@ storeXmlTestResults("TestResults.iOS.xml")
       - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin iOS tests results")
   run-tests-weaver:
     runs-on: windows-latest
@@ -349,4 +362,5 @@ jobs:
     steps:
       - #@ checkoutCode()
       - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
+      - #@ storeXmlTestResults("TestResults.Weaver.xml")
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")

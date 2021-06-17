@@ -52,7 +52,7 @@ namespace Realms.Tests.Database
 
             Logger.LogDefault(LogLevel.Warn, "This is very dangerous!");
 
-            Assert.That(messages.Count, Is.EqualTo(1));
+            Assert.That(messages.Count, Is.EqualTo(4));
             Assert.That(messages[0], Does.Contain(LogLevel.Warn.ToString()));
             Assert.That(messages[0], Does.Contain(DateTimeOffset.UtcNow.ToString("yyyy-MM-dd")));
             Assert.That(messages[0], Does.Contain("This is very dangerous!"));

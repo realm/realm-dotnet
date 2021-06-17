@@ -155,7 +155,7 @@ namespace Realms.Tests.Database
                 rv = retrievedObject.RealmValueProperty;
             }
 
-            Assert.That(rv == value);
+            Assert.That(rv == value+1);
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Float));
 
             Assert.That((float)rv == value);
