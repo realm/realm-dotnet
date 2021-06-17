@@ -22,6 +22,12 @@ namespace SetupUnityPackage
         private const string RealmPackagaName = "io.realm.unity";
         private const string RealmBundlePackageName = "io.realm.unity-bundled";
 
+        private static readonly IReadOnlyDictionary<string, string> DocumentationFiles = new Dictionary<string, string>
+        {
+            { "LICENSE", "LICENSE.md" },
+            { "CHANGELOG.md", "CHANGELOG.md" }
+        };
+
         public static async Task Main(string[] args)
         {
             await Parser.Default.ParseArguments<RealmOptions, TestOptions>(args)
@@ -64,6 +70,8 @@ namespace SetupUnityPackage
             }
 
             UpdatePackageJson(opts.IncludeDependencies, opts.PackageBasePath);
+
+            CopyDocumentation(opts.PackageBasePath);
 
             if (opts.Pack)
             {
@@ -267,6 +275,16 @@ namespace SetupUnityPackage
 
             contents = contents.Replace($"\"name\": \"{maybeSourceName}\"", $"\"name\": \"{targetName}\"");
             File.WriteAllText(packageJsonPath, contents);
+        }
+
+        private static void CopyDocumentation(string packageBasePath)
+        {
+            foreach (var kvp in DocumentationFiles)
+            {
+                var source = Path.Combine(Helpers.SolutionFolder, kvp.Key);
+                var target = Path.Combine(packageBasePath, kvp.Value);
+                File.Copy(source, target, overwrite: true);
+            }
         }
 
         private static void RunTool(string tool, string command, string packageBasePath)

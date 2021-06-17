@@ -1,21 +1,32 @@
 {
-    "name": "io.realm.unity-bundled",
-    "version": "10.2.0",
-    "displayName": "Realm",
-    "description": "Realm is a mobile database: a replacement for SQLite",
-    "unity": "2021.1",
-    "unityRelease": "3f1",
-    "dependencies": {
-    },
-    "keywords": [
-      "database",
-      "persistence",
-      "sqlite",
-      "mongodb"
-    ],
-    "author": {
-      "name": "Realm",
-      "email": "realm-help@mongodb.com",
-      "url": "https://docs.mongodb.com/realm/dotnet/"
-    }
+  "name": "io.realm.unity-bundled",
+  "version": "10.2.1",
+  "displayName": "Realm",
+  "description": "Realm is an embedded mobile database for Unity",
+  "unity": "2021.1",
+  "unityRelease": "3f1",
+  "dependencies": {
+  },
+  "keywords": [
+    "database",
+    "persistence",
+    "sqlite",
+    "mongodb",
+    "unity"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "realm-help@mongodb.com",
+    "url": "https://docs.mongodb.com/realm/dotnet/"
+  },
+  "bugs": {
+    "url": "https://github.com/realm/realm-dotnet/issues",
+    "email": "realm-help@mongodb.com"
+  },
+  "homepage": "https://realm.io",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:realm/realm-dotnet.git"
   }
+}

@@ -29,5 +29,11 @@
     <None Update="MetaFiles\Realm\Runtime\Dependencies\System.Runtime.CompilerServices.Unsafe.dll.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="MetaFiles\Realm\Third Party Notices.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MetaFiles\Realm\Third Party Notices.md.meta">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
