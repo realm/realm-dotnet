@@ -2,7 +2,6 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { v4 as uuidv4 } from "uuid";
 import * as childProcess from "promisify-child-process";
-import { exit } from "process";
 
 async function run(): Promise<void> {
     const id = uuidv4().split("-").join("");
@@ -61,7 +60,7 @@ async function run(): Promise<void> {
     }
 }
 
-async function execCmd(cmd: string, options: exec.ExecOptions = {}) {
+async function execCmd(cmd: string, options: exec.ExecOptions = {}): Promise<void> {
     const exitCode = await exec.exec(cmd, [], options);
     if (exitCode != 0) {
         const msgCmd = cmd.split(" ").slice(0, 3).join(" ");

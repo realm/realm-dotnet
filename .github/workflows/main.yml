@@ -618,6 +618,7 @@ jobs:
     - run-tests-uwp
     - run-tests-netcore-net5
     - run-tests-xamarin-macos
+    - run-tests-xamarin-ios
     - run-tests-weaver
     - build-packages
     if: always()
