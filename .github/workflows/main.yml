@@ -399,7 +399,7 @@ jobs:
       with:
         files: TestResults.Windows.xml
         comment_mode: "off"
-        check_name: Windows .NET framework tests results
+        check_name: Results .NET Framework
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -465,7 +465,7 @@ jobs:
       with:
         files: ${{ env.test_results }}
         comment_mode: "off"
-        check_name: UWP tests results
+        check_name: Results UWP
   run-tests-netcore-net5:
     name: Test .NET
     needs: build-packages
@@ -511,7 +511,7 @@ jobs:
       with:
         files: TestResults.xml
         comment_mode: "off"
-        check_name: ${{ matrix.os }} ${{ matrix.targetFramework }} tests results
+        check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -545,10 +545,10 @@ jobs:
       with:
         files: TestResults.macOS.xml
         comment_mode: "off"
-        check_name: Xamarin macOS tests results
+        check_name: Results Xamarin.macOS
   run-tests-weaver:
     runs-on: windows-latest
-    name: Test weaver
+    name: Test Weaver
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -570,7 +570,7 @@ jobs:
       with:
         files: TestResults.Weaver.xml
         comment_mode: "off"
-        check_name: Weaver tests results
+        check_name: Results Weaver
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
