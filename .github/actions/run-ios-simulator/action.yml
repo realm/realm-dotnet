@@ -15,9 +15,7 @@ inputs:
     description: Arguments for the simulator
     required: false
     default: ""
-# outputs:
-#   outputValue:
-#     description: A variable that will be set by the action
+
 runs:
   using: node12
   main: ./dist/index.js

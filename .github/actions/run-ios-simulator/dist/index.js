@@ -2694,6 +2694,7 @@ function run() {
             }
             catch (_b) {
                 // Different combinantions of xcode and macOS versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different syntax.
+                // additionally, this uses  childProcess.exec instead of @actions/exec because the latter doesn't properly parse the pipe (|) char
                 const { stdout, stderr } = yield promisify_child_process_exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
                 runtimeId = (_a = stdout === null || stdout === void 0 ? void 0 : stdout.toString()) !== null && _a !== void 0 ? _a : "";
                 if (stderr) {

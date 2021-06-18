@@ -36,6 +36,7 @@ async function run(): Promise<void> {
         }
         catch {
             // Different combinantions of xcode and macOS versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different syntax.
+            // additionally, this uses  childProcess.exec instead of @actions/exec because the latter doesn't properly parse the pipe (|) char
             const { stdout, stderr } = await childProcess.exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
             runtimeId = stdout?.toString() ?? "";
             if (stderr) {
