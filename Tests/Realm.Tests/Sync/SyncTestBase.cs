@@ -59,14 +59,6 @@ namespace Realms.Tests.Sync
         {
             _sessions.DrainQueue(session => session?.CloseHandle());
 
-            // Race condition:
-            // When trying to delete the Realm it can in some occasions (usually when Sync is involved)
-            // still be in use. To make sure other threads that use the same Realm get scheduled again
-            // and can finish their work before we actually delete the Realm files, we have to wait for
-            // a moment here.
-            // TODO: remove this when https://github.com/realm/realm-core/issues/4762 is resolved.
-            //Task.Delay(5).Wait();
-
             base.CustomTearDown();
 
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
