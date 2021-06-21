@@ -65,7 +65,7 @@ namespace Realms.Tests.Sync
             // and can finish their work before we actually delete the Realm files, we have to wait for
             // a moment here.
             // TODO: remove this when https://github.com/realm/realm-core/issues/4762 is resolved.
-            Task.Delay(5).Wait();
+            //Task.Delay(5).Wait();
 
             base.CustomTearDown();
 
