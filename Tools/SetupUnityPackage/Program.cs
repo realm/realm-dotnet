@@ -72,12 +72,9 @@ namespace SetupUnityPackage
 
             var (_, dependencies) = await CopyMainPackages(Helpers.PackagesFolder, opts);
 
-            var realmSearchDirectory = Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity", "Runtime");
             var testsSearchDirectory = Path.Combine(testsProjectFolder, "bin", "Release", "netstandard2.0");
 
-            File.Delete(Path.Combine(testsSearchDirectory, "Realm.dll"));
-
-            await CopyDependencies(opts, dependencies, realmSearchDirectory, testsSearchDirectory);
+            await CopyDependencies(opts, dependencies, testsSearchDirectory);
         }
 
         private static async Task Run(RealmOptions opts)

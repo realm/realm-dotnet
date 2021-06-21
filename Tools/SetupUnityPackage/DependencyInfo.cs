@@ -21,7 +21,6 @@ using System.IO;
 
 namespace SetupUnityPackage
 {
-
     internal class DependencyInfo : PackageInfoBase
     {
         private readonly string[] _files;

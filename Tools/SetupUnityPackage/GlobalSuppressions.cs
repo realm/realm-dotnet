@@ -6,3 +6,5 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "No localization", Scope = "module")]
+[assembly: SuppressMessage("Globalization", "CA1812:Avoid uninstantiated internal classes", Justification = "No localization", Scope = "type", Target = "~T:SetupUnityPackage.RealmOptions")]
+[assembly: SuppressMessage("Globalization", "CA1812:Avoid uninstantiated internal classes", Justification = "No localization", Scope = "type", Target = "~T:SetupUnityPackage.TestOptions")]

@@ -186,18 +186,18 @@ stage('Package') {
         //   }
         // }
       }
+    }
 
-      bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
-      dir('Realm/Realm.Unity') {
-        archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
-      }
+    bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
+    dir('Realm/Realm.Unity') {
+      archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
+    }
 
-      dir('packages') {
-        bar "del Realm.UnityUtils.${packageVersion}.nupkg"
-        bar "del Realm.UnityWeaver.${packageVersion}.nupkg"
-        stash includes: '*.nupkg', name: 'packages'
-        archiveArtifacts '*.nupkg'
-      }
+    dir('Realm/packages') {
+      bar "del Realm.UnityUtils.${packageVersion}.nupkg"
+      bar "del Realm.UnityWeaver.${packageVersion}.nupkg"
+      stash includes: '*.nupkg', name: 'packages'
+      archiveArtifacts '*.nupkg'
     }
   }
 }
