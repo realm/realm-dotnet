@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -55,13 +54,15 @@ namespace Realms.Tests.Sync
 
         static SyncTestHelpers()
         {
+#if !UNITY
             try
             {
-                _baseUri = new Uri(ConfigurationManager.AppSettings["BaasUrl"]);
+                _baseUri = new Uri(System.Configuration.ConfigurationManager.AppSettings["BaasUrl"]);
             }
             catch
             {
             }
+#endif
         }
 
         public static AppConfiguration GetAppConfig(AppConfigType type = AppConfigType.Default) => new AppConfiguration(_appIds[type])

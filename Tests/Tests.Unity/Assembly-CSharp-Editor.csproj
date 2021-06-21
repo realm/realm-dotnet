@@ -314,41 +314,17 @@
     <Reference Include="Mono.Cecil">
       <HintPath>C:\work\dotnet\Realm\Realm.Unity\Editor\Cecil\Mono.Cecil.dll</HintPath>
     </Reference>
-    <Reference Include="Nito.AsyncEx.Tasks">
-      <HintPath>Assets\Dependencies\Nito.AsyncEx.Tasks.dll</HintPath>
-    </Reference>
     <Reference Include="Realm.UnityUtils">
       <HintPath>C:\work\dotnet\Realm\Realm.Unity\Runtime\Realm.UnityUtils.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable">
-      <HintPath>Assets\Dependencies\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
       <HintPath>C:\work\dotnet\Realm\Realm.Unity\Editor\Cecil\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Bson">
-      <HintPath>C:\work\dotnet\Realm\Realm.Unity\Runtime\Dependencies\MongoDB.Bson.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil.Rocks">
       <HintPath>C:\work\dotnet\Realm\Realm.Unity\Editor\Cecil\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
-    <Reference Include="Nito.AsyncEx.Context">
-      <HintPath>Assets\Dependencies\Nito.AsyncEx.Context.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Buffers">
-      <HintPath>C:\work\dotnet\Realm\Realm.Unity\Runtime\Dependencies\System.Buffers.dll</HintPath>
-    </Reference>
     <Reference Include="Realm.Tests">
       <HintPath>Assets\Tests\Realm.Tests.dll</HintPath>
-    </Reference>
-    <Reference Include="Nito.Disposables">
-      <HintPath>Assets\Dependencies\Nito.Disposables.dll</HintPath>
-    </Reference>
-    <Reference Include="Remotion.Linq">
-      <HintPath>C:\work\dotnet\Realm\Realm.Unity\Runtime\Dependencies\Remotion.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>C:\work\dotnet\Realm\Realm.Unity\Runtime\Dependencies\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="Realm.UnityWeaver">
       <HintPath>C:\work\dotnet\Realm\Realm.Unity\Editor\Realm.UnityWeaver.dll</HintPath>
