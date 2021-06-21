@@ -6,7 +6,7 @@
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
-#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver']
+#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 
 #@ def checkCache(key):
 name: Check cache
@@ -115,34 +115,56 @@ steps:
 #@ end
 #@ end
 
-#@ def fetchPackageArtifacts(pkgs):
-#@ for pkg in pkgs:
-#@ finalPkgName = pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+#@ def fetchPackageArtifacts():
+#@ for pkg in [ "Realm", "Realm.Fody" ]:
   - name: #@ "Fetch " + pkg
     uses: actions/download-artifact@v2
     with:
-      name: #@ finalPkgName
+      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
       path: ${{ github.workspace }}/Realm/packages/
 #@ end
 #@ end
 
-#@ def fetchWrapperBinaries():
+#@ def deleteTempPackageArtifacts():
+#@ for pkg in [ 'Realm.UnityUtils', 'Realm.UnityWeaver' ]:
+  - name: #@ "Delete " + pkg
+    uses: geekyeggo/delete-artifact@v1
+    with:
+      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+#@ end
+#@ end
+
+#@ def getWrapperBinaryNames():
 #@ wrapperPlatforms = [ 'macos', 'ios', 'linux' ]
 #@ for androidABI in androidABIs:
-#@ wrapperPlatforms.append("android-" + androidABI)
+#@   wrapperPlatforms.append("android-" + androidABI)
 #@ end
 #@ for windowsArch in windowsArchs:
-#@ wrapperPlatforms.append("windows-" + windowsArch)
+#@   wrapperPlatforms.append("windows-" + windowsArch)
 #@ end
 #@ for uwpArch in windowsUWPArchs:
-#@ wrapperPlatforms.append("windows-uwp-" + uwpArch)
+#@   wrapperPlatforms.append("windows-uwp-" + uwpArch)
 #@ end
-#@ for platform in wrapperPlatforms:
+#@
+#@ return wrapperPlatforms
+#@ end
+
+#@ def fetchWrapperBinaries():
+#@ for platform in getWrapperBinaryNames():
   - name: #@ "Fetch artifacts for " + platform
     uses: actions/download-artifact@v2
     with:
       name: #@ "wrappers-" + platform
       path: wrappers/build
+#@ end
+#@ end
+
+#@ def deleteWrapperBinaries():
+#@ for platform in getWrapperBinaryNames():
+  - name: #@ "Delete artifacts for " + platform
+    uses: geekyeggo/delete-artifact@v1
+    with:
+      name: #@ "wrappers-" + platform
 #@ end
 #@ end
 
@@ -178,7 +200,7 @@ if: always()
 with:
   files: #@ files
   comment_mode: "off"
-  check_name: #@ test_title
+  check_name: #@ "Results " + test_title
 #@ end
 
 #@ def findPackageVersion():
@@ -208,7 +230,7 @@ run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration
 #@ end
 
 ---
-name: build and test
+name: main
 "on":
   push:
     branches:
@@ -218,40 +240,40 @@ name: build and test
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
-    name: Build macOS wrappers
+    name: Wrappers macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
   build-wrappers-ios:
     runs-on: macos-latest
-    name: Build iOS wrappers
+    name: Wrappers iOS
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
     runs-on: ubuntu-20.04
-    name: Build Linux wrappers
+    name: Wrappers Linux
     _: #@ template.replace(buildWrappers("./wrappers/build.sh", "wrappers-linux"))
   build-wrappers-android:
     runs-on: ubuntu-20.04
-    name: Build Android wrappers
+    name: Wrappers Android
     strategy:
       matrix:
         arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
   build-wrappers-windows:
     runs-on: windows-latest
-    name: Build Windows wrappers
+    name: Wrappers Windows
     strategy:
       matrix:
         arch: #@ windowsArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
-    name: Build Windows UWP wrappers
+    name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
   build-packages:
     runs-on: windows-latest
-    name: Build packages
+    name: Package
     needs:
       - build-wrappers-windows
       - build-wrappers-macos
@@ -277,22 +299,22 @@ jobs:
       - #@ template.replace(buildUnityPackage(True))
   run-tests-net-framework:
     runs-on: windows-latest
-    name: Run tests for NET framework
+    name: Test .NET Framework
     needs: build-packages
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
       - name: Run the tests
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
-      - #@ publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results")
+      - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
   run-tests-uwp:
     runs-on: windows-latest
-    name: Run tests for UWP on Windows
+    name: Test UWP managed
     needs: build-packages
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - #@ template.replace(fetchPackageArtifacts())
       - name: Import test certificate
         run: |
           $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
@@ -326,9 +348,9 @@ jobs:
             Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
           }
         shell: powershell
-      - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
+      - #@ publishTestsResults( "${{ env.test_results }}", "UWP")
   run-tests-netcore-net5:
-    name: Run tests for .NET Core and .NET 5
+    name: Test .NET
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -337,25 +359,33 @@ jobs:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
         targetFramework: [ netcoreapp3.1, net5.0 ]
     steps:
-    - #@ template.replace(checkoutCode())
-    - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
-    - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
-    - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
+      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
-    name: Run tests for Xamarin on MacOS
+    name: Test Xamarin.macOS
     needs: build-packages
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts( [ "Realm", "Realm.Fody" ] ))
+      - #@ template.replace(fetchPackageArtifacts())
       - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
-      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin MacOs tests results")
+      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
   run-tests-weaver:
     runs-on: windows-latest
-    name: Run tests for the weaver
+    name: Test Weaver
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
-      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")
+      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
+  run-cleanup:
+    runs-on: ubuntu-latest
+    name: Workflow cleanup
+    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-weaver, build-packages ]
+    if: always()
+    steps:
+      - #@ template.replace(deleteWrapperBinaries())
+      - #@ template.replace(deleteTempPackageArtifacts())
