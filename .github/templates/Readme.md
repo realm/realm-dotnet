@@ -9,4 +9,4 @@ We're using [ytt](https://github.com/vmware-tanzu/carvel-ytt) to generate the gi
 1. Place it in your PATH.
 
 ## Building the docs
-1. In `$SolutionDir/.github/templates` run `ytt -f main.yml --output-files ../workflows/`.
+1. In `$SolutionDir/.github/templates` run `ytt -f . --output-files ../workflows/`.

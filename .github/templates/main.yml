@@ -1,5 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
+#@ load("helpers.lib.yml", "fetchPackageArtifacts")
 
 #@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
@@ -112,16 +113,6 @@ steps:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-#@ end
-#@ end
-
-#@ def fetchPackageArtifacts():
-#@ for pkg in [ "Realm", "Realm.Fody" ]:
-  - name: #@ "Fetch " + pkg
-    uses: actions/download-artifact@v2
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
-      path: ${{ github.workspace }}/Realm/packages/
 #@ end
 #@ end
 

@@ -1,0 +1,12 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+
+#@ def fetchPackageArtifacts():
+#@  for pkg in [ "Realm", "Realm.Fody" ]:
+      - name: #@ "Fetch " + pkg
+        uses: actions/download-artifact@v2
+        with:
+          name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+          path: ${{ github.workspace }}/Realm/packages/
+#@  end
+#@ end
