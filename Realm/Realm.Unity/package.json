@@ -1,5 +1,5 @@
 {
-  "name": "io.realm.unity-bundled",
+  "name": "io.realm.unity",
   "version": "10.2.1",
   "displayName": "Realm",
   "description": "Realm is an embedded mobile database for Unity",
