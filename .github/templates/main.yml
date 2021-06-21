@@ -200,7 +200,7 @@ if: always()
 with:
   files: #@ files
   comment_mode: "off"
-  check_name: #@ test_title
+  check_name: #@ "Results " + test_title
 #@ end
 
 #@ def findPackageVersion():
@@ -307,7 +307,7 @@ jobs:
       - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
       - name: Run the tests
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After"
-      - #@ publishTestsResults("TestResults.Windows.xml", "Windows .NET framework tests results")
+      - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -348,7 +348,7 @@ jobs:
             Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
           }
         shell: powershell
-      - #@ publishTestsResults( "${{ env.test_results }}", "UWP tests results")
+      - #@ publishTestsResults( "${{ env.test_results }}", "UWP")
   run-tests-netcore-net5:
     name: Test .NET
     needs: build-packages
@@ -362,7 +362,7 @@ jobs:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
-      - #@ publishTestsResults("TestResults.xml", "${{ matrix.os }} ${{ matrix.targetFramework }} tests results")
+      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -373,14 +373,14 @@ jobs:
       - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
-      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin macOS tests results")
+      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
   run-tests-weaver:
     runs-on: windows-latest
-    name: Test weaver
+    name: Test Weaver
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
-      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver tests results")
+      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
