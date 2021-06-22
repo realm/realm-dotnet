@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Helpers;
+using Realms.Logging;
 
 namespace Realms.Tests.Sync
 {
@@ -276,16 +277,16 @@ namespace Realms.Tests.Sync
         };
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void List_RealmValue(RealmValue first, RealmValue second) => TestListCore(o => o.RealmValueList, Clone(first), Clone(second));
+        public void List_RealmValue(RealmValue first, RealmValue second) => TestListCore(o => o.RealmValueList, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void Set_RealmValue(RealmValue first, RealmValue second) => TestSetCore(o => o.RealmValueSet, Clone(first), Clone(second));
+        public void Set_RealmValue(RealmValue first, RealmValue second) => TestSetCore(o => o.RealmValueSet, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void Dict_RealmValue(RealmValue first, RealmValue second) => TestDictionaryCore(o => o.RealmValueDict, Clone(first), Clone(second));
+        public void Dict_RealmValue(RealmValue first, RealmValue second) => TestDictionaryCore(o => o.RealmValueDict, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         [TestCaseSource(nameof(RealmTestValues))]
-        public void Property_RealmValue(RealmValue first, RealmValue second) => TestPropertyCore(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, Clone(first), Clone(second));
+        public void Property_RealmValue(RealmValue first, RealmValue second) => TestPropertyCore(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         #endregion
 
@@ -468,10 +469,8 @@ namespace Realms.Tests.Sync
                 Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
 
                 // Assert Update works
-                if (item2 is EmbeddedObject eobj)
-                {
-                    item2 = Operator.Convert<RealmObjectBase, T>(Clone(eobj).AsRealmObject());
-                }
+                // item2 might belong to realm2, so let's find the equivalent in realm1
+                item2 = CloneOrLookup(item2, realm1);
 
                 realm1.Write(() =>
                 {
@@ -568,6 +567,65 @@ namespace Realms.Tests.Sync
             }
 
             return clone;
+        }
+
+        private static T CloneOrLookup<T>(T value, Realm targetRealm)
+        {
+            // If embedded - we need to clone as it might already be assigned to a different property
+            if (value is EmbeddedObject eobj)
+            {
+                return Operator.Convert<RealmObjectBase, T>(Clone(eobj).AsRealmObject());
+            }
+
+            // If RealmObject - we need to look up the existing equivalent in the correct realm
+            if (value is RealmObject robj)
+            {
+                // item2 belongs to realm2 - we want to look up the equivalent in realm1 to add it to dict1
+                Assert.That(robj.ObjectMetadata.Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
+                var item2InRealm1 = targetRealm.DynamicApi.FindCore(robj.ObjectSchema.Name, Operator.Convert<RealmValue>(pk));
+                return Operator.Convert<RealmObject, T>(item2InRealm1);
+            }
+
+            // If RealmValue that is holding an object, call CloneOrLookup
+            if (value is RealmValue rvalue && rvalue.Type == RealmValueType.Object)
+            {
+                var cloned = CloneOrLookup(rvalue.AsRealmObject(), targetRealm);
+                return Operator.Convert<RealmObjectBase, T>(cloned);
+            }
+
+            return value;
+        }
+
+        private static bool RealmValueEquals(RealmValue a, RealmValue b)
+        {
+            if (a.Equals(b))
+            {
+                return true;
+            }
+
+            // Special handling the object case as they might be "equivalent" but belonging to different realms
+            if (a.Type != RealmValueType.Object || b.Type != RealmValueType.Object)
+            {
+                return false;
+            }
+
+            var objA = a.AsRealmObject();
+            var objB = b.AsRealmObject();
+
+            if (objA.GetType() != objB.GetType())
+            {
+                return false;
+            }
+
+            foreach (var prop in objA.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(o => o.CanWrite && o.CanRead))
+            {
+                if (prop.GetValue(objA)?.Equals(prop.GetValue(objB)) != true)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static async Task WaitForPropertyChangedAsync(RealmObject realmObject, int timeout = 10 * 1000)
