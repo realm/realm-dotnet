@@ -16,4 +16,4 @@ jobs:
     steps:
       - #@ template.replace(fetchPackageArtifacts())
       - name: Upload nupkg
-        run: dotnet nuget push ${{ github.workspace }}/Realm/packages/*.nupkg --skip-duplicate --api-key ${{ secrets.Nuget_Api_Key }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push "${{ github.workspace }}/Realm/packages/*.nupkg" --skip-duplicate --api-key ${{ secrets.Nuget_Api_Key }} --source https://api.nuget.org/v3/index.json

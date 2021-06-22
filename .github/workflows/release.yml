@@ -19,4 +19,4 @@ jobs:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/
     - name: Upload nupkg
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/*.nupkg --skip-duplicate --api-key ${{ secrets.Nuget_Api_Key }} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push "${{ github.workspace }}/Realm/packages/*.nupkg" --skip-duplicate --api-key ${{ secrets.Nuget_Api_Key }} --source https://api.nuget.org/v3/index.json
