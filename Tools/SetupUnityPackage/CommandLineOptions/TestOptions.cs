@@ -25,6 +25,9 @@ namespace SetupUnityPackage
     [Verb("tests", HelpText = "Setup the Tests.Unity project")]
     internal class TestOptions : OptionsBase
     {
+        [Option("realm-package", Required = false, HelpText = "Path to the folder containing io.realm.unity.tgz to use. If not specified, a local install will be assumed.")]
+        public string RealmPackage { get; set; }
+
         public override string PackageBasePath => Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Assets");
 
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>

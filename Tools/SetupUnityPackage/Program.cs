@@ -22,10 +22,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using ICSharpCode.SharpZipLib.GZip;
+using ICSharpCode.SharpZipLib.Tar;
 using ILRepacking;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -67,14 +70,36 @@ namespace SetupUnityPackage
                 File.Delete(file);
             }
 
+            var extractedPackagePath = CreateTempDirectory("realm-package");
+            var realmDllPath = Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity", "Runtime", "Realm.dll");
+            if (opts.RealmPackage == null)
+            {
+                // If the user didn't provide a .tgz package, we should assume a local install
+                opts.RealmPackage = "../../../Realm/Realm.Unity";
+            }
+            else
+            {
+                // If we are building against a specific Realm package, we should untar it somewhere and reference it in the build
+                using var fileStream = File.OpenRead(opts.RealmPackage);
+                using var gzipStream = new GZipInputStream(fileStream);
+                using var archive = TarArchive.CreateInputTarArchive(gzipStream, Encoding.UTF8);
+                archive.ExtractContents(extractedPackagePath);
+                realmDllPath = Path.Combine(extractedPackagePath, "package", "Runtime", "Realm.dll");
+            }
+
             var testsProjectFolder = Path.Combine(Helpers.SolutionFolder, "Tests", "Realm.Tests");
-            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -c Release --include-symbols", Helpers.SolutionFolder);
+            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -p:RealmDllPath={realmDllPath} -c Release --include-symbols", Helpers.SolutionFolder);
 
             var (_, dependencies) = await CopyMainPackages(Helpers.PackagesFolder, opts);
 
             var testsSearchDirectory = Path.Combine(testsProjectFolder, "bin", "Release", "netstandard2.0");
 
             await CopyDependencies(opts, dependencies, testsSearchDirectory);
+
+            var manifestPath = Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Packages", "manifest.json");
+            UpdateManifestJson(manifestPath, "io.realm.unity", opts.RealmPackage);
+
+            Directory.Delete(extractedPackagePath, recursive: true);
         }
 
         private static async Task Run(RealmOptions opts)
@@ -121,13 +146,7 @@ namespace SetupUnityPackage
         {
             Console.WriteLine("Including dependencies");
 
-            var tempPath = Path.Combine(opts.PackageBasePath, "temp-dependencies");
-            if (Directory.Exists(tempPath))
-            {
-                Directory.Delete(tempPath, recursive: true);
-            }
-
-            Directory.CreateDirectory(tempPath);
+            var tempPath = CreateTempDirectory("dependencies");
 
             while (dependencies.TryDequeue(out var package))
             {
@@ -249,6 +268,14 @@ namespace SetupUnityPackage
             return (version, packages, extractedFiles);
         }
 
+        private static void UpdateManifestJson(string path, string packageName, string packagePath)
+        {
+            var contents = File.ReadAllText(path);
+            var regex = new Regex($"\"{packageName}\": \"file:(?<package>[^\"]*)\"");
+            var oldPackagePath = regex.Match(contents).Groups["package"].Value;
+            File.WriteAllText(path, contents.Replace(oldPackagePath, packagePath.Replace("\\", "\\\\")));
+        }
+
         private static void CopyDocumentation(string packageBasePath)
         {
             foreach (var kvp in DocumentationFiles)
@@ -282,6 +309,19 @@ namespace SetupUnityPackage
             });
 
             runner.WaitForExit();
+        }
+
+        private static string CreateTempDirectory(string name)
+        {
+            var tempPath = Path.Combine(Helpers.SolutionFolder, $"temp-{name}");
+            if (Directory.Exists(tempPath))
+            {
+                Directory.Delete(tempPath, recursive: true);
+            }
+
+            Directory.CreateDirectory(tempPath);
+
+            return tempPath;
         }
     }
 }

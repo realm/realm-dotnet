@@ -221,3 +221,4 @@ Tests/App.config
 Tests/LocalDev.props
 Realm/Realm.Unity/CHANGELOG.md
 Realm/Realm.Unity/LICENSE.md
+!Tests/Tests.Unity/Packages/**
