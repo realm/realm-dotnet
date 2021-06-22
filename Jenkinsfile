@@ -2,7 +2,7 @@
 
 @Library('realm-ci') _
 
-configuration = 'Debug'
+configuration = 'Release'
 
 def AndroidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 def WindowsPlatforms = [ 'Win32', 'x64' ]
