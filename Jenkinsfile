@@ -194,8 +194,8 @@ stage('Package') {
     }
 
     dir('Realm/packages') {
-      bar "del Realm.UnityUtils.${packageVersion}.nupkg"
-      bar "del Realm.UnityWeaver.${packageVersion}.nupkg"
+      bat "del Realm.UnityUtils.${packageVersion}.nupkg"
+      bat "del Realm.UnityWeaver.${packageVersion}.nupkg"
       stash includes: '*.nupkg', name: 'packages'
       archiveArtifacts '*.nupkg'
     }
