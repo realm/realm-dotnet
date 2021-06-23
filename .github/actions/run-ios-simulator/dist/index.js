@@ -2454,7 +2454,7 @@ const parse = dist/* parse */.Qc;
 
 
 async function run() {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b;
     const id = v4().split("-").join("");
     try {
         const appPath = core.getInput("appPath", { required: true });
@@ -2466,18 +2466,18 @@ async function run() {
         // and we want to extract "iOS 14.5" and "com.apple.CoreSimulator.SimRuntime.iOS-14-5"
         // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
         const matches = /(?<runtime1>iOS \d{1,2}(.\d{1,2})?).*(?<runtime2>com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9.-]+)/g.exec(runtimeId);
-        if (!matches || (matches === null || matches === void 0 ? void 0 : matches.length) == 0 || !(matches === null || matches === void 0 ? void 0 : matches.groups) || ((_a = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _a === void 0 ? void 0 : _a.runtime1.length) == 0 || ((_b = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _b === void 0 ? void 0 : _b.runtime2.length) == 0) {
+        if (!((_a = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _a === void 0 ? void 0 : _a.runtime1) || !((_b = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _b === void 0 ? void 0 : _b.runtime2)) {
             core.setFailed(`Impossible to fetch a runtime. Check runtimes and retry.\n${runtimeId}`);
             return;
         }
         core.info(`runtimeId: ${runtimeId}`);
         try {
-            runtimeId = (_e = (_d = (_c = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _c === void 0 ? void 0 : _c.runtime1) === null || _d === void 0 ? void 0 : _d.replace(" ", "")) !== null && _e !== void 0 ? _e : "";
+            runtimeId = matches.groups.runtime1.replace(" ", "");
             await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId}`);
         }
-        catch (_h) {
+        catch (_c) {
             // Different combinantions of xcode and macOS versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different syntax.
-            runtimeId = (_g = (_f = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _f === void 0 ? void 0 : _f.runtime2) !== null && _g !== void 0 ? _g : "";
+            runtimeId = matches.groups.runtime2;
             await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId}`);
         }
         await execCmd(`xcrun simctl boot ${id}`);
