@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { v4 as uuidv4 } from "uuid";
-import * as childProcess from "promisify-child-process";
 
 async function run(): Promise<void> {
     const id = uuidv4().split("-").join("");
