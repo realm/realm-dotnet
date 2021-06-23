@@ -17,7 +17,7 @@ async function run(): Promise<void> {
         // and we want to extract "iOS 14.5" and "com.apple.CoreSimulator.SimRuntime.iOS-14-5"
         // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
         const matches =/(?<runtime1>iOS \d{1,2}(.\d{1,2})?).*(?<runtime2>com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9.-]+)/g.exec(runtimeId);
-        if (!matches || matches?.length == 0 || matches?.groups || matches?.groups?.runtime1.length == 0 || matches?.groups?.runtime2.length == 0) {
+        if (!matches || matches?.length == 0 || !matches?.groups || matches?.groups?.runtime1.length == 0 || matches?.groups?.runtime2.length == 0) {
             core.setFailed(`Impossible to fetch a runtime. Check runtimes and retry.\n${runtimeId}`);
             return;
         }
@@ -37,13 +37,13 @@ async function run(): Promise<void> {
         await execCmd(`xcrun simctl install ${id} ${appPath}`);
         await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
     } catch (error) {
-        core.setFailed(`An unexpected error occurred: ${error.message} - ${error.stack}`);
+        core.setFailed(`An unexpected error occurred: ${error.message} -\n${error.stack}`);
     } finally {
         try {
             await execCmd(`xcrun simctl shutdown ${id}`);
             await execCmd(`xcrun simctl delete ${id}`);
         } catch (error) {
-            core.setFailed(`An error occurred during cleanup: ${error.message} - ${error.stack}`);
+            core.setFailed(`An error occurred during cleanup: ${error.message} -\n${error.stack}`);
         }
     }
 }
