@@ -389,7 +389,7 @@ jobs:
          bundleId: 'io.realm.dotnettests'
          iphoneToSimulate: 'iPhone-8'
          arguments: '--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml'
-      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin iOS tests results")
+      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver

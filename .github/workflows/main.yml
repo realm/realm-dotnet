@@ -584,7 +584,7 @@ jobs:
       with:
         files: TestResults.iOS.xml
         comment_mode: "off"
-        check_name: Results Xamarin iOS tests results
+        check_name: Results Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
