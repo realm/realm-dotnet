@@ -2286,197 +2286,6 @@ exports.default = _default;
 
 /***/ }),
 
-/***/ 491:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-var __webpack_unused_export__;
-
-
-__webpack_unused_export__ = ({
-  value: true
-});
-__webpack_unused_export__ = promisifyChildProcess;
-exports.Cs = spawn;
-exports.rM = fork;
-exports.tL = exports.GL = void 0;
-
-const child_process = __nccwpck_require__(129);
-
-const bindFinally = promise => (handler // don't assume we're running in an environment with Promise.finally
-) => promise.then(async value => {
-  await handler();
-  return value;
-}, async reason => {
-  await handler();
-  throw reason;
-});
-
-function joinChunks(chunks, encoding) {
-  if (chunks[0] instanceof Buffer) {
-    const buffer = Buffer.concat(chunks);
-    if (encoding) return buffer.toString(encoding);
-    return buffer;
-  }
-
-  return chunks.join('');
-}
-
-function promisifyChildProcess(child, options = {}) {
-  const _promise = new Promise((resolve, reject) => {
-    const {
-      encoding,
-      killSignal
-    } = options;
-    const captureStdio = encoding != null || options.maxBuffer != null;
-    const maxBuffer = options.maxBuffer != null ? options.maxBuffer : 200 * 1024;
-    let error;
-    let bufferSize = 0;
-    const stdoutChunks = [];
-    const stderrChunks = [];
-
-    const capture = chunks => data => {
-      const remaining = Math.max(0, maxBuffer - bufferSize);
-      const byteLength = Buffer.byteLength(data, 'utf8');
-      bufferSize += Math.min(remaining, byteLength);
-
-      if (byteLength > remaining) {
-        error = new Error(`maxBuffer size exceeded`); // $FlowFixMe
-
-        child.kill(killSignal ? killSignal : 'SIGTERM');
-        data = data.slice(0, remaining);
-      }
-
-      chunks.push(data);
-    };
-
-    if (captureStdio) {
-      if (child.stdout) child.stdout.on('data', capture(stdoutChunks));
-      if (child.stderr) child.stderr.on('data', capture(stderrChunks));
-    }
-
-    child.on('error', reject);
-
-    function done(code, signal) {
-      if (!error) {
-        if (code != null && code !== 0) {
-          error = new Error(`Process exited with code ${code}`);
-        } else if (signal != null) {
-          error = new Error(`Process was killed with ${signal}`);
-        }
-      }
-
-      function defineOutputs(obj) {
-        obj.code = code;
-        obj.signal = signal;
-
-        if (captureStdio) {
-          obj.stdout = joinChunks(stdoutChunks, encoding);
-          obj.stderr = joinChunks(stderrChunks, encoding);
-        } else {
-          const warn = prop => ({
-            configurable: true,
-            enumerable: true,
-
-            get() {
-              /* eslint-disable no-console */
-              console.error(new Error(`To get ${prop} from a spawned or forked process, set the \`encoding\` or \`maxBuffer\` option`).stack.replace(/^Error/, 'Warning'));
-              /* eslint-enable no-console */
-
-              return null;
-            }
-
-          });
-
-          Object.defineProperties(obj, {
-            stdout: warn('stdout'),
-            stderr: warn('stderr')
-          });
-        }
-      }
-
-      const finalError = error;
-
-      if (finalError) {
-        defineOutputs(finalError);
-        reject(finalError);
-      } else {
-        const output = {};
-        defineOutputs(output);
-        resolve(output);
-      }
-    }
-
-    child.on('close', done);
-  });
-
-  return Object.create(child, {
-    then: {
-      value: _promise.then.bind(_promise)
-    },
-    catch: {
-      value: _promise.catch.bind(_promise)
-    },
-    finally: {
-      value: bindFinally(_promise)
-    }
-  });
-}
-
-function spawn(command, args, options) {
-  return promisifyChildProcess(child_process.spawn(command, args, options), Array.isArray(args) ? options : args);
-}
-
-function fork(module, args, options) {
-  return promisifyChildProcess(child_process.fork(module, args, options), Array.isArray(args) ? options : args);
-}
-
-function promisifyExecMethod(method) {
-  return (...args) => {
-    let child;
-
-    const _promise = new Promise((resolve, reject) => {
-      child = method(...args, (err, stdout, stderr) => {
-        if (err) {
-          err.stdout = stdout;
-          err.stderr = stderr;
-          reject(err);
-        } else {
-          resolve({
-            code: 0,
-            signal: null,
-            stdout,
-            stderr
-          });
-        }
-      });
-    });
-
-    if (!child) {
-      throw new Error('unexpected error: child has not been initialized');
-    }
-
-    return Object.create(child, {
-      then: {
-        value: _promise.then.bind(_promise)
-      },
-      catch: {
-        value: _promise.catch.bind(_promise)
-      },
-      finally: {
-        value: bindFinally(_promise)
-      }
-    });
-  };
-}
-
-const exec = promisifyExecMethod(child_process.exec);
-exports.GL = exec;
-const execFile = promisifyExecMethod(child_process.execFile);
-exports.tL = execFile;
-
-
-/***/ }),
-
 /***/ 357:
 /***/ ((module) => {
 
@@ -2640,94 +2449,71 @@ const validate = dist/* validate */.Gu;
 const stringify = dist/* stringify */.Pz;
 const parse = dist/* parse */.Qc;
 
-// EXTERNAL MODULE: ../node_modules/promisify-child-process/index.cjs
-var promisify_child_process = __nccwpck_require__(491);
-;// CONCATENATED MODULE: ../node_modules/promisify-child-process/index.mjs
-
-const promisify_child_process_exec = promisify_child_process/* exec */.GL
-const execFile = promisify_child_process/* execFile */.tL
-const spawn = promisify_child_process/* spawn */.Cs
-const fork = promisify_child_process/* fork */.rM
-/* harmony default export */ const node_modules_promisify_child_process = ((/* unused pure expression or super */ null && (cjsModule)));
-
 ;// CONCATENATED MODULE: ./main.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
-
-function run() {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const id = v4().split("-").join("");
+async function run() {
+    var _a, _b, _c, _d, _e, _f, _g;
+    const id = v4().split("-").join("");
+    try {
+        const appPath = core.getInput("appPath", { required: true });
+        const bundleId = core.getInput("bundleId", { required: true });
+        const iphoneToSimulate = core.getInput("iphoneToSimulate", { required: false });
+        const args = core.getInput("arguments", { required: false });
+        let runtimeId = await execCmd("xcrun simctl list runtimes");
+        // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
+        // and we want to extract "iOS 14.5" and "com.apple.CoreSimulator.SimRuntime.iOS-14-5"
+        // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
+        const matches = /(?<runtime1>iOS \d{1,2}(.\d{1,2})?).*(?<runtime2>com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9.-]+)/g.exec(runtimeId);
+        if (!matches || (matches === null || matches === void 0 ? void 0 : matches.length) == 0 || (matches === null || matches === void 0 ? void 0 : matches.groups) || ((_a = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _a === void 0 ? void 0 : _a.runtime1.length) == 0 || ((_b = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _b === void 0 ? void 0 : _b.runtime2.length) == 0) {
+            core.setFailed(`Impossible to fetch a runtime. Check runtimes and retry.\n${runtimeId}`);
+            return;
+        }
+        core.info(`runtimeId: ${runtimeId}`);
         try {
-            const appPath = core.getInput("appPath", { required: true });
-            const bundleId = core.getInput("bundleId", { required: true });
-            const iphoneToSimulate = core.getInput("iphoneToSimulate", { required: false });
-            const args = core.getInput("arguments", { required: false });
-            let runtimeId = "";
-            const options = {};
-            options.listeners = {
-                stdout: (data) => {
-                    runtimeId += data.toString();
-                },
-            };
-            yield execCmd("xcrun simctl list runtimes", options);
-            // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
-            // and we want to extract "iOS 14.5"
-            // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
-            const matches = runtimeId.match(/(iOS \d{1,2}(.\d{1,2})?)/g);
-            if (matches && matches.length > 0) {
-                runtimeId = matches[0].replace(" ", "");
-                core.info(`runtimeId: ${runtimeId}`);
-            }
-            try {
-                yield execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
-            }
-            catch (_b) {
-                // Different combinantions of xcode and macOS versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different syntax.
-                // additionally, this uses  childProcess.exec instead of @actions/exec because the latter doesn't properly parse the pipe (|) char
-                const { stdout, stderr } = yield promisify_child_process_exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
-                runtimeId = (_a = stdout === null || stdout === void 0 ? void 0 : stdout.toString()) !== null && _a !== void 0 ? _a : "";
-                if (stderr) {
-                    core.setFailed(stderr.toString());
-                }
-                yield execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
-            }
-            yield execCmd(`xcrun simctl boot ${id}`);
-            yield execCmd(`xcrun simctl install ${id} ${appPath}`);
-            yield execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
+            runtimeId = (_e = (_d = (_c = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _c === void 0 ? void 0 : _c.runtime1) === null || _d === void 0 ? void 0 : _d.replace(" ", "")) !== null && _e !== void 0 ? _e : "";
+            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId}`);
+        }
+        catch (_h) {
+            // Different combinantions of xcode and macOS versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different syntax.
+            runtimeId = (_g = (_f = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _f === void 0 ? void 0 : _f.runtime2) !== null && _g !== void 0 ? _g : "";
+            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId}`);
+        }
+        await execCmd(`xcrun simctl boot ${id}`);
+        await execCmd(`xcrun simctl install ${id} ${appPath}`);
+        await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
+    }
+    catch (error) {
+        core.setFailed(`An unexpected error occurred: ${error.message} - ${error.stack}`);
+    }
+    finally {
+        try {
+            await execCmd(`xcrun simctl shutdown ${id}`);
+            await execCmd(`xcrun simctl delete ${id}`);
         }
         catch (error) {
-            core.setFailed(error.message);
+            core.setFailed(`An error occurred during cleanup: ${error.message} - ${error.stack}`);
         }
-        finally {
-            try {
-                yield execCmd(`xcrun simctl shutdown ${id}`);
-                yield execCmd(`xcrun simctl delete ${id}`);
-            }
-            catch (error) {
-                core.setFailed(`An error occurred during cleanup: ${error.toString()}`);
-            }
-        }
-    });
+    }
 }
-function execCmd(cmd, options = {}) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const exitCode = yield exec.exec(cmd, [], options);
-        if (exitCode != 0) {
-            const msgCmd = cmd.split(" ").slice(0, 3).join(" ");
-            core.setFailed(`"${msgCmd}" failed with code ${exitCode}`);
+async function execCmd(cmd) {
+    let stdout = "";
+    let stderr = "";
+    const options = {};
+    options.listeners = {
+        stdout: (data) => {
+            stdout += data.toString();
+        },
+        stderr: (data) => {
+            stderr += data.toString();
         }
-    });
+    };
+    const exitCode = await exec.exec(cmd, [], options);
+    if (exitCode != 0) {
+        throw new Error(`"${cmd}" failed with code ${exitCode} giving error:\n ${stderr}`);
+    }
+    return stdout;
 }
 run();
 /* harmony default export */ const main = (run);

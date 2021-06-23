@@ -12,61 +12,62 @@ async function run(): Promise<void> {
         const iphoneToSimulate = core.getInput("iphoneToSimulate", { required: false });
         const args = core.getInput("arguments", { required: false });
 
-        let runtimeId = "";
-        const options : exec.ExecOptions = {};
-        options.listeners = {
-            stdout: (data: Buffer) => {
-                runtimeId += data.toString();
-            },
-        };
-
-        await execCmd("xcrun simctl list runtimes", options);
+        let runtimeId = await execCmd("xcrun simctl list runtimes");
 
         // Sample output: iOS 14.5 (14.5 - 18E182) - com.apple.CoreSimulator.SimRuntime.iOS-14-5
-        // and we want to extract "iOS 14.5"
+        // and we want to extract "iOS 14.5" and "com.apple.CoreSimulator.SimRuntime.iOS-14-5"
         // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
-        const matches = runtimeId.match(/(iOS \d{1,2}(.\d{1,2})?)/g);
-        if (matches && matches.length > 0) {
-            runtimeId = matches[0].replace(" ", "");
-            core.info(`runtimeId: ${runtimeId}`);
+        const matches =/(?<runtime1>iOS \d{1,2}(.\d{1,2})?).*(?<runtime2>com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9.-]+)/g.exec(runtimeId);
+        if (!matches || matches?.length == 0 || matches?.groups || matches?.groups?.runtime1.length == 0 || matches?.groups?.runtime2.length == 0) {
+            core.setFailed(`Impossible to fetch a runtime. Check runtimes and retry.\n${runtimeId}`);
+            return;
         }
+        core.info(`runtimeId: ${runtimeId}`);
 
         try {
-            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
+            runtimeId = matches?.groups?.runtime1?.replace(" ", "") ?? "";
+            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId}`);
         }
         catch {
             // Different combinantions of xcode and macOS versions have shown different syntax acceptance about the runtime, therefore 1 last attempt with a different syntax.
-            // additionally, this uses  childProcess.exec instead of @actions/exec because the latter doesn't properly parse the pipe (|) char
-            const { stdout, stderr } = await childProcess.exec("xcrun simctl list runtimes |  awk '/com.apple.CoreSimulator.SimRuntime.iOS/ { match($0, /com.apple.CoreSimulator.SimRuntime.iOS-[0-9.-]+/); print substr($0, RSTART, RLENGTH); exit }'");
-            runtimeId = stdout?.toString() ?? "";
-            if (stderr) {
-                core.setFailed(stderr.toString());
-            }
-
-            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId.toString()}`);
+            runtimeId = matches?.groups?.runtime2 ?? "";
+            await execCmd(`xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.${iphoneToSimulate} ${runtimeId}`);
         }
 
         await execCmd(`xcrun simctl boot ${id}`);
         await execCmd(`xcrun simctl install ${id} ${appPath}`);
         await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
     } catch (error) {
-        core.setFailed(error.message);
+        core.setFailed(`An unexpected error occurred: ${error.message} - ${error.stack}`);
     } finally {
         try {
             await execCmd(`xcrun simctl shutdown ${id}`);
             await execCmd(`xcrun simctl delete ${id}`);
         } catch (error) {
-            core.setFailed(`An error occurred during cleanup: ${error.toString()}`);
+            core.setFailed(`An error occurred during cleanup: ${error.message} - ${error.stack}`);
         }
     }
 }
 
-async function execCmd(cmd: string, options: exec.ExecOptions = {}): Promise<void> {
+async function execCmd(cmd: string): Promise<string> {
+    let stdout = "";
+    let stderr = "";
+    const options : exec.ExecOptions = {};
+    options.listeners = {
+        stdout: (data: Buffer) => {
+            stdout += data.toString();
+        },
+        stderr: (data: Buffer) => {
+            stderr += data.toString();
+        }
+    };
+
     const exitCode = await exec.exec(cmd, [], options);
     if (exitCode != 0) {
-        const msgCmd = cmd.split(" ").slice(0, 3).join(" ");
-        core.setFailed(`"${msgCmd}" failed with code ${exitCode}`);
+        throw new Error(`"${cmd}" failed with code ${exitCode} giving error:\n ${stderr}`);
     }
+
+    return stdout;
 }
 
 run();
