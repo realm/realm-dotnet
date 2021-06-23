@@ -32,6 +32,10 @@ namespace UnityUtils
             {
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
                 Logger.Default = new UnityLogger();
+                UnityEngine.Application.quitting += () =>
+                {
+                    InteropConfig.CleanupNativeResources();
+                };
             }
         }
     }
