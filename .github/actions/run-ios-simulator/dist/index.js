@@ -2466,7 +2466,7 @@ async function run() {
         // and we want to extract "iOS 14.5" and "com.apple.CoreSimulator.SimRuntime.iOS-14-5"
         // If we want to allow launching watchOS/tvOS simulators, replace the 'iOS' with an 'os' argument
         const matches = /(?<runtime1>iOS \d{1,2}(.\d{1,2})?).*(?<runtime2>com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9.-]+)/g.exec(runtimeId);
-        if (!matches || (matches === null || matches === void 0 ? void 0 : matches.length) == 0 || (matches === null || matches === void 0 ? void 0 : matches.groups) || ((_a = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _a === void 0 ? void 0 : _a.runtime1.length) == 0 || ((_b = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _b === void 0 ? void 0 : _b.runtime2.length) == 0) {
+        if (!matches || (matches === null || matches === void 0 ? void 0 : matches.length) == 0 || !(matches === null || matches === void 0 ? void 0 : matches.groups) || ((_a = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _a === void 0 ? void 0 : _a.runtime1.length) == 0 || ((_b = matches === null || matches === void 0 ? void 0 : matches.groups) === null || _b === void 0 ? void 0 : _b.runtime2.length) == 0) {
             core.setFailed(`Impossible to fetch a runtime. Check runtimes and retry.\n${runtimeId}`);
             return;
         }
@@ -2485,7 +2485,7 @@ async function run() {
         await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
     }
     catch (error) {
-        core.setFailed(`An unexpected error occurred: ${error.message} - ${error.stack}`);
+        core.setFailed(`An unexpected error occurred: ${error.message} -\n${error.stack}`);
     }
     finally {
         try {
@@ -2493,7 +2493,7 @@ async function run() {
             await execCmd(`xcrun simctl delete ${id}`);
         }
         catch (error) {
-            core.setFailed(`An error occurred during cleanup: ${error.message} - ${error.stack}`);
+            core.setFailed(`An error occurred during cleanup: ${error.message} -\n${error.stack}`);
         }
     }
 }
