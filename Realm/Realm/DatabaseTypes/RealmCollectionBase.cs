@@ -196,6 +196,12 @@ namespace Realms
             }
 
             var robj = value.AsRealmObject<RealmObject>();
+
+            if (robj.IsManaged && robj.Realm != Realm)
+            {
+                throw new RealmException("Can't add to the collection an object that is already in another realm.");
+            }
+
             if (!robj.IsManaged)
             {
                 Realm.Add(robj);
