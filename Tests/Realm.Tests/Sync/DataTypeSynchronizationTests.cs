@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Helpers;
-using Realms.Logging;
 
 namespace Realms.Tests.Sync
 {
@@ -351,7 +350,7 @@ namespace Realms.Tests.Sync
                     list1.Clear();
                 });
 
-                await WaitForCollectionChangeAsync(list2.AsRealmCollection());
+                await TestHelpers.WaitForConditionAsync(() => !list2.Any());
 
                 Assert.That(list1, Is.Empty);
                 Assert.That(list2, Is.Empty);
@@ -416,7 +415,7 @@ namespace Realms.Tests.Sync
                     set1.Clear();
                 });
 
-                await WaitForCollectionChangeAsync(set2.AsRealmCollection());
+                await TestHelpers.WaitForConditionAsync(() => !set2.Any());
 
                 Assert.That(set1, Is.Empty);
                 Assert.That(set2, Is.Empty);
