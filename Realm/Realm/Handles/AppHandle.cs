@@ -201,7 +201,7 @@ namespace Realms.Sync
 
             lock (_appHandles)
             {
-                _appHandles.RemoveAll(a => a.IsAlive);
+                _appHandles.RemoveAll(a => !a.IsAlive);
                 _appHandles.Add(new WeakReference(this));
             }
         }
