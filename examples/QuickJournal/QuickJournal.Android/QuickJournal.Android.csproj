@@ -111,12 +111,20 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Realm">
-      <Version>10.2.1-PR-2458.2</Version>
-    </PackageReference>
+    <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj">
+      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
+      <Name>Realm</Name>
+    </ProjectReference>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
   </ItemGroup>
+  <ItemGroup>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\android\Debug-x86\librealm-wrappers.so">
+      <Link>lib\x86\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+  <Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
