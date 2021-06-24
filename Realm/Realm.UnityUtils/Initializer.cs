@@ -26,6 +26,7 @@ namespace UnityUtils
     {
         private static int _isInitialized;
 
+        [Preserve]
         public static void Initialize()
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
