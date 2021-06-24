@@ -335,6 +335,9 @@ namespace Realms.Tests.Sync
 
                 await WaitForUploadAsync(realm);
                 realm.Dispose();
+
+                await Task.Delay(50);
+
                 Realm.DeleteRealm(realm.Config);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
