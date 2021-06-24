@@ -3,7 +3,7 @@ import * as exec from "@actions/exec";
 import { v4 as uuidv4 } from "uuid";
 
 async function run(): Promise<void> {
-    const id = uuidv4().split("-").join("");
+    const id = uuidv4();
 
     try {
         const appPath = core.getInput("appPath", { required: true });
@@ -37,14 +37,7 @@ async function run(): Promise<void> {
         await execCmd(`xcrun simctl install ${id} ${appPath}`);
         await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
     } catch (error) {
-        core.setFailed(`An unexpected error occurred: ${error.message} -\n${error.stack}`);
-    } finally {
-        try {
-            await execCmd(`xcrun simctl shutdown ${id}`);
-            await execCmd(`xcrun simctl delete ${id}`);
-        } catch (error) {
-            core.setFailed(`An error occurred during cleanup: ${error.message} -\n${error.stack}`);
-        }
+        core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }
 }
 

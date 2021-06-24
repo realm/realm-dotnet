@@ -2455,7 +2455,7 @@ const parse = dist/* parse */.Qc;
 
 async function run() {
     var _a, _b;
-    const id = v4().split("-").join("");
+    const id = v4();
     try {
         const appPath = core.getInput("appPath", { required: true });
         const bundleId = core.getInput("bundleId", { required: true });
@@ -2485,16 +2485,7 @@ async function run() {
         await execCmd(`xcrun simctl launch --console-pty ${id} ${bundleId} ${args}`);
     }
     catch (error) {
-        core.setFailed(`An unexpected error occurred: ${error.message} -\n${error.stack}`);
-    }
-    finally {
-        try {
-            await execCmd(`xcrun simctl shutdown ${id}`);
-            await execCmd(`xcrun simctl delete ${id}`);
-        }
-        catch (error) {
-            core.setFailed(`An error occurred during cleanup: ${error.message} -\n${error.stack}`);
-        }
+        core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }
 }
 async function execCmd(cmd) {
