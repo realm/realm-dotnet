@@ -137,9 +137,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy_without_client_file_id", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void write_copy_without_client_file_id(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, bool allow_overwrite, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableKey table_key, out NativeException ex);
 
@@ -376,12 +373,6 @@ namespace Realms
         public void WriteCopy(string path, byte[] encryptionKey)
         {
             NativeMethods.write_copy(this, path, (IntPtr)path.Length, encryptionKey, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void WriteCopyWithoutClientFileId(string path, byte[] encryptionKey, bool allowOverwrite)
-        {
-            NativeMethods.write_copy_without_client_file_id(this, path, (IntPtr)path.Length, encryptionKey, allowOverwrite, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

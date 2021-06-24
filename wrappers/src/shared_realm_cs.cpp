@@ -406,17 +406,7 @@ REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, si
         Utf16StringAccessor pathStr(path, path_len);
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        realm->get()->write_copy(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0));
-    });
-}
-
-REALM_EXPORT void shared_realm_write_copy_without_client_file_id(SharedRealm* realm, uint16_t* path, size_t path_len, char* encryption_key, bool allow_overwrite, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        Utf16StringAccessor pathStr(path, path_len);
-
-        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        realm->get()->write_copy_without_client_file_id(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0), allow_overwrite);
+        realm->get()->write_copy_without_client_file_id(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0), false);
     });
 }
 

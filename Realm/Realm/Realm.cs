@@ -1367,24 +1367,6 @@ namespace Realms
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
         }
 
-        /// <summary>
-        /// Writes a compacted copy of the Realm to the path in the specified config. If the configuration object has
-        /// non-null <see cref="RealmConfigurationBase.EncryptionKey"/>, the copy will be encrypted with that key.
-        /// </summary>
-        /// <remarks>
-        /// If this is called from within a transaction it writes the current data, and not the data as it was when
-        /// the last transaction was committed.
-        /// </remarks>
-        /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
-        /// <param name="allowOverwrite">If true, an already existing Realm file will be overwritten. If false and the
-        /// file already exists, this will throw an error.</param>
-        public void WriteCopyWithoutClientFileId(RealmConfigurationBase config, bool allowOverwrite)
-        {
-            Argument.NotNull(config, nameof(config));
-
-            SharedRealmHandle.WriteCopyWithoutClientFileId(config.DatabasePath, config.EncryptionKey, allowOverwrite);
-        }
-
         #region Transactions
 
         internal void DrainTransactionQueue()

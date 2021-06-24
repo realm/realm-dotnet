@@ -321,19 +321,20 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void WriteCopy([Values(true, false)] bool originalEncrypted, [Values(true, false)] bool copyEncrypted)
+        public void WriteCopy_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var partition = Guid.NewGuid().ToString();
-
-                var originalConfig = await GetIntegrationConfigAsync(partition);
+                var originalPartition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
                 if (originalEncrypted)
                 {
                     originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
                 }
 
-                var copyConfig = await GetIntegrationConfigAsync(partition);
+                var copiedPartition = Guid.NewGuid().ToString();
+                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
                 if (copyEncrypted)
                 {
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
@@ -346,45 +347,9 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
-
-                originalRealm.WriteCopy(copyConfig);
-            });
-        }
-
-        [Test]
-        public void WriteCopyWithoutFileId_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted,
-                                                                 [Values(true, false)] bool allowOverwrite)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var originalPartition = Guid.NewGuid().ToString();
-                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
-                if (originalEncrypted)
-                {
-                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
-                }
-
-                var copiedPartition = Guid.NewGuid().ToString();
-                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
-                if (copyEncrypted)
-                {
-                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
-                }
-
-                if (!allowOverwrite)
-                {
-                    File.Delete(copyConfig.DatabasePath);
-                }
-
-                using var originalRealm = GetRealm(originalConfig);
-
-                AddDummyData(originalRealm, true);
-
-                await WaitForUploadAsync(originalRealm);
                 await WaitForDownloadAsync(originalRealm);
 
-                originalRealm.WriteCopyWithoutClientFileId(copyConfig, allowOverwrite);
+                originalRealm.WriteCopy(copyConfig);
 
                 using var copiedlRealm = GetRealm(copyConfig);
 
@@ -393,9 +358,8 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void WriteCopyWithoutFileId_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted,
-                                                                 [Values(true, false)] bool allowOverwrite)
+        public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -413,17 +377,14 @@ namespace Realms.Tests.Sync
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
                 }
 
-                if (!allowOverwrite)
-                {
-                    File.Delete(copyConfig.DatabasePath);
-                }
+                File.Delete(copyConfig.DatabasePath);
 
                 using var originalRealm = GetRealm(originalConfig);
 
                 AddDummyData(originalRealm, true);
 
                 // The error is thrown as a generic `RealmError` by Core which translates to a generic `RealmException` on our side.
-                Assert.Throws<RealmException>(() => originalRealm.WriteCopyWithoutClientFileId(copyConfig, allowOverwrite));
+                Assert.Throws<RealmException>(() => originalRealm.WriteCopy(copyConfig));
             });
         }
 
