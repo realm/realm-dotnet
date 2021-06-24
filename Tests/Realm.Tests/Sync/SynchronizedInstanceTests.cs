@@ -320,6 +320,28 @@ namespace Realms.Tests.Sync
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
+        [Test]
+        public void DeleteRealm_afterSessionDisposed([Values(true, false)] bool singleTransaction)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var config = await GetIntegrationConfigAsync(partition);
+                var asyncConfig = await GetIntegrationConfigAsync(partition);
+
+                using var realm = GetRealm(config);
+                AddDummyData(realm, singleTransaction);
+
+                await WaitForUploadAsync(realm);
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+
+                using var asyncRealm = await GetRealmAsync(asyncConfig);
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+            }, timeout: 120000);
+        }
+
         private const int DummyDataSize = 100;
 
         private static void AddDummyData(Realm realm, bool singleTransaction)
