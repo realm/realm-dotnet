@@ -171,7 +171,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Error($"Failed to weave assemblies: {ex}");
+                UnityLogger.Instance.Error($"[Realm] Failed to weave assemblies. If the error persists, please report it to https://github.com/realm/realm-dotnet/issues: {ex}");
             }
             finally
             {
@@ -216,6 +216,12 @@ namespace RealmWeaver
 
                     var results = weaver.Execute(analyticsConfig);
 
+                    if (results.ErrorMessage != null)
+                    {
+                        UnityLogger.Instance.Error($"[{name}] Weaving failed: {results}");
+                        return false;
+                    }
+
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
                     {
@@ -227,7 +233,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Warning($"[{name}] Weaving failed: {ex}");
+                UnityLogger.Instance.Error($"[{name}] Failed to weave assembly. If the error persists, please report it to https://github.com/realm/realm-dotnet/issues: {ex}");
             }
 
             return false;

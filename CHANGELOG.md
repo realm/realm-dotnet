@@ -1,3 +1,17 @@
+## vNext (TBD)
+
+### Fixed
+* \[Unity] Fixed an issue where failing to weave an assembly due to modeling errors, would only show an error in the logs once and then fail opening a Realm with `No RealmObjects. Has linker stripped them?`. Now, the weaving errors will show up on every code change/weave attempt and the runtime error will explicitly suggest manually re-running the weaver. (Issue [#2310](https://github.com/realm/realm-dotnet/issues/2310))
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0-alpha.0 or later.
+
+### Internal
+* Using Core 11.0.3.
+
 ## 10.2.0 (2021-06-15)
 
 ### Fixed

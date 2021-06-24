@@ -18,7 +18,7 @@ Downloading ObjectStore
 If you cloned your `realm-dotnet` repository, you can use a git command to get the submodule:
 
 1. Open a terminal window in the `realm-dotnet` source directory
-1. Enter the command `git submodule update --recursive`
+1. Enter the command `git submodule update --init --recursive`
 
 
 ### Direct Download
@@ -69,9 +69,9 @@ Building .NET Core wrappers for macOS and Linux
 
 `build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
 
-For Linux builds you can just build and run `Dockerfile.centos` if you don't have access to a Linux environment:
+For Linux builds you can just build and run `centos.Dockerfile` if you don't have access to a Linux environment:
 
-1. `docker build . -f Dockerfile.centos -t realm-dotnet/wrappers`
+1. `docker build . -f centos.Dockerfile -t realm-dotnet/wrappers`
 1. `docker run -v path/to/wrappers:/source realm-dotnet/wrappers`
 
 General Notes
