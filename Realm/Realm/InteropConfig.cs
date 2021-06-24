@@ -18,11 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using Realms.Logging;
-using Realms.Sync;
 
 namespace Realms
 {
@@ -91,35 +88,8 @@ namespace Realms
 
             AppDomain.CurrentDomain.DomainUnload += (_, __) =>
             {
-                Logger.LogDefault(LogLevel.Info, "Realm: Domain is unloading, force closing all Realm instances.");
-
-                CleanupNativeResources();
+                NativeCommon.CleanupNativeResources("AppDomain is unloading");
             };
-        }
-
-        /// <summary>
-        /// **WARNING**: This will close all native Realm instances and AppHandles. This method is extremely unsafe
-        /// to call in any circumstance where the user might be accessing anything Realm-related. The only places
-        /// where we do call it is in DomainUnload and Application.quitting on Unity. We expect that at this point
-        /// the Application/Domain is being torn down and the user should not be interracting with Realm.
-        /// </summary>
-        public static void CleanupNativeResources()
-        {
-            try
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-
-                AppHandle.ForceCloseHandles();
-                SharedRealmHandle.ForceCloseNativeRealms();
-
-                sw.Stop();
-                Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDefault(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
-            }
         }
 
         private static bool TryInitializeUnity()

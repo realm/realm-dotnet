@@ -221,7 +221,7 @@ namespace Realms.Sync
                 {
                     if (weakHandle.Target is AppHandle handle)
                     {
-                        handle.Close();
+                        handle?.Close();
                     }
                 }
 

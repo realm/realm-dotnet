@@ -34,7 +34,7 @@ namespace UnityUtils
                 Logger.Default = new UnityLogger();
                 UnityEngine.Application.quitting += () =>
                 {
-                    InteropConfig.CleanupNativeResources();
+                    NativeCommon.CleanupNativeResources("Application is exiting");
                 };
             }
         }
