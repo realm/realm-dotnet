@@ -67,15 +67,7 @@ namespace Realms
         {
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
-            if (realmValue.Type == RealmValueType.Object)
-            {
-                var robj = realmValue.AsRealmObject<RealmObject>();
-                if (!robj.IsManaged)
-                {
-                    Realm.Add(robj);
-                }
-            }
-
+            AddToRealmIfNecessary(realmValue);
             return _setHandle.Add(realmValue);
         }
 
