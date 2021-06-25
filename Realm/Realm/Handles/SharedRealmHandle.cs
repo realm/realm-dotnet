@@ -138,10 +138,10 @@ namespace Realms
             public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableKey table_key, out NativeException ex);
+            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableKey table_key, PrimitiveValue value,
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, UInt32 table_key, PrimitiveValue value,
                                                              [MarshalAs(UnmanagedType.U1)] bool update,
                                                              [MarshalAs(UnmanagedType.U1)] out bool is_new, out NativeException ex);
 
@@ -172,10 +172,10 @@ namespace Realms
             public static extern IntPtr freeze(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_object_for_primary_key", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object_for_primary_key(SharedRealmHandle realmHandle, TableKey table_key, PrimitiveValue value, out NativeException ex);
+            public static extern IntPtr get_object_for_primary_key(SharedRealmHandle realmHandle, UInt32 table_key, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_results(SharedRealmHandle sharedRealm, TableKey table_key, out NativeException ex);
+            public static extern IntPtr create_results(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
         }
@@ -335,7 +335,7 @@ namespace Realms
             Console.WriteLine(tableName.Length);
             var tableKey = NativeMethods.get_table_key(this, tableName, (IntPtr)tableName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new TableKey();
+            return new TableKey(tableKey);
         }
 
         public bool IsSameInstance(SharedRealmHandle other)
@@ -400,7 +400,7 @@ namespace Realms
 
         public ObjectHandle CreateObject(TableKey tableKey)
         {
-            var result = NativeMethods.create_object(this, tableKey, out NativeException ex);
+            var result = NativeMethods.create_object(this, tableKey.Value, out NativeException ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
         }
@@ -422,7 +422,7 @@ namespace Realms
             };
 
             var (primitiveValue, handles) = pkValue.ToNative();
-            var result = NativeMethods.create_object_unique(this, tableKey, primitiveValue, update, out isNew, out var ex);
+            var result = NativeMethods.create_object_unique(this, tableKey.Value, primitiveValue, update, out isNew, out var ex);
             handles?.Dispose();
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
@@ -443,7 +443,7 @@ namespace Realms
         public bool TryFindObject(TableKey tableKey, in RealmValue id, out ObjectHandle objectHandle)
         {
             var (primitiveValue, handles) = id.ToNative();
-            var result = NativeMethods.get_object_for_primary_key(this, tableKey, primitiveValue, out var ex);
+            var result = NativeMethods.get_object_for_primary_key(this, tableKey.Value, primitiveValue, out var ex);
             handles?.Dispose();
             ex.ThrowIfNecessary();
 
@@ -459,7 +459,7 @@ namespace Realms
 
         public ResultsHandle CreateResults(TableKey tableKey)
         {
-            var result = NativeMethods.create_results(this, tableKey, out var nativeException);
+            var result = NativeMethods.create_results(this, tableKey.Value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(this, result);
         }
