@@ -40,10 +40,10 @@
     </None>
     <!-- iOS -->
     <None Update="ios-dllmap.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
-    <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.xcframework\*">
+    <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.xcframework\**">
       <Pack>true</Pack>
       <PackagePath>native\ios\universal\realm-wrappers.xcframework</PackagePath>
-      <Link>wrappers\iOS\realm-wrappers.xcframework\%(Filename)%(Extension)</Link>
+      <Link>wrappers\iOS\realm-wrappers.xcframework\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
     <!-- macOS -->
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
