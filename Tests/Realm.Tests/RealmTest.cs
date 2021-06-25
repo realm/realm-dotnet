@@ -108,7 +108,7 @@ namespace Realms.Tests
             });
         }
 
-        private static bool DeleteRealmWithRetries(Realm realm)
+        protected static bool DeleteRealmWithRetries(Realm realm)
         {
             for (var i = 0; i < 100; i++)
             {
