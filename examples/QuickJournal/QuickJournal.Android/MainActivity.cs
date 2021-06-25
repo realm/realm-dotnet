@@ -4,6 +4,8 @@ using Android.Runtime;
 using Android.OS;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms;
+using Realms.Logging;
+using System;
 
 namespace QuickJournal.Droid
 {
@@ -19,6 +21,10 @@ namespace QuickJournal.Droid
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             Forms.Init(this, savedInstanceState);
+            Logger.LogLevel = LogLevel.All;
+            Logger.Default = Logger.Function((message) => {
+                Console.WriteLine(message);
+            });
             LoadApplication(new App());
         }
 

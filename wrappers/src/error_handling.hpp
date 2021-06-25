@@ -23,6 +23,7 @@
 #include <realm.hpp>
 #include "realm_error_type.hpp"
 #include "realm_export_decls.hpp"
+#include "shared_realm_cs.hpp"
 
 namespace realm {
 struct NativeException {
@@ -119,13 +120,19 @@ struct Default<void> {
 template <class F>
 auto handle_errors(NativeException::Marshallable& ex, F&& func) -> decltype(func())
 {
+    log_message("handle_errors ++++ 1");
     using RetVal = decltype(func());
+    log_message("handle_errors ++++ 2");
     ex.type = RealmErrorType::NoError;
     try {
+        log_message("handle_errors ++++ 3");
         return func();
+        log_message("handle_errors ++++ 4");
     }
     catch (...) {
+        log_message("handle_errors ++++ 5");
         ex = convert_exception().for_marshalling();
+        log_message("handle_errors ++++ 6");
         return Default<RetVal>::default_value();
     }
 }

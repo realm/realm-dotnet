@@ -35,6 +35,8 @@
 #include <list>
 #include <unordered_set>
 #include <sstream>
+#include <iostream>
+using namespace std;
 
 using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 
@@ -297,9 +299,49 @@ REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& e
 
 REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
 {
+    /*if (ex == nullptr) {
+        log_message("ERROR+++IS NULL");
+    }
+    else {
+        log_message("ERROR+++IS NOT NULL");
+    }*/
+    //log_message(util::format("ERROR +++++000 %d", &ex));
+    log_message("ERROR +++++111");
+
+    try {
+        log_message("ERROR +++++222");
+        NativeException::Marshallable* foo = &ex;
+        log_message("ERROR ++++pointer");
+        log_message(util::format("%1", reinterpret_cast<uint64_t>(foo)));
+        log_message("ERROR +++++222EX");
+        RealmErrorType error = foo->type;
+        log_message("ERROR +++++222TYPE");
+        int int_error = (int)error;
+        log_message("ERROR +++++222INT");
+
+        //log_message(util::format("++++exception type: %d", int_error));
+        log_message("ERROR +++++333");
+    }
+    catch (std::exception exception1) {
+        log_message("ERROR +++++444");
+        log_message(exception1.what());
+        log_message("ERROR +++++5555");
+
+    }
+    catch (...) {
+
+        log_message("ERROR ++++ anything else");
+    }
+
+    log_message("ERROR +++++6666");
     return handle_errors(ex, [&]() {
+        log_message("ERROR +++++444");
         Utf16StringAccessor object_type(object_type_buf, object_type_len);
-        return ObjectStore::table_for_object_type(realm->read_group(), object_type)->get_key().value;
+        //realm::Group group = ;
+        realm::TableRef tableRef = ObjectStore::table_for_object_type(realm->read_group(), object_type);
+        TableKey tableKey = tableRef->get_key();
+        uint32_t tableKeyValue = tableKey.value;
+        return tableKeyValue;
     });
 }
 
