@@ -1,17 +1,32 @@
-﻿using System.Collections.Generic;
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License")
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System.Collections.Generic;
 using System.IO;
 using CommandLine;
 
 namespace SetupUnityPackage
 {
     [Verb("realm", HelpText = "Setup the Realm package")]
-    public class RealmOptions : OptionsBase
+    internal class RealmOptions : OptionsBase
     {
         [Option("packages-path", Required = true, HelpText = "Path to the folder containing Realm.nupkg, Realm.UnityUtils.nupkg, and Realm.UnityWeaver.nupkg to use.")]
         public string PackagesPath { get; set; }
-
-        [Option("include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
-        public bool IncludeDependencies { get; set; }
 
         [Option("pack", Default = false, Required = false, HelpText = "Specify whether to invoke npm version + npm pack to produce a .tgz")]
         public bool Pack { get; set; }
@@ -31,7 +46,7 @@ namespace SetupUnityPackage
 
         public override PackageInfo[] Files { get; } = new[]
         {
-            new PackageInfo("Realm", DependencyMode.IncludeIfRequested, new Dictionary<string, string>
+            new PackageInfo("Realm", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.dll", "Runtime/Realm.dll" },
                 { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/realm-wrappers.framework/realm-wrappers" },
@@ -47,30 +62,24 @@ namespace SetupUnityPackage
                 { "runtimes/win10-x64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86_64/realm-wrappers.dll" },
                 { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86/realm-wrappers.dll" },
             }),
-            new PackageInfo("Realm.UnityUtils", DependencyMode.NeverInclude, new Dictionary<string, string>
+            new PackageInfo("Realm.UnityUtils", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.UnityUtils.dll", "Runtime/Realm.UnityUtils.dll" },
-            }),
-            new PackageInfo("Realm.UnityWeaver", DependencyMode.NeverInclude, new Dictionary<string, string>
+            }, includeDependencies: false),
+            new PackageInfo("Realm.UnityWeaver", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.UnityWeaver.dll", "Editor/Realm.UnityWeaver.dll" },
-            }),
-            new PackageInfo("MongoDB.Bson", DependencyMode.IsDependency, new Dictionary<string, string>
-            {
-                { "lib/netstandard2.0/MongoDB.Bson.dll", "Runtime/Dependencies/MongoDB.Bson.dll" },
-            }),
-            new PackageInfo("Remotion.Linq", DependencyMode.IsDependency, new Dictionary<string, string>
-            {
-                { "lib/netstandard1.0/Remotion.Linq.dll", "Runtime/Dependencies/Remotion.Linq.dll" },
-            }),
-            new PackageInfo("System.Runtime.CompilerServices.Unsafe", DependencyMode.IsDependency, new Dictionary<string, string>
-            {
-                { "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll", "Runtime/Dependencies/System.Runtime.CompilerServices.Unsafe.dll" },
-            }),
-            new PackageInfo("System.Buffers", DependencyMode.IsDependency, new Dictionary<string, string>
-            {
-                { "lib/netstandard2.0/System.Buffers.dll", "Runtime/Dependencies/System.Buffers.dll" },
-            }),
+            }, includeDependencies: false),
+        };
+
+        public override string MainPackagePath => "Runtime/Realm.dll";
+
+        public override DependencyInfo[] Dependencies => new[]
+        {
+            new DependencyInfo("MongoDB.Bson", "lib/netstandard2.0/MongoDB.Bson.dll"),
+            new DependencyInfo("Remotion.Linq", "lib/netstandard1.0/Remotion.Linq.dll"),
+            new DependencyInfo("System.Runtime.CompilerServices.Unsafe", "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll"),
+            new DependencyInfo("System.Buffers", "lib/netstandard2.0/System.Buffers.dll"),
         };
     }
 }

@@ -168,9 +168,6 @@ stage('Package') {
       )
 
       dir('packages') {
-        stash includes: '*.nupkg', name: 'packages'
-        archiveArtifacts '*.nupkg'
-
         // extract the package version from the weaver package because it has the most definite name
         def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
         packageVersion = getVersion(packages[0].name);
@@ -190,26 +187,17 @@ stage('Package') {
         // }
       }
     }
-  }
-}
-
-stage('Unity Package') {
-  rlmNode('dotnet && windows') {
-    unstash 'dotnet-source'
-    dir('Realm/packages') {
-      unstash 'packages'
-      bat 'dir'
-    }
 
     bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
-      bat "del io.realm.unity-${packageVersion}.tgz"
     }
 
-    bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --include-dependencies --pack"
-    dir('Realm/Realm.Unity') {
-      archiveArtifacts "*.tgz"
+    dir('Realm/packages') {
+      bat "del Realm.UnityUtils.${packageVersion}.nupkg"
+      bat "del Realm.UnityWeaver.${packageVersion}.nupkg"
+      stash includes: '*.nupkg', name: 'packages'
+      archiveArtifacts '*.nupkg'
     }
   }
 }

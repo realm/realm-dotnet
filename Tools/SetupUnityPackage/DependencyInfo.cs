@@ -21,23 +21,20 @@ using System.IO;
 
 namespace SetupUnityPackage
 {
-    internal class PackageInfo : PackageInfoBase
+    internal class DependencyInfo : PackageInfoBase
     {
-        private readonly IDictionary<string, string> _paths;
+        private readonly string[] _files;
 
-        public bool IncludeDependencies { get; }
-
-        public PackageInfo(string id, IDictionary<string, string> paths, bool includeDependencies = true) : base(id)
+        public DependencyInfo(string id, params string[] files) : base(id)
         {
-            IncludeDependencies = includeDependencies;
-            _paths = paths;
+            _files = files;
         }
 
         public override IEnumerable<(string PackagePath, string OnDiskPath)> GetFilesToExtract(string basePath)
         {
-            foreach (var kvp in _paths)
+            foreach (var file in _files)
             {
-                yield return (kvp.Key, Path.Combine(basePath, kvp.Value));
+                yield return (file, Path.Combine(basePath, Path.GetFileName(file)));
             }
         }
     }
