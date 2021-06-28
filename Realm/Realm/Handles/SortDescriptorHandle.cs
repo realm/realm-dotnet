@@ -30,7 +30,7 @@ namespace Realms
             public static extern void destroy(IntPtr queryHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sort_descriptor_add_clause", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_clause(SortDescriptorHandle descriptor, TableKey table_key, SharedRealmHandle realm,
+            public static extern void add_clause(SortDescriptorHandle descriptor, UInt32 table_key, SharedRealmHandle realm,
                 [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_index_chain, IntPtr column_keys_count,
                 [MarshalAs(UnmanagedType.U1)] bool ascending, [MarshalAs(UnmanagedType.U1)] bool replacing,
                 out NativeException ex);
@@ -42,7 +42,7 @@ namespace Realms
 
         public void AddClause(SharedRealmHandle realm, TableKey tableKey, IntPtr[] propertyIndexChain, bool ascending, bool replacing)
         {
-            NativeMethods.add_clause(this, tableKey, realm, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
+            NativeMethods.add_clause(this, tableKey.Value, realm, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
