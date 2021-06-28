@@ -21,19 +21,23 @@ using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
-    [StructLayout(LayoutKind.Sequential)]
     internal struct ObjKey : IEquatable<ObjKey>
     {
-        private Int64 value;
+        public readonly Int64 Value;
 
-        public bool Equals(ObjKey other) => value.Equals(other.value);
+        public ObjKey(Int64 value)
+        {
+            Value = value;
+        }
+
+        public bool Equals(ObjKey other) => Value.Equals(other.Value);
 
         public override bool Equals(object obj) => obj is ObjKey other && Equals(other);
 
-        public override int GetHashCode() => value.GetHashCode();
+        public override int GetHashCode() => Value.GetHashCode();
 
-        public static bool operator ==(ObjKey left, ObjKey right) => left.value == right.value;
+        public static bool operator ==(ObjKey left, ObjKey right) => left.Value == right.Value;
 
-        public static bool operator !=(ObjKey left, ObjKey right) => left.value != right.value;
+        public static bool operator !=(ObjKey left, ObjKey right) => left.Value != right.Value;
     }
 }
