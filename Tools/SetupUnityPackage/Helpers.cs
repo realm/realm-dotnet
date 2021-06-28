@@ -49,7 +49,7 @@ namespace SetupUnityPackage
             foreach (var file in testFiles)
             {
                 var relativePath = Path.GetRelativePath(from, file);
-                if (shouldIncludeFile != null && !shouldIncludeFile(relativePath))
+                if (shouldIncludeFile?.Invoke(relativePath) == false)
                 {
                     continue;
                 }

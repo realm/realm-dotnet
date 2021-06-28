@@ -173,20 +173,29 @@ namespace SetupUnityPackage
                 }
             }
 
-            var assembliesToRepack = new List<string> { Path.Combine(opts.PackageBasePath, opts.MainPackagePath) };
-            assembliesToRepack.AddRange(Directory.EnumerateFiles(tempPath));
-
-            var repack = new ILRepack(new RepackOptions
+            if (opts.NoRepack)
             {
-                InputAssemblies = assembliesToRepack.ToArray(),
-                Internalize = true,
-                OutputFile = assembliesToRepack[0],
-                SearchDirectories = searchDirectories,
-                XmlDocumentation = false,
-                ExcludeInternalizeMatches = { new Regex("MongoDB\\.Bson") }
-            });
+                var targetFolder = Path.Combine(opts.PackageBasePath, Path.GetDirectoryName(opts.MainPackagePath), "Dependencies");
 
-            repack.Repack();
+                Helpers.CopyFiles(tempPath, targetFolder);
+            }
+            else
+            {
+                var assembliesToRepack = new List<string> { Path.Combine(opts.PackageBasePath, opts.MainPackagePath) };
+                assembliesToRepack.AddRange(Directory.EnumerateFiles(tempPath));
+
+                var repack = new ILRepack(new RepackOptions
+                {
+                    InputAssemblies = assembliesToRepack.ToArray(),
+                    Internalize = true,
+                    OutputFile = assembliesToRepack[0],
+                    SearchDirectories = searchDirectories,
+                    XmlDocumentation = false,
+                    ExcludeInternalizeMatches = { new Regex("MongoDB\\.Bson") }
+                });
+
+                repack.Repack();
+            }
 
             Directory.Delete(tempPath, recursive: true);
         }
