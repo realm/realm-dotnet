@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Square : MonoBehaviour
 {
+    [SerializeField] private Board board = default;
+
     private void OnMouseDown()
     {
-        Debug.Log("Square clicked.");
+        board.SquareClickedEvent.Invoke((int)transform.position.x, (int)transform.position.z);
     }
 }
