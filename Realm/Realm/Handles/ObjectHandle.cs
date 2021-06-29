@@ -138,7 +138,7 @@ namespace Realms
             return result;
         }
 
-        public Int32 GetObjHash()
+        public int GetObjHash()
         {
             var result = NativeMethods.get_hashcode(this, out var nativeException);
             nativeException.ThrowIfNecessary();
