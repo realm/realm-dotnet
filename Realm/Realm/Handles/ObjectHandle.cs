@@ -66,8 +66,8 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_obj_key", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Int64 get_obj_key(ObjectHandle handle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_hashcode", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int32 get_hashcode(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlinks(ObjectHandle objectHandle, IntPtr property_index, out NativeException nativeException);
@@ -138,9 +138,9 @@ namespace Realms
             return result;
         }
 
-        public ObjKey GetObjKey()
+        public ObjKey GetObjHash()
         {
-            var result = NativeMethods.get_obj_key(this, out var nativeException);
+            var result = NativeMethods.get_hashcode(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ObjKey(result);

@@ -241,11 +241,18 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT int64_t object_get_obj_key(const Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT int32_t object_get_hashcode(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            // ObjKey is incompatible with C, so we return just the value.
-            return object.obj().get_key().value;
+            auto table_key_value = object.obj().get_table()->get_key().value;
+            auto table_key_hash = std::hash<int>{}(table_key_value);
+            auto object_key_value = object.obj().get_key().value;
+            auto object_key_hash = std::hash<int>{}(object_key_value);
+
+            auto hashCode = -9999999769;
+            hashCode = (hashCode * -1234570003) + table_key_hash;
+            hashCode = (hashCode * -5164898681) + object_key_hash;
+            return hashCode;
         });
     }
 
