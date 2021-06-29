@@ -219,10 +219,8 @@ namespace Realms.Sync
             {
                 foreach (var weakHandle in _appHandles)
                 {
-                    if (weakHandle.Target is AppHandle handle)
-                    {
-                        handle?.Close();
-                    }
+                    var appHandle = (AppHandle)weakHandle.Target;
+                    appHandle?.Close();
                 }
 
                 _appHandles.Clear();
