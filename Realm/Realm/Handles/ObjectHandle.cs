@@ -138,12 +138,12 @@ namespace Realms
             return result;
         }
 
-        public ObjKey GetObjHash()
+        public Int32 GetObjHash()
         {
             var result = NativeMethods.get_hashcode(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ObjKey(result);
+            return result;
         }
 
         public override bool IsFrozen
