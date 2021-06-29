@@ -36,6 +36,7 @@ namespace Realms
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void NotifyRealmCallback(IntPtr stateHandle);
@@ -180,6 +181,7 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
 
+#pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE1006 // Naming Styles
         }
 

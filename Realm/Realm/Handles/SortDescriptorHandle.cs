@@ -26,6 +26,8 @@ namespace Realms
     {
         private static class NativeMethods
         {
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sort_descriptor_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr queryHandle);
 
@@ -34,6 +36,8 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_index_chain, IntPtr column_keys_count,
                 [MarshalAs(UnmanagedType.U1)] bool ascending, [MarshalAs(UnmanagedType.U1)] bool replacing,
                 out NativeException ex);
+
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         public SortDescriptorHandle(RealmHandle root, IntPtr handle) : base(root, handle)
