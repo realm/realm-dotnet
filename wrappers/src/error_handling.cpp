@@ -149,6 +149,9 @@ namespace realm {
 
             return { RealmErrorType::AppUnknownError, e.message };
         }
+        catch (const DeleteOnOpenRealmException& e) {
+            return { RealmErrorType::RealmInUseException, e.what() };
+        }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };
         }

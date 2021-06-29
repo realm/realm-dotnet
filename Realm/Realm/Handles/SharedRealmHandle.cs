@@ -94,6 +94,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern void close_realm(SharedRealmHandle sharedRealm, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_delete_files", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            public static extern void delete_files([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_all_realms", CallingConvention = CallingConvention.Cdecl)]
             public static extern void close_all_realms(out NativeException ex);
 
@@ -260,6 +263,12 @@ namespace Realms
         public void CloseRealm()
         {
             NativeMethods.close_realm(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public static void DeleteFiles(string path)
+        {
+            NativeMethods.delete_files(path, (IntPtr)path.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

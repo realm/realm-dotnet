@@ -145,6 +145,9 @@ namespace Realms.Exceptions
 
                     return new SessionException(message, code);
 
+                case RealmExceptionCodes.RealmInUseException:
+                    return new RealmInUseException(message);
+
                 default:
                     return new Exception(message);
             }
