@@ -223,3 +223,5 @@ Realm/Realm.Unity/CHANGELOG.md
 Realm/Realm.Unity/LICENSE.md
 !Tests/Tests.Unity/Packages/**
 Tests/Tests.Unity/Player_*
+Tests/Tests.Unity/*.csproj
+Tests/Tests.Unity/*.sln
