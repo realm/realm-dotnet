@@ -272,7 +272,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public static void CloseAllRealms()
+        public static void ForceCloseNativeRealms()
         {
             NativeMethods.close_all_realms(out var nativeException);
             nativeException.ThrowIfNecessary();
