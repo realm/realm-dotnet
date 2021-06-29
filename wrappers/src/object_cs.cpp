@@ -247,7 +247,7 @@ extern "C" {
             auto table_key_value = object.obj().get_table()->get_key().value;
             auto object_key_value = object.obj().get_key().value;
 
-            auto hashCode = -9999999769;
+            int32_t hashCode = -9999999769;
             hashCode = (hashCode * -1234570003) + table_key_value;
             hashCode = (hashCode * -5164898681) + object_key_value;
             return hashCode;
