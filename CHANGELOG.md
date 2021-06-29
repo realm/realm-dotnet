@@ -15,6 +15,7 @@
 
 ### Internal
 * Using Core 11.0.3.
+* GetHashCode() on objects now uses the table key in addition to the object key. (Issue [#2473](https://github.com/realm/realm-dotnet/issues/2473))
 
 ## 10.2.0 (2021-06-15)
 
