@@ -228,8 +228,12 @@ extern "C" {
     REALM_EXPORT SharedApp* realm_syncuser_get_app(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            if (auto shared_app = user->sync_manager()->app().lock()) {
-                return new SharedApp(shared_app);
+            // If the user is detached from the sync manager, we'll hit an assert, so this early check avoids that. 
+            if (user->state() != SyncUser::State::Removed)
+            {
+                if (auto shared_app = user->sync_manager()->app().lock()) {
+                    return new SharedApp(shared_app);
+                }
             }
 
             return (SharedApp*)nullptr;
