@@ -69,7 +69,6 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
         var platform = "";
         for (var i = 0; i < commandLineArgs.Length; i++)
         {
-            Debug.Log($"CMD: {i} - {commandLineArgs[i]}");
             if (commandLineArgs[i] == "-testSettingsFile" && (i + 1) < commandLineArgs.Length)
             {
                 settings = Path.GetFileNameWithoutExtension(commandLineArgs[i + 1].Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar));
