@@ -23,7 +23,7 @@ namespace SetupUnityPackage
 {
     internal abstract class OptionsBase
     {
-        [Option("no-ilrepack", Default = true, Required = false, HelpText = "Specify whether to skip bundling dependencies into the main package. This should not be used for release builds")]
+        [Option("no-ilrepack", Default = false, Required = false, HelpText = "Specify whether to skip bundling dependencies into the main package. This should not be used for release builds")]
         public bool NoRepack { get; set; }
 
         public abstract PackageInfo[] Files { get; }
