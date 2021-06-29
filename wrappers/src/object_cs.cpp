@@ -245,13 +245,11 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             auto table_key_value = object.obj().get_table()->get_key().value;
-            auto table_key_hash = std::hash<int>{}(table_key_value);
             auto object_key_value = object.obj().get_key().value;
-            auto object_key_hash = std::hash<int>{}(object_key_value);
 
             auto hashCode = -9999999769;
-            hashCode = (hashCode * -1234570003) + table_key_hash;
-            hashCode = (hashCode * -5164898681) + object_key_hash;
+            hashCode = (hashCode * -1234570003) + table_key_value;
+            hashCode = (hashCode * -5164898681) + object_key_value;
             return hashCode;
         });
     }
