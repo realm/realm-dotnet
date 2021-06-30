@@ -244,8 +244,8 @@ extern "C" {
     REALM_EXPORT int32_t object_get_hashcode(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            int32_t table_key_value = object.obj().get_table()->get_key().value;
-            int32_t object_key_value = object.obj().get_key().value;
+            int32_t table_key_value = static_cast<int32_t>(object.obj().get_table()->get_key().value);
+            int32_t object_key_value = static_cast<int32_t>(object.obj().get_key().value);
 
             int32_t hashCode = -986587137;
             hashCode = (hashCode * -1521134295) + table_key_value;
