@@ -4,9 +4,6 @@ SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 REALM_CMAKE_CONFIGURATION=Debug
 EXTRA_CMAKE_ARGS="-T buildsystem=1"
-export REALM_CMAKE_SUBPLATFORM=iOS
-export REALM_CMAKE_EXTRA_BUILD_ARGS="-destination 'generic/platform=iOS Simulator' -destination 'generic/platform=iOS'"
-export REALM_CMAKE_INSTALL_TARGET="realm-wrappers"
 
 for i in "$@"
 do
@@ -21,7 +18,7 @@ case $i in
 esac
 done
 
-CMAKE_BINARY_DIR="$SCRIPT_DIRECTORY/cmake/$REALM_CMAKE_SUBPLATFORM"
+CMAKE_BINARY_DIR="$SCRIPT_DIRECTORY/cmake/iOS"
 CMAKE_INSTALL_PREFIX="$SCRIPT_DIRECTORY/build"
 
 mkdir -p "$CMAKE_BINARY_DIR"
