@@ -98,8 +98,8 @@ namespace Realms.Tests.Sync
 
             var realm = GetRealm();
 
-            Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
-            var syncConfig = (SyncConfiguration)realm.Config;
+            Assert.That(realm.Config, Is.TypeOf<PartitionSyncConfiguration>());
+            var syncConfig = (PartitionSyncConfiguration)realm.Config;
             Assert.That(syncConfig.User.Id, Is.EqualTo(config.User.Id));
             Assert.That(syncConfig.Partition, Is.EqualTo(config.Partition));
         }

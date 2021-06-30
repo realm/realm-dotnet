@@ -119,7 +119,7 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
@@ -128,7 +128,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
@@ -136,7 +136,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
 
@@ -144,7 +144,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.UUIDPartitionKey));
 
@@ -152,7 +152,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
         }
 
-        private static SyncConfiguration UpdateConfig(SyncConfiguration config)
+        private static PartitionSyncConfiguration UpdateConfig(PartitionSyncConfiguration config)
         {
             config.ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
@@ -160,7 +160,7 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));

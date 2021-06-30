@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -90,7 +89,8 @@ namespace Realms
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration is <see cref="SyncConfiguration"/>, the realm will be downloaded and fully
+        /// If the configuration is <see cref="PartitionSyncConfiguration"/> or <see cref="FlexibleSyncConfiguration"/>,
+        /// the realm will be downloaded and fully
         /// synchronized with the server prior to the completion of the returned Task object.
         /// Otherwise this method will perform any migrations on a background thread before returning an
         /// opened instance to the calling thread.
@@ -158,7 +158,7 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase config = null)
         {
             using var realm = GetInstance(config);
-            if (config is SyncConfiguration)
+            if (config is SyncConfigurationBase)
             {
                 var session = realm.GetSession();
                 session.Handle.ShutdownAndWait();

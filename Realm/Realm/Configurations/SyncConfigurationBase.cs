@@ -17,25 +17,23 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
+    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
-    public class SyncConfiguration : RealmConfigurationBase
+    public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
         /// <summary>
-        /// Gets the <see cref="User"/> used to create this <see cref="SyncConfiguration"/>.
+        /// Gets the <see cref="User"/> used to create this <see cref="PartitionSyncConfiguration"/>.
         /// </summary>
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
@@ -49,93 +47,14 @@ namespace Realms.Sync
         /// <value>A callback that will be periodically invoked as the Realm is downloaded.</value>
         public Action<SyncProgress> OnProgress { get; set; }
 
-        /// <summary>
-        /// Gets the partition identifying the Realm this configuration is describing.
-        /// </summary>
-        /// <value>The partition value for the Realm.</value>
-        public object Partition { get; }
-
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
-        /// </summary>
-        /// <param name="partition">
-        /// The partition identifying the remote Realm that will be synchronized.
-        /// </param>
-        /// <param name="user">
-        /// A valid <see cref="User"/>.
-        /// </param>
-        /// <param name="optionalPath">
-        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
-        /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public SyncConfiguration(string partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
-        /// </summary>
-        /// <param name="partition">
-        /// The partition identifying the remote Realm that will be synchronized.
-        /// </param>
-        /// <param name="user">
-        /// A valid <see cref="User"/>.
-        /// </param>
-        /// <param name="optionalPath">
-        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
-        /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public SyncConfiguration(long? partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
-        /// </summary>
-        /// <param name="partition">
-        /// The partition identifying the remote Realm that will be synchronized.
-        /// </param>
-        /// <param name="user">
-        /// A valid <see cref="User"/>.
-        /// </param>
-        /// <param name="optionalPath">
-        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
-        /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
-        /// </summary>
-        /// <param name="partition">
-        /// The partition identifying the remote Realm that will be synchronized.
-        /// </param>
-        /// <param name="user">
-        /// A valid <see cref="User"/>.
-        /// </param>
-        /// <param name="optionalPath">
-        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
-        /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public SyncConfiguration(Guid? partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
-        {
-        }
-
-        private SyncConfiguration(object partition, User user, string path)
+        internal SyncConfigurationBase(User user, string path, string realmIdentifier)
         {
             Argument.NotNull(user, nameof(user));
 
             User = user;
-            Partition = partition;
-            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, partition.ToNativeJson()));
+            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, realmIdentifier));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -208,12 +127,11 @@ namespace Realms.Sync
             }
         }
 
-        internal Native.SyncConfiguration CreateNativeSyncConfiguration()
+        internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
-                Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
             };
