@@ -210,7 +210,7 @@ stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
     'Xamarin iOS': {
-      rlmNode('xamarin.ios') {
+      rlmNode('atlanta_dotnet.realm.io') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
