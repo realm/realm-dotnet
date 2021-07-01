@@ -35,6 +35,8 @@ function build() {
 
   xcodebuild -scheme realm-wrappers -configuration $REALM_CMAKE_CONFIGURATION -destination "generic/platform=iOS Simulator" -destination generic/platform=iOS
 
+  rm -rf "$SCRIPT_DIRECTORY/build/iOS/$REALM_CMAKE_CONFIGURATION/realm-wrappers.xcframework"
+
   xcodebuild -create-xcframework \
     -framework "$SCRIPT_DIRECTORY/cmake/iOS/src/$REALM_CMAKE_CONFIGURATION-iphoneos/realm-wrappers.framework" \
     -framework "$SCRIPT_DIRECTORY/cmake/iOS/src/$REALM_CMAKE_CONFIGURATION-iphonesimulator/realm-wrappers.framework" \
