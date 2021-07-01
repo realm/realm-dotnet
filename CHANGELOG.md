@@ -1,13 +1,17 @@
 ## vNext (TBD)
 
+**Note**: This release uses xcframework and enables bitcode for the iOS native libraries. This significantly increases the package size and may appear to increase the .ipa size when compiling for iOS. However, the bitcode portion, as well as the unnecessary architectures, will be trimmed by the App Store, so the size of the actual download sent to users will be unchanged or smaller than before.
+
 ### Fixed
 * None
 
 ### Enhancements
-* None
+* Changed the native iOS library to use xcframework. This means that running in the simulator on M1 macs is now supported. (Issue [#2240](https://github.com/realm/realm-dotnet/issues/2240))
+* Added bitcode to the native iOS library. This has no effect on Xamarin.iOS, but allows Unity applications to take advantage of optimizations performed by the App Store servers and eventually support new architectures as they are released. (Issue [#2240](https://github.com/realm/realm-dotnet/issues/2240))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
+* This release uses xcframework for the iOS native libraries, which requires Xamarin.iOS 14.14.2.5 or later.
 
 ### Internal
 * Using Core 11.0.3.

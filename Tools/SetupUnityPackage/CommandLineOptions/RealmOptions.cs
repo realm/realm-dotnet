@@ -49,8 +49,12 @@ namespace SetupUnityPackage
             new PackageInfo("Realm", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.dll", "Runtime/Realm.dll" },
-                { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/realm-wrappers.framework/realm-wrappers" },
-                { "native/ios/universal/realm-wrappers.framework/Info.plist", "Runtime/iOS/realm-wrappers.framework/Info.plist" },
+                { "native/ios/universal/realm-wrappers.xcframework/Info.plist", "Runtime/iOS/realm-wrappers.xcframework/Info.plist" },
+                { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_armv7/realm-wrappers.framework/Info.plist", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_armv7/realm-wrappers.framework/Info.plist" },
+                { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_armv7/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_armv7/realm-wrappers.framework/realm-wrappers" },
+                { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/Info.plist", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/Info.plist" },
+                { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/realm-wrappers" },
+                { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/_CodeSignature/CodeResources", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/_CodeSignature/CodeResources" },
                 { "runtimes/osx-x64/native/librealm-wrappers.dylib", "Runtime/macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Runtime/Linux/librealm-wrappers.so" },
                 { "native/android/armeabi-v7a/librealm-wrappers.so", "Runtime/Android/armeabi-v7a/librealm-wrappers.so" },

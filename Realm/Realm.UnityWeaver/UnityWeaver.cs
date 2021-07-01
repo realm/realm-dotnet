@@ -32,7 +32,7 @@ using UnityEngine;
 namespace RealmWeaver
 {
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
-    public class UnityWeaver : IPostBuildPlayerScriptDLLs
+    public class UnityWeaver : IPostBuildPlayerScriptDLLs, IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private const string EnableAnalyticsPref = "realm_enable_analytics";
         private const string EnableAnalyticsMenuItemPath = "Realm/Enable build-time analytics";
@@ -277,6 +277,49 @@ namespace RealmWeaver
                     }
                 }
             }
+        }
+
+        public void OnPostprocessBuild(BuildReport report)
+        {
+            if (report == null || report.summary.platform != BuildTarget.iOS)
+            {
+                return;
+            }
+
+            UpdateiOSFrameworks(
+                enableForDevice: false,
+                enableForSimulator: false);
+        }
+
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            if (report == null || report.summary.platform != BuildTarget.iOS)
+            {
+                return;
+            }
+
+            UpdateiOSFrameworks(
+                enableForDevice: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK,
+                enableForSimulator: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK);
+        }
+
+        /// <summary>
+        /// Updates the native module import config for the wrappers framework. Unity doesn't support
+        /// xcframework, which means that it won't correctly include it when building for iOS. This is
+        /// a somewhat hacky solution that will manually update the compatibilify flag and the AddToEmbeddedBinaries
+        /// flag just for the slice that is compatible with the current build target (simulator or device).
+        /// </summary>
+        private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator)
+        {
+            var simulatorPath = "Packages/io.realm.unity/Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework";
+            var simulatorFrameworkImporter = (PluginImporter)PluginImporter.GetAtPath(simulatorPath);
+            simulatorFrameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enableForSimulator);
+            simulatorFrameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enableForSimulator.ToString().ToLower());
+
+            var devicePath = "Packages/io.realm.unity/Runtime/iOS/realm-wrappers.xcframework/ios-arm64_armv7/realm-wrappers.framework";
+            var deviceFrameworkImporter = (PluginImporter)PluginImporter.GetAtPath(devicePath);
+            deviceFrameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enableForDevice);
+            deviceFrameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enableForDevice.ToString().ToLower());
         }
 
         private static Assembly[] GetAssemblies()

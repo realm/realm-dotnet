@@ -188,6 +188,11 @@ stage('Package') {
       }
     }
 
+    dir('Realm/packages') {
+      archiveArtifacts "Realm.${packageVersion}.nupkg"
+      archiveArtifacts "Realm.Fody.${packageVersion}.nupkg"
+    }
+
     bat "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
     dir('Realm/Realm.Unity') {
       archiveArtifacts "io.realm.unity-${packageVersion}.tgz"
@@ -197,7 +202,6 @@ stage('Package') {
       bat "del Realm.UnityUtils.${packageVersion}.nupkg"
       bat "del Realm.UnityWeaver.${packageVersion}.nupkg"
       stash includes: '*.nupkg', name: 'packages'
-      archiveArtifacts '*.nupkg'
     }
   }
 }
@@ -206,7 +210,7 @@ stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
     'Xamarin iOS': {
-      rlmNode('xamarin.ios') {
+      rlmNode('atlanta_dotnet.realm.io') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 

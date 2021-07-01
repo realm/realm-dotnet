@@ -53,7 +53,6 @@ if(APPLE)
   if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
     set(BUILD_APPLE_FRAMEWORK TRUE)
-    set(CMAKE_XCODE_ATTRIBUTE_VALID_ARCHS[sdk=iphonesimulator*] "i386 x86_64") # Do not build Apple Silicon slices yet
   endif()
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(/DWIN32_LEAN_AND_MEAN)
