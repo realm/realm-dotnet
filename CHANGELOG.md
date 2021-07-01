@@ -1,3 +1,17 @@
+## vNext (TBD)
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.0.3.
+
 ## 10.2.1 (2021-06-30)
 
 This release changes the way Unity binaries are packaged and obviates the need to have an extra Unity package that contains the dependencies as standalone modules. If you were using the `io.realm.unity-bundled` package, please remove it and add the newly released `io.realm.unity` one.
