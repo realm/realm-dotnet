@@ -11,6 +11,7 @@
 * Fixed a crash after clearing a list or set of Mixed containing links to objects. (Core upgrade)
 * Fixed a recursive loop which would eventually crash trying to refresh a user app token when it had been revoked by an admin. Now this situation logs the user out and reports an error. (Core upgrade)
 * Fixed a race between calling `Realm.DeleteRealm` and concurrent opening of the realm file. (Core upgrade)
+* \[Unity\] Added code to preserve the constructors of several base serializers to ensure that most of the basic serialization/deserialization workloads work out of the box. (PR [#2489](https://github.com/realm/realm-dotnet/pull/2489))
 
 ### Enhancements
 * Changed the native iOS library to use xcframework. This means that running in the simulator on M1 macs is now supported. (Issue [#2240](https://github.com/realm/realm-dotnet/issues/2240))
