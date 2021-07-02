@@ -1,22 +1,58 @@
 name: release
-"on":
-  release:
-    types:
-    - created
+on:
+  workflow_dispatch
+
 jobs:
   publish-to-nuget:
-    runs-on: ubuntu-latest
-    name: Upload nupkg to nuget
+    runs-on: windows-latest
+    name: Publish nupkg to nuget
     steps:
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Download all artifacts
+      uses: dawidd6/action-download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        workflow: main.yml
+        branch: master
+        event: push
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+    - name: Extract release notes
+      run: |
+        $changelogContent = Get-Content -Raw -Path "./CHANGELOG.md"
+        $output_file = "./RELEASE_NOTES.md"
+        $regex = "(?sm)^(## \d{1,2}\.\d{1,2}\.\d{1,2} \(\d{4}-\d{2}-\d{2}\))(.+?)(\n## \d{1,2}\.\d{1,2}\.\d{1,2} \(\d{4}-\d{2}-\d{2}\))"
+        $changelogContent -match $regex
+        Set-Content -Path $output_file -Value $Matches[2]
+        echo "RELEASE_NOTES=$output_file" | Out-File $env:GITHUB_ENV -Encoding utf8
+    - name: Extract release name
+      run: |
+        $nupkgName = ls Realm/packages/ | select -expandproperty Name | Select-String Fody
+        $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}"
+        $version = $Matches[0]
+        echo "RELEASE_VERSION=$version" | Out-File $env:GITHUB_ENV -Encoding utf8
+    - name: Upload to nuget
+      run: |
+        dotnet nuget push "Realm/packages/Realm.Fody.${{ env.RELEASE_VERSION }}.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        dotnet nuget push "Realm/packages/Realm.${{ env.RELEASE_VERSION }}.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - name: Create Github Release
+      uses: ncipollo/release-action@v1
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Upload nupkg
-      run: dotnet nuget push "${{ github.workspace }}/Realm/packages/*.nupkg" --skip-duplicate --api-key ${{ secrets.Nuget_Api_Key }} --source https://api.nuget.org/v3/index.json
+        artifacts: Realm/packages/io.realm.unity-${{ env.RELEASE_VERSION }}.tgz
+        bodyFile: ${{ env.RELEASE_NOTES }}
+        name: ${{ env.RELEASE_VERSION }}
+        commit: master
+        tag: ${{ env.RELEASE_VERSION }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
+    - name: Build docs
+      run: |
+        choco install docfx -yes
+        docfx Docs/docfx.json
+        
+        py -m pip install s3cmd
+        $versions = $env:RELEASE_VERSION, "latest"
+        Foreach ($ver in $versions)
+        {
+          s3cmd put --recursive --acl-public --access_key=${secrets.AWS_ACCESS_KEY} --secret_key=${secrets.AWS_SECRET_KEY} "${{ github.workspace }}/Docs/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
+        }
+    
