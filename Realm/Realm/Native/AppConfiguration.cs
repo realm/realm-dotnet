@@ -109,5 +109,8 @@ namespace Realms.Sync.Native
         internal LogLevel log_level;
 
         internal IntPtr managed_logger;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool enable_flexible_sync;
     }
 }

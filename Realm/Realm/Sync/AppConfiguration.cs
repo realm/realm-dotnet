@@ -134,6 +134,8 @@ namespace Realms.Sync
         /// <value>The default HTTP request timeout.</value>
         public TimeSpan? DefaultRequestTimeout { get; set; }
 
+        public bool EnableFlexibleSync { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.
         /// </summary>

@@ -112,7 +112,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         config.sync_config->partition_value = partition;
     }
     else if (sync_configuration.query != nullptr) {
-        // TODO: set query on config
+        std::string query(Utf16StringAccessor(sync_configuration.query, sync_configuration.query_len));
+        config.sync_config->query_value = query;
     }
     else {
         REALM_ASSERT("Either query or partition must be set.");

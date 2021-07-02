@@ -161,6 +161,7 @@ namespace Realms.Sync
                 default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
 #pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
                 log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
+                enable_flexible_sync = config.EnableFlexibleSync,
             };
 
             if (config.CustomLogger != null)

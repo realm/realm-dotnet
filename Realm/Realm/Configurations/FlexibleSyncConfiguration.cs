@@ -59,10 +59,12 @@ namespace Realms.Sync
             _queries[typeof(T).GetMappedOrOriginalName()] = filter?.ToString();
         }
 
+        public string MQLQuery { get; set; }
+
         internal override Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
             var config = base.CreateNativeSyncConfiguration();
-            config.Query = "TODO";
+            config.Query = MQLQuery;
             return config;
         }
     }
