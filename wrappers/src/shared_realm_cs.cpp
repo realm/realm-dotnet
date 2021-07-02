@@ -104,9 +104,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
 
-
-    config.sync_config = std::make_shared<SyncConfig>();
-    config.sync_config->user = *sync_configuration.user;
+    std::string part = "";
+    config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, part);
     if (sync_configuration.partition != nullptr) {
         std::string partition(Utf16StringAccessor(sync_configuration.partition, sync_configuration.partition_len));
         config.sync_config->partition_value = partition;
