@@ -7,6 +7,8 @@ jobs:
     runs-on: windows-latest
     name: Publish nupkg to nuget
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Download all artifacts
       uses: dawidd6/action-download-artifact@v2
       with:
