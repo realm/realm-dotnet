@@ -292,16 +292,16 @@ jobs:
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
         run: |
           $suffix = ""
-          if ($env:github.EVENT_NAME -eq "pull_request")
+          if ($env:GITHUB_EVENT_NAME -eq "pull_request")
           {
-            if (-Not $env:github.GITHUB_HEAD_REF.Contains("release"))
+            if (-Not $env:GITHUB_REF.Contains("release"))
             {
-              $suffix = "PR-$env:github.event.NUMBER.$env:github.RUN_NUMBER"
+              $suffix = "PR-$env:GITHUB_EVENT_NUMBER.$env:GITHUB_RUN_NUMBER"
             }
           }
           else
           {
-            $suffix = "alpha.$env:github.RUN_NUMBER"
+            $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
           }
           echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
