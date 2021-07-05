@@ -14,7 +14,6 @@ jobs:
       with:
         workflow: main.yml
         branch: ${{ github.ref }}
-        event: push
         path: ${{ github.workspace }}/Realm/packages/
     - name: Extract release notes
       run: |
@@ -26,30 +25,30 @@ jobs:
         echo "RELEASE_NOTES=$output_file" | Out-File $env:GITHUB_ENV -Encoding utf8
     - name: Extract release name
       run: |
-        $nupkgName = ls Realm/packages/ | select -expandproperty Name | Select-String Fody
+        $nupkgName = ls Realm/packages/Realm.Fody.$env:RELEASE_VERSION | select -expandproperty Name | Select-String Fody
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}"
         $version = $Matches[0]
         echo "RELEASE_VERSION=$version" | Out-File $env:GITHUB_ENV -Encoding utf8
     - name: Upload to nuget
       run: |
-        dotnet nuget push "Realm/packages/Realm.Fody.${{ env.RELEASE_VERSION }}.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-        dotnet nuget push "Realm/packages/Realm.${{ env.RELEASE_VERSION }}.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        dotnet nuget push "Realm/packages/Realm.Fody.$env:RELEASE_VERSION/Realm.Fody.$env:RELEASE_VERSION.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        dotnet nuget push "Realm/packages/Realm.$env:RELEASE_VERSION/Realm.$env:RELEASE_VERSION.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: Create Github Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: Realm/packages/io.realm.unity-${{ env.RELEASE_VERSION }}.tgz
+        artifacts: Realm/packages/io.realm.unity-$env:RELEASE_VERSION/io.realm.unity-$env:RELEASE_VERSION.tgz
         bodyFile: ${{ env.RELEASE_NOTES }}
         name: ${{ env.RELEASE_VERSION }}
-        commit: master
+        commit: ${{ github.ref }}
         tag: ${{ env.RELEASE_VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: true
     - name: Upload docs
       run: |
-        Expand-Archive -Path Realm/packages/Docs.zip -DestinationPath Realm/packages
+        Expand-Archive -Path Realm/packages/Docs/Docs.zip -DestinationPath Realm/packages
         py -m pip install s3cmd
         $versions = $env:RELEASE_VERSION, "latest"
         Foreach ($ver in $versions)
         {
-          s3cmd put --recursive --acl-public --access_key=${secrets.DOCS_S3_ACCESS_KEY} --secret_key=${secrets.DOCS_S3_SECRET_KEY} "${{ github.workspace }}/Realm/packages/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
+          s3cmd put --recursive --acl-public --access_key=${{ secrets.DOCS_S3_ACCESS_KEY }} --secret_key=${{ secrets.DOCS_S3_SECRET_KEY }} "${{ github.workspace }}/Realm/packages/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
         }
