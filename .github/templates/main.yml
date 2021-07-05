@@ -296,7 +296,7 @@ jobs:
           {
             if (-Not $env:GITHUB_REF.Contains("release"))
             {
-              $suffix = "PR-$env:GITHUB_EVENT_NUMBER.$env:GITHUB_RUN_NUMBER"
+              $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
             }
           }
           else
@@ -417,7 +417,7 @@ jobs:
         {
             New-Item -ItemType directory -Path $resultPath
         }
-        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+        Compress-Archive -Path Docs/_site -DestinationPath "$resultPath/Docs.zip"
     - name: Store docs artifacts
       uses: actions/upload-artifact@v2
       with:

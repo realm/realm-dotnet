@@ -249,7 +249,7 @@ jobs:
         {
           if (-Not $env:GITHUB_REF.Contains("release"))
           {
-            $suffix = "PR-$env:GITHUB_EVENT_NUMBER.$env:GITHUB_RUN_NUMBER"
+            $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
           }
         }
         else
@@ -653,7 +653,7 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
   generate-docs:
-    if: ${{ contains(github.ref, 'release') }}
+    if: ${{ !contains(github.ref, 'release') }}
     runs-on: windows-latest
     name: Generate docs
     steps:
@@ -674,7 +674,7 @@ jobs:
         {
             New-Item -ItemType directory -Path $resultPath
         }
-        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+        Compress-Archive -Path Docs/_site -DestinationPath "$resultPath/Docs.zip"
     - name: Store docs artifacts
       uses: actions/upload-artifact@v2
       with:
