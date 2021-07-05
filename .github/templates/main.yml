@@ -412,6 +412,11 @@ jobs:
       run: |
         choco install docfx -yes
         docfx Docs/docfx.json
+        $resultPath = "Realm/packages/"
+        if(-not(Test-Path -path $resultPath))
+        {
+            New-Item -ItemType directory -Path $resultPath
+        }
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store docs artifacts
       uses: actions/upload-artifact@v2
