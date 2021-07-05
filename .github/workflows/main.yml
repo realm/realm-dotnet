@@ -653,7 +653,7 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
   generate-docs:
-    if: ${{ !contains(github.ref, 'release') }}
+    if: ${{ contains(github.ref, 'release') }}
     runs-on: windows-latest
     name: Generate docs
     steps:
