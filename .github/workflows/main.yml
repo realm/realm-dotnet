@@ -660,8 +660,9 @@ jobs:
     - name: Build docs
       run: |
         choco install docfx -yes
-        docfx ${{ github.workspace }}/Docs/docfx.json
-        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+        cd Docs/
+        docfx docfx.json
+        Compress-Archive -Path _site -DestinationPath "../Realm/packages/Docs.zip"
     - name: Store docs artifacts
       uses: actions/upload-artifact@v2
       with:
