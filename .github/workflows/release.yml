@@ -53,6 +53,6 @@ jobs:
         $versions = $env:RELEASE_VERSION, "latest"
         Foreach ($ver in $versions)
         {
-          s3cmd put --recursive --acl-public --access_key=${secrets.AWS_ACCESS_KEY} --secret_key=${secrets.AWS_SECRET_KEY} "${{ github.workspace }}/Docs/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
+          s3cmd put --recursive --acl-public --access_key=${secrets.DOCS_S3_ACCESS_KEY} --secret_key=${secrets.DOCS_S3_SECRET_KEY} "${{ github.workspace }}/Docs/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
         }
     
