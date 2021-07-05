@@ -403,9 +403,9 @@ jobs:
       - #@ template.replace(deleteWrapperBinaries())
       - #@ template.replace(deleteTempPackageArtifacts())
   generate-docs:
+    if: ${{ contains(github.ref, 'release') }}
     runs-on: windows-latest
     name: Generate docs
-    if: ${{ contains(github.ref, "release") }}
     steps:
     - name: Build docs
       run: |
