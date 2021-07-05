@@ -653,16 +653,23 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
   generate-docs:
-    if: ${{ !contains(github.ref, 'release') }}
+    if: ${{ contains(github.ref, 'release') }}
     runs-on: windows-latest
     name: Generate docs
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Build docs
       run: |
         choco install docfx -yes
-        cd Docs/
-        docfx docfx.json
-        Compress-Archive -Path _site -DestinationPath "../Realm/packages/Docs.zip"
+        docfx Docs/docfx.json
+        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store docs artifacts
       uses: actions/upload-artifact@v2
       with:
