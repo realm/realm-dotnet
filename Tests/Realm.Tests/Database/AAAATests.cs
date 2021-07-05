@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -24,10 +27,23 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AAAATests : RealmInstanceTest
     {
+        private static string GetDebugView(Expression exp)
+        {
+            if (exp == null)
+            {
+                return null;
+            }
+
+            var propertyInfo = typeof(Expression).GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic);
+            return propertyInfo.GetValue(exp) as string;
+        }
+
         [Test]
         public void SimpleTest()
         {
             var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("abc") && p.IsInteresting);
+            var debugView = GetDebugView(query.Expression);
+            Console.WriteLine(debugView);
             _ = query.ToArray();
         }
 
