@@ -402,3 +402,19 @@ jobs:
     steps:
       - #@ template.replace(deleteWrapperBinaries())
       - #@ template.replace(deleteTempPackageArtifacts())
+  generate-docs:
+    runs-on: windows-latest
+    name: Generate docs
+    if: ${{ contains(github.ref, "release") }}
+    steps:
+    - name: Build docs
+      run: |
+        choco install docfx -yes
+        docfx Docs/docfx.json
+        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+    - name: Store docs artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Docs.zip
+        path: ${{ github.workspace }}/Realm/packages/Docs.zip
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}

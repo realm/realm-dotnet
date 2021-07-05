@@ -7,13 +7,11 @@ jobs:
     runs-on: windows-latest
     name: Publish nupkg to nuget
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
     - name: Download all artifacts
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: master
+        branch: ${{ github.ref }}
         event: push
         path: ${{ github.workspace }}/Realm/packages/
     - name: Extract release notes
@@ -44,15 +42,12 @@ jobs:
         tag: ${{ env.RELEASE_VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: true
-    - name: Build docs
+    - name: Upload docs
       run: |
-        choco install docfx -yes
-        docfx Docs/docfx.json
-        
+        Expand-Archive -Path Realm/packages/Docs.zip -DestinationPath Realm/packages
         py -m pip install s3cmd
         $versions = $env:RELEASE_VERSION, "latest"
         Foreach ($ver in $versions)
         {
-          s3cmd put --recursive --acl-public --access_key=${secrets.DOCS_S3_ACCESS_KEY} --secret_key=${secrets.DOCS_S3_SECRET_KEY} "${{ github.workspace }}/Docs/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
+          s3cmd put --recursive --acl-public --access_key=${secrets.DOCS_S3_ACCESS_KEY} --secret_key=${secrets.DOCS_S3_SECRET_KEY} "${{ github.workspace }}/Realm/packages/_site s3://realm-sdks/realm-sdks/dotnet/${ver}/
         }
-    
