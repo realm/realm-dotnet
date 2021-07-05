@@ -243,7 +243,20 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Set version suffix
       id: set-version-suffix
-      run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
+      run: |
+        $suffix = ""
+        if ($env:github.EVENT_NAME -eq "pull_request")
+        {
+          if (-Not $env:github.GITHUB_HEAD_REF.Contains("release"))
+          {
+            $suffix = "PR-$env:github.event.NUMBER.$env:github.RUN_NUMBER"
+          }
+        }
+        else
+        {
+          $suffix = "alpha.$env:github.RUN_NUMBER"
+        }
+        echo "::set-output name=build_suffix::$suffix"
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v2
       with:

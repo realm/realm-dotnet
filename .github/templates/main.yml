@@ -290,7 +290,20 @@ jobs:
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
-        run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
+        run: |
+          $suffix = ""
+          if ($env:github.EVENT_NAME -eq "pull_request")
+          {
+            if (-Not $env:github.GITHUB_HEAD_REF.Contains("release"))
+            {
+              $suffix = "PR-$env:github.event.NUMBER.$env:github.RUN_NUMBER"
+            }
+          }
+          else
+          {
+            $suffix = "alpha.$env:github.RUN_NUMBER"
+          }
+          echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(buildPackages())
       - #@ findPackageVersion()
