@@ -169,32 +169,19 @@ namespace Realms
         }
 
         /// <summary>
-        /// Deletes all the files associated with a realm.
+        /// Deletes all files associated with a given Realm if the Realm exists and is not open.
         /// </summary>
+        /// <remarks>
+        /// The Realm file must not be open on other threads.<br/>
+        /// All but the .lock file will be deleted by this.
+        /// </remarks>
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
+        /// <exception cref="RealmInUseException">Thrown if the Realm is still open.</exception>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             Argument.NotNull(configuration, nameof(configuration));
 
-            var fullpath = configuration.DatabasePath;
-            if (IsRealmOpen(fullpath))
-            {
-                throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
-            }
-
-            var filesToDelete = new[] { string.Empty, ".log_a", ".log_b", ".log", ".lock", ".note" }
-                .Select(ext => fullpath + ext)
-                .Where(File.Exists);
-
-            foreach (var file in filesToDelete)
-            {
-                File.Delete(file);
-            }
-
-            if (Directory.Exists($"{fullpath}.management"))
-            {
-                Directory.Delete($"{fullpath}.management", recursive: true);
-            }
+            SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
         private static bool IsRealmOpen(string path)
@@ -1810,7 +1797,7 @@ namespace Realms
             public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            private RealmObject FindCore(string className, RealmValue primaryKey)
+            internal RealmObject FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 

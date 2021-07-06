@@ -89,18 +89,16 @@ steps:
   - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
 #@ end
 
-#@ def buildUnityPackage(includeDependencies):
-#@ finalPkgName = "io.realm.unity-" + ("bundled-" if includeDependencies else "") + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
-  - name: #@ "Build Unity" + (" Bundled Dependencies" if includeDependencies else "")
-    run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack" + (" --include-dependencies" if includeDependencies else "")
+#@ def buildUnityPackage():
+#@ finalPkgName = "io.realm.unity-" + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
+  - name: #@ "Build Unity"
+    run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
   - name: Store Unity artifacts
     uses: actions/upload-artifact@v2
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-  - name: Cleanup build folder
-    run: #@ "rm ${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
 #@ end
 
 #@ def uploadPackageArtifacts():
@@ -308,8 +306,7 @@ jobs:
       - #@ template.replace(buildPackages())
       - #@ findPackageVersion()
       - #@ template.replace(uploadPackageArtifacts())
-      - #@ template.replace(buildUnityPackage(False))
-      - #@ template.replace(buildUnityPackage(True))
+      - #@ template.replace(buildUnityPackage())
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
@@ -387,6 +384,22 @@ jobs:
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
+  run-tests-xamarin-ios:
+    runs-on: macos-latest
+    name: Test Xamarin.iOS
+    needs: build-packages
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+      - name: Run the tests
+        uses: realm/ci-actions/run-ios-simulator@v1
+        with:
+         appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
+         bundleId: 'io.realm.dotnettests'
+         iphoneToSimulate: 'iPhone-8'
+         arguments: '--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml'
+      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -397,7 +410,7 @@ jobs:
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-weaver, build-packages ]
+    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-xamarin-ios, run-tests-weaver, build-packages ]
     if: always()
     steps:
       - #@ template.replace(deleteWrapperBinaries())

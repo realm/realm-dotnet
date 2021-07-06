@@ -26,12 +26,17 @@ namespace UnityUtils
     {
         private static int _isInitialized;
 
+        [Preserve]
         public static void Initialize()
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
                 Logger.Default = new UnityLogger();
+                UnityEngine.Application.quitting += () =>
+                {
+                    NativeCommon.CleanupNativeResources("Application is exiting");
+                };
             }
         }
     }

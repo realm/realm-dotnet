@@ -27,8 +27,8 @@ namespace Realms.Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly List<Session> _sessions = new List<Session>();
-        private readonly List<App> _apps = new List<App>();
+        private readonly Queue<Session> _sessions = new Queue<Session>();
+        private readonly Queue<App> _apps = new Queue<App>();
 
         private App _defaultApp;
 
@@ -45,7 +45,7 @@ namespace Realms.Tests.Sync
             config ??= SyncTestHelpers.GetAppConfig();
 
             var app = App.Create(config);
-            _apps.Add(app);
+            _apps.Enqueue(app);
 
             if (_defaultApp == null)
             {
@@ -57,24 +57,18 @@ namespace Realms.Tests.Sync
 
         protected override void CustomTearDown()
         {
-            foreach (var session in _sessions)
-            {
-                session?.CloseHandle();
-            }
+            _sessions.DrainQueue(session => session?.CloseHandle());
 
             base.CustomTearDown();
 
-            foreach (var app in _apps)
-            {
-                app.Handle.ResetForTesting();
-            }
+            _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
         }
 
         protected void CleanupOnTearDown(Session session)
         {
-            _sessions.Add(session);
+            _sessions.Enqueue(session);
         }
 
         protected Session GetSession(Realm realm)
@@ -116,7 +110,7 @@ namespace Realms.Tests.Sync
             refreshToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVmcmVzaCB0b2tlbiIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTM2MjM5MDIyfQ.SWH98a-UYBEoJ7DLxpP7mdibleQFeCbGt4i3CrsyT2M";
             accessToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjJ9.bgnlxP_mGztBZsImn7HaF-6lDevFDn2U_K7D8WUC2GQ";
             var handle = app.Handle.GetUserForTesting(id, refreshToken, accessToken);
-            return new User(handle);
+            return new User(handle, app);
         }
 
         protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)

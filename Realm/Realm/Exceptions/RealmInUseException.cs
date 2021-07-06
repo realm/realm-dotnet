@@ -2,7 +2,7 @@
 //
 // Copyright 2021 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,24 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace Realms.Native
+namespace Realms.Exceptions
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct ObjKey : IEquatable<ObjKey>
+    /// <summary>
+    /// An exception thrown when an an operation is being performed on an open Realm
+    /// that can only performed on a closed Realm (e.g. deleting Realm files).
+    /// </summary>
+    public class RealmInUseException : RealmException
     {
-        private Int64 value;
-
-        public bool Equals(ObjKey other) => value.Equals(other.value);
-
-        public override bool Equals(object obj) => obj is ObjKey other && Equals(other);
-
-        public override int GetHashCode() => value.GetHashCode();
-
-        public static bool operator ==(ObjKey left, ObjKey right) => left.value == right.value;
-
-        public static bool operator !=(ObjKey left, ObjKey right) => left.value != right.value;
+        internal RealmInUseException(string message) : base(message)
+        {
+        }
     }
 }

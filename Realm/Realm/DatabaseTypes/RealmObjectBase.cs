@@ -195,7 +195,7 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
-            _hashCode = new Lazy<int>(() => _objectHandle.GetObjKey().GetHashCode());
+            _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
 
             if (_propertyChanged != null)
             {

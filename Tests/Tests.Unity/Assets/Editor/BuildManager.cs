@@ -29,7 +29,7 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
         var buildDifferentiatior = GetBuildDifferentiatorSettingsFileName();
 
         // Set the headlessBuildLocation to the output directory you desire. It does not need to be inside the project.
-        var headlessBuildLocation = Path.GetFullPath(Path.Combine(Application.dataPath, $".//..//PlayModeTestPlayer_{buildDifferentiatior}"));
+        var headlessBuildLocation = Path.GetFullPath(Path.Combine(Application.dataPath, $".//..//Player_{buildDifferentiatior}"));
         var fileName = Path.GetFileName(playerOptions.locationPathName);
         if (!string.IsNullOrEmpty(fileName))
         {
@@ -40,7 +40,7 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
 
         Debug.Log($"Build artifacts will be output to {playerOptions.locationPathName}");
 
-        // Instruct the cleanup to exit the Editor if the run came from the command line. 
+        // Instruct the cleanup to exit the Editor if the run came from the command line.
         // The variable is static because the cleanup is being invoked in a new instance of the class.
         s_RunningPlayerTests = true;
         return playerOptions;
@@ -65,16 +65,21 @@ public class HeadlessPlayModeSetup : ITestPlayerBuildModifier, IPostBuildCleanup
     {
         var commandLineArgs = Environment.GetCommandLineArgs();
 
+        var settings = "";
+        var platform = "";
         for (var i = 0; i < commandLineArgs.Length; i++)
         {
             if (commandLineArgs[i] == "-testSettingsFile" && (i + 1) < commandLineArgs.Length)
             {
-                var settings = commandLineArgs[i + 1].Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-                return Path.GetFileNameWithoutExtension(settings);
+                settings = Path.GetFileNameWithoutExtension(commandLineArgs[i + 1].Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar));
+            }
+            else if (commandLineArgs[i] == "-testPlatform" && (i + 1) < commandLineArgs.Length)
+            {
+                platform = commandLineArgs[i + 1];
             }
         }
 
-        return "unknown";
+        return $"{platform}_{settings}";
     }
 
     private static bool IsDebugBuild => Environment.GetCommandLineArgs().Any(a => a == "-debugBuild");

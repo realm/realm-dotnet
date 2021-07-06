@@ -3,7 +3,7 @@
     <_RealmNugetNativePath Condition="'$(_RealmNugetNativePath)' == ''">$(MSBuildThisFileDirectory)..\native\</_RealmNugetNativePath>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">
-    <NativeReference Include="$(_RealmNugetNativePath)ios\universal\realm-wrappers.framework">
+    <NativeReference Include="$(_RealmNugetNativePath)ios\universal\realm-wrappers.xcframework">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

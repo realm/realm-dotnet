@@ -86,7 +86,7 @@ namespace Realms.Tests.Sync
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
-            const int ObjectSize = 1000000;
+            const int ObjectSize = 1_000_000;
             const int ObjectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -161,7 +161,7 @@ namespace Realms.Tests.Sync
                 }
 
                 Assert.That(callbacksInvoked, Is.GreaterThan(1));
-            });
+            }, timeout: 120_000);
         }
 
         [Test]

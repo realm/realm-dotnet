@@ -1045,6 +1045,34 @@ namespace Realms.Tests.Database
             });
         }
 
+        [Test]
+        public void ObjectFromAnotherRealm_ThrowsRealmException()
+        {
+            var realm2 = GetRealm(CreateConfiguration(Guid.NewGuid().ToString()));
+
+            var item = new IntPropertyObject { Int = 5 };
+            var embeddedItem = new EmbeddedIntPropertyObject { Int = 10 };
+
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new DictionariesObject());
+            });
+
+            var obj2 = realm2.Write(() =>
+            {
+                return realm2.Add(new DictionariesObject());
+            });
+
+            _realm.Write(() =>
+            {
+                obj1.ObjectDictionary["foo"] = item;
+                obj1.EmbeddedObjectDictionary["foo"] = embeddedItem;
+            });
+
+            Assert.That(() => realm2.Write(() => obj2.ObjectDictionary["foo"] = item), Throws.TypeOf<RealmException>().And.Message.Contains("object that is already in another realm"));
+            Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectDictionary["foo"] = embeddedItem), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
+        }
+
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
             TestHelpers.RunAsyncTest(async () =>

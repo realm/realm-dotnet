@@ -22,7 +22,7 @@ using System.IO;
 
 namespace SetupUnityPackage
 {
-    public static class Helpers
+    internal static class Helpers
     {
         public static void EnqueueRange<T>(this Queue<T> queue, IEnumerable<T> items)
         {
@@ -39,7 +39,7 @@ namespace SetupUnityPackage
 
         public static string BuildFolder { get; } = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
-        public static string SolutionFolder { get; } = BuildFolder.Substring(0, BuildFolder.IndexOf(Path.Combine("Tools", "SetupUnityPackage")));
+        public static string SolutionFolder { get; } = BuildFolder.Substring(0, BuildFolder.IndexOf(Path.Combine("Tools", "SetupUnityPackage"), StringComparison.InvariantCulture));
 
         public static string PackagesFolder { get; } = Path.Combine(SolutionFolder, "Realm", "packages");
 
@@ -49,7 +49,7 @@ namespace SetupUnityPackage
             foreach (var file in testFiles)
             {
                 var relativePath = Path.GetRelativePath(from, file);
-                if (shouldIncludeFile != null && !shouldIncludeFile(relativePath))
+                if (shouldIncludeFile?.Invoke(relativePath) == false)
                 {
                     continue;
                 }

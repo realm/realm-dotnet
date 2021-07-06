@@ -365,18 +365,6 @@ jobs:
         name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Cleanup build folder
-      run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-    - name: Build Unity Bundled Dependencies
-      run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack --include-dependencies
-    - name: Store Unity artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-        path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Cleanup build folder
-      run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
@@ -559,6 +547,45 @@ jobs:
         files: TestResults.macOS.xml
         comment_mode: "off"
         check_name: Results Xamarin.macOS
+  run-tests-xamarin-ios:
+    runs-on: macos-latest
+    name: Test Xamarin.iOS
+    needs: build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build Tests/Tests.iOS
+      run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:TargetFrameworkVersion=v1.0 -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run the tests
+      uses: realm/ci-actions/run-ios-simulator@v1
+      with:
+        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
+        bundleId: io.realm.dotnettests
+        iphoneToSimulate: iPhone-8
+        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: TestResults.iOS.xml
+        comment_mode: "off"
+        check_name: Results Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -592,6 +619,7 @@ jobs:
     - run-tests-uwp
     - run-tests-netcore-net5
     - run-tests-xamarin-macos
+    - run-tests-xamarin-ios
     - run-tests-weaver
     - build-packages
     if: always()

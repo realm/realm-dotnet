@@ -28,7 +28,7 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class FunctionsTests : SyncTestBase
     {
-        private readonly List<string> _conventionsToRemove = new List<string>();
+        private readonly Queue<string> _conventionsToRemove = new Queue<string>();
 
         [Test]
         public void CallFunction_ReturnsResult()
@@ -490,12 +490,7 @@ namespace Realms.Tests.Sync
         {
             base.CustomTearDown();
 
-            foreach (var convention in _conventionsToRemove)
-            {
-                ConventionRegistry.Remove(convention);
-            }
-
-            _conventionsToRemove.Clear();
+            _conventionsToRemove.DrainQueue(ConventionRegistry.Remove);
         }
 
         private static void AssertDateTimeEquals(DateTime first, DateTime second)
@@ -518,7 +513,7 @@ namespace Realms.Tests.Sync
             pack.Add(new CamelCaseElementNameConvention());
             ConventionRegistry.Register(name, pack, _ => true);
 
-            _conventionsToRemove.Add(name);
+            _conventionsToRemove.Enqueue(name);
         }
 
         private class FunctionArgument

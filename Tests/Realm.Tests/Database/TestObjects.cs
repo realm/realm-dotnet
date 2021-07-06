@@ -295,6 +295,8 @@ namespace Realms.Tests
 
         public IList<IntPropertyObject> ObjectList { get; }
 
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+
         public IList<RealmValue> RealmValueList { get; }
 
         public IDictionary<string, char> CharDict { get; }

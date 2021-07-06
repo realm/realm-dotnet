@@ -135,7 +135,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
 
         std::vector<Mixed> mixed_args;
         mixed_args.reserve(args_count);
-        for (int i = 0; i < args_count; ++i) {
+        for (size_t i = 0; i < args_count; ++i) {
             if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
                 mixed_args.push_back(from_capi(arguments[i]));
             }

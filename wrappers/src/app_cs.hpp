@@ -187,7 +187,7 @@ namespace binding {
             std::vector<UserApiKey> marshalled_keys(keys.size());
             std::vector<std::string> id_storage(keys.size());
 
-            for (auto i = 0; i < keys.size(); i++) {
+            for (size_t i = 0; i < keys.size(); i++) {
                 auto& api_key = keys[i];
                 UserApiKey marshaled_key{};
 
