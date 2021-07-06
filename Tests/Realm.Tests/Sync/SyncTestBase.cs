@@ -125,7 +125,7 @@ namespace Realms.Tests.Sync
             partition ??= Guid.NewGuid().ToString();
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
         protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
@@ -133,7 +133,7 @@ namespace Realms.Tests.Sync
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
         protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
@@ -141,7 +141,7 @@ namespace Realms.Tests.Sync
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
         protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
@@ -149,7 +149,7 @@ namespace Realms.Tests.Sync
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.UUIDPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
         private static PartitionSyncConfiguration UpdateConfig(PartitionSyncConfiguration config)
@@ -163,7 +163,7 @@ namespace Realms.Tests.Sync
         public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
-            return UpdateConfig(new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
     }
 }
