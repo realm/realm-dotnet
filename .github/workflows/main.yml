@@ -158,11 +158,8 @@ jobs:
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
-        Write-Output 'Beginning download...'
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-        Write-Output 'Completed!'
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
@@ -208,11 +205,8 @@ jobs:
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
-        Write-Output 'Beginning download...'
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-        Write-Output 'Completed!'
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
@@ -350,11 +344,8 @@ jobs:
     - name: Download docfx
       if: ${{ !contains(github.ref, 'release') }} && steps.check-docfx-cache.outputs.cache-hit != 'true'
       run: |
-        Write-Output 'Beginning download...'
         Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
-        Write-Output ((Get-Item C:\docfx.zip).length/1MB)
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
-        Write-Output 'Completed!'
       shell: powershell
     - name: Build docs
       if: ${{ !contains(github.ref, 'release') }}
