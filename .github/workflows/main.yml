@@ -242,7 +242,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
@@ -408,7 +408,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
@@ -445,7 +445,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
@@ -522,7 +522,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
@@ -559,7 +559,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
@@ -594,7 +594,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
@@ -633,7 +633,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"

@@ -50,7 +50,7 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ actualCommand = cmd + configurationParam + ltoParam
 
 steps:
-  - #@ template.replace(checkoutCode())
+  - #@ template.replace(checkoutCode("recursive"))
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
   - #@ step
@@ -66,11 +66,11 @@ steps:
       retention-days: 1
 #@ end
 
-#@ def checkoutCode():
+#@ def checkoutCode(submodules=False):
   - name: Checkout code
     uses: actions/checkout@v2
     with:
-      submodules: recursive
+      submodules: #@ submodules
       ref: ${{ github.event.pull_request.head.sha }}
   - name: Register csc problem matcher
     run: echo "::add-matcher::.github/problem-matchers/csc.json"
