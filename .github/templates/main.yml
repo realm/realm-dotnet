@@ -403,7 +403,7 @@ jobs:
       - #@ template.replace(deleteWrapperBinaries())
       - #@ template.replace(deleteTempPackageArtifacts())
   generate-docs:
-    if: ${{ !contains(github.ref, 'release') }}
+    if: ${{ contains(github.ref, 'release') }}
     runs-on: windows-latest
     name: Generate docs
     steps:
