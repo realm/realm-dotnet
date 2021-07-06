@@ -333,6 +333,19 @@ jobs:
         pkgName=${tmpName#"Realm.Fody."}
         echo "::set-output name=package_version::$pkgName"
       shell: bash
+    - name: Build docs
+      if: ${{ !contains(github.ref, 'release') }}
+      run: |
+        choco install docfx -yes
+        docfx Docs/docfx.json
+        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+    - name: Store docs artifacts
+      if: ${{ !contains(github.ref, 'release') }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Docs.zip
+        path: ${{ github.workspace }}/Realm/packages/Docs.zip
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
       with:
@@ -680,32 +693,3 @@ jobs:
       uses: geekyeggo/delete-artifact@v1
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
-  generate-docs:
-    if: ${{ !contains(github.ref, 'release') }}
-    runs-on: windows-latest
-    name: Generate docs
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Build docs
-      run: |
-        choco install docfx -yes
-        docfx Docs/docfx.json
-        $resultPath = "Realm/packages/"
-        if(-not(Test-Path -path $resultPath))
-        {
-            New-Item -ItemType directory -Path $resultPath
-        }
-        Compress-Archive -Path Docs/_site -DestinationPath "$resultPath/Docs.zip"
-    - name: Store docs artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: Docs.zip
-        path: ${{ github.workspace }}/Realm/packages/Docs.zip
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
