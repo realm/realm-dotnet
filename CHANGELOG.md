@@ -1,4 +1,4 @@
-## 10.3.0 (TBD)
+## 10.3.0 (2021-07-07)
 
 **Note**: This release uses xcframework and enables bitcode for the iOS native libraries. This significantly increases the package size and may appear to increase the .ipa size when compiling for iOS. However, the bitcode portion, as well as the unnecessary architectures, will be trimmed by the App Store, so the size of the actual download sent to users will be unchanged or smaller than before.
 
