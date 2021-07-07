@@ -14,6 +14,6 @@ If instead ytt isn't in your packager manager or you don't use one you can manua
 
 ## Building the docs
 1. `cd $SolutionDir/.github/templates`
-1. `ytt -f . --output-files ../workflows/` ==> to target all files<br/>
-or<br/>
+1. `ytt -f . --output-files ../workflows/` ==> to target all files  
+or  
 `ytt -f YOUR_FILE --output-files ../workflows/` ==> for a specific file
