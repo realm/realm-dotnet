@@ -109,7 +109,7 @@ steps:
       path: 'C:\docfx'
       key: docfx
   - name: Download docfx
-    if: #@ "steps.check-docfx-cache.outputs.cache-hit != 'true' && " + docsCondition
+    if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && !contains(github.ref, 'release') }}
     run: |
       Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
       Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
