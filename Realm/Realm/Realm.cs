@@ -245,7 +245,7 @@ namespace Realms
             if (_state == null)
             {
                 _state = new State();
-                sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(_state.GCHandle));
+                sharedRealmHandle.SetManagedStateHandle(_state);
             }
 
             _state.AddRealm(this);
