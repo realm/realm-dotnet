@@ -13,6 +13,6 @@ public class GameState : MonoBehaviour
 
     private void SetUpInitialBoard()
     {
-
+        spawnManager.createPiece(SpawnManager.PieceType.RookWhite, new Vector3(4, 0, 4));
     }
 }
