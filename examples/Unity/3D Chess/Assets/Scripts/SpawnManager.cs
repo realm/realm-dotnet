@@ -2,18 +2,18 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    [SerializeField] GameObject prefabPawnWhite = default;
-    [SerializeField] GameObject prefabRookWhite = default;
-    [SerializeField] GameObject prefabKnightWhite = default;
-    [SerializeField] GameObject prefabBishopWhite = default;
-    [SerializeField] GameObject prefabQueenWhite = default;
-    [SerializeField] GameObject prefabKingWhite = default;
-    [SerializeField] GameObject prefabPawnBlack = default;
-    [SerializeField] GameObject prefabRookBlack = default;
-    [SerializeField] GameObject prefabKnightBlack = default;
-    [SerializeField] GameObject prefabBishopBlack = default;
-    [SerializeField] GameObject prefabQueenBlack = default;
-    [SerializeField] GameObject prefabKingBlack = default;
+    [SerializeField] Piece prefabPawnWhite = default;
+    [SerializeField] Piece prefabRookWhite = default;
+    [SerializeField] Piece prefabKnightWhite = default;
+    [SerializeField] Piece prefabBishopWhite = default;
+    [SerializeField] Piece prefabQueenWhite = default;
+    [SerializeField] Piece prefabKingWhite = default;
+    [SerializeField] Piece prefabPawnBlack = default;
+    [SerializeField] Piece prefabRookBlack = default;
+    [SerializeField] Piece prefabKnightBlack = default;
+    [SerializeField] Piece prefabBishopBlack = default;
+    [SerializeField] Piece prefabQueenBlack = default;
+    [SerializeField] Piece prefabKingBlack = default;
 
     public enum PieceType
     {
@@ -31,9 +31,9 @@ public class SpawnManager : MonoBehaviour
         KingBlack
     }
 
-    public void createPiece(PieceType pieceType, Vector3 position)
+    public Piece createPiece(PieceType pieceType, Vector3 position)
     {
-        GameObject piecePrefab = default;
+        Piece piecePrefab = default;
 
         switch (pieceType)
         {
@@ -75,7 +75,9 @@ public class SpawnManager : MonoBehaviour
                 break;
         }
 
-        GameObject pieceInstance = Instantiate(piecePrefab);
+        Piece pieceInstance = Instantiate(piecePrefab);
         pieceInstance.transform.position = position;
+
+        return pieceInstance;
     }
 }
