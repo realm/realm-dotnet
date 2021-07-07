@@ -2,6 +2,26 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
+    public enum Type : int
+    {
+        WhitePawn,
+        WhiteBishop,
+        WhiteKnight,
+        WhiteRook,
+        WhiteQueen,
+        WhiteKing,
+        BlackPawn,
+        BlackBishop,
+        BlackKnight,
+        BlackRook,
+        BlackQueen,
+        BlackKing
+    }
+
+    public Type PieceType => type;
+
+    [SerializeField] private Type type = default;
+
     private MovementManager movementManager = default;
 
     public void Select()

@@ -15,62 +15,46 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] Piece prefabQueenBlack = default;
     [SerializeField] Piece prefabKingBlack = default;
 
-    public enum PieceType
-    {
-        PawnWhite,
-        RookWhite,
-        KnightWhite,
-        BishopWhite,
-        QueenWhite,
-        KingWhite,
-        PawnBlack,
-        RookBlack,
-        KnightBlack,
-        BishopBlack,
-        QueenBlack,
-        KingBlack
-    }
-
-    public Piece SpawnPiece(PieceType pieceType, GameObject parent, Vector3 positionInPartent)
+    public Piece SpawnPiece(Piece.Type pieceType, GameObject parent, Vector3 positionInPartent)
     {
         Piece piecePrefab = default;
 
         switch (pieceType)
         {
-            case PieceType.PawnWhite:
+            case Piece.Type.WhitePawn:
                 piecePrefab = prefabPawnWhite;
                 break;
-            case PieceType.RookWhite:
+            case Piece.Type.WhiteRook:
                 piecePrefab = prefabRookWhite;
                 break;
-            case PieceType.KnightWhite:
+            case Piece.Type.WhiteKnight:
                 piecePrefab = prefabKnightWhite;
                 break;
-            case PieceType.BishopWhite:
+            case Piece.Type.WhiteBishop:
                 piecePrefab = prefabBishopWhite;
                 break;
-            case PieceType.QueenWhite:
+            case Piece.Type.WhiteQueen:
                 piecePrefab = prefabQueenWhite;
                 break;
-            case PieceType.KingWhite:
+            case Piece.Type.WhiteKing:
                 piecePrefab = prefabKingWhite;
                 break;
-            case PieceType.PawnBlack:
+            case Piece.Type.BlackPawn:
                 piecePrefab = prefabPawnBlack;
                 break;
-            case PieceType.RookBlack:
+            case Piece.Type.BlackRook:
                 piecePrefab = prefabRookBlack;
                 break;
-            case PieceType.KnightBlack:
+            case Piece.Type.BlackKnight:
                 piecePrefab = prefabKnightBlack;
                 break;
-            case PieceType.BishopBlack:
+            case Piece.Type.BlackBishop:
                 piecePrefab = prefabBishopBlack;
                 break;
-            case PieceType.QueenBlack:
+            case Piece.Type.BlackQueen:
                 piecePrefab = prefabQueenBlack;
                 break;
-            case PieceType.KingBlack:
+            case Piece.Type.BlackKing:
                 piecePrefab = prefabKingBlack;
                 break;
         }
