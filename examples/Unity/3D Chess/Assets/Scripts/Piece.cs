@@ -1,23 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    [SerializeField] private Board board = default;
+    [SerializeField] private EventManager eventManager = default;
 
     private bool isActive = false;
 
     private void OnEnable()
     {
-        board.SquareClickedEvent.AddListener(SquareClickedListener);
-        board.NewPieceActivated.AddListener(NewPieceActivated);
+        eventManager.SquareClickedEvent.AddListener(SquareClickedListener);
+        eventManager.NewPieceActivated.AddListener(NewPieceActivated);
     }
 
     private void OnDisable()
     {
-        board.SquareClickedEvent.RemoveListener(SquareClickedListener);
-        board.NewPieceActivated.RemoveListener(NewPieceActivated);
+        eventManager.SquareClickedEvent.RemoveListener(SquareClickedListener);
+        eventManager.NewPieceActivated.RemoveListener(NewPieceActivated);
     }
 
     private void OnMouseDown()
@@ -30,12 +28,6 @@ public class Piece : MonoBehaviour
         {
             Activate();
         }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        // Another piece was moved to this position.
-        Destroy(gameObject);
     }
 
     private void SquareClickedListener(int x, int z)
@@ -55,7 +47,7 @@ public class Piece : MonoBehaviour
 
     private void Activate()
     {
-        board.NewPieceActivated.Invoke();
+        eventManager.NewPieceActivated.Invoke();
         isActive = true;
         gameObject.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
     }

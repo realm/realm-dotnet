@@ -1,13 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Square : MonoBehaviour
 {
-    [SerializeField] private Board board = default;
+    [SerializeField] private EventManager eventManager = default;
 
     private void OnMouseDown()
     {
-        board.SquareClickedEvent.Invoke((int)transform.position.x, (int)transform.position.z);
+        eventManager.SquareClickedEvent.Invoke((int)transform.position.x, (int)transform.position.z);
     }
 }
