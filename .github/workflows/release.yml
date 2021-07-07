@@ -52,7 +52,7 @@ jobs:
       run: |
         Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
         py -m pip install s3cmd
-        $versions = ${{ steps.extract_release_ver.outputs.release_version }}, "latest"
+        $versions = "${{ steps.extract_release_ver.outputs.release_version }}", "latest"
         Foreach ($ver in $versions)
         {
           s3cmd put --recursive --acl-public --access_key=${{ secrets.DOCS_S3_ACCESS_KEY }} --secret_key=${{ secrets.DOCS_S3_SECRET_KEY }} "${{ github.workspace }}/Realm/packages/_site s3://realm-sdks/realm-sdks/dotnet/$ver/
