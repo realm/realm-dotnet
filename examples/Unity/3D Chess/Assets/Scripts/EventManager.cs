@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class SquareClickedEvent : UnityEvent<int, int>
+public class SquareClickedEvent : UnityEvent<Vector3>
 {
 }
 

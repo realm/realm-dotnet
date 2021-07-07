@@ -6,9 +6,6 @@ public class Square : MonoBehaviour
 
     private void OnMouseDown()
     {
-        int x = (int)Mathf.Round(transform.position.x);
-        int z = (int)Mathf.Round(transform.position.z);
-
-        eventManager.SquareClickedEvent.Invoke(x, z);
+        eventManager.SquareClickedEvent.Invoke(transform.position);
     }
 }

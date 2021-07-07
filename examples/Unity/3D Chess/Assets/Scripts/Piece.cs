@@ -2,59 +2,25 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    [SerializeField] private EventManager eventManager = default;
+    private MovementManager movementManager = default;
 
-    private bool isActive = false;
-
-    private void OnEnable()
+    public void Select()
     {
-        eventManager.SquareClickedEvent.AddListener(SquareClickedListener);
-        eventManager.NewPieceActivated.AddListener(NewPieceActivated);
+        gameObject.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
     }
 
-    private void OnDisable()
+    public void Deselect()
     {
-        eventManager.SquareClickedEvent.RemoveListener(SquareClickedListener);
-        eventManager.NewPieceActivated.RemoveListener(NewPieceActivated);
+        gameObject.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 1);
+    }
+
+    private void Start()
+    {
+        movementManager = GameObject.FindObjectOfType<MovementManager>();
     }
 
     private void OnMouseDown()
     {
-        if (isActive)
-        {
-            Deactivate();
-        }
-        else
-        {
-            Activate();
-        }
-    }
-
-    private void SquareClickedListener(int x, int z)
-    {
-        if (isActive)
-        {
-            // This piece was moved to a new square.
-            transform.position = new Vector3(x, 0, z);
-            Deactivate();
-        }
-    }
-
-    private void NewPieceActivated()
-    {
-        Deactivate();
-    }
-
-    private void Activate()
-    {
-        eventManager.NewPieceActivated.Invoke();
-        isActive = true;
-        gameObject.GetComponent<Renderer>().material.color = new Color(1, 0, 0, 1);
-    }
-
-    private void Deactivate()
-    {
-        isActive = false;
-        gameObject.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 1);
+        movementManager.SetActivePiece(this);
     }
 }

@@ -31,7 +31,7 @@ public class SpawnManager : MonoBehaviour
         KingBlack
     }
 
-    public Piece createPiece(PieceType pieceType, Vector3 position)
+    public Piece SpawnPiece(PieceType pieceType, GameObject parent, Vector3 positionInPartent)
     {
         Piece piecePrefab = default;
 
@@ -76,7 +76,8 @@ public class SpawnManager : MonoBehaviour
         }
 
         Piece pieceInstance = Instantiate(piecePrefab);
-        pieceInstance.transform.position = position;
+        pieceInstance.transform.SetParent(parent.transform);
+        pieceInstance.transform.position = new Vector3(positionInPartent.x, pieceInstance.transform.position.y, positionInPartent.z);
 
         return pieceInstance;
     }
