@@ -1,0 +1,59 @@
+name: release
+on:
+  workflow_dispatch
+
+jobs:
+  publish-to-nuget:
+    runs-on: windows-latest
+    name: Publish release
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Download all artifacts
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: main.yml
+        branch: ${{ github.ref }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Extract release notes
+      id: extract-release-notes
+      run: |
+        $changelogContent = Get-Content -Raw -Path "./CHANGELOG.md"
+        $output_file = "./RELEASE_NOTES.md"
+        $regex = "(?sm)^(## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))(.+?)(\n## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))"
+        $changelogContent -match $regex
+        Set-Content -Path $output_file -Value $Matches[2]
+        echo "::set-output name=release-notes-path::$output_file"
+    - name: Read version
+      id: get-version
+      run: |
+        $nupkgName = ls "Realm/packages" | Select -expandproperty Name | Select-String Realm.Fody
+        $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
+        $version = $Matches[0]
+        echo "::set-output name=version::$version"
+    - name: Upload to nuget
+      run: |
+        $version = ${{ steps.get-version.outputs.version }}
+        echo "Would upload to nuget 'Realm/packages/Realm.Fody.$version.nupkg/Realm.Fody.$version.nupkg'"
+        echo "Would upload to nuget 'Realm/packages/Realm.$version.nupkg/Realm.$version.nupkg'"
+    #     dotnet nuget push "Realm/packages/Realm.Fody.$version.nupkg/Realm.Fody.$version.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    #     dotnet nuget push "Realm/packages/Realm.$version.nupkg/Realm.$version.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - name: Create Github Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+        bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        name: ${{ steps.get-version.outputs.version }}
+        commit: ${{ github.ref }}
+        tag: ${{ steps.get-version.outputs.version }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
+    - name: Upload docs
+      run: |
+        Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
+        py -m pip install s3cmd
+        $versions = "${{ steps.get-version.outputs.version }}", "latest"
+        Foreach ($ver in $versions)
+        {
+          s3cmd put --recursive --acl-public --access_key=${{ secrets.DOCS_S3_ACCESS_KEY }} --secret_key=${{ secrets.DOCS_S3_SECRET_KEY }} "${{ github.workspace }}/Realm/packages/_site s3://realm-sdks/realm-sdks/dotnet/$ver/
+        }
