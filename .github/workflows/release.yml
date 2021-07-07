@@ -38,16 +38,16 @@ jobs:
         echo "Would upload to nuget 'Realm/packages/Realm.$version.nupkg/Realm.$version.nupkg'"
     #     dotnet nuget push "Realm/packages/Realm.Fody.$version.nupkg/Realm.Fody.$version.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     #     dotnet nuget push "Realm/packages/Realm.$version.nupkg/Realm.$version.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    # - name: Create Github Release
-    #   uses: ncipollo/release-action@v1
-    #   with:
-    #     artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-    #     bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
-    #     name: ${{ steps.get-version.outputs.version }}
-    #     commit: ${{ github.ref }}
-    #     tag: ${{ steps.get-version.outputs.version }}
-    #     token: ${{ secrets.GITHUB_TOKEN }}
-    #     draft: true
+    - name: Create Github Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+        bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        name: ${{ steps.get-version.outputs.version }}
+        commit: ${{ github.ref }}
+        tag: ${{ steps.get-version.outputs.version }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
     - name: Upload docs
       run: |
         Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
