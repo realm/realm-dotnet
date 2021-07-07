@@ -19,20 +19,22 @@ jobs:
       run: |
         $changelogContent = Get-Content -Raw -Path "./CHANGELOG.md"
         $output_file = "./RELEASE_NOTES.md"
-        $regex = "(?sm)^(## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-beta\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))(.+?)(\n## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-beta\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))"
+        $regex = "(?sm)^(## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))(.+?)(\n## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))"
         $changelogContent -match $regex
         Set-Content -Path $output_file -Value $Matches[2]
         echo "RELEASE_NOTES=$output_file" | Out-File $env:GITHUB_ENV -Encoding utf8
     - name: Extract release name
       run: |
         $nupkgName = ls "Realm/packages/Realm.Fody.$env:RELEASE_VERSION.nupkg" | select -expandproperty Name
-        $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-beta\.\d{1,2})?"
+        $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "RELEASE_VERSION=$version" | Out-File $env:GITHUB_ENV -Encoding utf8
     - name: Upload to nuget
       run: |
-        dotnet nuget push "Realm/packages/Realm.Fody.$env:RELEASE_VERSION.nupkg/Realm.Fody.$env:RELEASE_VERSION.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-        dotnet nuget push "Realm/packages/Realm.$env:RELEASE_VERSION.nupkg/Realm.$env:RELEASE_VERSION.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        echo "Would upload to nuget 'Realm/packages/Realm.Fody.$env:RELEASE_VERSION.nupkg/Realm.Fody.$env:RELEASE_VERSION.nupkg'"
+        echo "Would upload to nuget 'Realm/packages/Realm.$env:RELEASE_VERSION.nupkg/Realm.$env:RELEASE_VERSION.nupkg'"
+    #     dotnet nuget push "Realm/packages/Realm.Fody.$env:RELEASE_VERSION.nupkg/Realm.Fody.$env:RELEASE_VERSION.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    #     dotnet nuget push "Realm/packages/Realm.$env:RELEASE_VERSION.nupkg/Realm.$env:RELEASE_VERSION.nupkg" --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: Create Github Release
       uses: ncipollo/release-action@v1
       with:
