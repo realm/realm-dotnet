@@ -11,6 +11,7 @@
 
 ### Internal
 * Using Core 11.0.4.
+* Removed the RealmStates dictionary that used to hold a threadlocal dictionary of all the states for the opened Realms. It was only used for detecting open Realms during deletion and that is now handled by the native `delete_realm_files` method. (PR [#2251](https://github.com/realm/realm-dotnet/pull/2251))
 
 ## 10.3.0 (2021-07-07)
 
