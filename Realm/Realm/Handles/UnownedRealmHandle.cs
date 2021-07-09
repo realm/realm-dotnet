@@ -28,7 +28,7 @@ namespace Realms
         {
         }
 
-        public override bool CanCache => false;
+        public override bool OwnsNativeRealm => false;
 
         protected override void Unbind()
         {

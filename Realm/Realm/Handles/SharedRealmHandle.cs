@@ -220,7 +220,7 @@ namespace Realms
         {
         }
 
-        public virtual bool CanCache => true;
+        public virtual bool OwnsNativeRealm => true;
 
         protected override void Unbind()
         {
