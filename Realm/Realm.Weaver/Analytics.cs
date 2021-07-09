@@ -54,11 +54,10 @@ namespace RealmWeaver
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
-        private const string MixPanelToken = "ce0fac19508f6c8f20066d345d360fd0";
         private const string JsonTemplate = @"{
-   ""event"": ""%EVENT%"",
+   ""event"": ""Run"",
    ""properties"": {
-      ""token"": ""%TOKEN%"",
+      ""token"": ""ce0fac19508f6c8f20066d345d360fd0"",
       ""distinct_id"": ""%USER_ID%"",
       ""Anonymized MAC Address"": ""%USER_ID%"",
       ""Anonymized Bundle ID"": ""%APP_ID%"",
@@ -108,8 +107,6 @@ namespace RealmWeaver
             {
                 ComputeHostOSNameAndVersion(out var osName, out var osVersion);
                 return JsonTemplate
-                    .Replace("%EVENT%", "Run")
-                    .Replace("%TOKEN%", MixPanelToken)
                     .Replace("%USER_ID%", AnonymizedUserID)
                     .Replace("%APP_ID%", _config.ModuleName)
 
@@ -146,12 +143,6 @@ namespace RealmWeaver
             // Debugger.Launch();
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-
-            // this will need to go when mixPanel won't be used anymore
-            SendRequest(
-                "https://api.mixpanel.com/track/?data=",
-                base64Payload,
-                "&ip=1");
 
             SendRequest(
                 "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?data=",
