@@ -11,6 +11,7 @@
 
 ### Internal
 * Using Core 11.0.4.
+* Stop sending analytics to mixpanel.
 
 ## 10.3.0 (2021-07-07)
 
