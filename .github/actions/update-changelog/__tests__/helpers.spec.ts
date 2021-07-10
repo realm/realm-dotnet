@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import { suite, test } from "@testdeck/mocha";
+import { suite, params } from "@testdeck/mocha";
 import { processChangelog, updateChangelogContent } from "../src/helpers";
 import moment from "moment";
 import * as fs from "fs";
@@ -99,46 +99,69 @@ const majorBumpChangelog = `
 ### Internal
 * This is super internal`;
 
+const preReleaseChangelog = `
+## vNext (TBD)
+
+### Breaking Changes
+* Broke some API
+
+### Fixed
+* Fixed some stuff
+
+### Enhancements
+* This added an amazing enhancmement
+
+### Compatibility
+* Foo bar
+
+### Internal
+* This is super internal
+
+## 3.0.0-beta.2 (2019-02-03)
+
+### Fixed
+* Something
+
+### Enhancements
+* Something else
+
+### Compatibility
+* Foo bar
+
+### Internal
+* This is super internal`;
+
+
 @suite
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class extractorTests {
-    @test
-    public patchVersionBump(): void {
-        this.testChangelogProcessor(patchBumpChangelog, "1.2.4");
-        this.testChangelogUpdater(patchBumpChangelog, "1.2.4");
+class helpersTests {
+    @params({ input: patchBumpChangelog, expected: "1.2.4" }, "processor: patch")
+    @params({ input: minorBumpChangelog, expected: "10.3.0" }, "processor: minor")
+    @params({ input: majorBumpChangelog, expected: "11.0.0" }, "processor: major")
+    @params({ input: preReleaseChangelog, expected: "3.0.0-beta.3" }, "processor: pre")
+    testChangelogProcessor(args: { input: string, expected: string }): void {
+        const result = processChangelog(args.input);
+        expect(result.newVersion).to.equal(args.expected);
+
+        this.validateUpdatedChangelogContents(result.updatedChangelog, args.expected);
     }
 
-    @test
-    public minorVersionBump(): void {
-        this.testChangelogProcessor(minorBumpChangelog, "10.3.0");
-        this.testChangelogUpdater(minorBumpChangelog, "10.3.0");
-    }
-
-    @test
-    public majorVersionBump(): void {
-        this.testChangelogProcessor(majorBumpChangelog, "11.0.0");
-        this.testChangelogUpdater(majorBumpChangelog, "11.0.0");
-    }
-
-    testChangelogProcessor(input: string, expectedVersion: string): void {
-        const result = processChangelog(input);
-        expect(result.newVersion).to.equal(expectedVersion);
-
-        this.validateUpdatedChangelogContents(result.updatedChangelog, expectedVersion);
-    }
-
-    async testChangelogUpdater(input: string, expectedVersion: string): Promise<void> {
+    @params({ input: patchBumpChangelog, expected: "1.2.4" }, "updater: patch")
+    @params({ input: minorBumpChangelog, expected: "10.3.0" }, "updater: minor")
+    @params({ input: majorBumpChangelog, expected: "11.0.0" }, "updater: major")
+    @params({ input: preReleaseChangelog, expected: "3.0.0-beta.3" }, "updater: pre")
+    async testChangelogUpdater(args: { input: string, expected: string }): Promise<void> {
         const tempFile = tmp.tmpNameSync();
         try {
-            await fs.promises.writeFile(tempFile, input);
+            await fs.promises.writeFile(tempFile, args.input);
             const result = await updateChangelogContent(tempFile);
 
-            expect(result.newVersion).to.equal(expectedVersion);
+            expect(result.newVersion).to.equal(args.expected);
 
             const changelog = await fs.promises.readFile(tempFile, { encoding: "utf-8" });
-            this.validateUpdatedChangelogContents(changelog, expectedVersion);
+            this.validateUpdatedChangelogContents(changelog, args.expected);
         } finally {
-            await fs.promises.rm(tempFile);
+            await fs.promises.unlink(tempFile);
         }
     }
 

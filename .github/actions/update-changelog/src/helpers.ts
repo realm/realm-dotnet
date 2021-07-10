@@ -15,36 +15,25 @@ export function processChangelog(changelog: string): { updatedChangelog: string;
     }
 
     const prevVersion = changelogMatch.groups["prevVersion"];
-
     let newVersion = prevVersion;
-    let sectionMatch: RegExpExecArray | null;
-    while ((sectionMatch = sectionsRegex.exec(changelogMatch.groups["sections"]))) {
-        if (!sectionMatch.groups) {
-            throw new Error("Failed to match sections");
-        }
+    if (semver.parse(prevVersion)?.prerelease?.length) {
+        newVersion = semver.inc(prevVersion, "prerelease")!;
+    } else {
+        let sectionMatch: RegExpExecArray | null;
+        while ((sectionMatch = sectionsRegex.exec(changelogMatch.groups["sections"]))) {
+            if (!sectionMatch.groups) {
+                throw new Error("Failed to match sections");
+            }
 
-        if (!hasActualChanges(sectionMatch)) {
-            changelog = changelog.replace(sectionMatch[0], "");
-            continue;
-        }
-
-        let inferredNewVersion: string;
-        switch (sectionMatch.groups["sectionName"]) {
-            case "Fixed":
-                inferredNewVersion = semver.inc(prevVersion, "patch")!;
-                break;
-            case "Enhancements":
-                inferredNewVersion = semver.inc(prevVersion, "minor")!;
-                break;
-            case "Breaking Changes":
-                inferredNewVersion = semver.inc(prevVersion, "major")!;
-                break;
-            default:
+            if (!hasActualChanges(sectionMatch)) {
+                changelog = changelog.replace(sectionMatch[0], "");
                 continue;
-        }
+            }
 
-        if (semver.gt(inferredNewVersion, newVersion)) {
-            newVersion = inferredNewVersion;
+            const inferredNewVersion = getNextVersion(prevVersion, sectionMatch.groups["sectionName"]);
+            if (inferredNewVersion && semver.gt(inferredNewVersion, newVersion)) {
+                newVersion = inferredNewVersion;
+            }
         }
     }
 
@@ -71,4 +60,17 @@ export async function updateChangelogContent(path: string): Promise<{ newVersion
 function hasActualChanges(sectionMatch: RegExpExecArray): boolean {
     const content = sectionMatch.groups!["sectionContent"];
     return content.includes("*") && !content.includes("* None\n");
+}
+
+function getNextVersion(prevVersion: string, sectionName: string): string | undefined {
+    switch (sectionName) {
+        case "Fixed":
+            return semver.inc(prevVersion, "patch")!;
+        case "Enhancements":
+            return semver.inc(prevVersion, "minor")!;
+        case "Breaking Changes":
+            return semver.inc(prevVersion, "major")!;
+        default:
+            return undefined;
+    }
 }
