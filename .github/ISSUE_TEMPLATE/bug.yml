@@ -63,11 +63,7 @@ body:
     attributes:
       label: Repro steps
       description: If you can reproduce the issue, please provide detailed repro steps here?
-      placeholder: |
-        1. Open Realm
-        2. Insert some data
-        3. ...
-        4. Crash!
+      placeholder: 1. X, 2. Y, 3. Crash!
     validations:
       required: true
   - type: textarea
