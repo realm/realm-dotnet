@@ -33,4 +33,5 @@ jobs:
           branch: temp/${{ steps.update-changelog.outputs.new-version }}
           title: Prepare for ${{ steps.update-changelog.outputs.new-version }}
           draft: true
+          base: ${{ github.event.pull_request.head.ref }}
           body: An automated PR for next release.
