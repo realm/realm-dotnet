@@ -1,8 +1,5 @@
 ## vNext (TBD)
 
-### Breaking Changes
-* Broke everything :((
-
 ### Fixed
 * None
 
