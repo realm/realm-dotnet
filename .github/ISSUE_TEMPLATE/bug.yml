@@ -43,7 +43,7 @@ body:
     id: client-platforms
     attributes:
       label: Client OS and version
-      descritpion: What Client OS and version are you seeing the issue on?
+      description: What Client OS and version are you seeing the issue on?
     validations:
       required: true
   - type: dropdown
