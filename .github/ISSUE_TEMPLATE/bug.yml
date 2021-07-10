@@ -16,6 +16,14 @@ body:
       value: "A bug happened!"
     validations:
       required: true
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Repro steps
+      description: If you can reproduce the issue, please provide detailed repro steps here?
+      placeholder: 1. X, 2. Y, 3. Crash!
+    validations:
+      required: true
   - type: input
     id: version
     attributes:
@@ -32,20 +40,6 @@ body:
         - Local Database only
     validations:
       required: true
-  - type: input
-    id: host-platforms
-    attributes:
-      label: Host OS and version
-      description: What Host OS and version are you seeing the issue on?
-    validations:
-      required: true
-  - type: input
-    id: client-platforms
-    attributes:
-      label: Client OS and version
-      description: What Client OS and version are you seeing the issue on?
-    validations:
-      required: true
   - type: dropdown
     id: app-type
     attributes:
@@ -58,12 +52,18 @@ body:
         - Other
     validations:
       required: true
-  - type: textarea
-    id: repro-steps
+  - type: input
+    id: host-platforms
     attributes:
-      label: Repro steps
-      description: If you can reproduce the issue, please provide detailed repro steps here?
-      placeholder: 1. X, 2. Y, 3. Crash!
+      label: Host OS and version
+      description: What Host OS and version are you seeing the issue on?
+    validations:
+      required: true
+  - type: input
+    id: client-platforms
+    attributes:
+      label: Client OS and version
+      description: What Client OS and version are you seeing the issue on?
     validations:
       required: true
   - type: textarea
