@@ -40,7 +40,7 @@ body:
         - Windows
         - macOS
         - Linux
-      multipls: true
+      multiple: true
     validations:
       required: true
   - type: dropdown
@@ -54,7 +54,7 @@ body:
         - Windows
         - macOS
         - Linux
-      multipls: true
+      multiple: true
     validations:
       required: true
   - type: dropdown
