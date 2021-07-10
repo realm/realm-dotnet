@@ -1,0 +1,83 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of the .NET SDK are you using?
+    validations:
+      required: true
+  - type: dropdown
+    id: flavour
+    attributes:
+      label: What SDK flavour are you using?
+      options:
+        - MongoDB Realm (i.e. Sync, auth, functions)
+        - Local Database only
+    validations:
+      required: true
+  - type: dropdown
+    id: host-platforms
+    attributes:
+      label: What Host OS are you seeing the issue on?
+      options:
+        - Windows
+        - macOS
+        - Linux
+      multiple: true
+    validations:
+      required: true
+  - type: dropdown
+    id: client-platforms
+    attributes:
+      label: What Client OS are you seeing the issue on?
+      options:
+        - iOS
+        - Android
+        - UWP
+        - Windows
+        - macOS
+        - Linux
+      multiple: true
+    validations:
+      required: true
+  - type: dropdown
+    id: app-type
+    attributes:
+      label: What type of application is this?
+      options:
+        - Unity
+        - Xamarin
+        - WPF
+        - Console/Server
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: Stacktrace of the exception/crash you're getting
+      description: If you're getting an exception or a crash, please paste the stacktrace here..
+      render: shell
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output.
+      render: shell
