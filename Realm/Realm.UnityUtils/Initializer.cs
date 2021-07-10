@@ -32,7 +32,7 @@ namespace UnityUtils
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
-                Logger.Default = new UnityLogger();
+                Logger.Console = new UnityLogger();
                 UnityEngine.Application.quitting += () =>
                 {
                     NativeCommon.CleanupNativeResources("Application is exiting");
