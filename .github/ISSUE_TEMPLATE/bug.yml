@@ -1,7 +1,7 @@
 name: Bug Report
 description: File a bug report
 title: "[Bug]: "
-labels: [bug]
+labels: [Bug]
 body:
   - type: markdown
     attributes:
@@ -32,29 +32,18 @@ body:
         - Local Database only
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: host-platforms
     attributes:
-      label: What Host OS are you seeing the issue on?
-      options:
-        - Windows
-        - macOS
-        - Linux
-      multiple: true
+      label: Host OS and version
+      description: What Host OS and version are you seeing the issue on?
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: client-platforms
     attributes:
-      label: What Client OS are you seeing the issue on?
-      options:
-        - iOS
-        - Android
-        - UWP
-        - Windows
-        - macOS
-        - Linux
-      multiple: true
+      label: Client OS and version
+      description: What Client OS and version are you seeing the issue on?
     validations:
       required: true
   - type: dropdown
@@ -70,10 +59,24 @@ body:
     validations:
       required: true
   - type: textarea
+    id: repro-steps
+    attributes:
+      label: Repro steps
+      description: If you can reproduce the issue, please provide detailed repro steps here?
+      placeholder: 1. X, 2. Y, 3. Crash!
+    validations:
+      required: true
+  - type: textarea
+    id: code-snippets
+    attributes:
+      label: Code snippets
+      description: Please provide a code sample or test case that highlights the issue. If relevant, include your model definitions.
+      placeholder: Your code here
+  - type: textarea
     id: stacktrace
     attributes:
       label: Stacktrace of the exception/crash you're getting
-      description: If you're getting an exception or a crash, please paste the stacktrace here..
+      description: If you're getting an exception or a crash, please paste the stacktrace here.
       render: shell
   - type: textarea
     id: logs
