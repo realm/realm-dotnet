@@ -1,0 +1,13 @@
+name: update-changelog
+description: Infers next version from the changelog and updates the changelog to reflect it.
+author: Realm
+inputs:
+  changelog:
+    required: true
+    description: path to the changelog
+outputs:
+  new-version:
+    description: The new version as inferred from the changelog
+runs:
+  using: node12
+  main: dist/index.js

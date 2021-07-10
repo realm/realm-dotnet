@@ -1,0 +1,55 @@
+{
+  "name": "update-changelog",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Update the changelog and infer the correct version",
+  "main": "lib/src/main.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "lint": "eslint src/**/*.ts",
+    "package": "ncc build --source-map --license licenses.txt",
+    "test": "mocha -r ts-node/register '__tests__/**/*.ts'",
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realm/realm-dotnet.git"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "setup"
+  ],
+  "author": "realm",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "fs": "0.0.1-security",
+    "moment": "^2.29.1",
+    "semver": "^7.3.5"
+  },
+  "devDependencies": {
+    "@testdeck/mocha": "^0.1.2",
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.1",
+    "@types/node": "^14.14.9",
+    "@types/semver": "^7.3.7",
+    "@types/sinon": "^9.0.11",
+    "@types/tmp": "^0.2.1",
+    "@typescript-eslint/parser": "^4.8.1",
+    "@vercel/ncc": "^0.25.1",
+    "chai": "^4.3.3",
+    "eslint": "^7.17.0",
+    "eslint-plugin-github": "^4.1.1",
+    "eslint-plugin-jest": "^24.1.3",
+    "js-yaml": "^3.14.0",
+    "mocha": "^8.3.1",
+    "prettier": "2.2.1",
+    "sinon": "^9.2.4",
+    "tmp": "^0.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
+  }
+}
