@@ -1,4 +1,4 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
   - name: General Questions and Inquiries
     url: https://developer.mongodb.com/community/forums/c/realm-sdks/58
