@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Fixed
-* None
-
-### Enhancements
-* None
+## 10.3.0 (2021-07-10)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
