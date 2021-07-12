@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Realms.Schema;
@@ -8,6 +9,8 @@ namespace Realms
     internal class ClauseClasses : ExpressionVisitor
     {
         private readonly RealmObjectBase.Metadata _metadata;
+
+        private List<Where> _whereList = new List<Where>();
 
         public ClauseClasses(RealmObjectBase.Metadata metadata)
         {
@@ -63,7 +66,7 @@ namespace Realms
 
                 if (TryExtractConstantValue(node.Right, out object rightValue))
                 {
-                    where.value = rightValue;
+                    where.Value = rightValue;
                 }
                 else
                 {
@@ -86,33 +89,36 @@ namespace Realms
                 }
                 else
                 {
-                    where.property = GetColumnName(memberExpression, node.NodeType);
+                    where.Property = GetColumnName(memberExpression, node.NodeType);
                 }
 
                 switch (node.NodeType)
                 {
                     case ExpressionType.Equal:
-                        where.op = "eq";
+                        where.Op = "eq";
                         break;
                     case ExpressionType.NotEqual:
-                        where.op = "neq";
+                        where.Op = "neq";
                         break;
                     case ExpressionType.LessThan:
-                        where.op = "lt";
+                        where.Op = "lt";
                         break;
                     case ExpressionType.LessThanOrEqual:
-                        where.op = "lte";
+                        where.Op = "lte";
                         break;
                     case ExpressionType.GreaterThan:
-                        where.op = "gt";
+                        where.Op = "gt";
                         break;
                     case ExpressionType.GreaterThanOrEqual:
-                        where.op = "gte";
+                        where.Op = "gte";
                         break;
                     default:
                         throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
                 }
+
+                _whereList.Add(where);
             }
+
             return node;
         }
 
@@ -156,13 +162,8 @@ namespace Realms
 
         protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)
         {
-            // TODO: Where class solujtion that supports groups like these
-            //_coreQueryHandle.GroupBegin();
             Visit(b.Left);
-            //combineWith(_coreQueryHandle);
             Visit(b.Right);
-            //test
-            //_coreQueryHandle.GroupEnd();
         }
 
         private void AddQueryEqual(string columnName, object value)
@@ -170,9 +171,9 @@ namespace Realms
             var where = new Where();
             var propertyIndex = _metadata.PropertyIndices[columnName];
 
-            where.property = columnName;
-            where.op = "eq";
-            where.value = value;
+            where.Property = columnName;
+            where.Op = "eq";
+            where.Value = value;
         }
 
         internal static bool TryExtractConstantValue(Expression expr, out object value)
