@@ -41,7 +41,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest()
         {
-            var query = _realm.All<Person>().Where(p => p.Score == 5 && p.FirstName == "Test");
+            var query = _realm.All<Person>().Where(p => p.Score == 5 && p.FirstName == "Test" && p.LastName == "Testersson");
             var debugView = GetDebugView(query.Expression);
             Console.WriteLine(debugView);
             _ = query.ToArray();

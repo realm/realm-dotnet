@@ -161,6 +161,7 @@ namespace Realms
             Visit(b.Left);
             //combineWith(_coreQueryHandle);
             Visit(b.Right);
+            //test
             //_coreQueryHandle.GroupEnd();
         }
 
