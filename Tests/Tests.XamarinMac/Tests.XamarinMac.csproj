@@ -57,7 +57,7 @@
     <AOTMode>None</AOTMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
-    <StartArguments>--headless --labels=After</StartArguments>
+    <StartArguments>--labels=After --where=test=~AAAATests</StartArguments>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
