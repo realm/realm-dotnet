@@ -84,6 +84,8 @@ namespace realm {
             util::Logger::Level log_level;
 
             void* managed_logger;
+
+            bool enable_flexible_sync;
         };
 
         class SyncLogger : public util::RootLogger {
@@ -191,6 +193,8 @@ extern "C" {
             if (app_config.managed_logger) {
                 sync_client_config.logger_factory = new realm::binding::SyncLoggerFactory(app_config.managed_logger);
             }
+
+            sync_client_config.enable_query_based_sync = app_config.enable_flexible_sync;
 
             return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));
         });

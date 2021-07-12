@@ -44,7 +44,21 @@ namespace Realms.Sync.Native
             set
             {
                 partition = value;
-                partition_len = (IntPtr)value.Length;
+                partition_len = value.IntPtrLength();
+            }
+        }
+
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string query;
+
+        private IntPtr query_len;
+
+        internal string Query
+        {
+            set
+            {
+                query = value;
+                query_len = value.IntPtrLength();
             }
         }
 

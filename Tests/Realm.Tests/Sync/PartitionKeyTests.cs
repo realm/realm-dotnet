@@ -79,7 +79,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private async Task RunPartitionKeyTestsCore(SyncConfiguration config1, SyncConfiguration config2)
+        private async Task RunPartitionKeyTestsCore(PartitionSyncConfiguration config1, PartitionSyncConfiguration config2)
         {
             var objectClasses = new Type[]
             {
