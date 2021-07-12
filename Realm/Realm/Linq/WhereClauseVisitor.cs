@@ -6,13 +6,13 @@ using Realms.Schema;
 
 namespace Realms
 {
-    internal class ClauseClasses : ExpressionVisitor
+    internal class WhereClauseVisitor : ExpressionVisitor
     {
         private readonly RealmObjectBase.Metadata _metadata;
 
-        private List<Where> _whereList = new List<Where>();
+        private List<WhereClauseProperties> _whereList = new List<WhereClauseProperties>();
 
-        public ClauseClasses(RealmObjectBase.Metadata metadata)
+        public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
         }
@@ -56,7 +56,7 @@ namespace Realms
                 var leftExpression = node.Left;
                 var memberExpression = leftExpression as MemberExpression;
                 var rightExpression = node.Right;
-                var where = new Where();
+                var where = new WhereClauseProperties();
 
                 while (memberExpression == null && leftExpression.NodeType == ExpressionType.Convert)
                 {
@@ -95,22 +95,22 @@ namespace Realms
                 switch (node.NodeType)
                 {
                     case ExpressionType.Equal:
-                        where.Op = "eq";
+                        where.Operator = "eq";
                         break;
                     case ExpressionType.NotEqual:
-                        where.Op = "neq";
+                        where.Operator = "neq";
                         break;
                     case ExpressionType.LessThan:
-                        where.Op = "lt";
+                        where.Operator = "lt";
                         break;
                     case ExpressionType.LessThanOrEqual:
-                        where.Op = "lte";
+                        where.Operator = "lte";
                         break;
                     case ExpressionType.GreaterThan:
-                        where.Op = "gt";
+                        where.Operator = "gt";
                         break;
                     case ExpressionType.GreaterThanOrEqual:
-                        where.Op = "gte";
+                        where.Operator = "gte";
                         break;
                     default:
                         throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
@@ -168,11 +168,11 @@ namespace Realms
 
         private void AddQueryEqual(string columnName, object value)
         {
-            var where = new Where();
+            var where = new WhereClauseProperties();
             var propertyIndex = _metadata.PropertyIndices[columnName];
 
             where.Property = columnName;
-            where.Op = "eq";
+            where.Operator = "eq";
             where.Value = value;
         }
 
