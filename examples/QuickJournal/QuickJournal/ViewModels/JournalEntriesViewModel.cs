@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Input;
 using Realms;
 using Xamarin.Forms;
 
-namespace QuickJournal
+namespace QuickJournal.ViewModels
 {
-    public class JournalEntriesViewModel
+    public class JournalEntriesViewModel : BaseViewModel
     {
         // TODO: add UI for changing that.
         private const string AuthorName = "Me";

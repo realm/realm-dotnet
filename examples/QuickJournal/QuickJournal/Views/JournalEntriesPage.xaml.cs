@@ -1,9 +1,10 @@
-﻿using Xamarin.Forms;
+﻿using QuickJournal.Views;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace QuickJournal
 {
-    public partial class JournalEntriesPage : ContentPage
+    public partial class JournalEntriesPage : BasePage
     {
         public JournalEntriesPage()
         {

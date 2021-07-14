@@ -2,9 +2,9 @@
 using Realms;
 using Xamarin.Forms;
 
-namespace QuickJournal
+namespace QuickJournal.ViewModels
 {
-    public class JournalEntryDetailsViewModel
+    public class JournalEntryDetailsViewModel : BaseViewModel
     {
         private Transaction _transaction;
 
@@ -31,6 +31,6 @@ namespace QuickJournal
         {
             _transaction.Dispose();
         }
-   }
+    }
 }
 
