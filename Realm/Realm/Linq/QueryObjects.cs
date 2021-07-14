@@ -2,13 +2,9 @@
 
 namespace Realms
 {
-    public class WhereClauseProperties
+    public class QueryModel
     {
-        public string Property { get; set; }
-
-        public object Value { get; set; }
-
-        public string Operator { get; set; }
+        public WhereClause WhereClause { get; set; }
     }
 
     public class WhereClause
