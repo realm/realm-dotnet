@@ -1,4 +1,6 @@
-﻿using Xamarin.Forms;
+﻿using QuickJournal.ViewModels;
+using QuickJournal.Views;
+using Xamarin.Forms;
 
 namespace QuickJournal
 {
@@ -6,7 +8,11 @@ namespace QuickJournal
     {
         public App()
         {
-            MainPage = new NavigationPage(new JournalEntriesPage());
+            var page = new JournalEntriesPage();
+            {
+                BindingContext = new JournalEntriesViewModel();
+            };
+            MainPage = new NavigationPage(page);
         }
     }
 }

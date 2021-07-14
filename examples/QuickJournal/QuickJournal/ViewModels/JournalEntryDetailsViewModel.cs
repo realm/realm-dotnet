@@ -1,4 +1,7 @@
-﻿using System.Windows.Input;
+﻿using System.Threading.Tasks;
+using System.Windows.Input;
+using QuickJournal.Models;
+using QuickJournal.Services;
 using Realms;
 using Xamarin.Forms;
 
@@ -6,30 +9,34 @@ namespace QuickJournal.ViewModels
 {
     public class JournalEntryDetailsViewModel : BaseViewModel
     {
-        private Transaction _transaction;
+        private Transaction transaction;
 
         public JournalEntry Entry { get; private set; }
-
-        internal INavigation Navigation { get; set; }
 
         public ICommand SaveCommand { get; private set; }
 
         public JournalEntryDetailsViewModel(JournalEntry entry, Transaction transaction)
         {
             Entry = entry;
-            _transaction = transaction;
-            SaveCommand = new Command(Save);
+            this.transaction = transaction;
+
+            InitCommands();
         }
 
-        private void Save()
+        private void InitCommands()
         {
-            _transaction.Commit();
-            Navigation.PopAsync(true);
+            SaveCommand = new Command(async () => await Save());
         }
 
-        internal void OnDisappearing()
+        private async Task Save()
         {
-            _transaction.Dispose();
+            transaction.Commit();
+            await NavigationService.GoBack();
+        }
+
+        override internal void OnDisappearing()
+        {
+            transaction.Dispose();
         }
     }
 }

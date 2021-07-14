@@ -1,10 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 using Realms;
 
-namespace QuickJournal
+namespace QuickJournal.Models
 {
-    public class EntryMetadata : RealmObject
+    public class EntryMetadata : EmbeddedObject
     {
         public DateTimeOffset Date { get; set; }
 

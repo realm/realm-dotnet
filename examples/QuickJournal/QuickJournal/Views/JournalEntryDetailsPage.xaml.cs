@@ -1,22 +1,10 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
-
-namespace QuickJournal
+﻿namespace QuickJournal.Views
 {
-    public partial class JournalEntryDetailsPage : ContentPage
+    public partial class JournalEntryDetailsPage : BasePage
     {
-        public JournalEntryDetailsPage(JournalEntryDetailsViewModel viewModel)
+        public JournalEntryDetailsPage()
         {
             InitializeComponent();
-            BindingContext = viewModel;
-            viewModel.Navigation = Navigation;
-        }
-
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-            (BindingContext as JournalEntryDetailsViewModel)?.OnDisappearing();
-            BindingContext = null;
         }
     }
 }

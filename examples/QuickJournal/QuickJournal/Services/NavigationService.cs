@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using QuickJournal.ViewModels;
+using QuickJournal.Views;
 using Xamarin.Forms;
 
 namespace QuickJournal.Services
@@ -31,8 +32,8 @@ namespace QuickJournal.Services
         {
             switch (viewModel)
             {
-                //case AddEditContactViewModel _:  //TODO Modify
-                //    return new AddEditContactPage();
+                case JournalEntryDetailsViewModel _:
+                    return new JournalEntryDetailsPage();
                 default:
                     throw new ArgumentException("The input ViewModel is not accepted");
             }

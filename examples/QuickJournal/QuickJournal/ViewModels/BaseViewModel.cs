@@ -24,8 +24,8 @@ namespace QuickJournal.ViewModels
             return true;
         }
 
-        public virtual void OnAppearing() { }
+        internal virtual void OnAppearing() { }
 
-        public virtual void OnDisappearing() { }
+        internal virtual void OnDisappearing() { }
     }
 }

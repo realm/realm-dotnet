@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<d:BasePage  xmlns="http://xamarin.com/schemas/2014/forms" 
+<d:BasePage xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-		xmlns:d="clr-namespace:QuickJournal.Views"
-		x:Class="QuickJournal.JournalEntriesPage"
+        xmlns:d="clr-namespace:QuickJournal.Views"
+		x:Class="QuickJournal.Views.JournalEntriesPage"
 		Title="Journal">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add" Command="{Binding AddEntryCommand}" />
     </ContentPage.ToolbarItems>
     <ContentPage.Content>
-        <ListView ItemsSource="{Binding Entries}" x:Name="EntriesListView" ItemTapped="OnItemTapped" ItemSelected="OnItemSelected">
+        <ListView ItemsSource="{Binding Entries}"
+                  SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                  SelectionMode="Single"
+                  x:Name="EntriesListView">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextCell Text="{Binding Title}" Detail="{Binding Metadata.Date, StringFormat='{0:dddd, MMMM d yyyy}'}">
