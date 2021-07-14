@@ -102,6 +102,7 @@ namespace Realms.Helpers
             _ = new ObjectSerializer();
 
             _ = new EnumerableInterfaceImplementerSerializer<IList<object>, object>();
+            _ = new ExpandoObjectSerializer();
         }
 
         public static string ToNativeJson(this object value)
