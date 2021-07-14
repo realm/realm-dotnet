@@ -188,7 +188,7 @@ namespace Realms
                 {
                     Visit(node.Arguments[0]);
                     var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-                    var test = new ClauseClasses(_metadata);
+                    var test = new WhereClauseVisitor(_metadata);
                     test.VisitWhere(lambda);
                     Visit(lambda.Body);
                     return node;

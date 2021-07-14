@@ -29,6 +29,10 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Realm.rd.xml" />

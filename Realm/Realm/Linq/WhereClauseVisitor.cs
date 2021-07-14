@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using Newtonsoft.Json;
 using Realms.Schema;
 
 namespace Realms
@@ -12,6 +13,8 @@ namespace Realms
 
         private List<WhereClauseProperties> _whereList = new List<WhereClauseProperties>();
 
+        private WhereClause _whereClause;
+
         public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
@@ -19,7 +22,45 @@ namespace Realms
 
         public void VisitWhere(LambdaExpression whereClause)
         {
+            _whereClause = new WhereClause();
+            _whereClause.ExpNode = ParseExpression(whereClause.Body);
+            var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
             Visit(whereClause.Body);
+        }
+
+        private ExpressionNode ParseExpression(Expression exp)
+        {
+            if (exp is BinaryExpression be)
+            {
+                if (be.NodeType == ExpressionType.Equal)
+                {
+                    var comparisonNode = new EqualityNode();
+                    if (be.Left is MemberExpression me)
+                    {
+                        if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+                        {
+                            var leftName = GetColumnName(me, me.NodeType);
+
+                            comparisonNode.Property = leftName;
+                        }
+                    }
+                    if (be.Right is ConstantExpression co)
+                    {
+                        comparisonNode.Value = co.Value;
+                    }
+
+                    return comparisonNode;
+                }
+                if (be.NodeType == ExpressionType.AndAlso)
+                {
+                    var andNode = new AndNode();
+                    andNode.Left = ParseExpression(be.Left);
+                    andNode.Right = ParseExpression(be.Right);
+                    return andNode;
+                }
+            }
+
+            throw new Exception("Expression not supported!");
         }
 
         protected override Expression VisitMember(MemberExpression node)
