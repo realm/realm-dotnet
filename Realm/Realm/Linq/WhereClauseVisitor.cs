@@ -33,31 +33,74 @@ namespace Realms
         {
             if (exp is BinaryExpression be)
             {
-                if (be.NodeType == ExpressionType.Equal)
-                {
-                    var comparisonNode = new EqualityNode();
-                    if (be.Left is MemberExpression me)
-                    {
-                        if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
-                        {
-                            var leftName = GetColumnName(me, me.NodeType);
-
-                            comparisonNode.Property = leftName;
-                        }
-                    }
-                    if (be.Right is ConstantExpression co)
-                    {
-                        comparisonNode.Value = co.Value;
-                    }
-
-                    return comparisonNode;
-                }
                 if (be.NodeType == ExpressionType.AndAlso)
                 {
                     var andNode = new AndNode();
                     andNode.Left = ParseExpression(be.Left);
                     andNode.Right = ParseExpression(be.Right);
                     return andNode;
+                }
+
+                if (be.NodeType == ExpressionType.OrElse)
+                {
+                    var orNode = new OrNode();
+                    orNode.Left = ParseExpression(be.Left);
+                    orNode.Right = ParseExpression(be.Right);
+                    return orNode;
+                }
+
+                ComparisonNode comparisonNode;
+                switch (be.NodeType)
+                {
+                    case ExpressionType.Equal:
+                        comparisonNode = new EqualityNode();
+                        break;
+                    case ExpressionType.NotEqual:
+                        comparisonNode = new NotEqualNode();
+                        break;
+                    case ExpressionType.LessThan:
+                        comparisonNode = new LtNode();
+                        break;
+                    case ExpressionType.LessThanOrEqual:
+                        comparisonNode = new LteNode();
+                        break;
+                    case ExpressionType.GreaterThan:
+                        comparisonNode = new GtNode();
+                        break;
+                    case ExpressionType.GreaterThanOrEqual:
+                        comparisonNode = new GteNode();
+                        break;
+                    default:
+                        throw new NotSupportedException($"The binary operator '{be.NodeType}' is not supported");
+                }
+
+                if (be.Left is MemberExpression me)
+                {
+                    if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+                    {
+                        var leftName = GetColumnName(me, me.NodeType);
+
+                        comparisonNode.Property = leftName;
+                    }
+                }
+
+                if (be.Right is ConstantExpression co)
+                {
+                    comparisonNode.Value = co.Value;
+                }
+
+                return comparisonNode;
+            }
+
+            if (exp != null && exp.NodeType == ExpressionType.Parameter)
+            {
+                if (exp.Type == typeof(bool))
+                {
+                    var booleanNode = new BooleanNode();
+                    object rhs = true;  // box value
+                    var leftName = GetColumnName((MemberExpression)exp, exp.NodeType);
+                    booleanNode.Property = leftName;
+                    return booleanNode;
                 }
             }
 

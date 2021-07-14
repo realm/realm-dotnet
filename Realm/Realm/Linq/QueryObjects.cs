@@ -36,6 +36,11 @@ namespace Realms
         public override string Operator => "||";
     }
 
+    public class BooleanNode : ExpressionNode
+    {
+        public string Property { get; set; }
+    }
+
     public abstract class ComparisonNode : ExpressionNode
     {
         public string Property { get; set; }
@@ -50,9 +55,29 @@ namespace Realms
         public override string Operator => "=";
     }
 
-    public class BiggerThanNode : ComparisonNode
+    public class NotEqualNode : ComparisonNode
+    {
+        public override string Operator => "!=";
+    }
+
+    public class GteNode : ComparisonNode
     {
         public override string Operator => ">=";
+    }
+
+    public class GtNode : ComparisonNode
+    {
+        public override string Operator => ">";
+    }
+
+    public class LteNode : ComparisonNode
+    {
+        public override string Operator => "<=";
+    }
+
+    public class LtNode : ComparisonNode
+    {
+        public override string Operator => "<";
     }
 
     public class StartsWithNode : ComparisonNode
