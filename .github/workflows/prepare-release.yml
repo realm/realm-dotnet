@@ -1,0 +1,35 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Update Changelog
+        id: update-changelog
+        uses: realm/ci-actions/update-changelog@v2
+        with:
+          changelog: ${{ github.workspace }}/CHANGELOG.md
+      - name: Update package.json
+        uses: jacobtomlinson/gha-find-replace@master
+        with:
+          find: '"version": "[^"]*"'
+          replace: '"version": "${{ steps.update-changelog.outputs.new-version }}"'
+          include: Realm/Realm.Unity/package.json
+      - name: Update AssemblyInfo.props
+        uses: jacobtomlinson/gha-find-replace@master
+        with:
+          find: '<VersionPrefix>[^<]*<\/VersionPrefix>'
+          replace: '<VersionPrefix>${{ steps.update-changelog.outputs.new-version }}</VersionPrefix>'
+          include: Realm/AssemblyInfo.props
+      - name: Create Release PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: release/${{ steps.update-changelog.outputs.new-version }}
+          title: Prepare for ${{ steps.update-changelog.outputs.new-version }}
+          draft: true
+          body: An automated PR for next release.
