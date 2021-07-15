@@ -347,13 +347,6 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Read env vars
-      run: |
-        echo $GTIHUB_EVENET_PULL_REQUEST_HEAD_REF
-        echo ${{ github.event.pull_request.head.ref }}
-        echo $GITHUB_HEAD_REF
-        echo $GITHUB_BASE_REF
-      shell: bash
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
@@ -364,7 +357,7 @@ jobs:
       shell: bash
     - name: Check Docfx cache
       id: check-docfx-cache
-      if: ${{ contains(github.ref, 'release') }}
+      if: ${{ contains(github.head.ref, 'release') }}
       uses: actions/cache@v2
       with:
         path: C:\docfx
@@ -376,12 +369,12 @@ jobs:
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
     - name: Build docs
-      if: ${{ contains(github.ref, 'release') }}
+      if: ${{ contains(github.head.ref, 'release') }}
       run: |
         C:\docfx\docfx Docs/docfx.json
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store docs artifacts
-      if: ${{ contains(github.ref, 'release') }}
+      if: ${{ contains(github.head.ref, 'release') }}
       uses: actions/upload-artifact@v2
       with:
         name: Docs.zip

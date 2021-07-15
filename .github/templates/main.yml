@@ -103,7 +103,7 @@ steps:
 #@ end
 
 #@ def buildDocs():
-#@ docsCondition = "${{ contains(github.ref, 'release') }}"
+#@ docsCondition = "${{ contains(github.head.ref, 'release') }}"
   - name: Check Docfx cache
     id: check-docfx-cache
     if: #@ docsCondition
