@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using QuickJournal.Models;
 using QuickJournal.Services;
@@ -17,8 +18,8 @@ namespace QuickJournal.ViewModels
 
         public JournalEntryDetailsViewModel(JournalEntry entry, Transaction transaction)
         {
-            Entry = entry;
             this.transaction = transaction;
+            Entry = entry;
 
             InitCommands();
         }
@@ -30,13 +31,21 @@ namespace QuickJournal.ViewModels
 
         private async Task Save()
         {
+            if (string.IsNullOrEmpty(Entry.Title))
+            {
+                await DialogService.ShowAlert("Error", "You cannot save a note with an empty title");
+                return;
+            }
+
+            Entry.Metadata.LastModifiedDate = DateTimeOffset.Now;
             transaction.Commit();
+            transaction = null;
             await NavigationService.GoBack();
         }
 
         override internal void OnDisappearing()
         {
-            transaction.Dispose();
+            transaction?.Dispose();
         }
     }
 }

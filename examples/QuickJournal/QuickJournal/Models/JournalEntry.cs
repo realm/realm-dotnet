@@ -1,5 +1,4 @@
-﻿using System;
-using Realms;
+﻿using Realms;
 
 namespace QuickJournal.Models
 {
@@ -7,10 +6,8 @@ namespace QuickJournal.Models
     {
         public string Title { get; set; }
 
-        public string BodyText { get; set; }
+        public string Body { get; set; }
 
         public EntryMetadata Metadata { get; set; }
-
-        public DateTimeOffset Date => Metadata.Date;
     }
 }

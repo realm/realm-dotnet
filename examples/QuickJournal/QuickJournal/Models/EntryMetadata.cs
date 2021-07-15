@@ -5,8 +5,8 @@ namespace QuickJournal.Models
 {
     public class EntryMetadata : EmbeddedObject
     {
-        public DateTimeOffset Date { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
 
-        public string Author { get; set; }
+        public DateTimeOffset LastModifiedDate { get; set; }
     }
 }

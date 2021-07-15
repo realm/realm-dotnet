@@ -35,7 +35,6 @@ namespace QuickJournal.ViewModels
         public JournalEntriesViewModel()
         {
             realm = Realm.GetInstance();
-
             Entries = realm.All<JournalEntry>();
 
             InitCommands();
@@ -55,8 +54,7 @@ namespace QuickJournal.ViewModels
             {
                 Metadata = new EntryMetadata
                 {
-                    Date = DateTimeOffset.Now,
-                    Author = "me" //TODO should we make it changeable?
+                    CreatedDate = DateTimeOffset.Now,
                 }
             });
 

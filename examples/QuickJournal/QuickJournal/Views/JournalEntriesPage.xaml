@@ -3,7 +3,8 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         xmlns:d="clr-namespace:QuickJournal.Views"
 		x:Class="QuickJournal.Views.JournalEntriesPage"
-		Title="Journal">
+		Title="Journal"
+        x:Name="page">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add" Command="{Binding AddEntryCommand}" />
     </ContentPage.ToolbarItems>
@@ -14,10 +15,11 @@
                   x:Name="EntriesListView">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding Title}" Detail="{Binding Metadata.Date, StringFormat='{0:dddd, MMMM d yyyy}'}">
+                    <TextCell Text="{Binding Title}"
+                              Detail="{Binding Metadata.CreatedDate, StringFormat='{0:dddd, MMMM d yyyy}'}">
                         <TextCell.ContextActions>
                             <MenuItem Text="Delete" IsDestructive="true" 
-									  Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}}" 
+									  Command="{Binding Path=BindingContext.DeleteEntryCommand, Source={x:Reference page}}" 
 								      CommandParameter="{Binding .}" />
                         </TextCell.ContextActions>
                     </TextCell>

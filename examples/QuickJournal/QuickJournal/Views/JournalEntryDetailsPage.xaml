@@ -3,16 +3,12 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:d="clr-namespace:QuickJournal.Views"
 		x:Class="QuickJournal.Views.JournalEntryDetailsPage"
-		Title="{Binding Entry.Date, StringFormat='{0:MMMM d yyyy}'}">
+		Title="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:MMMM d yyyy}'}">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Save" Command="{Binding SaveCommand}" />
     </ContentPage.ToolbarItems>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="35" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Entry Text="{Binding Entry.Title}" Placeholder="Title" Grid.Row="0" />
-        <Editor Text="{Binding Entry.BodyText}" Grid.Row="1" />
-    </Grid>
+    <StackLayout Orientation="Vertical" Margin="15" Spacing="15">
+        <Entry Text="{Binding Entry.Title}" Placeholder="Title"  />
+        <Editor Text="{Binding Entry.Body}" Placeholder="Note" AutoSize="TextChanges"  />
+    </StackLayout>
 </d:BasePage>
