@@ -350,7 +350,7 @@ jobs:
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
-        echo $github_ref
+        echo $GITHUB_REF
         cd Realm/packages
         tmpName=$(basename Realm.Fody* .nupkg)
         pkgName=${tmpName#"Realm.Fody."}
