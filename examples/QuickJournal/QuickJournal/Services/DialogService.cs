@@ -11,7 +11,7 @@ namespace QuickJournal.Services
         public static async Task ShowAlert(string title, string message, string cancel = "Ok")
         {
             if (Page == null)
-                throw new Exception("The dialog service has not been initialized");
+                throw new Exception("Error while using the Dialog Service");
 
             await Page.DisplayAlert(title, message, cancel);
         }
