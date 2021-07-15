@@ -358,12 +358,6 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Read env vars
-      run: |
-        echo $GTIHUB_EVENET_PULL_REQUEST_HEAD_REF
-        echo ${{ github.event.pull_request.head.ref }}
-        echo $GITHUB_HEAD_REF
-        echo $GITHUB_BASE_REF
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
