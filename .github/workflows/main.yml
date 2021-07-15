@@ -353,6 +353,7 @@ jobs:
         echo ${{ github.event.pull_request.head.ref }}
         echo $GITHUB_HEAD_REF
         echo $GITHUB_BASE_REF
+      shell: bash
     - name: Find nupkg version
       id: find-nupkg-version
       run: |
