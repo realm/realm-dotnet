@@ -29,6 +29,20 @@ public class GameState : MonoBehaviour
         movedPiece.transform.position = new Vector3(endPosition.x, movedPiece.transform.position.y, endPosition.z);
     }
 
+    public void ResetGame()
+    {
+        foreach (Transform piece in piecesParent.transform)
+        {
+            Destroy(piece.gameObject);
+        }
+        pieces.Clear();
+        realm.Write(() =>
+        {
+            realm.RemoveAll<PieceEntity>();
+        });
+        SetUpInitialBoard();
+    }
+
     private void Awake()
     {
         realm = Realm.GetInstance();
