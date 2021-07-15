@@ -160,6 +160,7 @@
 * Fixes prior_size history corruption when replacing an embedded object in a list. (Core upgrade)
 * Fixed an assertion failure in the sync client when applying an AddColumn instruction for a RealmValue property when that property already exists locally. (Core upgrade)
 * Fixed an `Invalid data type` assertion failure in the sync client when applying an `AddColumn` instruction for a `RealmValue` property when that property already exists locally. (Core upgrade)
+* [Unity] Preserved additional constructors necessary to serialize and deserialize Custom User Data. (PR [#2519](https://github.com/realm/realm-dotnet/pull/2519))
 
 ### Enhancements
 * Added two extension methods on `IList` to get an `IQueryable` collection wrapping the list:
