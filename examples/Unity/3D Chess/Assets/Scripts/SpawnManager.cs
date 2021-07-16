@@ -59,9 +59,8 @@ public class SpawnManager : MonoBehaviour
                 break;
         }
 
-        Piece pieceInstance = Instantiate(piecePrefab);
-        pieceInstance.transform.SetParent(parent.transform);
-        pieceInstance.transform.position = new Vector3(positionInPartent.x, pieceInstance.transform.position.y, positionInPartent.z);
+        var position = new Vector3(positionInPartent.x, positionInPartent.y, positionInPartent.z);
+        Piece pieceInstance = Instantiate(piecePrefab, position, Quaternion.identity, parent.transform);
 
         return pieceInstance;
     }

@@ -8,8 +8,8 @@ public class GameState : MonoBehaviour
     [SerializeField] private SpawnManager spawnManager = default;
     [SerializeField] private GameObject piecesParent = default;
 
-    private List<Piece> pieces = new List<Piece>();
     private Realm realm = default;
+    private List<Piece> pieces = new List<Piece>();
 
     public void UpdatePiecePosition(Vector3 startPosition, Vector3 endPosition)
     {
@@ -23,6 +23,7 @@ public class GameState : MonoBehaviour
         if (attackedPiece)
         {
             pieces.Remove(attackedPiece);
+            attackedPiece.Delete();
             Destroy(attackedPiece.gameObject);
         }
 
@@ -31,15 +32,15 @@ public class GameState : MonoBehaviour
 
     public void ResetGame()
     {
+        foreach (Piece piece in pieces)
+        {
+            piece.Delete();
+        }
+        pieces.Clear();
         foreach (Transform piece in piecesParent.transform)
         {
             Destroy(piece.gameObject);
         }
-        pieces.Clear();
-        realm.Write(() =>
-        {
-            realm.RemoveAll<PieceEntity>();
-        });
         SetUpInitialBoard();
     }
 
@@ -66,56 +67,42 @@ public class GameState : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
-    {
-        realm.Write(() =>
-        {
-            realm.RemoveAll<PieceEntity>();
-            foreach (Piece piece in pieces)
-            {
-                PieceEntity pieceEntity = new PieceEntity(piece.PieceType, piece.transform.position);
-                realm.Add(pieceEntity);
-            }
-        });
-        realm.Dispose();
-    }
-
     private void SetUpInitialBoard()
     {
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteRook, piecesParent, new Vector3(1, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteKnight, piecesParent, new Vector3(2, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteBishop, piecesParent, new Vector3(3, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteQueen, piecesParent, new Vector3(4, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteKing, piecesParent, new Vector3(5, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteBishop, piecesParent, new Vector3(6, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteKnight, piecesParent, new Vector3(7, 0, 1)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteRook, piecesParent, new Vector3(8, 0, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteRook, piecesParent, new Vector3(1, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteKnight, piecesParent, new Vector3(2, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteBishop, piecesParent, new Vector3(3, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteQueen, piecesParent, new Vector3(4, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteKing, piecesParent, new Vector3(5, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteBishop, piecesParent, new Vector3(6, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteKnight, piecesParent, new Vector3(7, 0.5f, 1)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhiteRook, piecesParent, new Vector3(8, 0.5f, 1)));
 
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(1, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(2, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(3, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(4, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(5, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(6, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(7, 0, 2)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(8, 0, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(1, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(2, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(3, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(4, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(5, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(6, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(7, 0.5f, 2)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.WhitePawn, piecesParent, new Vector3(8, 0.5f, 2)));
 
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(1, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(2, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(3, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(4, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(5, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(6, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(7, 0, 7)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(8, 0, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(1, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(2, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(3, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(4, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(5, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(6, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(7, 0.5f, 7)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackPawn, piecesParent, new Vector3(8, 0.5f, 7)));
 
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackRook, piecesParent, new Vector3(1, 0, 8)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackKnight, piecesParent, new Vector3(2, 0, 8)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackBishop, piecesParent, new Vector3(3, 0, 8)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackQueen, piecesParent, new Vector3(4, 0, 8)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackKing, piecesParent, new Vector3(5, 0, 8)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackBishop, piecesParent, new Vector3(6, 0, 8)));
-        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackKnight, piecesParent, new Vector3(7, 0, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackRook, piecesParent, new Vector3(1, 0.5f, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackKnight, piecesParent, new Vector3(2, 0.5f, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackBishop, piecesParent, new Vector3(3, 0.5f, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackQueen, piecesParent, new Vector3(4, 0.5f, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackKing, piecesParent, new Vector3(5, 0.5f, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackBishop, piecesParent, new Vector3(6, 0.5f, 8)));
+        pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackKnight, piecesParent, new Vector3(7, 0.5f, 8)));
         pieces.Add(spawnManager.SpawnPiece(Piece.Type.BlackRook, piecesParent, new Vector3(8, 0, 8)));
     }
 }
