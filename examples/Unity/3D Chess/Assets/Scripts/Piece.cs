@@ -20,9 +20,7 @@ public class Piece : MonoBehaviour
         BlackKing
     }
 
-    public Type PieceType => type;
-
-    [SerializeField] private Type type = default;
+    public Type type = default;
 
     private Realm realm = default;
     private PieceEntity pieceEntity = default;
