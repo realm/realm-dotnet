@@ -41,7 +41,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest()
         {
-            var query = _realm.All<Person>().Where(p => p.IsInteresting);
+            var query = _realm.All<Person>().Where(p => p.Salary > 3 || p.Latitude == 53 && p.LastName == "true");
             var debugView = GetDebugView(query.Expression);
             Console.WriteLine(debugView);
             _ = query.ToArray();
