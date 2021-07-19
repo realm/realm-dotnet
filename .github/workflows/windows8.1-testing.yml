@@ -1,4 +1,4 @@
-name: release
+name: windows8.1-testing
 on:
   workflow_dispatch
 
