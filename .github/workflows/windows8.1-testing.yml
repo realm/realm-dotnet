@@ -60,12 +60,12 @@ jobs:
         retention-days: 1
 
   build-packages:
-  runs-on: windows-latest
-  name: Package
-  needs:
-  - build-wrappers-windows
-  - build-wrappers-windows-uwp
-  outputs:
+    runs-on: windows-latest
+    name: Package
+    needs:
+    - build-wrappers-windows
+    - build-wrappers-windows-uwp
+    outputs:
       package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
     - name: Disable Analytics
