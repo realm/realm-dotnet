@@ -4,6 +4,137 @@ on:
 #  workflow_dispatch:
 
 jobs:
+  build-wrappers-macos:
+    runs-on: macos-latest
+    name: Wrappers macOS
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-macos
+        path: wrappers/build/**
+        retention-days: 1
+  build-wrappers-ios:
+    runs-on: macos-latest
+    name: Wrappers iOS
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-ios
+        path: wrappers/build/**
+        retention-days: 1
+  build-wrappers-linux:
+    runs-on: ubuntu-20.04
+    name: Wrappers Linux
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-linux
+        path: wrappers/build/**
+        retention-days: 1
+  build-wrappers-android:
+    runs-on: ubuntu-20.04
+    name: Wrappers Android
+    strategy:
+      matrix:
+        arch:
+        - armeabi-v7a
+        - arm64-v8a
+        - x86
+        - x86_64
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-android-${{ matrix.arch }}
+        path: wrappers/build/**
+        retention-days: 1
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows
@@ -59,6 +190,56 @@ jobs:
         name: wrappers-windows-${{ matrix.arch }}
         path: wrappers/build/**
         retention-days: 1
+  build-wrappers-windows-uwp:
+    runs-on: windows-latest
+    name: Wrappers UWP
+    strategy:
+      matrix:
+        arch:
+        - Win32
+        - x64
+        - ARM
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Check cache
+      id: check-cache
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Check Vcpkg cache
+      id: check-vcpkg-cache
+      uses: actions/cache@v2
+      with:
+        path: C:\src
+        key: vcpkg
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Setup Vcpkg
+      run: |
+        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+      shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+    - name: Build wrappers
+      run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-uwp-${{ matrix.arch }}
+        path: wrappers/build/**
+        retention-days: 1
   build-packages:
     runs-on: windows-latest
     name: Package
@@ -100,53 +281,40 @@ jobs:
           $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
         }
         echo "::set-output name=build_suffix::$suffix"
+        echo $GITHUB_HEAD_REF
     - name: Fetch artifacts for macos
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-macos
-        path: wrappers/build/
+        path: wrappers/build
     - name: Fetch artifacts for ios
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-ios
         path: wrappers/build
     - name: Fetch artifacts for linux
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-linux
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-android-armeabi-v7a
         path: wrappers/build
     - name: Fetch artifacts for android-arm64-v8a
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-android-arm64-v8a
         path: wrappers/build
     - name: Fetch artifacts for android-x86
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-android-x86
         path: wrappers/build
     - name: Fetch artifacts for android-x86_64
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-android-x86_64
         path: wrappers/build
     - name: Fetch artifacts for windows-Win32
@@ -160,24 +328,18 @@ jobs:
         name: wrappers-windows-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-Win32
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-windows-uwp-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-x64
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-windows-uwp-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM
-      uses: dawidd6/action-download-artifact@v2
+      uses: actions/download-artifact@v2
       with:
-        workflow: main.yml
-        branch: ac/ci-win8.1-test
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Build Realm/Realm.Fody
