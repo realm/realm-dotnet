@@ -12,7 +12,18 @@ class SyncedRealm
         Debug.Log("SyncedRealm OpenRealm");
         var app = App.Create("3d_chess-sjdkk");
         Debug.Log("A");
-        var user = await app.LogInAsync(Credentials.Anonymous());
+        var email = "user@example.com";
+        var password = "password";
+        var user = await app.LogInAsync(Credentials.EmailPassword(email, password));
+        if (user == null)
+        {
+            await app.EmailPasswordAuth.RegisterUserAsync(email, password);
+            user = await app.LogInAsync(Credentials.EmailPassword(email, password));
+        }
+        if (user == null)
+        {
+            Debug.LogError("user must not be null");
+        }
         Debug.Log("B");
         var config = new SyncConfiguration("3d_chess_partition_key", user);
         Debug.Log("C");
