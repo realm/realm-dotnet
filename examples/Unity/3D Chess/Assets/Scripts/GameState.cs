@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Realms;
 using UnityEngine;
 
 public class GameState : MonoBehaviour
@@ -8,7 +7,6 @@ public class GameState : MonoBehaviour
     [SerializeField] private SpawnManager spawnManager = default;
     [SerializeField] private GameObject piecesParent = default;
 
-    private Realm realm = default;
     private List<Piece> pieces = new List<Piece>();
 
     public void UpdatePiecePosition(Vector3 startPosition, Vector3 endPosition)
@@ -44,14 +42,21 @@ public class GameState : MonoBehaviour
         SetUpInitialBoard();
     }
 
-    private void Awake()
+    private async void Awake()
     {
-        realm = Realm.GetInstance();
-    }
+        Debug.Log("GameState Awake");
 
-    private void Start()
-    {
-        IQueryable<PieceEntity> pieceEntities = realm.All<PieceEntity>();
+        await SyncedRealm.OpenRealm();
+        if (SyncedRealm.realm == null)
+        {
+            Debug.LogError("SyncedRealm.realm is null");
+        }
+        else
+        {
+            Debug.Log("SyncedRealm initialised.");
+        }
+
+        IQueryable<PieceEntity> pieceEntities = SyncedRealm.realm.All<PieceEntity>();
         if (pieceEntities.Count() > 0)
         {
             foreach (PieceEntity pieceEntity in pieceEntities)
@@ -65,6 +70,8 @@ public class GameState : MonoBehaviour
         {
             SetUpInitialBoard();
         }
+
+        Debug.Log("GameState Awake End");
     }
 
     private void SetUpInitialBoard()

@@ -1,5 +1,4 @@
 using System.Linq;
-using Realms;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -22,7 +21,6 @@ public class Piece : MonoBehaviour
 
     public Type type = default;
 
-    private Realm realm = default;
     private PieceEntity pieceEntity = default;
     private MovementManager movementManager = default;
 
@@ -38,9 +36,13 @@ public class Piece : MonoBehaviour
 
     public void Delete()
     {
-        realm.Write(() =>
+        if (SyncedRealm.realm == null)
         {
-            realm.Remove(pieceEntity);
+            Debug.LogError("SyncedRealm.realm is null");
+        }
+        SyncedRealm.realm.Write(() =>
+        {
+            SyncedRealm.realm.Remove(pieceEntity);
         });
     }
 
@@ -51,32 +53,41 @@ public class Piece : MonoBehaviour
 
     private void Awake()
     {
-        realm = Realm.GetInstance();
-        pieceEntity = realm.All<PieceEntity>().FirstOrDefault(piece =>
+        Debug.Log("Piece Awake");
+
+        movementManager = GameObject.FindObjectOfType<MovementManager>();
+
+        //SyncedRealm.OpenRealm();
+        if (SyncedRealm.realm == null)
+        {
+            Debug.LogError("SyncedRealm.realm is null");
+        }
+
+        pieceEntity = SyncedRealm.realm.All<PieceEntity>().FirstOrDefault(piece =>
             piece.PositionX == transform.position.x &&
             piece.PositionY == transform.position.y &&
             piece.PositionZ == transform.position.z &&
             piece.Type == (int)type);
         if (pieceEntity == null)
         {
-            realm.Write(() =>
+            SyncedRealm.realm.Write(() =>
             {
                 pieceEntity = new PieceEntity(type, transform.position);
-                realm.Add(pieceEntity);
+                SyncedRealm.realm.Add(pieceEntity);
             });
         }
-    }
-
-    private void Start()
-    {
-        movementManager = GameObject.FindObjectOfType<MovementManager>();
+        pieceEntity.PropertyChanged += PropertyChanged;
     }
 
     private void Update()
     {
         if (transform.hasChanged)
         {
-            realm.Write(() =>
+            if (SyncedRealm.realm == null)
+            {
+                Debug.LogError("SyncedRealm.realm is null");
+            }
+            SyncedRealm.realm.Write(() =>
             {
                 pieceEntity.PositionX = transform.position.x;
                 pieceEntity.PositionY = transform.position.y;
@@ -84,5 +95,11 @@ public class Piece : MonoBehaviour
             });
             transform.hasChanged = false;
         }
+    }
+
+    private void PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var newPosition = new Vector3(pieceEntity.PositionX, pieceEntity.PositionY, pieceEntity.PositionZ);
+        transform.position = newPosition;
     }
 }
