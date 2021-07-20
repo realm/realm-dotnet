@@ -1,11 +1,11 @@
 using System;
 using System.Threading.Tasks;
-using Realms;
 using Realms.Sync;
 
-class SyncedRealm
+class SyncedRealmConfiguration
 {
-    public static Realm realm;
+    //public static Realm realm;
+    public static SyncConfiguration SyncConfiguration;
 
     public static async Task OpenRealm()
     {
@@ -17,7 +17,8 @@ class SyncedRealm
         var password = "password";
         await app.EmailPasswordAuth.RegisterUserAsync(email, password);
         var user = await app.LogInAsync(Credentials.EmailPassword(email, password));
-        var config = new SyncConfiguration("3d_chess_partition_key", user);
-        realm = await Realm.GetInstanceAsync(config);
+        SyncConfiguration = new SyncConfiguration("3d_chess_partition_key", user);
+        //realm = await Realm.GetInstanceAsync(SyncConfiguration);
+        //Debug.Log(realm.Config.DatabasePath);
     }
 }
