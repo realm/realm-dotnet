@@ -36,10 +36,6 @@ public class Piece : MonoBehaviour
 
     public void Delete()
     {
-        if (SyncedRealm.realm == null)
-        {
-            Debug.LogError("SyncedRealm.realm is null");
-        }
         SyncedRealm.realm.Write(() =>
         {
             SyncedRealm.realm.Remove(pieceEntity);
@@ -53,15 +49,7 @@ public class Piece : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("Piece Awake");
-
         movementManager = GameObject.FindObjectOfType<MovementManager>();
-
-        //SyncedRealm.OpenRealm();
-        if (SyncedRealm.realm == null)
-        {
-            Debug.LogError("SyncedRealm.realm is null");
-        }
 
         pieceEntity = SyncedRealm.realm.All<PieceEntity>().FirstOrDefault(piece =>
             piece.PositionX == transform.position.x &&
@@ -83,10 +71,6 @@ public class Piece : MonoBehaviour
     {
         if (transform.hasChanged)
         {
-            if (SyncedRealm.realm == null)
-            {
-                Debug.LogError("SyncedRealm.realm is null");
-            }
             SyncedRealm.realm.Write(() =>
             {
                 pieceEntity.PositionX = transform.position.x;

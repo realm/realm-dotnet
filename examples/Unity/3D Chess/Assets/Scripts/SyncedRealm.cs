@@ -1,7 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using Realms;
 using Realms.Sync;
-using UnityEngine;
 
 class SyncedRealm
 {
@@ -9,42 +9,15 @@ class SyncedRealm
 
     public static async Task OpenRealm()
     {
-        Debug.Log("SyncedRealm OpenRealm");
+        // You can find the app id in your MongoDB Realm app in Atlas.
         var app = App.Create("3d_chess-sjdkk");
-        Debug.Log("A");
-        var email = "user@example.com";
+        // For this example we can just randomly create a new user when we start
+        // the game since all users will access the same game.
+        var email = Guid.NewGuid().ToString();
         var password = "password";
+        await app.EmailPasswordAuth.RegisterUserAsync(email, password);
         var user = await app.LogInAsync(Credentials.EmailPassword(email, password));
-        if (user == null)
-        {
-            await app.EmailPasswordAuth.RegisterUserAsync(email, password);
-            user = await app.LogInAsync(Credentials.EmailPassword(email, password));
-        }
-        if (user == null)
-        {
-            Debug.LogError("user must not be null");
-        }
-        Debug.Log("B");
         var config = new SyncConfiguration("3d_chess_partition_key", user);
-        Debug.Log("C");
         realm = await Realm.GetInstanceAsync(config);
-        Debug.Log("D");
-        //Thread.Sleep(5000);
-        Debug.Log(realm.Config.DatabasePath);
     }
 }
-
-
-//class SyncedRealm
-//{
-//    public static Realm realm;
-
-//    public static async void OpenRealm()
-//    {
-//        var app = App.Create("mangodb-vbrvs");
-//        var user = await app.LogInAsync(Credentials.Anonymous());
-//        var config = new SyncConfiguration("mangoDB", user);
-//        realm = await Realm.GetInstanceAsync(config);
-//        Debug.Log(realm.Config.DatabasePath);
-//    }
-//}

@@ -44,17 +44,7 @@ public class GameState : MonoBehaviour
 
     private async void Awake()
     {
-        Debug.Log("GameState Awake");
-
         await SyncedRealm.OpenRealm();
-        if (SyncedRealm.realm == null)
-        {
-            Debug.LogError("SyncedRealm.realm is null");
-        }
-        else
-        {
-            Debug.Log("SyncedRealm initialised.");
-        }
 
         IQueryable<PieceEntity> pieceEntities = SyncedRealm.realm.All<PieceEntity>();
         if (pieceEntities.Count() > 0)
@@ -70,8 +60,6 @@ public class GameState : MonoBehaviour
         {
             SetUpInitialBoard();
         }
-
-        Debug.Log("GameState Awake End");
     }
 
     private void SetUpInitialBoard()
