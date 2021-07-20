@@ -6,5 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     name: print to console
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Echo
       run: echo hello world
