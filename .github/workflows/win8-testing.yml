@@ -1,4 +1,4 @@
-name: windows8.1-testing
+name: win8-testing
 on:
   workflow_dispatch
 
