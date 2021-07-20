@@ -1,6 +1,6 @@
 name: win8-testing
 on:
-  push
+  workflow_dispatch
 
 jobs:
   build-wrappers-windows:
@@ -62,7 +62,6 @@ jobs:
     name: Package
     needs:
     - build-wrappers-windows
-    - build-wrappers-windows-uwp
     outputs:
       package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
