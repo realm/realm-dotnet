@@ -1,0 +1,10 @@
+name: toThrow
+on:
+  workflow_dispatch
+jobs:
+  print-to-console:
+    runs-on: ubuntu-latest
+    name: print to console
+    steps:
+    - name: Echo
+      run: echo hello world
