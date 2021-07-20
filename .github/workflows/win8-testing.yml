@@ -104,49 +104,49 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-macos
         path: wrappers/build/
     - name: Fetch artifacts for ios
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-ios
         path: wrappers/build
     - name: Fetch artifacts for linux
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-linux
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-android-armeabi-v7a
         path: wrappers/build
     - name: Fetch artifacts for android-arm64-v8a
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-android-arm64-v8a
         path: wrappers/build
     - name: Fetch artifacts for android-x86
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-android-x86
         path: wrappers/build
     - name: Fetch artifacts for android-x86_64
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-android-x86_64
         path: wrappers/build
     - name: Fetch artifacts for windows-Win32
@@ -163,21 +163,21 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-windows-uwp-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-x64
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-windows-uwp-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: main.yml
-        branch: ${{ github.ref }}
+        branch: ${{ github.head.ref }}
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Build Realm/Realm.Fody
