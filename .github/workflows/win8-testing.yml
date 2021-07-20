@@ -161,7 +161,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-8.1-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Install Windows 8.1 SDK
       run: |
         Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile sdksetup.exe -UseBasicParsing
@@ -245,6 +245,11 @@ jobs:
     name: Package
     needs:
     - build-wrappers-windows
+    - build-wrappers-macos
+    - build-wrappers-ios
+    - build-wrappers-android
+    - build-wrappers-linux
+    - build-wrappers-windows-uwp
     outputs:
       package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
