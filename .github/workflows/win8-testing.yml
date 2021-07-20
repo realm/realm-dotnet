@@ -1,7 +1,7 @@
 name: win8-testing
 on:
   pull_request:
-  workflow_dispatch:
+#  workflow_dispatch:
 
 jobs:
   build-wrappers-windows:
