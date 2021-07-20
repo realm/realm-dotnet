@@ -35,6 +35,7 @@ jobs:
         Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile sdksetup.exe -UseBasicParsing
         Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
       shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
       uses: actions/cache@v2
