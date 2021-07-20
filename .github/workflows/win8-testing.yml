@@ -1,6 +1,6 @@
 name: win8-testing
 on:
-  pull-request:
+  pull_request:
   workflow_dispatch:
 
 jobs:
