@@ -1,74 +1,65 @@
-using System;
-using System.Threading.Tasks;
+using System.Linq;
 using Realms;
-using Realms.Sync;
 using UnityEngine;
 
 class Persistence
 {
-    public static SyncConfiguration SyncConfiguration = default;
-
-    public static async Task CreateSyncConfiguration()
+    public static IQueryable<PieceEntity> ResetDatabase()
     {
-        // You can find the app id in your MongoDB Realm app in Atlas.
-        var app = App.Create("3d_chess-sjdkk");
-        // For this example we can just randomly create a new user when we start
-        // the game since all users will access the same game.
-        var email = Guid.NewGuid().ToString();
-        var password = "password";
-        await app.EmailPasswordAuth.RegisterUserAsync(email, password);
-        var user = await app.LogInAsync(Credentials.EmailPassword(email, password));
-        SyncConfiguration = new SyncConfiguration("3d_chess_partition_key", user);
-    }
-
-    public static async Task ResetDatabase()
-    {
-        //var realm = await Realm.GetInstanceAsync(SyncConfiguration);
         var realm = Realm.GetInstance();
 
-        AddPiece(realm, PieceType.WhiteRook, new Vector3(1, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteKnight, new Vector3(2, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteBishop, new Vector3(3, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteQueen, new Vector3(4, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteKing, new Vector3(5, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteBishop, new Vector3(6, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteKnight, new Vector3(7, 0.5f, 1));
-        AddPiece(realm, PieceType.WhiteRook, new Vector3(8, 0.5f, 1));
+        realm.Write(() =>
+        {
+            realm.RemoveAll<PieceEntity>();
+        });
 
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(1, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(2, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(3, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(4, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(5, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(6, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(7, 0.5f, 2));
-        AddPiece(realm, PieceType.WhitePawn, new Vector3(8, 0.5f, 2));
+        CreatePieceEntity(realm, PieceType.WhiteRook, new Vector3(1, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteKnight, new Vector3(2, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteBishop, new Vector3(3, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteQueen, new Vector3(4, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteKing, new Vector3(5, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteBishop, new Vector3(6, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteKnight, new Vector3(7, 0, 1));
+        CreatePieceEntity(realm, PieceType.WhiteRook, new Vector3(8, 0, 1));
 
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(1, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(2, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(3, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(4, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(5, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(6, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(7, 0.5f, 7));
-        AddPiece(realm, PieceType.BlackPawn, new Vector3(8, 0.5f, 7));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(1, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(2, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(3, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(4, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(5, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(6, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(7, 0, 2));
+        CreatePieceEntity(realm, PieceType.WhitePawn, new Vector3(8, 0, 2));
 
-        AddPiece(realm, PieceType.BlackRook, new Vector3(1, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackKnight, new Vector3(2, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackBishop, new Vector3(3, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackQueen, new Vector3(4, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackKing, new Vector3(5, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackBishop, new Vector3(6, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackKnight, new Vector3(7, 0.5f, 8));
-        AddPiece(realm, PieceType.BlackRook, new Vector3(8, 0.5f, 8));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(1, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(2, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(3, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(4, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(5, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(6, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(7, 0, 7));
+        CreatePieceEntity(realm, PieceType.BlackPawn, new Vector3(8, 0, 7));
+
+        CreatePieceEntity(realm, PieceType.BlackRook, new Vector3(1, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackKnight, new Vector3(2, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackBishop, new Vector3(3, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackQueen, new Vector3(4, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackKing, new Vector3(5, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackBishop, new Vector3(6, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackKnight, new Vector3(7, 0, 8));
+        CreatePieceEntity(realm, PieceType.BlackRook, new Vector3(8, 0, 8));
+
+        return realm.All<PieceEntity>();
     }
 
-    private static void AddPiece(Realm realm, PieceType type, Vector3 position)
+    private static PieceEntity CreatePieceEntity(Realm realm, PieceType type, Vector3 position)
     {
         var pieceEntity = new PieceEntity(type, position);
         realm.Write(() =>
         {
             realm.Add(pieceEntity);
         });
+
+        return pieceEntity;
     }
 }

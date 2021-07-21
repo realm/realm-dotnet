@@ -13,69 +13,73 @@ public class GameState : MonoBehaviour
 
     public void UpdatePiecePosition(Piece movedPiece, Vector3 newPosition)
     {
-        foreach (Piece piece in piecesParent.GetComponentsInChildren<Piece>())
+        // Check if there is already a piece at the new position and if so, destroy it.
+        foreach (Piece attackedPiece in piecesParent.GetComponentsInChildren<Piece>())
         {
-            if (piece.transform.position == newPosition)
+            if (attackedPiece.transform.position == newPosition)
             {
-                Destroy(piece);
-                break;
+                var attackedPieceEntity = pieces.FirstOrDefault(piece =>
+                            piece.PositionX == newPosition.x &&
+                            piece.PositionY == newPosition.y &&
+                            piece.PositionZ == newPosition.z);
+                realm.Write(() =>
+                {
+                    realm.Remove(attackedPieceEntity);
+                });
+                Destroy(attackedPiece.gameObject);
             }
         }
 
+        // Update the movedPiece's RealmObject.
         var oldPosition = movedPiece.transform.position;
-        movedPiece.transform.position = newPosition;
-
-        var pieceEntity = pieces.FirstOrDefault(piece =>
+        var movedPieceEntity = pieces.FirstOrDefault(piece =>
                             piece.PositionX == oldPosition.x &&
                             piece.PositionY == oldPosition.y &&
                             piece.PositionZ == oldPosition.z);
         realm.Write(() =>
         {
-            pieceEntity.SetPosition(newPosition);
-            Debug.Log("Position updated.");
+            movedPieceEntity.SetPosition(newPosition);
         });
+
+        // Finally move the GameOject.
+        movedPiece.transform.position = newPosition;
     }
 
-    public async void ResetGame()
+    public void ResetGame()
     {
+        // Destroy all GameObjects.
         foreach (Piece piece in piecesParent.GetComponentsInChildren<Piece>())
         {
             Destroy(piece.gameObject);
         }
-        realm.Write(() =>
-        {
-            realm.RemoveAll<PieceEntity>();
-        });
 
-        await Persistence.ResetDatabase();
+        // Re-create all RealmObjects with their original position.
+        pieces = Persistence.ResetDatabase().AsQueryable();
+
+        // Recreate the board.
         pieceSpawner.SetUpInitialBoard(piecesParent, pieceMovement);
     }
 
-    private async void Awake()
+    private void Awake()
     {
-        await Persistence.CreateSyncConfiguration();
-        //realm = await Realm.GetInstanceAsync(Persistence.SyncConfiguration);
         realm = Realm.GetInstance();
 
+        // Check if we already have PieceEntity's (which means we resume a game).
         pieces = realm.All<PieceEntity>();
         if (pieces.Count() > 0)
         {
             foreach (PieceEntity pieceEntity in pieces)
             {
+                // Create the GameObjects for these RealmObjects.
                 PieceType type = (PieceType)pieceEntity.Type;
                 Vector3 position = pieceEntity.GetPosition();
-                realm.Write(() =>
-                {
-                    var pieceEntity = new PieceEntity(type, position);
-                    realm.Add(pieceEntity);
-                });
                 pieceSpawner.SpawnPiece(type, position, piecesParent, pieceMovement);
             }
         }
         else
         {
-            await Persistence.ResetDatabase();
-            pieces = realm.All<PieceEntity>();
+            // No game was saved, create a new board.
+            pieces = Persistence.ResetDatabase().AsQueryable();
             pieceSpawner.SetUpInitialBoard(piecesParent, pieceMovement);
         }
     }
