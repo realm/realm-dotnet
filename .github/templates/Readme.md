@@ -4,7 +4,12 @@ We're using [ytt](https://github.com/vmware-tanzu/carvel-ytt) to generate the gi
 
 ## Prerequisites
 
-Get ytt from your package manager of choice. If, for example, you're on Windows and use chocolatey you can run:<br/> `choco install ytt -y`
+Get ytt from your package manager of choice. If:
+1. on Windows and use chocolatey you can run:  
+`choco install ytt -y`
+1. on MacOS and use brew you can run:  
+`brew tap vmware-tanzu/carvel`  
+`brew install ytt`
 
 If instead ytt isn't in your packager manager or you don't use one you can manually get ytt as follows:
 
