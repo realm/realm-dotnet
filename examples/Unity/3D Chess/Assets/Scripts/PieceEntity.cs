@@ -2,6 +2,22 @@ using MongoDB.Bson;
 using Realms;
 using UnityEngine;
 
+public enum PieceType : int
+{
+    WhitePawn,
+    WhiteBishop,
+    WhiteKnight,
+    WhiteRook,
+    WhiteQueen,
+    WhiteKing,
+    BlackPawn,
+    BlackBishop,
+    BlackKnight,
+    BlackRook,
+    BlackQueen,
+    BlackKing
+}
+
 public class PieceEntity : RealmObject
 {
     [PrimaryKey]
@@ -17,7 +33,7 @@ public class PieceEntity : RealmObject
 
     }
 
-    public PieceEntity(Piece.Type type, Vector3 position)
+    public PieceEntity(PieceType type, Vector3 position)
     {
         Type = (int)type;
         PositionX = position.x;
@@ -28,5 +44,12 @@ public class PieceEntity : RealmObject
     public Vector3 GetPosition()
     {
         return new Vector3(PositionX, PositionY, PositionZ);
+    }
+
+    public void SetPosition(Vector3 position)
+    {
+        PositionX = position.x;
+        PositionY = position.y;
+        PositionZ = position.z;
     }
 }

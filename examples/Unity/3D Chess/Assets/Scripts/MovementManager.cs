@@ -31,7 +31,11 @@ public class MovementManager : MonoBehaviour
     {
         if (activePiece)
         {
-            gameState.UpdatePiecePosition(activePiece.transform.position, position);
+            // We need to elevate the piece slightly to make it sit on top of the cube.
+            // For this example we'll just fix it to 0.5f as we know the height.
+            var newPosition = position + new Vector3(0, 0.5f, 0);
+
+            gameState.UpdatePiecePosition(activePiece, position);
             activePiece.Deselect();
             activePiece = null;
         }

@@ -4,27 +4,12 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    public enum Type : int
-    {
-        WhitePawn,
-        WhiteBishop,
-        WhiteKnight,
-        WhiteRook,
-        WhiteQueen,
-        WhiteKing,
-        BlackPawn,
-        BlackBishop,
-        BlackKnight,
-        BlackRook,
-        BlackQueen,
-        BlackKing
-    }
+    public PieceType type = default;
 
-    public Type type = default;
-    public PieceEntity pieceEntity { get; private set; }
+    private MovementManager movementManager = default;
 
     private Realm realm = default;
-    private MovementManager movementManager = default;
+    private PieceEntity pieceEntity = default;
 
     public void Select()
     {
@@ -34,6 +19,23 @@ public class Piece : MonoBehaviour
     public void Deselect()
     {
         gameObject.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 1);
+    }
+
+    public void MoveTo(Vector3 newPosition)
+    {
+        if (pieceEntity == null)
+        {
+            Debug.LogError("pieceEntity must not be null.");
+        }
+        if (realm == null)
+        {
+            Debug.LogError("realm must not be null.");
+        }
+        transform.position = newPosition;
+        realm.Write(() =>
+        {
+            pieceEntity.SetPosition(newPosition);
+        });
     }
 
     private void OnMouseDown()
@@ -49,43 +51,53 @@ public class Piece : MonoBehaviour
     {
         movementManager = GameObject.FindObjectOfType<MovementManager>();
 
+        if (SyncedRealmConfiguration.SyncConfiguration == null)
+        {
+            await SyncedRealmConfiguration.CreateSyncConfiguration();
+        }
         realm = await Realm.GetInstanceAsync(SyncedRealmConfiguration.SyncConfiguration);
         pieceEntity = realm.All<PieceEntity>().FirstOrDefault(piece =>
-            piece.PositionX == transform.position.x &&
-            piece.PositionY == transform.position.y &&
-            piece.PositionZ == transform.position.z &&
-            piece.Type == (int)type);
+                        piece.PositionX == transform.position.x &&
+                        piece.PositionY == transform.position.y &&
+                        piece.PositionZ == transform.position.z &&
+                        piece.Type == (int)type);
         if (pieceEntity == null)
         {
             realm.Write(() =>
             {
                 pieceEntity = new PieceEntity(type, transform.position);
                 realm.Add(pieceEntity);
+                pieceEntity.PropertyChanged += PropertyChanged;
             });
         }
-        pieceEntity.PropertyChanged += PropertyChanged;
     }
 
     private void Update()
     {
-        if (transform.hasChanged)
+        if (transform.hasChanged && realm != null && pieceEntity != null)
         {
-            if (realm != null)
+            realm.Write(() =>
             {
-                realm.Write(() =>
-                {
-                    pieceEntity.PositionX = transform.position.x;
-                    pieceEntity.PositionY = transform.position.y;
-                    pieceEntity.PositionZ = transform.position.z;
-                });
-            }
+                pieceEntity.SetPosition(transform.position);
+            });
             transform.hasChanged = false;
         }
     }
 
     private void OnDestroy()
     {
-        pieceEntity.PropertyChanged -= PropertyChanged;
+        if (pieceEntity == null)
+        {
+            Debug.LogError("pieceEntity must not be null.");
+        }
+        if (realm == null)
+        {
+            Debug.LogError("realm must not be null.");
+        }
+        realm.Write(() =>
+        {
+            realm.Remove(pieceEntity);
+        });
     }
 
     private void PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -94,7 +106,6 @@ public class Piece : MonoBehaviour
         {
             Debug.LogError("pieceEntity must not be null");
         }
-        //var newPosition = new Vector3(pieceEntity.PositionX, pieceEntity.PositionY, pieceEntity.PositionZ);
-        //transform.position = newPosition;
+        transform.position = pieceEntity.GetPosition();
     }
 }

@@ -15,51 +15,50 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] Piece prefabQueenBlack = default;
     [SerializeField] Piece prefabKingBlack = default;
 
-    public Piece SpawnPiece(Piece.Type pieceType, GameObject parent, Vector3 positionInPartent)
+    public Piece SpawnPiece(PieceType pieceType, GameObject parent, Vector3 position)
     {
         Piece piecePrefab = default;
 
         switch (pieceType)
         {
-            case Piece.Type.WhitePawn:
+            case PieceType.WhitePawn:
                 piecePrefab = prefabPawnWhite;
                 break;
-            case Piece.Type.WhiteRook:
+            case PieceType.WhiteRook:
                 piecePrefab = prefabRookWhite;
                 break;
-            case Piece.Type.WhiteKnight:
+            case PieceType.WhiteKnight:
                 piecePrefab = prefabKnightWhite;
                 break;
-            case Piece.Type.WhiteBishop:
+            case PieceType.WhiteBishop:
                 piecePrefab = prefabBishopWhite;
                 break;
-            case Piece.Type.WhiteQueen:
+            case PieceType.WhiteQueen:
                 piecePrefab = prefabQueenWhite;
                 break;
-            case Piece.Type.WhiteKing:
+            case PieceType.WhiteKing:
                 piecePrefab = prefabKingWhite;
                 break;
-            case Piece.Type.BlackPawn:
+            case PieceType.BlackPawn:
                 piecePrefab = prefabPawnBlack;
                 break;
-            case Piece.Type.BlackRook:
+            case PieceType.BlackRook:
                 piecePrefab = prefabRookBlack;
                 break;
-            case Piece.Type.BlackKnight:
+            case PieceType.BlackKnight:
                 piecePrefab = prefabKnightBlack;
                 break;
-            case Piece.Type.BlackBishop:
+            case PieceType.BlackBishop:
                 piecePrefab = prefabBishopBlack;
                 break;
-            case Piece.Type.BlackQueen:
+            case PieceType.BlackQueen:
                 piecePrefab = prefabQueenBlack;
                 break;
-            case Piece.Type.BlackKing:
+            case PieceType.BlackKing:
                 piecePrefab = prefabKingBlack;
                 break;
         }
 
-        var position = new Vector3(positionInPartent.x, positionInPartent.y, positionInPartent.z);
         Piece pieceInstance = Instantiate(piecePrefab, position, Quaternion.identity, parent.transform);
 
         return pieceInstance;

@@ -4,10 +4,9 @@ using Realms.Sync;
 
 class SyncedRealmConfiguration
 {
-    //public static Realm realm;
-    public static SyncConfiguration SyncConfiguration;
+    public static SyncConfiguration SyncConfiguration = default;
 
-    public static async Task OpenRealm()
+    public static async Task CreateSyncConfiguration()
     {
         // You can find the app id in your MongoDB Realm app in Atlas.
         var app = App.Create("3d_chess-sjdkk");
@@ -18,7 +17,5 @@ class SyncedRealmConfiguration
         await app.EmailPasswordAuth.RegisterUserAsync(email, password);
         var user = await app.LogInAsync(Credentials.EmailPassword(email, password));
         SyncConfiguration = new SyncConfiguration("3d_chess_partition_key", user);
-        //realm = await Realm.GetInstanceAsync(SyncConfiguration);
-        //Debug.Log(realm.Config.DatabasePath);
     }
 }
