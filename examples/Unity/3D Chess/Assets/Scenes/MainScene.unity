@@ -1037,7 +1037,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2340974e9bd00c241b3aae1f60e86a6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnManager: {fileID: 7926988979600865687}
+  pieceSpawner: {fileID: 7926988979600865687}
+  pieceMovement: {fileID: 1274552028}
   piecesParent: {fileID: 992431284}
 --- !u!1001 &428049796
 PrefabInstance:
@@ -3417,7 +3418,7 @@ GameObject:
   - component: {fileID: 1274552027}
   - component: {fileID: 1274552028}
   m_Layer: 0
-  m_Name: MovementManager
+  m_Name: PieceMovement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5407,7 +5408,7 @@ GameObject:
   - component: {fileID: 8472264306430443659}
   - component: {fileID: 7926988979600865687}
   m_Layer: 0
-  m_Name: SpawnManager
+  m_Name: PieceSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

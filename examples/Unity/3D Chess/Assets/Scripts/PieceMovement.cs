@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MovementManager : MonoBehaviour
+public class PieceMovement : MonoBehaviour
 {
     [SerializeField] private EventManager eventManager = default;
     [SerializeField] private GameState gameState = default;
@@ -33,9 +33,9 @@ public class MovementManager : MonoBehaviour
         {
             // We need to elevate the piece slightly to make it sit on top of the cube.
             // For this example we'll just fix it to 0.5f as we know the height.
-            var newPosition = position + new Vector3(0, 0.5f, 0);
+            var elevatedPosition = position + new Vector3(0, 0.5f, 0);
 
-            gameState.UpdatePiecePosition(activePiece, position);
+            gameState.UpdatePiecePosition(activePiece, elevatedPosition);
             activePiece.Deselect();
             activePiece = null;
         }
