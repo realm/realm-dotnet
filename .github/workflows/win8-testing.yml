@@ -156,34 +156,36 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-windows-8.1-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    # - name: Check cache
+    #   id: check-cache
+    #   uses: actions/cache@v2
+    #   with:
+    #     path: ./wrappers/build/**
+    #     key: wrappers-windows-8.1-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Install Windows 8.1 SDK
       run: |
+        dotnet --info
         Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile sdksetup.exe -UseBasicParsing
         Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
+        dotnet --info
       shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
       uses: actions/cache@v2
       with:
         path: C:\src
         key: vcpkg
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
