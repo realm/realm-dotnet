@@ -9,7 +9,7 @@ public class PieceMovement : MonoBehaviour
 
     public void SetActivePiece(Piece piece)
     {
-        if (activePiece)
+        if (activePiece != null)
         {
             activePiece.Deselect();
         }
@@ -29,7 +29,7 @@ public class PieceMovement : MonoBehaviour
 
     private void SquareClickedListener(Vector3 position)
     {
-        if (activePiece)
+        if (activePiece != null)
         {
             gameState.UpdatePiecePosition(activePiece, position);
             activePiece.Deselect();

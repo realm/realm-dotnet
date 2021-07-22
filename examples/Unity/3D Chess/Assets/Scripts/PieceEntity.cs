@@ -1,25 +1,10 @@
 using Realms;
 using UnityEngine;
 
-public enum PieceType : int
-{
-    WhitePawn,
-    WhiteBishop,
-    WhiteKnight,
-    WhiteRook,
-    WhiteQueen,
-    WhiteKing,
-    BlackPawn,
-    BlackBishop,
-    BlackKnight,
-    BlackRook,
-    BlackQueen,
-    BlackKing
-}
-
 public class PieceEntity : RealmObject
 {
     public int Type { get; set; }
+
     public float PositionX { get; set; }
     public float PositionY { get; set; }
     public float PositionZ { get; set; }
@@ -48,4 +33,5 @@ public class PieceEntity : RealmObject
         PositionY = position.y;
         PositionZ = position.z;
     }
+
 }

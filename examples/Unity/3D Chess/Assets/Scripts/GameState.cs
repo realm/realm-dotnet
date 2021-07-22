@@ -9,39 +9,32 @@ public class GameState : MonoBehaviour
     [SerializeField] private GameObject piecesParent = default;
 
     private Realm realm = default;
-    private IQueryable<PieceEntity> pieces = default;
+    private IQueryable<PieceEntity> pieceEntities = default;
 
     public void UpdatePiecePosition(Piece movedPiece, Vector3 newPosition)
     {
         // Check if there is already a piece at the new position and if so, destroy it.
-        foreach (Piece attackedPiece in piecesParent.GetComponentsInChildren<Piece>())
+        var attackedPiece = piecesParent.GetComponentsInChildren<Piece>()
+                                .FirstOrDefault(piece => piece.transform.position == newPosition);
+        if (attackedPiece != null)
         {
-            if (attackedPiece.transform.position == newPosition)
+            var attackedPieceEntity = FindPieceEntityAtPosition(newPosition);
+            realm.Write(() =>
             {
-                var attackedPieceEntity = pieces.FirstOrDefault(piece =>
-                            piece.PositionX == newPosition.x &&
-                            piece.PositionY == newPosition.y &&
-                            piece.PositionZ == newPosition.z);
-                realm.Write(() =>
-                {
-                    realm.Remove(attackedPieceEntity);
-                });
-                Destroy(attackedPiece.gameObject);
-            }
+                realm.Remove(attackedPieceEntity);
+            });
+            Destroy(attackedPiece.gameObject);
         }
 
         // Update the movedPiece's RealmObject.
         var oldPosition = movedPiece.transform.position;
-        var movedPieceEntity = pieces.FirstOrDefault(piece =>
-                            piece.PositionX == oldPosition.x &&
-                            piece.PositionY == oldPosition.y &&
-                            piece.PositionZ == oldPosition.z);
+        var movedPieceEntity = FindPieceEntityAtPosition(oldPosition);
         realm.Write(() =>
         {
             movedPieceEntity.SetPosition(newPosition);
         });
 
-        // Finally move the GameOject.
+        // Update the movedPiece's GameObject.
         movedPiece.transform.position = newPosition;
     }
 
@@ -53,35 +46,45 @@ public class GameState : MonoBehaviour
             Destroy(piece.gameObject);
         }
 
-        // Re-create all RealmObjects with their original position.
-        pieces = Persistence.ResetDatabase().AsQueryable();
+        // Re-create all RealmObjects with their initial position.
+        pieceEntities = Persistence.ResetDatabase();
 
-        // Recreate the board.
-        pieceSpawner.SetUpInitialBoard(piecesParent, pieceMovement);
+        // Recreate the GameObjects.
+        CreateGameObjects();
     }
 
     private void Awake()
     {
         realm = Realm.GetInstance();
+        pieceEntities = realm.All<PieceEntity>();
 
         // Check if we already have PieceEntity's (which means we resume a game).
-        pieces = realm.All<PieceEntity>();
-        if (pieces.Count() > 0)
+        if (pieceEntities.Count() == 0)
         {
-            foreach (PieceEntity pieceEntity in pieces)
-            {
-                // Create the GameObjects for these RealmObjects.
-                PieceType type = (PieceType)pieceEntity.Type;
-                Vector3 position = pieceEntity.GetPosition();
-                pieceSpawner.SpawnPiece(type, position, piecesParent, pieceMovement);
-            }
+            // No game was saved, create the necessary RealmObjects.
+            pieceEntities = Persistence.ResetDatabase();
         }
-        else
+
+        CreateGameObjects();
+    }
+
+    private void CreateGameObjects()
+    {
+        // Each RealmObject needs a corresponding GameObject to represent it.
+        foreach (PieceEntity pieceEntity in pieceEntities)
         {
-            // No game was saved, create a new board.
-            pieces = Persistence.ResetDatabase().AsQueryable();
-            pieceSpawner.SetUpInitialBoard(piecesParent, pieceMovement);
+            PieceType type = (PieceType)pieceEntity.Type;
+            Vector3 position = pieceEntity.GetPosition();
+            pieceSpawner.SpawnPiece(type, position, piecesParent, pieceMovement);
         }
+    }
+
+    private PieceEntity FindPieceEntityAtPosition(Vector3 position)
+    {
+        return pieceEntities.FirstOrDefault(piece =>
+                            piece.PositionX == position.x &&
+                            piece.PositionY == position.y &&
+                            piece.PositionZ == position.z);
     }
 
 }

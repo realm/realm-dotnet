@@ -63,42 +63,4 @@ public class PieceSpawner : MonoBehaviour
         pieceInstance.pieceMovement = pieceMovement;
     }
 
-    public void SetUpInitialBoard(GameObject piecesParent, PieceMovement pieceMovement)
-    {
-        SpawnPiece(PieceType.WhiteRook, new Vector3(1, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteKnight, new Vector3(2, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteBishop, new Vector3(3, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteQueen, new Vector3(4, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteKing, new Vector3(5, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteBishop, new Vector3(6, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteKnight, new Vector3(7, 0, 1), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhiteRook, new Vector3(8, 0, 1), piecesParent, pieceMovement);
-
-        SpawnPiece(PieceType.WhitePawn, new Vector3(1, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(2, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(3, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(4, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(5, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(6, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(7, 0, 2), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.WhitePawn, new Vector3(8, 0, 2), piecesParent, pieceMovement);
-
-        SpawnPiece(PieceType.BlackPawn, new Vector3(1, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(2, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(3, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(4, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(5, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(6, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(7, 0, 7), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackPawn, new Vector3(8, 0, 7), piecesParent, pieceMovement);
-
-        SpawnPiece(PieceType.BlackRook, new Vector3(1, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackKnight, new Vector3(2, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackBishop, new Vector3(3, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackQueen, new Vector3(4, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackKing, new Vector3(5, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackBishop, new Vector3(6, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackKnight, new Vector3(7, 0, 8), piecesParent, pieceMovement);
-        SpawnPiece(PieceType.BlackRook, new Vector3(8, 0, 8), piecesParent, pieceMovement);
-    }
 }
