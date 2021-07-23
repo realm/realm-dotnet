@@ -41,7 +41,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest()
         {
-            var query = _realm.All<Person>().Where(p => p.IsInteresting);
+            var query = _realm.All<Person>().Where(p => p.Score == 2);
             var debugView = GetDebugView(query.Expression);
             Console.WriteLine(debugView);
             _ = query.ToArray();
@@ -63,6 +63,8 @@ namespace Realms.Tests.Database
         //public void DictTest()
         //{
         //    var query = _realm.All<CollectionsObject>().Where(a => a.BooleanDict.Any(kvp => kvp.Key.StartsWith("abc")));
+        //    var debugView = GetDebugView(query.Expression);
+        //    Console.WriteLine(debugView);
         //    _ = query.ToArray();
         //}
 

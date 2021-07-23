@@ -35,9 +35,9 @@ namespace Realms
             _metadata = metadata;
         }
 
-        internal RealmResultsVisitor MakeVisitor()
+        internal RealmResultsVisitor2 MakeVisitor()
         {
-            return new RealmResultsVisitor(_realm, _metadata);
+            return new RealmResultsVisitor2(_realm, _metadata);
         }
 
         public IQueryable<T> CreateQuery<T>(Expression expression)

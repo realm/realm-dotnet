@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
 using Realms.Schema;
+using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
 {
@@ -14,6 +17,48 @@ namespace Realms
         //private List<WhereClauseProperties> _whereList = new List<WhereClauseProperties>();
 
         private WhereClause _whereClause;
+
+        private static class Methods
+        {
+            internal static LazyMethod Capture<T>(Expression<Action<T>> lambda)
+            {
+                return new LazyMethod(() =>
+                {
+                    var method = (lambda.Body as MethodCallExpression).Method;
+                    if (method.IsGenericMethod)
+                    {
+                        method = method.GetGenericMethodDefinition();
+                    }
+
+                    return method;
+                });
+            }
+
+            internal static class String
+            {
+                internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
+
+                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+
+                internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
+
+                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
+                internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
+
+                internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
+
+                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture EndsWith(string).")]
+                internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
+
+                internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
+
+                internal static readonly LazyMethod IsNullOrEmpty = Capture<string>(s => string.IsNullOrEmpty(s));
+
+                internal static readonly LazyMethod EqualsMethod = Capture<string>(s => s.Equals(string.Empty));
+
+                internal static readonly LazyMethod EqualsStringComparison = Capture<string>(s => s.Equals(string.Empty, StringComparison.Ordinal));
+            }
+        }
 
         public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
@@ -80,27 +125,102 @@ namespace Realms
                     {
                         var leftName = GetColumnName(me, me.NodeType);
 
-                        comparisonNode.Property = leftName;
+                        comparisonNode.PropertyNode.Property = leftName;
+                        var returned = ((PropertyInfo)me.Member).PropertyType;
+                        comparisonNode.PropertyNode.Type = me.Member.Name.GetType().Name;
                     }
                 }
 
                 if (be.Right is ConstantExpression co)
                 {
-                    comparisonNode.Value = co.Value;
+                    comparisonNode.ValueNode = new ValueNode();
+                    comparisonNode.ValueNode.Value = co.Value;
+                    var test2 = co.Value.GetType();
+                    if (test2 == typeof(float))
+                    {
+                        comparisonNode.ValueNode.Type = "float";
+                        comparisonNode.PropertyNode.Type = "float";
+                    }
                 }
 
                 return comparisonNode;
             }
-
-            if (exp != null && exp.NodeType == ExpressionType.Parameter)
+            else if (exp is MemberExpression)
             {
                 if (exp.Type == typeof(bool))
                 {
-                    var booleanNode = new BooleanNode();
-                    object rhs = true;  // box value
-                    var leftName = GetColumnName((MemberExpression)exp, exp.NodeType);
-                    booleanNode.Property = leftName;
-                    return booleanNode;
+                    var boolNode = new BooleanPropertyNode();
+                    var propName = ((MemberExpression)exp).Member.GetMappedOrOriginalName();
+                    boolNode.Property = propName;
+                    return boolNode;
+                }
+                throw new NotSupportedException($"The member '{((MemberExpression)exp).Member.Name}' is not supported");
+            }
+            else if (exp is MethodCallExpression)
+            {
+                if (((MethodCallExpression)exp).Method.DeclaringType == typeof(string) ||
+                    ((MethodCallExpression)exp).Method.DeclaringType == typeof(StringExtensions))
+                {
+                    var expMethod = exp as MethodCallExpression;
+
+                    ComparisonNode stringComparisonNode;
+
+                    if (AreMethodsSame(expMethod.Method, Methods.String.Contains.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    //else if (IsStringContainsWithComparison(node.Method, out var index))
+                    //{
+                    //    Console.WriteLine("Test");
+                    //}
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.StartsWith.Value))
+                    {
+                        stringComparisonNode = new StartsWithNode();
+                        if (expMethod.Arguments[0] is ConstantExpression c)
+                        {
+                            stringComparisonNode.ValueNode.Value = c.Value;
+                        }
+
+                        if (((MethodCallExpression)exp).Object is MemberExpression me)
+                        {
+                            if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+                            {
+                                var leftName = GetColumnName(me, me.NodeType);
+
+                                stringComparisonNode.PropertyNode.Property = leftName;
+                            }
+                        }
+
+                        return stringComparisonNode;
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.StartsWithStringComparison.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.EndsWith.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.EndsWithStringComparison.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.IsNullOrEmpty.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.EqualsMethod.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.EqualsStringComparison.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
+                    else if (AreMethodsSame(expMethod.Method, Methods.String.Like.Value))
+                    {
+                        Console.WriteLine("Test");
+                    }
                 }
             }
 
@@ -243,6 +363,38 @@ namespace Realms
             }
 
             return name;
+        }
+
+        private static bool AreMethodsSame(MethodInfo first, MethodInfo second)
+        {
+            if (first == second)
+            {
+                return true;
+            }
+
+            if (first.Name != second.Name ||
+                first.DeclaringType != second.DeclaringType)
+            {
+                return false;
+            }
+
+            var firstParameters = first.GetParameters();
+            var secondParameters = second.GetParameters();
+
+            if (firstParameters.Length != secondParameters.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < firstParameters.Length; i++)
+            {
+                if (firstParameters[i].ParameterType != secondParameters[i].ParameterType)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         //protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)

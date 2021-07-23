@@ -5,6 +5,13 @@ namespace Realms
     public class QueryModel
     {
         public WhereClause WhereClause { get; set; }
+
+        public SortClause SortClause { get; set; }
+    }
+
+    public class SortClause
+    {
+        public ExpressionNode expNode { get; set; }
     }
 
     public class WhereClause
@@ -14,7 +21,6 @@ namespace Realms
 
     public class ExpressionNode
     {
-
     }
 
     public abstract class BooleanBinaryNode : ExpressionNode
@@ -36,18 +42,39 @@ namespace Realms
         public override string Operator => "||";
     }
 
-    public class BooleanNode : ExpressionNode
+    public class BooleanPropertyNode : ExpressionNode
     {
         public string Property { get; set; }
     }
 
     public abstract class ComparisonNode : ExpressionNode
     {
-        public string Property { get; set; }
+        public PropertyNode PropertyNode { get; set; }
 
-        public object Value { get; set; }
+        public ValueNode ValueNode { get; set; }
 
         public abstract string Operator { get; }
+
+        public ComparisonNode()
+        {
+            PropertyNode = new PropertyNode();
+
+            ValueNode = new ValueNode();
+        }
+    }
+
+    public class ValueNode : ExpressionNode
+    {
+        public object Value { get; set; }
+
+        public string Type { get; set; }
+    }
+
+    public class PropertyNode : ExpressionNode
+    {
+        public object Property { get; set; }
+
+        public string Type { get; set; }
     }
 
     public class EqualityNode : ComparisonNode
