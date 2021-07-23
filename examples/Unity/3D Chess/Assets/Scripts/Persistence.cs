@@ -1,9 +1,23 @@
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Realms;
+using Realms.Sync;
 using UnityEngine;
 
 class Persistence
 {
+    public static async Task<Realm> CreateRealmAsync()
+    {
+        var app = App.Create("3d_chess-sjdkk");
+        var email = Guid.NewGuid().ToString();
+        var password = "password";
+        await app.EmailPasswordAuth.RegisterUserAsync(email, password);
+        var user = await app.LogInAsync(Credentials.EmailPassword(email, password));
+        var syncConfiguration = new SyncConfiguration("3d_chess_partition_key", user);
+        return await Realm.GetInstanceAsync(syncConfiguration);
+    }
+
     public static IQueryable<PieceEntity> ResetDatabase(Realm realm)
     {
         realm.Write(() =>

@@ -1,8 +1,13 @@
+using MongoDB.Bson;
 using Realms;
 using UnityEngine;
 
 public class PieceEntity : RealmObject
 {
+    [PrimaryKey]
+    [MapTo("_id")]
+    public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
     public int Type { get; set; }
 
     public float PositionX { get; set; }
