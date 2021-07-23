@@ -4,10 +4,8 @@ using UnityEngine;
 
 class Persistence
 {
-    public static IQueryable<PieceEntity> ResetDatabase()
+    public static IQueryable<PieceEntity> ResetDatabase(Realm realm)
     {
-        var realm = Realm.GetInstance();
-
         realm.Write(() =>
         {
             realm.RemoveAll<PieceEntity>();

@@ -31,7 +31,7 @@ public class PieceMovement : MonoBehaviour
     {
         if (activePiece != null)
         {
-            gameState.UpdatePiecePosition(activePiece, position);
+            gameState.UpdatePieceToPosition(activePiece, position);
             activePiece.Deselect();
             activePiece = null;
         }

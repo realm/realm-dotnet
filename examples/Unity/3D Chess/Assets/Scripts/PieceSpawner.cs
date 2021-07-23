@@ -62,5 +62,4 @@ public class PieceSpawner : MonoBehaviour
         Piece pieceInstance = Instantiate(piecePrefab, position, Quaternion.identity, parent.transform);
         pieceInstance.pieceMovement = pieceMovement;
     }
-
 }

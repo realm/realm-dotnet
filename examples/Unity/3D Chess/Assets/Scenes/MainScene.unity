@@ -1087,7 +1087,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pieceSpawner: {fileID: 7926988979600865687}
   pieceMovement: {fileID: 1274552028}
-  piecesParent: {fileID: 992431284}
+  pieces: {fileID: 992431284}
 --- !u!1001 &428049796
 PrefabInstance:
   m_ObjectHideFlags: 0

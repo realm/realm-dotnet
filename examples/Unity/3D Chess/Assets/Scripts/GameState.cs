@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Realms;
 using UnityEngine;
@@ -6,16 +7,15 @@ public class GameState : MonoBehaviour
 {
     [SerializeField] private PieceSpawner pieceSpawner = default;
     [SerializeField] private PieceMovement pieceMovement = default;
-    [SerializeField] private GameObject piecesParent = default;
+    [SerializeField] private GameObject pieces = default;
 
     private Realm realm = default;
     private IQueryable<PieceEntity> pieceEntities = default;
 
-    public void UpdatePiecePosition(Piece movedPiece, Vector3 newPosition)
+    public void UpdatePieceToPosition(Piece movedPiece, Vector3 newPosition)
     {
         // Check if there is already a piece at the new position and if so, destroy it.
-        var attackedPiece = piecesParent.GetComponentsInChildren<Piece>()
-                                .FirstOrDefault(piece => piece.transform.position == newPosition);
+        var attackedPiece = FindPieceAtPosition(newPosition);
         if (attackedPiece != null)
         {
             var attackedPieceEntity = FindPieceEntityAtPosition(newPosition);
@@ -41,13 +41,13 @@ public class GameState : MonoBehaviour
     public void ResetGame()
     {
         // Destroy all GameObjects.
-        foreach (Piece piece in piecesParent.GetComponentsInChildren<Piece>())
+        foreach (Piece piece in pieces.GetComponentsInChildren<Piece>())
         {
             Destroy(piece.gameObject);
         }
 
         // Re-create all RealmObjects with their initial position.
-        pieceEntities = Persistence.ResetDatabase();
+        pieceEntities = Persistence.ResetDatabase(realm);
 
         // Recreate the GameObjects.
         CreateGameObjects();
@@ -62,9 +62,8 @@ public class GameState : MonoBehaviour
         if (pieceEntities.Count() == 0)
         {
             // No game was saved, create the necessary RealmObjects.
-            pieceEntities = Persistence.ResetDatabase();
+            pieceEntities = Persistence.ResetDatabase(realm);
         }
-
         CreateGameObjects();
     }
 
@@ -75,8 +74,19 @@ public class GameState : MonoBehaviour
         {
             PieceType type = (PieceType)pieceEntity.Type;
             Vector3 position = pieceEntity.GetPosition();
-            pieceSpawner.SpawnPiece(type, position, piecesParent, pieceMovement);
+            pieceSpawner.SpawnPiece(type, position, pieces, pieceMovement);
         }
+    }
+
+    private Piece FindPieceAtIndex(int i)
+    {
+        return pieces.GetComponentsInChildren<Piece>()[i];
+    }
+
+    private Piece FindPieceAtPosition(Vector3 position)
+    {
+        return pieces.GetComponentsInChildren<Piece>()
+            .FirstOrDefault(piece => piece.transform.position == position);
     }
 
     private PieceEntity FindPieceEntityAtPosition(Vector3 position)

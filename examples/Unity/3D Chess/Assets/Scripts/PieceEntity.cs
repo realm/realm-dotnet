@@ -33,5 +33,4 @@ public class PieceEntity : RealmObject
         PositionY = position.y;
         PositionZ = position.z;
     }
-
 }
