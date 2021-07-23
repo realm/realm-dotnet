@@ -135,12 +135,28 @@ namespace Realms
                 {
                     comparisonNode.ValueNode = new ValueNode();
                     comparisonNode.ValueNode.Value = co.Value;
-                    var test2 = co.Value.GetType();
-                    if (test2 == typeof(float))
+                    var valueType = co.Value.GetType();
+
+                    if (valueType == typeof(float))
                     {
                         comparisonNode.ValueNode.Type = "float";
                         comparisonNode.PropertyNode.Type = "float";
                     }
+                    else if (valueType == typeof(long))
+                    {
+                        comparisonNode.ValueNode.Type = "long";
+                        comparisonNode.PropertyNode.Type = "long";
+                    }
+                    else if (valueType == typeof(double))
+                    {
+                        comparisonNode.ValueNode.Type = "double";
+                        comparisonNode.PropertyNode.Type = "double";
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(valueType + "is not a supported type.");
+                    }
+                    // Add all types
                 }
 
                 return comparisonNode;
@@ -179,6 +195,7 @@ namespace Realms
                         if (expMethod.Arguments[0] is ConstantExpression c)
                         {
                             stringComparisonNode.ValueNode.Value = c.Value;
+                            stringComparisonNode.ValueNode.Type = "string";
                         }
 
                         if (((MethodCallExpression)exp).Object is MemberExpression me)
@@ -188,6 +205,7 @@ namespace Realms
                                 var leftName = GetColumnName(me, me.NodeType);
 
                                 stringComparisonNode.PropertyNode.Property = leftName;
+                                stringComparisonNode.PropertyNode.Type = "string";
                             }
                         }
 
