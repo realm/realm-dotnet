@@ -63,11 +63,11 @@ namespace Realms
         public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
+            _whereClause = new WhereClause();
         }
 
         public WhereClause VisitWhere(LambdaExpression whereClause)
         {
-            _whereClause = new WhereClause();
             _whereClause.ExpNode = ParseExpression(whereClause.Body);
             var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
             Visit(whereClause.Body);

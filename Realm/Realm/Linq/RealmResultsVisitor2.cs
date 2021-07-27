@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Newtonsoft.Json;
 
 namespace Realms
 {
@@ -33,8 +34,9 @@ namespace Realms
                 }
                 if (IsSortClause(node.Method.Name, out var isAscending, out var isReplacing))
                 {
-                    var sortClause = new SortClauseVisitor();
-                    // TODO: _query.SortClause = sortClause.VisitSort();
+                    Visit(node.Arguments[0]);
+                    var orderClause = new OrderByClauseVisitor();
+                    _query.OrderByClause = orderClause.VisitOrderBy(node.Method.Name, isAscending, isReplacing);
                     return node;
                 }
                 else
@@ -87,6 +89,7 @@ namespace Realms
 
         public ResultsHandle MakeResultsForQuery()
         {
+            var json = JsonConvert.SerializeObject(_query, formatting: Formatting.Indented);
             return _coreQueryHandle.CreateResults(_realm.SharedRealmHandle, _sortDescriptor);
         }
     }

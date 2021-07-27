@@ -6,12 +6,18 @@ namespace Realms
     {
         public WhereClause WhereClause { get; set; }
 
-        public SortClause SortClause { get; set; }
+        public OrderbyClause OrderByClause { get; set; }
     }
 
-    public class SortClause
+    public class OrderbyClause
     {
-        public ExpressionNode expNode { get; set; }
+        public bool IsAscending { get; set; }
+
+        public bool IsReplacing { get; set; }
+
+        public string Property { get; set; }
+
+        public string Kind { get; } = "orderbyclause";
     }
 
     public class WhereClause
