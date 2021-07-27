@@ -1,10 +1,12 @@
-**_We want to hear from you! Tell us about your experience using the Realm SDKs in our [short survey](http://bit.ly/3hRO5U2)._**
-
 ![Realm](https://github.com/realm/realm-dotnet/raw/master/logo.png)
 
 Realm is a mobile database that runs directly on phones, tablets or wearables.
 
 This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platforms and their versions, check out the [Supported Platforms](https://docs.mongodb.com/realm/dotnet/#supported-platforms) sub-section in the documentation.
+
+## Tell us about your experience
+
+We want to hear from you! Tell us about your experience using the Realm SDKs in our [short survey](http://bit.ly/3hRO5U2).
 
 ## Features
 
