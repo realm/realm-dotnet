@@ -125,32 +125,31 @@ namespace Realms
                     {
                         var leftName = GetColumnName(me, me.NodeType);
 
-                        comparisonNode.PropertyNode.Property = leftName;
-                        var returned = ((PropertyInfo)me.Member).PropertyType;
-                        comparisonNode.PropertyNode.Type = me.Member.Name.GetType().Name;
+                        comparisonNode.Left.Value = leftName;
+                        comparisonNode.Left.Kind = "property";
                     }
                 }
 
                 if (be.Right is ConstantExpression co)
                 {
-                    comparisonNode.ValueNode = new ValueNode();
-                    comparisonNode.ValueNode.Value = co.Value;
+                    comparisonNode.Right.Value = co.Value;
+                    comparisonNode.Right.Kind = "constant";
                     var valueType = co.Value.GetType();
 
                     if (valueType == typeof(float))
                     {
-                        comparisonNode.ValueNode.Type = "float";
-                        comparisonNode.PropertyNode.Type = "float";
+                        comparisonNode.Right.Type = "float";
+                        comparisonNode.Left.Type = "float";
                     }
                     else if (valueType == typeof(long))
                     {
-                        comparisonNode.ValueNode.Type = "long";
-                        comparisonNode.PropertyNode.Type = "long";
+                        comparisonNode.Right.Type = "long";
+                        comparisonNode.Left.Type = "long";
                     }
                     else if (valueType == typeof(double))
                     {
-                        comparisonNode.ValueNode.Type = "double";
-                        comparisonNode.PropertyNode.Type = "double";
+                        comparisonNode.Right.Type = "double";
+                        comparisonNode.Left.Type = "double";
                     }
                     else
                     {
@@ -194,8 +193,8 @@ namespace Realms
                         stringComparisonNode = new StartsWithNode();
                         if (expMethod.Arguments[0] is ConstantExpression c)
                         {
-                            stringComparisonNode.ValueNode.Value = c.Value;
-                            stringComparisonNode.ValueNode.Type = "string";
+                            //stringComparisonNode.ValueNode.Value = c.Value;
+                            //stringComparisonNode.ValueNode.Type = "string";
                         }
 
                         if (((MethodCallExpression)exp).Object is MemberExpression me)
@@ -204,8 +203,8 @@ namespace Realms
                             {
                                 var leftName = GetColumnName(me, me.NodeType);
 
-                                stringComparisonNode.PropertyNode.Property = leftName;
-                                stringComparisonNode.PropertyNode.Type = "string";
+                                //stringComparisonNode.PropertyNode.Property = leftName;
+                                //stringComparisonNode.PropertyNode.Type = "string";
                             }
                         }
 

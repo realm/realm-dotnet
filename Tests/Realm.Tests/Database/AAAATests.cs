@@ -41,7 +41,8 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest()
         {
-            var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("test"));
+            //var query2 = _realm.All<Person>().Filter("LastName CONTAINS 'test'");
+            var query = _realm.All<Person>().Where(p => p.Score > 5).OrderBy(p => p.Score);
             var debugView = GetDebugView(query.Expression);
             Console.WriteLine(debugView);
             _ = query.ToArray();

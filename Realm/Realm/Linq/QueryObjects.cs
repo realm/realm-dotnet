@@ -17,10 +17,13 @@ namespace Realms
     public class WhereClause
     {
         public ExpressionNode ExpNode { get; set; }
+
+        public string Kind { get; } = "whereclause";
     }
 
-    public class ExpressionNode
+    public abstract class ExpressionNode
     {
+        public abstract string kind { get; }
     }
 
     public abstract class BooleanBinaryNode : ExpressionNode
@@ -35,44 +38,47 @@ namespace Realms
     public class AndNode : BooleanBinaryNode
     {
         public override string Operator => "&&";
+
+        public override string kind => "And";
     }
 
     public class OrNode : BooleanBinaryNode
     {
         public override string Operator => "||";
+
+        public override string kind => "Or";
     }
 
     public class BooleanPropertyNode : ExpressionNode
     {
         public string Property { get; set; }
+
+        public override string kind => throw new NotImplementedException();
     }
 
     public abstract class ComparisonNode : ExpressionNode
     {
-        public PropertyNode PropertyNode { get; set; }
+        public StandardNode Left { get; set; }
 
-        public ValueNode ValueNode { get; set; }
+        public StandardNode Right { get; set; }
 
         public abstract string Operator { get; }
 
+        public override string kind => "comparison";
+
         public ComparisonNode()
         {
-            PropertyNode = new PropertyNode();
+            Left = new StandardNode();
 
-            ValueNode = new ValueNode();
+            Right = new StandardNode();
         }
     }
 
-    public class ValueNode : ExpressionNode
+    public class StandardNode
     {
+        public string Kind { get; set; }
+
         public object Value { get; set; }
-
-        public string Type { get; set; }
-    }
-
-    public class PropertyNode : ExpressionNode
-    {
-        public object Property { get; set; }
 
         public string Type { get; set; }
     }
