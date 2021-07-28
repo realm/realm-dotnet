@@ -127,6 +127,23 @@ namespace Realms
 
                         comparisonNode.Left.Value = leftName;
                         comparisonNode.Left.Kind = "property";
+                        // TODO: Possible with switch statment in our current .NET version?
+                        if (me.Type == typeof(float))
+                        {
+                            comparisonNode.Left.Type = "float";
+                        }
+                        else if (me.Type == typeof(long))
+                        {
+                            comparisonNode.Left.Type = "long";
+                        }
+                        else if (me.Type == typeof(double))
+                        {
+                            comparisonNode.Left.Type = "double";
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(me + " is null or not a supported type.");
                     }
                 }
 
@@ -139,17 +156,14 @@ namespace Realms
                     if (valueType == typeof(float))
                     {
                         comparisonNode.Right.Type = "float";
-                        comparisonNode.Left.Type = "float";
                     }
                     else if (valueType == typeof(long))
                     {
                         comparisonNode.Right.Type = "long";
-                        comparisonNode.Left.Type = "long";
                     }
                     else if (valueType == typeof(double))
                     {
                         comparisonNode.Right.Type = "double";
-                        comparisonNode.Left.Type = "double";
                     }
                     else
                     {

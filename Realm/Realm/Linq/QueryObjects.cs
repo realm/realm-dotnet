@@ -11,13 +11,18 @@ namespace Realms
 
     public class OrderbyClause
     {
+        public OrderingNode OrderingNode { get; set; }
+
+        public string Kind { get; } = "orderbyclause";
+    }
+
+    public class OrderingNode
+    {
         public bool IsAscending { get; set; }
 
         public bool IsReplacing { get; set; }
 
         public string Property { get; set; }
-
-        public string Kind { get; } = "orderbyclause";
     }
 
     public class WhereClause
@@ -29,7 +34,7 @@ namespace Realms
 
     public abstract class ExpressionNode
     {
-        public abstract string kind { get; }
+        public abstract string Kind { get; }
     }
 
     public abstract class BooleanBinaryNode : ExpressionNode
@@ -45,21 +50,21 @@ namespace Realms
     {
         public override string Operator => "&&";
 
-        public override string kind => "And";
+        public override string Kind => "And";
     }
 
     public class OrNode : BooleanBinaryNode
     {
         public override string Operator => "||";
 
-        public override string kind => "Or";
+        public override string Kind => "Or";
     }
 
     public class BooleanPropertyNode : ExpressionNode
     {
         public string Property { get; set; }
 
-        public override string kind => throw new NotImplementedException();
+        public override string Kind => throw new NotImplementedException();
     }
 
     public abstract class ComparisonNode : ExpressionNode
@@ -70,7 +75,7 @@ namespace Realms
 
         public abstract string Operator { get; }
 
-        public override string kind => "comparison";
+        public override string Kind => "comparison";
 
         public ComparisonNode()
         {

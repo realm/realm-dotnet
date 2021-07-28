@@ -27,16 +27,19 @@ namespace Realms
             {
                 if (node.Method.Name == nameof(Queryable.Where))
                 {
+                    Visit(node.Arguments[0]);
                     var whereClause = new WhereClauseVisitor(_metadata);
                     var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
                     _query.WhereClause = whereClause.VisitWhere(lambda);
                     return node;
                 }
-                if (IsSortClause(node.Method.Name, out var isAscending, out var isReplacing))
+
+                // just check if sortclause in here
+                if (node.Method.Name == nameof(Queryable.OrderBy))
                 {
                     Visit(node.Arguments[0]);
                     var orderClause = new OrderByClauseVisitor();
-                    _query.OrderByClause = orderClause.VisitOrderBy(node.Method.Name, isAscending, isReplacing);
+                    _query.OrderByClause = orderClause.VisitOrderBy((LambdaExpression)StripQuotes(node.Arguments[1]));
                     return node;
                 }
                 else
