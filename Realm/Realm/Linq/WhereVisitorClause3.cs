@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -7,13 +6,12 @@ using Realms.Schema;
 
 namespace Realms
 {
-    internal class WhereClauseVisitor : ExpressionVisitor
+    internal class WhereClauseVisitor3 : ExpressionVisitor
     {
         private readonly RealmObjectBase.Metadata _metadata;
-
         private WhereClause _whereClause;
 
-        public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
+        public WhereClauseVisitor3(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
         }
@@ -21,32 +19,37 @@ namespace Realms
         public WhereClause VisitWhere(LambdaExpression whereClause)
         {
             _whereClause = new WhereClause();
-            _whereClause.ExpNode = ParseExpression(whereClause.Body);
-            var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
             Visit(whereClause.Body);
+            _whereClause.ExpNode = Extract(whereClause.Body);
+            var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
             return _whereClause;
         }
 
-        private ExpressionNode ParseExpression(Expression exp)
+        private ExpressionNode Extract(Expression exp)
         {
-            if (exp is BinaryExpression be)
+            var ce = Visit(exp) as ConstantExpression;
+            return ce?.Value as ExpressionNode;
+        }
+
+        protected override Expression VisitBinary(BinaryExpression be)
+        {
+            ExpressionNode currentNode;
+            if (be.NodeType == ExpressionType.AndAlso)
             {
-                if (be.NodeType == ExpressionType.AndAlso)
-                {
-                    var andNode = new AndNode();
-                    andNode.Left = ParseExpression(be.Left);
-                    andNode.Right = ParseExpression(be.Right);
-                    return andNode;
-                }
-
-                if (be.NodeType == ExpressionType.OrElse)
-                {
-                    var orNode = new OrNode();
-                    orNode.Left = ParseExpression(be.Left);
-                    orNode.Right = ParseExpression(be.Right);
-                    return orNode;
-                }
-
+                var andNode = new AndNode();
+                andNode.Left = Extract(be.Left);
+                andNode.Right = Extract(be.Right);
+                currentNode = andNode;
+            }
+            else if (be.NodeType == ExpressionType.OrElse)
+            {
+                var orNode = new OrNode();
+                orNode.Left = Extract(be.Left);
+                orNode.Right = Extract(be.Right);
+                currentNode = orNode;
+            }
+            else
+            {
                 ComparisonNode comparisonNode;
                 switch (be.NodeType)
                 {
@@ -77,7 +80,6 @@ namespace Realms
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
                     {
                         var leftName = GetColumnName(me, me.NodeType);
-
                         comparisonNode.Property = leftName;
                     }
                 }
@@ -87,22 +89,11 @@ namespace Realms
                     comparisonNode.Value = co.Value;
                 }
 
-                return comparisonNode;
+                currentNode = comparisonNode;
             }
 
-            if (exp != null && exp.NodeType == ExpressionType.Parameter)
-            {
-                if (exp.Type == typeof(bool))
-                {
-                    var booleanNode = new BooleanNode();
-                    object rhs = true;  // box value
-                    var leftName = GetColumnName((MemberExpression)exp, exp.NodeType);
-                    booleanNode.Property = leftName;
-                    return booleanNode;
-                }
-            }
+            return Expression.Constant(currentNode);
 
-            throw new Exception("Expression not supported!");
         }
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
@@ -124,5 +115,6 @@ namespace Realms
 
             return name;
         }
+
     }
 }
