@@ -140,6 +140,10 @@ namespace Realms
                         {
                             comparisonNode.Left.Type = "double";
                         }
+                        else
+                        {
+                            throw new NotSupportedException(me.Type + "is not a supported type.");
+                        }
                     }
                     else
                     {

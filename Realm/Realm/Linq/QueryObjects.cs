@@ -6,24 +6,41 @@ namespace Realms
     {
         public WhereClause WhereClause { get; set; }
 
-        public OrderbyClause OrderByClause { get; set; }
+        public OrderingClause OrderingClause { get; set; }
     }
 
-    public class OrderbyClause
-    {
-        public OrderingNode OrderingNode { get; set; }
-
-        public string Kind { get; } = "orderbyclause";
-    }
-
-    public class OrderingNode
+    public abstract class OrderingClause
     {
         public bool IsAscending { get; set; }
 
         public bool IsReplacing { get; set; }
 
         public string Property { get; set; }
+
+        public abstract string Kind { get; }
     }
+
+    public class OrderByNode : OrderingClause
+    {
+        public override string Kind => "orderbyclause";
+    }
+
+    public class ThenByNode : OrderingClause
+    {
+        public override string Kind => "thenbyclause";
+    }
+
+    public class OrderByDescendingNode : OrderingClause
+    {
+        public override string Kind => "orderbydescclause";
+    }
+
+    public class ThenByDescendingNode : OrderingClause
+    {
+        public override string Kind => "thenbydescclause";
+    }
+
+    // TODO: Extend with all orderingTypes
 
     public class WhereClause
     {

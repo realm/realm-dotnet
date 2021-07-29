@@ -34,12 +34,11 @@ namespace Realms
                     return node;
                 }
 
-                // just check if sortclause in here
-                if (node.Method.Name == nameof(Queryable.OrderBy))
+                if (IsSortClause(node.Method.Name))
                 {
                     Visit(node.Arguments[0]);
-                    var orderClause = new OrderByClauseVisitor();
-                    _query.OrderByClause = orderClause.VisitOrderBy((LambdaExpression)StripQuotes(node.Arguments[1]));
+                    var sortClause = new SortClause();
+                    _query.OrderingClause = sortClause.VisitOrderClause(node);
                     return node;
                 }
                 else
@@ -63,31 +62,12 @@ namespace Realms
             return e;
         }
 
-        private static bool IsSortClause(string methodName, out bool isAscending, out bool isReplacing)
+        private static bool IsSortClause(string methodName)
         {
-            switch (methodName)
-            {
-                case nameof(Queryable.OrderBy):
-                    isAscending = true;
-                    isReplacing = true;
-                    return true;
-                case nameof(Queryable.ThenBy):
-                    isAscending = true;
-                    isReplacing = false;
-                    return true;
-                case nameof(Queryable.OrderByDescending):
-                    isAscending = false;
-                    isReplacing = true;
-                    return true;
-                case nameof(Queryable.ThenByDescending):
-                    isAscending = false;
-                    isReplacing = false;
-                    return true;
-                default:
-                    isAscending = false;
-                    isReplacing = false;
-                    return false;
-            }
+            return methodName == nameof(Queryable.OrderBy)
+                || methodName == nameof(Queryable.ThenBy)
+                || methodName == nameof(Queryable.OrderByDescending)
+                || methodName == nameof(Queryable.ThenByDescending);
         }
 
         public ResultsHandle MakeResultsForQuery()
