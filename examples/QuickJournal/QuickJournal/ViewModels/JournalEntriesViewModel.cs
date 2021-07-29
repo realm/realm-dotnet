@@ -5,6 +5,7 @@ using System.Windows.Input;
 using QuickJournal.Models;
 using QuickJournal.Services;
 using Realms;
+using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
 
 namespace QuickJournal.ViewModels
@@ -42,9 +43,9 @@ namespace QuickJournal.ViewModels
 
         private void InitCommands()
         {
-            AddEntryCommand = new Command(async () => await AddEntry());
+            AddEntryCommand = new AsyncCommand(AddEntry);
             DeleteEntryCommand = new Command<JournalEntry>(DeleteEntry);
-            EditEntryCommand = new Command<JournalEntry>(async (e) => await EditEntry(e));
+            EditEntryCommand = new AsyncCommand<JournalEntry>(EditEntry);
         }
 
         private async Task AddEntry()

@@ -4,7 +4,7 @@ using System.Windows.Input;
 using QuickJournal.Models;
 using QuickJournal.Services;
 using Realms;
-using Xamarin.Forms;
+using Xamarin.CommunityToolkit.ObjectModel;
 
 namespace QuickJournal.ViewModels
 {
@@ -26,7 +26,7 @@ namespace QuickJournal.ViewModels
 
         private void InitCommands()
         {
-            SaveCommand = new Command(async () => await Save());
+            SaveCommand = new AsyncCommand(Save);
         }
 
         private async Task Save()
