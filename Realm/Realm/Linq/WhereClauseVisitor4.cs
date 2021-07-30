@@ -6,12 +6,23 @@ using Realms.Schema;
 
 namespace Realms
 {
-    internal class WhereClauseVisitor3 : ExpressionVisitor
+    internal class RealmLinqExpression : Expression
+    {
+        public ExpressionNode ExpressionNode { get; private set; }
+
+        public static RealmLinqExpression Create(ExpressionNode exp)
+        {
+            return new RealmLinqExpression { ExpressionNode = exp };
+        }
+    }
+
+    internal class WhereClauseVisitor4 : ExpressionVisitor
     {
         private readonly RealmObjectBase.Metadata _metadata;
+
         private WhereClause _whereClause;
 
-        public WhereClauseVisitor3(RealmObjectBase.Metadata metadata)
+        public WhereClauseVisitor4(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
         }
@@ -19,35 +30,33 @@ namespace Realms
         public WhereClause VisitWhere(LambdaExpression whereClause)
         {
             _whereClause = new WhereClause();
-            Visit(whereClause.Body);
             _whereClause.ExpNode = Extract(whereClause.Body);
             var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
             return _whereClause;
         }
 
-        //Idea is good, but let's make another expression that we can use
-        private ExpressionNode Extract(Expression exp)
+        private ExpressionNode Extract(Expression node)
         {
-            var ce = Visit(exp) as ConstantExpression;
-            return ce?.Value as ExpressionNode;
+            var realmLinqExpression = Visit(node) as RealmLinqExpression;
+            return realmLinqExpression.ExpressionNode;
         }
 
         protected override Expression VisitBinary(BinaryExpression be)
         {
-            ExpressionNode currentNode;
+            ExpressionNode returnNode;
             if (be.NodeType == ExpressionType.AndAlso)
             {
                 var andNode = new AndNode();
                 andNode.Left = Extract(be.Left);
                 andNode.Right = Extract(be.Right);
-                currentNode = andNode;
+                returnNode = andNode;
             }
             else if (be.NodeType == ExpressionType.OrElse)
             {
                 var orNode = new OrNode();
                 orNode.Left = Extract(be.Left);
                 orNode.Right = Extract(be.Right);
-                currentNode = orNode;
+                returnNode = orNode;
             }
             else
             {
@@ -81,6 +90,7 @@ namespace Realms
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
                     {
                         var leftName = GetColumnName(me, me.NodeType);
+
                         comparisonNode.Property = leftName;
                     }
                 }
@@ -90,11 +100,10 @@ namespace Realms
                     comparisonNode.Value = co.Value;
                 }
 
-                currentNode = comparisonNode;
+                returnNode = comparisonNode;
             }
 
-            return Expression.Constant(currentNode);
-
+            return RealmLinqExpression.Create(returnNode);
         }
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
@@ -116,6 +125,5 @@ namespace Realms
 
             return name;
         }
-
     }
 }
