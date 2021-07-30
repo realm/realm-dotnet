@@ -20,6 +20,8 @@ namespace Realms
         public abstract string Kind { get; }
     }
 
+
+    // TODO kind is not neccesarry, just the isAsc and isRep and property is needed
     public class OrderByNode : OrderingClause
     {
         public override string Kind => "orderbyclause";
@@ -30,17 +32,17 @@ namespace Realms
         public override string Kind => "thenbyclause";
     }
 
+    // Might be redundant
     public class OrderByDescendingNode : OrderingClause
     {
         public override string Kind => "orderbydescclause";
     }
 
+    // Might be redundant
     public class ThenByDescendingNode : OrderingClause
     {
         public override string Kind => "thenbydescclause";
     }
-
-    // TODO: Extend with all orderingTypes
 
     public class WhereClause
     {

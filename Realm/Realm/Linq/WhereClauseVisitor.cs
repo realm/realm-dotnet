@@ -10,14 +10,18 @@ using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
 {
+    internal class RealmLinqExpression : Expression
+    {
+        public ExpressionNode ExpressionNode { get; private set; }
+
+        public static RealmLinqExpression Create(ExpressionNode exp)
+        {
+            return new RealmLinqExpression { ExpressionNode = exp };
+        }
+    }
+
     internal class WhereClauseVisitor : ExpressionVisitor
     {
-        private readonly RealmObjectBase.Metadata _metadata;
-
-        //private List<WhereClauseProperties> _whereList = new List<WhereClauseProperties>();
-
-        private WhereClause _whereClause;
-
         private static class Methods
         {
             internal static LazyMethod Capture<T>(Expression<Action<T>> lambda)
@@ -60,6 +64,10 @@ namespace Realms
             }
         }
 
+        private readonly RealmObjectBase.Metadata _metadata;
+
+        private WhereClause _whereClause;
+
         public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
@@ -68,32 +76,37 @@ namespace Realms
 
         public WhereClause VisitWhere(LambdaExpression whereClause)
         {
-            _whereClause.ExpNode = ParseExpression(whereClause.Body);
+            _whereClause.ExpNode = Extract(whereClause.Body);
             var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
             Visit(whereClause.Body);
             return _whereClause;
         }
 
-        private ExpressionNode ParseExpression(Expression exp)
+        private ExpressionNode Extract(Expression node)
         {
-            if (exp is BinaryExpression be)
+            var realmLinqExpression = Visit(node) as RealmLinqExpression;
+            return realmLinqExpression.ExpressionNode;
+        }
+
+        protected override Expression VisitBinary(BinaryExpression be)
+        {
+            ExpressionNode returnNode;
+            if (be.NodeType == ExpressionType.AndAlso)
             {
-                if (be.NodeType == ExpressionType.AndAlso)
-                {
-                    var andNode = new AndNode();
-                    andNode.Left = ParseExpression(be.Left);
-                    andNode.Right = ParseExpression(be.Right);
-                    return andNode;
-                }
-
-                if (be.NodeType == ExpressionType.OrElse)
-                {
-                    var orNode = new OrNode();
-                    orNode.Left = ParseExpression(be.Left);
-                    orNode.Right = ParseExpression(be.Right);
-                    return orNode;
-                }
-
+                var andNode = new AndNode();
+                andNode.Left = Extract(be.Left);
+                andNode.Right = Extract(be.Right);
+                returnNode = andNode;
+            }
+            else if (be.NodeType == ExpressionType.OrElse)
+            {
+                var orNode = new OrNode();
+                orNode.Left = Extract(be.Left);
+                orNode.Right = Extract(be.Right);
+                returnNode = orNode;
+            }
+            else
+            {
                 ComparisonNode comparisonNode;
                 switch (be.NodeType)
                 {
@@ -175,210 +188,91 @@ namespace Realms
                     }
                     // Add all types
                 }
-
-                return comparisonNode;
+                returnNode = comparisonNode;
             }
-            else if (exp is MemberExpression)
-            {
-                if (exp.Type == typeof(bool))
-                {
-                    var boolNode = new BooleanPropertyNode();
-                    var propName = ((MemberExpression)exp).Member.GetMappedOrOriginalName();
-                    boolNode.Property = propName;
-                    return boolNode;
-                }
-                throw new NotSupportedException($"The member '{((MemberExpression)exp).Member.Name}' is not supported");
-            }
-            else if (exp is MethodCallExpression)
-            {
-                if (((MethodCallExpression)exp).Method.DeclaringType == typeof(string) ||
-                    ((MethodCallExpression)exp).Method.DeclaringType == typeof(StringExtensions))
-                {
-                    var expMethod = exp as MethodCallExpression;
+            //else if (exp is MemberExpression)
+            //{
+            //    if (exp.Type == typeof(bool))
+            //    {
+            //        var boolNode = new BooleanPropertyNode();
+            //        var propName = ((MemberExpression)exp).Member.GetMappedOrOriginalName();
+            //        boolNode.Property = propName;
+            //        return boolNode;
+            //    }
+            //    throw new NotSupportedException($"The member '{((MemberExpression)exp).Member.Name}' is not supported");
+            //}
+            //else if (exp is MethodCallExpression)
+            //{
+            //    if (((MethodCallExpression)exp).Method.DeclaringType == typeof(string) ||
+            //        ((MethodCallExpression)exp).Method.DeclaringType == typeof(StringExtensions))
+            //    {
+            //        var expMethod = exp as MethodCallExpression;
 
-                    ComparisonNode stringComparisonNode;
+            //        ComparisonNode stringComparisonNode;
 
-                    if (AreMethodsSame(expMethod.Method, Methods.String.Contains.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    //else if (IsStringContainsWithComparison(node.Method, out var index))
-                    //{
-                    //    Console.WriteLine("Test");
-                    //}
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.StartsWith.Value))
-                    {
-                        stringComparisonNode = new StartsWithNode();
-                        if (expMethod.Arguments[0] is ConstantExpression c)
-                        {
-                            //stringComparisonNode.ValueNode.Value = c.Value;
-                            //stringComparisonNode.ValueNode.Type = "string";
-                        }
+            //        if (AreMethodsSame(expMethod.Method, Methods.String.Contains.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        //else if (IsStringContainsWithComparison(node.Method, out var index))
+            //        //{
+            //        //    Console.WriteLine("Test");
+            //        //}
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.StartsWith.Value))
+            //        {
+            //            stringComparisonNode = new StartsWithNode();
+            //            if (expMethod.Arguments[0] is ConstantExpression c)
+            //            {
+            //                //stringComparisonNode.ValueNode.Value = c.Value;
+            //                //stringComparisonNode.ValueNode.Type = "string";
+            //            }
 
-                        if (((MethodCallExpression)exp).Object is MemberExpression me)
-                        {
-                            if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
-                            {
-                                var leftName = GetColumnName(me, me.NodeType);
+            //            if (((MethodCallExpression)exp).Object is MemberExpression me)
+            //            {
+            //                if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+            //                {
+            //                    var leftName = GetColumnName(me, me.NodeType);
 
-                                //stringComparisonNode.PropertyNode.Property = leftName;
-                                //stringComparisonNode.PropertyNode.Type = "string";
-                            }
-                        }
+            //                    //stringComparisonNode.PropertyNode.Property = leftName;
+            //                    //stringComparisonNode.PropertyNode.Type = "string";
+            //                }
+            //            }
 
-                        return stringComparisonNode;
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.StartsWithStringComparison.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.EndsWith.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.EndsWithStringComparison.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.IsNullOrEmpty.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.EqualsMethod.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.EqualsStringComparison.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                    else if (AreMethodsSame(expMethod.Method, Methods.String.Like.Value))
-                    {
-                        Console.WriteLine("Test");
-                    }
-                }
-            }
+            //            return stringComparisonNode;
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.StartsWithStringComparison.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.EndsWith.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.EndsWithStringComparison.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.IsNullOrEmpty.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.EqualsMethod.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.EqualsStringComparison.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //        else if (AreMethodsSame(expMethod.Method, Methods.String.Like.Value))
+            //        {
+            //            Console.WriteLine("Test");
+            //        }
+            //    }
+            //}
 
-            throw new Exception("Expression not supported!");
+            return RealmLinqExpression.Create(returnNode);
         }
-
-        //protected override Expression VisitMember(MemberExpression node)
-        //{
-        //    if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
-        //    {
-        //        if (node.Type == typeof(bool))
-        //        {
-        //            var leftName = GetColumnName(node, node.NodeType);
-
-        //            AddQueryEqual(leftName, node.Type);
-        //        }
-
-        //        return node;
-        //    }
-
-        //    throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
-        //}
-
-        //protected override Expression VisitBinary(BinaryExpression node)
-        //{
-        //    if (node.NodeType == ExpressionType.AndAlso)
-        //    {
-        //        // Boolean And with short-circuit
-        //        VisitCombination(node, (qh) => { /* noop -- AND is the default combinator */ });
-        //    }
-        //    else if (node.NodeType == ExpressionType.OrElse)
-        //    {
-        //        // Boolean Or with short-circuit
-        //        VisitCombination(node, qh => qh.Or());
-        //    }
-        //    else
-        //    {
-        //        var leftExpression = node.Left;
-        //        var memberExpression = leftExpression as MemberExpression;
-        //        var rightExpression = node.Right;
-        //        var where = new WhereClauseProperties();
-
-        //        while (memberExpression == null && leftExpression.NodeType == ExpressionType.Convert)
-        //        {
-        //            leftExpression = ((UnaryExpression)leftExpression).Operand;
-        //            memberExpression = leftExpression as MemberExpression;
-        //        }
-
-        //        if (TryExtractConstantValue(node.Right, out object rightValue))
-        //        {
-        //            where.Value = rightValue;
-        //        }
-        //        else
-        //        {
-        //            throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
-        //        }
-
-        //        string leftName = null;
-
-        //        if (IsRealmValueTypeExpression(memberExpression, out leftName))
-        //        {
-        //            if (node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual)
-        //            {
-        //                throw new NotSupportedException($"Only expressions of type Equal and NotEqual can be used with RealmValueType.");
-        //            }
-
-        //            if (rightValue is int intValue)
-        //            {
-        //                rightValue = (RealmValueType)intValue;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            where.Property = GetColumnName(memberExpression, node.NodeType);
-        //        }
-
-        //        switch (node.NodeType)
-        //        {
-        //            case ExpressionType.Equal:
-        //                where.Operator = "eq";
-        //                break;
-        //            case ExpressionType.NotEqual:
-        //                where.Operator = "neq";
-        //                break;
-        //            case ExpressionType.LessThan:
-        //                where.Operator = "lt";
-        //                break;
-        //            case ExpressionType.LessThanOrEqual:
-        //                where.Operator = "lte";
-        //                break;
-        //            case ExpressionType.GreaterThan:
-        //                where.Operator = "gt";
-        //                break;
-        //            case ExpressionType.GreaterThanOrEqual:
-        //                where.Operator = "gte";
-        //                break;
-        //            default:
-        //                throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
-        //        }
-
-        //        _whereList.Add(where);
-        //    }
-
-        //    return node;
-        //}
-
-        //private bool IsRealmValueTypeExpression(MemberExpression memberExpression, out string leftName)
-        //{
-        //    leftName = null;
-
-        //    if (memberExpression?.Type != typeof(RealmValueType))
-        //    {
-        //        return false;
-        //    }
-
-        //    if (memberExpression.Expression is MemberExpression innerExpression)
-        //    {
-        //        leftName = GetColumnName(innerExpression, memberExpression.NodeType);
-        //        return innerExpression.Type == typeof(RealmValue);
-        //    }
-
-        //    return false;
-        //}
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
         {
@@ -431,71 +325,5 @@ namespace Realms
 
             return true;
         }
-
-        //protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)
-        //{
-        //    Visit(b.Left);
-        //    Visit(b.Right);
-        //}
-
-        //private void AddQueryEqual(string columnName, object value)
-        //{
-        //    var where = new WhereClauseProperties();
-        //    var propertyIndex = _metadata.PropertyIndices[columnName];
-
-        //    where.Property = columnName;
-        //    where.Operator = "eq";
-        //    where.Value = value;
-        //}
-
-        //internal static bool TryExtractConstantValue(Expression expr, out object value)
-        //{
-        //    if (expr.NodeType == ExpressionType.Convert)
-        //    {
-        //        var operand = ((UnaryExpression)expr).Operand;
-        //        return TryExtractConstantValue(operand, out value);
-        //    }
-
-        //    if (expr is ConstantExpression constant)
-        //    {
-        //        value = constant.Value;
-        //        return true;
-        //    }
-
-        //    var memberAccess = expr as MemberExpression;
-        //    if (memberAccess?.Member is FieldInfo fieldInfo)
-        //    {
-        //        if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
-        //        {
-        //            // Handle static fields (e.g. string.Empty)
-        //            value = fieldInfo.GetValue(null);
-        //            return true;
-        //        }
-
-        //        if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
-        //        {
-        //            value = fieldInfo.GetValue(targetObject);
-        //            return true;
-        //        }
-        //    }
-
-        //    if (memberAccess?.Member is PropertyInfo propertyInfo)
-        //    {
-        //        if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
-        //        {
-        //            value = propertyInfo.GetValue(null);
-        //            return true;
-        //        }
-
-        //        if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
-        //        {
-        //            value = propertyInfo.GetValue(targetObject);
-        //            return true;
-        //        }
-        //    }
-
-        //    value = null;
-        //    return false;
-        //}
     }
 }

@@ -37,6 +37,7 @@ namespace Realms
                 if (IsSortClause(node.Method.Name))
                 {
                     Visit(node.Arguments[0]);
+                    // Fix SOrtClause naming
                     var sortClause = new SortClause();
                     _query.OrderingClause = sortClause.VisitOrderClause(node);
                     return node;

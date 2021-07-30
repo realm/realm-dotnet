@@ -189,10 +189,10 @@ namespace Realms
                 {
                     Visit(node.Arguments[0]);
                     var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-                    //var ans = new QueryModel();
-                    //var test = new WhereClauseVisitor(_metadata);
-                    //ans.WhereClause = test.VisitWhere(lambda);
-                    //var json = JsonConvert.SerializeObject(ans, formatting: Formatting.Indented);
+                    var ans = new QueryModel();
+                    var test = new WhereClauseVisitor(_metadata);
+                    ans.WhereClause = test.VisitWhere(lambda);
+                    var json = JsonConvert.SerializeObject(ans, formatting: Formatting.Indented);
                     Visit(lambda.Body);
                     return node;
                 }
