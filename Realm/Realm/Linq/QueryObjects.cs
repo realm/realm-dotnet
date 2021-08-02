@@ -1,59 +1,42 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Realms
 {
-    public class QueryModel
+    internal class QueryModel
     {
-        public WhereClause WhereClause { get; set; }
+        public List<WhereClause> WhereClauses { get; set; }
 
-        public OrderingClause OrderingClause { get; set; }
+        public List<OrderingClause> OrderingClauses { get; set; }
     }
 
     public abstract class OrderingClause
     {
         public bool IsAscending { get; set; }
 
-        public bool IsReplacing { get; set; }
-
         public string Property { get; set; }
 
         public abstract string Kind { get; }
     }
 
-
-    // TODO kind is not neccesarry, just the isAsc and isRep and property is needed
+    // TODO kind might not be neccesarry
     public class OrderByNode : OrderingClause
     {
-        public override string Kind => "orderbyclause";
+        public override string Kind => "orderByClause";
     }
 
     public class ThenByNode : OrderingClause
     {
-        public override string Kind => "thenbyclause";
-    }
-
-    // Might be redundant
-    public class OrderByDescendingNode : OrderingClause
-    {
-        public override string Kind => "orderbydescclause";
-    }
-
-    // Might be redundant
-    public class ThenByDescendingNode : OrderingClause
-    {
-        public override string Kind => "thenbydescclause";
+        public override string Kind => "thenByClause";
     }
 
     public class WhereClause
     {
-        public ExpressionNode ExpNode { get; set; }
-
-        public string Kind { get; } = "whereclause";
+        public ExpressionNode Expression { get; set; }
     }
 
     public abstract class ExpressionNode
     {
-        public abstract string Kind { get; }
     }
 
     public abstract class BooleanBinaryNode : ExpressionNode
@@ -62,28 +45,25 @@ namespace Realms
 
         public ExpressionNode Right { get; set; }
 
-        public abstract string Operator { get; }
+        public abstract string Kind { get; }
     }
 
     public class AndNode : BooleanBinaryNode
     {
-        public override string Operator => "&&";
+        public override string Kind => "and";
 
-        public override string Kind => "And";
     }
 
     public class OrNode : BooleanBinaryNode
     {
-        public override string Operator => "||";
+        public override string Kind => "or";
 
-        public override string Kind => "Or";
     }
 
     public class BooleanPropertyNode : ExpressionNode
     {
         public string Property { get; set; }
 
-        public override string Kind => throw new NotImplementedException();
     }
 
     public abstract class ComparisonNode : ExpressionNode
@@ -92,9 +72,7 @@ namespace Realms
 
         public StandardNode Right { get; set; }
 
-        public abstract string Operator { get; }
-
-        public override string Kind => "comparison";
+        public abstract string Kind { get; }
 
         public ComparisonNode()
         {
@@ -115,36 +93,36 @@ namespace Realms
 
     public class EqualityNode : ComparisonNode
     {
-        public override string Operator => "=";
+        public override string Kind => "eq";
     }
 
     public class NotEqualNode : ComparisonNode
     {
-        public override string Operator => "!=";
+        public override string Kind => "neq";
     }
 
     public class GteNode : ComparisonNode
     {
-        public override string Operator => ">=";
+        public override string Kind => "gte";
     }
 
     public class GtNode : ComparisonNode
     {
-        public override string Operator => ">";
+        public override string Kind => "gt";
     }
 
     public class LteNode : ComparisonNode
     {
-        public override string Operator => "<=";
+        public override string Kind => "lte";
     }
 
     public class LtNode : ComparisonNode
     {
-        public override string Operator => "<";
+        public override string Kind => "lt";
     }
 
     public class StartsWithNode : ComparisonNode
     {
-        public override string Operator => "StartsWith";
+        public override string Kind => "StartsWith";
     }
 }

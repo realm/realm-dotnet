@@ -43,8 +43,9 @@ namespace Realms.Tests.Database
         {
             //var query2 = _realm.All<Person>().Filter("LastName CONTAINS 'test'");
 
-
-            var query = _realm.All<Person>().Where(p => p.Score == 5).OrderBy(p => p.Score);
+            var query = _realm.All<Person>().Where(p => p.Score == 5 || p.Score == 10 && p.Salary == 7)
+                .OrderBy(p => p.Score)
+                .ThenBy(p => p.Salary);
             var debugView = GetDebugView(query.Expression);
             Console.WriteLine(debugView);
             _ = query.ToArray();

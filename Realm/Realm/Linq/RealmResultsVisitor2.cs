@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ namespace Realms
         private readonly RealmObjectBase.Metadata _metadata;
         private QueryModel _query;
 
+        // TODO Remove these fields when the CreateResults method is rewritten
         private QueryHandle _coreQueryHandle;
         private SortDescriptorHandle _sortDescriptor;
 
@@ -19,6 +21,8 @@ namespace Realms
             _realm = realm;
             _metadata = metadata;
             _query = new QueryModel();
+            _query.WhereClauses = new List<WhereClause>();
+            _query.OrderingClauses = new List<OrderingClause>();
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -30,7 +34,7 @@ namespace Realms
                     Visit(node.Arguments[0]);
                     var whereClause = new WhereClauseVisitor(_metadata);
                     var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-                    _query.WhereClause = whereClause.VisitWhere(lambda);
+                    _query.WhereClauses.Add(whereClause.VisitWhere(lambda));
                     return node;
                 }
 
@@ -39,7 +43,7 @@ namespace Realms
                     Visit(node.Arguments[0]);
                     // Fix SOrtClause naming
                     var sortClause = new SortClause();
-                    _query.OrderingClause = sortClause.VisitOrderClause(node);
+                    _query.OrderingClauses.Add(sortClause.VisitOrderClause(node));
                     return node;
                 }
                 else
@@ -53,7 +57,7 @@ namespace Realms
             }
         }
 
-        private static Expression StripQuotes(Expression e)
+        internal static Expression StripQuotes(Expression e)
         {
             while (e.NodeType == ExpressionType.Quote)
             {

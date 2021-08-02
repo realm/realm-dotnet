@@ -14,34 +14,29 @@ namespace Realms
             {
                 _orderingClause = new OrderByNode();
                 _orderingClause.IsAscending = true;
-                _orderingClause.IsReplacing = true;
             }
             else if (orderClause.Method.Name == nameof(Queryable.ThenBy))
             {
                 _orderingClause = new ThenByNode();
                 _orderingClause.IsAscending = true;
-                _orderingClause.IsReplacing = false;
             }
             else if (orderClause.Method.Name == nameof(Queryable.OrderByDescending))
             {
-                _orderingClause = new OrderByDescendingNode();
+                _orderingClause = new OrderByNode();
                 _orderingClause.IsAscending = false;
-                _orderingClause.IsReplacing = true;
 
             }
             else if (orderClause.Method.Name == nameof(Queryable.ThenByDescending))
             {
-                _orderingClause = new ThenByDescendingNode();
+                _orderingClause = new ThenByNode();
                 _orderingClause.IsAscending = false;
-                _orderingClause.IsReplacing = false;
-
             }
             else
             {
                 throw new NotSupportedException(orderClause.Method.Name + " is not a support order method");
             }
 
-            var lambda = (LambdaExpression)StripQuotes(orderClause.Arguments[1]);
+            var lambda = (LambdaExpression)RealmResultsVisitor2.StripQuotes(orderClause.Arguments[1]);
             if (lambda.Body is MemberExpression me)
             {
                 _orderingClause.Property = me.Member.Name;
@@ -52,16 +47,6 @@ namespace Realms
             }
 
             return _orderingClause;
-        }
-
-        private static Expression StripQuotes(Expression e)
-        {
-            while (e.NodeType == ExpressionType.Quote)
-            {
-                e = ((UnaryExpression)e).Operand;
-            }
-
-            return e;
         }
     }
 }

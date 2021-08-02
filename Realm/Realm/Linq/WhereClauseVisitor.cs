@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -76,9 +74,8 @@ namespace Realms
 
         public WhereClause VisitWhere(LambdaExpression whereClause)
         {
-            _whereClause.ExpNode = Extract(whereClause.Body);
+            _whereClause.Expression = Extract(whereClause.Body);
             var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
-            Visit(whereClause.Body);
             return _whereClause;
         }
 
