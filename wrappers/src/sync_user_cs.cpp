@@ -179,31 +179,31 @@ extern "C" {
             switch (profile_field)
             {
             case UserProfileField::name:
-                field = user->user_profile().name;
+                field = user->user_profile().name();
                 break;
             case UserProfileField::email:
-                field = user->user_profile().email;
+                field = user->user_profile().email();
                 break;
             case UserProfileField::picture_url:
-                field = user->user_profile().picture_url;
+                field = user->user_profile().picture_url();
                 break;
             case UserProfileField::first_name:
-                field = user->user_profile().first_name;
+                field = user->user_profile().first_name();
                 break;
             case UserProfileField::last_name:
-                field = user->user_profile().last_name;
+                field = user->user_profile().last_name();
                 break;
             case UserProfileField::gender:
-                field = user->user_profile().gender;
+                field = user->user_profile().gender();
                 break;
             case UserProfileField::birthday:
-                field = user->user_profile().birthday;
+                field = user->user_profile().birthday();
                 break;
             case UserProfileField::min_age:
-                field = user->user_profile().min_age;
+                field = user->user_profile().min_age();
                 break;
             case UserProfileField::max_age:
-                field = user->user_profile().max_age;
+                field = user->user_profile().max_age();
                 break;
             default:
                 REALM_UNREACHABLE();
