@@ -10,24 +10,11 @@ namespace Realms
         public List<OrderingClause> OrderingClauses { get; set; }
     }
 
-    public abstract class OrderingClause
+    public class OrderingClause
     {
         public bool IsAscending { get; set; }
 
         public string Property { get; set; }
-
-        public abstract string Kind { get; }
-    }
-
-    // TODO kind might not be neccesarry
-    public class OrderByNode : OrderingClause
-    {
-        public override string Kind => "orderByClause";
-    }
-
-    public class ThenByNode : OrderingClause
-    {
-        public override string Kind => "thenByClause";
     }
 
     public class WhereClause

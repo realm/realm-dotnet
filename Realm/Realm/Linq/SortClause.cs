@@ -10,30 +10,21 @@ namespace Realms
 
         public OrderingClause VisitOrderClause(MethodCallExpression orderClause)
         {
-            if (orderClause.Method.Name == nameof(Queryable.OrderBy))
-            {
-                _orderingClause = new OrderByNode();
-                _orderingClause.IsAscending = true;
-            }
-            else if (orderClause.Method.Name == nameof(Queryable.ThenBy))
-            {
-                _orderingClause = new ThenByNode();
-                _orderingClause.IsAscending = true;
-            }
-            else if (orderClause.Method.Name == nameof(Queryable.OrderByDescending))
-            {
-                _orderingClause = new OrderByNode();
-                _orderingClause.IsAscending = false;
+            _orderingClause = new OrderingClause();
 
-            }
-            else if (orderClause.Method.Name == nameof(Queryable.ThenByDescending))
+            if (orderClause.Method.Name == nameof(Queryable.OrderBy)
+                || orderClause.Method.Name == nameof(Queryable.ThenBy))
             {
-                _orderingClause = new ThenByNode();
+                _orderingClause.IsAscending = true;
+            }
+            else if (orderClause.Method.Name == nameof(Queryable.OrderByDescending)
+                || orderClause.Method.Name == nameof(Queryable.ThenByDescending))
+            {
                 _orderingClause.IsAscending = false;
             }
             else
             {
-                throw new NotSupportedException(orderClause.Method.Name + " is not a support order method");
+                throw new NotSupportedException(orderClause.Method.Name + " is not a supported ordering method");
             }
 
             var lambda = (LambdaExpression)RealmResultsVisitor2.StripQuotes(orderClause.Arguments[1]);
@@ -43,7 +34,7 @@ namespace Realms
             }
             else
             {
-                throw new NotSupportedException("Orderclause must have memberexpression");
+                throw new NotSupportedException("Could not fetch property name from orderClause query.");
             }
 
             return _orderingClause;
