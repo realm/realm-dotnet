@@ -320,6 +320,109 @@ namespace Realms.Tests.Sync
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
+        [Test]
+        public void WriteCopy_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalPartition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copiedPartition = Guid.NewGuid().ToString();
+                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                originalRealm.WriteCopy(copyConfig);
+
+                using var copiedlRealm = GetRealm(copyConfig);
+
+                Assert.AreEqual(copiedlRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalPartition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copiedPartition = Guid.NewGuid().ToString();
+                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                // The error is thrown as a generic `RealmError` by Core which translates to a generic `RealmException` on our side.
+                Assert.Throws<RealmException>(() => originalRealm.WriteCopy(copyConfig));
+            });
+        }
+
+        [Test]
+        public void DeleteRealmWorksIfCalledMultipleTimes()
+        {
+            var config = GetFakeConfig();
+            var openRealm = GetRealm(config);
+            openRealm.Dispose();
+            Assert.That(File.Exists(config.DatabasePath));
+
+            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+        }
+
+        [Test]
+        public void DeleteRealm_afterSessionDisposed([Values(true, false)] bool singleTransaction)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var config = await GetIntegrationConfigAsync(partition);
+                var asyncConfig = await GetIntegrationConfigAsync(partition);
+
+                using var realm = GetRealm(config);
+                AddDummyData(realm, singleTransaction);
+
+                await WaitForUploadAsync(realm);
+                realm.Dispose();
+
+                DeleteRealmWithRetries(realm);
+
+                using var asyncRealm = await GetRealmAsync(asyncConfig);
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+            }, timeout: 120000);
+        }
+
         private const int DummyDataSize = 100;
 
         private static void AddDummyData(Realm realm, bool singleTransaction)
