@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<d:BasePage xmlns="http://xamarin.com/schemas/2014/forms" 
+<local:BasePage xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-        xmlns:d="clr-namespace:QuickJournal.Views"
+        xmlns:local="clr-namespace:QuickJournal.Views"
 		x:Class="QuickJournal.Views.JournalEntriesPage"
 		Title="Journal"
         x:Name="page">
@@ -11,8 +11,7 @@
     <ContentPage.Content>
         <ListView ItemsSource="{Binding Entries}"
                   SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
-                  SelectionMode="Single"
-                  x:Name="EntriesListView">
+                  SelectionMode="Single">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextCell Text="{Binding Title}"
@@ -27,4 +26,4 @@
             </ListView.ItemTemplate>
         </ListView>
     </ContentPage.Content>
-</d:BasePage>
+</local:BasePage>

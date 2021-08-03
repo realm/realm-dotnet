@@ -12,20 +12,17 @@ namespace QuickJournal.ViewModels
 {
     public class JournalEntriesViewModel : BaseViewModel
     {
-        readonly JournalEntry selectedEntry = null;
-        readonly Realm realm;
+        private readonly Realm realm;
 
-        public IEnumerable<JournalEntry> Entries { get; private set; }
+        public IEnumerable<JournalEntry> Entries { get; }
 
-        public ICommand AddEntryCommand { get; private set; }
-        public ICommand EditEntryCommand { get; private set; }
-        public ICommand DeleteEntryCommand { get; private set; }
-
-        public INavigation Navigation { get; set; }
+        public ICommand AddEntryCommand { get; }
+        public ICommand EditEntryCommand { get; }
+        public ICommand DeleteEntryCommand { get; }
 
         public JournalEntry SelectedEntry
         {
-            get => selectedEntry;
+            get => null;
             set
             {
                 EditEntryCommand.Execute(value);
@@ -38,11 +35,6 @@ namespace QuickJournal.ViewModels
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();
 
-            InitCommands();
-        }
-
-        private void InitCommands()
-        {
             AddEntryCommand = new AsyncCommand(AddEntry);
             DeleteEntryCommand = new Command<JournalEntry>(DeleteEntry);
             EditEntryCommand = new AsyncCommand<JournalEntry>(EditEntry);

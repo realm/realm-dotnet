@@ -12,20 +12,15 @@ namespace QuickJournal.ViewModels
     {
         private Transaction transaction;
 
-        public JournalEntry Entry { get; private set; }
+        public JournalEntry Entry { get; }
 
-        public ICommand SaveCommand { get; private set; }
+        public ICommand SaveCommand { get; }
 
         public JournalEntryDetailsViewModel(JournalEntry entry, Transaction transaction)
         {
             this.transaction = transaction;
             Entry = entry;
 
-            InitCommands();
-        }
-
-        private void InitCommands()
-        {
             SaveCommand = new AsyncCommand(Save);
         }
 

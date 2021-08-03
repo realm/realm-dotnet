@@ -8,7 +8,7 @@ namespace QuickJournal.Services
 {
     public static class NavigationService
     {
-        static INavigation Navigation => Application.Current.MainPage?.Navigation;
+        private static INavigation Navigation => Application.Current.MainPage?.Navigation;
 
         public static async Task NavigateTo(BaseViewModel viewModel)
         {
@@ -19,6 +19,13 @@ namespace QuickJournal.Services
             await Navigation.PushAsync(destinationPage, true);
         }
 
+        public static void SetMainPage(BaseViewModel viewModel)
+        {
+            var destinationPage = GetPageForViewModel(viewModel);
+            destinationPage.BindingContext = viewModel;
+            Application.Current.MainPage = new NavigationPage(destinationPage);
+        }
+
         public static async Task GoBack()
         {
             CheckNavigationSupport();
@@ -26,7 +33,7 @@ namespace QuickJournal.Services
             await Navigation.PopAsync(true);
         }
 
-        static void CheckNavigationSupport()
+        private static void CheckNavigationSupport()
         {
             if (Navigation == null)
             {
@@ -34,15 +41,14 @@ namespace QuickJournal.Services
             }
         }
 
-        static Page GetPageForViewModel(BaseViewModel viewModel)
+        private static Page GetPageForViewModel(BaseViewModel viewModel)
         {
-            switch (viewModel)
+            return viewModel switch
             {
-                case JournalEntryDetailsViewModel _:
-                    return new JournalEntryDetailsPage();
-                default:
-                    throw new ArgumentException("The input ViewModel is not accepted");
-            }
+                JournalEntryDetailsViewModel _ => new JournalEntryDetailsPage(),
+                JournalEntriesViewModel => new JournalEntriesPage(),
+                _ => throw new ArgumentException("The input ViewModel is not accepted"),
+            };
         }
     }
 }

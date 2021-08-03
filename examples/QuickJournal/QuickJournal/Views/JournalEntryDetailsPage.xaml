@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<d:BasePage  xmlns="http://xamarin.com/schemas/2014/forms" 
+<local:BasePage  xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-		xmlns:d="clr-namespace:QuickJournal.Views"
+		xmlns:local="clr-namespace:QuickJournal.Views"
 		x:Class="QuickJournal.Views.JournalEntryDetailsPage"
 		Title="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:MMMM d yyyy}'}">
     <ContentPage.ToolbarItems>
@@ -11,4 +11,4 @@
         <Entry Text="{Binding Entry.Title}" Placeholder="Title"  />
         <Editor Text="{Binding Entry.Body}" Placeholder="Note" AutoSize="TextChanges"  />
     </StackLayout>
-</d:BasePage>
+</local:BasePage>

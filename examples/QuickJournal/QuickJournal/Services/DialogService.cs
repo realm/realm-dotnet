@@ -6,7 +6,7 @@ namespace QuickJournal.Services
 {
     public static class DialogService
     {
-        static Page Page => Application.Current.MainPage;
+        private static Page Page => Application.Current.MainPage;
 
         public static async Task ShowAlert(string title, string message, string cancel = "Ok")
         {
