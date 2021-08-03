@@ -18,10 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using Realms.Logging;
 
 namespace Realms
 {
@@ -90,22 +88,7 @@ namespace Realms
 
             AppDomain.CurrentDomain.DomainUnload += (_, __) =>
             {
-                Logger.LogDefault(LogLevel.Info, "Realm: Domain is unloading, force closing all Realm instances.");
-
-                try
-                {
-                    var sw = new Stopwatch();
-                    sw.Start();
-
-                    SharedRealmHandle.CloseAllRealms();
-
-                    sw.Stop();
-                    Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogDefault(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
-                }
+                NativeCommon.CleanupNativeResources("AppDomain is unloading");
             };
         }
 

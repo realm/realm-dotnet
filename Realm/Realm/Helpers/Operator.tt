@@ -41,7 +41,7 @@ namespace Realms.Helpers
         private static IDictionary<(Type, Type), IConverter> _valueConverters = new Dictionary<(Type, Type), IConverter>
         {
 <#
-            var realmValueContents = GetFileContents("..\\DatabaseTypes\\RealmValue.cs");
+            var realmValueContents = GetFileContents("../DatabaseTypes/RealmValue.cs");
             var implicitToRealmValueTypes = GetMatchedGroups(realmValueContents, _implicitTypeToRealmValueRegex, "fromType");
             foreach (var type in implicitToRealmValueTypes)
             {

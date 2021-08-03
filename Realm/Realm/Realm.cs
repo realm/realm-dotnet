@@ -48,10 +48,6 @@ namespace Realms
     {
         #region static
 
-        // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file.
-        // Theoretically we could use trackAllValues: true, but that would create locking issues.
-        private static readonly ThreadLocal<IDictionary<string, WeakReference<State>>> _states = new ThreadLocal<IDictionary<string, WeakReference<State>>>(DictionaryConstructor<string, WeakReference<State>>);
-
         // TODO: this will go away once https://github.com/realm/realm-dotnet/pull/2251 is merged, but due to a Mono bug, this needs to be a function rather than a lambda
         private static IDictionary<TKey, TValue> DictionaryConstructor<TKey, TValue>() => new Dictionary<TKey, TValue>();
 
@@ -169,39 +165,19 @@ namespace Realms
         }
 
         /// <summary>
-        /// Deletes all the files associated with a realm.
+        /// Deletes all files associated with a given Realm if the Realm exists and is not open.
         /// </summary>
+        /// <remarks>
+        /// The Realm file must not be open on other threads.<br/>
+        /// All but the .lock file will be deleted by this.
+        /// </remarks>
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
+        /// <exception cref="RealmInUseException">Thrown if the Realm is still open.</exception>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             Argument.NotNull(configuration, nameof(configuration));
 
-            var fullpath = configuration.DatabasePath;
-            if (IsRealmOpen(fullpath))
-            {
-                throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
-            }
-
-            var filesToDelete = new[] { string.Empty, ".log_a", ".log_b", ".log", ".lock", ".note" }
-                .Select(ext => fullpath + ext)
-                .Where(File.Exists);
-
-            foreach (var file in filesToDelete)
-            {
-                File.Delete(file);
-            }
-
-            if (Directory.Exists($"{fullpath}.management"))
-            {
-                Directory.Delete($"{fullpath}.management", recursive: true);
-            }
-        }
-
-        private static bool IsRealmOpen(string path)
-        {
-            return _states.Value.TryGetValue(path, out var reference) &&
-                   reference.TryGetTarget(out var state) &&
-                   state.GetLiveRealms().Any();
+            SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
         #endregion static
@@ -257,7 +233,7 @@ namespace Realms
         {
             Config = config;
 
-            if (config.EnableCache && sharedRealmHandle.CanCache)
+            if (config.EnableCache && sharedRealmHandle.OwnsNativeRealm)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
@@ -270,11 +246,6 @@ namespace Realms
             {
                 _state = new State();
                 sharedRealmHandle.SetManagedStateHandle(_state);
-
-                if (config.EnableCache && sharedRealmHandle.CanCache)
-                {
-                    _states.Value[config.DatabasePath] = new WeakReference<State>(_state);
-                }
             }
 
             _state.AddRealm(this);
@@ -384,11 +355,9 @@ namespace Realms
         {
             if (!IsClosed)
             {
-                // only mutate the state on explicit disposal
-                // otherwise we do so on the finalizer thread
-                if (Config.EnableCache && SharedRealmHandle.CanCache && _state.RemoveRealm(this))
+                if (SharedRealmHandle.OwnsNativeRealm)
                 {
-                    _states.Value.Remove(Config.DatabasePath);
+                    _state.RemoveRealm(this);
                 }
 
                 _state = null;
@@ -1461,29 +1430,32 @@ namespace Realms
             {
                 // We only want to have each realm once. That should be the case as AddRealm
                 // is only called in the Realm ctor, but let's check just in case.
-                Debug.Assert(!_weakRealms.Any(r =>
-                {
-                    return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
-                }), "Trying to add a duplicate Realm to the RealmState.");
+                Debug.Assert(!GetLiveRealms().Any(other => ReferenceEquals(realm, other)), "Trying to add a duplicate Realm to the RealmState.");
 
                 _weakRealms.Add(new WeakReference<Realm>(realm));
             }
 
-            public bool RemoveRealm(Realm realm)
+            /// <summary>
+            /// Remove a Realm from the list of Realms tracked by this state. This is only called when
+            /// Dispose is called on the Realm file and will not execute for garbage collected Realm
+            /// instances. This is fine because for GC-ed instances the lifecycle is as:
+            /// 1. Instance is GC-ed, its fields are GC-ed.
+            /// 2. The SharedRealmHandled is GC-ed, which causes Unbind to be called.
+            /// 3. The native pointer is deleted, which calls RealmCoordinator::unregister_realm.
+            /// 4. Once the last instance is deleted, the CSharpBindingContext destructor is called, which frees the state GCHandle.
+            /// 5. The State is now eligible for collection, and its fields will be GC-ed.
+            /// </summary>
+            public void RemoveRealm(Realm realm)
             {
-                var weakRealm = _weakRealms.SingleOrDefault(r =>
+                _weakRealms.RemoveAll(r =>
                 {
-                    return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
+                    return !r.TryGetTarget(out var other) || ReferenceEquals(realm, other);
                 });
-                _weakRealms.Remove(weakRealm);
 
                 if (!_weakRealms.Any())
                 {
                     realm.SharedRealmHandle.CloseRealm();
-                    return true;
                 }
-
-                return false;
             }
 
             public IEnumerable<Realm> GetLiveRealms()
@@ -1810,7 +1782,7 @@ namespace Realms
             public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            private RealmObject FindCore(string className, RealmValue primaryKey)
+            internal RealmObject FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 

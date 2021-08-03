@@ -45,6 +45,7 @@ namespace Realms.Tests.iOS
             var arguments = NSProcessInfo.ProcessInfo.Arguments
                                          .Select(a => a.Replace("-app-arg=", string.Empty))
                                          .ToArray();
+
             if (arguments.Any("--headless".Equals))
             {
                 options.AutoRun = true;
@@ -75,7 +76,6 @@ namespace Realms.Tests.iOS
 
                     return Task.CompletedTask;
                 };
-
             }
 
             nunit.Options = options;

@@ -35,6 +35,8 @@ namespace Realms.Logging
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
+        private static Logger _defaultLogger;
+
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
         /// using <see cref="Console.WriteLine()"/> but certain platforms may use different implementations.
@@ -98,7 +100,11 @@ namespace Realms.Logging
         /// replaces the deprecated <see cref="AppConfiguration.CustomLogger"/>.
         /// </remarks>
         /// <value>The logger to be used for Realm-originating messages.</value>
-        public static Logger Default { get; set; } = Console;
+        public static Logger Default
+        {
+            get => _defaultLogger ?? Console;
+            set => _defaultLogger = value;
+        }
 
         internal GCHandle GCHandle => _gcHandle.Value;
 

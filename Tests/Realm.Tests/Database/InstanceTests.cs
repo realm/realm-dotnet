@@ -77,6 +77,34 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void DeleteRealmWorksIfCalledMultipleTimes()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration;
+            var openRealm = GetRealm(config);
+
+            // Act
+            openRealm.Dispose();
+
+            // Assert
+            Assert.That(File.Exists(config.DatabasePath));
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+            Assert.That(File.Exists(config.DatabasePath), Is.False);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+        }
+
+        [Test]
+        public void DeleteRealmWorksIfFolderDoesntExist()
+        {
+            var config = RealmConfiguration.DefaultConfiguration;
+            var dbFolder = Path.GetDirectoryName(config.DatabasePath);
+            var nonExistingRealm = Path.Combine(dbFolder, "idontexist", "my.realm");
+            var newConfig = new RealmConfiguration(nonExistingRealm);
+
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
+        }
+
+        [Test]
         public void GetUniqueInstancesDifferentThreads()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -141,7 +169,7 @@ namespace Realms.Tests.Database
             using var openRealm = GetRealm();
 
             // Assert
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration));
+            Assert.Throws<RealmInUseException>(() => Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration));
         }
 
         [Test]

@@ -192,7 +192,6 @@ Realm/Realm.Unity/Runtime/**/*.dll
 Realm/Realm.Unity/Runtime/**/*.so
 Realm/Realm.Unity/Runtime/**/*.dylib
 Realm/Realm.Unity/Runtime/**/*.dll.config
-Realm/Realm.Unity/Runtime/**/*.framework/*
 Realm/Realm.Unity/Runtime/Dependencies/*.meta
 Realm/Realm.Unity/Runtime/Dependencies.meta
 Realm/Realm.Unity/Editor/*.dll
@@ -219,3 +218,13 @@ Tests/Tests.Unity/PlayModeTestPlayer*
 *.pfx
 Tests/App.config
 Tests/LocalDev.props
+Realm/Realm.Unity/CHANGELOG.md
+Realm/Realm.Unity/LICENSE.md
+!Tests/Tests.Unity/Packages/**
+Tests/Tests.Unity/Player_*
+Tests/Tests.Unity/*.csproj
+Tests/Tests.Unity/*.sln
+Realm/Realm.Unity/Runtime/iOS/realm-wrappers.xcframework/**/realm-wrappers.framework/realm-wrappers
+Realm/Realm.Unity/Runtime/iOS/realm-wrappers.xcframework/**/Info.plist
+CodeResources
+Tests/Tests.Unity/Assets/Tests/Dependencies

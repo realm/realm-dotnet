@@ -284,6 +284,14 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm& realm, NativeException::
     });
 }
 
+REALM_EXPORT void shared_realm_delete_files(uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        Utf16StringAccessor path_string(path_buf, path_len);
+        Realm::delete_files(path_string);
+    });
+}
+
 REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& ex)
 {
     s_can_call_managed = false;

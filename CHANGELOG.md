@@ -1,16 +1,65 @@
 ## vNext (TBD)
 
 ### Fixed
-* \[Unity] Fixed an issue where failing to weave an assembly due to modeling errors, would only show an error in the logs once and then fail opening a Realm with `No RealmObjects. Has linker stripped them?`. Now, the weaving errors will show up on every code change/weave attempt and the runtime error will explicitly suggest manually re-running the weaver. (Issue [#2310](https://github.com/realm/realm-dotnet/issues/2310))
+* Fixed an issue that would cause `Logger.Default` on Unity to always revert to `Debug.Log`, even when a custom logger was set. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
+* Fixed an issue where `Logger.Console` on Unity would still use `Console.WriteLine` instead of `Debug.Log`. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
 
 ### Enhancements
 * None
 
 ### Compatibility
-* Realm Studio: 11.0.0-alpha.0 or later.
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.0.4.
+* Removed the RealmStates dictionary that used to hold a threadlocal dictionary of all the states for the opened Realms. It was only used for detecting open Realms during deletion and that is now handled by the native `delete_realm_files` method. (PR [#2251](https://github.com/realm/realm-dotnet/pull/2251))
+* Stopped sending analytics to mixpanel.
+
+## 10.3.0 (2021-07-07)
+
+**Note**: This release uses xcframework and enables bitcode for the iOS native libraries. This significantly increases the package size and may appear to increase the .ipa size when compiling for iOS. However, the bitcode portion, as well as the unnecessary architectures, will be trimmed by the App Store, so the size of the actual download sent to users will be unchanged or smaller than before.
+
+### Fixed
+* Fixed an issue that would prevent `realm-wrappers.dll` from being loaded on Windows 8.1. (Issue [#2298](https://github.com/realm/realm-dotnet/issues/2298))
+* Fixed an assertion failure when listening for changes to a list of primitive Mixed which contains links. (Core upgrade)
+* Fixed an assertion failure when listening for changes to a dictionary or set which contains an invalidated link. (Core upgrade)
+* Fixed an endless recursive loop that could cause a stack overflow when computing changes on a set of objects which contained cycles. (Core upgrade)
+* Add collision handling to Dictionary implementation. (Core upgrade)
+* Fixed a crash after clearing a list or set of Mixed containing links to objects. (Core upgrade)
+* Fixed a recursive loop which would eventually crash trying to refresh a user app token when it had been revoked by an admin. Now this situation logs the user out and reports an error. (Core upgrade)
+* Fixed a race between calling `Realm.DeleteRealm` and concurrent opening of the realm file. (Core upgrade)
+* \[Unity\] Added code to preserve the constructors of several base serializers to ensure that most of the basic serialization/deserialization workloads work out of the box. (PR [#2489](https://github.com/realm/realm-dotnet/pull/2489))
+
+### Enhancements
+* Changed the native iOS library to use xcframework. This means that running in the simulator on M1 macs is now supported. (Issue [#2240](https://github.com/realm/realm-dotnet/issues/2240))
+* Added bitcode to the native iOS library. This has no effect on Xamarin.iOS, but allows Unity applications to take advantage of optimizations performed by the App Store servers and eventually support new architectures as they are released. (Issue [#2240](https://github.com/realm/realm-dotnet/issues/2240))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+* This release uses xcframework for the iOS native libraries, which requires Xamarin.iOS 14.14.2.5 or later.
+
+### Internal
+* Using Core 11.0.4.
+
+## 10.2.1 (2021-06-30)
+
+This release changes the way Unity binaries are packaged and obviates the need to have an extra Unity package that contains the dependencies as standalone modules. If you were using the `io.realm.unity-bundled` package, please remove it and add the newly released `io.realm.unity` one.
+
+### Fixed
+* \[Unity\] Fixed an issue where failing to weave an assembly due to modeling errors, would only show an error in the logs once and then fail opening a Realm with `No RealmObjects. Has linker stripped them?`. Now, the weaving errors will show up on every code change/weave attempt and the runtime error will explicitly suggest manually re-running the weaver. (Issue [#2310](https://github.com/realm/realm-dotnet/issues/2310))
+* \[Unity\] Fixed an issue that would cause the app to hang on exit when using Sync. (PR [#2467](https://github.com/realm/realm-dotnet/pull/2467))
+* \[Unity\] Fixed an issue that would cause the Unity editor on macOS to hang after assembly reload if the app uses Sync. (Issue [#2482](https://github.com/realm/realm-dotnet/issues/2482))
+* Fixed an issue where a crash could happen on Android x86 due to converting UInt32 into TableKey and Int64 into ObjKey incorrectly. (Issue [#2456](https://github.com/realm/realm-dotnet/issues/2456))
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
 
 ### Internal
 * Using Core 11.0.3.
+* GetHashCode() on objects now uses the table key in addition to the object key. (Issue [#2473](https://github.com/realm/realm-dotnet/issues/2473))
 
 ## 10.2.0 (2021-06-15)
 

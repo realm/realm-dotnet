@@ -118,14 +118,16 @@ namespace Realms.Sync
         /// at which the log message was emitted.
         /// </remarks>
         /// <value>The custom logger.</value>
-        [Obsolete("Configure the global RealmConfiguration.Logger instead")]
+        /// <seealso cref="Logger.Default"/>
+        [Obsolete("Configure the global Realms.Logging.Logger.Default instead")]
         public Action<string, LogLevel> CustomLogger { get; set; }
 
         /// <summary>
         /// Gets or sets the log level for sync operations.
         /// </summary>
         /// <value>The sync log level.</value>
-        [Obsolete("Configure the global RealmConfiguration.LogLevel instead")]
+        /// <seealso cref="Logger.LogLevel"/>
+        [Obsolete("Configure the global Realms.Logging.Logger.LogLevel instead")]
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
 
         /// <summary>

@@ -29,6 +29,7 @@ namespace Realms
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0049 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
@@ -66,8 +67,8 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_obj_key", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ObjKey get_obj_key(ObjectHandle handle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_hashcode", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int32 get_hashcode(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlinks(ObjectHandle objectHandle, IntPtr property_index, out NativeException nativeException);
@@ -95,6 +96,7 @@ namespace Realms
             public static extern void get_schema(ObjectHandle objectHandle, IntPtr callback, out NativeException ex);
 
 #pragma warning restore SA1121 // Use built-in type alias
+#pragma warning restore IDE0049 // Naming Styles
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -138,9 +140,9 @@ namespace Realms
             return result;
         }
 
-        public ObjKey GetObjKey()
+        public int GetObjHash()
         {
-            var result = NativeMethods.get_obj_key(this, out var nativeException);
+            var result = NativeMethods.get_hashcode(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;

@@ -36,12 +36,33 @@ namespace Realms.Helpers
 
         static SerializationHelper()
         {
-            var decimalSerializer = new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false));
-            BsonSerializer.RegisterSerializer(decimalSerializer);
+            BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)));
             BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
             BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
+        }
+
+        [Preserve]
+        internal static void PreserveSerializers()
+        {
+            _ = new BooleanSerializer();
+            _ = new ByteSerializer();
+            _ = new CharSerializer();
+            _ = new Int16Serializer();
+            _ = new Int32Serializer();
+            _ = new Int64Serializer();
+            _ = new SingleSerializer();
+            _ = new DoubleSerializer();
+            _ = new DecimalSerializer();
+            _ = new Decimal128Serializer();
+            _ = new ObjectIdSerializer();
+            _ = new GuidSerializer();
+            _ = new DateTimeSerializer();
+            _ = new DateTimeOffsetSerializer();
+            _ = new StringSerializer();
+            _ = new ByteArraySerializer();
 
             _ = new EnumSerializer<Credentials.AuthProvider>();
+
             _ = new ArraySerializer<bool>();
             _ = new ArraySerializer<byte>();
             _ = new ArraySerializer<char>();
@@ -56,6 +77,28 @@ namespace Realms.Helpers
             _ = new ArraySerializer<Guid>();
             _ = new ArraySerializer<DateTime>();
             _ = new ArraySerializer<DateTimeOffset>();
+            _ = new ArraySerializer<string>();
+            _ = new ArraySerializer<byte[]>();
+
+            _ = new NullableSerializer<bool>();
+            _ = new NullableSerializer<byte>();
+            _ = new NullableSerializer<char>();
+            _ = new NullableSerializer<short>();
+            _ = new NullableSerializer<int>();
+            _ = new NullableSerializer<long>();
+            _ = new NullableSerializer<float>();
+            _ = new NullableSerializer<double>();
+            _ = new NullableSerializer<decimal>();
+            _ = new NullableSerializer<Decimal128>();
+            _ = new NullableSerializer<ObjectId>();
+            _ = new NullableSerializer<Guid>();
+            _ = new NullableSerializer<DateTime>();
+            _ = new NullableSerializer<DateTimeOffset>();
+
+            _ = new BsonDocumentSerializer();
+            _ = new BsonArraySerializer();
+
+            _ = new ObjectSerializer();
         }
 
         public static string ToNativeJson(this object value)

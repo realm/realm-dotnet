@@ -17,23 +17,26 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
-    [StructLayout(LayoutKind.Sequential)]
     internal struct TableKey : IEquatable<TableKey>
     {
-        private UInt32 value;
+        public readonly UInt32 Value;
 
-        public bool Equals(TableKey other) => value.Equals(other.value);
+        public TableKey(UInt32 value)
+        {
+            Value = value;
+        }
+
+        public bool Equals(TableKey other) => Value.Equals(other.Value);
 
         public override bool Equals(object obj) => obj is TableKey other && Equals(other);
 
-        public override int GetHashCode() => value.GetHashCode();
+        public override int GetHashCode() => Value.GetHashCode();
 
-        public static bool operator ==(TableKey left, TableKey right) => left.value == right.value;
+        public static bool operator ==(TableKey left, TableKey right) => left.Value == right.Value;
 
-        public static bool operator !=(TableKey left, TableKey right) => left.value != right.value;
+        public static bool operator !=(TableKey left, TableKey right) => left.Value != right.Value;
     }
 }

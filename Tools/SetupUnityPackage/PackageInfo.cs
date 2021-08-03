@@ -1,63 +1,44 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using NuGet.Packaging;
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License")
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System.Collections.Generic;
+using System.IO;
 
 namespace SetupUnityPackage
 {
-    public class PackageInfo
+    internal class PackageInfo : PackageInfoBase
     {
-        public string Id { get; }
-
-        public DependencyMode DependencyMode { get; }
-
         private readonly IDictionary<string, string> _paths;
 
-        internal PackageInfo(string id, DependencyMode mode, IDictionary<string, string> paths = null)
+        public bool IncludeDependencies { get; }
+
+        public PackageInfo(string id, IDictionary<string, string> paths, bool includeDependencies = true) : base(id)
         {
-            Id = id;
-            DependencyMode = mode;
-            _paths = paths ?? new Dictionary<string, string>();
+            IncludeDependencies = includeDependencies;
+            _paths = paths;
         }
 
-        public IEnumerable<(string PackagePath, string OnDiskPath)> GetFilesToExtract(PackageArchiveReader reader)
+        public override IEnumerable<(string PackagePath, string OnDiskPath)> GetFilesToExtract(string basePath)
         {
-            if (_paths.Keys.Any(p => p.Contains("*")))
+            foreach (var kvp in _paths)
             {
-                var packageFiles = reader.GetFiles();
-                foreach (var kvp in _paths)
-                {
-                    var regex = new Regex(kvp.Key);
-                    foreach (var file in packageFiles)
-                    {
-                        var match = regex.Match(file);
-                        if (!match.Success)
-                        {
-                            continue;
-                        }
-
-                        var onDiskPath = kvp.Value;
-                        foreach (Group group in match.Groups)
-                        {
-                            onDiskPath = onDiskPath.Replace($"${group.Name}", group.Value);
-                        }
-
-                        yield return (file, onDiskPath);
-                    }
-                }
+                yield return (kvp.Key, Path.Combine(basePath, kvp.Value));
             }
-            else
-            {
-                foreach (var kvp in _paths)
-                {
-                    yield return (kvp.Key, kvp.Value);
-                }
-            }
-        }
-
-        public override string ToString()
-        {
-            return $"{Id} - {DependencyMode}";
         }
     }
 }

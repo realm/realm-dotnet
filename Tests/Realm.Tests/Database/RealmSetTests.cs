@@ -1162,6 +1162,31 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        [Test]
+        public void ObjectFromAnotherRealm_ThrowsRealmException()
+        {
+            var realm2 = GetRealm(CreateConfiguration(Guid.NewGuid().ToString()));
+
+            var item = new IntPropertyObject { Int = 5 };
+
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new CollectionsObject());
+            });
+
+            var obj2 = realm2.Write(() =>
+            {
+                return realm2.Add(new CollectionsObject());
+            });
+
+            _realm.Write(() =>
+            {
+                obj1.ObjectSet.Add(item);
+            });
+
+            Assert.That(() => realm2.Write(() => obj2.ObjectSet.Add(item)), Throws.TypeOf<RealmException>().And.Message.Contains("object that is already in another realm"));
+        }
+
         static RealmSetTests()
         {
             ObjectTestValues = GetObjectTestValues().ToArray();

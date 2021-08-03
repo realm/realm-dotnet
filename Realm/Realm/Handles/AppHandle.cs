@@ -31,6 +31,8 @@ namespace Realms.Sync
 {
     internal partial class AppHandle : RealmHandle
     {
+        private static readonly List<WeakReference> _appHandles = new List<WeakReference>();
+
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
@@ -196,6 +198,12 @@ namespace Realms.Sync
         internal AppHandle(IntPtr handle) : base(null, handle)
         {
             EmailPassword = new EmailPasswordApi(this);
+
+            lock (_appHandles)
+            {
+                _appHandles.RemoveAll(a => !a.IsAlive);
+                _appHandles.Add(new WeakReference(this));
+            }
         }
 
         public static AppHandle CreateApp(Native.AppConfiguration config, byte[] encryptionKey)
@@ -203,6 +211,20 @@ namespace Realms.Sync
             var handle = NativeMethods.create_app(config, encryptionKey, out var ex);
             ex.ThrowIfNecessary();
             return new AppHandle(handle);
+        }
+
+        public static void ForceCloseHandles()
+        {
+            lock (_appHandles)
+            {
+                foreach (var weakHandle in _appHandles)
+                {
+                    var appHandle = (AppHandle)weakHandle.Target;
+                    appHandle?.Close();
+                }
+
+                _appHandles.Clear();
+            }
         }
 
         public string GetRealmPath(User user, string partition)

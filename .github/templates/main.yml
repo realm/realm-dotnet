@@ -30,11 +30,8 @@ if: #@ wrappersCacheCondition
 #@ def setupVcpkg():
 name: Setup Vcpkg
 run: |
-  Write-Output 'Beginning download...'
   Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-  Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
   Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-  Write-Output 'Completed!'
 shell: powershell
 if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
 #@ end
@@ -50,7 +47,7 @@ if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit !
 #@ actualCommand = cmd + configurationParam + ltoParam
 
 steps:
-  - #@ template.replace(checkoutCode())
+  - #@ template.replace(checkoutCode("recursive"))
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
   - #@ step
@@ -66,11 +63,15 @@ steps:
       retention-days: 1
 #@ end
 
-#@ def checkoutCode():
+#@ def checkoutCode(submodules=False):
+  - name: Disable Analytics
+    run: |
+      echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
   - name: Checkout code
     uses: actions/checkout@v2
     with:
-      submodules: recursive
+      submodules: #@ submodules
+      ref: ${{ github.event.pull_request.head.sha }}
   - name: Register csc problem matcher
     run: echo "::add-matcher::.github/problem-matchers/csc.json"
   - name: Register msvc problem matcher
@@ -89,18 +90,45 @@ steps:
   - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
 #@ end
 
-#@ def buildUnityPackage(includeDependencies):
-#@ finalPkgName = "io.realm.unity-" + ("bundled-" if includeDependencies else "") + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
-  - name: #@ "Build Unity" + (" Bundled Dependencies" if includeDependencies else "")
-    run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack" + (" --include-dependencies" if includeDependencies else "")
+#@ def buildUnityPackage():
+#@ finalPkgName = "io.realm.unity-" + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
+  - name: #@ "Build Unity"
+    run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
   - name: Store Unity artifacts
     uses: actions/upload-artifact@v2
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-  - name: Cleanup build folder
-    run: #@ "rm ${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
+#@ end
+
+#@ def buildDocs():
+#@ docsCondition = "${{ contains(github.ref, 'release') }}"
+  - name: Check Docfx cache
+    id: check-docfx-cache
+    if: #@ docsCondition
+    uses: actions/cache@v2
+    with:
+      path: 'C:\docfx'
+      key: docfx
+  - name: Download docfx
+    if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && contains(github.ref, 'release') }}
+    run: |
+      Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
+      Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
+    shell: powershell
+  - name: Build docs
+    if: #@ docsCondition
+    run: |
+      C:\docfx\docfx Docs/docfx.json
+      Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+  - name: Store docs artifacts
+    if: #@ docsCondition
+    uses: actions/upload-artifact@v2
+    with:
+      name: Docs.zip
+      path: ${{ github.workspace }}/Realm/packages/Docs.zip
+      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
 #@ end
 
 #@ def uploadPackageArtifacts():
@@ -290,13 +318,26 @@ jobs:
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
-        run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
+        run: |
+          $suffix = ""
+          if ($env:GITHUB_EVENT_NAME -eq "pull_request")
+          {
+            if (-Not $env:GITHUB_REF.Contains("release"))
+            {
+              $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+            }
+          }
+          else
+          {
+            $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
+          }
+          echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(buildPackages())
       - #@ findPackageVersion()
+      - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
-      - #@ template.replace(buildUnityPackage(False))
-      - #@ template.replace(buildUnityPackage(True))
+      - #@ template.replace(buildUnityPackage())
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
@@ -328,7 +369,7 @@ jobs:
         shell: powershell
       - name: Run the tests
         run: |
-          echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml"  | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
           Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
           Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
           do
@@ -374,6 +415,22 @@ jobs:
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
+  run-tests-xamarin-ios:
+    runs-on: macos-latest
+    name: Test Xamarin.iOS
+    needs: build-packages
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+      - name: Run the tests
+        uses: realm/ci-actions/run-ios-simulator@v1
+        with:
+         appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
+         bundleId: 'io.realm.dotnettests'
+         iphoneToSimulate: 'iPhone-8'
+         arguments: '--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml'
+      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -384,7 +441,7 @@ jobs:
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-weaver, build-packages ]
+    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-xamarin-ios, run-tests-weaver, build-packages ]
     if: always()
     steps:
       - #@ template.replace(deleteWrapperBinaries())

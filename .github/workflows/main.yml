@@ -10,10 +10,14 @@ jobs:
     runs-on: macos-latest
     name: Wrappers macOS
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -37,10 +41,14 @@ jobs:
     runs-on: macos-latest
     name: Wrappers iOS
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -64,10 +72,14 @@ jobs:
     runs-on: ubuntu-20.04
     name: Wrappers Linux
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -98,10 +110,14 @@ jobs:
         - x86
         - x86_64
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -130,10 +146,14 @@ jobs:
         - Win32
         - x64
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -153,11 +173,8 @@ jobs:
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
-        Write-Output 'Beginning download...'
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-        Write-Output 'Completed!'
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
@@ -179,10 +196,14 @@ jobs:
         - x64
         - ARM
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -202,11 +223,8 @@ jobs:
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
-        Write-Output 'Beginning download...'
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-        Write-Output ((Get-Item C:\vcpkg.zip).length/1MB)
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-        Write-Output 'Completed!'
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
@@ -233,17 +251,34 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Set version suffix
       id: set-version-suffix
-      run: echo "::set-output name=build_suffix::${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || 'alpha'}}.${{ github.run_number }}"
+      run: |
+        $suffix = ""
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request")
+        {
+          if (-Not $env:GITHUB_REF.Contains("release"))
+          {
+            $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+          }
+        }
+        else
+        {
+          $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
+        }
+        echo "::set-output name=build_suffix::$suffix"
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v2
       with:
@@ -320,6 +355,31 @@ jobs:
         pkgName=${tmpName#"Realm.Fody."}
         echo "::set-output name=package_version::$pkgName"
       shell: bash
+    - name: Check Docfx cache
+      id: check-docfx-cache
+      if: ${{ contains(github.ref, 'release') }}
+      uses: actions/cache@v2
+      with:
+        path: C:\docfx
+        key: docfx
+    - name: Download docfx
+      if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && contains(github.ref, 'release') }}
+      run: |
+        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
+        Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
+      shell: powershell
+    - name: Build docs
+      if: ${{ contains(github.ref, 'release') }}
+      run: |
+        C:\docfx\docfx Docs/docfx.json
+        Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+    - name: Store docs artifacts
+      if: ${{ contains(github.ref, 'release') }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Docs.zip
+        path: ${{ github.workspace }}/Realm/packages/Docs.zip
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
       with:
@@ -352,27 +412,19 @@ jobs:
         name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Cleanup build folder
-      run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-    - name: Build Unity Bundled Dependencies
-      run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack --include-dependencies
-    - name: Store Unity artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-        path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Cleanup build folder
-      run: rm ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-bundled-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
     needs: build-packages
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -405,10 +457,14 @@ jobs:
     name: Test UWP managed
     needs: build-packages
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -439,7 +495,7 @@ jobs:
       shell: powershell
     - name: Run the tests
       run: |
-        echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml"  | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
         Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
         Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
         do
@@ -481,10 +537,14 @@ jobs:
         - netcoreapp3.1
         - net5.0
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -517,10 +577,14 @@ jobs:
     name: Test Xamarin.macOS
     needs: build-packages
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -546,14 +610,61 @@ jobs:
         files: TestResults.macOS.xml
         comment_mode: "off"
         check_name: Results Xamarin.macOS
+  run-tests-xamarin-ios:
+    runs-on: macos-latest
+    name: Test Xamarin.iOS
+    needs: build-packages
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build Tests/Tests.iOS
+      run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:TargetFrameworkVersion=v1.0 -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Run the tests
+      uses: realm/ci-actions/run-ios-simulator@v1
+      with:
+        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
+        bundleId: io.realm.dotnettests
+        iphoneToSimulate: iPhone-8
+        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: TestResults.iOS.xml
+        comment_mode: "off"
+        check_name: Results Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
     steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Register csc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
@@ -579,6 +690,7 @@ jobs:
     - run-tests-uwp
     - run-tests-netcore-net5
     - run-tests-xamarin-macos
+    - run-tests-xamarin-ios
     - run-tests-weaver
     - build-packages
     if: always()

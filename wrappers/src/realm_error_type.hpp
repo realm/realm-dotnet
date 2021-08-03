@@ -77,6 +77,8 @@ namespace realm {
         ObjectManagedByAnotherRealm = 25,
 
         KeyAlreadyExists = 26,
+
+        RealmInUseException = 27,
      
         RealmDotNetExceptionDuringMigration = 30,
 
