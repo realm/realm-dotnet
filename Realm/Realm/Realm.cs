@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -1324,6 +1323,11 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// The destination file cannot already exist.
+        ///
+        /// For synchronized realms, the file written will have the client file identifier removed.
+        /// Furthermore it is required that all local changes are synchronized with the server before the copy can be written.
+        /// This is to be sure that the file can be used as a starting point for a newly installed application.
+        /// The function will throw if there are pending uploads.
         /// <para/>
         /// If this is called from within a transaction it writes the current data, and not the data as it was when
         /// the last transaction was committed.
