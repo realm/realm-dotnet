@@ -117,6 +117,15 @@ REALM_EXPORT Query* results_get_query(Results& results, NativeException::Marshal
     });
 }
 
+REALM_EXPORT Query* results_get_query_new(Results& results, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor query_string(query_buf, query_len);
+        return new Query(results.get_table()->query_new(query_string));
+    });
+}
+
+
 REALM_EXPORT DescriptorOrdering* results_get_descriptor_ordering(Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

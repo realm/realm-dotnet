@@ -51,6 +51,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query_new", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_query_new(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_valid(ResultsHandle results, out NativeException ex);
@@ -136,6 +139,14 @@ namespace Realms
         public QueryHandle GetQuery()
         {
             var result = NativeMethods.get_query(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new QueryHandle(Root ?? this, result);
+        }
+
+        public QueryHandle GetQueryNew(string queryJson)
+        {
+            var result = NativeMethods.get_query_new(this, queryJson, (IntPtr)queryJson.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new QueryHandle(Root ?? this, result);
