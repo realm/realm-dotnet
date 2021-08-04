@@ -16,6 +16,8 @@ namespace Realms
         private QueryHandle _coreQueryHandle;
         private SortDescriptorHandle _sortDescriptor;
 
+        IQueryableCollection results;
+
         internal RealmResultsVisitor2(Realm realm, RealmObjectBase.Metadata metadata)
         {
             _realm = realm;
@@ -57,6 +59,21 @@ namespace Realms
             }
         }
 
+        // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
+        protected override Expression VisitConstant(ConstantExpression node)
+        {
+            if (node.Value is IQueryableCollection)
+            {
+                results = node.Value as IQueryableCollection;
+            }
+            else if (node.Value?.GetType() == typeof(object))
+            {
+                throw new NotSupportedException($"The constant for '{node.Value}' is not supported");
+            }
+
+            return node;
+        }
+
         internal static Expression StripQuotes(Expression e)
         {
             while (e.NodeType == ExpressionType.Quote)
@@ -78,7 +95,8 @@ namespace Realms
         public ResultsHandle MakeResultsForQuery()
         {
             var json = JsonConvert.SerializeObject(_query, formatting: Formatting.Indented);
-            return _coreQueryHandle.CreateResults(_realm.SharedRealmHandle, _sortDescriptor);
+            var query = results.GetQuery(json);
+            return query.CreateResultsNew(_realm.SharedRealmHandle);
         }
     }
 }
