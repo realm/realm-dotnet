@@ -26,6 +26,13 @@ namespace Realms
     {
     }
 
+    public class NegationNode : ExpressionNode
+    {
+        public ExpressionNode Expression { get; set; }
+
+        public string Kind => "not";
+    }
+
     public abstract class BooleanBinaryNode : ExpressionNode
     {
         public ExpressionNode Left { get; set; }

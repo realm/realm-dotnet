@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Realms
 {
@@ -94,7 +95,15 @@ namespace Realms
 
         public ResultsHandle MakeResultsForQuery()
         {
-            var json = JsonConvert.SerializeObject(_query, formatting: Formatting.Indented);
+            DefaultContractResolver contractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            };
+            string json = JsonConvert.SerializeObject(_query, new JsonSerializerSettings
+            {
+                ContractResolver = contractResolver,
+                Formatting = Formatting.Indented
+            });
             var query = results.GetQuery(json);
             return query.CreateResultsNew(_realm.SharedRealmHandle);
         }

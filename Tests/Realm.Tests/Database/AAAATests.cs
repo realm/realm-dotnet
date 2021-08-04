@@ -96,15 +96,23 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest()
         {
-            //var query2 = _realm.All<Person>().Filter("LastName CONTAINS 'test'");
 
-            var query = _realm.All<Person>().Where(p => p.Score == 100);
-            foreach (var person in query)
-            {
-                var name = person.FullName;
-                Console.WriteLine(name);
-            }
+            var query = _realm.All<Person>().Where(p => !(p.Score == 100));
+
+            _ = query.ToArray();
         }
+
+        //[Test]
+        //public void SimpleTest()
+        //{
+
+        //    var query = _realm.All<Person>().Where(p => p.Score == 100);
+        //    foreach (var person in query)
+        //    {
+        //        var name = person.FullName;
+        //        Console.WriteLine(name);
+        //    }
+        //}
 
         //[Test]
         //public void Ordering()

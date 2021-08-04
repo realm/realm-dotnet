@@ -127,6 +127,20 @@ namespace Realms
             return RealmLinqExpression.Create(returnNode);
         }
 
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            NegationNode returnNode = new NegationNode();
+            switch (node.NodeType)
+            {
+                case ExpressionType.Not:
+                    returnNode.Expression = Extract(node.Operand);  // recurse into richer expression, expect to VisitCombination
+                    break;
+                default:
+                    throw new NotSupportedException($"The unary operator '{node.NodeType}' is not supported");
+            }
+            return RealmLinqExpression.Create(returnNode);
+        }
+
         private static string GetKind(object valueType)
         {
             // TODO: Possible with switch statment in our current .NET version?
