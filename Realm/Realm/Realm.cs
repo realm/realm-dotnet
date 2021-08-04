@@ -1334,14 +1334,9 @@ namespace Realms
         {
             Argument.NotNull(config, nameof(config));
 
-            if (config is SyncConfiguration && Config is SyncConfiguration)
+            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
             {
-                SyncConfiguration originalConfig = (SyncConfiguration)Config;
-                SyncConfiguration copiedConfig = (SyncConfiguration)config;
-                if (originalConfig.Partition != copiedConfig.Partition)
-                {
-                    throw new NotSupportedException("Copying a Realm to another partition is not supported.");
-                }
+                throw new NotSupportedException("Copying a Realm to another partition is not supported.");
             }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
