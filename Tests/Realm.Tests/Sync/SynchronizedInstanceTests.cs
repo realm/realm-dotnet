@@ -352,9 +352,9 @@ namespace Realms.Tests.Sync
 
                 originalRealm.WriteCopy(copyConfig);
 
-                using var copiedlRealm = GetRealm(copyConfig);
+                using var copiedRealm = GetRealm(copyConfig);
 
-                Assert.AreEqual(copiedlRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
             });
         }
 
