@@ -384,11 +384,6 @@ namespace Realms.Tests.Sync
 
                 using var originalRealm = GetRealm(originalConfig);
 
-                AddDummyData(originalRealm, true);
-
-                await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
-
                 Assert.Throws<NotSupportedException>(() => originalRealm.WriteCopy(copyConfig));
             });
         }
