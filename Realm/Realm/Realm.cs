@@ -1323,10 +1323,11 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// 1. The destination file cannot already exist.
-        /// 2. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
+        /// 2. When using a local Realm and this is called from within a transaction it writes the current data,
+        ///    and not the data as it was when the last transaction was committed.
+        /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
         ///    This is to be sure that the file can be used as a starting point for a newly installed application.
         ///    The function will throw if there are pending uploads.
-        /// 3. It is advised to only copy a Realm file while it is not in use. Copying open Realms can lead to unexpected behvaiour.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
