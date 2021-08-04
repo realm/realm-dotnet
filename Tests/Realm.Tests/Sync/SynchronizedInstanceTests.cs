@@ -377,6 +377,7 @@ namespace Realms.Tests.Sync
                 {
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
                 }
+
                 Assert.That(originalConfig.Partition, !Is.EqualTo(copyConfig.Partition));
 
                 File.Delete(copyConfig.DatabasePath);
