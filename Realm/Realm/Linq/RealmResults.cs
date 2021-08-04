@@ -59,6 +59,8 @@ namespace Realms
 
         public QueryHandle GetQuery() => ResultsHandle.GetQuery();
 
+        public QueryHandle GetQuery(string queryJson) => ResultsHandle.GetQueryNew(queryJson);
+
         public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmResults<T>(realm, (ResultsHandle)handle, Metadata);
@@ -107,6 +109,12 @@ namespace Realms
         /// </summary>
         /// <returns>The query handle.</returns>
         QueryHandle GetQuery();
+
+        /// <summary>
+        /// Creates a query handle for the results.
+        /// </summary>
+        /// <returns>The query handle.</returns>
+        QueryHandle GetQuery(string queryJson);
 
         /// <summary>
         /// Creates a sort descriptor handle for the results.
