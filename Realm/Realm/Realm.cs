@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -1323,15 +1322,22 @@ namespace Realms
         /// non-null <see cref="RealmConfigurationBase.EncryptionKey"/>, the copy will be encrypted with that key.
         /// </summary>
         /// <remarks>
-        /// The destination file cannot already exist.
-        /// <para/>
-        /// If this is called from within a transaction it writes the current data, and not the data as it was when
-        /// the last transaction was committed.
+        /// 1. The destination file cannot already exist.
+        /// 2. When using a local Realm and this is called from within a transaction it writes the current data,
+        ///    and not the data as it was when the last transaction was committed.
+        /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
+        ///    This is to be sure that the file can be used as a starting point for a newly installed application.
+        ///    The function will throw if there are pending uploads.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
             Argument.NotNull(config, nameof(config));
+
+            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
+            {
+                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
+            }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
         }
