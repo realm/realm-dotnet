@@ -96,10 +96,14 @@ namespace Realms.Tests.Database
         [Test]
         public void SimpleTest()
         {
+            MakeThreePeople();
+            var query = _realm.All<Person>().Where(p => p.Score == 100);
 
-            var query = _realm.All<Person>().Where(p => !(p.Score == 100));
-
-            _ = query.ToArray();
+            foreach (var person in query)
+            {
+                var name = person.FullName;
+                var email = person.Email;
+            }
         }
 
         //[Test]
