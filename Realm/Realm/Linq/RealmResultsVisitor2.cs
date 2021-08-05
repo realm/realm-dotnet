@@ -13,10 +13,6 @@ namespace Realms
         private readonly RealmObjectBase.Metadata _metadata;
         private QueryModel _query;
 
-        // TODO Remove these fields when the CreateResults method is rewritten
-        private QueryHandle _coreQueryHandle;
-        private SortDescriptorHandle _sortDescriptor;
-
         IQueryableCollection results;
 
         internal RealmResultsVisitor2(Realm realm, RealmObjectBase.Metadata metadata)
@@ -24,6 +20,8 @@ namespace Realms
             _realm = realm;
             _metadata = metadata;
             _query = new QueryModel();
+
+            // TODO: Discuss this with Ferdinando since this can allow us to not have empty lists
             _query.WhereClauses = new List<WhereClause>();
             _query.OrderingClauses = new List<OrderingClause>();
         }
@@ -44,8 +42,7 @@ namespace Realms
                 if (IsSortClause(node.Method.Name))
                 {
                     Visit(node.Arguments[0]);
-                    // Fix SOrtClause naming
-                    var sortClause = new SortClause();
+                    var sortClause = new SortClauseVisitor();
                     _query.OrderingClauses.Add(sortClause.VisitOrderClause(node));
                     return node;
                 }
@@ -60,7 +57,6 @@ namespace Realms
             }
         }
 
-        // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         protected override Expression VisitConstant(ConstantExpression node)
         {
             if (node.Value is IQueryableCollection)

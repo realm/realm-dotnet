@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Realms
 {
-    internal class SortClause
+    internal class SortClauseVisitor
     {
         public OrderingClause _orderingClause;
 

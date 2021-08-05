@@ -138,12 +138,12 @@ namespace Realms
                 default:
                     throw new NotSupportedException($"The unary operator '{node.NodeType}' is not supported");
             }
+
             return RealmLinqExpression.Create(returnNode);
         }
 
         private static string GetKind(object valueType)
         {
-            // TODO: Possible with switch statment in our current .NET version?
             if (valueType == typeof(float))
             {
                 return "float";

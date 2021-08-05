@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Realms
 {
@@ -8,6 +7,7 @@ namespace Realms
         public List<WhereClause> WhereClauses { get; set; }
 
         public List<OrderingClause> OrderingClauses { get; set; }
+
     }
 
     public class OrderingClause
@@ -62,21 +62,21 @@ namespace Realms
 
     public abstract class ComparisonNode : ExpressionNode
     {
-        public StandardNode Left { get; set; }
+        public PropertyNode Left { get; set; }
 
-        public StandardNode Right { get; set; }
+        public PropertyNode Right { get; set; }
 
         public abstract string Kind { get; }
 
         public ComparisonNode()
         {
-            Left = new StandardNode();
+            Left = new PropertyNode();
 
-            Right = new StandardNode();
+            Right = new PropertyNode();
         }
     }
 
-    public class StandardNode
+    public class PropertyNode
     {
         public string Kind { get; set; }
 
