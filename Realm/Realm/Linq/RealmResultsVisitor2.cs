@@ -20,10 +20,6 @@ namespace Realms
             _realm = realm;
             _metadata = metadata;
             _query = new QueryModel();
-
-            // TODO: Discuss this with Ferdinando since this can allow us to not have empty lists
-            _query.WhereClauses = new List<WhereClause>();
-            _query.OrderingClauses = new List<OrderingClause>();
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)

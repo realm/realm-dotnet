@@ -31,6 +31,94 @@ namespace Realms
             return realmLinqExpression.ExpressionNode;
         }
 
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            ExpressionNode returnNode;
+            if (node.Method.DeclaringType == typeof(string) ||
+                node.Method.DeclaringType == typeof(StringExtensions))
+            {
+                StringComparisonNode result;
+                var test = node.Method.Name;
+                if (test.Equals("StartsWith"))
+                {
+                    result = new StartsWithNode();
+                }
+                else if (test.Equals("EndsWith"))
+                {
+                    result = new EndsWithNode();
+                }
+                else if (test.Equals("Contains"))
+                {
+                    result = new ContainsNode();
+                }
+                else if (test.Equals("Like"))
+                {
+                    result = new LikeNode();
+                }
+                else
+                {
+                    throw new NotSupportedException("Not supported string operation method");
+                }
+                if (node.Object is MemberExpression me)
+                {
+                    if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+                    {
+                        var leftName = GetColumnName(me, me.NodeType);
+                        result.Left.Name = leftName;
+                        result.Left.Kind = "property";
+                        result.Left.Type = GetKind(me.Type);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(me + " is null or not a supported type.");
+                    }
+
+                    if (node.Arguments[0] is ConstantExpression ce)
+                    {
+                        result.Right.Value = ce.Value;
+                        result.Right.Kind = "constant";
+                        result.Right.Type = GetKind(ce.Value.GetType());
+                    }
+                }
+                else
+                {
+                    result = null;
+                }
+
+                returnNode = result;
+            }
+            else
+            {
+                returnNode = null;
+            }
+
+            return RealmLinqExpression.Create(returnNode);
+        }
+
+        //if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
+        //{
+        //    queryMethod = (q, r, p, v) => q.StringContains(r, p, v, caseSensitive: true);
+        //}
+        //else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
+        //{
+        //    queryMethod = (q, r, p, v) => q.StringStartsWith(r, p, v, caseSensitive: true);
+        //}
+        //else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value))
+        //{
+        //    queryMethod = (q, r, p, v) => q.StringEndsWith(r, p, v, caseSensitive: true);
+        //}
+        //else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
+        //{
+        //    member = node.Arguments[0] as MemberExpression;
+        //    stringArgumentIndex = 1;
+        //    if (!TryExtractConstantValue(node.Arguments.Last(), out object caseSensitive) || !(caseSensitive is bool))
+        //    {
+        //        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a string and boolean constant arguments.");
+        //    }
+
+        //    queryMethod = (q, r, p, v) => q.StringLike(r, p, v, (bool)caseSensitive);
+        //}
+
         protected override Expression VisitBinary(BinaryExpression be)
         {
             ExpressionNode returnNode;
@@ -155,6 +243,10 @@ namespace Realms
             else if (valueType == typeof(double))
             {
                 return "double";
+            }
+            else if (valueType == typeof(string))
+            {
+                return "string";
             }
             else
             {

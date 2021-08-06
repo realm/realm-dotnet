@@ -96,6 +96,15 @@ namespace Realms.Tests.Database
         //[Test]
         //public void SimpleTest()
         //{
+        //    var query = _realm.All<Person>().Where(p => p.Score == 100 && p.Longitude == 50)
+        //        .OrderBy(p => p.Score);
+
+        //    _ = query.ToArray();
+        //}
+
+        //[Test]
+        //public void SimpleTest()
+        //{
         //    MakeThreePeople();
         //    var query = _realm.All<Person>().Where(p => p.Score == 100);
 
@@ -103,19 +112,57 @@ namespace Realms.Tests.Database
         //    {
         //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
         //    }
+
+        //    _ = query.ToArray();
+        //}
+
+        //[Test]
+        //public void SimpleTest2()
+        //{
+        //    MakeThreePeople();
+        //    var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("Pet"));
+
+        //    foreach (var person in query)
+        //    {
+        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
+        //    }
+        //}
+
+        //[Test]
+        //public void SimpleTest3()
+        //{
+        //    MakeThreePeople();
+        //    var query = _realm.All<Person>().Where(p => p.FirstName.EndsWith("ter"));
+
+        //    foreach (var person in query)
+        //    {
+        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
+        //    }
         //}
 
         [Test]
-        public void SimpleTest2()
+        public void SimpleTest4()
         {
             MakeThreePeople();
-            var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("Pet"));
+            var query = _realm.All<Person>().Where(p => p.FirstName.Contains("ete"));
 
             foreach (var person in query)
             {
                 Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
             }
         }
+
+        //[Test]
+        //public void SimpleTest5()
+        //{
+        //    MakeThreePeople();
+        //    var query = _realm.All<Person>().Where(p => p.FirstName.Like("ter"));
+
+        //    foreach (var person in query)
+        //    {
+        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
+        //    }
+        //}
 
         //[Test]
         //public void SimpleTest()

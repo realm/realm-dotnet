@@ -68,7 +68,6 @@ namespace Realms
 
         public object Execute(Expression expression)
         {
-            expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
             var v = MakeVisitor();
             var visitResult = v.Visit(expression);
             var constExp = visitResult as ConstantExpression;
