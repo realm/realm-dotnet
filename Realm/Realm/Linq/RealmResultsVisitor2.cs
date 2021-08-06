@@ -197,6 +197,14 @@ namespace Realms
                 _queryHandle = _results.GetQuery(jsonQuery);
             }
 
+            //So, I'm not really convinced about this... I don't like the idea to keep state in the visitor, even though it definitely works
+            //It seems that RealmResults also are live and updating, so I could even cache that
+            //Methods like Count/Sum/Min/Max just need the query cached.
+            //Methods like First/Single/ElementAt need the results cached.
+            //Do we have issues with that (memory wise)...?
+            //It seems that when we enumerate a realmResult (like with foreach) we create a new realmResult that is connected to a snapshot of the realmHandle, so that the collection is frozen
+            //This means that we could keep the realmResults? Even though I have a feeling we're going in circles
+
             return _queryHandle.CreateResultsNew(_realm.SharedRealmHandle);
         }
     }
