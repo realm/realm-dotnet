@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -13,7 +14,8 @@ namespace Realms
         private readonly RealmObjectBase.Metadata _metadata;
         private QueryModel _query;
 
-        IQueryableCollection results;
+        private IQueryableCollection _results;
+        private QueryHandle _queryHandle;
 
         internal RealmResultsVisitor2(Realm realm, RealmObjectBase.Metadata metadata)
         {
@@ -46,6 +48,20 @@ namespace Realms
                     _query.OrderingClauses.Add(sortClause.VisitOrderClause(node));
                     return node;
                 }
+
+                if (node.Method.Name.StartsWith(nameof(Queryable.ElementAt), StringComparison.OrdinalIgnoreCase))
+                {
+                    Visit(node.Arguments.First());
+                    if (!TryExtractConstantValue(node.Arguments.Last(), out object argument) || argument.GetType() != typeof(int))
+                    {
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single integer constant argument or closure variable");
+                    }
+
+                    var index = (int)argument;
+                    using var rh = MakeResultsForQuery();
+
+                    return GetObjectAtIndex(index, rh, node.Method.Name);
+                }
                 else
                 {
                     throw new NotSupportedException($"The method call '{node.Method.Name}' is not supported");
@@ -57,11 +73,87 @@ namespace Realms
             }
         }
 
+        private Expression GetObjectAtIndex(int index, ResultsHandle rh, string methodName)
+        {
+            try
+            {
+                var val = rh.GetValueAtIndex(index, _realm);
+                return Expression.Constant(val.AsRealmObject());
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                if (methodName.EndsWith("OrDefault", StringComparison.OrdinalIgnoreCase))
+                {
+                    // For First/Last/Single/ElemetAtOrDefault - ignore
+                    return Expression.Constant(null);
+                }
+
+                if (methodName == nameof(Queryable.ElementAt))
+                {
+                    // ElementAt should rethrow the ArgumentOutOfRangeException.
+                    throw;
+                }
+
+                // All the rest should throw an InvalidOperationException.
+                throw new InvalidOperationException("Sequence contains no matching element", ex);
+            }
+        }
+
+        internal static bool TryExtractConstantValue(Expression expr, out object value)
+        {
+            if (expr.NodeType == ExpressionType.Convert)
+            {
+                var operand = ((UnaryExpression)expr).Operand;
+                return TryExtractConstantValue(operand, out value);
+            }
+
+            if (expr is ConstantExpression constant)
+            {
+                value = constant.Value;
+                return true;
+            }
+
+            var memberAccess = expr as MemberExpression;
+            if (memberAccess?.Member is FieldInfo fieldInfo)
+            {
+                if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
+                {
+                    // Handle static fields (e.g. string.Empty)
+                    value = fieldInfo.GetValue(null);
+                    return true;
+                }
+
+                if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
+                {
+                    value = fieldInfo.GetValue(targetObject);
+                    return true;
+                }
+            }
+
+            if (memberAccess?.Member is PropertyInfo propertyInfo)
+            {
+                if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
+                {
+                    value = propertyInfo.GetValue(null);
+                    return true;
+                }
+
+                if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
+                {
+                    value = propertyInfo.GetValue(targetObject);
+                    return true;
+                }
+            }
+
+            value = null;
+            return false;
+        }
+
         protected override Expression VisitConstant(ConstantExpression node)
         {
             if (node.Value is IQueryableCollection)
             {
-                results = node.Value as IQueryableCollection;
+                _results = node.Value as IQueryableCollection;
             }
             else if (node.Value?.GetType() == typeof(object))
             {
@@ -91,17 +183,21 @@ namespace Realms
 
         public ResultsHandle MakeResultsForQuery()
         {
-            DefaultContractResolver contractResolver = new DefaultContractResolver
+            if (_queryHandle == null)
             {
-                NamingStrategy = new CamelCaseNamingStrategy()
-            };
-            string json = JsonConvert.SerializeObject(_query, new JsonSerializerSettings
-            {
-                ContractResolver = contractResolver,
-                Formatting = Formatting.Indented
-            });
-            var query = results.GetQuery(json);
-            return query.CreateResultsNew(_realm.SharedRealmHandle);
+                DefaultContractResolver contractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                };
+                var jsonQuery = JsonConvert.SerializeObject(_query, new JsonSerializerSettings
+                {
+                    ContractResolver = contractResolver,
+                    Formatting = Formatting.Indented
+                });
+                _queryHandle = _results.GetQuery(jsonQuery);
+            }
+
+            return _queryHandle.CreateResultsNew(_realm.SharedRealmHandle);
         }
     }
 }

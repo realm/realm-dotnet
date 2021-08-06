@@ -93,17 +93,16 @@ namespace Realms.Tests.Database
             return propertyInfo.GetValue(exp) as string;
         }
 
-        //[Test]
-        //public void SimpleTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.Score == 100);
+        [Test]
+        public void SimpleTest()
+        {
+            MakeThreePeople();
+            var query = _realm.All<Person>().Where(p => p.Score > 2).OrderBy(p => p.Email);
 
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
-        //    }
-        //}
+            var a = query.ElementAt(0);
+            var b = query.ElementAt(1);
+            var c = query.ElementAt(2);
+        }
 
         [Test]
         public void SimpleTest2()

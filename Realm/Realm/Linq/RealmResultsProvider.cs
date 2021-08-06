@@ -28,6 +28,7 @@ namespace Realms
     {
         private readonly Realm _realm;
         private readonly RealmObjectBase.Metadata _metadata;
+        private RealmResultsVisitor2 _visitor;
 
         internal RealmResultsProvider(Realm realm, RealmObjectBase.Metadata metadata)
         {
@@ -35,9 +36,10 @@ namespace Realms
             _metadata = metadata;
         }
 
-        internal RealmResultsVisitor2 MakeVisitor()
+        internal RealmResultsVisitor2 GetOrCreateVisitor()
         {
-            return new RealmResultsVisitor2(_realm, _metadata);
+            _visitor ??= new RealmResultsVisitor2(_realm, _metadata);
+            return _visitor;
         }
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
@@ -68,8 +70,7 @@ namespace Realms
 
         public object Execute(Expression expression)
         {
-            expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
-            var v = MakeVisitor();
+            var v = GetOrCreateVisitor();  //TODO We don't need to recreate the visitor I think
             var visitResult = v.Visit(expression);
             var constExp = visitResult as ConstantExpression;
             return constExp?.Value;

@@ -73,7 +73,7 @@ namespace Realms
             }
 
             // do all the LINQ expression evaluation to build a query
-            var qv = ((RealmResultsProvider)Provider).MakeVisitor();
+            var qv = ((RealmResultsProvider)Provider).GetOrCreateVisitor();
             qv.Visit(Expression);
             return qv.MakeResultsForQuery();
         }
