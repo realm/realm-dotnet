@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <local:BasePage xmlns="http://xamarin.com/schemas/2014/forms" 
-		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         xmlns:local="clr-namespace:QuickJournal.Views"
-		x:Class="QuickJournal.Views.JournalEntriesPage"
-		Title="Journal"
+        x:Class="QuickJournal.Views.JournalEntriesPage"
+        Title="Journal"
         x:Name="page">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add" Command="{Binding AddEntryCommand}" />
@@ -18,8 +18,8 @@
                               Detail="{Binding Metadata.CreatedDate, StringFormat='{0:dddd, MMMM d yyyy}'}">
                         <TextCell.ContextActions>
                             <MenuItem Text="Delete" IsDestructive="true" 
-									  Command="{Binding Path=BindingContext.DeleteEntryCommand, Source={x:Reference page}}" 
-								      CommandParameter="{Binding .}" />
+                                       Command="{Binding Path=BindingContext.DeleteEntryCommand, Source={x:Reference page}}" 
+                                       CommandParameter="{Binding .}" />
                         </TextCell.ContextActions>
                     </TextCell>
                 </DataTemplate>
