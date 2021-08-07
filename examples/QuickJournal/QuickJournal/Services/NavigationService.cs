@@ -45,7 +45,7 @@ namespace QuickJournal.Services
         {
             return viewModel switch
             {
-                JournalEntryDetailsViewModel _ => new JournalEntryDetailsPage(),
+                JournalEntryDetailsViewModel => new JournalEntryDetailsPage(),
                 JournalEntriesViewModel => new JournalEntriesPage(),
                 _ => throw new ArgumentException("The input ViewModel is not accepted"),
             };
