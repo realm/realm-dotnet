@@ -61,7 +61,13 @@ Prerequisites:
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
-## Contributing
+## Examples
+
+Some minimal examples of Realm use can be found in the `examples` folder:
+
+* [QuickJournal](examples/QuickJournal): a simple Xamarin.Forms application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
+
+## Contributing 
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 

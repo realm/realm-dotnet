@@ -1,17 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
-		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-		x:Class="QuickJournal.JournalEntryDetailsPage"
-		Title="{Binding Entry.Date, StringFormat='{0:MMMM d yyyy}'}">
-	<ContentPage.ToolbarItems>
-		<ToolbarItem Text="Save" Command="{Binding SaveCommand}" />
-	</ContentPage.ToolbarItems>
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="35" />
-			<RowDefinition Height="*" />
-		</Grid.RowDefinitions>
-		<Entry Text="{Binding Entry.Title}" Placeholder="Title" Grid.Row="0" />
-		<Editor Text="{Binding Entry.BodyText}" Grid.Row="1" />
-	</Grid>
-</ContentPage>
+<local:BasePage xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:local="clr-namespace:QuickJournal.Views"
+		x:Class="QuickJournal.Views.JournalEntryDetailsPage"
+		Title="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:MMMM d yyyy}'}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Save" Command="{Binding SaveCommand}" />
+    </ContentPage.ToolbarItems>
+    <StackLayout Orientation="Vertical" Margin="15" Spacing="15">
+        <Entry Text="{Binding Entry.Title}" Placeholder="Title"  />
+        <Editor Text="{Binding Entry.Body}" Placeholder="Note" AutoSize="TextChanges"  />
+    </StackLayout>
+</local:BasePage>
