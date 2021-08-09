@@ -51,14 +51,17 @@ namespace Realms
                 {
                     result = new ContainsNode();
                 }
+
+                // TODO Undecided implementation
                 else if (test.Equals("Like"))
                 {
                     result = new LikeNode();
                 }
                 else
                 {
-                    throw new NotSupportedException("Not supported string operation method");
+                    throw new NotSupportedException(node.Method.Name + " is not supported string operation method");
                 }
+
                 if (node.Object is MemberExpression me)
                 {
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
@@ -80,16 +83,12 @@ namespace Realms
                         result.Right.Type = GetKind(ce.Value.GetType());
                     }
                 }
-                else
-                {
-                    result = null;
-                }
 
                 returnNode = result;
             }
             else
             {
-                returnNode = null;
+                throw new NotSupportedException(node.Method + " is not a supported method.");
             }
 
             return RealmLinqExpression.Create(returnNode);
@@ -136,7 +135,7 @@ namespace Realms
                         comparisonNode = new GteNode();
                         break;
                     default:
-                        throw new NotSupportedException($"The binary operator '{be.NodeType}' is not supported");
+                        throw new NotSupportedException($"The operator '{be.NodeType}' is not supported");
                 }
 
                 if (be.Left is MemberExpression me)
@@ -151,7 +150,7 @@ namespace Realms
                     }
                     else
                     {
-                        throw new NotSupportedException(me + " is null or not a supported type.");
+                        throw new NotSupportedException(me + " is null or not a supported node type.");
                     }
                 }
 
@@ -169,12 +168,12 @@ namespace Realms
                         comparisonNode.Right = new PropertyNode();
                         var leftName = GetColumnName(mo, mo.NodeType);
 
-                        comparisonNode.Right.Value = leftName;
+                        comparisonNode.Right.Name = leftName;
                         comparisonNode.Right.Type = GetKind(mo.Type);
                     }
                     else
                     {
-                        throw new NotSupportedException(mo + " is null or not a supported type.");
+                        throw new NotSupportedException(mo + " is null or not a supported node type.");
                     }
                 }
 
@@ -226,7 +225,7 @@ namespace Realms
             }
             else
             {
-                throw new NotSupportedException(valueType + "is not a supported type.");
+                throw new NotSupportedException(valueType + " is not a supported type.");
             }
         }
 

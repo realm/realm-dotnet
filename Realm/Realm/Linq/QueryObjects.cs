@@ -86,16 +86,16 @@ namespace Realms
         public abstract string Kind { get; }
     }
 
-    public class PropertyNode
+    public class PropertyNode : ExpressionNode
     {
         public string Kind => "property";
 
-        public object Name { get; set; }
+        public string Name { get; set; }
 
         public string Type { get; set; }
     }
 
-    public class ConstantNode
+    public class ConstantNode : ExpressionNode
     {
         public string Kind => "constant";
 
