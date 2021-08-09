@@ -2,12 +2,11 @@
 
 namespace Realms
 {
-    internal class QueryModel
+    public class QueryModel
     {
         public List<WhereClause> WhereClauses { get; set; } = new List<WhereClause>();
 
         public List<OrderingClause> OrderingClauses { get; set; } = new List<OrderingClause>();
-
     }
 
     public class OrderingClause
@@ -17,7 +16,7 @@ namespace Realms
         public string Property { get; set; }
     }
 
-    // TODO: Fix modifier access to internal for all classes + fields
+    // TODO: Changing access modifier to internal will make all tests fail(?)
     public class WhereClause
     {
         public ExpressionNode Expression { get; set; }
@@ -46,87 +45,59 @@ namespace Realms
     public class AndNode : BooleanBinaryNode
     {
         public override string Kind => "and";
-
     }
 
     public class OrNode : BooleanBinaryNode
     {
         public override string Kind => "or";
-
     }
 
     public class BooleanPropertyNode : ExpressionNode
     {
         public string Property { get; set; }
-
     }
 
-    public abstract class StringComparisonNode : ExpressionNode
-    {
-        public ConstantNode Left { get; set; }
-
-        public PropertyNode Right { get; set; }
-
-        public abstract string Kind { get; }
-
-        // TODO: Remove this and set left and right in appropriate assignement method
-        public StringComparisonNode()
-        {
-            Left = new ConstantNode();
-
-            Right = new PropertyNode();
-        }
-    }
-
-    public class StartsWithNode : StringComparisonNode
+    public class StartsWithNode : ComparisonNode
     {
         public override string Kind => "beginsWith";
     }
 
-    public class EndsWithNode : StringComparisonNode
+    public class EndsWithNode : ComparisonNode
     {
         public override string Kind => "endsWith";
     }
 
-    public class ContainsNode : StringComparisonNode
+    public class ContainsNode : ComparisonNode
     {
         public override string Kind => "contains";
     }
 
-    public class LikeNode : StringComparisonNode
+    public class LikeNode : ComparisonNode
     {
         public override string Kind => "like";
     }
 
     public abstract class ComparisonNode : ExpressionNode
     {
-        public PropertyNode Left { get; set; }
+        public dynamic Left { get; set; }
 
-        public PropertyNode Right { get; set; }
+        public dynamic Right { get; set; }
 
         public abstract string Kind { get; }
-
-        // TODO: Remove this and set left and right in appropriate assignement method
-        public ComparisonNode()
-        {
-            Left = new PropertyNode();
-
-            Right = new PropertyNode();
-        }
     }
 
-    public class ConstantNode
+    public class PropertyNode
     {
-        public string Kind { get; set; }
+        public string Kind => "property";
 
         public object Name { get; set; }
 
         public string Type { get; set; }
     }
 
-    public class PropertyNode
+    public class ConstantNode
     {
-        public string Kind { get; set; }
+        public string Kind => "constant";
 
         public object Value { get; set; }
 

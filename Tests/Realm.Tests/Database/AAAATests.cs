@@ -102,46 +102,60 @@ namespace Realms.Tests.Database
         //    _ = query.ToArray();
         //}
 
-        //[Test]
-        //public void SimpleTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.Score == 100);
+        [Test]
+        public void WhereFloatEqualityTest()
+        {
+            MakeThreePeople();
+            var query = _realm.All<Person>().Where(p => p.Score == 100);
 
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
-        //    }
+            foreach (var person in query)
+            {
+                Assert.That(person.FullName, Is.EqualTo("John Doe"));
+            }
 
-        //    _ = query.ToArray();
-        //}
-
-        //[Test]
-        //public void SimpleTest2()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("Pet"));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-        //}
-
-        //[Test]
-        //public void SimpleTest3()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.EndsWith("ter"));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-        //}
+            _ = query.ToArray();
+        }
 
         [Test]
-        public void SimpleTest4()
+        public void WhereStringEqualityTest()
+        {
+            MakeThreePeople();
+            var query = _realm.All<Person>().Where(p => p.LastName == "Doe");
+
+            foreach (var person in query)
+            {
+                Assert.That(person.FullName, Is.EqualTo("John Doe"));
+            }
+
+            _ = query.ToArray();
+        }
+
+        [Test]
+        public void SimpleStringStartsWithTest()
+        {
+            MakeThreePeople();
+            var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("Pet"));
+
+            foreach (var person in query)
+            {
+                Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
+            }
+        }
+
+        [Test]
+        public void SimpleStringEndsWIthTest()
+        {
+            MakeThreePeople();
+            var query = _realm.All<Person>().Where(p => p.FirstName.EndsWith("ter"));
+
+            foreach (var person in query)
+            {
+                Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
+            }
+        }
+
+        [Test]
+        public void SimpleStringContainsTest()
         {
             MakeThreePeople();
             var query = _realm.All<Person>().Where(p => p.FirstName.Contains("ete"));
@@ -152,11 +166,12 @@ namespace Realms.Tests.Database
             }
         }
 
+        ////TODO Test has to be implemented with the decided Like syntax
         //[Test]
-        //public void SimpleTest5()
+        //public void SimpleStringLikeTest()
         //{
         //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.Like("ter"));
+        //    var query = _realm.All<Person>().Where(p => p.FirstName.Like(""));
 
         //    foreach (var person in query)
         //    {

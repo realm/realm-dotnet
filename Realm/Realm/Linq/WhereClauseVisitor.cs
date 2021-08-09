@@ -37,7 +37,7 @@ namespace Realms
             if (node.Method.DeclaringType == typeof(string) ||
                 node.Method.DeclaringType == typeof(StringExtensions))
             {
-                StringComparisonNode result;
+                ComparisonNode result;
                 var test = node.Method.Name;
                 if (test.Equals("StartsWith"))
                 {
@@ -63,9 +63,9 @@ namespace Realms
                 {
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
                     {
+                        result.Left = new PropertyNode();
                         var leftName = GetColumnName(me, me.NodeType);
                         result.Left.Name = leftName;
-                        result.Left.Kind = "property";
                         result.Left.Type = GetKind(me.Type);
                     }
                     else
@@ -75,8 +75,8 @@ namespace Realms
 
                     if (node.Arguments[0] is ConstantExpression ce)
                     {
+                        result.Right = new ConstantNode();
                         result.Right.Value = ce.Value;
-                        result.Right.Kind = "constant";
                         result.Right.Type = GetKind(ce.Value.GetType());
                     }
                 }
@@ -94,30 +94,6 @@ namespace Realms
 
             return RealmLinqExpression.Create(returnNode);
         }
-
-        //if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
-        //{
-        //    queryMethod = (q, r, p, v) => q.StringContains(r, p, v, caseSensitive: true);
-        //}
-        //else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
-        //{
-        //    queryMethod = (q, r, p, v) => q.StringStartsWith(r, p, v, caseSensitive: true);
-        //}
-        //else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value))
-        //{
-        //    queryMethod = (q, r, p, v) => q.StringEndsWith(r, p, v, caseSensitive: true);
-        //}
-        //else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
-        //{
-        //    member = node.Arguments[0] as MemberExpression;
-        //    stringArgumentIndex = 1;
-        //    if (!TryExtractConstantValue(node.Arguments.Last(), out object caseSensitive) || !(caseSensitive is bool))
-        //    {
-        //        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a string and boolean constant arguments.");
-        //    }
-
-        //    queryMethod = (q, r, p, v) => q.StringLike(r, p, v, (bool)caseSensitive);
-        //}
 
         protected override Expression VisitBinary(BinaryExpression be)
         {
@@ -167,10 +143,10 @@ namespace Realms
                 {
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
                     {
+                        comparisonNode.Left = new PropertyNode();
                         var leftName = GetColumnName(me, me.NodeType);
 
-                        comparisonNode.Left.Value = leftName;
-                        comparisonNode.Left.Kind = "property";
+                        comparisonNode.Left.Name = leftName;
                         comparisonNode.Left.Type = GetKind(me.Type);
                     }
                     else
@@ -181,8 +157,8 @@ namespace Realms
 
                 if (be.Left is ConstantExpression ce)
                 {
+                    comparisonNode.Left = new ConstantNode();
                     comparisonNode.Left.Value = ce.Value;
-                    comparisonNode.Left.Kind = "constant";
                     comparisonNode.Left.Type = GetKind(ce.Value.GetType());
                 }
 
@@ -190,10 +166,10 @@ namespace Realms
                 {
                     if (mo.Expression != null && mo.Expression.NodeType == ExpressionType.Parameter)
                     {
+                        comparisonNode.Right = new PropertyNode();
                         var leftName = GetColumnName(mo, mo.NodeType);
 
                         comparisonNode.Right.Value = leftName;
-                        comparisonNode.Right.Kind = "property";
                         comparisonNode.Right.Type = GetKind(mo.Type);
                     }
                     else
@@ -204,8 +180,8 @@ namespace Realms
 
                 if (be.Right is ConstantExpression co)
                 {
+                    comparisonNode.Right = new ConstantNode();
                     comparisonNode.Right.Value = co.Value;
-                    comparisonNode.Right.Kind = "constant";
                     comparisonNode.Right.Type = GetKind(co.Value.GetType());
                 }
 
