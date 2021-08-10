@@ -11,7 +11,7 @@ async function run(): Promise<void> {
 
         const parsedResults = JSON.parse(fs.readFileSync(resultsFile, {encoding: "utf8"}));
 
-        updateBenchmarkId(parsedResults);
+        updateBenchmarkResults(parsedResults);
 
         const dashboardPath = core.getInput("dashboard-path", {required: false});
         if (dashboardPath) {
@@ -24,8 +24,11 @@ async function run(): Promise<void> {
     }
 }
 
-export function updateBenchmarkId(results: any): void {
-    results._id = `${github.context.runNumber}-${github.context.sha}`;
+export function updateBenchmarkResults(results: any): void {
+    results.RunNumber = github.context.runNumber;
+    results.Commit = github.context.sha;
+    results.Branch = github.context.ref;
+    results._id = github.context.runNumber;
 
     for (const benchmark of results.Benchmarks) {
         if (!benchmark.Parameters) {

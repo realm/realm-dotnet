@@ -35,7 +35,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.uploadBenchmarkResults = exports.generateChartsDashboard = exports.updateBenchmarkId = void 0;
+exports.uploadBenchmarkResults = exports.generateChartsDashboard = exports.updateBenchmarkResults = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const fs = __importStar(__nccwpck_require__(5747));
@@ -47,7 +47,7 @@ function run() {
             const token = core.getInput("realm-token", { required: true });
             const resultsFile = core.getInput("file", { required: true });
             const parsedResults = JSON.parse(fs.readFileSync(resultsFile, { encoding: "utf8" }));
-            updateBenchmarkId(parsedResults);
+            updateBenchmarkResults(parsedResults);
             const dashboardPath = core.getInput("dashboard-path", { required: false });
             if (dashboardPath) {
                 generateChartsDashboard(parsedResults, path.join(process.env.GITHUB_WORKSPACE || "", dashboardPath));
@@ -59,8 +59,11 @@ function run() {
         }
     });
 }
-function updateBenchmarkId(results) {
-    results._id = `${github.context.runNumber}-${github.context.sha}`;
+function updateBenchmarkResults(results) {
+    results.RunNumber = github.context.runNumber;
+    results.Commit = github.context.sha;
+    results.Branch = github.context.ref;
+    results._id = github.context.runNumber;
     for (const benchmark of results.Benchmarks) {
         if (!benchmark.Parameters) {
             benchmark.Parameters = "N/A";
@@ -68,7 +71,7 @@ function updateBenchmarkId(results) {
     }
     core.info(`Updated results id to: ${results._id}`);
 }
-exports.updateBenchmarkId = updateBenchmarkId;
+exports.updateBenchmarkResults = updateBenchmarkResults;
 function generateChartsDashboard(results, dashboardPath) {
     const dashboard = JSON.parse(fs.readFileSync(__nccwpck_require__.ab + "charts-template.json", { encoding: "utf8" }));
     const layouts = dashboard.dashboards.dashboard.layout;

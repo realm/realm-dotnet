@@ -1,5 +1,5 @@
 {
-   "Title":"BenchmarkRun-joined-2021-08-10-17-30-30",
+   "Title":"BenchmarkRun-joined-2021-08-10-23-10-28",
    "HostEnvironmentInfo":{
       "BenchmarkDotNetCaption":"BenchmarkDotNet",
       "BenchmarkDotNetVersion":"0.12.1.1486-nightly",
@@ -21,7 +21,7 @@
    },
    "Benchmarks":[
       {
-         "DisplayInfo":"QueryTests.Count: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [ObjectCount=10]",
+         "DisplayInfo":"QueryTests.Count: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"QueryTests",
          "Method":"Count",
@@ -30,62 +30,62 @@
          "FullName":"PerformanceTests.QueryTests.Count(ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               25707900
+               295117.333984375,291908.3984375,293770.263671875,291860.498046875,293754.345703125,298911.1328125,295318.017578125,296297.65625,292752.24609375,292030.95703125,292278.61328125,294728.80859375,292773.53515625,291854.931640625,294735.400390625
             ],
-            "N":1,
-            "Min":25707900,
-            "LowerFence":25707900,
-            "Q1":25707900,
-            "Median":25707900,
-            "Mean":25707900,
-            "Q3":25707900,
-            "UpperFence":25707900,
-            "Max":25707900,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":291854.931640625,
+            "LowerFence":287997.412109375,
+            "Q1":292154.78515625,
+            "Median":293754.345703125,
+            "Mean":293872.8092447917,
+            "Q3":294926.3671875,
+            "UpperFence":299083.740234375,
+            "Max":298911.1328125,
+            "InterquartileRange":2771.58203125,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":519.9884877281291,
+            "Variance":4055820.410546802,
+            "StandardDeviation":2013.9067531906242,
+            "Skewness":0.9091170719466204,
+            "Kurtosis":3.062598356926518,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":25707900,
-               "StandardError":0,
+               "N":15,
+               "Mean":293872.8092447917,
+               "StandardError":519.9884877281291,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":2152.988472718796,
+               "Lower":291719.8207720729,
+               "Upper":296025.7977175105
             },
             "Percentiles":{
-               "P0":25707900,
-               "P25":25707900,
-               "P50":25707900,
-               "P67":25707900,
-               "P80":25707900,
-               "P85":25707900,
-               "P90":25707900,
-               "P95":25707900,
-               "P100":25707900
+               "P0":291854.931640625,
+               "P25":292154.78515625,
+               "P50":293754.345703125,
+               "P67":294731.3134765625,
+               "P80":295157.470703125,
+               "P85":295297.94921875,
+               "P90":295905.80078125,
+               "P95":297081.69921875,
+               "P100":298911.1328125
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":2,
+            "Gen1Collections":1,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":12424
+            "TotalOperations":2048,
+            "BytesAllocatedPerOperation":10600
          }
       },{
-         "DisplayInfo":"QueryTests.Count: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [ObjectCount=100]",
+         "DisplayInfo":"QueryTests.Count: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"QueryTests",
          "Method":"Count",
@@ -94,62 +94,62 @@
          "FullName":"PerformanceTests.QueryTests.Count(ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               1230100
+               292342.08984375,295244.580078125,293353.466796875,290863.427734375,289520.5078125,293574.169921875,293954.931640625,292065.283203125,292133.10546875,291140.869140625,292620.703125,295417.48046875,291789.306640625,290565.771484375,293293.701171875
             ],
-            "N":1,
-            "Min":1230100,
-            "LowerFence":1230100,
-            "Q1":1230100,
-            "Median":1230100,
-            "Mean":1230100,
-            "Q3":1230100,
-            "UpperFence":1230100,
-            "Max":1230100,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":289520.5078125,
+            "LowerFence":288466.9921875,
+            "Q1":291465.087890625,
+            "Median":292342.08984375,
+            "Mean":292525.29296875,
+            "Q3":293463.818359375,
+            "UpperFence":296461.9140625,
+            "Max":295417.48046875,
+            "InterquartileRange":1998.73046875,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":429.15337264642704,
+            "Variance":2762589.258807046,
+            "StandardDeviation":1662.1038652283576,
+            "Skewness":0.10075672140962617,
+            "Kurtosis":2.085809286113944,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":1230100,
-               "StandardError":0,
+               "N":15,
+               "Mean":292525.29296875,
+               "StandardError":429.15337264642704,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":1776.8898468752943,
+               "Lower":290748.4031218747,
+               "Upper":294302.1828156253
             },
             "Percentiles":{
-               "P0":1230100,
-               "P25":1230100,
-               "P50":1230100,
-               "P67":1230100,
-               "P80":1230100,
-               "P85":1230100,
-               "P90":1230100,
-               "P95":1230100,
-               "P100":1230100
+               "P0":289520.5078125,
+               "P25":291465.087890625,
+               "P50":292342.08984375,
+               "P67":293316.412109375,
+               "P80":293650.322265625,
+               "P85":293916.85546875,
+               "P90":294728.720703125,
+               "P95":295296.4501953125,
+               "P100":295417.48046875
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":2,
+            "Gen1Collections":1,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":12256
+            "TotalOperations":2048,
+            "BytesAllocatedPerOperation":10608
          }
       },{
-         "DisplayInfo":"QueryTests.Count: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [ObjectCount=1000]",
+         "DisplayInfo":"QueryTests.Count: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [ObjectCount=1000]",
          "Namespace":"PerformanceTests",
          "Type":"QueryTests",
          "Method":"Count",
@@ -158,62 +158,62 @@
          "FullName":"PerformanceTests.QueryTests.Count(ObjectCount: 1000)",
          "Statistics":{
             "OriginalValues":[
-               1147700
+               301575.87890625,300530.126953125,303225.439453125,298889.990234375,301839.794921875,302679.98046875,303255.224609375,302776.416015625,305206.15234375,299612.5,300246.435546875,300779.638671875,298555.859375,301217.96875
             ],
-            "N":1,
-            "Min":1147700,
-            "LowerFence":1147700,
-            "Q1":1147700,
-            "Median":1147700,
-            "Mean":1147700,
-            "Q3":1147700,
-            "UpperFence":1147700,
-            "Max":1147700,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":298555.859375,
+            "LowerFence":296664.9353027344,
+            "Q1":300317.3583984375,
+            "Median":301396.923828125,
+            "Mean":301456.52901785716,
+            "Q3":302752.30712890625,
+            "UpperFence":306404.7302246094,
+            "Max":305206.15234375,
+            "InterquartileRange":2434.94873046875,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":497.5941271184429,
+            "Variance":3466398.814798712,
+            "StandardDeviation":1861.8267413480535,
+            "Skewness":0.19687337926871468,
+            "Kurtosis":2.0928803776420715,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":1147700,
-               "StandardError":0,
+               "N":14,
+               "Mean":301456.52901785716,
+               "StandardError":497.5941271184429,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":2100.261079262325,
+               "Lower":299356.26793859486,
+               "Upper":303556.79009711946
             },
             "Percentiles":{
-               "P0":1147700,
-               "P25":1147700,
-               "P50":1147700,
-               "P67":1147700,
-               "P80":1147700,
-               "P85":1147700,
-               "P90":1147700,
-               "P95":1147700,
-               "P100":1147700
+               "P0":298555.859375,
+               "P25":300317.3583984375,
+               "P50":301396.923828125,
+               "P67":302436.32666015625,
+               "P80":302956.025390625,
+               "P85":303226.9287109375,
+               "P90":303246.2890625,
+               "P95":303938.04931640625,
+               "P100":305206.15234375
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":2,
+            "Gen1Collections":1,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":12312
+            "TotalOperations":2048,
+            "BytesAllocatedPerOperation":10608
          }
       },{
-         "DisplayInfo":"QueryTests.Enumerate: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [ObjectCount=10]",
+         "DisplayInfo":"QueryTests.Enumerate: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"QueryTests",
          "Method":"Enumerate",
@@ -222,62 +222,62 @@
          "FullName":"PerformanceTests.QueryTests.Enumerate(ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               5754900
+               65919.921875,67432.373046875,65235.31494140625,67244.82421875,65474.658203125,66721.37451171875,65685.02197265625,65533.88671875,65522.03369140625,65851.416015625,65458.2275390625,67491.9677734375,67152.20947265625,65866.064453125,66416.83349609375
             ],
-            "N":1,
-            "Min":5754900,
-            "LowerFence":5754900,
-            "Q1":5754900,
-            "Median":5754900,
-            "Mean":5754900,
-            "Q3":5754900,
-            "UpperFence":5754900,
-            "Max":5754900,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":65235.31494140625,
+            "LowerFence":63414.71252441406,
+            "Q1":65527.960205078125,
+            "Median":65866.064453125,
+            "Mean":66200.40852864583,
+            "Q3":66936.7919921875,
+            "UpperFence":69050.03967285156,
+            "Max":67491.9677734375,
+            "InterquartileRange":1408.831787109375,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":206.92890061484215,
+            "Variance":642293.5486450082,
+            "StandardDeviation":801.4321859302934,
+            "Skewness":0.47145016064266776,
+            "Kurtosis":1.4760790500829613,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":5754900,
-               "StandardError":0,
+               "N":15,
+               "Mean":66200.40852864583,
+               "StandardError":206.92890061484215,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":856.7796176461928,
+               "Lower":65343.628910999636,
+               "Upper":67057.18814629203
             },
             "Percentiles":{
-               "P0":5754900,
-               "P25":5754900,
-               "P50":5754900,
-               "P67":5754900,
-               "P80":5754900,
-               "P85":5754900,
-               "P90":5754900,
-               "P95":5754900,
-               "P100":5754900
+               "P0":65235.31494140625,
+               "P25":65527.960205078125,
+               "P50":65866.064453125,
+               "P67":66532.55908203125,
+               "P80":67170.732421875,
+               "P85":67235.56274414062,
+               "P90":67357.353515625,
+               "P95":67450.25146484375,
+               "P100":67491.9677734375
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":4,
+            "Gen1Collections":2,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":7376
+            "TotalOperations":8192,
+            "BytesAllocatedPerOperation":5840
          }
       },{
-         "DisplayInfo":"QueryTests.Enumerate: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [ObjectCount=100]",
+         "DisplayInfo":"QueryTests.Enumerate: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"QueryTests",
          "Method":"Enumerate",
@@ -286,62 +286,62 @@
          "FullName":"PerformanceTests.QueryTests.Enumerate(ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               695300
+               138276.220703125,145505.029296875,138004.8095703125,138079.1015625,137581.005859375,141571.2158203125,141994.4580078125,139834.08203125,142957.9833984375,139333.6669921875,144476.9775390625,141199.755859375,138887.9638671875,138168.896484375,139041.30859375
             ],
-            "N":1,
-            "Min":695300,
-            "LowerFence":695300,
-            "Q1":695300,
-            "Median":695300,
-            "Mean":695300,
-            "Q3":695300,
-            "UpperFence":695300,
-            "Max":695300,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":137581.005859375,
+            "LowerFence":132882.14111328125,
+            "Q1":138222.55859375,
+            "Median":139333.6669921875,
+            "Mean":140327.49837239584,
+            "Q3":141782.8369140625,
+            "UpperFence":147123.25439453125,
+            "Max":145505.029296875,
+            "InterquartileRange":3560.2783203125,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":646.7842614285954,
+            "Variance":6274948.212476005,
+            "StandardDeviation":2504.9846731020143,
+            "Skewness":0.7046595046660982,
+            "Kurtosis":2.087089825782198,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":695300,
-               "StandardError":0,
+               "N":15,
+               "Mean":140327.49837239584,
+               "StandardError":646.7842614285954,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":2677.98055544601,
+               "Lower":137649.51781694984,
+               "Upper":143005.47892784185
             },
             "Percentiles":{
-               "P0":695300,
-               "P25":695300,
-               "P50":695300,
-               "P67":695300,
-               "P80":695300,
-               "P85":695300,
-               "P90":695300,
-               "P95":695300,
-               "P100":695300
+               "P0":137581.005859375,
+               "P25":138222.55859375,
+               "P50":139333.6669921875,
+               "P67":141340.91064453125,
+               "P80":142187.1630859375,
+               "P85":142861.630859375,
+               "P90":143869.3798828125,
+               "P95":144785.39306640625,
+               "P100":145505.029296875
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":7,
+            "Gen1Collections":3,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":21680
+            "TotalOperations":4096,
+            "BytesAllocatedPerOperation":20241
          }
       },{
-         "DisplayInfo":"QueryTests.Enumerate: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [ObjectCount=1000]",
+         "DisplayInfo":"QueryTests.Enumerate: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [ObjectCount=1000]",
          "Namespace":"PerformanceTests",
          "Type":"QueryTests",
          "Method":"Enumerate",
@@ -350,62 +350,62 @@
          "FullName":"PerformanceTests.QueryTests.Enumerate(ObjectCount: 1000)",
          "Statistics":{
             "OriginalValues":[
-               1370700
+               963042.578125,947486.9140625,946508.0078125,947369.23828125,960324.31640625,966926.953125,959457.71484375,947910.546875,939611.1328125,935642.48046875,975476.46484375,943123.2421875,975906.4453125,941669.921875,947770.21484375
             ],
-            "N":1,
-            "Min":1370700,
-            "LowerFence":1370700,
-            "Q1":1370700,
-            "Median":1370700,
-            "Mean":1370700,
-            "Q3":1370700,
-            "UpperFence":1370700,
-            "Max":1370700,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":935642.48046875,
+            "LowerFence":919513.8916015625,
+            "Q1":944815.625,
+            "Median":947770.21484375,
+            "Mean":953215.078125,
+            "Q3":961683.447265625,
+            "UpperFence":986985.1806640625,
+            "Max":975906.4453125,
+            "InterquartileRange":16867.822265625,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":3297.422461548166,
+            "Variance":163094923.34883553,
+            "StandardDeviation":12770.862278986315,
+            "Skewness":0.49082410514264935,
+            "Kurtosis":1.8123897784382723,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":1370700,
-               "StandardError":0,
+               "N":15,
+               "Mean":953215.078125,
+               "StandardError":3297.422461548166,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":13652.826393166313,
+               "Lower":939562.2517318337,
+               "Upper":966867.9045181663
             },
             "Percentiles":{
-               "P0":1370700,
-               "P25":1370700,
-               "P50":1370700,
-               "P67":1370700,
-               "P80":1370700,
-               "P85":1370700,
-               "P90":1370700,
-               "P95":1370700,
-               "P100":1370700
+               "P0":935642.48046875,
+               "P25":944815.625,
+               "P50":947770.21484375,
+               "P67":959787.0234375,
+               "P80":963819.453125,
+               "P85":966538.515625,
+               "P90":972056.66015625,
+               "P95":975605.458984375,
+               "P100":975906.4453125
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":16,
+            "Gen1Collections":8,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":165760
+            "TotalOperations":1024,
+            "BytesAllocatedPerOperation":164246
          }
       },{
-         "DisplayInfo":"ObjectTests.GetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1)",
+         "DisplayInfo":"ObjectTests.GetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain)",
          "Namespace":"PerformanceTests",
          "Type":"ObjectTests",
          "Method":"GetPropertyValue",
@@ -414,62 +414,62 @@
          "FullName":"PerformanceTests.ObjectTests.GetPropertyValue",
          "Statistics":{
             "OriginalValues":[
-               71134.375
+               1674.9113082885742,1648.5223770141602,1632.5796127319336,1659.2300415039062,1668.952751159668,1654.4483184814453,1649.4268417358398,1649.3780136108398,1650.6345748901367,1650.3114700317383,1665.7159805297852,1665.2044296264648,1641.002082824707
             ],
-            "N":1,
-            "Min":71134.375,
-            "LowerFence":71134.375,
-            "Q1":71134.375,
-            "Median":71134.375,
-            "Mean":71134.375,
-            "Q3":71134.375,
-            "UpperFence":71134.375,
-            "Max":71134.375,
-            "InterquartileRange":0,
+            "N":13,
+            "Min":1632.5796127319336,
+            "LowerFence":1625.6383895874023,
+            "Q1":1649.3780136108398,
+            "Median":1650.6345748901367,
+            "Mean":1654.6398309560923,
+            "Q3":1665.2044296264648,
+            "UpperFence":1688.9440536499023,
+            "Max":1674.9113082885742,
+            "InterquartileRange":15.826416015625,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":3.2727452897202203,
+            "Variance":139.24120250801653,
+            "StandardDeviation":11.800050953619502,
+            "Skewness":-0.0017200824066829481,
+            "Kurtosis":2.0382103027451666,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":71134.375,
-               "StandardError":0,
+               "N":13,
+               "Mean":1654.6398309560923,
+               "StandardError":3.2727452897202203,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":14.131031085015746,
+               "Lower":1640.5087998710765,
+               "Upper":1668.770862041108
             },
             "Percentiles":{
-               "P0":71134.375,
-               "P25":71134.375,
-               "P50":71134.375,
-               "P67":71134.375,
-               "P80":71134.375,
-               "P85":71134.375,
-               "P90":71134.375,
-               "P95":71134.375,
-               "P100":71134.375
+               "P0":1632.5796127319336,
+               "P25":1649.3780136108398,
+               "P50":1650.6345748901367,
+               "P67":1659.4690170288086,
+               "P80":1665.511360168457,
+               "P85":1666.3633346557617,
+               "P90":1668.3053970336914,
+               "P95":1671.3361740112305,
+               "P100":1674.9113082885742
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":14,
+            "Gen1Collections":7,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":306
+            "TotalOperations":524288,
+            "BytesAllocatedPerOperation":288
          }
       },{
-         "DisplayInfo":"StringTests.GetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=20]",
+         "DisplayInfo":"StringTests.GetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=20]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"GetPropertyValue",
@@ -478,62 +478,62 @@
          "FullName":"PerformanceTests.StringTests.GetPropertyValue(StringSize: 20)",
          "Statistics":{
             "OriginalValues":[
-               27856.25
+               470.3322410583496,470.58253288269043,469.06723976135254,469.59543228149414,468.2538032531738,472.22142219543457,473.55828285217285,468.62101554870605,469.0432548522949,471.5877056121826,470.7930564880371,471.86503410339355,473.2262134552002,469.09828186035156
             ],
-            "N":1,
-            "Min":27856.25,
-            "LowerFence":27856.25,
-            "Q1":27856.25,
-            "Median":27856.25,
-            "Mean":27856.25,
-            "Q3":27856.25,
-            "UpperFence":27856.25,
-            "Max":27856.25,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":468.2538032531738,
+            "LowerFence":464.9939477443695,
+            "Q1":469.0750002861023,
+            "Median":470.45738697052,
+            "Mean":470.560394014631,
+            "Q3":471.7957019805908,
+            "UpperFence":475.8767545223236,
+            "Max":473.55828285217285,
+            "InterquartileRange":2.7207016944885254,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":0.4593280432025736,
+            "Variance":2.9537515178122744,
+            "StandardDeviation":1.7186481658013295,
+            "Skewness":0.32875549517053093,
+            "Kurtosis":1.6461006740366206,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":27856.25,
-               "StandardError":0,
+               "N":14,
+               "Mean":470.560394014631,
+               "StandardError":0.4593280432025736,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":1.9387463781751153,
+               "Lower":468.6216476364559,
+               "Upper":472.4991403928061
             },
             "Percentiles":{
-               "P0":27856.25,
-               "P25":27856.25,
-               "P50":27856.25,
-               "P67":27856.25,
-               "P80":27856.25,
-               "P85":27856.25,
-               "P90":27856.25,
-               "P95":27856.25,
-               "P100":27856.25
+               "P0":468.2538032531738,
+               "P25":469.0750002861023,
+               "P50":470.45738697052,
+               "P67":471.3572573661804,
+               "P80":472.00758934020996,
+               "P85":472.27166175842285,
+               "P90":472.9247760772705,
+               "P95":473.3424377441406,
+               "P100":473.55828285217285
             }
          },
          "Memory":{
-            "Gen0Collections":0,
+            "Gen0Collections":12,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":82
+            "TotalOperations":2097152,
+            "BytesAllocatedPerOperation":64
          }
       },{
-         "DisplayInfo":"StringTests.GetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=100]",
+         "DisplayInfo":"StringTests.GetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=100]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"GetPropertyValue",
@@ -542,62 +542,62 @@
          "FullName":"PerformanceTests.StringTests.GetPropertyValue(StringSize: 100)",
          "Statistics":{
             "OriginalValues":[
-               16590.625
+               1241.2612915039062,1241.8180465698242,1234.8899841308594,1247.0525741577148,1254.9644470214844,1263.8425827026367,1252.1625518798828,1240.0100708007812,1241.739273071289,1243.4097290039062,1248.0255126953125,1256.2786102294922,1247.1128463745117,1244.4503784179688,1255.9013366699219
             ],
-            "N":1,
-            "Min":16590.625,
-            "LowerFence":16590.625,
-            "Q1":16590.625,
-            "Median":16590.625,
-            "Mean":16590.625,
-            "Q3":16590.625,
-            "UpperFence":16590.625,
-            "Max":16590.625,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":1234.8899841308594,
+            "LowerFence":1224.1014003753662,
+            "Q1":1241.7786598205566,
+            "Median":1247.0525741577148,
+            "Mean":1247.5279490152996,
+            "Q3":1253.5634994506836,
+            "UpperFence":1271.240758895874,
+            "Max":1263.8425827026367,
+            "InterquartileRange":11.784839630126953,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":1.9980138350169374,
+            "Variance":59.880889273786345,
+            "StandardDeviation":7.738274308512612,
+            "Skewness":0.4232273540803439,
+            "Kurtosis":2.193029357091715,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":16590.625,
-               "StandardError":0,
+               "N":15,
+               "Mean":1247.5279490152996,
+               "StandardError":1.9980138350169374,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":8.272684600996863,
+               "Lower":1239.2552644143027,
+               "Upper":1255.8006336162964
             },
             "Percentiles":{
-               "P0":16590.625,
-               "P25":16590.625,
-               "P50":16590.625,
-               "P67":16590.625,
-               "P80":16590.625,
-               "P85":16590.625,
-               "P90":16590.625,
-               "P95":16590.625,
-               "P100":16590.625
+               "P0":1234.8899841308594,
+               "P25":1241.7786598205566,
+               "P50":1247.0525741577148,
+               "P67":1249.5975875854492,
+               "P80":1255.1518249511719,
+               "P85":1255.8076477050781,
+               "P90":1256.127700805664,
+               "P95":1258.5478019714355,
+               "P100":1263.8425827026367
             }
          },
          "Memory":{
-            "Gen0Collections":0,
+            "Gen0Collections":11,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":242
+            "TotalOperations":524288,
+            "BytesAllocatedPerOperation":224
          }
       },{
-         "DisplayInfo":"StringTests.GetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=1000]",
+         "DisplayInfo":"StringTests.GetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=1000]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"GetPropertyValue",
@@ -606,62 +606,62 @@
          "FullName":"PerformanceTests.StringTests.GetPropertyValue(StringSize: 1000)",
          "Statistics":{
             "OriginalValues":[
-               25678.125
+               11675.199127197266,11707.714080810547,11724.210357666016,11713.49105834961,11779.871368408203,11739.02359008789,11685.34164428711,11738.306427001953,11672.19467163086,11733.501434326172,11738.733673095703,11804.004669189453,11698.270416259766,11649.762725830078,11745.674896240234
             ],
-            "N":1,
-            "Min":25678.125,
-            "LowerFence":25678.125,
-            "Q1":25678.125,
-            "Median":25678.125,
-            "Mean":25678.125,
-            "Q3":25678.125,
-            "UpperFence":25678.125,
-            "Max":25678.125,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":11649.762725830078,
+            "LowerFence":11621.197128295898,
+            "Q1":11691.806030273438,
+            "Median":11724.210357666016,
+            "Mean":11720.353342692057,
+            "Q3":11738.878631591797,
+            "UpperFence":11809.487533569336,
+            "Max":11804.004669189453,
+            "InterquartileRange":47.072601318359375,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":10.609768678990601,
+            "Variance":1688.5078713253495,
+            "StandardDeviation":41.091457400843666,
+            "Skewness":0.21303725839785762,
+            "Kurtosis":2.301597269446931,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":25678.125,
-               "StandardError":0,
+               "N":15,
+               "Mean":11720.353342692057,
+               "StandardError":10.609768678990601,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":43.92926036474634,
+               "Lower":11676.42408232731,
+               "Upper":11764.282603056803
             },
             "Percentiles":{
-               "P0":25678.125,
-               "P25":25678.125,
-               "P50":25678.125,
-               "P67":25678.125,
-               "P80":25678.125,
-               "P85":25678.125,
-               "P90":25678.125,
-               "P95":25678.125,
-               "P100":25678.125
+               "P0":11649.762725830078,
+               "P25":11691.806030273438,
+               "P50":11724.210357666016,
+               "P67":11738.468780517578,
+               "P80":11740.35385131836,
+               "P85":11745.009765625,
+               "P90":11766.192779541016,
+               "P95":11787.111358642578,
+               "P100":11804.004669189453
             }
          },
          "Memory":{
-            "Gen0Collections":0,
+            "Gen0Collections":12,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":2042
+            "TotalOperations":65536,
+            "BytesAllocatedPerOperation":2024
          }
       },{
-         "DisplayInfo":"StringTests.LookupByPK: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=20]",
+         "DisplayInfo":"StringTests.LookupByPK: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=20]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"LookupByPK",
@@ -670,62 +670,62 @@
          "FullName":"PerformanceTests.StringTests.LookupByPK(StringSize: 20)",
          "Statistics":{
             "OriginalValues":[
-               86331.25
+               5666.880416870117,5626.102066040039,5547.278213500977,5602.640914916992,5581.383895874023,5665.152359008789,5527.333450317383,5578.78532409668,5581.61506652832,5480.873489379883,5598.00910949707,5507.726669311523,5508.953475952148,5703.923416137695,5649.485397338867
             ],
-            "N":1,
-            "Min":86331.25,
-            "LowerFence":86331.25,
-            "Q1":86331.25,
-            "Median":86331.25,
-            "Mean":86331.25,
-            "Q3":86331.25,
-            "UpperFence":86331.25,
-            "Max":86331.25,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":5480.873489379883,
+            "LowerFence":5386.5739822387695,
+            "Q1":5537.30583190918,
+            "Median":5581.61506652832,
+            "Mean":5588.4095509847,
+            "Q3":5637.793731689453,
+            "UpperFence":5788.525581359863,
+            "Max":5703.923416137695,
+            "InterquartileRange":100.48789978027344,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":17.020083899534974,
+            "Variance":4345.248839208146,
+            "StandardDeviation":65.91850149395195,
+            "Skewness":0.04475857814306938,
+            "Kurtosis":1.7632496456070335,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":86331.25,
-               "StandardError":0,
+               "N":15,
+               "Mean":5588.4095509847,
+               "StandardError":17.020083899534974,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":70.4708763851798,
+               "Lower":5517.938674599521,
+               "Upper":5658.88042736988
             },
             "Percentiles":{
-               "P0":86331.25,
-               "P25":86331.25,
-               "P50":86331.25,
-               "P67":86331.25,
-               "P80":86331.25,
-               "P85":86331.25,
-               "P90":86331.25,
-               "P95":86331.25,
-               "P100":86331.25
+               "P0":5480.873489379883,
+               "P25":5537.30583190918,
+               "P50":5581.61506652832,
+               "P67":5611.55615234375,
+               "P80":5652.618789672852,
+               "P85":5663.585662841797,
+               "P90":5666.189193725586,
+               "P95":5677.993316650391,
+               "P100":5703.923416137695
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":8,
+            "Gen1Collections":4,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":688
+            "TotalOperations":131072,
+            "BytesAllocatedPerOperation":664
          }
       },{
-         "DisplayInfo":"StringTests.LookupByPK: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=100]",
+         "DisplayInfo":"StringTests.LookupByPK: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=100]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"LookupByPK",
@@ -734,62 +734,62 @@
          "FullName":"PerformanceTests.StringTests.LookupByPK(StringSize: 100)",
          "Statistics":{
             "OriginalValues":[
-               20815.625
+               5633.647155761719,5645.330047607422,5666.417694091797,5660.691833496094,5702.790832519531,5632.758331298828,5656.941986083984,5740.6158447265625,5656.252288818359,5607.770538330078,5668.717193603516,5678.253936767578,5668.104553222656
             ],
-            "N":1,
-            "Min":20815.625,
-            "LowerFence":20815.625,
-            "Q1":20815.625,
-            "Median":20815.625,
-            "Mean":20815.625,
-            "Q3":20815.625,
-            "UpperFence":20815.625,
-            "Max":20815.625,
-            "InterquartileRange":0,
+            "N":13,
+            "Min":5607.770538330078,
+            "LowerFence":5610.249328613281,
+            "Q1":5645.330047607422,
+            "Median":5660.691833496094,
+            "Mean":5662.945556640625,
+            "Q3":5668.717193603516,
+            "UpperFence":5703.797912597656,
+            "Max":5740.6158447265625,
+            "InterquartileRange":23.38714599609375,
             "LowerOutliers":[
-               
+               5607.770538330078
             ],
             "UpperOutliers":[
-               
+               5740.6158447265625
             ],
             "AllOutliers":[
-               
+               5607.770538330078,5740.6158447265625
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":9.176623231775315,
+            "Variance":1094.735381193459,
+            "StandardDeviation":33.08678559777996,
+            "Skewness":0.6565585482889782,
+            "Kurtosis":3.2031997273445802,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":20815.625,
-               "StandardError":0,
+               "N":13,
+               "Mean":5662.945556640625,
+               "StandardError":9.176623231775315,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":39.622743801971914,
+               "Lower":5623.322812838653,
+               "Upper":5702.568300442597
             },
             "Percentiles":{
-               "P0":20815.625,
-               "P25":20815.625,
-               "P50":20815.625,
-               "P67":20815.625,
-               "P80":20815.625,
-               "P85":20815.625,
-               "P90":20815.625,
-               "P95":20815.625,
-               "P100":20815.625
+               "P0":5607.770538330078,
+               "P25":5645.330047607422,
+               "P50":5660.691833496094,
+               "P67":5668.129058837891,
+               "P80":5674.439239501953,
+               "P85":5683.161315917969,
+               "P90":5697.883453369141,
+               "P95":5717.920837402344,
+               "P100":5740.6158447265625
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":8,
+            "Gen1Collections":4,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":694
+            "TotalOperations":131072,
+            "BytesAllocatedPerOperation":664
          }
       },{
-         "DisplayInfo":"StringTests.LookupByPK: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=1000]",
+         "DisplayInfo":"StringTests.LookupByPK: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=1000]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"LookupByPK",
@@ -798,62 +798,62 @@
          "FullName":"PerformanceTests.StringTests.LookupByPK(StringSize: 1000)",
          "Statistics":{
             "OriginalValues":[
-               25015.625
+               10296.461486816406,10152.57568359375,10236.228942871094,10156.158447265625,10228.790283203125,10266.368103027344,10238.04931640625,10247.770690917969,10142.544555664062,10291.5771484375,10199.119567871094,10219.187927246094,10308.291625976562,10238.8427734375
             ],
-            "N":1,
-            "Min":25015.625,
-            "LowerFence":25015.625,
-            "Q1":25015.625,
-            "Median":25015.625,
-            "Mean":25015.625,
-            "Q3":25015.625,
-            "UpperFence":25015.625,
-            "Max":25015.625,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":10142.544555664062,
+            "LowerFence":10117.76351928711,
+            "Q1":10204.136657714844,
+            "Median":10237.139129638672,
+            "Mean":10230.140468052456,
+            "Q3":10261.71875,
+            "UpperFence":10348.091888427734,
+            "Max":10308.291625976562,
+            "InterquartileRange":57.58209228515625,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":14.127737308405226,
+            "Variance":2794.3014603742695,
+            "StandardDeviation":52.861152658396215,
+            "Skewness":-0.25124126891311693,
+            "Kurtosis":1.81766275605666,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":25015.625,
-               "StandardError":0,
+               "N":14,
+               "Mean":10230.140468052456,
+               "StandardError":14.127737308405226,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":59.6308018720304,
+               "Lower":10170.509666180425,
+               "Upper":10289.771269924486
             },
             "Percentiles":{
-               "P0":25015.625,
-               "P25":25015.625,
-               "P50":25015.625,
-               "P67":25015.625,
-               "P80":25015.625,
-               "P85":25015.625,
-               "P90":25015.625,
-               "P95":25015.625,
-               "P100":25015.625
+               "P0":10142.544555664062,
+               "P25":10204.136657714844,
+               "P50":10237.139129638672,
+               "P67":10245.181594848633,
+               "P80":10276.451721191406,
+               "P85":10291.821365356445,
+               "P90":10294.996185302734,
+               "P95":10300.602035522461,
+               "P100":10308.291625976562
             }
          },
          "Memory":{
-            "Gen0Collections":0,
-            "Gen1Collections":0,
+            "Gen0Collections":4,
+            "Gen1Collections":2,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":688
+            "TotalOperations":65536,
+            "BytesAllocatedPerOperation":664
          }
       },{
-         "DisplayInfo":"ObjectTests.SetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1)",
+         "DisplayInfo":"ObjectTests.SetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain)",
          "Namespace":"PerformanceTests",
          "Type":"ObjectTests",
          "Method":"SetPropertyValue",
@@ -862,62 +862,62 @@
          "FullName":"PerformanceTests.ObjectTests.SetPropertyValue",
          "Statistics":{
             "OriginalValues":[
-               19309.375
+               481.9565773010254,483.6277961730957,482.49034881591797,481.0135841369629,481.7554473876953,479.5130729675293,478.51200103759766,480.3873062133789,483.2145690917969,482.0176124572754,481.1100959777832,480.54656982421875,481.1460494995117,480.721378326416
             ],
-            "N":1,
-            "Min":19309.375,
-            "LowerFence":19309.375,
-            "Q1":19309.375,
-            "Median":19309.375,
-            "Mean":19309.375,
-            "Q3":19309.375,
-            "UpperFence":19309.375,
-            "Max":19309.375,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":478.51200103759766,
+            "LowerFence":478.47214937210083,
+            "Q1":480.59027194976807,
+            "Median":481.12807273864746,
+            "Mean":481.2866006578718,
+            "Q3":482.0023536682129,
+            "UpperFence":484.1204762458801,
+            "Max":483.6277961730957,
+            "InterquartileRange":1.4120817184448242,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":0.3668655100521912,
+            "Variance":1.8842642345219618,
+            "StandardDeviation":1.3726850456393709,
+            "Skewness":-0.15858709331502743,
+            "Kurtosis":2.348130888266912,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":19309.375,
-               "StandardError":0,
+               "N":14,
+               "Mean":481.2866006578718,
+               "StandardError":0.3668655100521912,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":1.5484775846297967,
+               "Lower":479.73812307324204,
+               "Upper":482.8350782425016
             },
             "Percentiles":{
-               "P0":19309.375,
-               "P25":19309.375,
-               "P50":19309.375,
-               "P67":19309.375,
-               "P80":19309.375,
-               "P85":19309.375,
-               "P90":19309.375,
-               "P95":19309.375,
-               "P100":19309.375
+               "P0":478.51200103759766,
+               "P25":480.59027194976807,
+               "P50":481.12807273864746,
+               "P67":481.89824962615967,
+               "P80":482.2067070007324,
+               "P85":482.5265598297119,
+               "P90":482.9973030090332,
+               "P95":483.35919857025146,
+               "P100":483.6277961730957
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":18
+            "TotalOperations":1048576,
+            "BytesAllocatedPerOperation":0
          }
       },{
-         "DisplayInfo":"StringTests.SetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=20]",
+         "DisplayInfo":"StringTests.SetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=20]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"SetPropertyValue",
@@ -926,62 +926,62 @@
          "FullName":"PerformanceTests.StringTests.SetPropertyValue(StringSize: 20)",
          "Statistics":{
             "OriginalValues":[
-               20425
+               863.1258010864258,865.5021667480469,865.3108596801758,876.0360717773438,867.2208786010742,863.3735656738281,892.8853034973145,891.6154861450195,882.9669952392578,868.3934211730957,888.7910842895508,869.1030502319336,860.2310180664062
             ],
-            "N":1,
-            "Min":20425,
-            "LowerFence":20425,
-            "Q1":20425,
-            "Median":20425,
-            "Mean":20425,
-            "Q3":20425,
-            "UpperFence":20425,
-            "Max":20425,
-            "InterquartileRange":0,
+            "N":13,
+            "Min":860.2310180664062,
+            "LowerFence":838.8266563415527,
+            "Q1":865.3108596801758,
+            "Median":868.3934211730957,
+            "Mean":873.427361708421,
+            "Q3":882.9669952392578,
+            "UpperFence":909.4511985778809,
+            "Max":892.8853034973145,
+            "InterquartileRange":17.65613555908203,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":3.238257631659864,
+            "Variance":136.32206235704356,
+            "StandardDeviation":11.675703934112219,
+            "Skewness":0.5803687632832579,
+            "Kurtosis":1.5704025022947194,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":20425,
-               "StandardError":0,
+               "N":13,
+               "Mean":873.427361708421,
+               "StandardError":3.238257631659864,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":13.98212057565498,
+               "Lower":859.445241132766,
+               "Upper":887.409482284076
             },
             "Percentiles":{
-               "P0":20425,
-               "P25":20425,
-               "P50":20425,
-               "P67":20425,
-               "P80":20425,
-               "P85":20425,
-               "P90":20425,
-               "P95":20425,
-               "P100":20425
+               "P0":860.2310180664062,
+               "P25":865.3108596801758,
+               "P50":868.3934211730957,
+               "P67":876.3133087158203,
+               "P80":886.4614486694336,
+               "P85":889.3559646606445,
+               "P90":891.0506057739258,
+               "P95":892.1234130859375,
+               "P100":892.8853034973145
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":18
+            "TotalOperations":1048576,
+            "BytesAllocatedPerOperation":0
          }
       },{
-         "DisplayInfo":"StringTests.SetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=100]",
+         "DisplayInfo":"StringTests.SetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=100]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"SetPropertyValue",
@@ -990,62 +990,62 @@
          "FullName":"PerformanceTests.StringTests.SetPropertyValue(StringSize: 100)",
          "Statistics":{
             "OriginalValues":[
-               9996.875
+               1086.5567207336426,1092.4103736877441,1104.4524192810059,1105.6941032409668,1100.3138542175293,1083.9444160461426,1082.787799835205,1079.626178741455,1081.462001800537,1091.0605430603027,1086.0146522521973,1095.3448295593262,1089.1825675964355
             ],
-            "N":1,
-            "Min":9996.875,
-            "LowerFence":9996.875,
-            "Q1":9996.875,
-            "Median":9996.875,
-            "Mean":9996.875,
-            "Q3":9996.875,
-            "UpperFence":9996.875,
-            "Max":9996.875,
-            "InterquartileRange":0,
+            "N":13,
+            "Min":1079.626178741455,
+            "LowerFence":1066.8437957763672,
+            "Q1":1083.9444160461426,
+            "Median":1089.1825675964355,
+            "Mean":1090.6808046194224,
+            "Q3":1095.3448295593262,
+            "UpperFence":1112.4454498291016,
+            "Max":1105.6941032409668,
+            "InterquartileRange":11.400413513183594,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":2.386710244959253,
+            "Variance":74.05301531411496,
+            "StandardDeviation":8.605406167875806,
+            "Skewness":0.46950572908696653,
+            "Kurtosis":1.7496612788230759,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":9996.875,
-               "StandardError":0,
+               "N":13,
+               "Mean":1090.6808046194224,
+               "StandardError":2.386710244959253,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":10.305316691885903,
+               "Lower":1080.3754879275364,
+               "Upper":1100.9861213113084
             },
             "Percentiles":{
-               "P0":9996.875,
-               "P25":9996.875,
-               "P50":9996.875,
-               "P67":9996.875,
-               "P80":9996.875,
-               "P85":9996.875,
-               "P90":9996.875,
-               "P95":9996.875,
-               "P100":9996.875
+               "P0":1079.626178741455,
+               "P25":1083.9444160461426,
+               "P50":1089.1825675964355,
+               "P67":1092.5277519226074,
+               "P80":1098.326244354248,
+               "P85":1101.1415672302246,
+               "P90":1103.6247062683105,
+               "P95":1104.9490928649902,
+               "P100":1105.6941032409668
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":18
+            "TotalOperations":524288,
+            "BytesAllocatedPerOperation":0
          }
       },{
-         "DisplayInfo":"StringTests.SetPropertyValue: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringSize=1000]",
+         "DisplayInfo":"StringTests.SetPropertyValue: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringSize=1000]",
          "Namespace":"PerformanceTests",
          "Type":"StringTests",
          "Method":"SetPropertyValue",
@@ -1054,62 +1054,62 @@
          "FullName":"PerformanceTests.StringTests.SetPropertyValue(StringSize: 1000)",
          "Statistics":{
             "OriginalValues":[
-               15343.75
+               5420.088958740234,5454.803466796875,5525.653076171875,5456.121063232422,5452.077484130859,5526.546478271484,5466.1163330078125,5439.556884765625,5457.991790771484,5561.830139160156,5476.7425537109375,5476.715850830078,5456.436920166016,5452.825927734375
             ],
-            "N":1,
-            "Min":15343.75,
-            "LowerFence":15343.75,
-            "Q1":15343.75,
-            "Median":15343.75,
-            "Mean":15343.75,
-            "Q3":15343.75,
-            "UpperFence":15343.75,
-            "Max":15343.75,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":5420.088958740234,
+            "LowerFence":5418.196964263916,
+            "Q1":5453.3203125,
+            "Median":5457.21435546875,
+            "Mean":5473.107637677874,
+            "Q3":5476.735877990723,
+            "UpperFence":5511.859226226807,
+            "Max":5561.830139160156,
+            "InterquartileRange":23.415565490722656,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+               5525.653076171875,5526.546478271484,5561.830139160156
             ],
             "AllOutliers":[
-               
+               5525.653076171875,5526.546478271484,5561.830139160156
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":10.346672689223569,
+            "Variance":1498.7509003309483,
+            "StandardDeviation":38.71370429616557,
+            "Skewness":0.9507050813877258,
+            "Kurtosis":2.7856822107911294,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":15343.75,
-               "StandardError":0,
+               "N":14,
+               "Mean":5473.107637677874,
+               "StandardError":10.346672689223569,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":43.67156436287708,
+               "Lower":5429.436073314997,
+               "Upper":5516.7792020407505
             },
             "Percentiles":{
-               "P0":15343.75,
-               "P25":15343.75,
-               "P50":15343.75,
-               "P67":15343.75,
-               "P80":15343.75,
-               "P85":15343.75,
-               "P90":15343.75,
-               "P95":15343.75,
-               "P100":15343.75
+               "P0":5420.088958740234,
+               "P25":5453.3203125,
+               "P50":5457.21435546875,
+               "P67":5473.641990661621,
+               "P80":5496.3067626953125,
+               "P85":5525.6977462768555,
+               "P90":5526.278457641602,
+               "P95":5538.8957595825195,
+               "P100":5561.830139160156
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":32,
-            "BytesAllocatedPerOperation":18
+            "TotalOperations":131072,
+            "BytesAllocatedPerOperation":0
          }
       },{
-         "DisplayInfo":"BinaryWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [BinarySize=128, ObjectCount=10]",
+         "DisplayInfo":"BinaryWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [BinarySize=128, ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"BinaryWriteTests",
          "Method":"Write",
@@ -1118,62 +1118,62 @@
          "FullName":"PerformanceTests.BinaryWriteTests.Write(BinarySize: 128, ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               44474700
+               1421233.984375,1467979.8828125,1455243.1640625,1469348.2421875,1459153.90625,1450971.09375,1455680.6640625,1498802.34375,1454214.2578125,1452008.203125,1504065.625,1465577.9296875,1486974.0234375,1481476.953125
             ],
-            "N":1,
-            "Min":44474700,
-            "LowerFence":44474700,
-            "Q1":44474700,
-            "Median":44474700,
-            "Mean":44474700,
-            "Q3":44474700,
-            "UpperFence":44474700,
-            "Max":44474700,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":1421233.984375,
+            "LowerFence":1418511.5478515625,
+            "Q1":1454471.484375,
+            "Median":1462365.91796875,
+            "Mean":1465909.3052455357,
+            "Q3":1478444.775390625,
+            "UpperFence":1514404.7119140625,
+            "Max":1504065.625,
+            "InterquartileRange":23973.291015625,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":5767.105677395422,
+            "Variance":465633110.51945114,
+            "StandardDeviation":21578.533558132516,
+            "Skewness":0.035060797911066664,
+            "Kurtosis":2.5240281724292273,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":44474700,
-               "StandardError":0,
+               "N":14,
+               "Mean":1465909.3052455357,
+               "StandardError":5767.105677395422,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":24341.98262019129,
+               "Lower":1441567.3226253444,
+               "Upper":1490251.287865727
             },
             "Percentiles":{
-               "P0":44474700,
-               "P25":44474700,
-               "P50":44474700,
-               "P67":44474700,
-               "P80":44474700,
-               "P85":44474700,
-               "P90":44474700,
-               "P95":44474700,
-               "P100":44474700
+               "P0":1421233.984375,
+               "P25":1454471.484375,
+               "P50":1462365.91796875,
+               "P67":1468951.41796875,
+               "P80":1483675.78125,
+               "P85":1487565.439453125,
+               "P90":1495253.84765625,
+               "P95":1500644.4921875,
+               "P100":1504065.625
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1144
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"BinaryWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [BinarySize=128, ObjectCount=100]",
+         "DisplayInfo":"BinaryWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [BinarySize=128, ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"BinaryWriteTests",
          "Method":"Write",
@@ -1182,62 +1182,62 @@
          "FullName":"PerformanceTests.BinaryWriteTests.Write(BinarySize: 128, ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               30299700
+               1400497.4609375,1441276.7578125,1363000.9765625,1345710.15625,1350921.09375,1331455.859375,1364694.921875,1338492.7734375,1326902.34375,1394455.6640625,1349843.1640625,1344861.71875,1425628.125,1342061.1328125,1359800.5859375,1399290.625,1353549.8046875,1381342.96875,1412359.5703125,1348445.703125,1355183.59375
             ],
-            "N":1,
-            "Min":30299700,
-            "LowerFence":30299700,
-            "Q1":30299700,
-            "Median":30299700,
-            "Mean":30299700,
-            "Q3":30299700,
-            "UpperFence":30299700,
-            "Max":30299700,
-            "InterquartileRange":0,
+            "N":21,
+            "Min":1326902.34375,
+            "LowerFence":1272591.89453125,
+            "Q1":1345710.15625,
+            "Median":1355183.59375,
+            "Mean":1368084.5238095238,
+            "Q3":1394455.6640625,
+            "UpperFence":1467573.92578125,
+            "Max":1441276.7578125,
+            "InterquartileRange":48745.5078125,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":7012.129538016243,
+            "Variance":1032569173.8163176,
+            "StandardDeviation":32133.614390795155,
+            "Skewness":0.7802126149643072,
+            "Kurtosis":2.3644154929575385,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":30299700,
-               "StandardError":0,
+               "N":21,
+               "Mean":1368084.5238095238,
+               "StandardError":7012.129538016243,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":26993.309163065805,
+               "Lower":1341091.214646458,
+               "Upper":1395077.8329725896
             },
             "Percentiles":{
-               "P0":30299700,
-               "P25":30299700,
-               "P50":30299700,
-               "P67":30299700,
-               "P80":30299700,
-               "P85":30299700,
-               "P90":30299700,
-               "P95":30299700,
-               "P100":30299700
+               "P0":1326902.34375,
+               "P25":1345710.15625,
+               "P50":1355183.59375,
+               "P67":1371354.140625,
+               "P80":1399290.625,
+               "P85":1400497.4609375,
+               "P90":1412359.5703125,
+               "P95":1425628.125,
+               "P100":1441276.7578125
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"BinaryWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [BinarySize=1024, ObjectCount=10]",
+         "DisplayInfo":"BinaryWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [BinarySize=1024, ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"BinaryWriteTests",
          "Method":"Write",
@@ -1246,62 +1246,62 @@
          "FullName":"PerformanceTests.BinaryWriteTests.Write(BinarySize: 1024, ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               36971900
+               1344391.9921875,1419922.0703125,1355938.0859375,1368828.7109375,1395772.4609375,1353739.84375,1362676.171875,1429247.8515625,1378574.4140625,1394160.3515625,1403562.109375,1378300,1377918.359375,1412770.1171875,1354633.203125,1376840.8203125
             ],
-            "N":1,
-            "Min":36971900,
-            "LowerFence":36971900,
-            "Q1":36971900,
-            "Median":36971900,
-            "Mean":36971900,
-            "Q3":36971900,
-            "UpperFence":36971900,
-            "Max":36971900,
-            "InterquartileRange":0,
+            "N":16,
+            "Min":1344391.9921875,
+            "LowerFence":1305899.31640625,
+            "Q1":1360991.650390625,
+            "Median":1378109.1796875,
+            "Mean":1381704.78515625,
+            "Q3":1397719.873046875,
+            "UpperFence":1452812.20703125,
+            "Max":1429247.8515625,
+            "InterquartileRange":36728.22265625,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":6349.240879805554,
+            "Variance":645005755.9967041,
+            "StandardDeviation":25396.963519222216,
+            "Skewness":0.3372429931331502,
+            "Kurtosis":1.8256694384340533,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":36971900,
-               "StandardError":0,
+               "N":16,
+               "Mean":1381704.78515625,
+               "StandardError":6349.240879805554,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":25858.967278005228,
+               "Lower":1355845.8178782447,
+               "Upper":1407563.7524342553
             },
             "Percentiles":{
-               "P0":36971900,
-               "P25":36971900,
-               "P50":36971900,
-               "P67":36971900,
-               "P80":36971900,
-               "P85":36971900,
-               "P90":36971900,
-               "P95":36971900,
-               "P100":36971900
+               "P0":1344391.9921875,
+               "P25":1360991.650390625,
+               "P50":1378109.1796875,
+               "P67":1394240.95703125,
+               "P80":1403562.109375,
+               "P85":1410468.115234375,
+               "P90":1416346.09375,
+               "P95":1422253.515625,
+               "P100":1429247.8515625
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"BinaryWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [BinarySize=1024, ObjectCount=100]",
+         "DisplayInfo":"BinaryWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [BinarySize=1024, ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"BinaryWriteTests",
          "Method":"Write",
@@ -1310,62 +1310,62 @@
          "FullName":"PerformanceTests.BinaryWriteTests.Write(BinarySize: 1024, ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               55192500
+               1408708.7890625,1379185.9375,1380279.8828125,1420619.53125,1381291.6015625,1388202.734375,1437609.5703125,1400884.375,1382072.0703125,1428723.828125,1401929.1015625,1358199.0234375,1377074.0234375,1370966.6015625,1369131.4453125
             ],
-            "N":1,
-            "Min":55192500,
-            "LowerFence":55192500,
-            "Q1":55192500,
-            "Median":55192500,
-            "Mean":55192500,
-            "Q3":55192500,
-            "UpperFence":55192500,
-            "Max":55192500,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":1358199.0234375,
+            "LowerFence":1337346.533203125,
+            "Q1":1378129.98046875,
+            "Median":1382072.0703125,
+            "Mean":1392325.234375,
+            "Q3":1405318.9453125,
+            "UpperFence":1446102.392578125,
+            "Max":1437609.5703125,
+            "InterquartileRange":27188.96484375,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":6001.168840612687,
+            "Variance":540210411.8031093,
+            "StandardDeviation":23242.42697747181,
+            "Skewness":0.5183765361684918,
+            "Kurtosis":1.9811360002500213,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":55192500,
-               "StandardError":0,
+               "N":15,
+               "Mean":1392325.234375,
+               "StandardError":6001.168840612687,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":24847.564208832377,
+               "Lower":1367477.6701661677,
+               "Upper":1417172.7985838323
             },
             "Percentiles":{
-               "P0":55192500,
-               "P25":55192500,
-               "P50":55192500,
-               "P67":55192500,
-               "P80":55192500,
-               "P85":55192500,
-               "P90":55192500,
-               "P95":55192500,
-               "P100":55192500
+               "P0":1358199.0234375,
+               "P25":1378129.98046875,
+               "P50":1382072.0703125,
+               "P67":1401281.37109375,
+               "P80":1411090.9375,
+               "P85":1419428.45703125,
+               "P90":1425482.109375,
+               "P95":1431389.55078125,
+               "P100":1437609.5703125
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"BinaryWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [BinarySize=1048576, ObjectCount=10]",
+         "DisplayInfo":"BinaryWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [BinarySize=1048576, ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"BinaryWriteTests",
          "Method":"Write",
@@ -1374,62 +1374,62 @@
          "FullName":"PerformanceTests.BinaryWriteTests.Write(BinarySize: 1048576, ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               847742500
+               1831556.0546875,1836173.2421875,1836890.8203125,1863716.6015625,1809048.828125,1812720.3125,1856072.265625,1807104.8828125,1814996.09375,1820248.828125,1819854.4921875,1781939.453125,1836595.3125,1784497.0703125
             ],
-            "N":1,
-            "Min":847742500,
-            "LowerFence":847742500,
-            "Q1":847742500,
-            "Median":847742500,
-            "Mean":847742500,
-            "Q3":847742500,
-            "UpperFence":847742500,
-            "Max":847742500,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":1781939.453125,
+            "LowerFence":1770182.0556640625,
+            "Q1":1809966.69921875,
+            "Median":1820051.66015625,
+            "Mean":1822243.8755580357,
+            "Q3":1836489.794921875,
+            "UpperFence":1876274.4384765625,
+            "Max":1863716.6015625,
+            "InterquartileRange":26523.095703125,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":6277.060870879402,
+            "Variance":551620904.4741536,
+            "StandardDeviation":23486.61117475558,
+            "Skewness":-0.03658206502036322,
+            "Kurtosis":2.151255269542543,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":847742500,
-               "StandardError":0,
+               "N":14,
+               "Mean":1822243.8755580357,
+               "StandardError":6277.060870879402,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":26494.417680557566,
+               "Lower":1795749.457877478,
+               "Upper":1848738.2932385933
             },
             "Percentiles":{
-               "P0":847742500,
-               "P25":847742500,
-               "P50":847742500,
-               "P67":847742500,
-               "P80":847742500,
-               "P85":847742500,
-               "P90":847742500,
-               "P95":847742500,
-               "P100":847742500
+               "P0":1781939.453125,
+               "P25":1809966.69921875,
+               "P50":1820051.66015625,
+               "P67":1834834.2578125,
+               "P80":1836713.515625,
+               "P85":1837849.892578125,
+               "P90":1850317.83203125,
+               "P95":1858747.783203125,
+               "P100":1863716.6015625
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1208
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"BinaryWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [BinarySize=1048576, ObjectCount=100]",
+         "DisplayInfo":"BinaryWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [BinarySize=1048576, ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"BinaryWriteTests",
          "Method":"Write",
@@ -1438,51 +1438,51 @@
          "FullName":"PerformanceTests.BinaryWriteTests.Write(BinarySize: 1048576, ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               5347834200
+               7008000,7978400,8834400,8434700,7407600,7697300,9026700,7578400,7414100,8163500,8308300,6737800,7096500,8555800,6617400,6417900,8403800,7569200,7326400,8660600,6269300,7189900,7449000,7509800,8629700,6321800,7144900,8126000,6641700,8342100,6818100,6079400,8010000,8262300,6638500,8534500,6253000,7275200,6286600,6483100,7554800,6495700,9232300,6408900,6946300,7255200,6567400,8284500,6137600,7498000,6257000,7377300,6591800,6926400,7161400,6552300,8280500,6645200,8983300,6121200,8715600,6053900,7988000,6007200,7626100,6250600,7675900,6457800,7023800,8887300,6245300,9091000,6140800,6958300,7684900,6372400,8388000,6372200,7204100,7931000,6180900,7002300,6130600,7765400,6812500,6707900,8083100,6476400,7535700,6637300,8184000,6130900,7759800,6643700,6503900,7043700,6693300,8612800,7276600
             ],
-            "N":1,
-            "Min":5347834200,
-            "LowerFence":5347834200,
-            "Q1":5347834200,
-            "Median":5347834200,
-            "Mean":5347834200,
-            "Q3":5347834200,
-            "UpperFence":5347834200,
-            "Max":5347834200,
-            "InterquartileRange":0,
+            "N":99,
+            "Min":6007200,
+            "LowerFence":4321750,
+            "Q1":6528100,
+            "Median":7189900,
+            "Mean":7293270.707070707,
+            "Q3":7999000,
+            "UpperFence":10205350,
+            "Max":9232300,
+            "InterquartileRange":1470900,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":88606.66600236508,
+            "Variance":777262984745.4132,
+            "StandardDeviation":881625.195162555,
+            "Skewness":0.38841792140357206,
+            "Kurtosis":1.9784989476238417,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":5347834200,
-               "StandardError":0,
+               "N":99,
+               "Mean":7293270.707070707,
+               "StandardError":88606.66600236508,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":300605.94340972963,
+               "Lower":6992664.763660978,
+               "Upper":7593876.650480437
             },
             "Percentiles":{
-               "P0":5347834200,
-               "P25":5347834200,
-               "P50":5347834200,
-               "P67":5347834200,
-               "P80":5347834200,
-               "P85":5347834200,
-               "P90":5347834200,
-               "P95":5347834200,
-               "P100":5347834200
+               "P0":6007200,
+               "P25":6528100,
+               "P50":7189900,
+               "P67":7658968,
+               "P80":8215320,
+               "P85":8355870,
+               "P90":8567200,
+               "P95":8839690,
+               "P100":9232300
             }
          },
          "Memory":{
@@ -1493,7 +1493,7 @@
             "BytesAllocatedPerOperation":1104
          }
       },{
-         "DisplayInfo":"EmptyWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1)",
+         "DisplayInfo":"EmptyWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain)",
          "Namespace":"PerformanceTests",
          "Type":"EmptyWriteTests",
          "Method":"Write",
@@ -1502,62 +1502,62 @@
          "FullName":"PerformanceTests.EmptyWriteTests.Write",
          "Statistics":{
             "OriginalValues":[
-               23804500
+               1386589.35546875,1442783.88671875,1419171.77734375,1395952.44140625,1417893.65234375,1416803.02734375,1427205.76171875,1439021.77734375,1428768.84765625,1441575.68359375,1505953.02734375,1467391.30859375,1464566.69921875,1458358.10546875,1467036.42578125,1412491.30859375,1433965.33203125,1404006.54296875
             ],
-            "N":1,
-            "Min":23804500,
-            "LowerFence":23804500,
-            "Q1":23804500,
-            "Median":23804500,
-            "Mean":23804500,
-            "Q3":23804500,
-            "UpperFence":23804500,
-            "Max":23804500,
-            "InterquartileRange":0,
+            "N":18,
+            "Min":1386589.35546875,
+            "LowerFence":1360992.3828125,
+            "Q1":1417075.68359375,
+            "Median":1431367.08984375,
+            "Mean":1434974.1644965278,
+            "Q3":1454464.55078125,
+            "UpperFence":1510547.8515625,
+            "Max":1505953.02734375,
+            "InterquartileRange":37388.8671875,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":6992.086784390309,
+            "Variance":880006996.8080208,
+            "StandardDeviation":29664.911879323372,
+            "Skewness":0.4995941416067277,
+            "Kurtosis":2.7153490980040917,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":23804500,
-               "StandardError":0,
+               "N":18,
+               "Mean":1434974.1644965278,
+               "StandardError":6992.086784390309,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":27724.50700384644,
+               "Lower":1407249.6574926814,
+               "Upper":1462698.671500374
             },
             "Percentiles":{
-               "P0":23804500,
-               "P25":23804500,
-               "P50":23804500,
-               "P67":23804500,
-               "P80":23804500,
-               "P85":23804500,
-               "P90":23804500,
-               "P95":23804500,
-               "P100":23804500
+               "P0":1386589.35546875,
+               "P25":1417075.68359375,
+               "P50":1431367.08984375,
+               "P67":1442046.8828125,
+               "P80":1462083.26171875,
+               "P85":1465678.076171875,
+               "P90":1467142.890625,
+               "P95":1473175.56640625,
+               "P100":1505953.02734375
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":816
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":241
          }
       },{
-         "DisplayInfo":"StringWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringLength=20, ObjectCount=10]",
+         "DisplayInfo":"StringWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringLength=20, ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"StringWriteTests",
          "Method":"Write",
@@ -1566,62 +1566,62 @@
          "FullName":"PerformanceTests.StringWriteTests.Write(StringLength: 20, ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               98878700
+               1429983.3984375,1453328.125,1462773.2421875,1428381.0546875,1487409.5703125,1462752.1484375,1413445.8984375,1404208.0078125,1451152.5390625,1412127.9296875,1405840.8203125,1415244.921875,1416671.2890625,1424120.3125,1394339.6484375
             ],
-            "N":1,
-            "Min":98878700,
-            "LowerFence":98878700,
-            "Q1":98878700,
-            "Median":98878700,
-            "Mean":98878700,
-            "Q3":98878700,
-            "UpperFence":98878700,
-            "Max":98878700,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":1394339.6484375,
+            "LowerFence":1353606.787109375,
+            "Q1":1412786.9140625,
+            "Median":1424120.3125,
+            "Mean":1430785.2604166667,
+            "Q3":1452240.33203125,
+            "UpperFence":1511420.458984375,
+            "Max":1487409.5703125,
+            "InterquartileRange":39453.41796875,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":6890.846493750197,
+            "Variance":712256481.0064408,
+            "StandardDeviation":26688.133711566283,
+            "Skewness":0.580681020184019,
+            "Kurtosis":2.071585401868617,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":98878700,
-               "StandardError":0,
+               "N":15,
+               "Mean":1430785.2604166667,
+               "StandardError":6890.846493750197,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":28531.233706996445,
+               "Lower":1402254.0267096702,
+               "Upper":1459316.4941236633
             },
             "Percentiles":{
-               "P0":98878700,
-               "P25":98878700,
-               "P50":98878700,
-               "P67":98878700,
-               "P80":98878700,
-               "P85":98878700,
-               "P90":98878700,
-               "P95":98878700,
-               "P100":98878700
+               "P0":1394339.6484375,
+               "P25":1412786.9140625,
+               "P50":1424120.3125,
+               "P67":1438027.671875,
+               "P80":1455212.9296875,
+               "P85":1461809.74609375,
+               "P90":1462764.8046875,
+               "P95":1470164.140625,
+               "P100":1487409.5703125
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"StringWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringLength=20, ObjectCount=100]",
+         "DisplayInfo":"StringWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringLength=20, ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"StringWriteTests",
          "Method":"Write",
@@ -1630,62 +1630,62 @@
          "FullName":"PerformanceTests.StringWriteTests.Write(StringLength: 20, ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               99495800
+               1477652.9296875,1503334.375,1554219.7265625,1520541.2109375,1535986.328125,1530786.328125,1539943.75,1487082.6171875,1477065.625,1474051.171875,1491010.546875,1495350.9765625,1476843.1640625,1472104.1015625,1464597.4609375,1447573.2421875,1438712.3046875,1461225.1953125,1460246.09375
             ],
-            "N":1,
-            "Min":99495800,
-            "LowerFence":99495800,
-            "Q1":99495800,
-            "Median":99495800,
-            "Mean":99495800,
-            "Q3":99495800,
-            "UpperFence":99495800,
-            "Max":99495800,
-            "InterquartileRange":0,
+            "N":19,
+            "Min":1438712.3046875,
+            "LowerFence":1402970.263671875,
+            "Q1":1468350.78125,
+            "Median":1477652.9296875,
+            "Mean":1489911.9551809211,
+            "Q3":1511937.79296875,
+            "UpperFence":1577318.310546875,
+            "Max":1554219.7265625,
+            "InterquartileRange":43587.01171875,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":7531.981929134719,
+            "Variance":1077884283.8354278,
+            "StandardDeviation":32831.148073672775,
+            "Skewness":0.4412638123931795,
+            "Kurtosis":1.9827878677764685,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":99495800,
-               "StandardError":0,
+               "N":19,
+               "Mean":1489911.9551809211,
+               "StandardError":7531.981929134719,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":29537.76548563566,
+               "Lower":1460374.1896952854,
+               "Upper":1519449.7206665569
             },
             "Percentiles":{
-               "P0":99495800,
-               "P25":99495800,
-               "P50":99495800,
-               "P67":99495800,
-               "P80":99495800,
-               "P85":99495800,
-               "P90":99495800,
-               "P95":99495800,
-               "P100":99495800
+               "P0":1438712.3046875,
+               "P25":1468350.78125,
+               "P50":1477652.9296875,
+               "P67":1495829.98046875,
+               "P80":1524639.2578125,
+               "P85":1532346.328125,
+               "P90":1536777.8125,
+               "P95":1541371.34765625,
+               "P100":1554219.7265625
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"StringWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringLength=200, ObjectCount=10]",
+         "DisplayInfo":"StringWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringLength=200, ObjectCount=10]",
          "Namespace":"PerformanceTests",
          "Type":"StringWriteTests",
          "Method":"Write",
@@ -1694,62 +1694,62 @@
          "FullName":"PerformanceTests.StringWriteTests.Write(StringLength: 200, ObjectCount: 10)",
          "Statistics":{
             "OriginalValues":[
-               87873200
+               1496657.03125,1480166.796875,1509350,1454274.0234375,1430226.171875,1476039.0625,1479374.8046875,1459839.84375,1447460.3515625,1461385.15625,1452632.6171875,1485146.484375,1461454.296875,1445040.4296875,1439578.125
             ],
-            "N":1,
-            "Min":87873200,
-            "LowerFence":87873200,
-            "Q1":87873200,
-            "Median":87873200,
-            "Mean":87873200,
-            "Q3":87873200,
-            "UpperFence":87873200,
-            "Max":87873200,
-            "InterquartileRange":0,
+            "N":15,
+            "Min":1430226.171875,
+            "LowerFence":1405460.009765625,
+            "Q1":1450046.484375,
+            "Median":1461385.15625,
+            "Mean":1465241.6796875,
+            "Q3":1479770.80078125,
+            "UpperFence":1524357.275390625,
+            "Max":1509350,
+            "InterquartileRange":29724.31640625,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":5696.44921859687,
+            "Variance":486743005.50079346,
+            "StandardDeviation":22062.252956141932,
+            "Skewness":0.3403180223995387,
+            "Kurtosis":2.0439755084943165,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":87873200,
-               "StandardError":0,
+               "N":15,
+               "Mean":1465241.6796875,
+               "StandardError":5696.44921859687,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":23585.886596549746,
+               "Lower":1441655.7930909502,
+               "Upper":1488827.5662840498
             },
             "Percentiles":{
-               "P0":87873200,
-               "P25":87873200,
-               "P50":87873200,
-               "P67":87873200,
-               "P80":87873200,
-               "P85":87873200,
-               "P90":87873200,
-               "P95":87873200,
-               "P100":87873200
+               "P0":1430226.171875,
+               "P25":1450046.484375,
+               "P50":1461385.15625,
+               "P67":1477306.64453125,
+               "P80":1481162.734375,
+               "P85":1484648.515625,
+               "P90":1492052.8125,
+               "P95":1500464.921875,
+               "P100":1509350
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       },{
-         "DisplayInfo":"StringWriteTests.Write: Dry(Toolchain=InProcessEmitToolchain, IterationCount=1, LaunchCount=1, RunStrategy=ColdStart, UnrollFactor=1, WarmupCount=1) [StringLength=200, ObjectCount=100]",
+         "DisplayInfo":"StringWriteTests.Write: Job-ITZMWJ(Toolchain=InProcessEmitToolchain) [StringLength=200, ObjectCount=100]",
          "Namespace":"PerformanceTests",
          "Type":"StringWriteTests",
          "Method":"Write",
@@ -1758,59 +1758,59 @@
          "FullName":"PerformanceTests.StringWriteTests.Write(StringLength: 200, ObjectCount: 100)",
          "Statistics":{
             "OriginalValues":[
-               131816800
+               1481898.33984375,1498965.33203125,1462820.60546875,1481404.19921875,1476598.92578125,1460174.12109375,1463716.69921875,1490888.76953125,1441222.75390625,1441531.73828125,1477035.64453125,1443326.66015625,1471440.91796875,1465158.10546875
             ],
-            "N":1,
-            "Min":131816800,
-            "LowerFence":131816800,
-            "Q1":131816800,
-            "Median":131816800,
-            "Mean":131816800,
-            "Q3":131816800,
-            "UpperFence":131816800,
-            "Max":131816800,
-            "InterquartileRange":0,
+            "N":14,
+            "Min":1441222.75390625,
+            "LowerFence":1431621.2646484375,
+            "Q1":1460835.7421875,
+            "Median":1468299.51171875,
+            "Mean":1468298.7723214286,
+            "Q3":1480312.060546875,
+            "UpperFence":1509526.5380859375,
+            "Max":1498965.33203125,
+            "InterquartileRange":19476.318359375,
             "LowerOutliers":[
-               
+
             ],
             "UpperOutliers":[
-               
+
             ],
             "AllOutliers":[
-               
+
             ],
-            "StandardError":0,
-            "Variance":0,
-            "StandardDeviation":0,
-            "Skewness":"",
-            "Kurtosis":"",
+            "StandardError":4782.417197929681,
+            "Variance":320201199.5707501,
+            "StandardDeviation":17894.166635268324,
+            "Skewness":-0.11250288876532666,
+            "Kurtosis":1.8563982563104675,
             "ConfidenceInterval":{
-               "N":1,
-               "Mean":131816800,
-               "StandardError":0,
+               "N":14,
+               "Mean":1468298.7723214286,
+               "StandardError":4782.417197929681,
                "Level":12,
-               "Margin":"",
-               "Lower":"",
-               "Upper":""
+               "Margin":20185.778244154466,
+               "Lower":1448112.994077274,
+               "Upper":1488484.5505655832
             },
             "Percentiles":{
-               "P0":131816800,
-               "P25":131816800,
-               "P50":131816800,
-               "P67":131816800,
-               "P80":131816800,
-               "P85":131816800,
-               "P90":131816800,
-               "P95":131816800,
-               "P100":131816800
+               "P0":1441222.75390625,
+               "P25":1460835.7421875,
+               "P50":1468299.51171875,
+               "P67":1476908.99609375,
+               "P80":1481601.85546875,
+               "P85":1482347.861328125,
+               "P90":1488191.640625,
+               "P95":1493715.56640625,
+               "P100":1498965.33203125
             }
          },
          "Memory":{
             "Gen0Collections":0,
             "Gen1Collections":0,
             "Gen2Collections":0,
-            "TotalOperations":1,
-            "BytesAllocatedPerOperation":1064
+            "TotalOperations":512,
+            "BytesAllocatedPerOperation":489
          }
       }
    ]

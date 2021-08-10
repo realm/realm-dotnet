@@ -4,11 +4,27 @@
       "dashboard":{
         "description":"",
         "filters":[
-
+          {
+            "type":"String",
+            "disabled":false,
+            "name":"Branch",
+            "settings":{
+              "allOthers":false,
+              "values":[
+                "master"
+              ]
+            },
+            "linkedFields":[
+              {
+                "dataSourceId":"data-source",
+                "fieldPath":"Branch"
+              }
+            ]
+          }
         ],
         "layout":[
           {
-            "w":10,
+            "w":8,
             "h":2,
             "x":0,
             "y":0,
@@ -30,7 +46,11 @@
       "template":{
         "allowInteractiveFilters":true,
         "calculatedFields":[
-
+          {
+            "fieldPath":"OrderedCommit",
+            "rawExpression":"{ $concat: [ { $toString: \"$RunId\" }, \": \", \"$Commit\"]}",
+            "derivedMQL":"{\"$concat\":[{\"$toString\":\"$RunId\"},\": \",\"$Commit\"]}"
+          }
         ],
         "channels":{
           "y":{
@@ -43,7 +63,7 @@
           },
           "x":{
             "channelType":"category",
-            "field":"_id",
+            "field":"OrderedCommit",
             "inferredType":"String",
             "type":"nominal",
             "isBinning":false,
@@ -51,7 +71,7 @@
 
             ],
             "sort":{
-              "axis":"Aggregated Value",
+              "axis":"Category",
               "order":"ascending"
             }
           },
@@ -70,7 +90,14 @@
         ],
         "customisations":{
           "options":{
-
+            "dataMarkers":{
+              "enabled":true,
+              "value":null
+            },
+            "legendPosition":{
+              "enabled":true,
+              "value":"top"
+            }
           },
           "axes":{
             "x":{
