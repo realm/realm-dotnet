@@ -1,0 +1,19 @@
+name: "TODOs have links"
+description: "Verifies that TODOs in your codebase have a link to a follow-up issue."
+author: "Nikola Irinchev"
+inputs:
+    atlas-token:
+        required: true
+        description: The MongoDB Atlas token for the benchmark upload.
+    file:
+        required: true
+        description: The path to the Benchmark.NET json results.
+    dashboard-path:
+        required: false
+        description: Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated.
+runs:
+    using: "node12"
+    main: "dist/index.js"
+branding:
+    icon: "external-link"
+    color: "purple"

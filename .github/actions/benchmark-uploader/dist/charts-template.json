@@ -1,0 +1,172 @@
+{
+    "exportVersion":4,
+    "dashboards":{
+      "dashboard":{
+        "description":"",
+        "filters":[
+
+        ],
+        "layout":[
+          {
+            "w":10,
+            "h":2,
+            "x":0,
+            "y":0,
+            "i":"template",
+            "minW":1,
+            "maxW":10,
+            "minH":1,
+            "maxH":10,
+            "moved":false,
+            "static":false,
+            "isDraggable":true,
+            "isResizable":true
+          }
+        ],
+        "title":".NET Benchmark Results"
+      }
+    },
+    "items":{
+      "template":{
+        "allowInteractiveFilters":true,
+        "calculatedFields":[
+
+        ],
+        "channels":{
+          "y":{
+            "channelType":"aggregation",
+            "field":"Benchmarks.Statistics.Mean",
+            "inferredType":"Number",
+            "type":"quantitative",
+            "transformedType":"Number",
+            "aggregate":"sum"
+          },
+          "x":{
+            "channelType":"category",
+            "field":"_id",
+            "inferredType":"String",
+            "type":"nominal",
+            "isBinning":false,
+            "nominalBinning":[
+
+            ],
+            "sort":{
+              "axis":"Aggregated Value",
+              "order":"ascending"
+            }
+          },
+          "color":{
+            "channelType":"category",
+            "field":"Benchmarks.Parameters",
+            "inferredType":"String",
+            "type":"nominal",
+            "transformedType":"String",
+            "isBinning":false
+          }
+        },
+        "chartType":"Line",
+        "convertedFields":[
+
+        ],
+        "customisations":{
+          "options":{
+
+          },
+          "axes":{
+            "x":{
+              "categoryLabelAngle":{
+                "enabled":true,
+                "value":"diagonal"
+              }
+            },
+            "y":{
+
+            }
+          },
+          "channels":{
+            "y":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"nsec"
+              },
+              "numberFormatting":{
+                "enabled":true,
+                "value":"Default"
+              }
+            },
+            "x":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Commit"
+              }
+            },
+            "color":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Parameters"
+              }
+            }
+          },
+          "conditionalFormatting":[
+
+          ]
+        },
+        "dashboardId":"dashboard",
+        "dataSourceId":"data-source",
+        "description":"",
+        "filters":[
+
+        ],
+        "iconValue":"line-discrete",
+        "itemType":"chart",
+        "lookupFields":[
+
+        ],
+        "meta":{
+
+        },
+        "missedFields":[
+
+        ],
+        "queryCache":{
+          "filter":"[{$addFields: { Benchmarks: { $filter: { input: \"$Benchmarks\", as: \"benchmark\", cond: { $and: [ { $eq: [ \"$$benchmark.Method\", \"%METHOD%\" ] }, { $eq: [ \"$$benchmark.Type\", \"%TYPE%\" ] } ] } } }}}]",
+          "sample":false
+        },
+        "reductions":{
+          "y":[
+            {
+              "dimensionality":1,
+              "field":"Benchmarks",
+              "type":"Unwind array",
+              "arguments":[
+
+              ]
+            }
+          ],
+          "color":[
+            {
+              "dimensionality":1,
+              "field":"Benchmarks",
+              "type":"Unwind array",
+              "arguments":[
+
+              ]
+            }
+          ]
+        },
+        "title":"%TYPE%.%METHOD%",
+        "embedding":{
+
+        }
+      }
+    },
+    "dataSources":{
+      "data-source":{
+        "alias":"benchmarks.results",
+        "collection":"results",
+        "database":"benchmarks",
+        "deployment":"Cluster1",
+        "sourceType":"cluster"
+      }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "diff": true,
+    "extension": ["ts"],
+    "package": "./package.json",
+    "reporter": "spec",
+    "slow": 1500,
+    "timeout": 20000,
+    "recursive": true,
+    "spec": "__tests__/**/*.spec.ts",
+    "require": "ts-node/register",
+    "forbidOnly": true,
+    "fullTrace": true,
+    "exit": true
+}
