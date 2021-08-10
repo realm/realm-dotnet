@@ -751,3 +751,50 @@ jobs:
       uses: geekyeggo/delete-artifact@v1
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
+  benchmark-netcore-net5:
+    name: Benchmark
+    needs: build-packages
+    runs-on: ${{ matrix.os }}
+    if: ${{ !contains(github.ref, 'master') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - macos-latest
+        - windows-latest
+        - ubuntu-latest
+    steps:
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Publish Tests/Benchmarks/PerformanceTests
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AddNet5Framework=true -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+      shell: bash
+    - name: Run the tests
+      run: ./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/PerformanceTests -f "*" --join
+      shell: bash
+    - name: Save benchmark results
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark-results-${{ matrix.os }}
+        path: ${{ github.workspace }}/Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/
+        retention-days: 30

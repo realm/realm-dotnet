@@ -446,3 +446,24 @@ jobs:
     steps:
       - #@ template.replace(deleteWrapperBinaries())
       - #@ template.replace(deleteTempPackageArtifacts())
+  benchmark-netcore-net5:
+    name: Benchmark
+    needs: build-packages
+    runs-on: ${{ matrix.os }}
+    #! TODO: reverse !
+    if: ${{ !contains(github.ref, 'master') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join", "true"))
+      - name: Save benchmark results
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results-${{ matrix.os }}
+          path: ${{ github.workspace }}/Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/
+          retention-days: 30
+
