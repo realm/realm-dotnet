@@ -29,7 +29,7 @@ export async function updateBenchmarkResults(results: any): Promise<void> {
     results._id = github.context.runNumber;
     results.RunId = github.context.runNumber;
     results.Commit = github.context.sha;
-    results.CommitMessage = await execCmd("git", ["rev-list", "--format=%B", "--max-count=1", github.context.sha]);
+    results.CommitMessage = await execCmd("git", ["rev-list", "--format=%B", "--max-count=1", "HEAD"]);
     results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
 
     core.info(

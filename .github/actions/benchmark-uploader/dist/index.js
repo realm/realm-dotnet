@@ -127,7 +127,7 @@ function updateBenchmarkResults(results) {
         results._id = github.context.runNumber;
         results.RunId = github.context.runNumber;
         results.Commit = github.context.sha;
-        results.CommitMessage = yield helpers_1.execCmd("git", ["rev-list", "--format=%B", "--max-count=1", github.context.sha]);
+        results.CommitMessage = yield helpers_1.execCmd("git", ["rev-list", "--format=%B", "--max-count=1", "HEAD"]);
         results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
         core.info(`Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`);
         for (const benchmark of results.Benchmarks) {
