@@ -25,61 +25,12 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AAAATests : RealmInstanceTest
+    public class AAAATests : PeopleTestsBase
     {
-        protected void MakeThreePeople()
+        protected override void CustomSetUp()
         {
-            _realm.Write(() =>
-            {
-                _realm.Add(new Person
-                {
-                    FirstName = "John",
-                    LastName = "Smith",
-                    IsInteresting = true,
-                    Email = "john@smith.com",
-                    Salary = 67000,
-                    Score = -0.9907f,
-                    Latitude = 51.508530,
-                    Longitude = 0.076132,
-                    Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero),
-                    PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe },
-                    OptionalAddress = "12 Cosgrove St.",
-                    IsAmbivalent = true
-                });
-            });
-
-            _realm.Write(() =>
-            {
-                _realm.Add(new Person
-                {
-                    FullName = "John Doe", // uses our setter which splits and maps to First/Lastname
-                    IsInteresting = false,
-                    Email = "john@doe.com",
-                    Salary = 30000,
-                    Score = 100.0f,
-                    Latitude = 25.708534,
-                    Longitude = -73.9748113,
-                    Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero),
-                    PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef },
-                    OptionalAddress = string.Empty,
-                    IsAmbivalent = false
-                });
-            });
-
-            _realm.Write(() =>
-            {
-                _realm.Add(new Person
-                {
-                    FullName = "Peter Jameson",
-                    Email = "peter@jameson.net",
-                    Salary = 87000,
-                    IsInteresting = true,
-                    Score = 42.42f,
-                    Latitude = 37.7798657,
-                    Longitude = -122.394179,
-                    Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero)
-                });
-            });
+            base.CustomSetUp();
+            MakeThreePeople();
         }
 
         private static string GetDebugView(Expression exp)
@@ -94,204 +45,132 @@ namespace Realms.Tests.Database
         }
 
         //[Test]
-        //public void SimpleTest()
+        //public void WhereBooleanEqualTest()
         //{
-        //    var query = _realm.All<Person>().Where(p => p.Score == 100 && p.Longitude == 50)
-        //        .OrderBy(p => p.Score);
-
-        //    _ = query.ToArray();
+        //    var query = _realm.All<Person>().Where(p => !p.IsInteresting).ToList();
+        //    Assert.That(query.Count, Is.EqualTo(2));
+        //    Assert.That(query[0].FullName, Is.EqualTo("John Smith"));
+        //    Assert.That(query[1].FullName, Is.EqualTo("Peter Jameson"));
         //}
 
-        //[Test]
-        //public void WhereFloatEqualTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.Score == 100);
+        [Test]
+        public void WhereDoubleEqualTest()
+        {
+            var latitudeEq = _realm.All<Person>().Where(p => p.Latitude == 51.508530).ToList();
+            Assert.That(latitudeEq.Count, Is.EqualTo(1));
+            Assert.That(latitudeEq[0].FullName, Is.EqualTo("John Smith"));
+        }
 
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
-        //    }
-
-        //    _ = query.ToArray();
-        //}
+        [Test]
+        public void WhereFloatEqualTest()
+        {
+            var scoreEq = _realm.All<Person>().Where(p => p.Score == 100).ToList();
+            Assert.That(scoreEq.Count, Is.EqualTo(1));
+            Assert.That(scoreEq[0].FullName, Is.EqualTo("John Doe"));
+        }
 
         [Test]
         public void WhereFloatNotEqualTest()
         {
-            MakeThreePeople();
-            var query = _realm.All<Person>().Where(p => p.Score != 100);
-
-            foreach (var person in query)
-            {
-                Assert.That(person.FullName, Is.Not.EqualTo("John Doe"));
-            }
-
-            _ = query.ToArray();
+            var scoreNeq = _realm.All<Person>().Where(p => p.Score != 100).ToList();
+            Assert.That(scoreNeq.Count, Is.EqualTo(2));
+            Assert.That(scoreNeq[0].FullName, Is.EqualTo("John Smith"));
+            Assert.That(scoreNeq[1].FullName, Is.EqualTo("Peter Jameson"));
         }
 
         [Test]
         public void WhereFloatGtAndLtThanTest()
         {
-            MakeThreePeople();
-            var query = _realm.All<Person>().Where(p => p.Score > 40
-            && p.Score < 48);
-
-            foreach (var person in query)
-            {
-                Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-            }
-
-            _ = query.ToArray();
+            var scoreGtAndLt = _realm.All<Person>().Where(p => p.Score > 40
+            && p.Score < 48).ToList();
+            Assert.That(scoreGtAndLt.Count, Is.EqualTo(1));
+            Assert.That(scoreGtAndLt[0].FullName, Is.EqualTo("Peter Jameson"));
         }
 
         [Test]
         public void WhereFloatGteAndLteThanTest()
         {
-            MakeThreePeople();
-            var query = _realm.All<Person>().Where(p => p.Score >= 100.0f
-            && p.Score <= 100.0f);
+            var scoreGteAndLte = _realm.All<Person>().Where(p => p.Score >= 100.0f
+            && p.Score <= 100.0f).ToList();
+            Assert.That(scoreGteAndLte.Count, Is.EqualTo(1));
+            Assert.That(scoreGteAndLte[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-            foreach (var person in query)
-            {
-                Assert.That(person.FullName, Is.EqualTo("John Doe"));
-            }
+        [Test]
+        public void WhereStringEqualityTest()
+        {
+            var lastNameEq = _realm.All<Person>().Where(p => p.LastName == "Doe").ToList();
+            Assert.That(lastNameEq.Count, Is.EqualTo(1));
+            Assert.That(lastNameEq[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-            _ = query.ToArray();
+        [Test]
+        public void WhereNegationTest()
+        {
+            var scoreNeq = _realm.All<Person>().Where(p => !(p.Score == -0.9907f)).ToList();
+            Assert.That(scoreNeq.Count, Is.EqualTo(2));
+            Assert.That(scoreNeq[0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(scoreNeq[1].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
+        public void WhereFloatEqualityReversedOrderTest()
+        {
+            var scoreEq = _realm.All<Person>().Where(p => 100 == p.Score).ToList();
+            Assert.That(scoreEq.Count, Is.EqualTo(1));
+            Assert.That(scoreEq[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void WhereBooleanAndTest()
+        {
+            var scoreEqAndLastNameEq = _realm.All<Person>().Where(p => p.Score == 100 && p.LastName == "Doe").ToList();
+            Assert.That(scoreEqAndLastNameEq.Count, Is.EqualTo(1));
+            Assert.That(scoreEqAndLastNameEq[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void WhereBooleanOrTest()
+        {
+            var firstNameEqOrScoreEq = _realm.All<Person>().Where(p => p.FirstName == "NonExistant"
+            || p.Score == 42.42f).ToList();
+            Assert.That(firstNameEqOrScoreEq.Count, Is.EqualTo(1));
+            Assert.That(firstNameEqOrScoreEq[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
+        public void StringStartsWithTest()
+        {
+            var firstNameStartsWith = _realm.All<Person>().Where(p => p.FirstName.StartsWith("Pet")).ToList();
+            Assert.That(firstNameStartsWith.Count, Is.EqualTo(1));
+            Assert.That(firstNameStartsWith[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
+        public void StringEndsWIthTest()
+        {
+            var firstNameEndsWith = _realm.All<Person>().Where(p => p.FirstName.EndsWith("ter")).ToList();
+            Assert.That(firstNameEndsWith.Count, Is.EqualTo(1));
+            Assert.That(firstNameEndsWith[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
+        public void StringContainsTest()
+        {
+            var firstNameContains = _realm.All<Person>().Where(p => p.FirstName.Contains("ete")).ToList();
+            Assert.That(firstNameContains.Count, Is.EqualTo(1));
+            Assert.That(firstNameContains[0].FullName, Is.EqualTo("Peter Jameson"));
         }
 
         //[Test]
-        //public void WhereStringEqualityTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.LastName == "Doe");
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
-        //    }
-
-        //    _ = query.ToArray();
-        //}
-
-        //[Test]
-        //public void WhereNegationTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => !(p.Score == -0.9907f
-        //    || p.Score == 100));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-
-        //    _ = query.ToArray();
-        //}
-
-        //[Test]
-        //public void WhereFloatEqualityReversedOrderTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => 100 == p.Score);
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
-        //    }
-
-        //    _ = query.ToArray();
-        //}
-
-        //[Test]
-        //public void WhereBooleanAndTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.Score == 100 && p.LastName == "Doe");
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("John Doe"));
-        //    }
-
-        //    _ = query.ToArray();
-        //}
-
-        //[Test]
-        //public void WhereBooleanOrTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName == "NonExistant"
-        //    || p.Score == 42.42f);
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-
-        //    _ = query.ToArray();
-        //}
-
-        //[Test]
-        //public void StringStartsWithTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.StartsWith("Pet"));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-        //}
-
-        //[Test]
-        //public void StringEndsWIthTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.EndsWith("ter"));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-        //}
-
-        //[Test]
-        //public void StringContainsTest()
-        //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.Contains("ete"));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
-        //}
-
-        ////TODO Test has to be implemented with the decided Like syntax
-        //[Test]
         //public void StringLikeTest()
         //{
-        //    MakeThreePeople();
-        //    var query = _realm.All<Person>().Where(p => p.FirstName.Like(""));
-
-        //    foreach (var person in query)
-        //    {
-        //        Assert.That(person.FullName, Is.EqualTo("Peter Jameson"));
-        //    }
+        //    var firstNameLike = _realm.All<Person>().Where(p => p.FirstName.Like("P?t??", true)).ToList();
+        //    Assert.That(firstNameLike.Count, Is.EqualTo(1));
+        //    Assert.That(firstNameLike[0].FullName, Is.EqualTo("Peter Jameson"));
         //}
 
-        //[Test]
-        //public void SimpleTest()
-        //{
-
-        //    var query = _realm.All<Person>().Where(p => p.Score == 100);
-        //    foreach (var person in query)
-        //    {
-        //        var name = person.FullName;
-        //        Console.WriteLine(name);
-        //    }
-        //}
+        // End of new tests
 
         //[Test]
         //public void Ordering()

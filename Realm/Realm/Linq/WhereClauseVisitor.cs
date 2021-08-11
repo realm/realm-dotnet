@@ -38,22 +38,19 @@ namespace Realms
                 node.Method.DeclaringType == typeof(StringExtensions))
             {
                 ComparisonNode result;
-                var test = node.Method.Name;
-                if (test.Equals("StartsWith"))
+                if (node.Method.Name.Equals("StartsWith"))
                 {
                     result = new StartsWithNode();
                 }
-                else if (test.Equals("EndsWith"))
+                else if (node.Method.Name.Equals("EndsWith"))
                 {
                     result = new EndsWithNode();
                 }
-                else if (test.Equals("Contains"))
+                else if (node.Method.Name.Equals("Contains"))
                 {
                     result = new ContainsNode();
                 }
-
-                // TODO Undecided implementation
-                else if (test.Equals("Like"))
+                else if (node.Method.Name.Equals("Like"))
                 {
                     result = new LikeNode();
                 }
@@ -66,10 +63,11 @@ namespace Realms
                 {
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
                     {
-                        result.Left = new PropertyNode();
-                        var leftName = GetColumnName(me, me.NodeType);
-                        result.Left.Name = leftName;
-                        result.Left.Type = GetKind(me.Type);
+                        result.Left = new PropertyNode()
+                        {
+                            Name = GetColumnName(me, me.NodeType),
+                            Type = GetKind(me.Type)
+                        };
                     }
                     else
                     {
@@ -78,10 +76,16 @@ namespace Realms
 
                     if (node.Arguments[0] is ConstantExpression ce)
                     {
-                        result.Right = new ConstantNode();
-                        result.Right.Value = ce.Value;
-                        result.Right.Type = GetKind(ce.Value.GetType());
+                        result.Right = new ConstantNode()
+                        {
+                            Value = ce.Value,
+                            Type = GetKind(ce.Value.GetType())
+                        };
                     }
+                }
+                else
+                {
+                    throw new NotSupportedException(node + " is not a supported a supported string expression.");
                 }
 
                 returnNode = result;
@@ -142,11 +146,11 @@ namespace Realms
                 {
                     if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
                     {
-                        comparisonNode.Left = new PropertyNode();
-                        var leftName = GetColumnName(me, me.NodeType);
-
-                        comparisonNode.Left.Name = leftName;
-                        comparisonNode.Left.Type = GetKind(me.Type);
+                        comparisonNode.Left = new PropertyNode()
+                        {
+                            Name = GetColumnName(me, me.NodeType),
+                            Type = GetKind(me.Type)
+                        };
                     }
                     else
                     {
@@ -156,20 +160,22 @@ namespace Realms
 
                 if (be.Left is ConstantExpression ce)
                 {
-                    comparisonNode.Left = new ConstantNode();
-                    comparisonNode.Left.Value = ce.Value;
-                    comparisonNode.Left.Type = GetKind(ce.Value.GetType());
+                    comparisonNode.Left = new ConstantNode()
+                    {
+                        Value = ce.Value,
+                        Type = GetKind(ce.Value.GetType())
+                    };
                 }
 
                 if (be.Right is MemberExpression mo)
                 {
                     if (mo.Expression != null && mo.Expression.NodeType == ExpressionType.Parameter)
                     {
-                        comparisonNode.Right = new PropertyNode();
-                        var leftName = GetColumnName(mo, mo.NodeType);
-
-                        comparisonNode.Right.Name = leftName;
-                        comparisonNode.Right.Type = GetKind(mo.Type);
+                        comparisonNode.Right = new PropertyNode()
+                        {
+                            Name = GetColumnName(mo, mo.NodeType),
+                            Type = GetKind(mo.Type)
+                        };
                     }
                     else
                     {
@@ -179,9 +185,11 @@ namespace Realms
 
                 if (be.Right is ConstantExpression co)
                 {
-                    comparisonNode.Right = new ConstantNode();
-                    comparisonNode.Right.Value = co.Value;
-                    comparisonNode.Right.Type = GetKind(co.Value.GetType());
+                    comparisonNode.Right = new ConstantNode()
+                    {
+                        Value = co.Value,
+                        Type = GetKind(co.Value.GetType())
+                    };
                 }
 
                 returnNode = comparisonNode;
@@ -196,13 +204,38 @@ namespace Realms
             switch (node.NodeType)
             {
                 case ExpressionType.Not:
-                    returnNode.Expression = Extract(node.Operand);  // recurse into richer expression, expect to VisitCombination
+                    returnNode.Expression = Extract(node.Operand);
                     break;
                 default:
                     throw new NotSupportedException($"The unary operator '{node.NodeType}' is not supported");
             }
 
             return RealmLinqExpression.Create(returnNode);
+        }
+
+        protected override Expression VisitMember(MemberExpression node)
+        {
+            if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
+            {
+                ComparisonNode comparisonNode = new EqualityNode();
+                if (node.Type == typeof(bool))
+                {
+                    comparisonNode.Left = new PropertyNode()
+                    {
+                        Name = GetColumnName(node, node.NodeType),
+                        Type = GetKind(node.Type)
+                    };
+                    comparisonNode.Right = new PropertyNode()
+                    {
+                        Name = GetColumnName(node, node.NodeType),
+                        Type = GetKind(node.Type)
+                    };
+                }
+
+                return RealmLinqExpression.Create(comparisonNode);
+            }
+
+            throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
         }
 
         private static string GetKind(object valueType)
@@ -222,6 +255,10 @@ namespace Realms
             else if (valueType == typeof(string))
             {
                 return "string";
+            }
+            else if (valueType == typeof(bool))
+            {
+                return "bool";
             }
             else
             {

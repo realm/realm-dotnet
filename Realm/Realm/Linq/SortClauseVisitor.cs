@@ -34,7 +34,7 @@ namespace Realms
             }
             else
             {
-                throw new NotSupportedException("Could not fetch property name from orderClause query.");
+                throw new NotSupportedException("Unable to sort on specified property");
             }
 
             return _orderingClause;

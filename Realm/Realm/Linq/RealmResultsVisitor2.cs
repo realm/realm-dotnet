@@ -13,7 +13,7 @@ namespace Realms
         private readonly RealmObjectBase.Metadata _metadata;
         private QueryModel _query;
 
-        IQueryableCollection results;
+        private IQueryableCollection results;
 
         internal RealmResultsVisitor2(Realm realm, RealmObjectBase.Metadata metadata)
         {
@@ -87,13 +87,9 @@ namespace Realms
 
         public ResultsHandle MakeResultsForQuery()
         {
-            DefaultContractResolver contractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new CamelCaseNamingStrategy()
-            };
             string json = JsonConvert.SerializeObject(_query, new JsonSerializerSettings
             {
-                ContractResolver = contractResolver,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 Formatting = Formatting.Indented
             });
             var query = results.GetQuery(json);
