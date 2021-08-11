@@ -780,7 +780,7 @@ jobs:
     - name: Publish Benchmark Results
       uses: ./.github/actions/benchmark-uploader
       with:
-        atlas-token: ${{ secrets.Realm_Token }}
+        realm-token: ${{ secrets.Realm_Token }}
         file: ${{ steps.find-results-file.outputs.benchmark-results }}
         dashboard-path: dashboard.charts
     - name: Upload Charts Dashboard File

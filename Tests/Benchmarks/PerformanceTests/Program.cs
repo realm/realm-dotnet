@@ -51,7 +51,7 @@ namespace PerformanceTests
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
-                .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
+                .AddExporter(MarkdownExporter.GitHub, JsonExporter.BriefCompressed);
 
             return config;
         }
