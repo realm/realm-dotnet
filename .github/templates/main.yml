@@ -178,15 +178,6 @@ steps:
 #@ end
 #@ end
 
-#@ def deleteWrapperBinaries():
-#@ for platform in getWrapperBinaryNames():
-  - name: #@ "Delete artifacts for " + platform
-    uses: geekyeggo/delete-artifact@v1
-    with:
-      name: #@ "wrappers-" + platform
-#@ end
-#@ end
-
 #@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand, addNet5):
 #@ properties = {
 #@   "AddNet5Framework": addNet5,
@@ -432,10 +423,15 @@ jobs:
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-xamarin-ios, run-tests-weaver, build-packages ]
+    needs: [ build-packages ]
     if: always()
     steps:
-      - #@ template.replace(deleteWrapperBinaries())
+#@ for platform in getWrapperBinaryNames():
+      - name: #@ "Delete artifacts for " + platform
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: #@ "wrappers-" + platform
+#@ end
   benchmark-netcore-net5:
     name: Benchmark
     needs: build-packages
