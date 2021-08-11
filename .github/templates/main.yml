@@ -132,7 +132,7 @@ steps:
 #@ end
 
 #@ def uploadPackageArtifacts():
-#@ for pkgName in nugetPackages:
+#@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
@@ -150,15 +150,6 @@ steps:
     with:
       name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
       path: ${{ github.workspace }}/Realm/packages/
-#@ end
-#@ end
-
-#@ def deleteTempPackageArtifacts():
-#@ for pkg in [ 'Realm.UnityUtils', 'Realm.UnityWeaver' ]:
-  - name: #@ "Delete " + pkg
-    uses: geekyeggo/delete-artifact@v1
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
 #@ end
 #@ end
 
@@ -445,11 +436,10 @@ jobs:
     if: always()
     steps:
       - #@ template.replace(deleteWrapperBinaries())
-      - #@ template.replace(deleteTempPackageArtifacts())
   benchmark-netcore-net5:
     name: Benchmark
     needs: build-packages
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     #! TODO: reverse !
     if: ${{ !contains(github.ref, 'master') }}
     steps:
@@ -459,7 +449,7 @@ jobs:
       - name: Upload benchmark results
         uses: actions/upload-artifact@v2
         with:
-          name: benchmark-results-windows
+          name: benchmark-results-linux
           path: ${{ github.workspace }}/Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/
           retention-days: 30
       - name: Find Results file

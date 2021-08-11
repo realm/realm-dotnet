@@ -392,18 +392,6 @@ jobs:
         name: Realm.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
         path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Store artifacts for Realm.UnityUtils
-      uses: actions/upload-artifact@v2
-      with:
-        name: Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.UnityUtils.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Store artifacts for Realm.UnityWeaver
-      uses: actions/upload-artifact@v2
-      with:
-        name: Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
     - name: Store Unity artifacts
@@ -743,18 +731,10 @@ jobs:
       uses: geekyeggo/delete-artifact@v1
       with:
         name: wrappers-windows-uwp-ARM
-    - name: Delete Realm.UnityUtils
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}.nupkg
-    - name: Delete Realm.UnityWeaver
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}.nupkg
   benchmark-netcore-net5:
     name: Benchmark
     needs: build-packages
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     if: ${{ !contains(github.ref, 'master') }}
     steps:
     - name: Disable Analytics
@@ -788,7 +768,7 @@ jobs:
     - name: Upload benchmark results
       uses: actions/upload-artifact@v2
       with:
-        name: benchmark-results-windows
+        name: benchmark-results-linux
         path: ${{ github.workspace }}/Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/
         retention-days: 30
     - name: Find Results file
