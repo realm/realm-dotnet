@@ -449,13 +449,9 @@ jobs:
   benchmark-netcore-net5:
     name: Benchmark
     needs: build-packages
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     #! TODO: reverse !
     if: ${{ !contains(github.ref, 'master') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -463,7 +459,7 @@ jobs:
       - name: Upload benchmark results
         uses: actions/upload-artifact@v2
         with:
-          name: benchmark-results-${{ matrix.os }}
+          name: benchmark-results-windows
           path: ${{ github.workspace }}/Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/
           retention-days: 30
       - name: Find Results file
@@ -477,9 +473,8 @@ jobs:
         with:
           atlas-token: ${{ secrets.Realm_Token }}
           file: ${{ steps.find-results-file.outputs.benchmark-results }}
-          dashboard-path: ${{ matrix.os == windows-latest && 'dashboard.charts' }}
+          dashboard-path: 'dashboard.charts'
       - name: Upload Charts Dashboard File
-        if: ${{ matrix.os == windows-latest }}
         uses: actions/upload-artifact@v2
         with:
           name: dashboard.charts
