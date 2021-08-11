@@ -1,6 +1,6 @@
 import * as exec from "@actions/exec";
 
-export async function execCmd(cmd: string, args: string[]): Promise<string> {
+export async function execCmd(cmd: string, args?: string[]): Promise<string> {
     let stdout = "";
     let stderr = "";
     const options: exec.ExecOptions = {
