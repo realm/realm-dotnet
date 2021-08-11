@@ -25,7 +25,7 @@ async function run(): Promise<void> {
 }
 
 export function updateBenchmarkResults(results: any): void {
-    results.RunNumber = github.context.runNumber;
+    results.RunId = github.context.runNumber;
     results.Commit = github.context.sha;
     results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
     results._id = github.context.runNumber;
