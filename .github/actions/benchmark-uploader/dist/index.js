@@ -37,24 +37,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.execCmd = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
-function execCmd(cmd) {
+function execCmd(cmd, args) {
     return __awaiter(this, void 0, void 0, function* () {
         let stdout = "";
         let stderr = "";
-        const options = {};
-        options.listeners = {
-            stdout: (data) => {
-                stdout += data.toString();
-            },
-            stderr: (data) => {
-                stderr += data.toString();
+        const options = {
+            listeners: {
+                stdout: (data) => {
+                    stdout += data.toString();
+                },
+                stderr: (data) => {
+                    stderr += data.toString();
+                },
             },
         };
-        const exitCode = yield exec.exec(cmd, [], options);
+        const exitCode = yield exec.exec(cmd, args, options);
         if (exitCode !== 0) {
-            throw new Error(`"${cmd}" failed with code ${exitCode} giving error:\n ${stderr}`);
+            throw new Error(`"${cmd}" failed with code ${exitCode} giving error:\n ${stderr.trim()}`);
         }
-        return stdout;
+        return stdout.trim();
     });
 }
 exports.execCmd = execCmd;
@@ -126,7 +127,7 @@ function updateBenchmarkResults(results) {
         results._id = github.context.runNumber;
         results.RunId = github.context.runNumber;
         results.Commit = github.context.sha;
-        results.CommitMessage = yield helpers_1.execCmd(`git rev-list --format=%B --max-count=1 ${github.context.sha} | tail +2`);
+        results.CommitMessage = yield helpers_1.execCmd("git", ["rev-list", "--format=%B", "--max-count=1", github.context.sha]);
         results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
         core.info(`Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`);
         for (const benchmark of results.Benchmarks) {
