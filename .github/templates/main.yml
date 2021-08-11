@@ -446,16 +446,16 @@ jobs:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join", "true"))
-      - name: Upload benchmark results
+      - name: Upload Benchmark results
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results-linux
-          path: ${{ github.workspace }}/Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/
+          path: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/
           retention-days: 30
       - name: Find Results file
         id: find-results-file
         run: |
-          cd Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results
+          cd BenchmarkDotNet.Artifacts/results
           file=$(basename BenchmarkRun*json)
           echo "::set-output name=benchmark-results::$file"
       - name: Publish Benchmark Results
