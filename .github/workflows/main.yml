@@ -41,6 +41,10 @@ jobs:
     runs-on: macos-latest
     name: Wrappers iOS
     steps:
+    - name: TEEEEMP
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
     - name: Disable Analytics
       run: |
         echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
