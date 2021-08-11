@@ -3,6 +3,7 @@ import * as github from "@actions/github";
 import * as fs from "fs";
 import * as Realm from "realm-web";
 import * as path from "path";
+import {execCmd} from "./helpers";
 
 async function run(): Promise<void> {
     try {
@@ -11,7 +12,7 @@ async function run(): Promise<void> {
 
         const parsedResults = JSON.parse(fs.readFileSync(resultsFile, {encoding: "utf8"}));
 
-        updateBenchmarkResults(parsedResults);
+        await updateBenchmarkResults(parsedResults);
 
         const dashboardPath = core.getInput("dashboard-path", {required: false});
         if (dashboardPath) {
@@ -24,11 +25,16 @@ async function run(): Promise<void> {
     }
 }
 
-export function updateBenchmarkResults(results: any): void {
+export async function updateBenchmarkResults(results: any): Promise<void> {
+    results._id = github.context.runNumber;
     results.RunId = github.context.runNumber;
     results.Commit = github.context.sha;
+    results.CommitMessage = await execCmd(`git rev-list --format=%B --max-count=1 ${github.context.sha} | tail +2`);
     results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
-    results._id = github.context.runNumber;
+
+    core.info(
+        `Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`,
+    );
 
     for (const benchmark of results.Benchmarks) {
         if (!benchmark.Parameters) {

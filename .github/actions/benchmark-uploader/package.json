@@ -27,6 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.4.0",
+    "@actions/exec": "^1.1.0",
     "@actions/github": "^4.0.0",
     "@types/minimatch": "^3.0.4",
     "abort-controller": "^3.0.0",
