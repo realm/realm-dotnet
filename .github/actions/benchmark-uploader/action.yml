@@ -2,9 +2,9 @@ name: "TODOs have links"
 description: "Verifies that TODOs in your codebase have a link to a follow-up issue."
 author: "Nikola Irinchev"
 inputs:
-    atlas-token:
+    realm-token:
         required: true
-        description: The MongoDB Atlas token for the benchmark upload.
+        description: The MongoDB Realm token for the benchmark upload.
     file:
         required: true
         description: The path to the Benchmark.NET json results.
