@@ -725,11 +725,11 @@ jobs:
       uses: geekyeggo/delete-artifact@v1
       with:
         name: wrappers-windows-uwp-ARM
-  benchmark-netcore-net5:
-    name: Benchmark
+  benchmark-linux:
+    name: Benchmark Linux
     needs: build-packages
     runs-on: ubuntu-latest
-    if: ${{ contains(github.ref, 'master') || contains(github.ref, 'main') }}
+    if: ${{ github.event_name == 'push' }}
     steps:
     - name: Disable Analytics
       run: |
@@ -759,12 +759,6 @@ jobs:
     - name: Run the tests
       run: ./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/PerformanceTests -f "*" --join
       shell: bash
-    - name: Upload Benchmark results
-      uses: actions/upload-artifact@v2
-      with:
-        name: benchmark-results-linux
-        path: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/
-        retention-days: 30
     - name: Find Results file
       id: find-results-file
       run: |
@@ -776,7 +770,7 @@ jobs:
       with:
         realm-token: ${{ secrets.Realm_Token }}
         file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
-        dashboard-path: dashboard.charts
+        dashboard-path: ${{ github.workspace }}/dashboard.charts
     - name: Upload Charts Dashboard File
       uses: actions/upload-artifact@v2
       with:

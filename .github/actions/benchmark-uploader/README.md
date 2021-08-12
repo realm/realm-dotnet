@@ -20,7 +20,7 @@ jobs:
       - name: "Upload Results"
         uses: ".github/actions/benchmark-uploader"
         with:
-          realm-token: ${{ secrets.Atlas_Token }}
+          realm-token: ${{ secrets.MDBRealm_Token }}
           file: ${{ steps.run-benchmarks.outputs.benchmark-results }}
           dashboard-path: 'dashboard.charts'
 ```
