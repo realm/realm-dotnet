@@ -44,14 +44,14 @@ namespace PerformanceTests
             });
         }
 
-        [Benchmark]
+        [Benchmark(Description = "Time to execute Count query that matches half of ObjectCount elements.")]
         public int Count()
         {
             var expectedBool = _faker.Random.Bool();
             return _realm.All<QueryClass>().Where(c => c.BoolValue == expectedBool).Count();
         }
 
-        [Benchmark]
+        [Benchmark(Description = "Time to execute enumerate results of a query that matches half of ObjectCount elements.")]
         public object Enumerate()
         {
             var expectedBool = _faker.Random.Bool();

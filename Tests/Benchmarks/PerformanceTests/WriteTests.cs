@@ -44,7 +44,7 @@ namespace PerformanceTests
 
         protected abstract int GetCurrentSize();
 
-        [Benchmark]
+        [Benchmark(Description = "Time to write %ObjectCount% objects of particular size/length and commit the transaction.")]
         public void Write()
         {
             _realm.Write(() =>
@@ -69,7 +69,7 @@ namespace PerformanceTests
 
     public class EmptyWriteTests : BenchmarkBase
     {
-        [Benchmark]
+        [Benchmark(Description = "Time to commit an empty write transaction")]
         public void Write()
         {
             using var transaction = _realm.BeginWrite();

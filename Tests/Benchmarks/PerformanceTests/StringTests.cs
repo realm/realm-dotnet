@@ -107,7 +107,7 @@ namespace PerformanceTests
             _transaction.Rollback();
         }
 
-        [Benchmark(OperationsPerInvoke = 32)]
+        [Benchmark(OperationsPerInvoke = 32, Description = "Time to get a property of type String.")]
         public string GetPropertyValue()
         {
             _temp = _robject.Value0;
@@ -145,7 +145,7 @@ namespace PerformanceTests
             return _temp;
         }
 
-        [Benchmark(OperationsPerInvoke = 32)]
+        [Benchmark(OperationsPerInvoke = 32, Description = "Time to set a property of type String.")]
         public void SetPropertyValue()
         {
             _robject.Value0 = _newPropertyValues[0];
@@ -182,7 +182,7 @@ namespace PerformanceTests
             _robject.Value31 = _newPropertyValues[31];
         }
 
-        [Benchmark(OperationsPerInvoke = 32)]
+        [Benchmark(OperationsPerInvoke = 32, Description = "Time to lookup an object with a String PK.")]
         public RealmObject LookupByPK()
         {
             _tempObj = _realm.Find<StringClass>(_primaryKeys[0]);

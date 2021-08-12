@@ -95,7 +95,7 @@ namespace PerformanceTests
             _transaction.Rollback();
         }
 
-        [Benchmark(OperationsPerInvoke = 32)]
+        [Benchmark(OperationsPerInvoke = 32, Description = "Time to get a property of type RealmObject.")]
         public object GetPropertyValue()
         {
             _temp = _robject.Value0;
@@ -133,7 +133,7 @@ namespace PerformanceTests
             return _temp;
         }
 
-        [Benchmark(OperationsPerInvoke = 32)]
+        [Benchmark(OperationsPerInvoke = 32, Description = "Time to set a property of type RealmObject")]
         public void SetPropertyValue()
         {
             _robject.Value0 = _newPropertyValues[0];
