@@ -436,8 +436,7 @@ jobs:
     name: Benchmark
     needs: build-packages
     runs-on: ubuntu-latest
-    #! TODO: reverse !
-    if: ${{ !contains(github.ref, 'master') }}
+    if: ${{ contains(github.ref, 'master') || contains(github.ref, 'main') }}
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())

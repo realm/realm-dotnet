@@ -729,7 +729,7 @@ jobs:
     name: Benchmark
     needs: build-packages
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.ref, 'master') }}
+    if: ${{ contains(github.ref, 'master') || contains(github.ref, 'main') }}
     steps:
     - name: Disable Analytics
       run: |
