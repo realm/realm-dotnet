@@ -44,7 +44,7 @@ namespace PerformanceTests
 
         protected abstract int GetCurrentSize();
 
-        [Benchmark(Description = "Time to write %ObjectCount% objects of particular size/length and commit the transaction.")]
+        [Benchmark(Description = "Time to write %ObjectCount% objects of particular size/length and commit the transaction")]
         public void Write()
         {
             _realm.Write(() =>

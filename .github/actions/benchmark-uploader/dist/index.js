@@ -163,6 +163,8 @@ function generateChartsDashboard(results, dashboardPath) {
         layouts.push(newLayout);
         newItem.queryCache.filter = newItem.queryCache.filter.replace(/%METHOD%/g, method).replace(/%TYPE%/g, type);
         newItem.title = `${type}.${method}`;
+        // Benchmark.NET inserts ' at the beginning and the end of MethodTitle, so let's trim those
+        newItem.description = benchmark.MethodTitle.substring(1, benchmark.MethodTitle.length - 1);
         items[benchmarkId] = newItem;
         currentY = currentY + newLayout.h;
     }

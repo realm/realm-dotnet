@@ -95,7 +95,7 @@ namespace PerformanceTests
             _transaction.Rollback();
         }
 
-        [Benchmark(OperationsPerInvoke = 32, Description = "Time to get a property of type RealmObject.")]
+        [Benchmark(OperationsPerInvoke = 32, Description = "Time to get a property of type RealmObject")]
         public object GetPropertyValue()
         {
             _temp = _robject.Value0;

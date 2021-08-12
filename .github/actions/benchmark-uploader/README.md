@@ -33,6 +33,10 @@ jobs:
 | `file` | `true` | The Benchmark.NET results file (in json format). |
 | `dashboard-path` | `false` | Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated. |
 
-## Contributing & Issues
+## MongoDB Services used
 
-This action is developed as a getting started project and is not extensively tested. If you encounter problems, feel free to open an issue or submit a pull request.
+We're using the `Realm SDK metrics` project to store benchmark data.
+
+* [MongoDB Atlas](https://cloud.mongodb.com/v2/5f2beb77dd663c59fa806486#clusters) for storing the benchmark results.
+* [MongoDB Realm](https://realm.mongodb.com/groups/5f2beb77dd663c59fa806486/apps/61153e38bc7c862b9c02c860/dashboard) for auth and uploading new documents.
+* [MongoDB Charts](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/dashboards) for plotting the data.

@@ -77,6 +77,9 @@ export function generateChartsDashboard(results: any, dashboardPath: string): vo
 
         newItem.queryCache.filter = newItem.queryCache.filter.replace(/%METHOD%/g, method).replace(/%TYPE%/g, type);
         newItem.title = `${type}.${method}`;
+
+        // Benchmark.NET inserts ' at the beginning and the end of MethodTitle, so let's trim those
+        newItem.description = benchmark.MethodTitle.substring(1, benchmark.MethodTitle.length - 1);
         items[benchmarkId] = newItem;
 
         currentY = currentY + (newLayout.h as number);
