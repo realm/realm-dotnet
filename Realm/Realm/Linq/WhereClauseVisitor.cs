@@ -76,11 +76,22 @@ namespace Realms
 
                     if (node.Arguments[0] is ConstantExpression ce)
                     {
-                        result.Right = new ConstantNode()
+                        if (ce.Value == null)
                         {
-                            Value = ce.Value,
-                            Type = GetKind(ce.Value.GetType())
-                        };
+                            result.Right = new ConstantNode()
+                            {
+                                Value = ce.Value,
+                                Type = "string"
+                            };
+                        }
+                        else
+                        {
+                            result.Right = new ConstantNode()
+                            {
+                                Value = ce.Value,
+                                Type = GetKind(ce.Value.GetType())
+                            };
+                        }
                     }
                 }
                 else
@@ -160,11 +171,22 @@ namespace Realms
 
                 if (be.Left is ConstantExpression ce)
                 {
-                    comparisonNode.Left = new ConstantNode()
+                    if (ce.Value == null)
                     {
-                        Value = ce.Value,
-                        Type = GetKind(ce.Value.GetType())
-                    };
+                        comparisonNode.Left = new ConstantNode()
+                        {
+                            Value = ce.Value,
+                            Type = "string"
+                        };
+                    }
+                    else
+                    {
+                        comparisonNode.Left = new ConstantNode()
+                        {
+                            Value = ce.Value,
+                            Type = GetKind(ce.Value.GetType())
+                        };
+                    }
                 }
 
                 if (be.Right is MemberExpression mo)
@@ -185,11 +207,22 @@ namespace Realms
 
                 if (be.Right is ConstantExpression co)
                 {
-                    comparisonNode.Right = new ConstantNode()
+                    if (co.Value == null)
                     {
-                        Value = co.Value,
-                        Type = GetKind(co.Value.GetType())
-                    };
+                        comparisonNode.Right = new ConstantNode()
+                        {
+                            Value = co.Value,
+                            Type = "string"
+                        };
+                    }
+                    else
+                    {
+                        comparisonNode.Right = new ConstantNode()
+                        {
+                            Value = co.Value,
+                            Type = GetKind(co.Value.GetType())
+                        };
+                    }
                 }
 
                 returnNode = comparisonNode;

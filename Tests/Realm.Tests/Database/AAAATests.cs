@@ -44,13 +44,13 @@ namespace Realms.Tests.Database
             return propertyInfo.GetValue(exp) as string;
         }
 
-        //[Test]
-        //public void WhereNullEqTest()
-        //{
-        //    var AddressEqNull = _realm.All<Person>().Where(p => p.OptionalAddress == null).ToList();
-        //    Assert.That(AddressEqNull.Count, Is.EqualTo(1));
-        //    Assert.That(AddressEqNull[0].FullName, Is.EqualTo("Peter Jameson"));
-        //}
+        [Test]
+        public void WhereNullEqTest()
+        {
+            var AddressEqNull = _realm.All<Person>().Where(p => p.OptionalAddress == null).ToList();
+            Assert.That(AddressEqNull.Count, Is.EqualTo(1));
+            Assert.That(AddressEqNull[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
 
         [Test]
         public void WhereBooleanEqTest()
@@ -85,14 +85,13 @@ namespace Realms.Tests.Database
             Assert.That(scoreEq[0].FullName, Is.EqualTo("John Doe"));
         }
 
-       // TODO: Testa denna för detta är inte supportat
-       //[Test]
-       // public void WhereFloatEqualTest()
-       // {
-       //     var scoreEq = _realm.All<Person>().Where(p => p.Score == 100.0).ToList();
-       //     Assert.That(scoreEq.Count, Is.EqualTo(1));
-       //     Assert.That(scoreEq[0].FullName, Is.EqualTo("John Doe"));
-       // }
+        [Test]
+        public void WhereFloat2EqualTest()
+        {
+            var scoreEq = _realm.All<Person>().Where(p => p.Score == 100.0).ToList();
+            Assert.That(scoreEq.Count, Is.EqualTo(1));
+            Assert.That(scoreEq[0].FullName, Is.EqualTo("John Doe"));
+        }
 
         [Test]
         public void WhereFloatNotEqualTest()
