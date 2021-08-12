@@ -172,7 +172,7 @@ function generateChartsDashboard(results, dashboardPath) {
 exports.generateChartsDashboard = generateChartsDashboard;
 function uploadBenchmarkResults(apiKey, results) {
     return __awaiter(this, void 0, void 0, function* () {
-        const app = new Realm.App("benchmarks-mbqmw");
+        const app = new Realm.App("sdkbenchmarks-rolry");
         const credentials = Realm.Credentials.apiKey(apiKey);
         core.info("Authenticating Realm user...");
         const user = yield app.logIn(credentials);

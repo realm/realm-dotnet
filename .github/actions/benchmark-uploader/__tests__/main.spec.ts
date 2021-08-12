@@ -10,8 +10,10 @@ describe("generateChartsDashboard", () => {
         const apiKey = "%ADD_API_KEY%";
         const results = require("./bench-tests.json");
         results.Branch = "master";
-        results.Commit = "Test #3";
-        results.RunId = 3;
+        results.Commit = "64ad0b0dc8a834a5172681e452e2562d5195f7fd";
+        results.CommitMessage = "Delete me";
+        results.RunId = 1006;
+        results._id = 1006;
         await uploadBenchmarkResults(apiKey, results);
     });
 });

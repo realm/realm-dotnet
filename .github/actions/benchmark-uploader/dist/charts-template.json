@@ -45,13 +45,7 @@
     "items":{
       "template":{
         "allowInteractiveFilters":true,
-        "calculatedFields":[
-          {
-            "fieldPath":"OrderedCommit",
-            "rawExpression":"{ $concat: [ { $toString: \"$RunId\" }, \": \", \"$Commit\"]}",
-            "derivedMQL":"{\"$concat\":[{\"$toString\":\"$RunId\"},\": \",\"$Commit\"]}"
-          }
-        ],
+        "calculatedFields":[ ],
         "channels":{
           "y":{
             "channelType":"aggregation",
@@ -63,16 +57,12 @@
           },
           "x":{
             "channelType":"category",
-            "field":"OrderedCommit",
-            "inferredType":"String",
+            "field":"RunId",
+            "inferredType":"Number",
             "type":"nominal",
             "isBinning":false,
-            "nominalBinning":[
-
-            ],
-            "sort":{
-              "axis":"Category",
-              "order":"ascending"
+            "quantitativeBinning":{
+              "binSize":10
             }
           },
           "color":{
@@ -124,7 +114,15 @@
             "x":{
               "labelOverride":{
                 "enabled":true,
-                "value":"Commit"
+                "value":"Run"
+              },
+              "numberFormatting":{
+                "enabled":true,
+                "value":"Custom"
+              },
+              "numberGrouping":{
+                "enabled":false,
+                "value":null
               }
             },
             "color":{

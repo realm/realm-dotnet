@@ -45,13 +45,7 @@
     "items":{
       "template":{
         "allowInteractiveFilters":true,
-        "calculatedFields":[
-          {
-            "fieldPath":"OrderedCommit",
-            "rawExpression":"{ $concat: [ { $toString: \"$RunId\" }, \": \", \"$Commit\"]}",
-            "derivedMQL":"{\"$concat\":[{\"$toString\":\"$RunId\"},\": \",\"$Commit\"]}"
-          }
-        ],
+        "calculatedFields":[ ],
         "channels":{
           "y":{
             "channelType":"aggregation",

@@ -88,7 +88,7 @@ export function generateChartsDashboard(results: any, dashboardPath: string): vo
 }
 
 export async function uploadBenchmarkResults(apiKey: string, results: any): Promise<void> {
-    const app = new Realm.App("benchmarks-mbqmw");
+    const app = new Realm.App("sdkbenchmarks-rolry");
     const credentials = Realm.Credentials.apiKey(apiKey);
 
     core.info("Authenticating Realm user...");
