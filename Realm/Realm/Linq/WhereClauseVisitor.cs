@@ -225,10 +225,10 @@ namespace Realms
                         Name = GetColumnName(node, node.NodeType),
                         Type = GetKind(node.Type)
                     };
-                    comparisonNode.Right = new PropertyNode()
+                    comparisonNode.Right = new ConstantNode()
                     {
-                        Name = GetColumnName(node, node.NodeType),
-                        Type = GetKind(node.Type)
+                        Value = true,
+                        Type = "bool"
                     };
                 }
 
@@ -259,6 +259,10 @@ namespace Realms
             else if (valueType == typeof(bool))
             {
                 return "bool";
+            }
+            else if (valueType == null)
+            {
+                return "null";
             }
             else
             {
