@@ -770,7 +770,7 @@ jobs:
       with:
         realm-token: ${{ secrets.Realm_Token }}
         file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
-        dashboard-path: ${{ github.workspace }}/dashboard.charts
+        dashboard-path: dashboard.charts
     - name: Upload Charts Dashboard File
       uses: actions/upload-artifact@v2
       with:
