@@ -5,7 +5,11 @@
 * Fixed an issue where `Logger.Console` on Unity would still use `Console.WriteLine` instead of `Debug.Log`. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
 
 ### Enhancements
-* None
+* Added two extension methods on `IList` to get an `IQueryable` collection wrapping the list:
+  * `list.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IList<T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `list.Filter(query, arguments)` will filter the list and return the filtered collection. It is roughly equivalent to `list.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#1499](https://github.com/realm/realm-dotnet/issues/1499))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.

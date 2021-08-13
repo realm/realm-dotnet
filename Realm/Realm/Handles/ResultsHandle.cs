@@ -18,7 +18,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms
@@ -188,30 +187,8 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
-        {
-            var primitiveValues = new PrimitiveValue[arguments.Length];
-            var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                var argument = arguments[i];
-                if (argument.Type == RealmValueType.Object && !argument.AsRealmObject().IsManaged)
-                {
-                    throw new RealmException("Can't use unmanaged object as argument of Filter");
-                }
-
-                (primitiveValues[i], handles[i]) = argument.ToNative();
-            }
-
-            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, (IntPtr)primitiveValues.Length, out var ex);
-            foreach (var handle in handles)
-            {
-                handle?.Dispose();
-            }
-
-            ex.ThrowIfNecessary();
-            return new ResultsHandle(this, ptr);
-        }
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         public int Find(in RealmValue value)
         {

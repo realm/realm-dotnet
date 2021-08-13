@@ -87,6 +87,15 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ListHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_to_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr to_results(ListHandle list, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(ListHandle results,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -213,10 +222,16 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        public ResultsHandle ToResults()
         {
-            throw new NotImplementedException("Lists can't be filtered yet.");
+            var ptr = NativeMethods.to_results(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            return new ResultsHandle(this, ptr);
         }
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         public override bool IsFrozen
         {
