@@ -729,7 +729,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'push' }}
+    if: ${{ github.event_name == 'push' }}
     steps:
     - name: Disable Analytics
       run: |
