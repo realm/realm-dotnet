@@ -1,6 +1,10 @@
 # Benchmark uploader
 
-Lorem ipusum
+This is an action that takes the results.json file from a Benchmark.NET run and uploads it to MongoDB Atlas using the realm-web SDK. In the process, it does a couple of things:
+
+1. It enhances the results with git information (i.e. commit, branch, etc.).
+2. It generates a charts dashboard that we can then import. This is only actually necessary when the benchmark tests change in any way.
+3. It uploads the enhanced results to MongoDB Atlas using MongoDB Realm.
 
 ## Basic Usage
 
