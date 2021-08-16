@@ -164,8 +164,8 @@ namespace Realms
 
         internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
         {
-            var handle = Handle.Value.GetFilteredResults(query, arguments);
-            return new RealmResults<T>(Realm, handle, Metadata);
+            var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
+            return new RealmResults<T>(Realm, resultsHandle, Metadata);
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)

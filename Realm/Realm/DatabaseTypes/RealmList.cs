@@ -182,6 +182,12 @@ namespace Realms
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
+        internal RealmResults<T> ToResults()
+        {
+            var resultsHandle = _listHandle.ToResults();
+            return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
+
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmList<T>(realm, (ListHandle)handle, Metadata);
 
         protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Realm).As<T>();

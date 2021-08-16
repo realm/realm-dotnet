@@ -277,6 +277,187 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ListAsRealmQueryable_RaisesNotifications()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.Dogs.AsRealmQueryable().Where(d => d.Age >= 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => joe.Dogs.Add(new Dog { Age = i }));
+                _realm.Refresh();
+
+                if (i >= 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 4));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                }
+            }
+        }
+
+        [Test]
+        public void ListFilter_ReturnsCorrectElementAtResult()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.Dogs.Filter("Age >= 5");
+
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    joe.Dogs.Add(new Dog { Age = i });
+                }
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                var dog = oldDogs.ElementAt(i);
+                Assert.That(dog.Age, Is.EqualTo(i + 5));
+            }
+        }
+
+        [Test]
+        public void ListFilter_PassesArgumentsCorrectly()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.Dogs.Add(new Dog { Name = "Rick" });
+                joe.Dogs.Add(new Dog { Name = "Fido" });
+                joe.Dogs.Add(new Dog { Name = "Fester" });
+                joe.Dogs.Add(new Dog { Name = "Fifi" });
+                joe.Dogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ToArray().Select(d => d.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
+        }
+
+        [Test]
+        public void ListFilter_CanSortResults()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.Dogs.Add(new Dog { Name = "Rick" });
+                joe.Dogs.Add(new Dog { Name = "Fido" });
+                joe.Dogs.Add(new Dog { Name = "Fifi" });
+                joe.Dogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ElementAt(0).Name, Is.EqualTo("Fifi"));
+            Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
+        }
+
+        [Test]
+        public void ListFilter_CanBeFilteredWithLinq()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.Dogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.Dogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.Dogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.Dogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.Dogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.Dogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Where(d => d.Vaccinated).OrderBy(d => d.Age);
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void ListFilter_CanBeFilteredWithStringPredicate()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.Dogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.Dogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.Dogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.Dogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.Dogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.Dogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Filter("Vaccinated = true SORT(Age asc)");
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
         public void Set_WhenIndexIsNegative_ShouldThrow()
         {
             var container = new ContainerObject();
