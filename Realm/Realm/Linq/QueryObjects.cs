@@ -66,6 +66,17 @@ namespace Realms
         public abstract string Kind { get; }
     }
 
+    internal abstract class ComparisonNodeStringCaseSensitivty : ExpressionNode
+    {
+        public ExpressionNode Left { get; set; }
+
+        public ExpressionNode Right { get; set; }
+
+        public abstract string Kind { get; }
+
+        public bool CaseSensitivity { get; set; }
+    }
+
     internal class PropertyNode : ExpressionNode
     {
         public string Kind => "property";
@@ -129,7 +140,7 @@ namespace Realms
         public override string Kind => "contains";
     }
 
-    internal class LikeNode : ComparisonNode
+    internal class LikeNode : ComparisonNodeStringCaseSensitivty
     {
         public override string Kind => "like";
     }

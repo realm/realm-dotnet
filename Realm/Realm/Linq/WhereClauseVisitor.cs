@@ -52,7 +52,35 @@ namespace Realms
                 }
                 else if (node.Method.Name.Equals("Like"))
                 {
-                    result = new LikeNode();
+                    ComparisonNodeStringCaseSensitivty result2 = new LikeNode();
+                    if (node.Arguments.Count > 2)
+                    {
+                        if (node.Arguments[0] is MemberExpression me2)
+                        {
+                            result2.Left = new PropertyNode()
+                            {
+                                Name = GetColumnName(me2, me2.NodeType),
+                                Type = GetKind(me2.Type)
+                            };
+                        }
+
+                        if (node.Arguments[1] is ConstantExpression ce)
+                        {
+                            result2.Right = new ConstantNode()
+                            {
+                                Value = ce.Value,
+                                Type = "string"
+                            };
+                        }
+
+                        if (node.Arguments[2] is ConstantExpression ce2)
+                        {
+                            result2.CaseSensitivity = (bool)ce2.Value;
+                        }
+                    }
+
+                    returnNode = result2;
+                    return RealmLinqExpression.Create(returnNode);
                 }
                 else
                 {
