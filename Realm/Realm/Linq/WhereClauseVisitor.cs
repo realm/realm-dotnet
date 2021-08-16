@@ -53,30 +53,34 @@ namespace Realms
                 else if (node.Method.Name.Equals("Like"))
                 {
                     ComparisonNodeStringCaseSensitivty result2 = new LikeNode();
-                    if (node.Arguments.Count > 2)
+                    if (node.Arguments.Count == 3)
                     {
-                        if (node.Arguments[0] is MemberExpression me2)
+                        if (node.Arguments[0] is MemberExpression stringMemberExpression)
                         {
                             result2.Left = new PropertyNode()
                             {
-                                Name = GetColumnName(me2, me2.NodeType),
-                                Type = GetKind(me2.Type)
+                                Name = GetColumnName(stringMemberExpression, stringMemberExpression.NodeType),
+                                Type = GetKind(stringMemberExpression.Type)
                             };
                         }
 
-                        if (node.Arguments[1] is ConstantExpression ce)
+                        if (node.Arguments[1] is ConstantExpression constantExpression)
                         {
                             result2.Right = new ConstantNode()
                             {
-                                Value = ce.Value,
+                                Value = constantExpression.Value,
                                 Type = "string"
                             };
                         }
 
-                        if (node.Arguments[2] is ConstantExpression ce2)
+                        if (node.Arguments[2] is ConstantExpression isCaseSensetive)
                         {
-                            result2.CaseSensitivity = (bool)ce2.Value;
+                            result2.CaseSensitivity = (bool)isCaseSensetive.Value;
                         }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Not a supported 'Like' string query.");
                     }
 
                     returnNode = result2;
@@ -87,28 +91,28 @@ namespace Realms
                     throw new NotSupportedException(node.Method.Name + " is not supported string operation method");
                 }
 
-                if (node.Object is MemberExpression me)
+                if (node.Object is MemberExpression memberExpression)
                 {
-                    if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+                    if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
                     {
                         result.Left = new PropertyNode()
                         {
-                            Name = GetColumnName(me, me.NodeType),
-                            Type = GetKind(me.Type)
+                            Name = GetColumnName(memberExpression, memberExpression.NodeType),
+                            Type = GetKind(memberExpression.Type)
                         };
                     }
                     else
                     {
-                        throw new NotSupportedException(me + " is null or not a supported type.");
+                        throw new NotSupportedException(memberExpression + " is null or not a supported type.");
                     }
 
-                    if (node.Arguments[0] is ConstantExpression ce)
+                    if (node.Arguments[0] is ConstantExpression constantExpression)
                     {
-                        if (ce.Value == null)
+                        if (constantExpression.Value == null)
                         {
                             result.Right = new ConstantNode()
                             {
-                                Value = ce.Value,
+                                Value = constantExpression.Value,
                                 Type = "string"
                             };
                         }
@@ -116,8 +120,8 @@ namespace Realms
                         {
                             result.Right = new ConstantNode()
                             {
-                                Value = ce.Value,
-                                Type = GetKind(ce.Value.GetType())
+                                Value = constantExpression.Value,
+                                Type = GetKind(constantExpression.Value.GetType())
                             };
                         }
                     }
@@ -137,27 +141,27 @@ namespace Realms
             return RealmLinqExpression.Create(returnNode);
         }
 
-        protected override Expression VisitBinary(BinaryExpression be)
+        protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             ExpressionNode returnNode;
-            if (be.NodeType == ExpressionType.AndAlso)
+            if (binaryExpression.NodeType == ExpressionType.AndAlso)
             {
                 var andNode = new AndNode();
-                andNode.Left = Extract(be.Left);
-                andNode.Right = Extract(be.Right);
+                andNode.Left = Extract(binaryExpression.Left);
+                andNode.Right = Extract(binaryExpression.Right);
                 returnNode = andNode;
             }
-            else if (be.NodeType == ExpressionType.OrElse)
+            else if (binaryExpression.NodeType == ExpressionType.OrElse)
             {
                 var orNode = new OrNode();
-                orNode.Left = Extract(be.Left);
-                orNode.Right = Extract(be.Right);
+                orNode.Left = Extract(binaryExpression.Left);
+                orNode.Right = Extract(binaryExpression.Right);
                 returnNode = orNode;
             }
             else
             {
                 ComparisonNode comparisonNode;
-                switch (be.NodeType)
+                switch (binaryExpression.NodeType)
                 {
                     case ExpressionType.Equal:
                         comparisonNode = new EqualityNode();
@@ -178,32 +182,32 @@ namespace Realms
                         comparisonNode = new GteNode();
                         break;
                     default:
-                        throw new NotSupportedException($"The operator '{be.NodeType}' is not supported");
+                        throw new NotSupportedException($"The operator '{binaryExpression.NodeType}' is not supported");
                 }
 
-                if (be.Left is MemberExpression me)
+                if (binaryExpression.Left is MemberExpression binaryLeftMemberExpression)
                 {
-                    if (me.Expression != null && me.Expression.NodeType == ExpressionType.Parameter)
+                    if (binaryLeftMemberExpression.Expression != null && binaryLeftMemberExpression.Expression.NodeType == ExpressionType.Parameter)
                     {
                         comparisonNode.Left = new PropertyNode()
                         {
-                            Name = GetColumnName(me, me.NodeType),
-                            Type = GetKind(me.Type)
+                            Name = GetColumnName(binaryLeftMemberExpression, binaryLeftMemberExpression.NodeType),
+                            Type = GetKind(binaryLeftMemberExpression.Type)
                         };
                     }
                     else
                     {
-                        throw new NotSupportedException(me + " is null or not a supported node type.");
+                        throw new NotSupportedException(binaryLeftMemberExpression + " is null or not a supported node type.");
                     }
                 }
 
-                if (be.Left is ConstantExpression ce)
+                if (binaryExpression.Left is ConstantExpression binaryLeftConstantExpression)
                 {
-                    if (ce.Value == null)
+                    if (binaryLeftConstantExpression.Value == null)
                     {
                         comparisonNode.Left = new ConstantNode()
                         {
-                            Value = ce.Value,
+                            Value = binaryLeftConstantExpression.Value,
                             Type = "string"
                         };
                     }
@@ -211,35 +215,35 @@ namespace Realms
                     {
                         comparisonNode.Left = new ConstantNode()
                         {
-                            Value = ce.Value,
-                            Type = GetKind(ce.Value.GetType())
+                            Value = binaryLeftConstantExpression.Value,
+                            Type = GetKind(binaryLeftConstantExpression.Value.GetType())
                         };
                     }
                 }
 
-                if (be.Right is MemberExpression mo)
+                if (binaryExpression.Right is MemberExpression binaryRightMemberExpression)
                 {
-                    if (mo.Expression != null && mo.Expression.NodeType == ExpressionType.Parameter)
+                    if (binaryRightMemberExpression.Expression != null && binaryRightMemberExpression.Expression.NodeType == ExpressionType.Parameter)
                     {
                         comparisonNode.Right = new PropertyNode()
                         {
-                            Name = GetColumnName(mo, mo.NodeType),
-                            Type = GetKind(mo.Type)
+                            Name = GetColumnName(binaryRightMemberExpression, binaryRightMemberExpression.NodeType),
+                            Type = GetKind(binaryRightMemberExpression.Type)
                         };
                     }
                     else
                     {
-                        throw new NotSupportedException(mo + " is null or not a supported node type.");
+                        throw new NotSupportedException(binaryRightMemberExpression + " is null or not a supported node type.");
                     }
                 }
 
-                if (be.Right is ConstantExpression co)
+                if (binaryExpression.Right is ConstantExpression binaryRightConstantExpression)
                 {
-                    if (co.Value == null)
+                    if (binaryRightConstantExpression.Value == null)
                     {
                         comparisonNode.Right = new ConstantNode()
                         {
-                            Value = co.Value,
+                            Value = binaryRightConstantExpression.Value,
                             Type = "string"
                         };
                     }
@@ -247,8 +251,8 @@ namespace Realms
                     {
                         comparisonNode.Right = new ConstantNode()
                         {
-                            Value = co.Value,
-                            Type = GetKind(co.Value.GetType())
+                            Value = binaryRightConstantExpression.Value,
+                            Type = GetKind(binaryRightConstantExpression.Value.GetType())
                         };
                     }
                 }
