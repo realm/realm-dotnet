@@ -1,4 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <UsingTask TaskName="MSBuildReadTask.ExtractChangelog" AssemblyFile="$(ProjectDir)\..\..\Tools\MSBuildTaskExtractChangelog\MSBuildTaskExtractChangelog.dll" />
+
+  <Target Name="PrepareForRelease" BeforeTargets="Build" Condition="$(NugetRelease)">
+    <Message Text="Extracting release note" />
+    <ExtractChangelog FilePath="Changelog.md">
+      <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
+    </ExtractChangelog>
+  </Target>
+  
+  <PropertyGroup>
+    <NugetRelease Condition="'$(NugetRelease)' == ''">false</NugetRelease>
+  </PropertyGroup>
+  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Realms</RootNamespace>
