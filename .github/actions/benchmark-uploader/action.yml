@@ -1,0 +1,19 @@
+name: "Benchmarks to MongoDB Charts"
+description: "Enhances Benchmark.NET results and uploads them to MongoDB Atlas through Realm. It also generates a Charts dashboard that can be imported and used to visualize the results."
+author: "Nikola Irinchev"
+inputs:
+    realm-token:
+        required: true
+        description: The MongoDB Realm token for the benchmark upload.
+    file:
+        required: true
+        description: The path to the Benchmark.NET json results.
+    dashboard-path:
+        required: false
+        description: Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated.
+runs:
+    using: "node12"
+    main: "dist/index.js"
+branding:
+    icon: "bar-chart-2"
+    color: "purple"

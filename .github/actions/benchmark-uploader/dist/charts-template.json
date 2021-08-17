@@ -1,0 +1,197 @@
+{
+    "exportVersion":4,
+    "dashboards":{
+      "dashboard":{
+        "description":"Benchmark results for the Realm.NET SDK: https://github.com/realm/realm-dotnet/tree/master/Tests/Benchmarks/PerformanceTests",
+        "filters":[
+          {
+            "type":"String",
+            "disabled":false,
+            "name":"Branch",
+            "settings":{
+              "allOthers":false,
+              "values":[
+                "master"
+              ]
+            },
+            "linkedFields":[
+              {
+                "dataSourceId":"data-source",
+                "fieldPath":"Branch"
+              }
+            ]
+          }
+        ],
+        "layout":[
+          {
+            "w":8,
+            "h":2,
+            "x":0,
+            "y":0,
+            "i":"template",
+            "minW":1,
+            "maxW":10,
+            "minH":1,
+            "maxH":10,
+            "moved":false,
+            "static":false,
+            "isDraggable":true,
+            "isResizable":true
+          }
+        ],
+        "title":"Realm .NET Benchmark Results"
+      }
+    },
+    "items":{
+      "template":{
+        "allowInteractiveFilters":true,
+        "calculatedFields":[ ],
+        "channels":{
+          "y":{
+            "channelType":"aggregation",
+            "field":"Benchmarks.Statistics.Mean",
+            "inferredType":"Number",
+            "type":"quantitative",
+            "transformedType":"Number",
+            "aggregate":"sum"
+          },
+          "x":{
+            "channelType":"category",
+            "field":"RunId",
+            "inferredType":"Number",
+            "type":"nominal",
+            "isBinning":false,
+            "quantitativeBinning":{
+              "binSize":10
+            }
+          },
+          "color":{
+            "channelType":"category",
+            "field":"Benchmarks.Parameters",
+            "inferredType":"String",
+            "type":"nominal",
+            "transformedType":"String",
+            "isBinning":false
+          }
+        },
+        "chartType":"Line",
+        "convertedFields":[
+
+        ],
+        "customisations":{
+          "options":{
+            "dataMarkers":{
+              "enabled":true,
+              "value":null
+            },
+            "legendPosition":{
+              "enabled":true,
+              "value":"top"
+            }
+          },
+          "axes":{
+            "x":{
+              "categoryLabelAngle":{
+                "enabled":true,
+                "value":"diagonal"
+              }
+            },
+            "y":{
+
+            }
+          },
+          "channels":{
+            "y":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"nsec"
+              },
+              "numberFormatting":{
+                "enabled":true,
+                "value":"Default"
+              }
+            },
+            "x":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Run"
+              },
+              "numberFormatting":{
+                "enabled":true,
+                "value":"Custom"
+              },
+              "numberGrouping":{
+                "enabled":false,
+                "value":null
+              }
+            },
+            "color":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Parameters"
+              }
+            }
+          },
+          "conditionalFormatting":[
+
+          ]
+        },
+        "dashboardId":"dashboard",
+        "dataSourceId":"data-source",
+        "description":"",
+        "filters":[
+
+        ],
+        "iconValue":"line-discrete",
+        "itemType":"chart",
+        "lookupFields":[
+
+        ],
+        "meta":{
+
+        },
+        "missedFields":[
+
+        ],
+        "queryCache":{
+          "filter":"[{$addFields: { Benchmarks: { $filter: { input: \"$Benchmarks\", as: \"benchmark\", cond: { $and: [ { $eq: [ \"$$benchmark.Method\", \"%METHOD%\" ] }, { $eq: [ \"$$benchmark.Type\", \"%TYPE%\" ] } ] } } }}}]",
+          "sample":false
+        },
+        "reductions":{
+          "y":[
+            {
+              "dimensionality":1,
+              "field":"Benchmarks",
+              "type":"Unwind array",
+              "arguments":[
+
+              ]
+            }
+          ],
+          "color":[
+            {
+              "dimensionality":1,
+              "field":"Benchmarks",
+              "type":"Unwind array",
+              "arguments":[
+
+              ]
+            }
+          ]
+        },
+        "title":"%TYPE%.%METHOD%",
+        "embedding":{
+
+        }
+      }
+    },
+    "dataSources":{
+      "data-source":{
+        "alias":"benchmarks.results",
+        "collection":"results",
+        "database":"benchmarks",
+        "deployment":"Cluster1",
+        "sourceType":"cluster"
+      }
+    }
+}

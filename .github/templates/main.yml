@@ -132,7 +132,7 @@ steps:
 #@ end
 
 #@ def uploadPackageArtifacts():
-#@ for pkgName in nugetPackages:
+#@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
@@ -150,15 +150,6 @@ steps:
     with:
       name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
       path: ${{ github.workspace }}/Realm/packages/
-#@ end
-#@ end
-
-#@ def deleteTempPackageArtifacts():
-#@ for pkg in [ 'Realm.UnityUtils', 'Realm.UnityWeaver' ]:
-  - name: #@ "Delete " + pkg
-    uses: geekyeggo/delete-artifact@v1
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
 #@ end
 #@ end
 
@@ -184,15 +175,6 @@ steps:
     with:
       name: #@ "wrappers-" + platform
       path: wrappers/build
-#@ end
-#@ end
-
-#@ def deleteWrapperBinaries():
-#@ for platform in getWrapperBinaryNames():
-  - name: #@ "Delete artifacts for " + platform
-    uses: geekyeggo/delete-artifact@v1
-    with:
-      name: #@ "wrappers-" + platform
 #@ end
 #@ end
 
@@ -441,8 +423,39 @@ jobs:
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-xamarin-ios, run-tests-weaver, build-packages ]
+    needs: [ build-packages ]
     if: always()
     steps:
-      - #@ template.replace(deleteWrapperBinaries())
-      - #@ template.replace(deleteTempPackageArtifacts())
+#@ for platform in getWrapperBinaryNames():
+      - name: #@ "Delete artifacts for " + platform
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: #@ "wrappers-" + platform
+#@ end
+  benchmark-linux:
+    name: Benchmark Linux
+    needs: build-packages
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join", "true"))
+      - name: Find Results file
+        id: find-results-file
+        run: |
+          cd BenchmarkDotNet.Artifacts/results
+          file=$(basename BenchmarkRun*json)
+          echo "::set-output name=benchmark-results::$file"
+      - name: Publish Benchmark Results
+        uses: ./.github/actions/benchmark-uploader
+        with:
+          realm-token: ${{ secrets.Realm_Token }}
+          file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
+          dashboard-path: dashboard.charts
+      - name: Upload Charts Dashboard File
+        uses: actions/upload-artifact@v2
+        with:
+          name: dashboard.charts
+          path: ${{ github.workspace }}/dashboard.charts
+          retention-days: 30
