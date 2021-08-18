@@ -144,12 +144,7 @@ namespace Realms.Sync
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            if (IsDynamic && !schema.Any())
-            {
-                schema = srHandle.GetSchema();
-            }
-
-            return new Realm(srHandle, this, schema);
+            return GetRealm(srHandle, schema);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The new Realm will take ownership of the handle")]
