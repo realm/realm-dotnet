@@ -20,7 +20,7 @@
     uses: github/codeql-action/init@v1
     with:
       languages: #@ language
-      queries: security-and-quality
+      config-file: ./.github/codeql/codeql-config.yml
   #@ for step in buildSteps:
   - #@ template.replace(step)
   #@ end

@@ -29,7 +29,7 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: cpp
-        queries: security-and-quality
+        config-file: ./.github/codeql/codeql-config.yml
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
       uses: actions/cache@v2
@@ -66,7 +66,7 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: csharp
-        queries: security-and-quality
+        config-file: ./.github/codeql/codeql-config.yml
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Realm.Fody
