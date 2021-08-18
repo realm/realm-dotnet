@@ -4,7 +4,6 @@ name: main
     branches:
     - main
     - master
-    - ni/remove-refs-heads
   pull_request: null
 jobs:
   build-wrappers-macos:
