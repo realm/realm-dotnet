@@ -17,25 +17,6 @@ with:
   key: #@ key
 #@ end
 
-#@ def cacheVcpkg():
-name: Check Vcpkg cache
-id: check-vcpkg-cache
-uses: actions/cache@v2
-with:
-  path: 'C:\src'
-  key: vcpkg
-if: #@ wrappersCacheCondition
-#@ end
-
-#@ def setupVcpkg():
-name: Setup Vcpkg
-run: |
-  Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-  Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-shell: powershell
-if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
-#@ end
-
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 #@ configurationParam =  " --configuration=" + configuration
 #@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
@@ -50,7 +31,7 @@ steps:
   - #@ template.replace(checkoutCode("recursive"))
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
-  - #@ step
+  - #@ template.replace(step)
   #@ end
   - name: Build wrappers
     run: #@ actualCommand
@@ -76,6 +57,42 @@ steps:
     run: echo "::add-matcher::.github/problem-matchers/csc.json"
   - name: Register msvc problem matcher
     run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+#@ end
+
+#@ def setupVcpkg():
+  - name: Check Vcpkg cache
+    id: check-vcpkg-cache
+    uses: actions/cache@v2
+    with:
+      path: 'C:\src'
+      key: vcpkg
+    if: #@ wrappersCacheCondition
+  - name: Setup Vcpkg
+    run: |
+      Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+      Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+    shell: powershell
+    if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
+#@ end
+
+#@ def setupWin81SDK():
+  - name: Check Win8.1 SDK Cache
+    id: check-win81-sdk-cache
+    uses: actions/cache@v2
+    with:
+      path: 'C:\win81sdk'
+      key: win81sdk
+  - name: Download Win8.1 SDK
+    run: |
+      md C:\win81sdk
+      Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
+    shell: powershell
+    if: #@ wrappersCacheCondition + " && steps.check-win81-sdk-cache.outputs.cache-hit != 'true'"
+  - name: Install Win8.1 SDK
+    run: |
+      Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
+    shell: powershell
+    if: #@ wrappersCacheCondition
 #@ end
 
 #@ def buildPackages():
@@ -273,14 +290,14 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(), setupWin81SDK() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg() ]))
   build-packages:
     runs-on: windows-latest
     name: Package

@@ -177,6 +177,23 @@ jobs:
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+    - name: Check Win8.1 SDK Cache
+      id: check-win81-sdk-cache
+      uses: actions/cache@v2
+      with:
+        path: C:\win81sdk
+        key: win81sdk
+    - name: Download Win8.1 SDK
+      run: |
+        md C:\win81sdk
+        Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
+      shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-win81-sdk-cache.outputs.cache-hit != 'true'
+    - name: Install Win8.1 SDK
+      run: |
+        Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
+      shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
