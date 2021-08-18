@@ -121,7 +121,8 @@ steps:
 #@ end
 
 #@ def buildDocs():
-#@ docsCondition = "${{ contains(github.ref, 'release') }}"
+#@ isRelease = "contains(github.head_ref, 'release')"
+#@ docsCondition = "${{ " + isRelease + " }}"
   - name: Check Docfx cache
     id: check-docfx-cache
     if: #@ docsCondition
@@ -130,7 +131,7 @@ steps:
       path: 'C:\docfx'
       key: docfx
   - name: Download docfx
-    if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && contains(github.ref, 'release') }}
+    if: #@ "${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && " + isRelease + " }}"
     run: |
       Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
       Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
