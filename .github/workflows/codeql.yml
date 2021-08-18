@@ -41,6 +41,8 @@ jobs:
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
