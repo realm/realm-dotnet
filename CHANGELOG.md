@@ -20,6 +20,7 @@
 * Stopped sending analytics to mixpanel.
 * Started uploading benchmark results to [MongoDB Charts](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/public/dashboards/6115babd-c7fe-47ee-836f-efffd92ffae3). (Issue [#2226](https://github.com/realm/realm-dotnet/issues/2226))
 * Use the Win81 SDK when building the Windows wrappers on Github Actions. (Issue [#2530](https://github.com/realm/realm-dotnet/issues/2530))
+* Started tracking package and wrapper sizes over time. (Issue [#2225](https://github.com/realm/realm-dotnet/issues/2225))
 
 ## 10.3.0 (2021-07-07)
 

@@ -4,6 +4,7 @@ name: main
     branches:
     - main
     - master
+    - ni/track-binary-sizes
   pull_request: null
 jobs:
   build-wrappers-macos:

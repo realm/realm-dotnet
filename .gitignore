@@ -229,3 +229,5 @@ Realm/Realm.Unity/Runtime/iOS/realm-wrappers.xcframework/**/Info.plist
 CodeResources
 Tests/Tests.Unity/Assets/Tests/Dependencies
 dashboard.charts
+!FakeRealm.nupkg
+.github/actions/benchmark-uploader/src/packageContents

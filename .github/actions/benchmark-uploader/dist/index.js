@@ -34,9 +34,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.execCmd = void 0;
+exports.getDirectorySizes = exports.execCmd = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
+const fs = __importStar(__nccwpck_require__(5747));
+const du_1 = __importDefault(__nccwpck_require__(2990));
 function execCmd(cmd, args) {
     return __awaiter(this, void 0, void 0, function* () {
         let stdout = "";
@@ -59,6 +64,21 @@ function execCmd(cmd, args) {
     });
 }
 exports.execCmd = execCmd;
+function getDirectorySizes(path, fileNameMapper) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const folders = fs
+            .readdirSync(path, { withFileTypes: true })
+            .filter(d => d.isDirectory())
+            .map(d => d.name);
+        const results = new Array();
+        for (const folder of folders) {
+            const size = yield du_1.default(`${path}/${folder}`);
+            results.push({ file: (fileNameMapper && fileNameMapper(folder)) || folder, size });
+        }
+        return results;
+    });
+}
+exports.getDirectorySizes = getDirectorySizes;
 
 
 /***/ }),
@@ -97,7 +117,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.uploadBenchmarkResults = exports.generateChartsDashboard = exports.updateBenchmarkResults = void 0;
+exports.extractPackageSizes = exports.uploadBenchmarkResults = exports.generateChartsDashboard = exports.updateBenchmarkResults = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const fs = __importStar(__nccwpck_require__(5747));
@@ -109,8 +129,9 @@ function run() {
         try {
             const token = core.getInput("realm-token", { required: true });
             const resultsFile = core.getInput("file", { required: true });
+            const nugetPackage = core.getInput("nuget-package", { required: true });
             const parsedResults = JSON.parse(fs.readFileSync(resultsFile, { encoding: "utf8" }));
-            yield updateBenchmarkResults(parsedResults);
+            yield updateBenchmarkResults(parsedResults, nugetPackage);
             const dashboardPath = core.getInput("dashboard-path", { required: false });
             if (dashboardPath) {
                 generateChartsDashboard(parsedResults, path.join(process.env.GITHUB_WORKSPACE || "", dashboardPath));
@@ -122,7 +143,7 @@ function run() {
         }
     });
 }
-function updateBenchmarkResults(results) {
+function updateBenchmarkResults(results, nugetPackagePath) {
     return __awaiter(this, void 0, void 0, function* () {
         results._id = github.context.runNumber;
         results.RunId = github.context.runNumber;
@@ -130,6 +151,12 @@ function updateBenchmarkResults(results) {
         const revListResponse = yield helpers_1.execCmd("git rev-list --format=%B --max-count=1 HEAD");
         results.CommitMessage = revListResponse.substring(revListResponse.indexOf("\n") + 1);
         results.Branch = (process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "").replace(/refs\/heads\//g, "");
+        results.FileSizes = (yield extractPackageSizes(nugetPackagePath)).map(f => {
+            return {
+                File: f.file,
+                Size: f.size,
+            };
+        });
         core.info(`Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`);
         for (const benchmark of results.Benchmarks) {
             if (!benchmark.Parameters) {
@@ -144,10 +171,13 @@ function generateChartsDashboard(results, dashboardPath) {
     const dashboard = JSON.parse(fs.readFileSync(__nccwpck_require__.ab + "charts-template.json", { encoding: "utf8" }));
     const layouts = dashboard.dashboards.dashboard.layout;
     const layoutTemplate = JSON.stringify(layouts[0]);
-    layouts.length = 0;
+    layouts.shift();
+    // We'll add this after we've added all the benchmark charts
+    const filesizeLayout = layouts[0];
+    layouts.shift();
     const items = dashboard.items;
-    const itemTemplate = JSON.stringify(items.template);
-    delete items.template;
+    const itemTemplate = JSON.stringify(items.benchmarkTemplate);
+    delete items.benchmarkTemplate;
     let currentY = 0;
     for (const benchmark of results.Benchmarks) {
         const newLayout = JSON.parse(layoutTemplate);
@@ -168,6 +198,8 @@ function generateChartsDashboard(results, dashboardPath) {
         items[benchmarkId] = newItem;
         currentY = currentY + newLayout.h;
     }
+    filesizeLayout.y = currentY;
+    layouts.push(filesizeLayout);
     fs.writeFileSync(dashboardPath, JSON.stringify(dashboard));
     core.info(`Generated dashboard containing ${layouts.length} charts at: ${path}`);
 }
@@ -185,6 +217,23 @@ function uploadBenchmarkResults(apiKey, results) {
     });
 }
 exports.uploadBenchmarkResults = uploadBenchmarkResults;
+function extractPackageSizes(packagePath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        fs.rmdirSync(`${__dirname}/packageContents`, { recursive: true });
+        yield helpers_1.execCmd(`unzip -d ${__dirname}/packageContents ${packagePath}`);
+        const results = new Array();
+        // This handles all platforms except for iOS and Android
+        results.push(...(yield helpers_1.getDirectorySizes(`${__dirname}/packageContents/runtimes`)));
+        // Android
+        results.push(...(yield helpers_1.getDirectorySizes(`${__dirname}/packageContents/native/android`, abi => `android-${abi}`)));
+        // iOS
+        results.push(...(yield helpers_1.getDirectorySizes(`${__dirname}/packageContents/native/ios/universal/realm-wrappers.xcframework`)));
+        // The package itself
+        results.push({ file: "NuGet package", size: fs.statSync(packagePath).size });
+        return results;
+    });
+}
+exports.extractPackageSizes = extractPackageSizes;
 void run();
 
 
@@ -11427,6 +11476,75 @@ exports.Deprecation = Deprecation;
 
 /***/ }),
 
+/***/ 2990:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+/* Copyright (c) 2012 Rod Vagg <@rvagg> */
+
+const fs = __nccwpck_require__(5747)
+const path = __nccwpck_require__(5622)
+const map = __nccwpck_require__(8181)
+
+function du (dir, options, callback) {
+  dir = path.resolve(dir)
+  fs.lstat(dir, afterLstat)
+
+  function afterLstat (err, stat) {
+    if (err) {
+      return callback(err)
+    }
+
+    if (!stat) {
+      return callback(null, 0)
+    }
+
+    let size = options.disk ? (512 * stat.blocks) : stat.size
+
+    if (!stat.isDirectory()) {
+      return callback(null, !options.filter || options.filter(dir) ? size : 0)
+    }
+
+    fs.readdir(dir, afterReaddir)
+
+    function afterReaddir (err, list) {
+      if (err) {
+        return callback(err)
+      }
+
+      map(
+        list.map((f) => path.join(dir, f)),
+        (f, callback) => du(f, options, callback),
+        (err, sizes) => callback(err, sizes && sizes.reduce((p, s) => p + s, size))
+      )
+    }
+  }
+}
+
+module.exports = function maybePromiseWrap (dir, options, callback) {
+  if (typeof options !== 'object') {
+    callback = options
+    options = {}
+  }
+
+  if (typeof callback === 'function') {
+    return du(dir, options, callback)
+  }
+
+  return new Promise((resolve, reject) => {
+    callback = (err, data) => {
+      if (err) {
+        return reject(err)
+      }
+      resolve(data)
+    }
+
+    du(dir, options, callback)
+  })
+}
+
+
+/***/ }),
+
 /***/ 4697:
 /***/ ((module, exports) => {
 
@@ -12302,6 +12420,67 @@ module.exports = EventTarget
 module.exports.EventTarget = module.exports.default = EventTarget
 module.exports.defineEventAttribute = defineEventAttribute
 //# sourceMappingURL=event-target-shim.js.map
+
+
+/***/ }),
+
+/***/ 8181:
+/***/ ((module) => {
+
+module.exports = map
+
+function map(list, iterator, context, callback) {
+    var keys = Object.keys(list)
+        , returnValue = Array.isArray(list) ? [] : {}
+        , count = keys.length
+
+    if (typeof context === "function") {
+        callback = context
+        context = this
+    }
+
+    if (keys.length === 0) {
+        return callback(null, returnValue)
+    }
+
+    for (var i = 0, len = keys.length; i < len; i++) {
+        var key = keys[i]
+            , value = list[key]
+
+        invokeIterator(iterator,
+            next(key), context, value, key, list)
+    }
+
+    function next(key) {
+        return handler
+
+        function handler(err, newValue) {
+            if (err) {
+                return callback && callback(err)
+            }
+
+            returnValue[key] = newValue
+
+            if (--count === 0) {
+                callback && callback(null, returnValue)
+            }
+        }
+    }
+}
+
+function invokeIterator(iterator, done, self, value, key, list) {
+    var length = iterator.length
+
+    if (length === 1) {
+        iterator.call(self, done)
+    } else if (length === 2) {
+        iterator.call(self, value, done)
+    } else if (length === 3) {
+        iterator.call(self, value, key, done)
+    } else {
+        iterator.call(self, value, key, list, done)
+    }
+}
 
 
 /***/ }),
