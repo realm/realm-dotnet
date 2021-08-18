@@ -1,0 +1,52 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+jobs:
+  analyze-cpp:
+    name: Analyze C++
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+        queries: security-and-quality
+    - name: Build wrappers
+      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='OFF'
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+  analyze-csharp:
+    name: Analyze C#
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: csharp
+        queries: security-and-quality
+    - name: Build Realm/Realm.Fody
+      run: msbuild Realm/Realm.Fody -p:Configuration=Release -restore
+    - name: Build Realm/Realm
+      run: msbuild Realm/Realm -p:Configuration=Release -restore
+    - name: Build Realm/Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -p:Configuration=Release -restore
+    - name: Build Realm/Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -p:Configuration=Release -restore
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
