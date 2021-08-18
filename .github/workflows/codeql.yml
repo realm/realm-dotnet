@@ -16,6 +16,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
@@ -35,6 +38,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
