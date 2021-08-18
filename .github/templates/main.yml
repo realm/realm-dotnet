@@ -33,15 +33,9 @@ steps:
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
   #@ end
-  - name: Initialize CodeQL
-    uses: github/codeql-action/init@v1
-    with:
-      languages: cpp
   - name: Build wrappers
     run: #@ actualCommand
     if: #@ wrappersCacheCondition
-  - name: Perform CodeQL Analysis
-    uses: github/codeql-action/analyze@v1
   - name: Store artifacts
     uses: actions/upload-artifact@v2
     with:
@@ -82,10 +76,21 @@ steps:
 #@ end
 
 #@ def setupWin81SDK():
-  - name: Install Win8.1 SDK
+  - name: Check Win8.1 SDK Cache
+    id: check-win81-sdk-cache
+    uses: actions/cache@v2
+    with:
+      path: 'C:\win81sdk'
+      key: win81sdk
+    if: #@ wrappersCacheCondition
+  - name: Download Win8.1 SDK
     run: |
       md C:\win81sdk
       Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
+    shell: powershell
+    if: #@ wrappersCacheCondition + " && steps.check-win81-sdk-cache.outputs.cache-hit != 'true'"
+  - name: Install Win8.1 SDK
+    run: |
       Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
     shell: powershell
     if: #@ wrappersCacheCondition
@@ -329,13 +334,7 @@ jobs:
           }
           echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: csharp
       - #@ template.replace(buildPackages())
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
       - #@ findPackageVersion()
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
