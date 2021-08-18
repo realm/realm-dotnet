@@ -1,5 +1,5 @@
 name: CodeQL
-true:
+"on":
   push:
     branches:
     - master

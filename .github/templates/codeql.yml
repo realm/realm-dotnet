@@ -59,7 +59,7 @@
 
 ---
 name: "CodeQL"
-on:
+"on":
   push:
     branches: [ master, main ]
   pull_request:
