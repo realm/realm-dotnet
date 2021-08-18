@@ -1,20 +1,26 @@
-name: "CodeQL"
-
-on:
+name: CodeQL
+true:
   push:
-    branches: [ master, main ]
+    branches:
+    - master
+    - main
   pull_request:
-    branches: [ master, main ]
+    branches:
+    - master
+    - main
 jobs:
   analyze-cpp:
     name: Analyze C++
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     permissions:
       actions: read
       contents: read
       security-events: write
     steps:
-    - name: Checkout repository
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
@@ -24,8 +30,20 @@ jobs:
       with:
         languages: cpp
         queries: security-and-quality
+    - name: Check Vcpkg cache
+      id: check-vcpkg-cache
+      uses: actions/cache@v2
+      with:
+        path: C:\src
+        key: vcpkg
+    - name: Setup Vcpkg
+      run: |
+        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+      shell: powershell
+      if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='OFF'
+      run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
   analyze-csharp:
@@ -36,25 +54,28 @@ jobs:
       contents: read
       security-events: write
     steps:
-    - name: Checkout repository
+    - name: Disable Analytics
+      run: |
+        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
+    - name: Checkout code
       uses: actions/checkout@v2
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: csharp
         queries: security-and-quality
-    - name: Build Realm/Realm.Fody
-      run: msbuild Realm/Realm.Fody -p:Configuration=Release -restore -p:UseSharedCompilation=false
-    - name: Build Realm/Realm
-      run: msbuild Realm/Realm -p:Configuration=Release -restore -p:UseSharedCompilation=false
-    - name: Build Realm/Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -p:Configuration=Release -restore -p:UseSharedCompilation=false
-    - name: Build Realm/Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -p:Configuration=Release -restore -p:UseSharedCompilation=false
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Build Realm.Fody
+      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
+    - name: Build Realm
+      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
+    - name: Build Realm.UnityUtils
+      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
+    - name: Build Realm.UnityWeaver
+      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
