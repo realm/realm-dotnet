@@ -183,6 +183,7 @@ jobs:
       with:
         path: C:\win81sdk
         key: win81sdk
+      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Download Win8.1 SDK
       run: |
         md C:\win81sdk
