@@ -20,8 +20,11 @@ body:
     id: repro-steps
     attributes:
       label: Repro steps
-      description: If you can reproduce the issue, please provide detailed repro steps here?
-      placeholder: 1. X, 2. Y, 3. Crash!
+      description: If you can reproduce the issue, please provide detailed repro steps here or provide a link to a repro project.
+      placeholder: |
+        1. X
+        2. Y
+        3. Crash!
     validations:
       required: true
   - type: input
@@ -78,13 +81,11 @@ body:
       description: Please copy and paste any relevant log output.
       render: shell
   - type: textarea
-     id: build-environment
-     attributes:
-       label: "Build environment"
-       description: Build environment versions (if relevant)
-       value: |
-         Host OS and version: e.g. Windows 10/macOS Big Sur/???
-         Visual Studio flavor and version: e.g. VS for Mac 8.10.7
-         Other details: ...
-     validations:
-       required: false
+    id: build-environment
+    attributes:
+      label: "Build environment"
+      description: Build environment versions (if relevant)
+      value: |
+        Host OS and version: e.g. Windows 10/macOS Big Sur/???
+        Visual Studio flavor and version: e.g. VS for Mac 8.10.7
+        Other details: ...
