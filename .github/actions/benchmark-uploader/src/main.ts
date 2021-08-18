@@ -38,7 +38,7 @@ export async function updateBenchmarkResults(results: any, nugetPackagePath: str
     results.FileSizes = (await extractPackageSizes(nugetPackagePath)).map(f => {
         return {
             File: f.file,
-            Size: Math.round((100 * f.size) / (1024*1024)) / 100,
+            Size: Math.round((100 * f.size) / (1024 * 1024)) / 100,
         };
     });
 

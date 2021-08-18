@@ -154,7 +154,7 @@ function updateBenchmarkResults(results, nugetPackagePath) {
         results.FileSizes = (yield extractPackageSizes(nugetPackagePath)).map(f => {
             return {
                 File: f.file,
-                Size: f.size,
+                Size: Math.round((100 * f.size) / (1024 * 1024)) / 100,
             };
         });
         core.info(`Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`);
