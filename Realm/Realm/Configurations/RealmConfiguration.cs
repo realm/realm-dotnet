@@ -158,9 +158,18 @@ namespace Realms
             }
 
             var srHandle = new SharedRealmHandle(srPtr);
+
             if (IsDynamic && !schema.Any())
             {
-                schema = srHandle.GetSchema();
+                try
+                {
+                    schema = srHandle.GetSchema();
+                }
+                catch (Exception)
+                {
+                    srHandle.Close();
+                    throw;
+                }
             }
 
             return new Realm(srHandle, this, schema);
