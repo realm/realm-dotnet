@@ -32,7 +32,7 @@ export async function updateBenchmarkResults(results: any): Promise<void> {
 
     const revListResponse = await execCmd("git rev-list --format=%B --max-count=1 HEAD");
     results.CommitMessage = revListResponse.substring(revListResponse.indexOf("\n") + 1);
-    results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
+    results.Branch = (process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "").replace(/refs\/heads\//g, "");
 
     core.info(
         `Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`,

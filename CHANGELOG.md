@@ -18,6 +18,7 @@
 * Using Core 11.0.4.
 * Removed the RealmStates dictionary that used to hold a threadlocal dictionary of all the states for the opened Realms. It was only used for detecting open Realms during deletion and that is now handled by the native `delete_realm_files` method. (PR [#2251](https://github.com/realm/realm-dotnet/pull/2251))
 * Stopped sending analytics to mixpanel.
+* Started uploading benchmark results to [MongoDB Charts](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/public/dashboards/6115babd-c7fe-47ee-836f-efffd92ffae3). (Issue [#2226](https://github.com/realm/realm-dotnet/issues/2226))
 
 ## 10.3.0 (2021-07-07)
 

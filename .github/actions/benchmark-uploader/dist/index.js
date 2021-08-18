@@ -129,7 +129,7 @@ function updateBenchmarkResults(results) {
         results.Commit = yield helpers_1.execCmd("git rev-parse HEAD");
         const revListResponse = yield helpers_1.execCmd("git rev-list --format=%B --max-count=1 HEAD");
         results.CommitMessage = revListResponse.substring(revListResponse.indexOf("\n") + 1);
-        results.Branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF;
+        results.Branch = (process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "").replace(/refs\/heads\//g, "");
         core.info(`Inferred git information:\nCommit: ${results.Commit}\nMessage: ${results.CommitMessage}\nBranch: ${results.Branch}`);
         for (const benchmark of results.Benchmarks) {
             if (!benchmark.Parameters) {
