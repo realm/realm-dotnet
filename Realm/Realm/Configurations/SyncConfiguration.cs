@@ -152,6 +152,7 @@ namespace Realms.Sync
             return new Realm(srHandle, this, schema);
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The new Realm will take ownership of the handle")]
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             var configuration = CreateNativeConfiguration();
@@ -192,14 +193,8 @@ namespace Realms.Sync
                 }
 
                 using var realmReference = await tcs.Task;
-                var realmPtr = SharedRealmHandle.ResolveFromReference(realmReference);
-                var sharedRealmHandle = new SharedRealmHandle(realmPtr);
-                if (IsDynamic && !schema.Any())
-                {
-                    schema = sharedRealmHandle.GetSchema();
-                }
-
-                return new Realm(sharedRealmHandle, this, schema);
+                var sharedRealmHandle = SharedRealmHandle.ResolveFromReference(realmReference);
+                return GetRealm(sharedRealmHandle, schema);
             }
             finally
             {

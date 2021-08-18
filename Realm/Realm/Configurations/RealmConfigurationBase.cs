@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Schema;
@@ -159,6 +160,24 @@ namespace Realms
                 enable_cache = EnableCache,
                 max_number_of_active_versions = MaxNumberOfActiveVersions
             };
+        }
+
+        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema)
+        {
+            if (IsDynamic && !schema.Any())
+            {
+                try
+                {
+                    schema = sharedRealmHandle.GetSchema();
+                }
+                catch (Exception)
+                {
+                    sharedRealmHandle.Close();
+                    throw;
+                }
+            }
+
+            return new Realm(sharedRealmHandle, this, schema);
         }
     }
 }
