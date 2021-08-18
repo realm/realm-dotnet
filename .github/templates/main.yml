@@ -84,6 +84,7 @@ steps:
       key: win81sdk
   - name: Download Win8.1 SDK
     run: |
+      md C:\win81sdk
       Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
     shell: powershell
     if: #@ wrappersCacheCondition + " && steps.check-win81-sdk-cache.outputs.cache-hit != 'true'"
