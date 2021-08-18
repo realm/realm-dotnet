@@ -49,12 +49,12 @@ jobs:
         languages: csharp
         queries: security-and-quality
     - name: Build Realm/Realm.Fody
-      run: msbuild Realm/Realm.Fody -p:Configuration=Release -restore
+      run: msbuild Realm/Realm.Fody -p:Configuration=Release -restore -p:UseSharedCompilation=false
     - name: Build Realm/Realm
-      run: msbuild Realm/Realm -p:Configuration=Release -restore
+      run: msbuild Realm/Realm -p:Configuration=Release -restore -p:UseSharedCompilation=false
     - name: Build Realm/Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -p:Configuration=Release -restore
+      run: msbuild Realm/Realm.UnityUtils -p:Configuration=Release -restore -p:UseSharedCompilation=false
     - name: Build Realm/Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -p:Configuration=Release -restore
+      run: msbuild Realm/Realm.UnityWeaver -p:Configuration=Release -restore -p:UseSharedCompilation=false
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
