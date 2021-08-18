@@ -28,9 +28,15 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
     - name: Build wrappers
       run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -59,9 +65,15 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
     - name: Build wrappers
       run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -90,9 +102,15 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
     - name: Build wrappers
       run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -128,9 +146,15 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
     - name: Build wrappers
       run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -177,21 +201,10 @@ jobs:
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
-    - name: Check Win8.1 SDK Cache
-      id: check-win81-sdk-cache
-      uses: actions/cache@v2
-      with:
-        path: C:\win81sdk
-        key: win81sdk
-      if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Download Win8.1 SDK
+    - name: Install Win8.1 SDK
       run: |
         md C:\win81sdk
         Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
-      shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-win81-sdk-cache.outputs.cache-hit != 'true'
-    - name: Install Win8.1 SDK
-      run: |
         Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -251,9 +264,15 @@ jobs:
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
