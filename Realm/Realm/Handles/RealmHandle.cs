@@ -202,7 +202,7 @@ namespace Realms
 
         private static List<RealmHandle> GetUnbindList()
         {
-            return new List<RealmHandle>(); // todo:experiment with what might be a decent initial list size
+            return new List<RealmHandle>();
         }
 
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
