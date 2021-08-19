@@ -52,7 +52,7 @@ namespace Realms
                 }
                 else if (node.Method.Name.Equals("Like"))
                 {
-                    ComparisonNodeStringCaseSensitivty result2 = new LikeNode();
+                    StringComparisonNode result2 = new LikeNode();
                     if (node.Arguments.Count == 3)
                     {
                         if (node.Arguments[0] is MemberExpression stringMemberExpression)
@@ -265,11 +265,13 @@ namespace Realms
 
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            NegationNode returnNode = new NegationNode();
+            ExpressionNode returnNode;
             switch (node.NodeType)
             {
                 case ExpressionType.Not:
-                    returnNode.Expression = Extract(node.Operand);
+                    NegationNode negationNode = new NegationNode();
+                    negationNode.Expression = Extract(node.Operand);
+                    returnNode = negationNode;
                     break;
                 default:
                     throw new NotSupportedException($"The unary operator '{node.NodeType}' is not supported");
@@ -315,7 +317,7 @@ namespace Realms
             }
             else if (valueType == typeof(double))
             {
-                return "double";
+                 return "double";
             }
             else if (valueType == typeof(string))
             {

@@ -9,6 +9,7 @@ namespace Realms
         public List<OrderingClause> OrderingClauses { get; set; } = new List<OrderingClause>();
     }
 
+    #region Clause Nodes
     internal class OrderingClause
     {
         public bool IsAscending { get; set; }
@@ -16,30 +17,47 @@ namespace Realms
         public string Property { get; set; }
     }
 
-    // TODO: Changing access modifier to internal will make all tests fail(?)
     internal class WhereClause
     {
         public ExpressionNode Expression { get; set; }
     }
+    #endregion
 
+    #region Parent Node
     internal abstract class ExpressionNode
     {
+        public abstract string Kind { get; }
     }
+    #endregion
 
-    internal class NegationNode : ExpressionNode
+    #region Base Level Nodes
+    internal class PropertyNode : ExpressionNode
     {
-        public ExpressionNode Expression { get; set; }
+        public override string Kind => "property";
 
-        public string Kind => "not";
+        public string Name { get; set; }
+
+        public string Type { get; set; }
     }
 
+    internal class ConstantNode : ExpressionNode
+    {
+        public override string Kind => "constant";
+
+        public object Value { get; set; }
+
+        public string Type { get; set; }
+    }
+    #endregion
+
+    #region Boolean Operator Nodes
     internal abstract class BooleanBinaryNode : ExpressionNode
     {
         public ExpressionNode Left { get; set; }
 
         public ExpressionNode Right { get; set; }
 
-        public abstract string Kind { get; }
+        public override abstract string Kind { get; }
     }
 
     internal class AndNode : BooleanBinaryNode
@@ -52,47 +70,22 @@ namespace Realms
         public override string Kind => "or";
     }
 
-    internal class BooleanPropertyNode : ExpressionNode
+    internal class NegationNode : ExpressionNode
     {
-        public string Property { get; set; }
-    }
+        public ExpressionNode Expression { get; set; }
 
+        public override string Kind => "not";
+    }
+    #endregion
+
+    #region Comparison Nodes
     internal abstract class ComparisonNode : ExpressionNode
     {
         public ExpressionNode Left { get; set; }
 
         public ExpressionNode Right { get; set; }
 
-        public abstract string Kind { get; }
-    }
-
-    internal abstract class ComparisonNodeStringCaseSensitivty : ExpressionNode
-    {
-        public ExpressionNode Left { get; set; }
-
-        public ExpressionNode Right { get; set; }
-
-        public abstract string Kind { get; }
-
-        public bool CaseSensitivity { get; set; }
-    }
-
-    internal class PropertyNode : ExpressionNode
-    {
-        public string Kind => "property";
-
-        public string Name { get; set; }
-
-        public string Type { get; set; }
-    }
-
-    internal class ConstantNode : ExpressionNode
-    {
-        public string Kind => "constant";
-
-        public object Value { get; set; }
-
-        public string Type { get; set; }
+        public override abstract string Kind { get; }
     }
 
     internal class EqualityNode : ComparisonNode
@@ -124,6 +117,19 @@ namespace Realms
     {
         public override string Kind => "lt";
     }
+    #endregion
+
+    #region String Comparison Nodes
+    internal abstract class StringComparisonNode : ExpressionNode
+    {
+        public ExpressionNode Left { get; set; }
+
+        public ExpressionNode Right { get; set; }
+
+        public override abstract string Kind { get; }
+
+        public bool CaseSensitivity { get; set; }
+    }
 
     internal class StartsWithNode : ComparisonNode
     {
@@ -140,8 +146,9 @@ namespace Realms
         public override string Kind => "contains";
     }
 
-    internal class LikeNode : ComparisonNodeStringCaseSensitivty
+    internal class LikeNode : StringComparisonNode
     {
         public override string Kind => "like";
     }
+    #endregion
 }

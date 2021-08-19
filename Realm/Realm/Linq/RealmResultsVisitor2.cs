@@ -11,7 +11,7 @@ namespace Realms
     {
         private readonly Realm _realm;
         private readonly RealmObjectBase.Metadata _metadata;
-        private QueryModel _query;
+        private readonly QueryModel _query;
 
         private IQueryableCollection results;
 
@@ -29,17 +29,17 @@ namespace Realms
                 if (node.Method.Name == nameof(Queryable.Where))
                 {
                     Visit(node.Arguments[0]);
-                    var whereClause = new WhereClauseVisitor(_metadata);
+                    var whereClauseVisitor = new WhereClauseVisitor(_metadata);
                     var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-                    _query.WhereClauses.Add(whereClause.VisitWhere(lambda));
+                    _query.WhereClauses.Add(whereClauseVisitor.VisitWhere(lambda));
                     return node;
                 }
 
                 if (IsSortClause(node.Method.Name))
                 {
                     Visit(node.Arguments[0]);
-                    var sortClause = new SortClauseVisitor();
-                    _query.OrderingClauses.Add(sortClause.VisitOrderClause(node));
+                    var sortClauseVisitor = new SortClauseVisitor();
+                    _query.OrderingClauses.Add(sortClauseVisitor.VisitOrderClause(node));
                     return node;
                 }
                 else

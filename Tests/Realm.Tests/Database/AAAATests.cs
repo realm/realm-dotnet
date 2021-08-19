@@ -106,8 +106,8 @@ namespace Realms.Tests.Database
         [Test]
         public void WhereFloatGteAndLteThanTest()
         {
-            var scoreGteAndLte = _realm.All<Person>().Where(p => p.Score >= 100.0f
-            && p.Score <= 100.0f).ToList();
+            var scoreGteAndLte = _realm.All<Person>()
+                .Where(p => p.Score >= 100.0f && p.Score <= 100.0f).ToList();
             Assert.That(scoreGteAndLte.Count, Is.EqualTo(1));
             Assert.That(scoreGteAndLte[0].FullName, Is.EqualTo("John Doe"));
         }
@@ -140,7 +140,8 @@ namespace Realms.Tests.Database
         [Test]
         public void WhereBooleanAndTest()
         {
-            var scoreEqAndLastNameEq = _realm.All<Person>().Where(p => p.Score == 100 && p.LastName == "Doe").ToList();
+            var scoreEqAndLastNameEq = _realm.All<Person>()
+                .Where(p => p.Score == 100 && p.LastName == "Doe").ToList();
             Assert.That(scoreEqAndLastNameEq.Count, Is.EqualTo(1));
             Assert.That(scoreEqAndLastNameEq[0].FullName, Is.EqualTo("John Doe"));
         }
@@ -148,8 +149,8 @@ namespace Realms.Tests.Database
         [Test]
         public void WhereBooleanOrTest()
         {
-            var firstNameEqOrScoreEq = _realm.All<Person>().Where(p => p.FirstName == "NonExistant"
-            || p.Score == 42.42f).ToList();
+            var firstNameEqOrScoreEq = _realm.All<Person>()
+                .Where(p => p.FirstName == "NonExistant" || p.Score == 42.42f).ToList();
             Assert.That(firstNameEqOrScoreEq.Count, Is.EqualTo(1));
             Assert.That(firstNameEqOrScoreEq[0].FullName, Is.EqualTo("Peter Jameson"));
         }
