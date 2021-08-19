@@ -28,7 +28,22 @@
             "h":2,
             "x":0,
             "y":0,
-            "i":"template",
+            "i":"benchmarkTemplate",
+            "minW":1,
+            "maxW":10,
+            "minH":1,
+            "maxH":10,
+            "moved":false,
+            "static":false,
+            "isDraggable":true,
+            "isResizable":true
+          },
+          {
+            "w":8,
+            "h":2,
+            "x":0,
+            "y":2,
+            "i":"fileSizeChart",
             "minW":1,
             "maxW":10,
             "minH":1,
@@ -43,7 +58,7 @@
       }
     },
     "items":{
-      "template":{
+      "benchmarkTemplate":{
         "allowInteractiveFilters":true,
         "calculatedFields":[ ],
         "channels":{
@@ -180,6 +195,149 @@
           ]
         },
         "title":"%TYPE%.%METHOD%",
+        "embedding":{
+
+        }
+      },
+      "fileSizeChart": {
+        "allowInteractiveFilters":true,
+        "calculatedFields":[
+
+        ],
+        "channels":{
+          "x":{
+            "channelType":"category",
+            "field":"RunId",
+            "inferredType":"Number",
+            "type":"nominal",
+            "isBinning":false,
+            "quantitativeBinning":{
+              "binSize":10
+            }
+          },
+          "color":{
+            "channelType":"category",
+            "field":"FileSizes.File",
+            "inferredType":"String",
+            "type":"nominal",
+            "transformedType":"String",
+            "isBinning":false
+          },
+          "y":{
+            "channelType":"aggregation",
+            "field":"FileSizes.Size",
+            "inferredType":"Number",
+            "type":"quantitative",
+            "transformedType":"Number",
+            "aggregate":"mean"
+          }
+        },
+        "chartType":"Line",
+        "convertedFields":[
+
+        ],
+        "customisations":{
+          "options":{
+            "dataMarkers":{
+              "enabled":true,
+              "value":null
+            }
+          },
+          "axes":{
+            "x":{
+              "categoryLabelAngle":{
+                "enabled":true,
+                "value":"diagonal"
+              }
+            },
+            "y":{
+
+            }
+          },
+          "channels":{
+            "x":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Run"
+              },
+              "numberFormatting":{
+                "enabled":true,
+                "value":"Custom"
+              },
+              "numberGrouping":{
+                "enabled":false,
+                "value":null
+              }
+            },
+            "color":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Platform"
+              }
+            },
+            "y":{
+              "labelOverride":{
+                "enabled":true,
+                "value":"Size (MB)"
+              },
+              "numberFormatting":{
+                "enabled":true,
+                "value":"Custom"
+              },
+              "numberGrouping":{
+                "enabled":false,
+                "value":null
+              }
+            }
+          },
+          "conditionalFormatting":[
+
+          ]
+        },
+        "dashboardId":"dashboard",
+        "dataSourceId":"data-source",
+        "description":"Chart tracking the platform binary sizes as well as the overall Realm package size",
+        "filters":[
+
+        ],
+        "iconValue":"line-discrete",
+        "itemType":"chart",
+        "lookupFields":[
+
+        ],
+        "meta":{
+
+        },
+        "missedFields":[
+
+        ],
+        "queryCache":{
+          "filter":"",
+          "sample":false
+        },
+        "reductions":{
+          "color":[
+            {
+              "dimensionality":1,
+              "field":"FileSizes",
+              "type":"Unwind array",
+              "arguments":[
+
+              ]
+            }
+          ],
+          "y":[
+            {
+              "dimensionality":1,
+              "field":"FileSizes",
+              "type":"Unwind array",
+              "arguments":[
+
+              ]
+            }
+          ]
+        },
+        "title":"Package and binary sizes",
         "embedding":{
 
         }

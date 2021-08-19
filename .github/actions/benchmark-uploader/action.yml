@@ -8,6 +8,9 @@ inputs:
     file:
         required: true
         description: The path to the Benchmark.NET json results.
+    nuget-package:
+        required: true
+        descritpion: The path to the Realm.nupkg that will be used for file size tracking.
     dashboard-path:
         required: false
         description: Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated.

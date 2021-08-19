@@ -10,7 +10,7 @@ This is an action that takes the results.json file from a Benchmark.NET run and 
 
 A simple workflow script can look like this:
 
-```
+```yaml
 name: "Workflow"
 on: ["pull_request"]
 jobs:
@@ -26,6 +26,7 @@ jobs:
         with:
           realm-token: ${{ secrets.MDBRealm_Token }}
           file: ${{ steps.run-benchmarks.outputs.benchmark-results }}
+          nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
           dashboard-path: 'dashboard.charts'
 ```
 
@@ -35,6 +36,7 @@ jobs:
 |-|-|-|
 | `realm-token` | `true` | The MongoDB Realm token used to upload the benchmark results. |
 | `file` | `true` | The Benchmark.NET results file (in json format). |
+| `nuget-package` | `true` |  The path to the Realm.nupkg that will be used for file size tracking. |
 | `dashboard-path` | `false` | Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated. |
 
 ## MongoDB Services used
