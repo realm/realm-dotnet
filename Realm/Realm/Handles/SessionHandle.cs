@@ -31,8 +31,6 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset);
 
@@ -85,8 +83,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_start", CallingConvention = CallingConvention.Cdecl)]
             public static extern void start(SessionHandle session, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         [Preserve]
@@ -107,16 +103,16 @@ namespace Realms.Sync
             NativeMethods.install_syncsession_callbacks(error, progress, wait);
         }
 
-        public bool TryGetUser(out SyncUserHandle handle)
+        public bool TryGetUser(out SyncUserHandle userHandle)
         {
             var ptr = NativeMethods.get_user(this);
             if (ptr == IntPtr.Zero)
             {
-                handle = null;
+                userHandle = null;
                 return false;
             }
 
-            handle = new SyncUserHandle(ptr);
+            userHandle = new SyncUserHandle(ptr);
             return true;
         }
 

@@ -26,8 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_value(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
 
@@ -95,8 +93,6 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
                 [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
                 out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid

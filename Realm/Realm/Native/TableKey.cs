@@ -20,6 +20,8 @@ using System;
 
 namespace Realms.Native
 {
+#pragma warning disable IDE0049 // Use built-in type alias
+
     internal struct TableKey : IEquatable<TableKey>
     {
         public readonly UInt32 Value;
@@ -39,4 +41,6 @@ namespace Realms.Native
 
         public static bool operator !=(TableKey left, TableKey right) => left.Value != right.Value;
     }
+
+#pragma warning restore IDE0049 // Use built-in type alias
 }

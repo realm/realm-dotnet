@@ -26,8 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_clear", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear(SetHandle handle, out NativeException ex);
 
@@ -99,8 +97,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_set_equals", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool set_equals(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid

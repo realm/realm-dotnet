@@ -1545,16 +1545,10 @@ namespace Realms
 
                 var result = metadata.Helper.CreateInstance();
 
-                ObjectHandle objectHandle;
                 var pkProperty = metadata.Schema.PrimaryKeyProperty;
-                if (pkProperty.HasValue)
-                {
-                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _);
-                }
-                else
-                {
-                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
-                }
+                var objectHandle = pkProperty.HasValue
+                    ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
+                    : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
                 result.SetOwner(_realm, objectHandle, metadata);
                 result.OnManaged();

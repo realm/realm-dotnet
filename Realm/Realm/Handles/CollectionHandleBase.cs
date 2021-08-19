@@ -57,9 +57,9 @@ namespace Realms
             }
 
             var ptr = GetFilteredResultsCore(query, primitiveValues, out var ex);
-            foreach (var handle in handles)
+            foreach (var argHandles in handles)
             {
-                handle?.Dispose();
+                argHandles?.Dispose();
             }
 
             ex.ThrowIfNecessary();

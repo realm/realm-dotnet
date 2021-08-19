@@ -38,8 +38,6 @@ namespace Realms
 
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_clear", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear(DictionaryHandle handle, out NativeException ex);
 
@@ -105,8 +103,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_keys", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_keys(DictionaryHandle handle, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid

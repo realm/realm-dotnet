@@ -26,8 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
@@ -78,8 +76,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ResultsHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid
@@ -159,30 +155,6 @@ namespace Realms
             return new NotificationTokenHandle(this, result);
         }
 
-        public override bool Equals(object obj)
-        {
-            // If parameter is null, return false.
-            if (obj is null)
-            {
-                return false;
-            }
-
-            // Optimization for a common success case.
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (!(obj is ResultsHandle resultsHandle))
-            {
-                return false;
-            }
-
-            var result = NativeMethods.is_same_internal_results(this, resultsHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
@@ -215,6 +187,5 @@ namespace Realms
             => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         protected override void Unbind() => NativeMethods.destroy(handle);
-
     }
 }

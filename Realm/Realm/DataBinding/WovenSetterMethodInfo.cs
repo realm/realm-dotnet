@@ -60,21 +60,17 @@ namespace Realms.DataBinding
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
             var managingRealm = (obj as RealmObjectBase)?.Realm;
-            Transaction writeTransaction = null;
-            if (managingRealm != null && !managingRealm.IsInTransaction)
+
+            // If managingRealm is null or is currently in transaction, just set the property
+            if (managingRealm?.IsInTransaction == false)
             {
-                writeTransaction = managingRealm.BeginWrite();
+                return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
             }
 
-            var result = _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
-
-            if (writeTransaction != null)
+            return managingRealm.Write(() =>
             {
-                writeTransaction.Commit();
-                writeTransaction.Dispose();
-            }
-
-            return result;
+                return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+            });
         }
 
         public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
