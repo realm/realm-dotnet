@@ -170,7 +170,7 @@ namespace Realms
                 {
                     schema = sharedRealmHandle.GetSchema();
                 }
-                catch (Exception)
+                catch
                 {
                     sharedRealmHandle.Close();
                     throw;
