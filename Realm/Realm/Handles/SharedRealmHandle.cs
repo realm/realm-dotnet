@@ -227,13 +227,13 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public static IntPtr Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
             var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new SharedRealmHandle(result);
         }
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -255,11 +255,11 @@ namespace Realms
             return new AsyncOpenTaskHandle(asyncTaskPtr);
         }
 
-        public static IntPtr ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
+        public static SharedRealmHandle ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
         {
             var result = NativeMethods.resolve_realm_reference(referenceHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new SharedRealmHandle(result);
         }
 
         public void CloseRealm()

@@ -440,6 +440,7 @@ jobs:
           realm-token: ${{ secrets.Realm_Token }}
           file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
           dashboard-path: dashboard.charts
+          nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - name: Upload Charts Dashboard File
         uses: actions/upload-artifact@v2
         with:

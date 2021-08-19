@@ -1,4 +1,0 @@
-zlib
-openssl
---triplet
-x64-windows-static
