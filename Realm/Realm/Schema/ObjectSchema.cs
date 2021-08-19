@@ -175,7 +175,7 @@ namespace Realms.Schema
                 if (Count == 0)
                 {
                     throw new InvalidOperationException(
-                        $"No properties in {Name}, has linker stripped it? See https://thereIsntSuchDocYet");
+                        $"No properties in {Name}, has linker stripped it? See https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/#linker-stripped-schema");
                 }
 
                 return new ObjectSchema(Name, this.ToDictionary(p => p.Name))
