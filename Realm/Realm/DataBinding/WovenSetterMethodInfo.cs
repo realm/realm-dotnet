@@ -61,16 +61,16 @@ namespace Realms.DataBinding
         {
             var managingRealm = (obj as RealmObjectBase)?.Realm;
 
-            // If managingRealm is null or is currently in transaction, just set the property
+            // If managingRealm is not null and not currently in transaction, wrap setting the property in a realm.Write(...)
             if (managingRealm?.IsInTransaction == false)
             {
-                return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+                return managingRealm.Write(() =>
+                {
+                    return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+                });
             }
 
-            return managingRealm.Write(() =>
-            {
-                return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
-            });
+            return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
         }
 
         public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
