@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Native;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
@@ -233,7 +234,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
             }
         }
 

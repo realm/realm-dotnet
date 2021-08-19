@@ -92,7 +92,17 @@ namespace Realms
             }
         }
 
-        protected override SnapshotDelegate SnapshotCore { get; }
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public override bool CanSnapshot => true;
 
         // keep this one even though warned that it is not used. It is in fact used by marshalling
         // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
@@ -104,12 +114,6 @@ namespace Realms
         [Preserve]
         public ResultsHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
-            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
-        }
-
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
@@ -187,9 +191,6 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
-            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
-
         public int Find(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
@@ -197,16 +198,6 @@ namespace Realms
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return (int)result;
-        }
-
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
@@ -217,5 +208,13 @@ namespace Realms
         }
 
         public override void Clear() => throw new NotSupportedException("Clearing a Results collection is not supported.");
+
+        protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
+
+        protected override void Unbind() => NativeMethods.destroy(handle);
+
     }
 }

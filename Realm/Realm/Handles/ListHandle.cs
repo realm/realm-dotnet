@@ -109,16 +109,20 @@ namespace Realms
             }
         }
 
-        protected override SnapshotDelegate SnapshotCore { get; }
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public override bool CanSnapshot => true;
 
         public ListHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
-            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
-        }
-
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
@@ -230,24 +234,18 @@ namespace Realms
             return new ResultsHandle(this, ptr);
         }
 
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
-            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
-
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
-        }
-
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ListHandle(frozenRealmHandle, result);
         }
+
+        protected override void Unbind() => NativeMethods.destroy(handle);
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
+
+        protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
     }
 }

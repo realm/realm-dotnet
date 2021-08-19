@@ -1276,9 +1276,7 @@ namespace Realms
             ThrowIfDisposed();
 
             Argument.NotNull(range, nameof(range));
-            Argument.Ensure(range is RealmResults<T>, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
-
-            var results = (RealmResults<T>)range;
+            var results = Argument.EnsureType<RealmResults<T>>(range, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
             results.ResultsHandle.Clear(SharedRealmHandle);
         }
 
@@ -1334,9 +1332,9 @@ namespace Realms
         {
             Argument.NotNull(config, nameof(config));
 
-            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
+            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig._partition != copiedConfig._partition)
             {
-                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
+                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig._partition}, passed partition: {copiedConfig._partition}");
             }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);

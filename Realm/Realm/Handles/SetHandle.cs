@@ -113,16 +113,20 @@ namespace Realms
             }
         }
 
-        protected override SnapshotDelegate SnapshotCore { get; }
+        public override bool CanSnapshot => true;
+
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
 
         public SetHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
-            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
-        }
-
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
         }
 
         public override void Clear()
@@ -151,21 +155,6 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             return new ThreadSafeReferenceHandle(result);
-        }
-
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
-        {
-            throw new NotImplementedException("Sets can't be filtered yet.");
-        }
-
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
@@ -208,6 +197,13 @@ namespace Realms
             nativeException.ThrowIfNecessary();
             return result;
         }
+
+        protected override void Unbind() => NativeMethods.destroy(handle);
+
+        protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => throw new NotImplementedException("Sets can't be filtered yet.");
 
         #region Set methods
 
