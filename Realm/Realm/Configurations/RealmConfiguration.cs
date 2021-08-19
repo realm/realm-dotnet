@@ -142,10 +142,10 @@ namespace Realms
                 configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(shouldCompactHandle.Value);
             }
 
-            var srPtr = IntPtr.Zero;
+            SharedRealmHandle sharedRealmHandle;
             try
             {
-                srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+                sharedRealmHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
             }
             catch (ManagedExceptionDuringMigrationException)
             {
@@ -157,13 +157,7 @@ namespace Realms
                 shouldCompactHandle?.Free();
             }
 
-            var srHandle = new SharedRealmHandle(srPtr);
-            if (IsDynamic && !schema.Any())
-            {
-                schema = srHandle.GetSchema();
-            }
-
-            return new Realm(srHandle, this, schema);
+            return GetRealm(sharedRealmHandle, schema);
         }
 
         internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
