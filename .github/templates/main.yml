@@ -1,12 +1,11 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg")
 
-#@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
-#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 
 #@ def checkCache(key):
 name: Check cache
@@ -42,37 +41,6 @@ steps:
       name: #@ outputVar
       path: wrappers/build/**
       retention-days: 1
-#@ end
-
-#@ def checkoutCode(submodules=False):
-  - name: Disable Analytics
-    run: |
-      echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
-  - name: Checkout code
-    uses: actions/checkout@v2
-    with:
-      submodules: #@ submodules
-      ref: ${{ github.event.pull_request.head.sha }}
-  - name: Register csc problem matcher
-    run: echo "::add-matcher::.github/problem-matchers/csc.json"
-  - name: Register msvc problem matcher
-    run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-#@ end
-
-#@ def setupVcpkg():
-  - name: Check Vcpkg cache
-    id: check-vcpkg-cache
-    uses: actions/cache@v2
-    with:
-      path: 'C:\src'
-      key: vcpkg
-    if: #@ wrappersCacheCondition
-  - name: Setup Vcpkg
-    run: |
-      Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-      Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-    shell: powershell
-    if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
 #@ end
 
 #@ def setupWin81SDK():
@@ -292,14 +260,14 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(), setupWin81SDK() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ]))
   build-packages:
     runs-on: windows-latest
     name: Package

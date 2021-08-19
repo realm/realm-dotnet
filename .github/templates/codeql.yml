@@ -1,46 +1,17 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
-
-#@ configuration = "Release"
-#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
-
-#@ def checkoutCode(submodules=False):
-  - name: Disable Analytics
-    run: |
-      echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
-  - name: Checkout code
-    uses: actions/checkout@v2
-    with:
-      submodules: #@ submodules
-      ref: ${{ github.event.pull_request.head.sha }}
-#@ end
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg")
 
 #@ def runCodeQL(language, buildSteps = []):
   - name: Initialize CodeQL
     uses: github/codeql-action/init@v1
     with:
       languages: #@ language
-      config-file: ./.github/codeql/codeql-config.yml
+      queries: security-and-quality
   #@ for step in buildSteps:
   - #@ template.replace(step)
   #@ end
   - name: Perform CodeQL Analysis
     uses: github/codeql-action/analyze@v1
-#@ end
-
-#@ def setupVcpkg():
-  - name: Check Vcpkg cache
-    id: check-vcpkg-cache
-    uses: actions/cache@v2
-    with:
-      path: 'C:\src'
-      key: vcpkg
-  - name: Setup Vcpkg
-    run: |
-      Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-      Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-    shell: powershell
-    if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
 #@ end
 
 #@ def buildWrappers():
@@ -73,7 +44,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-    - #@ template.replace(checkoutCode("recursive"))
+    - #@ template.replace(checkoutCode("recursive", False))
     - #@ template.replace(runCodeQL("cpp", [setupVcpkg(), buildWrappers()]))
   analyze-csharp:
     name: Analyze C#
@@ -83,5 +54,5 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - #@ template.replace(checkoutCode("recursive"))
+      - #@ template.replace(checkoutCode(False, False))
       - #@ template.replace(runCodeQL("csharp", [buildPackages()]))

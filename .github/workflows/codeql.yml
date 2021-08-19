@@ -29,19 +29,20 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: cpp
-        config-file: ./.github/codeql/codeql-config.yml
+        queries: security-and-quality
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
       uses: actions/cache@v2
       with:
         path: C:\src
         key: vcpkg
+      if: "true"
     - name: Setup Vcpkg
       run: |
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
-      if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      if: true && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
     - name: Perform CodeQL Analysis
@@ -60,13 +61,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        submodules: recursive
+        submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: csharp
-        config-file: ./.github/codeql/codeql-config.yml
+        queries: security-and-quality
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Realm.Fody
