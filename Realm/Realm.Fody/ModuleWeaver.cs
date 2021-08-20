@@ -97,8 +97,6 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             {
                 return "osx";
             }
-
-            return "windows";
         }
         catch
         {
@@ -108,6 +106,8 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             throw;
 #endif
         }
+
+        return "windows";
     }
 
     void ILogger.Debug(string message)
