@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
 using Realms.Schema;
+using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
+
 
 namespace Realms
 {
@@ -11,6 +14,48 @@ namespace Realms
         private readonly RealmObjectBase.Metadata _metadata;
 
         private WhereClause _whereClause;
+
+        private static class Methods
+        {
+            internal static LazyMethod Capture<T>(Expression<Action<T>> lambda)
+            {
+                return new LazyMethod(() =>
+                {
+                    var method = (lambda.Body as MethodCallExpression).Method;
+                    if (method.IsGenericMethod)
+                    {
+                        method = method.GetGenericMethodDefinition();
+                    }
+
+                    return method;
+                });
+            }
+
+            internal static class String
+            {
+                internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
+
+                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+
+                internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
+
+                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
+                internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
+
+                internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
+
+                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture EndsWith(string).")]
+                internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
+
+                internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
+
+                internal static readonly LazyMethod IsNullOrEmpty = Capture<string>(s => string.IsNullOrEmpty(s));
+
+                internal static readonly LazyMethod EqualsMethod = Capture<string>(s => s.Equals(string.Empty));
+
+                internal static readonly LazyMethod EqualsStringComparison = Capture<string>(s => s.Equals(string.Empty, StringComparison.Ordinal));
+            }
+        }
 
         public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
@@ -37,20 +82,46 @@ namespace Realms
             if (node.Method.DeclaringType == typeof(string) ||
                 node.Method.DeclaringType == typeof(StringExtensions))
             {
-                ComparisonNode result;
-                if (node.Method.Name.Equals("StartsWith"))
+                StringComparisonNode result;
+                if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
                 {
                     result = new StartsWithNode();
                 }
-                else if (node.Method.Name.Equals("EndsWith"))
+                else if (AreMethodsSame(node.Method, Methods.String.StartsWithStringComparison.Value))
+                {
+                    result = new StartsWithNode();
+                    if (node.Arguments[1] is ConstantExpression constantExpression)
+                    {
+                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.CaseSensitivity = false;
+                        }
+                    }
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value))
                 {
                     result = new EndsWithNode();
                 }
-                else if (node.Method.Name.Equals("Contains"))
+                else if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
                 {
                     result = new ContainsNode();
                 }
-                else if (node.Method.Name.Equals("Like"))
+                else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value))
+                {
+                    result = new StringEqualityNode();
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.EqualsStringComparison.Value))
+                {
+                    result = new StringEqualityNode();
+                    if (node.Arguments[1] is ConstantExpression constantExpression)
+                    {
+                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.CaseSensitivity = false;
+                        }
+                    }
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
                 {
                     StringComparisonNode result2 = new LikeNode();
                     if (node.Arguments.Count == 3)
@@ -355,6 +426,39 @@ namespace Realms
             }
 
             return name;
+        }
+
+        // Compares two methods for equality. .NET Native's == doesn't return expected results.
+        private static bool AreMethodsSame(MethodInfo first, MethodInfo second)
+        {
+            if (first == second)
+            {
+                return true;
+            }
+
+            if (first.Name != second.Name ||
+                first.DeclaringType != second.DeclaringType)
+            {
+                return false;
+            }
+
+            var firstParameters = first.GetParameters();
+            var secondParameters = second.GetParameters();
+
+            if (firstParameters.Length != secondParameters.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < firstParameters.Length; i++)
+            {
+                if (firstParameters[i].ParameterType != secondParameters[i].ParameterType)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

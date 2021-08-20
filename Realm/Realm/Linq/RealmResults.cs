@@ -113,6 +113,7 @@ namespace Realms
         /// <summary>
         /// Creates a query handle for the results.
         /// </summary>
+        /// <param name="queryJson">JSON representation of the query.</param>
         /// <returns>The query handle.</returns>
         QueryHandle GetQuery(string queryJson);
 

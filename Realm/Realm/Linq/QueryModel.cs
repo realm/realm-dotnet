@@ -128,20 +128,25 @@ namespace Realms
 
         public override abstract string Kind { get; }
 
-        public bool CaseSensitivity { get; set; }
+        public bool CaseSensitivity { get; set; } = true;
     }
 
-    internal class StartsWithNode : ComparisonNode
+    internal class StringEqualityNode : StringComparisonNode
+    {
+        public override string Kind => "eq";
+    }
+
+    internal class StartsWithNode : StringComparisonNode
     {
         public override string Kind => "beginsWith";
     }
 
-    internal class EndsWithNode : ComparisonNode
+    internal class EndsWithNode : StringComparisonNode
     {
         public override string Kind => "endsWith";
     }
 
-    internal class ContainsNode : ComparisonNode
+    internal class ContainsNode : StringComparisonNode
     {
         public override string Kind => "contains";
     }
