@@ -102,9 +102,31 @@ namespace Realms
                 {
                     result = new EndsWithNode();
                 }
+                else if (AreMethodsSame(node.Method, Methods.String.EndsWithStringComparison.Value))
+                {
+                    result = new EndsWithNode();
+                    if (node.Arguments[1] is ConstantExpression constantExpression)
+                    {
+                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.CaseSensitivity = false;
+                        }
+                    }
+                }
                 else if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
                 {
                     result = new ContainsNode();
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
+                {
+                    result = new ContainsNode();
+                    if (node.Arguments[1] is ConstantExpression constantExpression)
+                    {
+                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.CaseSensitivity = false;
+                        }
+                    }
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value))
                 {
