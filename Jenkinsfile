@@ -354,14 +354,9 @@ def NetCoreTest(String nodeName, String targetFramework) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
-      def additionalFrameworks = ''
-      if (targetFramework == 'net5.0') {
-        additionalFrameworks = 'net5.0'
-      }
-
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
-        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AdditionalFrameworks=${additionalFrameworks}
+        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AdditionalFrameworks=${targetFramework}
       """.trim()
 
       if (isUnix() && nodeName == 'docker') {

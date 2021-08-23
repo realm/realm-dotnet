@@ -154,9 +154,9 @@ steps:
 #@ end
 #@ end
 
-#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand, additionalFrameworks):
+#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand):
 #@ properties = {
-#@   "AdditionalFrameworks": additionalFrameworks,
+#@   "AdditionalFrameworks": framework,
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
 #@ }
@@ -365,7 +365,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ (matrix.targetFramework == 'net5.0' || matrix.targetFramework == 'net6.0') && matrix.targetFramework || '' }}"))
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
@@ -421,7 +421,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join", "true"))
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
       - name: Find Results file
         id: find-results-file
         run: |

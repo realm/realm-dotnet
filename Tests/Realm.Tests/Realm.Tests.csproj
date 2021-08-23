@@ -16,9 +16,9 @@
 
   <PropertyGroup Condition="'$(UnityBuild)' != 'true'">
     <TargetFrameworks>net461</TargetFrameworks>
-    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
+    <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
+    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;$(AdditionalFrameworks)</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
-    <TargetFrameworks Condition="'$(AdditionalFrameworks)' != ''">$(TargetFrameworks);$(AdditionalFrameworks)</TargetFrameworks>
 
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
   </PropertyGroup>
