@@ -27,21 +27,4 @@ namespace Realms
     public class RealmObject : RealmObjectBase
     {
     }
-
-    internal class InvalidRealmObject : RealmObjectBase
-    {
-        private static readonly InvalidRealmObject _instance = new InvalidRealmObject();
-
-        private InvalidRealmObject() { }
-
-        public static InvalidRealmObject Instance
-        {
-            get { return _instance; }
-        }
-
-        public override bool Equals(object obj)
-        {
-            return true;
-        }
-    }
 }

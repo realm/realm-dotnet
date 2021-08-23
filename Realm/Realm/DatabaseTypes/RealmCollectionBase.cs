@@ -298,6 +298,7 @@ namespace Realms
                     return;
                 }
 
+                // InvalidRealmObject is used to go around a bug in WPF (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>)
                 var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => InvalidRealmObject.Instance, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
