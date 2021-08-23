@@ -4,7 +4,7 @@ The Realm .NET SDK uses [Benchmark.NET](http://benchmarkdotnet.org) to run synth
 
 ## Running the benchmarks
 
-To run all tests, use `dotnet run -c Release -f net5.0 -- -f *`. To run only a subset of the tests, replace `*` with a regex that will match the tests you want to run. To list all benchmarks, use `dotnet run -c Release -f net5.0 -- --list`. Refere to [the docs](https://benchmarkdotnet.org/articles/guides/console-args.html) for a complete list of the supported arguments.
+To run all tests, use `dotnet run -c Release -f net5.0 -- -f *`. To run only a subset of the tests, replace `*` with a regex that will match the tests you want to run. To list all benchmarks, use `dotnet run -c Release -f net5.0 -- --list`. Refer to [the docs](https://benchmarkdotnet.org/articles/guides/console-args.html) for a complete list of the supported arguments.
 
 ## Best practices
 

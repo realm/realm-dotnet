@@ -11,6 +11,7 @@
   * `list.Filter(query, arguments)` will filter the list and return the filtered collection. It is roughly equivalent to `list.AsRealmQueryable().Filter(query, arguments)`.
 
   The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#1499](https://github.com/realm/realm-dotnet/issues/1499))
+* Added a cache for the Realm schema. This will speed up `Realm.GetInstance` invocations where `RealmConfiguration.ObjectClasses` is explicitly set. The speed gains will depend on the number and complexity of your model classes. A reference benchmark that tests a schema containing all valid Realm property types showed a 25% speed increase of Realm.GetInstance. (Issue [#2194](https://github.com/realm/realm-dotnet/issues/2194))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
