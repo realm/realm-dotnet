@@ -298,17 +298,7 @@ namespace Realms
                     return;
                 }
 
-                Func<int, object> removedGetter;
-                if (typeof(T).IsSubclassOf(typeof(RealmObjectBase)))
-                {
-                    removedGetter = _ => InvalidRealmObject.Instance;
-                }
-                else
-                {
-                    removedGetter = _ => default;
-                }
-
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => removedGetter, out var removedItems, out var removedStartIndex);
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => InvalidRealmObject.Instance, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
