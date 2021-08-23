@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Realms
 {
-    internal class SortClauseVisitor
+    internal class SortClauseVisitor : ClauseVisitor
     {
         public OrderingClause _orderingClause;
 
@@ -27,7 +27,7 @@ namespace Realms
                 throw new NotSupportedException(orderClause.Method.Name + " is not a supported ordering method");
             }
 
-            var lambda = (LambdaExpression)RealmResultsVisitor2.StripQuotes(orderClause.Arguments[1]);
+            var lambda = (LambdaExpression)StripQuotes(orderClause.Arguments[1]);
             if (lambda.Body is MemberExpression me)
             {
                 _orderingClause.Property = me.Member.Name;

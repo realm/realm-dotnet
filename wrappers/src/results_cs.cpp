@@ -117,11 +117,23 @@ REALM_EXPORT Query* results_get_query(Results& results, NativeException::Marshal
     });
 }
 
-REALM_EXPORT Query* results_get_query_new(Results& results, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
+REALM_EXPORT Query* results_get_query_new(Results& results, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor query_string(query_buf, query_len);
-        return new Query(results.get_table()->query_new(query_string));
+
+        std::vector<Mixed> mixed_args;
+        mixed_args.reserve(args_count);
+        for (size_t i = 0; i < args_count; ++i) {
+            if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
+                mixed_args.push_back(from_capi(arguments[i]));
+            }
+            else {
+                mixed_args.push_back(from_capi(arguments[i].link.object, true));
+            }
+        }
+
+        return new Query(results.get_table()->query_new(query_string, mixed_args));
     });
 }
 

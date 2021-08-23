@@ -44,9 +44,9 @@ namespace Realms
     {
         public override string Kind => "constant";
 
-        public object Value { get; set; }
+        public string Value { get; set; }
 
-        public string Type { get; set; }
+        public string Type => "arg";
     }
     #endregion
 

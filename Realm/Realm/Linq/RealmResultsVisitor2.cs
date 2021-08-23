@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
 {
@@ -13,13 +12,16 @@ namespace Realms
         private readonly Realm _realm;
         private readonly RealmObjectBase.Metadata _metadata;
         private readonly QueryModel _query;
+        private readonly List<RealmValue> _arguments;
 
         private IQueryableCollection results;
+        private int _argumentsCounter = 0;
 
         internal RealmResultsVisitor2(Realm realm, RealmObjectBase.Metadata metadata)
         {
             _realm = realm;
             _metadata = metadata;
+            _arguments = new List<RealmValue>();
             _query = new QueryModel();
         }
 
@@ -31,8 +33,9 @@ namespace Realms
                 {
                     Visit(node.Arguments[0]);
                     var whereClauseVisitor = new WhereClauseVisitor(_metadata);
-                    var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-                    _query.WhereClauses.Add(whereClauseVisitor.VisitWhere(lambda));
+                    _query.WhereClauses.Add(whereClauseVisitor.VisitWhere(node.Arguments[1], _argumentsCounter, out var whereArguments));
+                    _argumentsCounter += whereArguments.Count;
+                    _arguments.AddRange(whereArguments);
                     return node;
                 }
 
@@ -68,16 +71,6 @@ namespace Realms
             return node;
         }
 
-        internal static Expression StripQuotes(Expression e)
-        {
-            while (e.NodeType == ExpressionType.Quote)
-            {
-                e = ((UnaryExpression)e).Operand;
-            }
-
-            return e;
-        }
-
         private static bool IsSortClause(string methodName)
         {
             return methodName == nameof(Queryable.OrderBy)
@@ -93,7 +86,7 @@ namespace Realms
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 Formatting = Formatting.Indented
             });
-            var query = results.GetQuery(json);
+            var query = results.GetQuery(json, _arguments.ToArray()); //TODO Should we keep it as array?
             return query.CreateResultsNew(_realm.SharedRealmHandle);
         }
     }

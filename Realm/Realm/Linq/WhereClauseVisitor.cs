@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
-using Newtonsoft.Json;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 
 namespace Realms
 {
-    internal class WhereClauseVisitor : ExpressionVisitor
+    internal class WhereClauseVisitor : ClauseVisitor
     {
         private readonly RealmObjectBase.Metadata _metadata;
+        private readonly List<RealmValue> _arguments;
 
         private WhereClause _whereClause;
+        private int _argumentsCounter;
 
         private static class Methods
         {
@@ -60,13 +62,16 @@ namespace Realms
         public WhereClauseVisitor(RealmObjectBase.Metadata metadata)
         {
             _metadata = metadata;
+            _arguments = new List<RealmValue>();
             _whereClause = new WhereClause();
         }
 
-        public WhereClause VisitWhere(LambdaExpression whereClause)
+        public WhereClause VisitWhere(Expression whereClause, int argumentsCounter, out List<RealmValue> arguments)
         {
-            _whereClause.Expression = Extract(whereClause.Body);
-            var json = JsonConvert.SerializeObject(_whereClause, formatting: Formatting.Indented);
+            _argumentsCounter = argumentsCounter;
+            var lambda = (LambdaExpression)StripQuotes(whereClause);
+            _whereClause.Expression = Extract(lambda.Body);
+            arguments = _arguments;
             return _whereClause;
         }
 
@@ -83,7 +88,7 @@ namespace Realms
                 node.Method.DeclaringType == typeof(StringExtensions))
             {
                 StringComparisonNode result;
-                if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
+                if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))  //TODO Can we just use string comparison with the name...? 
                 {
                     result = new StartsWithNode();
                 }
@@ -157,12 +162,11 @@ namespace Realms
                             };
                         }
 
-                        if (node.Arguments[1] is ConstantExpression constantExpression)
+                        if (node.Arguments[1] is ConstantExpression constantExpression)  //TODO Maybe we can move this whole thing to a new method...?
                         {
                             result2.Right = new ConstantNode()
                             {
-                                Value = constantExpression.Value,
-                                Type = "string"
+                                Value = ExtractValue(constantExpression.Value),
                             };
                         }
 
@@ -201,22 +205,10 @@ namespace Realms
 
                     if (node.Arguments[0] is ConstantExpression constantExpression)
                     {
-                        if (constantExpression.Value == null)
+                        result.Right = new ConstantNode()
                         {
-                            result.Right = new ConstantNode()
-                            {
-                                Value = constantExpression.Value,
-                                Type = "string"
-                            };
-                        }
-                        else
-                        {
-                            result.Right = new ConstantNode()
-                            {
-                                Value = constantExpression.Value,
-                                Type = GetKind(constantExpression.Value.GetType())
-                            };
-                        }
+                            Value = ExtractValue(constantExpression.Value),
+                        };
                     }
                 }
                 else
@@ -278,82 +270,52 @@ namespace Realms
                         throw new NotSupportedException($"The operator '{binaryExpression.NodeType}' is not supported");
                 }
 
-                if (binaryExpression.Left is MemberExpression binaryLeftMemberExpression)
+                var memberExpression = (binaryExpression.Left is MemberExpression ? binaryExpression.Left : binaryExpression.Right) as MemberExpression;
+                var constantExpression = (binaryExpression.Left is ConstantExpression ? binaryExpression.Left : binaryExpression.Right) as ConstantExpression;  //TODO need to consider the case that none of those is
+
+                if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
                 {
-                    if (binaryLeftMemberExpression.Expression != null && binaryLeftMemberExpression.Expression.NodeType == ExpressionType.Parameter)
+                    comparisonNode.Left = new PropertyNode()
                     {
-                        comparisonNode.Left = new PropertyNode()
-                        {
-                            Name = GetColumnName(binaryLeftMemberExpression, binaryLeftMemberExpression.NodeType),
-                            Type = GetKind(binaryLeftMemberExpression.Type)
-                        };
-                    }
-                    else
-                    {
-                        throw new NotSupportedException(binaryLeftMemberExpression + " is null or not a supported node type.");
-                    }
+                        Name = GetColumnName(memberExpression, memberExpression.NodeType),
+                        Type = GetKind(memberExpression.Type)
+                    };
+                }
+                else
+                {
+                    throw new NotSupportedException(memberExpression + " is null or not a supported node type.");
                 }
 
-                if (binaryExpression.Left is ConstantExpression binaryLeftConstantExpression)
+                comparisonNode.Right = new ConstantNode()  //TODO We don't know what's right and what's left (it's important if the comparison is not symmetric (as with lte)
                 {
-                    if (binaryLeftConstantExpression.Value == null)
-                    {
-                        comparisonNode.Left = new ConstantNode()
-                        {
-                            Value = binaryLeftConstantExpression.Value,
-                            Type = "string"
-                        };
-                    }
-                    else
-                    {
-                        comparisonNode.Left = new ConstantNode()
-                        {
-                            Value = binaryLeftConstantExpression.Value,
-                            Type = GetKind(binaryLeftConstantExpression.Value.GetType())
-                        };
-                    }
-                }
-
-                if (binaryExpression.Right is MemberExpression binaryRightMemberExpression)
-                {
-                    if (binaryRightMemberExpression.Expression != null && binaryRightMemberExpression.Expression.NodeType == ExpressionType.Parameter)
-                    {
-                        comparisonNode.Right = new PropertyNode()
-                        {
-                            Name = GetColumnName(binaryRightMemberExpression, binaryRightMemberExpression.NodeType),
-                            Type = GetKind(binaryRightMemberExpression.Type)
-                        };
-                    }
-                    else
-                    {
-                        throw new NotSupportedException(binaryRightMemberExpression + " is null or not a supported node type.");
-                    }
-                }
-
-                if (binaryExpression.Right is ConstantExpression binaryRightConstantExpression)
-                {
-                    if (binaryRightConstantExpression.Value == null)
-                    {
-                        comparisonNode.Right = new ConstantNode()
-                        {
-                            Value = binaryRightConstantExpression.Value,
-                            Type = "string"
-                        };
-                    }
-                    else
-                    {
-                        comparisonNode.Right = new ConstantNode()
-                        {
-                            Value = binaryRightConstantExpression.Value,
-                            Type = GetKind(binaryRightConstantExpression.Value.GetType())
-                        };
-                    }
-                }
+                    Value = ExtractValue(constantExpression.Value),
+                };
 
                 returnNode = comparisonNode;
             }
 
             return RealmLinqExpression.Create(returnNode);
+        }
+
+        private string ExtractValue(object value)
+        {
+            _arguments.Add(ExtractRealmValue(value));
+            return $"${_argumentsCounter++}";
+        }
+
+        private RealmValue ExtractRealmValue(object value)  //TODO Probably we can move this to RealmValue itself
+        {
+            return value switch
+            {
+                int intValue => RealmValue.Create(intValue, RealmValueType.Int),
+                bool boolValue => RealmValue.Create(boolValue, RealmValueType.Bool),
+                string stringValue => RealmValue.Create(stringValue, RealmValueType.String),
+                float floatValue => RealmValue.Create(floatValue, RealmValueType.Float),
+                double doubleValue => RealmValue.Create(doubleValue, RealmValueType.Double),
+                null => RealmValue.Null,
+                RealmValue realmValue => realmValue,
+                _ => throw new Exception("TODOOOOOO")
+            };
         }
 
         protected override Expression VisitUnary(UnaryExpression node)
@@ -377,9 +339,11 @@ namespace Realms
         {
             if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
             {
-                ComparisonNode comparisonNode = new EqualityNode();
+                ExpressionNode result;
+
                 if (node.Type == typeof(bool))
                 {
+                    var comparisonNode = new EqualityNode();
                     comparisonNode.Left = new PropertyNode()
                     {
                         Name = GetColumnName(node, node.NodeType),
@@ -387,46 +351,50 @@ namespace Realms
                     };
                     comparisonNode.Right = new ConstantNode()
                     {
-                        Value = true,
-                        Type = "bool"
+                        Value = ExtractValue(true),
+                    };
+                    result = comparisonNode;
+                }
+                else
+                {
+                    result = new PropertyNode()
+                    {
+                        Name = GetColumnName(node, node.NodeType),
+                        Type = GetKind(node.Type)
                     };
                 }
 
-                return RealmLinqExpression.Create(comparisonNode);
+                return RealmLinqExpression.Create(result);
             }
 
             throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
         }
 
-        private static string GetKind(object valueType)
+        private static string GetKind(Type type)
         {
-            if (valueType == typeof(float))
+            if (type == typeof(float))
             {
                 return "float";
             }
-            else if (valueType == typeof(long))
+            else if (type == typeof(long))
             {
                 return "long";
             }
-            else if (valueType == typeof(double))
+            else if (type == typeof(double))
             {
                  return "double";
             }
-            else if (valueType == typeof(string))
+            else if (type == typeof(string))
             {
                 return "string";
             }
-            else if (valueType == typeof(bool))
+            else if (type == typeof(bool))
             {
                 return "bool";
-            }
-            else if (valueType == null)
-            {
-                return "null";
-            }
+            }  //TODO needs to be completed
             else
             {
-                throw new NotSupportedException(valueType + " is not a supported type.");
+                throw new NotSupportedException(type + " is not a supported type.");
             }
         }
 

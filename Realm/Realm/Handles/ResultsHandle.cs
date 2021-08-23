@@ -52,7 +52,10 @@ namespace Realms
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query_new", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_query_new(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len, out NativeException ex);
+            public static extern IntPtr get_query_new(ResultsHandle results,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -144,11 +147,28 @@ namespace Realms
             return new QueryHandle(Root ?? this, result);
         }
 
-        public QueryHandle GetQueryNew(string queryJson)
+        public QueryHandle GetQueryNew(string queryJson, RealmValue[] arguments)
         {
-            var result = NativeMethods.get_query_new(this, queryJson, (IntPtr)queryJson.Length, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            var primitiveValues = new PrimitiveValue[arguments.Length];
+            var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                var argument = arguments[i];
+                if (argument.Type == RealmValueType.Object && !argument.AsRealmObject().IsManaged)
+                {
+                    throw new RealmException("Can't use unmanaged object as argument of query");
+                }
 
+                (primitiveValues[i], handles[i]) = argument.ToNative();
+            }
+
+            var result = NativeMethods.get_query_new(this, queryJson, (IntPtr)queryJson.Length, primitiveValues, (IntPtr)primitiveValues.Length, out var nativeException);
+            foreach (var handle in handles)
+            {
+                handle?.Dispose();
+            }
+
+            nativeException.ThrowIfNecessary();
             return new QueryHandle(Root ?? this, result);
         }
 

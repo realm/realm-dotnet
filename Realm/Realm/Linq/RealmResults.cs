@@ -59,7 +59,7 @@ namespace Realms
 
         public QueryHandle GetQuery() => ResultsHandle.GetQuery();
 
-        public QueryHandle GetQuery(string queryJson) => ResultsHandle.GetQueryNew(queryJson);
+        public QueryHandle GetQuery(string queryJson, RealmValue[] arguments) => ResultsHandle.GetQueryNew(queryJson, arguments);
 
         public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
 
@@ -113,9 +113,10 @@ namespace Realms
         /// <summary>
         /// Creates a query handle for the results.
         /// </summary>
-        /// <param name="queryJson">JSON representation of the query.</param>
+        /// <param name="queryJson">JSON representation of the query.</param>  //TODO Remember to change this in case we don't use JSON anymore
+        /// <param name="arguments">The arguments of the query.</param>
         /// <returns>The query handle.</returns>
-        QueryHandle GetQuery(string queryJson);
+        QueryHandle GetQuery(string queryJson, RealmValue[] arguments);
 
         /// <summary>
         /// Creates a sort descriptor handle for the results.

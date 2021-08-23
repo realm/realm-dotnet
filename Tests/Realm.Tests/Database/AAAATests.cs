@@ -55,10 +55,20 @@ namespace Realms.Tests.Database
         [Test]
         public void WhereBooleanEqTest()
         {
-            var isInterestingTrue = _realm.All<Person>().Where(p => p.IsInteresting == true).ToList();
-            Assert.That(isInterestingTrue.Count, Is.EqualTo(2));
-            Assert.That(isInterestingTrue[0].FullName, Is.EqualTo("John Smith"));
-            Assert.That(isInterestingTrue[1].FullName, Is.EqualTo("Peter Jameson"));
+            var q1 = _realm.All<Person>().Where(p => p.IsInteresting).ToList();
+
+            Assert.That(q1.Count, Is.EqualTo(2));
+            Assert.That(q1[0].FullName, Is.EqualTo("John Smith"));
+            Assert.That(q1[1].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
+        public void WhereBooleanEqTestWithConstant()
+        {
+            var q1 = _realm.All<Person>().Where(p => p.IsInteresting == true).ToList();
+            Assert.That(q1.Count, Is.EqualTo(1));
+            Assert.That(q1[0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(q1[1].FullName, Is.EqualTo("Peter Jameson"));
         }
 
         [Test]
@@ -132,9 +142,17 @@ namespace Realms.Tests.Database
         [Test]
         public void WhereFloatEqualityReversedOrderTest()
         {
-            var scoreEq = _realm.All<Person>().Where(p => 100 == p.Score).ToList();
-            Assert.That(scoreEq.Count, Is.EqualTo(1));
-            Assert.That(scoreEq[0].FullName, Is.EqualTo("John Doe"));
+            var q1 = _realm.All<Person>().Where(p => p.Score > 40).ToList();
+            var q2 = _realm.All<Person>().Where(p => 40 <= p.Score).ToList();
+
+            Assert.That(q1.Count, Is.EqualTo(2));
+            Assert.That(q1[0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(q1[1].FullName, Is.EqualTo("Peter Jameson"));
+
+            Assert.That(q2.Count, Is.EqualTo(2));
+            Assert.That(q2[0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(q2[1].FullName, Is.EqualTo("Peter Jameson"));
+
         }
 
         [Test]
