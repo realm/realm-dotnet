@@ -28,7 +28,7 @@ namespace Realms
 
         private InvalidRealmObject() { }
 
-        public static InvalidRealmObject Instance => _instance;
+        public static InvalidRealmObject Instance { get; } = new InvalidRealmObject();
 
         // The method is overriden to avoid the bug in WPF
         public override bool Equals(object obj)
