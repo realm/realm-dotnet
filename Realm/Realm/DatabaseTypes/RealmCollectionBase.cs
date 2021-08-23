@@ -298,7 +298,17 @@ namespace Realms
                     return;
                 }
 
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default, out var removedItems, out var removedStartIndex);
+                Func<int, object> removedGetter;
+                if (typeof(T).IsSubclassOf(typeof(RealmObjectBase)))
+                {
+                    removedGetter = _ => InvalidRealmObject.Instance;
+                }
+                else
+                {
+                    removedGetter = _ => default;
+                }
+
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => removedGetter, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
@@ -339,7 +349,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, T> getter, out IList items, out int startIndex)
+        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
         {
             items = null;
 
