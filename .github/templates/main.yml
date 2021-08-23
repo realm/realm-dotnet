@@ -44,21 +44,10 @@ steps:
 #@ end
 
 #@ def setupWin81SDK():
-  - name: Check Win8.1 SDK Cache
-    id: check-win81-sdk-cache
-    uses: actions/cache@v2
-    with:
-      path: 'C:\win81sdk'
-      key: win81sdk
-    if: #@ wrappersCacheCondition
-  - name: Download Win8.1 SDK
+  - name: Install Win8.1 SDK
     run: |
       md C:\win81sdk
       Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
-    shell: powershell
-    if: #@ wrappersCacheCondition + " && steps.check-win81-sdk-cache.outputs.cache-hit != 'true'"
-  - name: Install Win8.1 SDK
-    run: |
       Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
     shell: powershell
     if: #@ wrappersCacheCondition
@@ -165,9 +154,9 @@ steps:
 #@ end
 #@ end
 
-#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand, addNet5):
+#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand):
 #@ properties = {
-#@   "AddNet5Framework": addNet5,
+#@   "AdditionalFrameworks": framework,
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
 #@ }
@@ -183,7 +172,7 @@ steps:
 #@
 #@ runtime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
   - name: #@ "Publish " + projectPath
-    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg
+    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg + " --no-self-contained"
     shell: bash
   - name: Run the tests
     run: #@ "./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "/" + executeCommand
@@ -367,11 +356,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        targetFramework: [ netcoreapp3.1, net5.0 ]
+        targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
+      - uses: actions/setup-dotnet@v1
+        if: matrix.targetFramework == 'net6.0'
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
@@ -427,7 +421,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join", "true"))
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
       - name: Find Results file
         id: find-results-file
         run: |
