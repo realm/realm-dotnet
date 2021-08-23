@@ -18,7 +18,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -255,25 +260,60 @@ namespace Realms.Tests.Database
 
 #pragma warning disable SYSLIB0011 // We only use BinaryFormatter for serialization
         [Test]
-        public void RealmObject_WhenSerialized_ShouldSkipBaseProperties()
+        public void RealmObject_WhenSerializedBinary_ShouldSkipBaseProperties([Values(true, false)] bool managed)
         {
-            var obj = new SerializedObject();
-            _realm.Write(() => _realm.Add(obj));
-
-            string text = null;
-            using (var stream = new System.IO.MemoryStream())
+            var obj = new SerializedObject
             {
-                var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                formatter.Serialize(stream, obj);
-                text = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+                IntValue = 123,
+                Name = "abc"
+            };
+
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(obj));
             }
 
-            foreach (var field in typeof(RealmObjectBase).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+            using var stream = new MemoryStream();
+            var formatter = new BinaryFormatter();
+            formatter.Serialize(stream, obj);
+            var text = Encoding.UTF8.GetString(stream.ToArray());
+
+            foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
             {
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
+
+            Assert.That(text, Does.Not.Contain(nameof(RealmObjectBase.DynamicApi)));
         }
 #pragma warning restore SYSLIB0011
+
+        [Test]
+        public void RealmObject_WhenSerialized_WithMongoDBBson_ShouldSkipBaseProperties([Values(true, false)] bool managed)
+        {
+            var obj = new SerializedObject
+            {
+                IntValue = 123,
+                Name = "abc"
+            };
+
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(obj));
+            }
+
+            var text = obj.ToJson();
+
+            foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                Assert.That(text, Does.Not.Contains(field.Name));
+            }
+
+            Assert.That(text, Does.Not.Contain(nameof(RealmObjectBase.DynamicApi)));
+            Assert.That(text, Does.Contain(nameof(SerializedObject.IntValue)));
+            Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
+            Assert.That(text, Does.Contain(obj.Name));
+            Assert.That(text, Does.Contain(obj.IntValue.ToString()));
+        }
 
         [Test]
         public void FrozenObject_GetsGarbageCollected()
@@ -421,7 +461,7 @@ namespace Realms.Tests.Database
         [Serializable]
         private class SerializedObject : RealmObject
         {
-            public int Id { get; set; }
+            public int IntValue { get; set; }
 
             public string Name { get; set; }
         }

@@ -108,7 +108,7 @@ namespace Realms
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
-        [NonSerialized, XmlIgnore]
+        [XmlIgnore]
         public Dynamic DynamicApi
         {
             get
