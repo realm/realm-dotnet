@@ -238,60 +238,75 @@ namespace Realms.Tests.Database
             Assert.That(q2.Count, Is.EqualTo(0));
         }
 
-        // End of new tests
+        [Test]
+        public void SearchComparingConstants()
+        {
+            // Verify that constants in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandConstant).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-        //[Test]
-        //public void Ordering()
-        //{
-        //    var query = _realm.All<Person>()
-        //        .Where(p => p.FirstName.StartsWith("abc") && p.IsInteresting)
-        //        .Where(p => p.Birthday < System.DateTimeOffset.UtcNow)
-        //        .OrderBy(p => p.FirstName)
-        //        .ThenByDescending(p => p.Birthday);
+        [Test]
+        public void SearchComparingStaticFields()
+        {
+            // Verify that static field in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandField).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-        //    _ = query.ToArray();
-        //}
+        [Test]
+        public void SearchComparingStaticProperties()
+        {
+            // Verify that static properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandProperty).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-        //[Test]
-        //public void DictTest()
-        //{
-        //    var query = _realm.All<CollectionsObject>().Where(a => a.BooleanDict.Any(kvp => kvp.Key.StartsWith("abc")));
-        //    var debugView = GetDebugView(query.Expression);
-        //    Console.WriteLine(debugView);
-        //    _ = query.ToArray();
-        //}
+        [Test]
+        public void SearchComparingInstanceFields()
+        {
+            var constants = new InstanceConstants();
 
-        //[Test]
-        //public void ListTest()
-        //{
-        //    var query = _realm.All<CollectionsObject>().Where(a => a.BooleanList.Count > 5);
-        //    _ = query.ToArray();
-        //}
+            // Verify that instance fields in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandField).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-        //[Test]
-        //public void Iteration()
-        //{
-        //    _realm.Write(() =>
-        //    {
-        //        for (var i = 0; i < 10; i++)
-        //        {
-        //            _realm.Add(new IntPropertyObject
-        //            {
-        //                Int = i
-        //            });
-        //        }
-        //    });
+        [Test]
+        public void SearchComparingInstanceProperties()
+        {
+            var constants = new InstanceConstants();
 
-        //    var query = _realm.All<IntPropertyObject>().Where(a => a.Int > 5);
-        //    foreach (var item in query)
-        //    {
-        //        System.Console.WriteLine(item.Int);
-        //    }
+            // Verify that instance properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandProperty).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-        //    for (var i = 0; i < query.Count(); i++)
-        //    {
-        //        System.Console.WriteLine(query.ElementAt(i).Int);
-        //    }
-        //}
+        private static class Constants
+        {
+            public const long SixtyThousandConstant = 60000;
+
+            public static readonly long SixtyThousandField = 60000;
+
+            public static long SixtyThousandProperty { get; } = 60000;
+        }
+
+        private class NestedConstants
+        {
+            public InstanceConstants InstanceConstants { get; } = new InstanceConstants();
+        }
+
+        private class InstanceConstants
+        {
+            public readonly long SixtyThousandField = 60000;
+
+            public long SixtyThousandProperty { get; } = 60000;
+        }
+
     }
 }

@@ -6,7 +6,6 @@ using System.Reflection;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
-
 namespace Realms
 {
     internal class WhereClauseVisitor : ClauseVisitor
@@ -82,73 +81,37 @@ namespace Realms
                 node.Method.DeclaringType == typeof(StringExtensions))
             {
                 StringComparisonNode result;
-                bool caseSensitivity = true;
                 if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value) || AreMethodsSame(node.Method, Methods.String.StartsWithStringComparison.Value))
                 {
                     result = new StartsWithNode();
-                    caseSensitivity = GetCaseSensitivity(node);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value) || AreMethodsSame(node.Method, Methods.String.EndsWithStringComparison.Value))
                 {
                     result = new EndsWithNode();
-                    caseSensitivity = GetCaseSensitivity(node);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.Contains.Value) || AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
                 {
                     result = new ContainsNode();
-                    caseSensitivity = GetCaseSensitivity(node);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value) || AreMethodsSame(node.Method, Methods.String.EqualsStringComparison.Value))
                 {
                     result = new StringEqualityNode();
-                    caseSensitivity = GetCaseSensitivity(node);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
                 {
-                    StringComparisonNode result2 = new LikeNode();
-                    if (node.Arguments.Count == 3)
-                    {
-                        if (node.Arguments[0] is MemberExpression stringMemberExpression)
-                        {
-                            result2.Left = new PropertyNode()
-                            {
-                                Name = GetColumnName(stringMemberExpression, stringMemberExpression.NodeType),
-                                Type = GetKind(stringMemberExpression.Type)
-                            };
-                        }
-
-                        if (node.Arguments[1] is ConstantExpression ce)  //TODO Need to reuse the visit and extrac methods for this
-                        {
-                            result2.Right = new ConstantNode()
-                            {
-                                Value = ExtractValue(ce.Value),
-                            };
-                        }
-
-                        if (node.Arguments[2] is ConstantExpression isCaseSensetive)
-                        {
-                            result2.CaseSensitivity = (bool)isCaseSensetive.Value;
-                        }
-                    }
-                    else
-                    {
-                        throw new NotSupportedException("Not a supported 'Like' string query.");
-                    }
-
-                    returnNode = result2;
-                    return RealmLinqExpression.Create(returnNode);
+                    result = new LikeNode();
                 }
                 else
                 {
-                    throw new NotSupportedException(node.Method.Name + " is not supported string operation method");
+                    throw new NotSupportedException(node.Method.Name + " is not a supported string operation method");
                 }
 
-                result.CaseSensitivity = caseSensitivity;
+                result.CaseSensitivity = GetCaseSensitivity(node);
 
-                MemberExpression memberExpression = null;
-                ConstantExpression constantExpression = null;
+                MemberExpression memberExpression;
+                ConstantExpression constantExpression;
 
-                // This means that it's a static method, so it's a little different
+                // This means that it's a static method (from StringExtensions)
                 if (node.Object == null)
                 {
                     memberExpression = node.Arguments[0] as MemberExpression;
@@ -160,27 +123,10 @@ namespace Realms
                     constantExpression = node.Arguments[0] as ConstantExpression;
                 }
 
-                var exp = node.Object ?? node.Arguments[0];  //TODO Better name
-
-                if (memberExpression != null)
+                if (memberExpression != null && constantExpression != null)
                 {
-                    if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
-                    {
-                        result.Left = new PropertyNode()
-                        {
-                            Name = GetColumnName(memberExpression, memberExpression.NodeType),
-                            Type = GetKind(memberExpression.Type)
-                        };
-                    }
-                    else
-                    {
-                        throw new NotSupportedException(memberExpression + " is null or not a supported type.");
-                    }
-
-                    result.Right = new ConstantNode()
-                    {
-                        Value = ExtractValue(constantExpression.Value),
-                    };
+                    result.Left = ExtractNode(memberExpression);
+                    result.Right = ExtractNode(constantExpression);
                 }
                 else
                 {
@@ -195,52 +141,6 @@ namespace Realms
             }
 
             return RealmLinqExpression.Create(returnNode);
-        }
-
-        private static bool GetCaseSensitivity(MethodCallExpression methodExpression)
-        {
-            int argumentIndex;
-            if (methodExpression.Object == null && methodExpression.Arguments.Count == 3)
-            {
-                argumentIndex = 2;
-            }
-            else if (methodExpression.Arguments.Count == 2)
-            {
-                argumentIndex = 1;
-            }
-            else
-            {
-                return true;
-            }
-
-            if (methodExpression.Arguments[argumentIndex] is ConstantExpression constantExpression)
-            {
-                // For "Like" method  //TODO Am I making this method too generic...?
-                if (constantExpression.Value is bool boolValue)
-                {
-                    return boolValue;
-                }
-
-                if (constantExpression.Value is StringComparison comparison)
-                {
-                    return comparison switch
-                    {
-                        StringComparison.Ordinal => true,
-                        StringComparison.OrdinalIgnoreCase => false,
-                        _ => throw new NotSupportedException($"The comparison {comparison} is not yet supported. Use {StringComparison.Ordinal} or {StringComparison.OrdinalIgnoreCase}."),
-                    };
-                }
-                else
-                {
-                    //TODO
-                    throw new Exception("TODO");
-                }
-            }
-            else
-            {
-                //TODO
-                throw new Exception("TODO");
-            }
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
@@ -346,6 +246,52 @@ namespace Realms
             return RealmLinqExpression.Create(constantNode);
         }
 
+        private static bool GetCaseSensitivity(MethodCallExpression methodExpression)
+        {
+            int argumentIndex;
+
+            // This means that it's a static method (coming from StringExtensions)
+            if (methodExpression.Object == null && methodExpression.Arguments.Count == 3)
+            {
+                argumentIndex = 2;
+            }
+            else if (methodExpression.Arguments.Count == 2)
+            {
+                argumentIndex = 1;
+            }
+            else
+            {
+                return true;
+            }
+
+            if (methodExpression.Arguments[argumentIndex] is ConstantExpression constantExpression)
+            {
+                // Special case for "Like" -- //TODO Have I made this method too generic?
+                if (constantExpression.Value is bool boolValue)
+                {
+                    return boolValue;
+                }
+
+                if (constantExpression.Value is StringComparison comparison)
+                {
+                    return comparison switch
+                    {
+                        StringComparison.Ordinal => true,
+                        StringComparison.OrdinalIgnoreCase => false,
+                        _ => throw new NotSupportedException($"The comparison {comparison} is not yet supported. Use {StringComparison.Ordinal} or {StringComparison.OrdinalIgnoreCase}."),
+                    };
+                }
+                else
+                {
+                    throw new NotSupportedException(methodExpression.Method.Name + " is not a supported string operation method");
+                }
+            }
+            else
+            {
+                throw new NotSupportedException(methodExpression.Method.Name + " is not a supported string operation method");
+            }
+        }
+
         private static string GetKind(Type type)
         {
             if (type == typeof(float))
@@ -393,11 +339,11 @@ namespace Realms
 
         private string ExtractValue(object value)
         {
-            _arguments.Add(ExtractRealmValue(value));
+            _arguments.Add(GetRealmValue(value));
             return $"${_argumentsCounter++}";
         }
 
-        private static RealmValue ExtractRealmValue(object value)  //TODO Probably we can move this to RealmValue itself
+        private static RealmValue GetRealmValue(object value)  //TODO Can we do this differently? If not, we should move it to RealmValue
         {
             return value switch
             {
@@ -408,7 +354,7 @@ namespace Realms
                 double doubleValue => RealmValue.Create(doubleValue, RealmValueType.Double),
                 null => RealmValue.Null,
                 RealmValue realmValue => realmValue,
-                _ => throw new Exception("TODOOOOOO")
+                _ => throw new Exception("TODOOOOOO")  //TODO
             };
         }
 
