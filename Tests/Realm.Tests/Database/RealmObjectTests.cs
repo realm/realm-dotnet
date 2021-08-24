@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Xml.Serialization;
 using MongoDB.Bson;
@@ -259,76 +258,22 @@ namespace Realms.Tests.Database
             Assert.That(objAgain.GetHashCode(), Is.EqualTo(managedHash), "Object that didn't hash its hash code and its row got deleted should still have the same hash code");
         }
 
-#pragma warning disable SYSLIB0011 // We only use BinaryFormatter for serialization
-        [Test]
-        public void RealmObject_WhenSerializedBinary_ShouldSkipBaseProperties([Values(true, false)] bool managed)
-        {
-            var obj = new SerializedObject
-            {
-                IntValue = 123,
-                Name = "abc"
-            };
-
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(obj));
-            }
-
-            using var stream = new MemoryStream();
-            var formatter = new BinaryFormatter();
-            formatter.Serialize(stream, obj);
-            var text = Encoding.UTF8.GetString(stream.ToArray());
-
-            foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                Assert.That(text, Does.Not.Contains(field.Name));
-            }
-
-            Assert.That(text, Does.Contain(nameof(SerializedObject.IntValue)));
-            Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
-        }
-#pragma warning restore SYSLIB0011
-
         [Test]
         public void RealmObject_WhenSerialized_WithMongoDBBson_ShouldSkipBaseProperties([Values(true, false)] bool managed)
         {
-            var obj = new SerializedObject
-            {
-                IntValue = 123,
-                Name = "abc"
-            };
-
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(obj));
-            }
-
-            var text = obj.ToJson();
-
-            AssertSerializedTextContainsOnlyUserProperties(text, obj);
+            TestSerialization(managed, obj => obj.ToJson());
         }
 
         [Test]
         public void RealmObject_WhenSerialized_Xml_ShouldSkipBaseProperties([Values(true, false)] bool managed)
         {
-            var obj = new SerializedObject
+            TestSerialization(managed, obj =>
             {
-                IntValue = 123,
-                Name = "abc"
-            };
-
-            if (managed)
-            {
-                _realm.Write(() => _realm.Add(obj));
-            }
-
-            var serializer = new XmlSerializer(typeof(SerializedObject));
-            using var stream = new MemoryStream();
-            serializer.Serialize(stream, obj);
-
-            var text = Encoding.UTF8.GetString(stream.ToArray());
-
-            AssertSerializedTextContainsOnlyUserProperties(text, obj);
+                var serializer = new XmlSerializer(typeof(SerializedObject));
+                using var stream = new MemoryStream();
+                serializer.Serialize(stream, obj);
+                return Encoding.UTF8.GetString(stream.ToArray());
+            });
         }
 
 #if !UNITY
@@ -336,31 +281,38 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_WhenSerialized_NewtonsoftJson_ShouldSkipBaseProperties([Values(true, false)] bool managed)
         {
+            TestSerialization(managed, obj => Newtonsoft.Json.JsonConvert.SerializeObject(obj), expectCollections: true);
+        }
+
+#endif
+
+        private void TestSerialization(bool managed, Func<SerializedObject, string> serializationFunction, bool expectCollections = false)
+        {
             var obj = new SerializedObject
             {
                 IntValue = 123,
                 Name = "abc"
             };
 
+            obj.List.Add("list item");
+            obj.Set.Add("set item");
+            obj.Dict["foo"] = 987;
+
             if (managed)
             {
                 _realm.Write(() => _realm.Add(obj));
             }
 
-            var text = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
-            AssertSerializedTextContainsOnlyUserProperties(text, obj);
-        }
+            var text = serializationFunction(obj);
 
-#endif
+            var realmTypes = new[] { typeof(RealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
 
-        private static void AssertSerializedTextContainsOnlyUserProperties(string text, SerializedObject obj)
-        {
-            foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            foreach (var field in realmTypes.SelectMany(t => t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)))
             {
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
 
-            foreach (var prop in typeof(RealmObjectBase).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+            foreach (var prop in realmTypes.SelectMany(t => t.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)))
             {
                 Assert.That(text, Does.Not.Contains(prop.Name));
             }
@@ -369,6 +321,18 @@ namespace Realms.Tests.Database
             Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
             Assert.That(text, Does.Contain(obj.Name));
             Assert.That(text, Does.Contain(obj.IntValue.ToString()));
+
+            if (expectCollections)
+            {
+                Assert.That(text, Does.Contain(nameof(SerializedObject.Set)));
+                Assert.That(text, Does.Contain(nameof(SerializedObject.Dict)));
+                Assert.That(text, Does.Contain(nameof(SerializedObject.List)));
+
+                Assert.That(text, Does.Contain(obj.Set.Single()));
+                Assert.That(text, Does.Contain(obj.List.Single()));
+                Assert.That(text, Does.Contain(obj.Dict.Keys.Single()));
+                Assert.That(text, Does.Contain(obj.Dict.Values.Single().ToString()));
+            }
         }
 
         [Test]
@@ -520,6 +484,12 @@ namespace Realms.Tests.Database
             public int IntValue { get; set; }
 
             public string Name { get; set; }
+
+            public IDictionary<string, int> Dict { get; }
+
+            public IList<string> List { get; }
+
+            public ISet<string> Set { get; }
         }
 
         private class OnManagedTestClass : RealmObject

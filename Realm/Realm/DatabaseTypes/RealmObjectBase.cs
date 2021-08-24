@@ -41,29 +41,22 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true)]
-    [Serializable]
     public abstract class RealmObjectBase
         : INotifyPropertyChanged,
           IThreadConfined,
           INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IReflectableType
     {
-        [NonSerialized, IgnoreDataMember]
         private Lazy<int> _hashCode;
 
-        [NonSerialized, IgnoreDataMember]
         private Realm _realm;
 
-        [NonSerialized, IgnoreDataMember]
         private ObjectHandle _objectHandle;
 
-        [NonSerialized, IgnoreDataMember]
         private Metadata _metadata;
 
-        [NonSerialized, IgnoreDataMember]
         private NotificationTokenHandle _notificationToken;
 
-        [field: NonSerialized, IgnoreDataMember]
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
@@ -94,10 +87,8 @@ namespace Realms
             }
         }
 
-        [IgnoreDataMember]
         internal ObjectHandle ObjectHandle => _objectHandle;
 
-        [IgnoreDataMember]
         internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
@@ -157,7 +148,7 @@ namespace Realms
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
-        [IgnoreDataMember, XmlIgnore]
+        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
         /// <summary>
@@ -183,7 +174,6 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        [IgnoreDataMember]
         Metadata IMetadataObject.Metadata => ObjectMetadata;
 
         /// <inheritdoc/>

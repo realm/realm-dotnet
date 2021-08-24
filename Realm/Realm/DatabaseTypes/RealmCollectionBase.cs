@@ -25,6 +25,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
@@ -39,16 +41,19 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
+        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+
+        private NotificationTokenHandle _notificationToken;
+
+        private bool _deliveredInitialNotification;
+
         internal readonly bool _isEmbedded;
 
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+        internal readonly Lazy<CollectionHandleBase> Handle;
 
         internal readonly RealmObjectBase.Metadata Metadata;
 
         internal bool IsDynamic;
-
-        private NotificationTokenHandle _notificationToken;
-        private bool _deliveredInitialNotification;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event NotifyCollectionChangedEventHandler _collectionChanged;
@@ -90,6 +95,7 @@ namespace Realms
             }
         }
 
+        [IgnoreDataMember]
         public int Count
         {
             get
@@ -103,34 +109,37 @@ namespace Realms
             }
         }
 
+        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
         RealmObjectBase.Metadata IMetadataObject.Metadata => Metadata;
 
+        [IgnoreDataMember]
         public bool IsManaged => Realm != null;
 
+        [IgnoreDataMember]
         public bool IsValid => Handle.Value.IsValid;
 
+        [IgnoreDataMember]
         public bool IsFrozen => Handle.Value.IsFrozen;
 
+        [IgnoreDataMember]
         public Realm Realm { get; }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
-        public IRealmCollection<T> Freeze()
-        {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
-            return CreateCollection(frozenRealm, frozenHandle);
-        }
 
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
-        internal readonly Lazy<CollectionHandleBase> Handle;
+        public T this[int index]
+        {
+            get
+            {
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                return GetValueAtIndex(index);
+            }
+        }
 
         internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
         {
@@ -149,23 +158,23 @@ namespace Realms
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
-        public T this[int index]
-        {
-            get
-            {
-                if (index < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
-
-                return GetValueAtIndex(index);
-            }
-        }
-
         internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
         {
             var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
+
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
+        public IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
+            return CreateCollection(frozenRealm, frozenHandle);
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
