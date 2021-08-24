@@ -93,8 +93,10 @@ namespace Realms
             }
         }
 
+        [XmlIgnore]
         internal ObjectHandle ObjectHandle => _objectHandle;
 
+        [XmlIgnore]
         internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
@@ -102,6 +104,7 @@ namespace Realms
         /// <see cref="Realm.Add{T}(T, bool)"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
+        [XmlIgnore]
         public bool IsManaged => _realm != null;
 
         /// <summary>
@@ -129,6 +132,7 @@ namespace Realms
         /// Unmanaged objects are always considered valid.
         /// </summary>
         /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
+        [XmlIgnore]
         public bool IsValid => _objectHandle?.IsValid != false;
 
         /// <summary>
@@ -138,18 +142,21 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
+        [XmlIgnore]
         public bool IsFrozen => _objectHandle?.IsFrozen == true;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
+        [XmlIgnore]
         public Realm Realm => _realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
+        [XmlIgnore]
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
         /// <summary>
@@ -159,6 +166,7 @@ namespace Realms
         /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
         /// </remarks>
         /// <value>The number of objects referring to this one.</value>
+        [XmlIgnore]
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
         internal RealmObjectBase FreezeImpl()
@@ -174,6 +182,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
+        [XmlIgnore]
         Metadata IMetadataObject.Metadata => ObjectMetadata;
 
         /// <inheritdoc/>

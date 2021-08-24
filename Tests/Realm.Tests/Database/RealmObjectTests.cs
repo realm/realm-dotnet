@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Xml.Serialization;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -316,6 +317,38 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmObject_WhenSerialized_Xml_ShouldSkipBaseProperties([Values(true, false)] bool managed)
+        {
+            var obj = new SerializedObject
+            {
+                IntValue = 123,
+                Name = "abc"
+            };
+
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(obj));
+            }
+
+            var serializer = new XmlSerializer(typeof(SerializedObject));
+            using var stream = new MemoryStream();
+            serializer.Serialize(stream, obj);
+
+            var text = Encoding.UTF8.GetString(stream.ToArray());
+
+            foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                Assert.That(text, Does.Not.Contains(field.Name));
+            }
+
+            Assert.That(text, Does.Not.Contain(nameof(RealmObjectBase.DynamicApi)));
+            Assert.That(text, Does.Contain(nameof(SerializedObject.IntValue)));
+            Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
+            Assert.That(text, Does.Contain(obj.Name));
+            Assert.That(text, Does.Contain(obj.IntValue.ToString()));
+        }
+
+        [Test]
         public void FrozenObject_GetsGarbageCollected()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -459,7 +492,7 @@ namespace Realms.Tests.Database
         }
 
         [Serializable]
-        private class SerializedObject : RealmObject
+        public class SerializedObject : RealmObject
         {
             public int IntValue { get; set; }
 
