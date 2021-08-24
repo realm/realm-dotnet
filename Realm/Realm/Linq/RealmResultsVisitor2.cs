@@ -15,7 +15,7 @@ namespace Realms
         private readonly List<RealmValue> _arguments;
 
         private IQueryableCollection results;
-        private int _argumentsCounter = 0;
+        private int _argumentsCounter;
 
         internal RealmResultsVisitor2(Realm realm, RealmObjectBase.Metadata metadata)
         {

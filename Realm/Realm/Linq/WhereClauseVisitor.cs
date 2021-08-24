@@ -75,7 +75,7 @@ namespace Realms
             return _whereClause;
         }
 
-        private ExpressionNode Extract(Expression node)
+        private ExpressionNode Extract(Expression node)  //TODO need to modify this method to accept a boolean "shouldExpandMemberExpression" to solve the issue with boolean properties
         {
             var realmLinqExpression = Visit(node) as RealmLinqExpression;
             return realmLinqExpression.ExpressionNode;
@@ -162,7 +162,7 @@ namespace Realms
                             };
                         }
 
-                        if (node.Arguments[1] is ConstantExpression constantExpression)  //TODO Maybe we can move this whole thing to a new method...?
+                        if (node.Arguments[1] is ConstantExpression constantExpression)  //TODO Need to reuse the visit and extrac methods for this
                         {
                             result2.Right = new ConstantNode()
                             {
@@ -270,26 +270,16 @@ namespace Realms
                         throw new NotSupportedException($"The operator '{binaryExpression.NodeType}' is not supported");
                 }
 
-                var memberExpression = (binaryExpression.Left is MemberExpression ? binaryExpression.Left : binaryExpression.Right) as MemberExpression;
-                var constantExpression = (binaryExpression.Left is ConstantExpression ? binaryExpression.Left : binaryExpression.Right) as ConstantExpression;  //TODO need to consider the case that none of those is
+                var leftExpression = Extract(binaryExpression.Left);
+                var rightExpression = Extract(binaryExpression.Right);
 
-                if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
+                if (!((leftExpression is PropertyNode && rightExpression is ConstantNode) || (leftExpression is ConstantNode && rightExpression is PropertyNode)))
                 {
-                    comparisonNode.Left = new PropertyNode()
-                    {
-                        Name = GetColumnName(memberExpression, memberExpression.NodeType),
-                        Type = GetKind(memberExpression.Type)
-                    };
-                }
-                else
-                {
-                    throw new NotSupportedException(memberExpression + " is null or not a supported node type.");
+                    throw new Exception("WHAT DO I WRITE HERE?"); //TODO;
                 }
 
-                comparisonNode.Right = new ConstantNode()  //TODO We don't know what's right and what's left (it's important if the comparison is not symmetric (as with lte)
-                {
-                    Value = ExtractValue(constantExpression.Value),
-                };
+                comparisonNode.Left = leftExpression;
+                comparisonNode.Right = rightExpression;
 
                 returnNode = comparisonNode;
             }
@@ -337,11 +327,14 @@ namespace Realms
 
         protected override Expression VisitMember(MemberExpression node)
         {
+            //TODO The problem is that sometimes this needs to be expanded, sometimes this needs to be kept as it is...
             if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
             {
                 ExpressionNode result;
 
-                if (node.Type == typeof(bool))
+                //if (node.Type == typeof(bool))
+
+                if (false)
                 {
                     var comparisonNode = new EqualityNode();
                     comparisonNode.Left = new PropertyNode()
@@ -368,6 +361,15 @@ namespace Realms
             }
 
             throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
+        }
+
+        protected override Expression VisitConstant(ConstantExpression node)
+        {
+            var constantNode = new ConstantNode()
+            {
+                Value = ExtractValue(node.Value),
+            };
+            return RealmLinqExpression.Create(constantNode);
         }
 
         private static string GetKind(Type type)
@@ -418,7 +420,6 @@ namespace Realms
             return name;
         }
 
-        // Compares two methods for equality. .NET Native's == doesn't return expected results.
         private static bool AreMethodsSame(MethodInfo first, MethodInfo second)
         {
             if (first == second)

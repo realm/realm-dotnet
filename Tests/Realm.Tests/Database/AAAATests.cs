@@ -66,8 +66,8 @@ namespace Realms.Tests.Database
         public void WhereBooleanEqTestWithConstant()
         {
             var q1 = _realm.All<Person>().Where(p => p.IsInteresting == true).ToList();
-            Assert.That(q1.Count, Is.EqualTo(1));
-            Assert.That(q1[0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(q1.Count, Is.EqualTo(2));
+            Assert.That(q1[0].FullName, Is.EqualTo("John Smith"));
             Assert.That(q1[1].FullName, Is.EqualTo("Peter Jameson"));
         }
 
