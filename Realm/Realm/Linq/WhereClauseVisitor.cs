@@ -70,15 +70,9 @@ namespace Realms
         {
             _argumentsCounter = argumentsCounter;
             var lambda = (LambdaExpression)StripQuotes(whereClause);
-            _whereClause.Expression = Extract(lambda.Body);
+            _whereClause.Expression = ExtractNode(lambda.Body);
             arguments = _arguments;
             return _whereClause;
-        }
-
-        private ExpressionNode Extract(Expression node)  //TODO need to modify this method to accept a boolean "shouldExpandMemberExpression" to solve the issue with boolean properties
-        {
-            var realmLinqExpression = Visit(node) as RealmLinqExpression;
-            return realmLinqExpression.ExpressionNode;
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -88,65 +82,26 @@ namespace Realms
                 node.Method.DeclaringType == typeof(StringExtensions))
             {
                 StringComparisonNode result;
-                if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))  //TODO Can we just use string comparison with the name...? 
+                bool caseSensitivity = true;
+                if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value) || AreMethodsSame(node.Method, Methods.String.StartsWithStringComparison.Value))
                 {
                     result = new StartsWithNode();
+                    caseSensitivity = GetCaseSensitivity(node);
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.StartsWithStringComparison.Value))
-                {
-                    result = new StartsWithNode();
-                    if (node.Arguments[1] is ConstantExpression constantExpression)
-                    {
-                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
-                        {
-                            result.CaseSensitivity = false;
-                        }
-                    }
-                }
-                else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value) || AreMethodsSame(node.Method, Methods.String.EndsWithStringComparison.Value))
                 {
                     result = new EndsWithNode();
+                    caseSensitivity = GetCaseSensitivity(node);
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.EndsWithStringComparison.Value))
-                {
-                    result = new EndsWithNode();
-                    if (node.Arguments[1] is ConstantExpression constantExpression)
-                    {
-                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
-                        {
-                            result.CaseSensitivity = false;
-                        }
-                    }
-                }
-                else if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.Contains.Value) || AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
                 {
                     result = new ContainsNode();
+                    caseSensitivity = GetCaseSensitivity(node);
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
-                {
-                    result = new ContainsNode();
-                    if (node.Arguments[1] is ConstantExpression constantExpression)
-                    {
-                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
-                        {
-                            result.CaseSensitivity = false;
-                        }
-                    }
-                }
-                else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value) || AreMethodsSame(node.Method, Methods.String.EqualsStringComparison.Value))
                 {
                     result = new StringEqualityNode();
-                }
-                else if (AreMethodsSame(node.Method, Methods.String.EqualsStringComparison.Value))
-                {
-                    result = new StringEqualityNode();
-                    if (node.Arguments[1] is ConstantExpression constantExpression)
-                    {
-                        if (constantExpression.Value.Equals(StringComparison.OrdinalIgnoreCase))
-                        {
-                            result.CaseSensitivity = false;
-                        }
-                    }
+                    caseSensitivity = GetCaseSensitivity(node);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
                 {
@@ -162,11 +117,11 @@ namespace Realms
                             };
                         }
 
-                        if (node.Arguments[1] is ConstantExpression constantExpression)  //TODO Need to reuse the visit and extrac methods for this
+                        if (node.Arguments[1] is ConstantExpression ce)  //TODO Need to reuse the visit and extrac methods for this
                         {
                             result2.Right = new ConstantNode()
                             {
-                                Value = ExtractValue(constantExpression.Value),
+                                Value = ExtractValue(ce.Value),
                             };
                         }
 
@@ -188,7 +143,26 @@ namespace Realms
                     throw new NotSupportedException(node.Method.Name + " is not supported string operation method");
                 }
 
-                if (node.Object is MemberExpression memberExpression)
+                result.CaseSensitivity = caseSensitivity;
+
+                MemberExpression memberExpression = null;
+                ConstantExpression constantExpression = null;
+
+                // This means that it's a static method, so it's a little different
+                if (node.Object == null)
+                {
+                    memberExpression = node.Arguments[0] as MemberExpression;
+                    constantExpression = node.Arguments[1] as ConstantExpression;
+                }
+                else
+                {
+                    memberExpression = node.Object as MemberExpression;
+                    constantExpression = node.Arguments[0] as ConstantExpression;
+                }
+
+                var exp = node.Object ?? node.Arguments[0];  //TODO Better name
+
+                if (memberExpression != null)
                 {
                     if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
                     {
@@ -203,13 +177,10 @@ namespace Realms
                         throw new NotSupportedException(memberExpression + " is null or not a supported type.");
                     }
 
-                    if (node.Arguments[0] is ConstantExpression constantExpression)
+                    result.Right = new ConstantNode()
                     {
-                        result.Right = new ConstantNode()
-                        {
-                            Value = ExtractValue(constantExpression.Value),
-                        };
-                    }
+                        Value = ExtractValue(constantExpression.Value),
+                    };
                 }
                 else
                 {
@@ -226,21 +197,67 @@ namespace Realms
             return RealmLinqExpression.Create(returnNode);
         }
 
+        private static bool GetCaseSensitivity(MethodCallExpression methodExpression)
+        {
+            int argumentIndex;
+            if (methodExpression.Object == null && methodExpression.Arguments.Count == 3)
+            {
+                argumentIndex = 2;
+            }
+            else if (methodExpression.Arguments.Count == 2)
+            {
+                argumentIndex = 1;
+            }
+            else
+            {
+                return true;
+            }
+
+            if (methodExpression.Arguments[argumentIndex] is ConstantExpression constantExpression)
+            {
+                // For "Like" method  //TODO Am I making this method too generic...?
+                if (constantExpression.Value is bool boolValue)
+                {
+                    return boolValue;
+                }
+
+                if (constantExpression.Value is StringComparison comparison)
+                {
+                    return comparison switch
+                    {
+                        StringComparison.Ordinal => true,
+                        StringComparison.OrdinalIgnoreCase => false,
+                        _ => throw new NotSupportedException($"The comparison {comparison} is not yet supported. Use {StringComparison.Ordinal} or {StringComparison.OrdinalIgnoreCase}."),
+                    };
+                }
+                else
+                {
+                    //TODO
+                    throw new Exception("TODO");
+                }
+            }
+            else
+            {
+                //TODO
+                throw new Exception("TODO");
+            }
+        }
+
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             ExpressionNode returnNode;
             if (binaryExpression.NodeType == ExpressionType.AndAlso)
             {
                 var andNode = new AndNode();
-                andNode.Left = Extract(binaryExpression.Left);
-                andNode.Right = Extract(binaryExpression.Right);
+                andNode.Left = ExtractNode(binaryExpression.Left);
+                andNode.Right = ExtractNode(binaryExpression.Right);
                 returnNode = andNode;
             }
             else if (binaryExpression.NodeType == ExpressionType.OrElse)
             {
                 var orNode = new OrNode();
-                orNode.Left = Extract(binaryExpression.Left);
-                orNode.Right = Extract(binaryExpression.Right);
+                orNode.Left = ExtractNode(binaryExpression.Left);
+                orNode.Right = ExtractNode(binaryExpression.Right);
                 returnNode = orNode;
             }
             else
@@ -270,8 +287,8 @@ namespace Realms
                         throw new NotSupportedException($"The operator '{binaryExpression.NodeType}' is not supported");
                 }
 
-                var leftExpression = Extract(binaryExpression.Left);
-                var rightExpression = Extract(binaryExpression.Right);
+                var leftExpression = ExtractNode(binaryExpression.Left, false);
+                var rightExpression = ExtractNode(binaryExpression.Right, false);
 
                 if (!((leftExpression is PropertyNode && rightExpression is ConstantNode) || (leftExpression is ConstantNode && rightExpression is PropertyNode)))
                 {
@@ -287,27 +304,6 @@ namespace Realms
             return RealmLinqExpression.Create(returnNode);
         }
 
-        private string ExtractValue(object value)
-        {
-            _arguments.Add(ExtractRealmValue(value));
-            return $"${_argumentsCounter++}";
-        }
-
-        private RealmValue ExtractRealmValue(object value)  //TODO Probably we can move this to RealmValue itself
-        {
-            return value switch
-            {
-                int intValue => RealmValue.Create(intValue, RealmValueType.Int),
-                bool boolValue => RealmValue.Create(boolValue, RealmValueType.Bool),
-                string stringValue => RealmValue.Create(stringValue, RealmValueType.String),
-                float floatValue => RealmValue.Create(floatValue, RealmValueType.Float),
-                double doubleValue => RealmValue.Create(doubleValue, RealmValueType.Double),
-                null => RealmValue.Null,
-                RealmValue realmValue => realmValue,
-                _ => throw new Exception("TODOOOOOO")
-            };
-        }
-
         protected override Expression VisitUnary(UnaryExpression node)
         {
             ExpressionNode returnNode;
@@ -315,7 +311,7 @@ namespace Realms
             {
                 case ExpressionType.Not:
                     NegationNode negationNode = new NegationNode();
-                    negationNode.Expression = Extract(node.Operand);
+                    negationNode.Expression = ExtractNode(node.Operand);
                     returnNode = negationNode;
                     break;
                 default:
@@ -327,35 +323,13 @@ namespace Realms
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            //TODO The problem is that sometimes this needs to be expanded, sometimes this needs to be kept as it is...
             if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
             {
-                ExpressionNode result;
-
-                //if (node.Type == typeof(bool))
-
-                if (false)
+                var result = new PropertyNode()
                 {
-                    var comparisonNode = new EqualityNode();
-                    comparisonNode.Left = new PropertyNode()
-                    {
-                        Name = GetColumnName(node, node.NodeType),
-                        Type = GetKind(node.Type)
-                    };
-                    comparisonNode.Right = new ConstantNode()
-                    {
-                        Value = ExtractValue(true),
-                    };
-                    result = comparisonNode;
-                }
-                else
-                {
-                    result = new PropertyNode()
-                    {
-                        Name = GetColumnName(node, node.NodeType),
-                        Type = GetKind(node.Type)
-                    };
-                }
+                    Name = GetColumnName(node, node.NodeType),
+                    Type = GetKind(node.Type)
+                };
 
                 return RealmLinqExpression.Create(result);
             }
@@ -398,6 +372,44 @@ namespace Realms
             {
                 throw new NotSupportedException(type + " is not a supported type.");
             }
+        }
+
+        private ExpressionNode ExtractNode(Expression node, bool expandMemberExpression = true)
+        {
+            var expressionNode = (Visit(node) as RealmLinqExpression).ExpressionNode;
+            if (expandMemberExpression && expressionNode is PropertyNode propertyNode && propertyNode.Type == "bool")
+            {
+                var comparisonNode = new EqualityNode();
+                comparisonNode.Left = expressionNode;
+                comparisonNode.Right = new ConstantNode()
+                {
+                    Value = ExtractValue(true),
+                };
+                return comparisonNode;
+            }
+
+            return expressionNode;
+        }
+
+        private string ExtractValue(object value)
+        {
+            _arguments.Add(ExtractRealmValue(value));
+            return $"${_argumentsCounter++}";
+        }
+
+        private static RealmValue ExtractRealmValue(object value)  //TODO Probably we can move this to RealmValue itself
+        {
+            return value switch
+            {
+                int intValue => RealmValue.Create(intValue, RealmValueType.Int),
+                bool boolValue => RealmValue.Create(boolValue, RealmValueType.Bool),
+                string stringValue => RealmValue.Create(stringValue, RealmValueType.String),
+                float floatValue => RealmValue.Create(floatValue, RealmValueType.Float),
+                double doubleValue => RealmValue.Create(doubleValue, RealmValueType.Double),
+                null => RealmValue.Null,
+                RealmValue realmValue => realmValue,
+                _ => throw new Exception("TODOOOOOO")
+            };
         }
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)

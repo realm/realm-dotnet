@@ -182,11 +182,30 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void StringStartsWithCaseTest()
+        {
+            var firstNameStartsWith = _realm.All<Person>().Where(p => p.FirstName.StartsWith("pet",  StringComparison.OrdinalIgnoreCase)).ToList();
+            Assert.That(firstNameStartsWith.Count, Is.EqualTo(1));
+            Assert.That(firstNameStartsWith[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
         public void StringEndsWithTest()
         {
             var firstNameEndsWith = _realm.All<Person>().Where(p => p.FirstName.EndsWith("ter")).ToList();
             Assert.That(firstNameEndsWith.Count, Is.EqualTo(1));
             Assert.That(firstNameEndsWith[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
+
+        [Test]
+        public void StringEndsWithCaseTest()
+        {
+            var q1 = _realm.All<Person>().Where(p => p.FirstName.EndsWith("Ter", StringComparison.OrdinalIgnoreCase)).ToList();
+            Assert.That(q1.Count, Is.EqualTo(1));
+            Assert.That(q1[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var q2 = _realm.All<Person>().Where(p => p.FirstName.EndsWith("Ter", StringComparison.Ordinal)).ToList();
+            Assert.That(q2.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -198,11 +217,25 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void StringContainsIgnoreCaseTest()
+        {
+            var q1 = _realm.All<Person>().Where(p => p.FirstName.Contains("Ete", StringComparison.OrdinalIgnoreCase)).ToList();
+            Assert.That(q1.Count, Is.EqualTo(1));
+            Assert.That(q1[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var q2 = _realm.All<Person>().Where(p => p.FirstName.Contains("Ete", StringComparison.Ordinal)).ToList();
+            Assert.That(q2.Count, Is.EqualTo(0));
+        }
+
+        [Test]
         public void StringLikeTest()
         {
-            var firstNameLike = _realm.All<Person>().Where(p => p.FirstName.Like("P?t??", true)).ToList();
-            Assert.That(firstNameLike.Count, Is.EqualTo(1));
-            Assert.That(firstNameLike[0].FullName, Is.EqualTo("Peter Jameson"));
+            var q1 = _realm.All<Person>().Where(p => p.FirstName.Like("p?t??", false)).ToList();
+            Assert.That(q1.Count, Is.EqualTo(1));
+            Assert.That(q1[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var q2 = _realm.All<Person>().Where(p => p.FirstName.Like("p?t??", true)).ToList();
+            Assert.That(q2.Count, Is.EqualTo(0));
         }
 
         // End of new tests
