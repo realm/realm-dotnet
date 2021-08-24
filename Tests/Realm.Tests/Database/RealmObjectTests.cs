@@ -284,7 +284,8 @@ namespace Realms.Tests.Database
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
 
-            Assert.That(text, Does.Not.Contain(nameof(RealmObjectBase.DynamicApi)));
+            Assert.That(text, Does.Contain(nameof(SerializedObject.IntValue)));
+            Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
         }
 #pragma warning restore SYSLIB0011
 
@@ -304,16 +305,7 @@ namespace Realms.Tests.Database
 
             var text = obj.ToJson();
 
-            foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                Assert.That(text, Does.Not.Contains(field.Name));
-            }
-
-            Assert.That(text, Does.Not.Contain(nameof(RealmObjectBase.DynamicApi)));
-            Assert.That(text, Does.Contain(nameof(SerializedObject.IntValue)));
-            Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
-            Assert.That(text, Does.Contain(obj.Name));
-            Assert.That(text, Does.Contain(obj.IntValue.ToString()));
+            AssertSerializedTextContainsOnlyUserProperties(text, obj);
         }
 
         [Test]
@@ -336,12 +328,43 @@ namespace Realms.Tests.Database
 
             var text = Encoding.UTF8.GetString(stream.ToArray());
 
+            AssertSerializedTextContainsOnlyUserProperties(text, obj);
+        }
+
+#if !UNITY
+
+        [Test]
+        public void RealmObject_WhenSerialized_NewtonsoftJson_ShouldSkipBaseProperties([Values(true, false)] bool managed)
+        {
+            var obj = new SerializedObject
+            {
+                IntValue = 123,
+                Name = "abc"
+            };
+
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(obj));
+            }
+
+            var text = Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+            AssertSerializedTextContainsOnlyUserProperties(text, obj);
+        }
+
+#endif
+
+        private static void AssertSerializedTextContainsOnlyUserProperties(string text, SerializedObject obj)
+        {
             foreach (var field in typeof(RealmObjectBase).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
             {
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
 
-            Assert.That(text, Does.Not.Contain(nameof(RealmObjectBase.DynamicApi)));
+            foreach (var prop in typeof(RealmObjectBase).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+            {
+                Assert.That(text, Does.Not.Contains(prop.Name));
+            }
+
             Assert.That(text, Does.Contain(nameof(SerializedObject.IntValue)));
             Assert.That(text, Does.Contain(nameof(SerializedObject.Name)));
             Assert.That(text, Does.Contain(obj.Name));
