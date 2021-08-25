@@ -429,7 +429,7 @@ jobs:
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ build-packages ]
+    needs: [ code-coverage ]
     if: always()
     steps:
 #@ for platform in getWrapperBinaryNames():

@@ -779,7 +779,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Workflow cleanup
     needs:
-    - build-packages
+    - code-coverage
     if: always()
     steps:
     - name: Delete artifacts for macos
