@@ -358,9 +358,8 @@ jobs:
       id: find-nupkg-version
       run: |
         cd Realm/packages
-        tmpName=$(basename Realm.Fody* .nupkg)
-        pkgName=${tmpName#"Realm.Fody."}
-        echo "::set-output name=package_version::$pkgName"
+        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+        echo "::set-output name=package_version::$pkgVersion"
       shell: bash
     - name: Check Docfx cache
       id: check-docfx-cache
