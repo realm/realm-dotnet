@@ -94,7 +94,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Ignore("temporarily disable")]
         public void DeleteRealmWorksIfFolderDoesntExist()
         {
             var config = RealmConfiguration.DefaultConfiguration;
