@@ -307,7 +307,8 @@ namespace Realms
                     return;
                 }
 
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default, out var removedItems, out var removedStartIndex);
+                // InvalidRealmObject is used to go around a bug in WPF (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>)
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => InvalidObject.Instance, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
@@ -348,7 +349,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, T> getter, out IList items, out int startIndex)
+        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
         {
             items = null;
 
@@ -526,5 +527,23 @@ namespace Realms
         /// Gets the native handle for that collection.
         /// </summary>
         THandle NativeHandle { get; }
+    }
+
+    /// <summary>
+    /// Special invalid object that is used to avoid an exception in WPF
+    /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
+    internal class InvalidObject
+    {
+        private InvalidObject() { }
+
+        public static InvalidObject Instance { get; } = new InvalidObject();
+
+        // The method is overriden to avoid the bug in WPF
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
     }
 }
