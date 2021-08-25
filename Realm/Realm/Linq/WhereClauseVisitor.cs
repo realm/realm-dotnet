@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
@@ -221,20 +222,51 @@ namespace Realms
             return RealmLinqExpression.Create(returnNode);
         }
 
-        protected override Expression VisitMember(MemberExpression node)
+        protected override Expression VisitMember(MemberExpression memberExpression)
         {
-            if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
+            ExpressionNode result = null;
+            if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
             {
-                var result = new PropertyNode()
+                result = new PropertyNode()
                 {
-                    Name = GetColumnName(node, node.NodeType),
-                    Type = GetKind(node.Type)
+                    Name = GetColumnName(memberExpression, memberExpression.NodeType),
+                    Type = GetKind(memberExpression.Type)
                 };
+            }
+            else if (memberExpression.Member is PropertyInfo propertyInfo)
+            {
+                if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
+                {
+                    result = new ConstantNode()
+                    {
+                        Value = ExtractValue(propertyInfo.GetValue(null))
+                    };
+                }
+                else
+                {
 
-                return RealmLinqExpression.Create(result);
+                }
+            }
+            else if (memberExpression.Member is FieldInfo fieldInfo)
+            {
+                if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
+                {
+                    result = new ConstantNode()
+                    {
+                        Value = ExtractValue(fieldInfo.GetValue(null))
+                    };
+                }
+                else
+                {
+                    var test = ExtractNode(memberExpression.Expression);
+                }
+            }
+            else
+            {
+                throw new NotSupportedException($"The member '{memberExpression.Member.Name}' is not supported");
             }
 
-            throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
+            return RealmLinqExpression.Create(result);
         }
 
         protected override Expression VisitConstant(ConstantExpression node)
@@ -339,23 +371,9 @@ namespace Realms
 
         private string ExtractValue(object value)
         {
-            _arguments.Add(GetRealmValue(value));
+            var realmValue = Operator.Convert<RealmValue>(value);  //TODO Should check if exceptions are thrown
+            _arguments.Add(realmValue);
             return $"${_argumentsCounter++}";
-        }
-
-        private static RealmValue GetRealmValue(object value)  //TODO Can we do this differently? If not, we should move it to RealmValue
-        {
-            return value switch
-            {
-                int intValue => RealmValue.Create(intValue, RealmValueType.Int),
-                bool boolValue => RealmValue.Create(boolValue, RealmValueType.Bool),
-                string stringValue => RealmValue.Create(stringValue, RealmValueType.String),
-                float floatValue => RealmValue.Create(floatValue, RealmValueType.Float),
-                double doubleValue => RealmValue.Create(doubleValue, RealmValueType.Double),
-                null => RealmValue.Null,
-                RealmValue realmValue => realmValue,
-                _ => throw new Exception("TODOOOOOO")  //TODO
-            };
         }
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
