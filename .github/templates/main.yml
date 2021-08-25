@@ -411,14 +411,15 @@ jobs:
           dotnet-version: '3.1.x'
       - name: Setup Coverlet & Report Generator
         run: |
-          dotnet tool install --global coverlet.console
-          dotnet tool install --global dotnet-reportgenerator-globaltool
+          dotnet tool install coverlet.console --tool-path tools
+          dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+          echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
       - name: Publish Tests/Realm.Tests
         run: dotnet publish Tests/Realm.Tests -c Release -f netcoreapp3.1 -r 'win-x64' -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
       - name: Run the tests
-        run: coverlet ./Tests/Realm.Tests/bin/Release/netcoreapp3.1/win-x64/Realm.Tests -t ./Tests/Realm.Tests/bin/Release/netcoreapp3.1/win-x64/Realm.Tests/Realm.Tests.exe -a "--labels=After" -f lcov -o ${{ github.workspace }}/report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+        run: tools/coverlet ./Tests/Realm.Tests/bin/Release/netcoreapp3.1/win-x64/Realm.Tests -t ./Tests/Realm.Tests/bin/Release/netcoreapp3.1/win-x64/Realm.Tests/Realm.Tests.exe -a "--labels=After" -f lcov -o ${{ github.workspace }}/report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
       - name: Generate Html Report
-        run: reportgenerator -reports:"${{ github.workspace }}/report.lcov" -targetdir:"${{ github.workspace }}/coveragereport" -reporttypes:Html
+        run: tools/reportgenerator -reports:"${{ github.workspace }}/report.lcov" -targetdir:"${{ github.workspace }}/coveragereport" -reporttypes:Html
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v2
         with:
