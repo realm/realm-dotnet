@@ -3,6 +3,7 @@
 ### Fixed
 * Fixed an issue that would cause `Logger.Default` on Unity to always revert to `Debug.Log`, even when a custom logger was set. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
 * Fixed an issue where `Logger.Console` on Unity would still use `Console.WriteLine` instead of `Debug.Log`. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
+* Added serialization annotations to RealmObjectBase to prevent Newtonsoft.Json and similar serializers from attempting to serialize the base properties. (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
 * Fixed an issue that would cause an `InvalidOperationException` when removing an element from an UI-bound collection in WPF. (Issue [#1903](https://github.com/realm/realm-dotnet/issues/1903))
 
 ### Enhancements
@@ -25,6 +26,7 @@
 * Use the Win81 SDK when building the Windows wrappers on Github Actions. (Issue [#2530](https://github.com/realm/realm-dotnet/issues/2530))
 * Added CodeQL workflow. (Issue [#2155](https://github.com/realm/realm-dotnet/issues/2155))
 * Started tracking package and wrapper sizes over time. (Issue [#2225](https://github.com/realm/realm-dotnet/issues/2225))
+* Removed the `[Serializable]` attribute from RealmObjectBase as `BinarySerializer` is now obsolete. (PR [#2578](https://github.com/realm/realm-dotnet/pull/2578))
 
 ## 10.3.0 (2021-07-07)
 
