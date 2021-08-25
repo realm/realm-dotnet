@@ -28,6 +28,7 @@ jobs:
         workflow: main.yml
         run_number: 1130
         workflow_conclusion: cancelled
+        path: ${{ github.workspace }}/Realm/packages/
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
