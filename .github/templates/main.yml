@@ -6,6 +6,7 @@
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
+#@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 
 #@ def checkCache(key):
 name: Check cache
@@ -161,20 +162,27 @@ steps:
 #@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
 #@ }
 #@
-#@ return dotnetPublishAndRun(projectPath, framework, executeCommand, properties)
+  - #@ template.replace(dotnetPublish(projectPath, framework, properties))
+  - name: Run the tests
+    run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/" + executeCommand
 #@ end
 
-#@ def dotnetPublishAndRun(projectPath, framework, executeCommand, properties = {}):
+#@ def dotnetPublish(projectPath, framework, properties = {}):
 #@ propsArg = ""
 #@ for prop in properties.keys():
 #@   propsArg += " -p:" + prop + "=" + properties[prop]
 #@ end
-#@
-#@ runtime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
   - name: #@ "Publish " + projectPath
-    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg + " --no-self-contained"
+    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + dotnetRuntime + propsArg + " --no-self-contained"
+  - name: Output executable path
+    id: dotnet-publish
+    run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + dotnetRuntime + "'"
+#@ end
+
+#@ def dotnetPublishAndRunCoverage(framework):
+  - #@ dotnetPublish("Tests/Realm.Tests", framework)
   - name: Run the tests
-    run: #@ "./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "/" + executeCommand
+    run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
 #@ end
 
 #@ def publishTestsResults(files, test_title):
@@ -396,7 +404,9 @@ jobs:
     name: Test Weaver
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
+      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1"))
+      - name: Run Tests
+        run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
   code-coverage:
     runs-on: ubuntu-latest
@@ -413,10 +423,7 @@ jobs:
           dotnet tool install coverlet.console --tool-path tools
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-      - name: Publish Tests/Realm.Tests
-        run: dotnet publish Tests/Realm.Tests -c Debug -f net5.0 -r 'linux-x64' -p:AdditionalFrameworks=net5.0 --no-self-contained
-      - name: Run the tests
-        run: ./tools/coverlet ${{ github.workspace }}/Tests/Realm.Tests/bin/Debug/net5.0/linux-x64/publish/ -t ./Tests/Realm.Tests/bin/Debug/net5.0/linux-x64/publish/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+      - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
       - name: Generate Html Report
         run: ./tools/reportgenerator -reports:"./report.lcov" -targetdir:"./coveragereport" -reporttypes:Html
       - name: Upload Coverage Report
