@@ -150,14 +150,9 @@ namespace Realms.Dynamic
 
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
-                if (IsTargetEmbedded(property))
-                {
-                    expression = Expression.Call(self, RealmObjectGetBacklinksForHandle_EmbeddedObject, Expression.Constant(binder.Name), expression);
-                }
-                else
-                {
-                    expression = Expression.Call(self, RealmObjectGetBacklinksForHandle_RealmObject, Expression.Constant(binder.Name), expression);
-                }
+                expression = IsTargetEmbedded(property)
+                    ? Expression.Call(self, RealmObjectGetBacklinksForHandle_EmbeddedObject, Expression.Constant(binder.Name), expression)
+                    : Expression.Call(self, RealmObjectGetBacklinksForHandle_RealmObject, Expression.Constant(binder.Name), expression);
             }
 
             if (expression.Type == typeof(RealmValue))

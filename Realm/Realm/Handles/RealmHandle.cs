@@ -202,7 +202,7 @@ namespace Realms
 
         private static List<RealmHandle> GetUnbindList()
         {
-            return new List<RealmHandle>(); // todo:experiment with what might be a decent initial list size
+            return new List<RealmHandle>();
         }
 
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
@@ -246,7 +246,7 @@ namespace Realms
 
                 return true;
             }
-            catch (Exception)
+            catch
             {
                 // it would be really bad if we got an exception in here. We must not pass it on, but have to return false
                 return false;

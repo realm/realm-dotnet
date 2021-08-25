@@ -24,13 +24,9 @@ namespace Realms
 {
     internal abstract class CollectionHandleBase : NotifiableObjectHandleBase
     {
-        protected delegate IntPtr SnapshotDelegate(out NativeException ex);
-
         public abstract bool IsValid { get; }
 
-        public bool CanSnapshot => SnapshotCore != null;
-
-        protected virtual SnapshotDelegate SnapshotCore => null;
+        public virtual bool CanSnapshot => false;
 
         protected CollectionHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
         {
@@ -40,14 +36,9 @@ namespace Realms
 
         public ResultsHandle Snapshot()
         {
-            if (CanSnapshot)
-            {
-                var ptr = SnapshotCore(out var ex);
-                ex.ThrowIfNecessary();
-                return new ResultsHandle(Root ?? this, ptr);
-            }
-
-            throw new NotSupportedException("Snapshotting this collection is not supported.");
+            var ptr = SnapshotCore(out var ex);
+            ex.ThrowIfNecessary();
+            return new ResultsHandle(Root ?? this, ptr);
         }
 
         public ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
@@ -66,19 +57,21 @@ namespace Realms
             }
 
             var ptr = GetFilteredResultsCore(query, primitiveValues, out var ex);
-            foreach (var handle in handles)
+            foreach (var argHandles in handles)
             {
-                handle?.Dispose();
+                argHandles?.Dispose();
             }
 
             ex.ThrowIfNecessary();
             return new ResultsHandle(this, ptr);
         }
 
-        protected abstract IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex);
-
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
+
+        protected abstract IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex);
+
+        protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
     }
 }

@@ -35,8 +35,6 @@ namespace Realms.Sync
 
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void LogMessageCallback(IntPtr managed_handler, PrimitiveValue messageValue, LogLevel logLevel);
 
@@ -141,8 +139,6 @@ namespace Realms.Sync
                     [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
                     IntPtr tcs_ptr, out NativeException ex);
             }
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         static AppHandle()
@@ -256,18 +252,18 @@ namespace Realms.Sync
             NativeMethods.reconnect(this);
         }
 
-        public bool TryGetCurrentUser(out SyncUserHandle handle)
+        public bool TryGetCurrentUser(out SyncUserHandle userHandle)
         {
             var userPtr = NativeMethods.get_current_user(this, out var ex);
             ex.ThrowIfNecessary();
 
             if (userPtr == IntPtr.Zero)
             {
-                handle = null;
+                userHandle = null;
                 return false;
             }
 
-            handle = new SyncUserHandle(userPtr);
+            userHandle = new SyncUserHandle(userPtr);
             return true;
         }
 

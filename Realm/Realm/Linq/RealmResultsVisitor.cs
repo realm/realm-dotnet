@@ -553,14 +553,19 @@ namespace Realms
                     memberExpression = leftExpression as MemberExpression;
                 }
 
+                if (memberExpression == null)
+                {
+                    throw new NotSupportedException($"The lhs of the binary operator '{leftExpression.NodeType}' should be a member expression accessing a property on a managed RealmObjectBase.\nUnable to process '{node.Left}'.");
+                }
+
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression.\nUnable to process '{node.Right}'.");
                 }
 
                 if (rightValue is RealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase. \nUnable to process '{node.Right}'.");
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase.\nUnable to process '{node.Right}'.");
                 }
 
                 string leftName = null;
@@ -859,7 +864,7 @@ namespace Realms
         {
             leftName = null;
 
-            if (memberExpression?.Type != typeof(RealmValueType))
+            if (memberExpression.Type != typeof(RealmValueType))
             {
                 return false;
             }
