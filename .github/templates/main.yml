@@ -180,7 +180,7 @@ steps:
 #@ end
 
 #@ def dotnetPublishAndRunCoverage(framework):
-  - #@ template.replace(dotnetPublish("Tests/Realm.Tests", framework))
+  - #@ template.replace(dotnetPublish("Tests/Realm.Tests", framework, { "AdditionalFrameworks": framework }))
   - name: Run the tests
     run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
 #@ end
