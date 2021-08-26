@@ -5,6 +5,7 @@
 * Fixed an issue where `Logger.Console` on Unity would still use `Console.WriteLine` instead of `Debug.Log`. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
 * Added serialization annotations to RealmObjectBase to prevent Newtonsoft.Json and similar serializers from attempting to serialize the base properties. (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
 * Fixed an issue that would cause an `InvalidOperationException` when removing an element from an UI-bound collection in WPF. (Issue [#1903](https://github.com/realm/realm-dotnet/issues/1903))
+* Fixed an issue where DeleteRealm could crash on Windows if the folder passed into the function did not exist. (PR [#2584](https://github.com/realm/realm-dotnet/pull/2584))
 
 ### Enhancements
 * Added two extension methods on `IList` to get an `IQueryable` collection wrapping the list:
