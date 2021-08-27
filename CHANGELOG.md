@@ -5,7 +5,11 @@
 * Fixed an issue where `Logger.Console` on Unity would still use `Console.WriteLine` instead of `Debug.Log`. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
 * Added serialization annotations to RealmObjectBase to prevent Newtonsoft.Json and similar serializers from attempting to serialize the base properties. (Issue [#2579](https://github.com/realm/realm-dotnet/issues/2579))
 * Fixed an issue that would cause an `InvalidOperationException` when removing an element from an UI-bound collection in WPF. (Issue [#1903](https://github.com/realm/realm-dotnet/issues/1903))
-* Fixed an issue where DeleteRealm could crash on Windows if the folder passed into the function did not exist. (PR [#2584](https://github.com/realm/realm-dotnet/pull/2584))
+* User profile now correctly persists between runs. (Core upgrade)
+* Fixed a crash when delivering notifications over a nested hierarchy of lists of RealmValue that contain RealmObject inheritors. (Core upgrade)
+* Fixed a crash when an object which is linked to by a RealmValue property is invalidated (sync only). (Core upgrade)
+* Fixes prior_size history corruption when replacing an embedded object in a list. (Core upgrade)
+* Fixed an assertion failure in the sync client when applying an AddColumn instruction for a RealmValue property when that property already exists locally. (Core upgrade)
 
 ### Enhancements
 * Added two extension methods on `IList` to get an `IQueryable` collection wrapping the list:
@@ -14,12 +18,15 @@
 
   The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#1499](https://github.com/realm/realm-dotnet/issues/1499))
 * Added a cache for the Realm schema. This will speed up `Realm.GetInstance` invocations where `RealmConfiguration.ObjectClasses` is explicitly set. The speed gains will depend on the number and complexity of your model classes. A reference benchmark that tests a schema containing all valid Realm property types showed a 25% speed increase of Realm.GetInstance. (Issue [#2194](https://github.com/realm/realm-dotnet/issues/2194))
+* Improve performance of creating collection notifiers for Realms with a complex schema. In the SDKs this means that the first run of a synchronous query, first call to subscribe for notifications will do significantly less work on the calling thread.
+* Improve performance of calculating changesets for notifications, particularly for deeply nested object graphs and objects which have List or Set properties with small numbers of objects in the collection.
+* Query parser now accepts `BETWEEN` operator. Can be used like `realm.All<Person>().Filter("Age BETWEEN {20, 60}")` which means "'Age' must be in the open interval ]20;60[". (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.0.4.
+* Using Core 11.3.?.
 * Removed the RealmStates dictionary that used to hold a threadlocal dictionary of all the states for the opened Realms. It was only used for detecting open Realms during deletion and that is now handled by the native `delete_realm_files` method. (PR [#2251](https://github.com/realm/realm-dotnet/pull/2251))
 * Stopped sending analytics to mixpanel.
 * Started uploading benchmark results to [MongoDB Charts](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/public/dashboards/6115babd-c7fe-47ee-836f-efffd92ffae3). (Issue [#2226](https://github.com/realm/realm-dotnet/issues/2226))
