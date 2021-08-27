@@ -372,6 +372,20 @@ jobs:
           include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
+  #! This should be folded in run-tests-netcore once we fix the TLS issues on win81
+  run-tests-netcore-win81:
+    name: Test .NET on Win81
+    needs: build-packages
+    runs-on: win81
+    strategy:
+      fail-fast: false
+      matrix:
+        targetFramework: [ netcoreapp3.1, net5.0 ]
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
+      - #@ publishTestsResults("TestResults.xml", ".NET (win81, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS

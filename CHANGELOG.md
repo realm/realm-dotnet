@@ -29,6 +29,7 @@
 * Started tracking package and wrapper sizes over time. (Issue [#2225](https://github.com/realm/realm-dotnet/issues/2225))
 * Removed the `[Serializable]` attribute from RealmObjectBase as `BinarySerializer` is now obsolete. (PR [#2578](https://github.com/realm/realm-dotnet/pull/2578))
 * Added code coverage job to Github Actions. (PR [#2581](https://github.com/realm/realm-dotnet/pull/2581))
+* Added CI tests running on Windows 8.1 . (PR [#2580](https://github.com/realm/realm-dotnet/pull/2580))
 
 ## 10.3.0 (2021-07-07)
 
