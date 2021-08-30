@@ -5,14 +5,13 @@ name: main
     - main
     - master
   pull_request: null
+env:
+  REALM_DISABLE_ANALYTICS: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -41,9 +40,6 @@ jobs:
     runs-on: macos-latest
     name: Wrappers iOS
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -72,9 +68,6 @@ jobs:
     runs-on: ubuntu-20.04
     name: Wrappers Linux
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -110,9 +103,6 @@ jobs:
         - x86
         - x86_64
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -146,9 +136,6 @@ jobs:
         - Win32
         - x64
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -203,9 +190,6 @@ jobs:
         - x64
         - ARM
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -258,9 +242,6 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -411,9 +392,6 @@ jobs:
     name: Test .NET Framework
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -451,9 +429,6 @@ jobs:
     name: Test UWP managed
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -532,9 +507,6 @@ jobs:
         - net5.0
         - net6.0
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -584,9 +556,6 @@ jobs:
         - netcoreapp3.1
         - net5.0
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -625,9 +594,6 @@ jobs:
     name: Test Xamarin.macOS
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -663,9 +629,6 @@ jobs:
     name: Test Xamarin.iOS
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -705,9 +668,6 @@ jobs:
     runs-on: windows-latest
     name: Test Weaver
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -736,9 +696,6 @@ jobs:
     name: Code Coverage
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -892,9 +849,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:

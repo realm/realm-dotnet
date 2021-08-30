@@ -8,6 +8,8 @@ name: CodeQL
     branches:
     - master
     - main
+env:
+  REALM_DISABLE_ANALYTICS: true
 jobs:
   analyze-cpp:
     name: Analyze C++
@@ -17,9 +19,6 @@ jobs:
       contents: read
       security-events: write
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -55,9 +54,6 @@ jobs:
       contents: read
       security-events: write
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
