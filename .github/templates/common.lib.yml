@@ -2,9 +2,6 @@
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
-  - name: Disable Analytics
-    run: |
-      echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
   - name: Checkout code
     uses: actions/checkout@v2
     with:

@@ -35,6 +35,8 @@ name: "CodeQL"
     branches: [ master, main ]
   pull_request:
     branches: [ master, main ]
+env:
+  REALM_DISABLE_ANALYTICS: true
 jobs:
   analyze-cpp:
     name: Analyze C++

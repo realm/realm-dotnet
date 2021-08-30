@@ -228,6 +228,8 @@ name: main
       - main
       - master
   pull_request:
+env:
+  REALM_DISABLE_ANALYTICS: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
