@@ -232,7 +232,7 @@ namespace Realms.Sync
             });
         }
 
-        public SessionHandle GetSessionForPath(SharedRealmHandle realm)
+        public SessionHandle GetSessionForRealm(SharedRealmHandle realm)
         {
             var ptr = NativeMethods.get_session(this, realm, out var ex);
             ex.ThrowIfNecessary();

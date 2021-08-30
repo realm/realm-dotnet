@@ -444,8 +444,10 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void DeleteRealm_afterSessionDisposed([Values(true, false)] bool singleTransaction)
+        public void DeleteRealm_AfterDispose_Succeeds([Values(true, false)] bool singleTransaction)
         {
+            // This test verifies that disposing a Realm will eventually close its session and
+            // release the file, so that we can delete it.
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partition = Guid.NewGuid().ToString();
@@ -453,12 +455,14 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync(partition);
                 var asyncConfig = await GetIntegrationConfigAsync(partition);
 
-                using var realm = GetRealm(config);
+                var realm = GetRealm(config);
                 AddDummyData(realm, singleTransaction);
 
                 await WaitForUploadAsync(realm);
                 realm.Dispose();
 
+                // Ensure that the Realm can be deleted from the filesystem. If the sync
+                // session was still using it, we would get a permission denied error.
                 DeleteRealmWithRetries(realm);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
