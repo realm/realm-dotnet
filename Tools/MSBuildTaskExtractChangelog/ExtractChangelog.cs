@@ -19,17 +19,15 @@ namespace MSBuildReadTask
             try
             {
                 var textToParse = File.ReadAllText(FilePath);
-                var regex = new Regex("(?sm)^(## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-beta\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))(.+?)(\n## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-beta\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))"); ;
+                var regex = new Regex("(?sm)^(## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-beta\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))(.+?)(?=\n## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-beta\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))");
                 var matches = regex.Matches(textToParse);
-                foreach (Match match in matches)
-                {
-                    ExtractedText = match.Groups[2].Value;
-                }
+                ExtractedText = matches[0].Groups[0].Value;
                 File.WriteAllText("./ExtractedChangelog.md", ExtractedText);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine("The changelog could not be extracted because: " + e);
+                Log.LogError($"The changelog could not be extracted because: {ex.Message}\nAborting the build.");
+                return false;
             }
 
             return true;

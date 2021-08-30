@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,5 +8,9 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="16.10.0" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.10.0" />
   </ItemGroup>
-  
+
+  <Target Name="CopyDllToProjDir" AfterTargets="AfterBuild">
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="$(MSBuildProjectDir)" DestinationFiles="$(AssemblyName).dll"/>
+  </Target>
+
 </Project>

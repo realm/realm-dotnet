@@ -2,16 +2,12 @@
 
   <UsingTask TaskName="MSBuildReadTask.ExtractChangelog" AssemblyFile="$(ProjectDir)\..\..\Tools\MSBuildTaskExtractChangelog\MSBuildTaskExtractChangelog.dll" />
 
-  <Target Name="PrepareForRelease" BeforeTargets="Build" Condition="$(NugetRelease)">
+  <Target Name="PrepareForRelease" BeforeTargets="GenerateNuspec">
     <Message Text="Extracting release note" />
-    <ExtractChangelog FilePath="Changelog.md">
+    <ExtractChangelog FilePath="$(ProjectDir)\..\..\CHANGELOG.md">
       <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
     </ExtractChangelog>
   </Target>
-  
-  <PropertyGroup>
-    <NugetRelease Condition="'$(NugetRelease)' == ''">false</NugetRelease>
-  </PropertyGroup>
   
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -22,7 +18,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>8.0</LangVersion>
     <Title>Realm</Title>
-    <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <DisableFody>true</DisableFody>
   </PropertyGroup>
