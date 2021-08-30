@@ -10,6 +10,7 @@
 * Fixed a crash when an object which is linked to by a RealmValue property is invalidated (sync only). (Core upgrade)
 * Fixes prior_size history corruption when replacing an embedded object in a list. (Core upgrade)
 * Fixed an assertion failure in the sync client when applying an AddColumn instruction for a RealmValue property when that property already exists locally. (Core upgrade)
+* Fixed an `Invalid data type` assertion failure in the sync client when applying an `AddColumn` instruction for a `RealmValue` property when that property already exists locally. (Core upgrade)
 
 ### Enhancements
 * Added two extension methods on `IList` to get an `IQueryable` collection wrapping the list:
@@ -26,7 +27,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.3.?.
+* Using Core 11.3.1.
 * Removed the RealmStates dictionary that used to hold a threadlocal dictionary of all the states for the opened Realms. It was only used for detecting open Realms during deletion and that is now handled by the native `delete_realm_files` method. (PR [#2251](https://github.com/realm/realm-dotnet/pull/2251))
 * Stopped sending analytics to mixpanel.
 * Started uploading benchmark results to [MongoDB Charts](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/public/dashboards/6115babd-c7fe-47ee-836f-efffd92ffae3). (Issue [#2226](https://github.com/realm/realm-dotnet/issues/2226))
