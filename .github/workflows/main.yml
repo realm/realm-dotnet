@@ -418,12 +418,12 @@ jobs:
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: TestResults.Windows.xml
-        comment_mode: "off"
-        check_name: Results .NET Framework
+        name: Results .NET Framework
+        path: TestResults.Windows.xml
+        reporter: java-junit
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -485,12 +485,12 @@ jobs:
         }
       shell: powershell
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: ${{ env.test_results }}
-        comment_mode: "off"
-        check_name: Results UWP
+        name: Results UWP
+        path: ${{ env.test_results }}
+        reporter: java-junit
   run-tests-netcore:
     name: Test .NET
     needs: build-packages
@@ -539,12 +539,12 @@ jobs:
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: TestResults.xml
-        comment_mode: "off"
-        check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        path: TestResults.xml
+        reporter: java-junit
   run-tests-netcore-win81:
     name: Test .NET on Win81
     needs: build-packages
@@ -583,12 +583,12 @@ jobs:
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: TestResults.xml
-        comment_mode: "off"
-        check_name: Results .NET (win81, ${{ matrix.targetFramework }})
+        name: Results .NET (win81, ${{ matrix.targetFramework }})
+        path: TestResults.xml
+        reporter: java-junit
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -618,12 +618,12 @@ jobs:
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: TestResults.macOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.macOS
+        name: Results Xamarin.macOS
+        path: TestResults.macOS.xml
+        reporter: java-junit
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
@@ -658,12 +658,12 @@ jobs:
         iphoneToSimulate: iPhone-8
         arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: TestResults.iOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.iOS
+        name: Results Xamarin.iOS
+        path: TestResults.iOS.xml
+        reporter: java-junit
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -685,12 +685,12 @@ jobs:
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: dorny/test-reporter@v1
       if: always()
       with:
-        files: TestResults.Weaver.xml
-        comment_mode: "off"
-        check_name: Results Weaver
+        name: Results Weaver
+        path: TestResults.Weaver.xml
+        reporter: java-junit
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage

@@ -187,12 +187,12 @@ steps:
 
 #@ def publishTestsResults(files, test_title):
 name: Publish Unit Test Results
-uses: EnricoMi/publish-unit-test-result-action/composite@v1
+uses: dorny/test-reporter@v1
 if: always()
 with:
-  files: #@ files
-  comment_mode: "off"
-  check_name: #@ "Results " + test_title
+  name: #@ "Results " + test_title
+  path: #@ files
+  reporter: java-junit
 #@ end
 
 #@ def findPackageVersion():
