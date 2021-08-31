@@ -780,14 +780,15 @@ jobs:
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
       run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
-    - name: Generate Html Report
-      run: ./tools/reportgenerator -reports:"./report.lcov" -targetdir:"./coveragereport" -reporttypes:Html
-    - name: Upload Coverage Report
-      uses: actions/upload-artifact@v2
+    - name: Publish Coverage
+      id: publish-coveralls
+      uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
       with:
-        name: coverage-report
-        path: ${{ github.workspace }}/coveragereport/**
-        retention-days: 30
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./report.lcov
+        git-commit: ${{ github.event.pull_request.head.sha }}
+    - name: Output Coveralls response
+      run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
@@ -796,51 +797,51 @@ jobs:
     if: always()
     steps:
     - name: Delete artifacts for macos
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-macos
     - name: Delete artifacts for ios
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-ios
     - name: Delete artifacts for linux
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-linux
     - name: Delete artifacts for android-armeabi-v7a
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-android-armeabi-v7a
     - name: Delete artifacts for android-arm64-v8a
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-android-arm64-v8a
     - name: Delete artifacts for android-x86
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-android-x86
     - name: Delete artifacts for android-x86_64
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-android-x86_64
     - name: Delete artifacts for windows-Win32
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-Win32
     - name: Delete artifacts for windows-x64
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-x64
     - name: Delete artifacts for windows-uwp-Win32
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-Win32
     - name: Delete artifacts for windows-uwp-x64
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-x64
     - name: Delete artifacts for windows-uwp-ARM
-      uses: geekyeggo/delete-artifact@v1
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-ARM
   benchmark-linux:

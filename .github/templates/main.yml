@@ -440,15 +440,15 @@ jobs:
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
       - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
-      - name: Generate Html Report
-        run: ./tools/reportgenerator -reports:"./report.lcov" -targetdir:"./coveragereport" -reporttypes:Html
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
+      - name: Publish Coverage
+        id: publish-coveralls
+        uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057 #! v1.1.3
         with:
-          name: coverage-report
-          path: ${{ github.workspace }}/coveragereport/**
-          retention-days: 30
-
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./report.lcov
+          git-commit: ${{ github.event.pull_request.head.sha }}
+      - name: Output Coveralls response
+        run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
@@ -457,7 +457,7 @@ jobs:
     steps:
 #@ for platform in getWrapperBinaryNames():
       - name: #@ "Delete artifacts for " + platform
-        uses: geekyeggo/delete-artifact@v1
+        uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44 #! v1
         with:
           name: #@ "wrappers-" + platform
 #@ end
