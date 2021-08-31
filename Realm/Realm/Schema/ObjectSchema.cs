@@ -33,6 +33,8 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
+        private static readonly IDictionary<TypeInfo, ObjectSchema> _cache = new Dictionary<TypeInfo, ObjectSchema>();
+
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
         /// <summary>
@@ -109,6 +111,10 @@ namespace Realms.Schema
         public static ObjectSchema FromType(TypeInfo type)
         {
             Argument.NotNull(type, nameof(type));
+            if (_cache.TryGetValue(type, out var result))
+            {
+                return result;
+            }
 
             Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
 
@@ -148,9 +154,10 @@ namespace Realms.Schema
                 builder.Add(schemaProperty);
             }
 
-            var ret = builder.Build();
-            ret.Type = type;
-            return ret;
+            result = builder.Build();
+            result.Type = type;
+            _cache[type] = result;
+            return result;
         }
 
         internal class Builder : List<Property>
@@ -175,7 +182,7 @@ namespace Realms.Schema
                 if (Count == 0)
                 {
                     throw new InvalidOperationException(
-                        $"No properties in {Name}, has linker stripped it? See https://thereIsntSuchDocYet");
+                        $"No properties in {Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
                 }
 
                 return new ObjectSchema(Name, this.ToDictionary(p => p.Name))

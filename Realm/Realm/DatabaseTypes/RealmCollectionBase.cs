@@ -25,6 +25,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
@@ -39,16 +41,19 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
+        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+
+        private NotificationTokenHandle _notificationToken;
+
+        private bool _deliveredInitialNotification;
+
         internal readonly bool _isEmbedded;
 
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+        internal readonly Lazy<CollectionHandleBase> Handle;
 
         internal readonly RealmObjectBase.Metadata Metadata;
 
         internal bool IsDynamic;
-
-        private NotificationTokenHandle _notificationToken;
-        private bool _deliveredInitialNotification;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event NotifyCollectionChangedEventHandler _collectionChanged;
@@ -90,6 +95,7 @@ namespace Realms
             }
         }
 
+        [IgnoreDataMember]
         public int Count
         {
             get
@@ -103,34 +109,37 @@ namespace Realms
             }
         }
 
+        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
         RealmObjectBase.Metadata IMetadataObject.Metadata => Metadata;
 
+        [IgnoreDataMember]
         public bool IsManaged => Realm != null;
 
+        [IgnoreDataMember]
         public bool IsValid => Handle.Value.IsValid;
 
+        [IgnoreDataMember]
         public bool IsFrozen => Handle.Value.IsFrozen;
 
+        [IgnoreDataMember]
         public Realm Realm { get; }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
-        public IRealmCollection<T> Freeze()
-        {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
-            return CreateCollection(frozenRealm, frozenHandle);
-        }
 
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
-        internal readonly Lazy<CollectionHandleBase> Handle;
+        public T this[int index]
+        {
+            get
+            {
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                return GetValueAtIndex(index);
+            }
+        }
 
         internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
         {
@@ -149,23 +158,23 @@ namespace Realms
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
-        public T this[int index]
-        {
-            get
-            {
-                if (index < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
-
-                return GetValueAtIndex(index);
-            }
-        }
-
         internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
         {
             var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
+
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
+        public IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
+            return CreateCollection(frozenRealm, frozenHandle);
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
@@ -298,7 +307,8 @@ namespace Realms
                     return;
                 }
 
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default, out var removedItems, out var removedStartIndex);
+                // InvalidRealmObject is used to go around a bug in WPF (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>)
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => InvalidObject.Instance, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
@@ -339,7 +349,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, T> getter, out IList items, out int startIndex)
+        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
         {
             items = null;
 
@@ -517,5 +527,23 @@ namespace Realms
         /// Gets the native handle for that collection.
         /// </summary>
         THandle NativeHandle { get; }
+    }
+
+    /// <summary>
+    /// Special invalid object that is used to avoid an exception in WPF
+    /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
+    internal class InvalidObject
+    {
+        private InvalidObject() { }
+
+        public static InvalidObject Instance { get; } = new InvalidObject();
+
+        // The method is overriden to avoid the bug in WPF
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
     }
 }

@@ -31,6 +31,7 @@
     "@actions/github": "^4.0.0",
     "@types/minimatch": "^3.0.4",
     "abort-controller": "^3.0.0",
+    "du": "^1.0.0",
     "fs": "0.0.1-security",
     "minimatch": "^3.0.4",
     "node-fetch": "^2.6.1",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
+    "@types/du": "^1.0.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.12.2",
     "@types/tmp": "^0.2.0",

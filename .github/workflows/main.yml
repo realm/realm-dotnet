@@ -5,14 +5,13 @@ name: main
     - main
     - master
   pull_request: null
+env:
+  REALM_DISABLE_ANALYTICS: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -41,9 +40,6 @@ jobs:
     runs-on: macos-latest
     name: Wrappers iOS
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -72,9 +68,6 @@ jobs:
     runs-on: ubuntu-20.04
     name: Wrappers Linux
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -110,9 +103,6 @@ jobs:
         - x86
         - x86_64
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -146,9 +136,6 @@ jobs:
         - Win32
         - x64
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -177,6 +164,13 @@ jobs:
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+    - name: Install Win8.1 SDK
+      run: |
+        md C:\win81sdk
+        Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
+        Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
+      shell: powershell
+      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -196,9 +190,6 @@ jobs:
         - x64
         - ARM
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -251,9 +242,6 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -351,30 +339,29 @@ jobs:
       id: find-nupkg-version
       run: |
         cd Realm/packages
-        tmpName=$(basename Realm.Fody* .nupkg)
-        pkgName=${tmpName#"Realm.Fody."}
-        echo "::set-output name=package_version::$pkgName"
+        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+        echo "::set-output name=package_version::$pkgVersion"
       shell: bash
     - name: Check Docfx cache
       id: check-docfx-cache
-      if: ${{ contains(github.ref, 'release') }}
+      if: ${{ contains(github.head_ref, 'release') }}
       uses: actions/cache@v2
       with:
         path: C:\docfx
         key: docfx
     - name: Download docfx
-      if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && contains(github.ref, 'release') }}
+      if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && contains(github.head_ref, 'release') }}
       run: |
         Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
     - name: Build docs
-      if: ${{ contains(github.ref, 'release') }}
+      if: ${{ contains(github.head_ref, 'release') }}
       run: |
         C:\docfx\docfx Docs/docfx.json
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store docs artifacts
-      if: ${{ contains(github.ref, 'release') }}
+      if: ${{ contains(github.head_ref, 'release') }}
       uses: actions/upload-artifact@v2
       with:
         name: Docs.zip
@@ -383,14 +370,14 @@ jobs:
     - name: Store artifacts for Realm.Fody
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for Realm
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
-        path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.package_version }}.nupkg
+        name: Realm.${{ steps.find-nupkg-version.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.package_version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for ExtractedChangelog.md"
       uses: actions/upload-artifact@v2
@@ -411,9 +398,6 @@ jobs:
     name: Test .NET Framework
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -426,12 +410,12 @@ jobs:
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -451,9 +435,6 @@ jobs:
     name: Test UWP managed
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -466,12 +447,12 @@ jobs:
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Import test certificate
       run: |
@@ -516,7 +497,7 @@ jobs:
         files: ${{ env.test_results }}
         comment_mode: "off"
         check_name: Results UWP
-  run-tests-netcore-net5:
+  run-tests-netcore:
     name: Test .NET
     needs: build-packages
     runs-on: ${{ matrix.os }}
@@ -530,10 +511,8 @@ jobs:
         targetFramework:
         - netcoreapp3.1
         - net5.0
+        - net6.0
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -546,19 +525,25 @@ jobs:
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - uses: actions/setup-dotnet@v1
+      if: matrix.targetFramework == 'net6.0'
+      with:
+        dotnet-version: 6.0.x
+        include-prerelease: true
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AddNet5Framework=${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-      shell: bash
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/Realm.Tests --result=TestResults.xml --labels=After
-      shell: bash
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -566,14 +551,17 @@ jobs:
         files: TestResults.xml
         comment_mode: "off"
         check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
-  run-tests-xamarin-macos:
-    runs-on: macos-latest
-    name: Test Xamarin.macOS
+  run-tests-netcore-win81:
+    name: Test .NET on Win81
     needs: build-packages
+    runs-on: win81
+    strategy:
+      fail-fast: false
+      matrix:
+        targetFramework:
+        - netcoreapp3.1
+        - net5.0
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -586,12 +574,50 @@ jobs:
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      if: always()
+      with:
+        files: TestResults.xml
+        comment_mode: "off"
+        check_name: Results .NET (win81, ${{ matrix.targetFramework }})
+  run-tests-xamarin-macos:
+    runs-on: macos-latest
+    name: Test Xamarin.macOS
+    needs: build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
@@ -609,9 +635,6 @@ jobs:
     name: Test Xamarin.iOS
     needs: build-packages
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -624,12 +647,12 @@ jobs:
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:TargetFrameworkVersion=v1.0 -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
@@ -651,9 +674,6 @@ jobs:
     runs-on: windows-latest
     name: Test Weaver
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -664,11 +684,12 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}
-      shell: bash
-    - name: Run the tests
-      run: ./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
-      shell: bash
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+    - name: Run Tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -676,11 +697,108 @@ jobs:
         files: TestResults.Weaver.xml
         comment_mode: "off"
         check_name: Results Weaver
+  code-coverage:
+    runs-on: ubuntu-latest
+    name: Code Coverage
+    needs: build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch artifacts for macos
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-macos
+        path: wrappers/build
+    - name: Fetch artifacts for ios
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-ios
+        path: wrappers/build
+    - name: Fetch artifacts for linux
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-linux
+        path: wrappers/build
+    - name: Fetch artifacts for android-armeabi-v7a
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-armeabi-v7a
+        path: wrappers/build
+    - name: Fetch artifacts for android-arm64-v8a
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-arm64-v8a
+        path: wrappers/build
+    - name: Fetch artifacts for android-x86
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-x86
+        path: wrappers/build
+    - name: Fetch artifacts for android-x86_64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-android-x86_64
+        path: wrappers/build
+    - name: Fetch artifacts for windows-Win32
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-Win32
+        path: wrappers/build
+    - name: Fetch artifacts for windows-x64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-x64
+        path: wrappers/build
+    - name: Fetch artifacts for windows-uwp-Win32
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-Win32
+        path: wrappers/build
+    - name: Fetch artifacts for windows-uwp-x64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-x64
+        path: wrappers/build
+    - name: Fetch artifacts for windows-uwp-ARM
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-ARM
+        path: wrappers/build
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Setup Coverlet & Report Generator
+      run: |
+        dotnet tool install coverlet.console --tool-path tools
+        dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+    - name: Run the tests
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+    - name: Generate Html Report
+      run: ./tools/reportgenerator -reports:"./report.lcov" -targetdir:"./coveragereport" -reporttypes:Html
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: ${{ github.workspace }}/coveragereport/**
+        retention-days: 30
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
     needs:
-    - build-packages
+    - code-coverage
     if: always()
     steps:
     - name: Delete artifacts for macos
@@ -737,9 +855,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     steps:
-    - name: Disable Analytics
-      run: |
-        echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -752,19 +867,20 @@ jobs:
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
       uses: actions/download-artifact@v2
       with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AddNet5Framework=true -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-      shell: bash
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/PerformanceTests -f "*" --join
-      shell: bash
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join
     - name: Find Results file
       id: find-results-file
       run: |
@@ -777,6 +893,7 @@ jobs:
         realm-token: ${{ secrets.Realm_Token }}
         file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
         dashboard-path: dashboard.charts
+        nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
     - name: Upload Charts Dashboard File
       uses: actions/upload-artifact@v2
       with:

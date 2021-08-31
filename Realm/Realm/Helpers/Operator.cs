@@ -30,7 +30,7 @@ namespace Realms.Helpers
     [Preserve]
     internal static class Operator
     {
-        private static IDictionary<(Type, Type), IConverter> _valueConverters = new Dictionary<(Type, Type), IConverter>
+        private static readonly IDictionary<(Type, Type), IConverter> _valueConverters = new Dictionary<(Type, Type), IConverter>
         {
             [(typeof(char), typeof(RealmValue))] = new CharRealmValueConverter(),
             [(typeof(byte), typeof(RealmValue))] = new ByteRealmValueConverter(),

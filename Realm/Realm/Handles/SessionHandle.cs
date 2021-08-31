@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Native;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
@@ -30,8 +31,6 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset);
 
@@ -84,8 +83,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_start", CallingConvention = CallingConvention.Cdecl)]
             public static extern void start(SessionHandle session, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         [Preserve]
@@ -106,16 +103,16 @@ namespace Realms.Sync
             NativeMethods.install_syncsession_callbacks(error, progress, wait);
         }
 
-        public bool TryGetUser(out SyncUserHandle handle)
+        public bool TryGetUser(out SyncUserHandle userHandle)
         {
             var ptr = NativeMethods.get_user(this);
             if (ptr == IntPtr.Zero)
             {
-                handle = null;
+                userHandle = null;
                 return false;
             }
 
-            handle = new SyncUserHandle(ptr);
+            userHandle = new SyncUserHandle(ptr);
             return true;
         }
 
@@ -233,7 +230,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
             }
         }
 

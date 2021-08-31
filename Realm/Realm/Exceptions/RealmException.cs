@@ -133,15 +133,7 @@ namespace Realms.Exceptions
                     return new ArgumentException(message);
 
                 case RealmExceptionCodes.SessionError:
-                    ErrorCode code;
-                    if (int.TryParse(detail, out var intCode))
-                    {
-                        code = (ErrorCode)intCode;
-                    }
-                    else
-                    {
-                        code = ErrorCode.Unknown;
-                    }
+                    var code = int.TryParse(detail, out var intCode) ? (ErrorCode)intCode : ErrorCode.Unknown;
 
                     return new SessionException(message, code);
 

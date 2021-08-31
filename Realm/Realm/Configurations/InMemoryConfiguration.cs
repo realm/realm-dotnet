@@ -53,8 +53,8 @@ namespace Realms
             var configuration = CreateNativeConfiguration();
             configuration.in_memory = true;
 
-            var srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
-            return new Realm(new SharedRealmHandle(srPtr), this, schema);
+            var srHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+            return new Realm(srHandle, this, schema);
         }
 
         internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)

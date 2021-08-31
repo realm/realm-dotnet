@@ -1,7 +1,15 @@
-import {generateChartsDashboard, uploadBenchmarkResults, updateBenchmarkResults} from "../src/main";
+import {
+    generateChartsDashboard,
+    uploadBenchmarkResults,
+    updateBenchmarkResults,
+    extractPackageSizes,
+} from "../src/main";
 import * as fs from "fs";
 import {expect} from "chai";
 import * as github from "@actions/github";
+import * as path from "path";
+
+const nugetPackagePath = path.resolve(__filename, "..", "FakeRealm.nupkg");
 
 describe("generateChartsDashboard", () => {
     it("contains all items", () => {
@@ -33,7 +41,7 @@ describe("updateBenchmarkResults", () => {
             process.env.GITHUB_HEAD_REF = "my-super-branch";
         }
 
-        await updateBenchmarkResults(results);
+        await updateBenchmarkResults(results, nugetPackagePath);
 
         if (!Number.isNaN(github.context.runId)) {
             expect(results.RunId).to.equal(github.context.runId);
@@ -46,6 +54,7 @@ describe("updateBenchmarkResults", () => {
         expect(results.Branch).to.equal(process.env.GITHUB_HEAD_REF);
         expect(results.CommitMessage).to.not.be.undefined;
         expect(results.Commit).to.not.be.undefined;
+        expect(results.FileSizes).to.have.length.greaterThan(1);
     });
 });
 
@@ -60,5 +69,15 @@ describe("uploadBenchmarkResults", () => {
         results.RunId = 1006;
         results._id = 1006;
         await uploadBenchmarkResults(apiKey, results);
+    });
+});
+
+describe("extractPackageSizes", () => {
+    it("returns expected results", async () => {
+        const sizes = await extractPackageSizes(nugetPackagePath);
+        expect(sizes).to.have.length(14);
+        for (let sizeInfo of sizes) {
+            expect(sizeInfo.size).to.be.greaterThan(1);
+        }
     });
 });

@@ -35,7 +35,7 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0049 // Use built-in type alias
 #pragma warning disable SA1121 // Use built-in type alias
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -182,7 +182,7 @@ namespace Realms
             public static extern IntPtr create_results(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
 
 #pragma warning restore SA1121 // Use built-in type alias
-#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE0049 // Use built-in type alias
         }
 
         static SharedRealmHandle()
@@ -227,13 +227,13 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public static IntPtr Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
             var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new SharedRealmHandle(result);
         }
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -255,11 +255,11 @@ namespace Realms
             return new AsyncOpenTaskHandle(asyncTaskPtr);
         }
 
-        public static IntPtr ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
+        public static SharedRealmHandle ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
         {
             var result = NativeMethods.resolve_realm_reference(referenceHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new SharedRealmHandle(result);
         }
 
         public void CloseRealm()
@@ -293,9 +293,9 @@ namespace Realms
         public void SetManagedStateHandle(Realm.State managedState)
         {
             // This is freed in OnBindingContextDestructed
-            var handle = GCHandle.Alloc(managedState);
+            var stateHandle = GCHandle.Alloc(managedState);
 
-            NativeMethods.set_managed_state_handle(this, GCHandle.ToIntPtr(handle), out var nativeException);
+            NativeMethods.set_managed_state_handle(this, GCHandle.ToIntPtr(stateHandle), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -391,15 +391,15 @@ namespace Realms
         {
             RealmSchema result = null;
             Action<Native.Schema> callback = schema => result = RealmSchema.CreateFromObjectStoreSchema(schema);
-            var handle = GCHandle.Alloc(callback);
+            var callbackHandle = GCHandle.Alloc(callback);
             try
             {
-                NativeMethods.get_schema(this, GCHandle.ToIntPtr(handle), out var nativeException);
+                NativeMethods.get_schema(this, GCHandle.ToIntPtr(callbackHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
             }
             finally
             {
-                handle.Free();
+                callbackHandle.Free();
             }
 
             return result;

@@ -28,7 +28,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable IDE0049 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
 
@@ -97,7 +96,6 @@ namespace Realms
 
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Naming Styles
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public bool IsValid
@@ -115,26 +113,9 @@ namespace Realms
         {
         }
 
-        public override bool Equals(object obj)
+        public bool ObjEquals(ObjectHandle other)
         {
-            // If parameter is null, return false.
-            if (obj is null)
-            {
-                return false;
-            }
-
-            // Optimization for a common success case.
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (!(obj is ObjectHandle otherHandle))
-            {
-                return false;
-            }
-
-            var result = NativeMethods.equals_object(this, otherHandle, out var nativeException);
+            var result = NativeMethods.equals_object(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
@@ -207,8 +188,8 @@ namespace Realms
                             throw new RealmException("Can't link to an embedded object that is already managed.");
                         }
 
-                        var handle = CreateEmbeddedObjectForProperty(propertyIndex);
-                        realm.ManageEmbedded(embeddedObj, handle);
+                        var embeddedHandle = CreateEmbeddedObjectForProperty(propertyIndex);
+                        realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
                 }
             }

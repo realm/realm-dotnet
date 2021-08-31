@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -57,32 +58,45 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             RunAnalytics = !disableAnalytics,
         };
 
-        var version = "UNKNOWN";
+        config.FrameworkVersion = frameworkName.Version.ToString();
+        config.TargetOSName = GetTargetOSName(frameworkName);
 
-        // Default to windows for backward compatibility
-        var name = "windows";
+        // For backward compatibility
+        config.TargetOSVersion = frameworkName.Version.ToString();
 
+        return config;
+    }
+
+    private static string GetTargetOSName(FrameworkName frameworkName)
+    {
         try
         {
             // Legacy reporting used ios, osx, and android
             switch (frameworkName.Identifier)
             {
                 case "Xamarin.iOS":
-                    name = "ios";
-                    break;
+                    return "ios";
                 case "Xamarin.Mac":
-                    name = "osx";
-                    break;
+                    return "osx";
                 case "MonoAndroid":
                 case "Mono.Android":
-                    name = "android";
-                    break;
-                default:
-                    name = frameworkName.Identifier;
-                    break;
+                    return "android";
             }
 
-            version = frameworkName.Version.ToString();
+            if (frameworkName.Identifier.EndsWith("-android", StringComparison.OrdinalIgnoreCase))
+            {
+                return "android";
+            }
+
+            if (frameworkName.Identifier.EndsWith("-ios", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ios";
+            }
+
+            if (frameworkName.Identifier.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase))
+            {
+                return "osx";
+            }
         }
         catch
         {
@@ -93,13 +107,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 #endif
         }
 
-        config.FrameworkVersion = version;
-        config.TargetOSName = name;
-
-        // For backward compatibility
-        config.TargetOSVersion = version;
-
-        return config;
+        return "windows";
     }
 
     void ILogger.Debug(string message)
