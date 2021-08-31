@@ -15,19 +15,19 @@ jobs:
         with:
           changelog: ${{ github.workspace }}/CHANGELOG.md
       - name: Update package.json
-        uses: jacobtomlinson/gha-find-replace@master
+        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
         with:
           find: '"version": "[^"]*"'
           replace: '"version": "${{ steps.update-changelog.outputs.new-version }}"'
           include: Realm/Realm.Unity/package.json
       - name: Update AssemblyInfo.props
-        uses: jacobtomlinson/gha-find-replace@master
+        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
         with:
           find: '<VersionPrefix>[^<]*<\/VersionPrefix>'
           replace: '<VersionPrefix>${{ steps.update-changelog.outputs.new-version }}</VersionPrefix>'
           include: Realm/AssemblyInfo.props
       - name: Create Release PR
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
         with:
           branch: release/${{ steps.update-changelog.outputs.new-version }}
           title: Prepare for ${{ steps.update-changelog.outputs.new-version }}
