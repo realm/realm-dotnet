@@ -445,6 +445,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./report.lcov
+          git-commit: ${{ github.event.pull_request.head.sha }}
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
