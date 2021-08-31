@@ -23,7 +23,6 @@ namespace Realms
     /// <summary>
     /// Base for any embedded object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    [Serializable]
     public class EmbeddedObject : RealmObjectBase
     {
         /// <summary>

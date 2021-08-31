@@ -536,7 +536,9 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
     internal class InvalidObject
     {
-        private InvalidObject() { }
+        private InvalidObject()
+        {
+        }
 
         public static InvalidObject Instance { get; } = new InvalidObject();
 
