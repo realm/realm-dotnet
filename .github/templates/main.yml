@@ -193,6 +193,8 @@ with:
   name: #@ "Results " + test_title
   path: #@ files
   reporter: java-junit
+  list-suites: failed
+  list-tests: failed
 #@ end
 
 #@ def findPackageVersion():
