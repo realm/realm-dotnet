@@ -257,7 +257,7 @@ jobs:
         $suffix = ""
         if ($env:GITHUB_EVENT_NAME -eq "pull_request")
         {
-          if (-Not $env:GITHUB_REF.Contains("release"))
+          if (-Not "${{ github.head_ref }}".Contains("release"))
           {
             $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
           }
