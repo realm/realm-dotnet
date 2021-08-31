@@ -48,6 +48,7 @@ namespace Realms.Tests.Database
             }
 
             Assert.That(temp.IsClosed);
+            Assert.That(false);
         }
 
         [Test]
@@ -102,6 +103,7 @@ namespace Realms.Tests.Database
             var newConfig = new RealmConfiguration(nonExistingRealm);
 
             Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
+            Assert.That(false);
         }
 
         [Test]
@@ -231,6 +233,7 @@ namespace Realms.Tests.Database
             // Act and assert
             // Can't have classes in the list which are not RealmObjects
             Assert.That(() => GetRealm(), Throws.TypeOf<ArgumentException>());
+            Assert.That(false);
         }
 
         [TestCase(true)]

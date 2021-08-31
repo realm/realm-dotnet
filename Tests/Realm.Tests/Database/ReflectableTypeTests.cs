@@ -46,6 +46,7 @@ namespace Realms.Tests.Database
             var topDog = getter.Invoke(owner, null) as Dog;
             Assert.That(topDog, Is.Not.Null);
             Assert.That(topDog.Name, Is.EqualTo(DogName));
+            Assert.That(false);
         }
 
         [Test]
@@ -118,6 +119,7 @@ namespace Realms.Tests.Database
             {
                 var topDog = owner.TopDog;
             });
+            Assert.That(false);
         }
 
         [Test]
