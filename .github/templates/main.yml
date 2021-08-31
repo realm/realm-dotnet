@@ -441,11 +441,14 @@ jobs:
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
       - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
       - name: Publish Coverage
+        id: publish-coveralls
         uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057 #! v1.1.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./report.lcov
           git-commit: ${{ github.event.pull_request.head.sha }}
+      - name: Output Coveralls response
+        run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
