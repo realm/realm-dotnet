@@ -1,3 +1,19 @@
+## vNext (TBD)
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.3.1.
+* Started uploading code coverage to coveralls. (Issue [#2586](https://github.com/realm/realm-dotnet/issues/2586))
+* Removed the `[Serializable]` attribute from RealmObjectBase inheritors. (PR [#2600](https://github.com/realm/realm-dotnet/pull/2600))
+
 ## 10.4.0 (2021-08-31)
 
 ### Fixed

@@ -307,9 +307,9 @@ namespace Realms
             }
 
             // Special case to cover possible bugs similar to WPF (#1903)
-            if (obj is InvalidObject && !IsValid)
+            if (obj is InvalidObject)
             {
-                return true;
+                return !IsValid;
             }
 
             // If run-time types are not exactly the same, return false.
