@@ -483,7 +483,7 @@ jobs:
         }
         else
         {
-          Write-Output "Test results saved at $Env:test_results"
+          Write-Output "Test results saved at ${{ env.test_results }}"
           Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
         }
       shell: powershell
