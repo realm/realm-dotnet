@@ -65,7 +65,7 @@ jobs:
         path: wrappers/build/**
         retention-days: 1
   build-wrappers-linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     name: Wrappers Linux
     steps:
     - name: Checkout code
@@ -84,8 +84,9 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      uses: ./.github/actions/wrappers-linux
+      with:
+        command: ' --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != ''pull_request'' && ''ON'' || ''OFF'' }}'
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:

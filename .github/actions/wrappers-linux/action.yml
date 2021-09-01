@@ -1,0 +1,11 @@
+name: 'Build Linux wrappers'
+description: 'Builds the Linux wrappers in a centos container'
+inputs:
+  command:
+    description: 'Command to execute'
+    required: true
+runs:
+  using: 'docker'
+  image: '../../../wrappers/centos.Dockerfile'
+  args:
+    - ${{ inputs.command }}

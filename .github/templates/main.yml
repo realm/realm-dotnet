@@ -8,7 +8,18 @@
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 
-#@ def checkCache(key):
+#@ def getWrapperBuildCommand(cmd):
+#@ configurationParam =  " --configuration=" + configuration
+#@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
+#@ if cmd.startswith("powershell"):
+#@   configurationParam = " -Configuration " + configuration
+#@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
+#@ end
+#@ return cmd + configurationParam + ltoParam
+#@ end
+
+#@ def checkCache(outputVar):
+#@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
 name: Check cache
 id: check-cache
 uses: actions/cache@v2
@@ -18,23 +29,14 @@ with:
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
-#@ configurationParam =  " --configuration=" + configuration
-#@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
-#@ if cmd.startswith("powershell"):
-#@   configurationParam = " -Configuration " + configuration
-#@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
-#@ end
-#@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
-#@ actualCommand = cmd + configurationParam + ltoParam
-
 steps:
   - #@ template.replace(checkoutCode("recursive"))
-  - #@ checkCache(cacheKey)
+  - #@ checkCache(outputVar)
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
   #@ end
   - name: Build wrappers
-    run: #@ actualCommand
+    run: #@ getWrapperBuildCommand(cmd)
     if: #@ wrappersCacheCondition
   - name: Store artifacts
     uses: actions/upload-artifact@v2
@@ -240,9 +242,22 @@ jobs:
     name: Wrappers iOS
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     name: Wrappers Linux
-    _: #@ template.replace(buildWrappers("./wrappers/build.sh", "wrappers-linux"))
+    steps:
+      - #@ template.replace(checkoutCode("recursive"))
+      - #@ checkCache("wrappers-linux")
+      - name: Build wrappers
+        uses: ./.github/actions/wrappers-linux
+        with:
+          command: #@ getWrapperBuildCommand("")
+        #! if: #@ wrappersCacheCondition
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: wrappers-linux
+          path: wrappers/build/**
+          retention-days: 1
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Wrappers Android
