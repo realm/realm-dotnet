@@ -240,7 +240,7 @@ jobs:
     name: Wrappers iOS
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     name: Wrappers Linux
     _: #@ template.replace(buildWrappers("./wrappers/build.sh", "wrappers-linux"))
   build-wrappers-android:
