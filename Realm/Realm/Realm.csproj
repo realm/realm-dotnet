@@ -2,7 +2,7 @@
 
   <UsingTask TaskName="MSBuildReadTask.ExtractChangelog" AssemblyFile="$(ProjectDir)\..\..\Tools\MSBuildTaskExtractChangelog\MSBuildTaskExtractChangelog.dll" />
 
-  <Target Name="PrepareForRelease" BeforeTargets="GenerateNuspec">
+  <Target Name="PrepareForRelease" BeforeTargets="GenerateNuspec" Condition="'$(CI)' == 'true'">
     <Message Text="Extracting release note" />
     <ExtractChangelog FilePath="$(ProjectDir)\..\..\CHANGELOG.md">
       <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
