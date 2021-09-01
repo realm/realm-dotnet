@@ -29,4 +29,4 @@ RUN mkdir -p /etc/ssh && \
     ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
 
 VOLUME /source
-ENTRYPOINT ["$GITHUB_WORKSPACE/wrappers/build.sh"]
+ENTRYPOINT ["/github/workspace/wrappers/build.sh"]
