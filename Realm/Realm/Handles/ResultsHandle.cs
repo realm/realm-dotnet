@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms

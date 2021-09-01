@@ -35,7 +35,7 @@ namespace Realms
     {
         public override string Kind => "property";
 
-        public string Name { get; set; }
+        public List<string> Path { get; set; } = new List<string>();
 
         public string Type { get; set; }
     }

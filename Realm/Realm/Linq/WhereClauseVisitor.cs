@@ -227,11 +227,12 @@ namespace Realms
             ExpressionNode result = null;
             if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
             {
-                result = new PropertyNode()
+                var propertyNode = new PropertyNode()
                 {
-                    Name = GetColumnName(memberExpression, memberExpression.NodeType),
                     Type = GetKind(memberExpression.Type)
                 };
+                propertyNode.Path.Add(GetColumnName(memberExpression, memberExpression.NodeType));
+                result = propertyNode;
             }
             else
             {
