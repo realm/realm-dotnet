@@ -217,7 +217,7 @@ namespace Realms
 
             if (!currentValue.Equals(value))
             {
-                throw new InvalidOperationException("Once set, primary key properties may not be modified.");
+                throw new InvalidOperationException($"Once set, primary key properties may not be modified. Current primary key value: {currentValue}, new value: {value}");
             }
         }
 

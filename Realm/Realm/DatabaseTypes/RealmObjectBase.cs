@@ -605,7 +605,14 @@ namespace Realms
                     throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
                 }
 
-                _realmObject.SetValue(propertyName, value);
+                if (property.IsPrimaryKey)
+                {
+                    _realmObject.SetValueUnique(propertyName, value);
+                }
+                else
+                {
+                    _realmObject.SetValue(propertyName, value);
+                }
             }
 
             /// <summary>

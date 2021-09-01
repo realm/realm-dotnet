@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Fixed
-* None
+* Fixed an issue that manifested in circumventing the check for changing a primary key when using the dynamic API - i.e. `myObj.DynamicApi.Set("Id", "some-new-value")` will now correctly throw a `NotSupportedException` if `"some-new-value"` is different from `myObj`'s primary key value. (PR [#2601](https://github.com/realm/realm-dotnet/pull/2601))
 
 ### Enhancements
 * None
