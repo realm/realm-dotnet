@@ -362,7 +362,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        os: [ macos-latest, windows-latest, ubuntu-latest, ubuntu-18.04 ]
         targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
     steps:
       - #@ template.replace(checkoutCode())

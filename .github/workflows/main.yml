@@ -502,6 +502,7 @@ jobs:
         - macos-latest
         - windows-latest
         - ubuntu-latest
+        - ubuntu-18.04
         targetFramework:
         - netcoreapp3.1
         - net5.0
