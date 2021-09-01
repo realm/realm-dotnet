@@ -233,38 +233,49 @@ namespace Realms
                     Type = GetKind(memberExpression.Type)
                 };
             }
-            else if (memberExpression.Member is PropertyInfo propertyInfo)
-            {
-                if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
-                {
-                    result = new ConstantNode()
-                    {
-                        Value = ExtractValue(propertyInfo.GetValue(null))
-                    };
-                }
-                else
-                {
-
-                }
-            }
-            else if (memberExpression.Member is FieldInfo fieldInfo)
-            {
-                if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
-                {
-                    result = new ConstantNode()
-                    {
-                        Value = ExtractValue(fieldInfo.GetValue(null))
-                    };
-                }
-                else
-                {
-                    var test = ExtractNode(memberExpression.Expression);
-                }
-            }
             else
             {
-                throw new NotSupportedException($"The member '{memberExpression.Member.Name}' is not supported");
+                //TODO need to check if this makes sens everywhere
+                var objectMember = Expression.Convert(memberExpression, typeof(object));
+                var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+                var value = getterLambda.Compile().Invoke();
+                result = new ConstantNode()
+                {
+                    Value = ExtractValue(value)
+                };
             }
+            //else if (memberExpression.Member is PropertyInfo propertyInfo)
+            //{
+            //    if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
+            //    {
+            //        result = new ConstantNode()
+            //        {
+            //            Value = ExtractValue(propertyInfo.GetValue(null))
+            //        };
+            //    }
+            //    else
+            //    {
+
+            //    }
+            //}
+            //else if (memberExpression.Member is FieldInfo fieldInfo)
+            //{
+            //    if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
+            //    {
+            //        result = new ConstantNode()
+            //        {
+            //            Value = ExtractValue(fieldInfo.GetValue(null))
+            //        };
+            //    }
+            //    else
+            //    {
+            //        var test = ExtractNode(memberExpression.Expression);
+            //    }
+            //}
+            //else
+            //{
+            //    throw new NotSupportedException($"The member '{memberExpression.Member.Name}' is not supported");
+            //}
 
             return RealmLinqExpression.Create(result);
         }

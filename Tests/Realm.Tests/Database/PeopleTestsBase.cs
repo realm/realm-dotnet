@@ -24,56 +24,56 @@ namespace Realms.Tests.Database
     {
         protected void MakeThreePeople()
         {
-            _realm.Write(() =>
+            var p1 = new Person
             {
-                _realm.Add(new Person
-                {
-                    FirstName = "John",
-                    LastName = "Smith",
-                    IsInteresting = true,
-                    Email = "john@smith.com",
-                    Salary = 30000,
-                    Score = -0.9907f,
-                    Latitude = 51.508530,
-                    Longitude = 0.076132,
-                    Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero),
-                    PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe },
-                    OptionalAddress = "12 Cosgrove St.",
-                    IsAmbivalent = true
-                });
-            });
+                FirstName = "John",
+                LastName = "Smith",
+                IsInteresting = true,
+                Email = "john@smith.com",
+                Salary = 30000,
+                Score = -0.9907f,
+                Latitude = 51.508530,
+                Longitude = 0.076132,
+                Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero),
+                PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe },
+                OptionalAddress = "12 Cosgrove St.",
+                IsAmbivalent = true,
+                Pet = new Pet { Name = "Dido", Color = "DarkBrown" }
+            };
+
+            var p2 = new Person
+            {
+                FullName = "John Doe", // uses our setter which splits and maps to First/Lastname
+                IsInteresting = false,
+                Email = "john@doe.com",
+                Salary = 60000,
+                Score = 100,
+                Latitude = 40.7637286,
+                Longitude = -73.9748113,
+                Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero),
+                PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef },
+                OptionalAddress = string.Empty,
+                IsAmbivalent = false,
+                Pet = new Pet { Name = "Fuffy" }
+            };
+
+            var p3 = new Person
+            {
+                FullName = "Peter Jameson",
+                Email = "peter@jameson.net",
+                Salary = 87000,
+                IsInteresting = true,
+                Score = 42.42f,
+                Latitude = 37.7798657,
+                Longitude = -122.394179,
+                Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero)
+            };
 
             _realm.Write(() =>
             {
-                _realm.Add(new Person
-                {
-                    FullName = "John Doe", // uses our setter which splits and maps to First/Lastname
-                    IsInteresting = false,
-                    Email = "john@doe.com",
-                    Salary = 60000,
-                    Score = 100,
-                    Latitude = 40.7637286,
-                    Longitude = -73.9748113,
-                    Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero),
-                    PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef },
-                    OptionalAddress = string.Empty,
-                    IsAmbivalent = false
-                });
-            });
-
-            _realm.Write(() =>
-            {
-                _realm.Add(new Person
-                {
-                    FullName = "Peter Jameson",
-                    Email = "peter@jameson.net",
-                    Salary = 87000,
-                    IsInteresting = true,
-                    Score = 42.42f,
-                    Latitude = 37.7798657,
-                    Longitude = -122.394179,
-                    Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero)
-                });
+                _realm.Add(p1);
+                _realm.Add(p2);
+                _realm.Add(p3);
             });
         }
     }

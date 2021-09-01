@@ -133,7 +133,7 @@ REALM_EXPORT Query* results_get_query_new(Results& results, uint16_t* query_buf,
             }
         }
 
-        return new Query(results.get_table()->query_new(query_string, mixed_args));
+        return new Query(results.get_table()->query(query_string, mixed_args));
     });
 }
 

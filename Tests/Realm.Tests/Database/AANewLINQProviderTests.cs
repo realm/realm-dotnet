@@ -25,23 +25,12 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AAAATests : PeopleTestsBase
+    public class AANewLINQProviderTests : PeopleTestsBase
     {
         protected override void CustomSetUp()
         {
             base.CustomSetUp();
             MakeThreePeople();
-        }
-
-        private static string GetDebugView(Expression exp)
-        {
-            if (exp == null)
-            {
-                return null;
-            }
-
-            var propertyInfo = typeof(Expression).GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic);
-            return propertyInfo.GetValue(exp) as string;
         }
 
         [Test]
@@ -285,6 +274,19 @@ namespace Realms.Tests.Database
             var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandProperty).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void NestedPropertyComparison()
+        {
+            var constants = new InstanceConstants();
+
+            var pes = new Dog { Name = "23" };
+
+            // Verify that instance properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => pes.Name == p.Pet.Name).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Smith"));
         }
 
         private static class Constants
