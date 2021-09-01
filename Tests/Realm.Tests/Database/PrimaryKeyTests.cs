@@ -150,7 +150,9 @@ namespace Realms.Tests.Database
                 });
             });
 
-            Assert.That(ex.Message, Is.EqualTo("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
 
             if (TestHelpers.IsUnity)
             {
@@ -163,7 +165,9 @@ namespace Realms.Tests.Database
 
             ex = Assert.Throws<InvalidOperationException>(() => SetDynamicValue(secondValue));
 
-            Assert.That(ex.Message, Is.EqualTo("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
 
             void SetDynamicValue(object value)
             {
@@ -323,7 +327,9 @@ namespace Realms.Tests.Database
                 });
             });
 
-            Assert.That(ex.Message, Is.EqualTo("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
+            Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
         }
 
         private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
