@@ -279,12 +279,7 @@ namespace Realms.Tests.Database
         [Test]
         public void NestedPropertyComparison()
         {
-            var constants = new InstanceConstants();
-
-            var pes = new Dog { Name = "23" };
-
-            // Verify that instance properties in LINQ work
-            var equality = _realm.All<Person>().Where(p => pes.Name == p.Pet.Name).ToArray();
+            var equality = _realm.All<Person>().Where(p => p.Pet.Name == "Dido").ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Smith"));
         }

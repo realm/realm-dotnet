@@ -191,11 +191,6 @@ namespace Realms
                 var leftExpression = ExtractNode(binaryExpression.Left, false);
                 var rightExpression = ExtractNode(binaryExpression.Right, false);
 
-                if (!((leftExpression is PropertyNode && rightExpression is ConstantNode) || (leftExpression is ConstantNode && rightExpression is PropertyNode)))
-                {
-                    throw new Exception("WHAT DO I WRITE HERE?"); //TODO;
-                }
-
                 comparisonNode.Left = leftExpression;
                 comparisonNode.Right = rightExpression;
 
@@ -225,18 +220,18 @@ namespace Realms
         protected override Expression VisitMember(MemberExpression memberExpression)
         {
             ExpressionNode result = null;
-            if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
+            if (IsParameter(memberExpression, out var path))
             {
                 var propertyNode = new PropertyNode()
                 {
                     Type = GetKind(memberExpression.Type)
                 };
-                propertyNode.Path.Add(GetColumnName(memberExpression, memberExpression.NodeType));
+                propertyNode.Path = path;
                 result = propertyNode;
             }
             else
             {
-                //TODO need to check if this makes sens everywhere
+                //TODO Easy way to get constant values from member expressions. Good idea?
                 var objectMember = Expression.Convert(memberExpression, typeof(object));
                 var getterLambda = Expression.Lambda<Func<object>>(objectMember);
                 var value = getterLambda.Compile().Invoke();
@@ -245,40 +240,29 @@ namespace Realms
                     Value = ExtractValue(value)
                 };
             }
-            //else if (memberExpression.Member is PropertyInfo propertyInfo)
-            //{
-            //    if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
-            //    {
-            //        result = new ConstantNode()
-            //        {
-            //            Value = ExtractValue(propertyInfo.GetValue(null))
-            //        };
-            //    }
-            //    else
-            //    {
-
-            //    }
-            //}
-            //else if (memberExpression.Member is FieldInfo fieldInfo)
-            //{
-            //    if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
-            //    {
-            //        result = new ConstantNode()
-            //        {
-            //            Value = ExtractValue(fieldInfo.GetValue(null))
-            //        };
-            //    }
-            //    else
-            //    {
-            //        var test = ExtractNode(memberExpression.Expression);
-            //    }
-            //}
-            //else
-            //{
-            //    throw new NotSupportedException($"The member '{memberExpression.Member.Name}' is not supported");
-            //}
 
             return RealmLinqExpression.Create(result);
+        }
+
+        private bool IsParameter(MemberExpression memberExpression, out List<string> path)
+        {
+            if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
+            {
+                path = new List<string>();
+                path.Add(GetColumnName(memberExpression, memberExpression.NodeType));
+                return true;
+            }
+            else if (memberExpression.Expression is MemberExpression innerExpression && IsParameter(innerExpression, out var innerPath))
+            {
+                path = innerPath;
+                path.Add(GetColumnName(memberExpression, memberExpression.NodeType));
+                return true;
+            }
+            else
+            {
+                path = null;
+                return false;
+            }
         }
 
         protected override Expression VisitConstant(ConstantExpression node)
@@ -396,7 +380,6 @@ namespace Realms
             {
                 if (name == null ||
                     memberExpression.Expression.NodeType != ExpressionType.Parameter ||
-                    !(memberExpression.Member is PropertyInfo) ||
                     !_metadata.Schema.TryFindProperty(name, out var property) ||
                     property.Type.HasFlag(PropertyType.Array) ||
                     property.Type.HasFlag(PropertyType.Set))
