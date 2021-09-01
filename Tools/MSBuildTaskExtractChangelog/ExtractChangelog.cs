@@ -22,7 +22,6 @@ namespace MSBuildReadTask
                 var regex = new Regex("(?sm)^(## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-beta\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))(.+?)(?=\n## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-beta\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))");
                 var matches = regex.Matches(textToParse);
                 ExtractedText = matches[0].Groups[0].Value;
-                File.WriteAllText("./ExtractedChangelog.md", ExtractedText);
             }
             catch (Exception ex)
             {
