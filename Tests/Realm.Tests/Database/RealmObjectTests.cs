@@ -497,6 +497,142 @@ namespace Realms.Tests.Database
             Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
         }
 
+        [Test]
+        public void RealmObject_Equals_WhenOtherIsNull_ReturnsFalse()
+        {
+            var obj = new Person();
+            Assert.That(obj.Equals(null), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            Assert.That(obj.Equals(null), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_EqualsInvalidObject_WhenValid_ReturnsFalse()
+        {
+            var obj = new Person();
+            Assert.That(obj.IsValid);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            Assert.That(obj.IsValid);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_EqualsInvalidObject_WhenInalid_ReturnsTrue()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new Person());
+            });
+
+            Assert.That(obj.IsValid);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(obj);
+            });
+
+            Assert.That(obj.IsValid, Is.False);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.True);
+        }
+
+        [Test]
+        public void RealmObject_EqualsADifferentType_ReturnsFalse()
+        {
+            var person = new Person();
+            var owner = new Owner();
+
+            // Unmanaged.Equals(Unmanaged)
+            Assert.That(person.Equals(owner), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            Assert.That(person.IsManaged);
+            Assert.That(owner.IsManaged, Is.False);
+
+            // Unmanaged.Equals(Managed)
+            Assert.That(person.Equals(owner), Is.False);
+
+            // Managed.Equals(Unmanaged)
+            Assert.That(owner.Equals(person), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(owner);
+            });
+
+            Assert.That(person.IsManaged);
+            Assert.That(owner.IsManaged);
+
+            // Managed.Equals(Managed)
+            Assert.That(person.Equals(owner), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_ToString_WhenUnmanaged()
+        {
+            var unmanaged = new Owner();
+
+            Assert.That(unmanaged.ToString(), Is.EqualTo($"Owner (unmanaged)"));
+
+            var unmanagedWithPK = new PrimaryKeyStringObject
+            {
+                Id = "abc"
+            };
+
+            Assert.That(unmanagedWithPK.ToString(), Is.EqualTo($"PrimaryKeyStringObject (unmanaged)"));
+        }
+
+        [Test]
+        public void RealmObject_ToString_WithoutPK()
+        {
+            var managed = _realm.Write(() => _realm.Add(new Owner()));
+
+            Assert.That(managed.ToString(), Is.EqualTo("Owner"));
+        }
+
+        [Test]
+        public void RealmObject_ToString_WithPK()
+        {
+            var managedWithPK = _realm.Write(() => _realm.Add(new PrimaryKeyStringObject
+            {
+                Id = "abc"
+            }));
+
+            // We're printing out the Realm name of the Id, which is _id in this case
+            Assert.That(managedWithPK.ToString(), Is.EqualTo($"PrimaryKeyStringObject (_id = abc)"));
+        }
+
+        [Test]
+        public void RealmObject_ToString_WhenDeleted()
+        {
+            var obj = _realm.Write(() => _realm.Add(new PrimaryKeyStringObject
+            {
+                Id = "abc"
+            }));
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(obj);
+            });
+
+            Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
+        }
+
         [Serializable]
         public class SerializedObject : RealmObject
         {
