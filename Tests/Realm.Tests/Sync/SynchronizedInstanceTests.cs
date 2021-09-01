@@ -321,6 +321,117 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void WriteCopy_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(partition);
+                Assert.That(originalConfig.Partition, Is.EqualTo(copyConfig.Partition));
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                originalRealm.WriteCopy(copyConfig);
+
+                using var copiedRealm = GetRealm(copyConfig);
+
+                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalPartition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copiedPartition = Guid.NewGuid().ToString();
+                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                Assert.That(originalConfig.Partition, !Is.EqualTo(copyConfig.Partition));
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                Assert.Throws<NotSupportedException>(() => originalRealm.WriteCopy(copyConfig));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
+                                                                 [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(partition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                // The error is thrown as a generic `RealmError` by Core which translates to a generic `RealmException` on our side.
+                Assert.Throws<RealmException>(() => originalRealm.WriteCopy(copyConfig));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWithEmptyConfig()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                using var originalRealm = GetRealm(originalConfig);
+                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null));
+            });
+        }
+
+        [Test]
         public void DeleteRealmWorksIfCalledMultipleTimes()
         {
             var config = GetFakeConfig();

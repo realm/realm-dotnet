@@ -25,7 +25,7 @@ namespace Realms.Dynamic
 {
     internal class MetaRealmDictionary : DynamicMetaObject
     {
-        private bool _isEmbedded;
+        private readonly bool _isEmbedded;
 
         internal MetaRealmDictionary(Expression expression, object value) : base(expression, BindingRestrictions.Empty, value)
         {

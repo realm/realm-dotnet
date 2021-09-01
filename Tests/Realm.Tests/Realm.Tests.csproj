@@ -5,7 +5,7 @@
     <LocalDev Condition="'$(LocalDev)' == ''">false</LocalDev>
     <UnityBuild>false</UnityBuild>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
     <PackageId>Realm.Tests</PackageId>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
@@ -16,27 +16,30 @@
 
   <PropertyGroup Condition="'$(UnityBuild)' != 'true'">
     <TargetFrameworks>net461</TargetFrameworks>
-    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
+    <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
+    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;$(AdditionalFrameworks)</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
-    <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
-  
+
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <LangVersion>8.0</LangVersion>
+    <LangVersion Condition="$(TargetFramework.Contains('net6.0'))">10.0</LangVersion>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnitLite" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' == 'true'">
@@ -44,7 +47,7 @@
       <HintPath>..\Tests.Unity\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom\nunit.framework.dll</HintPath>
     </Reference>
 
-    <!-- 
+    <!--
     In the Unity Tests project, we're referincing Realm.dll that has bundled dependencies in it. We should reference
     the same dll here, otherwise when we try to ilrepack the test dependencies, we won't find MongoDB.Bson and friends.
     -->

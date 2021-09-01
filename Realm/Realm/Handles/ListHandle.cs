@@ -26,8 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_value(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
 
@@ -87,7 +85,14 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ListHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
-#pragma warning restore IDE1006 // Naming Styles
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_to_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr to_results(ListHandle list, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(ListHandle results,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
         }
 
         public override bool IsValid
@@ -100,16 +105,20 @@ namespace Realms
             }
         }
 
-        protected override SnapshotDelegate SnapshotCore { get; }
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public override bool CanSnapshot => true;
 
         public ListHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
-            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
-        }
-
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
@@ -213,19 +222,12 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        public ResultsHandle ToResults()
         {
-            throw new NotImplementedException("Lists can't be filtered yet.");
-        }
+            var ptr = NativeMethods.to_results(this, out var ex);
+            ex.ThrowIfNecessary();
 
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
+            return new ResultsHandle(this, ptr);
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
@@ -234,5 +236,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
             return new ListHandle(frozenRealmHandle, result);
         }
+
+        protected override void Unbind() => NativeMethods.destroy(handle);
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
+
+        protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
     }
 }

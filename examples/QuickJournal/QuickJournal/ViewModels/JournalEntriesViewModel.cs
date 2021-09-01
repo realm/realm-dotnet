@@ -1,66 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using QuickJournal.Models;
+using QuickJournal.Services;
 using Realms;
+using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
 
-namespace QuickJournal
+namespace QuickJournal.ViewModels
 {
-    public class JournalEntriesViewModel
+    public class JournalEntriesViewModel : BaseViewModel
     {
-        // TODO: add UI for changing that.
-        private const string AuthorName = "Me";
+        private readonly Realm realm;
 
-        private Realm _realm;
+        public IEnumerable<JournalEntry> Entries { get; }
 
-        public IEnumerable<JournalEntry> Entries { get; private set; }
+        public ICommand AddEntryCommand { get; }
+        public ICommand EditEntryCommand { get; }
+        public ICommand DeleteEntryCommand { get; }
 
-        public ICommand AddEntryCommand { get; private set; }
-
-        public ICommand DeleteEntryCommand { get; private set; }
-
-        public INavigation Navigation { get; set; }
+        public JournalEntry SelectedEntry
+        {
+            get => null;
+            set
+            {
+                EditEntryCommand.Execute(value);
+                OnPropertyChanged();
+            }
+        }
 
         public JournalEntriesViewModel()
         {
-            _realm = Realm.GetInstance();
+            realm = Realm.GetInstance();
+            Entries = realm.All<JournalEntry>();
 
-            Entries = _realm.All<JournalEntry>();
-
-            AddEntryCommand = new Command(AddEntry);
+            AddEntryCommand = new AsyncCommand(AddEntry);
             DeleteEntryCommand = new Command<JournalEntry>(DeleteEntry);
+            EditEntryCommand = new AsyncCommand<JournalEntry>(EditEntry);
         }
 
-        private void AddEntry()
+        private async Task AddEntry()
         {
-            var transaction = _realm.BeginWrite();
-            var entry = _realm.Add(new JournalEntry
+            var transaction = realm.BeginWrite();
+            var entry = realm.Add(new JournalEntry
             {
                 Metadata = new EntryMetadata
                 {
-                    Date = DateTimeOffset.Now,
-                    Author = AuthorName
+                    CreatedDate = DateTimeOffset.Now,
                 }
             });
 
-            var page = new JournalEntryDetailsPage(new JournalEntryDetailsViewModel(entry, transaction));
-
-            Navigation.PushAsync(page);
+            await NavigationService.NavigateTo(new JournalEntryDetailsViewModel(entry, transaction));
         }
 
-        internal void EditEntry(JournalEntry entry)
+        private async Task EditEntry(JournalEntry entry)
         {
-            var transaction = _realm.BeginWrite();
+            var transaction = realm.BeginWrite();
 
-            var page = new JournalEntryDetailsPage(new JournalEntryDetailsViewModel(entry, transaction));
-
-            Navigation.PushAsync(page);
+            await NavigationService.NavigateTo(new JournalEntryDetailsViewModel(entry, transaction));
         }
 
         private void DeleteEntry(JournalEntry entry)
         {
-            _realm.Write(() => _realm.Remove(entry));
+            realm.Write(() => realm.Remove(entry));
         }
     }
 }

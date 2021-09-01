@@ -243,15 +243,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in other)
-            {
-                if (Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return other.Any(Contains);
         }
 
         public bool SetEquals(IEnumerable<T> other)
@@ -269,16 +261,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in otherSet)
-            {
-                if (!Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We already know that counts are the same
-            return true;
+            return otherSet.All(Contains);
         }
 
         private bool IsSubsetCore(IEnumerable<T> other, bool proper)
@@ -311,16 +294,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in this)
-            {
-                if (!otherSet.Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We've already established that we have less than the max element count, so we're a subset.
-            return true;
+            return this.All(otherSet.Contains);
         }
 
         private bool IsSupersetCore(IEnumerable<T> other, bool proper)
@@ -355,16 +329,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in otherSet)
-            {
-                if (!Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We've already established that we have more than the min element count, so we're a superset.
-            return true;
+            return otherSet.All(Contains);
         }
 
         private static ISet<T> GetSet(IEnumerable<T> collection)

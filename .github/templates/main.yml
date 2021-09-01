@@ -1,12 +1,12 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg")
 
-#@ configuration = "Release"
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
-#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
+#@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 
 #@ def checkCache(key):
 name: Check cache
@@ -15,25 +15,6 @@ uses: actions/cache@v2
 with:
   path: ./wrappers/build/**
   key: #@ key
-#@ end
-
-#@ def cacheVcpkg():
-name: Check Vcpkg cache
-id: check-vcpkg-cache
-uses: actions/cache@v2
-with:
-  path: 'C:\src'
-  key: vcpkg
-if: #@ wrappersCacheCondition
-#@ end
-
-#@ def setupVcpkg():
-name: Setup Vcpkg
-run: |
-  Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-  Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-shell: powershell
-if: #@ wrappersCacheCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
@@ -50,7 +31,7 @@ steps:
   - #@ template.replace(checkoutCode("recursive"))
   - #@ checkCache(cacheKey)
   #@ for step in intermediateSteps:
-  - #@ step
+  - #@ template.replace(step)
   #@ end
   - name: Build wrappers
     run: #@ actualCommand
@@ -63,19 +44,14 @@ steps:
       retention-days: 1
 #@ end
 
-#@ def checkoutCode(submodules=False):
-  - name: Disable Analytics
+#@ def setupWin81SDK():
+  - name: Install Win8.1 SDK
     run: |
-      echo "REALM_DISABLE_ANALYTICS=true" >> $GITHUB_ENV
-  - name: Checkout code
-    uses: actions/checkout@v2
-    with:
-      submodules: #@ submodules
-      ref: ${{ github.event.pull_request.head.sha }}
-  - name: Register csc problem matcher
-    run: echo "::add-matcher::.github/problem-matchers/csc.json"
-  - name: Register msvc problem matcher
-    run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+      md C:\win81sdk
+      Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
+      Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
+    shell: powershell
+    if: #@ wrappersCacheCondition
 #@ end
 
 #@ def buildPackages():
@@ -103,7 +79,8 @@ steps:
 #@ end
 
 #@ def buildDocs():
-#@ docsCondition = "${{ contains(github.ref, 'release') }}"
+#@ isRelease = "contains(github.head_ref, 'release')"
+#@ docsCondition = "${{ " + isRelease + " }}"
   - name: Check Docfx cache
     id: check-docfx-cache
     if: #@ docsCondition
@@ -112,7 +89,7 @@ steps:
       path: 'C:\docfx'
       key: docfx
   - name: Download docfx
-    if: ${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && contains(github.ref, 'release') }}
+    if: #@ "${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && " + isRelease + " }}"
     run: |
       Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
       Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
@@ -132,13 +109,13 @@ steps:
 #@ end
 
 #@ def uploadPackageArtifacts():
-#@ for pkgName in nugetPackages:
-#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}.nupkg"
+#@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
+#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
     with:
       name: #@ finalPkgName
-      path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName
+      path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName + ".*nupkg"
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
 #@ end
 #@ end
@@ -148,17 +125,8 @@ steps:
   - name: #@ "Fetch " + pkg
     uses: actions/download-artifact@v2
     with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
+      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
       path: ${{ github.workspace }}/Realm/packages/
-#@ end
-#@ end
-
-#@ def deleteTempPackageArtifacts():
-#@ for pkg in [ 'Realm.UnityUtils', 'Realm.UnityWeaver' ]:
-  - name: #@ "Delete " + pkg
-    uses: geekyeggo/delete-artifact@v1
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}.nupkg"
 #@ end
 #@ end
 
@@ -187,38 +155,34 @@ steps:
 #@ end
 #@ end
 
-#@ def deleteWrapperBinaries():
-#@ for platform in getWrapperBinaryNames():
-  - name: #@ "Delete artifacts for " + platform
-    uses: geekyeggo/delete-artifact@v1
-    with:
-      name: #@ "wrappers-" + platform
-#@ end
-#@ end
-
-#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand, addNet5):
+#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand):
 #@ properties = {
-#@   "AddNet5Framework": addNet5,
+#@   "AdditionalFrameworks": framework,
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
 #@ }
 #@
-#@ return dotnetPublishAndRun(projectPath, framework, executeCommand, properties)
+  - #@ template.replace(dotnetPublish(projectPath, framework, properties))
+  - name: Run the tests
+    run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/" + executeCommand
 #@ end
 
-#@ def dotnetPublishAndRun(projectPath, framework, executeCommand, properties = {}):
+#@ def dotnetPublish(projectPath, framework, properties = {}):
 #@ propsArg = ""
 #@ for prop in properties.keys():
 #@   propsArg += " -p:" + prop + "=" + properties[prop]
 #@ end
-#@
-#@ runtime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
   - name: #@ "Publish " + projectPath
-    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg
-    shell: bash
+    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + dotnetRuntime + propsArg + " --no-self-contained"
+  - name: Output executable path
+    id: dotnet-publish
+    run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + dotnetRuntime + "'"
+#@ end
+
+#@ def dotnetPublishAndRunCoverage(framework):
+  - #@ template.replace(dotnetPublish("Tests/Realm.Tests", framework, { "AdditionalFrameworks": framework }))
   - name: Run the tests
-    run: #@ "./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "/" + executeCommand
-    shell: bash
+    run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
 #@ end
 
 #@ def publishTestsResults(files, test_title):
@@ -236,9 +200,8 @@ name: Find nupkg version
 id: find-nupkg-version
 run: |
   cd Realm/packages
-  tmpName=$(basename Realm.Fody* .nupkg)
-  pkgName=${tmpName#"Realm.Fody."}
-  echo "::set-output name=package_version::$pkgName"
+  pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+  echo "::set-output name=package_version::$pkgVersion"
 shell: bash
 #@ end
 
@@ -265,6 +228,8 @@ name: main
       - main
       - master
   pull_request:
+env:
+  REALM_DISABLE_ANALYTICS: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
@@ -291,14 +256,14 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ cacheVcpkg(), setupVcpkg() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ]))
   build-packages:
     runs-on: windows-latest
     name: Package
@@ -322,7 +287,7 @@ jobs:
           $suffix = ""
           if ($env:GITHUB_EVENT_NAME -eq "pull_request")
           {
-            if (-Not $env:GITHUB_REF.Contains("release"))
+            if (-Not "${{ github.head_ref }}".Contains("release"))
             {
               $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
             }
@@ -390,7 +355,7 @@ jobs:
           }
         shell: powershell
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP")
-  run-tests-netcore-net5:
+  run-tests-netcore:
     name: Test .NET
     needs: build-packages
     runs-on: ${{ matrix.os }}
@@ -398,12 +363,31 @@ jobs:
       fail-fast: false
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
+        targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - uses: actions/setup-dotnet@v1
+        if: matrix.targetFramework == 'net6.0'
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: true
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
+      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
+  #! This should be folded in run-tests-netcore once we fix the TLS issues on win81
+  run-tests-netcore-win81:
+    name: Test .NET on Win81
+    needs: build-packages
+    runs-on: win81
+    strategy:
+      fail-fast: false
+      matrix:
         targetFramework: [ netcoreapp3.1, net5.0 ]
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After", "${{ matrix.targetFramework == 'net5.0' && 'true' || 'false' }}"))
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
+      - #@ publishTestsResults("TestResults.xml", ".NET (win81, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -436,13 +420,72 @@ jobs:
     name: Test Weaver
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(dotnetPublishAndRun("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After"))
+      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1"))
+      - name: Run Tests
+        run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
+  code-coverage:
+    runs-on: ubuntu-latest
+    name: Code Coverage
+    needs: build-packages
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchWrapperBinaries())
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Setup Coverlet & Report Generator
+        run: |
+          dotnet tool install coverlet.console --tool-path tools
+          dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+          echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+      - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
+      - name: Publish Coverage
+        id: publish-coveralls
+        uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057 #! v1.1.3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./report.lcov
+          git-commit: ${{ github.event.pull_request.head.sha }}
+      - name: Output Coveralls response
+        run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ run-tests-net-framework, run-tests-uwp, run-tests-netcore-net5, run-tests-xamarin-macos, run-tests-xamarin-ios, run-tests-weaver, build-packages ]
+    needs: [ code-coverage ]
     if: always()
     steps:
-      - #@ template.replace(deleteWrapperBinaries())
-      - #@ template.replace(deleteTempPackageArtifacts())
+#@ for platform in getWrapperBinaryNames():
+      - name: #@ "Delete artifacts for " + platform
+        uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44 #! v1
+        with:
+          name: #@ "wrappers-" + platform
+#@ end
+  benchmark-linux:
+    name: Benchmark Linux
+    needs: build-packages
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
+      - name: Find Results file
+        id: find-results-file
+        run: |
+          cd BenchmarkDotNet.Artifacts/results
+          file=$(basename BenchmarkRun*json)
+          echo "::set-output name=benchmark-results::$file"
+      - name: Publish Benchmark Results
+        uses: ./.github/actions/benchmark-uploader
+        with:
+          realm-token: ${{ secrets.Realm_Token }}
+          file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
+          dashboard-path: dashboard.charts
+          nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
+      - name: Upload Charts Dashboard File
+        uses: actions/upload-artifact@v2
+        with:
+          name: dashboard.charts
+          path: ${{ github.workspace }}/dashboard.charts
+          retention-days: 30

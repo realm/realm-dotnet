@@ -1,0 +1,32 @@
+#@ configuration = "Release"
+#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
+
+#@ def checkoutCode(submodules=False, registerProblemMatchers=True):
+  - name: Checkout code
+    uses: actions/checkout@v2
+    with:
+      submodules: #@ submodules
+      ref: ${{ github.event.pull_request.head.sha }}
+#@ if registerProblemMatchers:
+  - name: Register csc problem matcher
+    run: echo "::add-matcher::.github/problem-matchers/csc.json"
+  - name: Register msvc problem matcher
+    run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+#@ end
+#@ end
+
+#@ def setupVcpkg(ifCondition = "true"):
+  - name: Check Vcpkg cache
+    id: check-vcpkg-cache
+    uses: actions/cache@v2
+    with:
+      path: 'C:\src'
+      key: vcpkg
+    if: #@ ifCondition
+  - name: Setup Vcpkg
+    run: |
+      Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
+      Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
+    shell: powershell
+    if: #@ ifCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
+#@ end

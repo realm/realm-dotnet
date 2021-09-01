@@ -2,7 +2,7 @@
   <PropertyGroup>
     <_RealmNugetNativePath Condition="'$(_RealmNugetNativePath)' == ''">$(MSBuildThisFileDirectory)..\native\</_RealmNugetNativePath>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' Or $(TargetFramework.Contains('-ios'))">
     <NativeReference Include="$(_RealmNugetNativePath)ios\universal\realm-wrappers.xcframework">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
@@ -12,19 +12,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac' Or $(TargetFramework.Contains('-maccatalyst'))">
     <NativeReference Include="$(_RealmNugetNativePath)..\runtimes\osx-x64\native\librealm-wrappers.dylib">
       <Kind>Dynamic</Kind>
     </NativeReference>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid' Or $(TargetFramework.Contains('-android'))">
     <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so">
       <Link>$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
     <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\x86\librealm-wrappers.so">
       <Link>$(_RealmNugetNativePath)android\x86\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <!-- 64bit -->
     <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\arm64-v8a\librealm-wrappers.so">
       <Link>$(_RealmNugetNativePath)android\arm64-v8a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>

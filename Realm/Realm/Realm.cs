@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -1277,9 +1276,7 @@ namespace Realms
             ThrowIfDisposed();
 
             Argument.NotNull(range, nameof(range));
-            Argument.Ensure(range is RealmResults<T>, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
-
-            var results = (RealmResults<T>)range;
+            var results = Argument.EnsureType<RealmResults<T>>(range, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
             results.ResultsHandle.Clear(SharedRealmHandle);
         }
 
@@ -1323,15 +1320,22 @@ namespace Realms
         /// non-null <see cref="RealmConfigurationBase.EncryptionKey"/>, the copy will be encrypted with that key.
         /// </summary>
         /// <remarks>
-        /// The destination file cannot already exist.
-        /// <para/>
-        /// If this is called from within a transaction it writes the current data, and not the data as it was when
-        /// the last transaction was committed.
+        /// 1. The destination file cannot already exist.
+        /// 2. When using a local Realm and this is called from within a transaction it writes the current data,
+        ///    and not the data as it was when the last transaction was committed.
+        /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
+        ///    This is to be sure that the file can be used as a starting point for a newly installed application.
+        ///    The function will throw if there are pending uploads.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
             Argument.NotNull(config, nameof(config));
+
+            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig._partition != copiedConfig._partition)
+            {
+                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig._partition}, passed partition: {copiedConfig._partition}");
+            }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
         }
@@ -1541,16 +1545,10 @@ namespace Realms
 
                 var result = metadata.Helper.CreateInstance();
 
-                ObjectHandle objectHandle;
                 var pkProperty = metadata.Schema.PrimaryKeyProperty;
-                if (pkProperty.HasValue)
-                {
-                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _);
-                }
-                else
-                {
-                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
-                }
+                var objectHandle = pkProperty.HasValue
+                    ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
+                    : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
                 result.SetOwner(_realm, objectHandle, metadata);
                 result.OnManaged();

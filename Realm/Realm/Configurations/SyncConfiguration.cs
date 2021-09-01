@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +33,10 @@ namespace Realms.Sync
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public class SyncConfiguration : RealmConfigurationBase
     {
+        // TODO: https://github.com/realm/realm-dotnet/issues/2571 - we should update the public property type to be RealmValue and
+        // get rid of this field.
+        internal readonly RealmValue _partition;
+
         /// <summary>
         /// Gets the <see cref="User"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
@@ -53,7 +56,7 @@ namespace Realms.Sync
         /// Gets the partition identifying the Realm this configuration is describing.
         /// </summary>
         /// <value>The partition value for the Realm.</value>
-        public object Partition { get; }
+        public object Partition => _partition.AsAny();
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
@@ -71,7 +74,7 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(string partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
+            : this(user, partition, optionalPath)
         {
         }
 
@@ -89,7 +92,7 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(long? partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
+            : this(user, partition, optionalPath)
         {
         }
 
@@ -107,7 +110,7 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
+            : this(user, partition, optionalPath)
         {
         }
 
@@ -125,17 +128,17 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(Guid? partition, User user, string optionalPath = null)
-            : this((object)partition, user, optionalPath)
+            : this(user, partition, optionalPath)
         {
         }
 
-        private SyncConfiguration(object partition, User user, string path)
+        private SyncConfiguration(User user, RealmValue partition, string path)
         {
             Argument.NotNull(user, nameof(user));
 
             User = user;
-            Partition = partition;
-            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, partition.ToNativeJson()));
+            _partition = partition;
+            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, Partition.ToNativeJson()));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -144,12 +147,7 @@ namespace Realms.Sync
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            if (IsDynamic && !schema.Any())
-            {
-                schema = srHandle.GetSchema();
-            }
-
-            return new Realm(srHandle, this, schema);
+            return GetRealm(srHandle, schema);
         }
 
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
@@ -192,14 +190,8 @@ namespace Realms.Sync
                 }
 
                 using var realmReference = await tcs.Task;
-                var realmPtr = SharedRealmHandle.ResolveFromReference(realmReference);
-                var sharedRealmHandle = new SharedRealmHandle(realmPtr);
-                if (IsDynamic && !schema.Any())
-                {
-                    schema = sharedRealmHandle.GetSchema();
-                }
-
-                return new Realm(sharedRealmHandle, this, schema);
+                var sharedRealmHandle = SharedRealmHandle.ResolveFromReference(realmReference);
+                return GetRealm(sharedRealmHandle, schema);
             }
             finally
             {

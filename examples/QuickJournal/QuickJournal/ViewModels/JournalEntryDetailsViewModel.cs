@@ -1,36 +1,47 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using QuickJournal.Models;
+using QuickJournal.Services;
 using Realms;
-using Xamarin.Forms;
+using Xamarin.CommunityToolkit.ObjectModel;
 
-namespace QuickJournal
+namespace QuickJournal.ViewModels
 {
-    public class JournalEntryDetailsViewModel
+    public class JournalEntryDetailsViewModel : BaseViewModel
     {
-        private Transaction _transaction;
+        private Transaction transaction;
 
-        public JournalEntry Entry { get; private set; }
+        public JournalEntry Entry { get; }
 
-        internal INavigation Navigation { get; set; }
-
-        public ICommand SaveCommand { get; private set; }
+        public ICommand SaveCommand { get; }
 
         public JournalEntryDetailsViewModel(JournalEntry entry, Transaction transaction)
         {
+            this.transaction = transaction;
             Entry = entry;
-            _transaction = transaction;
-            SaveCommand = new Command(Save);
+
+            SaveCommand = new AsyncCommand(Save);
         }
 
-        private void Save()
+        private async Task Save()
         {
-            _transaction.Commit();
-            Navigation.PopAsync(true);
+            if (string.IsNullOrEmpty(Entry.Title))
+            {
+                await DialogService.ShowAlert("Error", "You cannot save a note with an empty title");
+                return;
+            }
+
+            Entry.Metadata.LastModifiedDate = DateTimeOffset.Now;
+            transaction.Commit();
+            transaction = null;
+            await NavigationService.GoBack();
         }
 
-        internal void OnDisappearing()
+        override internal void OnDisappearing()
         {
-            _transaction.Dispose();
+            transaction?.Dispose();
         }
-   }
+    }
 }
 

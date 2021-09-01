@@ -1,18 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
-    <PackageReference Include="Realm" Version="5.1.1" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>portable</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+		<LangVersion>9.0</LangVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<LangVersion>9.0</LangVersion>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
+		<PackageReference Include="Xamarin.Essentials" Version="1.7.0" />
+		<PackageReference Include="Realm" Version="10.3.0" />
+		<PackageReference Include="Xamarin.CommunityToolkit" Version="1.2.0" />
+	</ItemGroup>
 </Project>
