@@ -583,6 +583,89 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmObject_Equals_WhenSameInstance_ReturnsTrue()
+        {
+            var person = new Person();
+            Assert.That(person.Equals(person));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            Assert.That(person.Equals(person));
+        }
+
+        [Test]
+        public void RealmObject_Equals_UnmanagedDifferentInstance()
+        {
+            var firstWithPK = new PrimaryKeyStringObject { Id = "abc" };
+            var secondWithPK = new PrimaryKeyStringObject { Id = "abc" };
+            Assert.That(firstWithPK.Equals(secondWithPK), Is.False);
+            Assert.That(ReferenceEquals(firstWithPK, secondWithPK), Is.False);
+
+            var firstNoPK = new Person();
+            var secondNoPK = new Person();
+            Assert.That(firstNoPK.Equals(secondNoPK), Is.False);
+            Assert.That(ReferenceEquals(firstNoPK, secondNoPK), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_Equals_ManagedSameInstance_WithPK()
+        {
+            var firstWithPK = new PrimaryKeyStringObject { Id = "abc" };
+            var secondWithPK = new PrimaryKeyStringObject { Id = "abc" };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(firstWithPK, update: true);
+                _realm.Add(secondWithPK, update: true);
+            });
+
+            Assert.That(ReferenceEquals(firstWithPK, secondWithPK), Is.False);
+            Assert.That(firstWithPK.Equals(secondWithPK), Is.True);
+
+            var firstTsr = ThreadSafeReference.Create(firstWithPK);
+            var objResolved = _realm.ResolveReference(firstTsr);
+
+            Assert.That(ReferenceEquals(firstWithPK, objResolved), Is.False);
+            Assert.That(ReferenceEquals(objResolved, secondWithPK), Is.False);
+
+            Assert.That(firstWithPK.Equals(objResolved), Is.True);
+            Assert.That(objResolved.Equals(secondWithPK), Is.True);
+
+            var objFromResults = _realm.All<PrimaryKeyStringObject>().Single();
+            Assert.That(ReferenceEquals(firstWithPK, objFromResults), Is.False);
+            Assert.That(firstWithPK.Equals(objFromResults), Is.True);
+
+            var objFromFind = _realm.Find<PrimaryKeyStringObject>("abc");
+            Assert.That(ReferenceEquals(secondWithPK, objFromFind), Is.False);
+            Assert.That(objFromFind.Equals(secondWithPK), Is.True);
+        }
+
+        [Test]
+        public void RealmObject_Equals_ManagedSameInstance_NoPK()
+        {
+            var person = new Person();
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var personTsr = ThreadSafeReference.Create(person);
+            var personResolved = _realm.ResolveReference(personTsr);
+
+            Assert.That(ReferenceEquals(person, personResolved), Is.False);
+            Assert.That(person.Equals(personResolved), Is.True);
+
+            var personFromResults = _realm.All<Person>().Single();
+
+            Assert.That(ReferenceEquals(person, personFromResults), Is.False);
+            Assert.That(person.Equals(personFromResults), Is.True);
+        }
+
+        [Test]
         public void RealmObject_ToString_WhenUnmanaged()
         {
             var unmanaged = new Owner();
