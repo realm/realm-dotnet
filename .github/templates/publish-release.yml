@@ -1,12 +1,13 @@
 #@ load("@ytt:template", "template")
 
-#@ def uploadToNuget(packageName, isSymbols = False):
-#@ extension = "nupkg"
-#@ if isSymbols:
-#@   extension = "snupkg"
-#@ end
+#@ def uploadToNuget(packageName, includeSymbols = False):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
-    run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}." + extension + " --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
+    run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
+
+#@ if includeSymbols:
+  - name: #@ "NuGet Publish Symbols " + packageName + ".${{ steps.get-version.outputs.version }}"
+    run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.snupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
+#@ end
 #@ end
 
 #@ def uploadToNpm(packageName):
@@ -88,6 +89,5 @@ jobs:
     - #@ template.replace(publishGithubRelease())
     - #@ template.replace(uploadDocsToS3())
     - #@ template.replace(uploadToNuget("Realm.Fody"))
-    - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNuget("Realm", True))
     - #@ template.replace(uploadToNpm("io.realm.unity"))
