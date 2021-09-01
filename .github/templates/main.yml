@@ -250,7 +250,7 @@ jobs:
       - name: Build wrappers
         uses: ./.github/actions/wrappers-linux
         with:
-          command: #@ getWrapperBuildCommand("/github/workspace/wrappers/build.sh")
+          command: #@ getWrapperBuildCommand("")
         #! if: #@ wrappersCacheCondition
       - name: Store artifacts
         uses: actions/upload-artifact@v2
