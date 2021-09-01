@@ -26,6 +26,7 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
@@ -123,6 +124,24 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmObject_ObjectSchema_ReturnsValueWhenManaged()
+        {
+            var person = new Person();
+
+            Assert.That(person.ObjectSchema, Is.Null);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            Assert.That(person.ObjectSchema, Is.Not.Null);
+
+            Assert.That(person.ObjectSchema.TryFindProperty(nameof(Person.FirstName), out var property), Is.True);
+            Assert.That(property.Type, Is.EqualTo(PropertyType.NullableString));
+        }
+
+        [Test]
         public void Realm_Find_InvokesOnManaged()
         {
             _realm.Write(() =>
@@ -189,7 +208,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_GetHashCode_ChangesAfterAddingToRealm()
         {
-            var objA = new RequiredPrimaryKeyStringObject { StringProperty = "a" };
+            var objA = new RequiredPrimaryKeyStringObject { Id = "a" };
 
             var unmanagedHash = objA.GetHashCode();
 
@@ -209,8 +228,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_GetHashCode_IsDifferentForDifferentObjects()
         {
-            var objA = new RequiredPrimaryKeyStringObject { StringProperty = "a" };
-            var objB = new RequiredPrimaryKeyStringObject { StringProperty = "b" };
+            var objA = new RequiredPrimaryKeyStringObject { Id = "a" };
+            var objB = new RequiredPrimaryKeyStringObject { Id = "b" };
 
             Assert.That(objB.GetHashCode(), Is.Not.EqualTo(objA.GetHashCode()), "Different unmanaged objects should have different hash codes");
 
@@ -228,7 +247,7 @@ namespace Realms.Tests.Database
         {
             var obj = _realm.Write(() =>
             {
-                return _realm.Add(new RequiredPrimaryKeyStringObject { StringProperty = "a" });
+                return _realm.Add(new RequiredPrimaryKeyStringObject { Id = "a" });
             });
 
             var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a");
@@ -242,7 +261,7 @@ namespace Realms.Tests.Database
         {
             var obj = _realm.Write(() =>
             {
-                return _realm.Add(new RequiredPrimaryKeyStringObject { StringProperty = "a" });
+                return _realm.Add(new RequiredPrimaryKeyStringObject { Id = "a" });
             });
 
             var managedHash = obj.GetHashCode();

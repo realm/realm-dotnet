@@ -112,6 +112,13 @@ namespace Realms.Tests.Database
             });
         }
 
+        [Test]
+        public void DynamicApi_WhenObjectIsUnmanaged_Throws()
+        {
+            var ato = new AllTypesObject();
+            Assert.That(() => _ = ato.DynamicApi, Throws.TypeOf<NotSupportedException>());
+        }
+
 #if !UNITY // Unity doesn't support generic test cases
         [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndGetValueCases))]
 #endif

@@ -634,42 +634,42 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public char CharProperty { get; set; }
+        public char Id { get; set; }
     }
 
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public byte ByteProperty { get; set; }
+        public byte Id { get; set; }
     }
 
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public short Int16Property { get; set; }
+        public short Id { get; set; }
     }
 
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public int Int32Property { get; set; }
+        public int Id { get; set; }
     }
 
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public long Int64Property { get; set; }
+        public long Id { get; set; }
     }
 
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public string StringProperty { get; set; }
+        public string Id { get; set; }
 
         public string Value { get; set; }
     }
@@ -679,7 +679,7 @@ namespace Realms.Tests
         [PrimaryKey]
         [Required]
         [MapTo("_id")]
-        public string StringProperty { get; set; }
+        public string Id { get; set; }
 
         public string Value { get; set; }
     }
@@ -688,63 +688,63 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public ObjectId ObjectIdProperty { get; set; }
+        public ObjectId Id { get; set; }
     }
 
     public class PrimaryKeyGuidObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public Guid GuidProperty { get; set; }
+        public Guid Id { get; set; }
     }
 
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public char? CharProperty { get; set; }
+        public char? Id { get; set; }
     }
 
     public class PrimaryKeyNullableByteObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public byte? ByteProperty { get; set; }
+        public byte? Id { get; set; }
     }
 
     public class PrimaryKeyNullableInt16Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public short? Int16Property { get; set; }
+        public short? Id { get; set; }
     }
 
     public class PrimaryKeyNullableInt32Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public int? Int32Property { get; set; }
+        public int? Id { get; set; }
     }
 
     public class PrimaryKeyNullableInt64Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public long? Int64Property { get; set; }
+        public long? Id { get; set; }
     }
 
     public class PrimaryKeyNullableObjectIdObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public ObjectId? ObjectIdProperty { get; set; }
+        public ObjectId? Id { get; set; }
     }
 
     public class PrimaryKeyNullableGuidObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public Guid? GuidProperty { get; set; }
+        public Guid? Id { get; set; }
     }
 
     public class ClassWithUnqueryableMembers : RealmObject
