@@ -483,8 +483,12 @@ jobs:
         }
         else
         {
+          tree /f "$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)"
           Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
         }
+      shell: powershell
+    - name: check tree folder before
+      run: tree /f "$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)"
       shell: powershell
     - name: Publish Unit Test Results
       uses: dorny/test-reporter@v1
@@ -495,6 +499,9 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+    - name: check tree folder after
+      run: tree /f "$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)"
+      shell: powershell
   run-tests-netcore:
     name: Test .NET
     needs: build-packages
