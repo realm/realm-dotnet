@@ -3,3 +3,4 @@ description: 'Builds the Linux wrappers in a centos container'
 runs:
   using: 'docker'
   image: '../../../wrappers/centos.Dockerfile'
+  entrypoint: /github/workspace/wrappers/build.sh
