@@ -195,6 +195,7 @@ with:
   reporter: java-junit
   list-suites: failed
   list-tests: failed
+  path-replace-backslashes: true
 #@ end
 
 #@ def findPackageVersion():
@@ -353,6 +354,7 @@ jobs:
           }
           else
           {
+            # print test results in GH Action's console
             Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
           }
         shell: powershell

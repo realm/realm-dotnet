@@ -426,6 +426,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+        path-replace-backslashes: true
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -483,12 +484,9 @@ jobs:
         }
         else
         {
-          tree /f "$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)"
+          # print test results in GH Action's console
           Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
         }
-      shell: powershell
-    - name: check tree folder before
-      run: tree /f "$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)"
       shell: powershell
     - name: Publish Unit Test Results
       uses: dorny/test-reporter@v1
@@ -499,9 +497,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
-    - name: check tree folder after
-      run: tree /f "$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)"
-      shell: powershell
+        path-replace-backslashes: true
   run-tests-netcore:
     name: Test .NET
     needs: build-packages
@@ -558,6 +554,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+        path-replace-backslashes: true
   run-tests-netcore-win81:
     name: Test .NET on Win81
     needs: build-packages
@@ -604,6 +601,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+        path-replace-backslashes: true
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -641,6 +639,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+        path-replace-backslashes: true
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
@@ -683,6 +682,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+        path-replace-backslashes: true
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -712,6 +712,7 @@ jobs:
         reporter: java-junit
         list-suites: failed
         list-tests: failed
+        path-replace-backslashes: true
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage
