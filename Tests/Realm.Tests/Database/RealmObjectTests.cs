@@ -528,7 +528,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_EqualsInvalidObject_WhenInalid_ReturnsTrue()
+        public void RealmObject_EqualsInvalidObject_WhenInvalid_ReturnsTrue()
         {
             var obj = _realm.Write(() =>
             {
