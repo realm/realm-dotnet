@@ -28,6 +28,15 @@ with:
   key: #@ key
 #@ end
 
+#@ def storeWrapperBinaries(outputVar):
+name: Store artifacts
+uses: actions/upload-artifact@v2
+with:
+  name: #@ outputVar
+  path: wrappers/build/**
+  retention-days: 1
+#@ end
+
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 steps:
   - #@ template.replace(checkoutCode("recursive"))
@@ -38,12 +47,7 @@ steps:
   - name: Build wrappers
     run: #@ getWrapperBuildCommand(cmd)
     if: #@ wrappersCacheCondition
-  - name: Store artifacts
-    uses: actions/upload-artifact@v2
-    with:
-      name: #@ outputVar
-      path: wrappers/build/**
-      retention-days: 1
+  - #@ storeWrapperBinaries(outputVar)
 #@ end
 
 #@ def setupWin81SDK():
@@ -249,18 +253,12 @@ jobs:
       - #@ checkCache("wrappers-linux")
       - name: Build wrappers
         uses: ./.github/actions/wrappers-linux
+        entrypoint: /github/workspace/wrappers/build.sh
         env:
           REALM_CMAKE_CONFIGURATION: #@ configuration
           EXTRA_CMAKE_ARGS: -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-        with:
-          command: #@ getWrapperBuildCommand("")
-        #! if: #@ wrappersCacheCondition
-      - name: Store artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: wrappers-linux
-          path: wrappers/build/**
-          retention-days: 1
+        if: #@ wrappersCacheCondition
+      - #@ storeWrapperBinaries("wrappers-linux")
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Wrappers Android
@@ -380,7 +378,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest, ubuntu-18.04 ]
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
         targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
     steps:
       - #@ template.replace(checkoutCode())

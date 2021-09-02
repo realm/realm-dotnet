@@ -85,11 +85,11 @@ jobs:
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       uses: ./.github/actions/wrappers-linux
+      entrypoint: /github/workspace/wrappers/build.sh
       env:
         REALM_CMAKE_CONFIGURATION: Release
         EXTRA_CMAKE_ARGS: -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      with:
-        command: ' --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != ''pull_request'' && ''ON'' || ''OFF'' }}'
+      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -506,7 +506,6 @@ jobs:
         - macos-latest
         - windows-latest
         - ubuntu-latest
-        - ubuntu-18.04
         targetFramework:
         - netcoreapp3.1
         - net5.0
