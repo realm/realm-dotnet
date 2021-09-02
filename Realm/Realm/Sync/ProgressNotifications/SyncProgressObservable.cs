@@ -22,13 +22,13 @@ namespace Realms.Sync
 {
     internal class SyncProgressObservable : IObservable<SyncProgress>
     {
-        private readonly Session _session;
+        private readonly SessionHandle _sessionHandle;
         private readonly ProgressDirection _direction;
         private readonly ProgressMode _mode;
 
-        public SyncProgressObservable(Session session, ProgressDirection direction, ProgressMode mode)
+        public SyncProgressObservable(SessionHandle sessionHandle, ProgressDirection direction, ProgressMode mode)
         {
-            _session = session;
+            _sessionHandle = sessionHandle;
             _direction = direction;
             _mode = mode;
         }
@@ -42,7 +42,7 @@ namespace Realms.Sync
                 {
                     observer.OnCompleted();
                 }
-            }, handle => _session.Handle.RegisterProgressNotifier(handle, _direction, _mode), _session.Handle.UnregisterProgressNotifier);
+            }, handle => _sessionHandle.RegisterProgressNotifier(handle, _direction, _mode), _sessionHandle.UnregisterProgressNotifier);
         }
     }
 }
