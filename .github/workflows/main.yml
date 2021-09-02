@@ -489,7 +489,7 @@ jobs:
         }
       shell: powershell
     - name: Publish Unit Test Results
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v1.4.3
       if: always()
       with:
         name: Results UWP
