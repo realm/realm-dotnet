@@ -245,6 +245,16 @@ namespace Realms
             return RealmLinqExpression.Create(result);
         }
 
+        protected override Expression VisitConstant(ConstantExpression node)
+        {
+            var constantNode = new ConstantNode()
+            {
+                Value = ExtractValue(node.Value),
+            };
+            return RealmLinqExpression.Create(constantNode);
+        }
+
+        // This method returns true if the member expression is based on the query parameter (ex p.Pet.Name), and returns the path to that member.
         private bool IsParameter(MemberExpression memberExpression, out List<string> path)
         {
             if (memberExpression.Expression != null && memberExpression.Expression.NodeType == ExpressionType.Parameter)
@@ -266,14 +276,6 @@ namespace Realms
             }
         }
 
-        protected override Expression VisitConstant(ConstantExpression node)
-        {
-            var constantNode = new ConstantNode()
-            {
-                Value = ExtractValue(node.Value),
-            };
-            return RealmLinqExpression.Create(constantNode);
-        }
 
         private static bool GetCaseSensitivity(MethodCallExpression methodExpression)
         {
