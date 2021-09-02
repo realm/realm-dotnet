@@ -46,10 +46,8 @@ namespace Realms
                     _query.OrderingClauses.Add(sortClauseVisitor.VisitOrderClause(node));
                     return node;
                 }
-                else
-                {
-                    throw new NotSupportedException($"The method call '{node.Method.Name}' is not supported");
-                }
+
+                throw new NotSupportedException($"The method call '{node.Method.Name}' is not supported");
             }
             else
             {
@@ -86,7 +84,7 @@ namespace Realms
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 Formatting = Formatting.Indented
             });
-            var query = results.GetQuery(json, _arguments.ToArray()); //TODO Should we keep it as array?
+            var query = results.GetQuery(json, _arguments.ToArray());
             return query.CreateResultsNew(_realm.SharedRealmHandle);
         }
     }

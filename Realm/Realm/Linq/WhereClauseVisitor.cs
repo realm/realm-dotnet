@@ -220,6 +220,7 @@ namespace Realms
         protected override Expression VisitMember(MemberExpression memberExpression)
         {
             ExpressionNode result = null;
+            //TODO This will fail if used with nested properties because of GetColumnName
             if (IsParameter(memberExpression, out var path))
             {
                 var propertyNode = new PropertyNode()
@@ -320,6 +321,7 @@ namespace Realms
             }
         }
 
+        //TODO This method needs to be completed
         private static string GetKind(Type type)
         {
             if (type == typeof(float))
@@ -341,7 +343,7 @@ namespace Realms
             else if (type == typeof(bool))
             {
                 return "bool";
-            }  //TODO needs to be completed
+            }
             else
             {
                 throw new NotSupportedException(type + " is not a supported type.");
@@ -372,6 +374,7 @@ namespace Realms
             return $"${_argumentsCounter++}";
         }
 
+        //TODO This method needs to be more generic. At the moment it does not work with nested properties.
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
         {
             var name = memberExpression?.Member.GetMappedOrOriginalName();
