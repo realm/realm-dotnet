@@ -85,6 +85,9 @@ jobs:
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       uses: ./.github/actions/wrappers-linux
+      env:
+        REALM_CMAKE_CONFIGURATION: Release
+        EXTRA_CMAKE_ARGS: -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       with:
         command: ' --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != ''pull_request'' && ''ON'' || ''OFF'' }}'
     - name: Store artifacts

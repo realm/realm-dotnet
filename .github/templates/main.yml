@@ -249,6 +249,9 @@ jobs:
       - #@ checkCache("wrappers-linux")
       - name: Build wrappers
         uses: ./.github/actions/wrappers-linux
+        env:
+          REALM_CMAKE_CONFIGURATION: #@ configuration
+          EXTRA_CMAKE_ARGS: -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
         with:
           command: #@ getWrapperBuildCommand("")
         #! if: #@ wrappersCacheCondition
