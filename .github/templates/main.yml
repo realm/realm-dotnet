@@ -111,19 +111,20 @@ steps:
 #@ def uploadPackageArtifacts():
 #@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
+#@ retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"
   - name: #@ "Store artifacts for " + pkgName
     uses: actions/upload-artifact@v2
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName + ".*nupkg"
-      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+      retention-days: #@ retentionDays
 #@ end
   - name: Store artifacts for ExtractedChangelog.md"
     uses: actions/upload-artifact@v2
     with:
       name: ExtractedChangelog.md
       path: "${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md"
-      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+      retention-days: #@ retentionDays
 #@ end
 
 #@ def fetchPackageArtifacts():
