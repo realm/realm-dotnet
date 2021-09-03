@@ -106,6 +106,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results_new", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_results_new(QueryHandle queryPtr, SharedRealmHandle sharedRealm, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_realm_value_type_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void realm_value_type_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, RealmValueType realm_value_type, out NativeException ex);
 
@@ -302,6 +305,13 @@ namespace Realms
         public ResultsHandle CreateResults(SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor)
         {
             var result = NativeMethods.create_results(this, sharedRealm, sortDescriptor, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ResultsHandle(sharedRealm, result);
+        }
+
+        public ResultsHandle CreateResultsNew(SharedRealmHandle sharedRealm)
+        {
+            var result = NativeMethods.create_results_new(this, sharedRealm, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(sharedRealm, result);
         }

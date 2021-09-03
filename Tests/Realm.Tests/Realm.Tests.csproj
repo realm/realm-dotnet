@@ -134,4 +134,9 @@
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Database\AANewLINQProviderTests.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

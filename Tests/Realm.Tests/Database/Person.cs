@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Realms.Tests.Database
 {
@@ -106,8 +107,17 @@ namespace Realms.Tests.Database
             }
         }
 
+        public Pet Pet { get; set; }
+
         public IList<Person> Friends { get; }
 
         public override string ToString() => $"{FirstName} {LastName}";
+    }
+
+    public class Pet : RealmObject
+    {
+        public string Name { get; set; }
+
+        public string Color { get; set; }
     }
 }

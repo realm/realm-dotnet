@@ -401,6 +401,13 @@ REALM_EXPORT Results* query_create_results(Query& query, SharedRealm& realm, Des
     });
 }
 
+REALM_EXPORT Results* query_create_results_new(Query& query, SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(realm, query);
+    });
+}
+
 REALM_EXPORT void query_realm_value_type_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_type realm_value_type, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
