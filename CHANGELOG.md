@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Fixed
-* None
+* Fixed a regression that would prevent the SDK from working on older Linux versions. (Issue [#2602](https://github.com/realm/realm-dotnet/issues/2602))
 
 ### Enhancements
 * None
