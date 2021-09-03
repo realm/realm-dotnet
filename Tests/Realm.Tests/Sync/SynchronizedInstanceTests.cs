@@ -463,11 +463,31 @@ namespace Realms.Tests.Sync
 
                 // Ensure that the Realm can be deleted from the filesystem. If the sync
                 // session was still using it, we would get a permission denied error.
-                DeleteRealmWithRetries(realm);
+                Assert.That(DeleteRealmWithRetries(realm), Is.True);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
                 Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
             }, timeout: 120000);
+        }
+
+        [Test]
+        public void DeleteRealm_WhileSessionIsOpen_Fails()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetIntegrationRealmAsync();
+                var session = GetSession(realm);
+                realm.Dispose();
+
+                await Task.Delay(100);
+
+                Assert.Throws<RealmInUseException>(() => Realm.DeleteRealm(realm.Config));
+
+                session.CloseHandle(waitForShutdown: true);
+
+                // We've closed the session, so we should be able to delete the Realm.
+                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+            });
         }
 
         private const int DummyDataSize = 100;
