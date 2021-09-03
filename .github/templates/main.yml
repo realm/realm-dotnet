@@ -258,6 +258,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           tags: wrappers-centos:latest
+          file: ./wrappers/centos.Dockerfile
           push: false
         #! if: #@ wrappersCacheCondition
       - name: Build wrappers

@@ -89,6 +89,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         tags: wrappers-centos:latest
+        file: ./wrappers/centos.Dockerfile
         push: false
     - name: Build wrappers
       uses: addnab/docker-run-action@v3
