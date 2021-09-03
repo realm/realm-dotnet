@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact")
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
@@ -22,7 +22,7 @@
 #@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
 name: Check cache
 id: check-cache
-uses: actions/cache@v2
+uses: #@ actionCache
 with:
   path: ./wrappers/build/**
   key: #@ key
@@ -30,7 +30,7 @@ with:
 
 #@ def storeWrapperBinaries(outputVar):
 name: Store artifacts
-uses: actions/upload-artifact@v2
+uses: #@ actionUploadArtifact
 with:
   name: #@ outputVar
   path: wrappers/build/**
@@ -68,7 +68,7 @@ steps:
 
 #@ def msbuildOnWin(projectPath, **properties):
   - name: Add msbuild to PATH
-    uses: microsoft/setup-msbuild@v1.0.2
+    uses: #@ actionSetupMSBuild
   - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
 #@ end
 
@@ -77,7 +77,7 @@ steps:
   - name: #@ "Build Unity"
     run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
   - name: Store Unity artifacts
-    uses: actions/upload-artifact@v2
+    uses: #@ actionUploadArtifact
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
@@ -90,7 +90,7 @@ steps:
   - name: Check Docfx cache
     id: check-docfx-cache
     if: #@ docsCondition
-    uses: actions/cache@v2
+    uses: #@ actionCache
     with:
       path: 'C:\docfx'
       key: docfx
@@ -107,7 +107,7 @@ steps:
       Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
   - name: Store docs artifacts
     if: #@ docsCondition
-    uses: actions/upload-artifact@v2
+    uses: #@ actionUploadArtifact
     with:
       name: Docs.zip
       path: ${{ github.workspace }}/Realm/packages/Docs.zip
@@ -118,7 +118,7 @@ steps:
 #@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
   - name: #@ "Store artifacts for " + pkgName
-    uses: actions/upload-artifact@v2
+    uses: #@ actionUploadArtifact
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName + ".*nupkg"
@@ -129,7 +129,7 @@ steps:
 #@ def fetchPackageArtifacts():
 #@ for pkg in [ "Realm", "Realm.Fody" ]:
   - name: #@ "Fetch " + pkg
-    uses: actions/download-artifact@v2
+    uses: #@ actionDownloadArtifact
     with:
       name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
       path: ${{ github.workspace }}/Realm/packages/
@@ -154,7 +154,7 @@ steps:
 #@ def fetchWrapperBinaries():
 #@ for platform in getWrapperBinaryNames():
   - name: #@ "Fetch artifacts for " + platform
-    uses: actions/download-artifact@v2
+    uses: #@ actionDownloadArtifact
     with:
       name: #@ "wrappers-" + platform
       path: wrappers/build
@@ -251,18 +251,18 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux")
-      - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97 #! 0.0.11
+      - uses: #@ actionDockerLayerCaching
         continue-on-error: true
         #! if: #@ wrappersCacheCondition
       - name: Build CentOS image
-        uses: docker/build-push-action@v2
+        uses: #@ actionDockerBuild
         with:
           tags: wrappers-centos:latest
           file: ./wrappers/centos.Dockerfile
           push: false
         #! if: #@ wrappersCacheCondition
       - name: Build wrappers
-        uses: addnab/docker-run-action@v3
+        uses: #@ actionDockerRun
         with:
           image: wrappers-centos:latest
           shell: bash
@@ -305,7 +305,7 @@ jobs:
       package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: #@ actionSetupMSBuild
       - #@ template.replace(checkoutCode())
       - name: Set version suffix
         id: set-version-suffix
@@ -394,7 +394,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - uses: actions/setup-dotnet@v1
+      - uses: #@ actionSetupDotnet
         if: matrix.targetFramework == 'net6.0'
         with:
           dotnet-version: '6.0.x'
@@ -435,7 +435,7 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts())
       - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
-        uses: realm/ci-actions/run-ios-simulator@v1
+        uses: #@ actionRuniOSSimulator
         with:
          appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
          bundleId: 'io.realm.dotnettests'
@@ -458,7 +458,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())
-      - uses: actions/setup-dotnet@v1
+      - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '5.0.x'
       - name: Setup Coverlet & Report Generator
@@ -469,7 +469,7 @@ jobs:
       - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
       - name: Publish Coverage
         id: publish-coveralls
-        uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057 #! v1.1.3
+        uses: #@ actionCoveralls
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./report.lcov
@@ -484,7 +484,7 @@ jobs:
     steps:
 #@ for platform in getWrapperBinaryNames():
       - name: #@ "Delete artifacts for " + platform
-        uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44 #! v1
+        uses: #@ actionDeleteArtifact
         with:
           name: #@ "wrappers-" + platform
 #@ end
@@ -511,7 +511,7 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - name: Upload Charts Dashboard File
-        uses: actions/upload-artifact@v2
+        uses: #@ actionUploadArtifact
         with:
           name: dashboard.charts
           path: ${{ github.workspace }}/dashboard.charts
