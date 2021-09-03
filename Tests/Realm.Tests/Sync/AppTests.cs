@@ -87,7 +87,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
+                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
                 });
 
                 await WaitForUploadAsync(realm);
@@ -113,7 +113,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
+                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
                 });
 
                 await WaitForUploadAsync(realm);

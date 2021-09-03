@@ -26,6 +26,7 @@ using System.Xml.Serialization;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
@@ -123,6 +124,24 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmObject_ObjectSchema_ReturnsValueWhenManaged()
+        {
+            var person = new Person();
+
+            Assert.That(person.ObjectSchema, Is.Null);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            Assert.That(person.ObjectSchema, Is.Not.Null);
+
+            Assert.That(person.ObjectSchema.TryFindProperty(nameof(Person.FirstName), out var property), Is.True);
+            Assert.That(property.Type, Is.EqualTo(PropertyType.NullableString));
+        }
+
+        [Test]
         public void Realm_Find_InvokesOnManaged()
         {
             _realm.Write(() =>
@@ -189,7 +208,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_GetHashCode_ChangesAfterAddingToRealm()
         {
-            var objA = new RequiredPrimaryKeyStringObject { StringProperty = "a" };
+            var objA = new RequiredPrimaryKeyStringObject { Id = "a" };
 
             var unmanagedHash = objA.GetHashCode();
 
@@ -209,8 +228,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_GetHashCode_IsDifferentForDifferentObjects()
         {
-            var objA = new RequiredPrimaryKeyStringObject { StringProperty = "a" };
-            var objB = new RequiredPrimaryKeyStringObject { StringProperty = "b" };
+            var objA = new RequiredPrimaryKeyStringObject { Id = "a" };
+            var objB = new RequiredPrimaryKeyStringObject { Id = "b" };
 
             Assert.That(objB.GetHashCode(), Is.Not.EqualTo(objA.GetHashCode()), "Different unmanaged objects should have different hash codes");
 
@@ -228,7 +247,7 @@ namespace Realms.Tests.Database
         {
             var obj = _realm.Write(() =>
             {
-                return _realm.Add(new RequiredPrimaryKeyStringObject { StringProperty = "a" });
+                return _realm.Add(new RequiredPrimaryKeyStringObject { Id = "a" });
             });
 
             var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a");
@@ -242,7 +261,7 @@ namespace Realms.Tests.Database
         {
             var obj = _realm.Write(() =>
             {
-                return _realm.Add(new RequiredPrimaryKeyStringObject { StringProperty = "a" });
+                return _realm.Add(new RequiredPrimaryKeyStringObject { Id = "a" });
             });
 
             var managedHash = obj.GetHashCode();
@@ -476,6 +495,225 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<Owner>(), Is.Empty);
             Assert.That(frozenPeter.IsValid);
             Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
+        }
+
+        [Test]
+        public void RealmObject_Equals_WhenOtherIsNull_ReturnsFalse()
+        {
+            var obj = new Person();
+            Assert.That(obj.Equals(null), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            Assert.That(obj.Equals(null), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_EqualsInvalidObject_WhenValid_ReturnsFalse()
+        {
+            var obj = new Person();
+            Assert.That(obj.IsValid);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            Assert.That(obj.IsValid);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_EqualsInvalidObject_WhenInvalid_ReturnsTrue()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new Person());
+            });
+
+            Assert.That(obj.IsValid);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(obj);
+            });
+
+            Assert.That(obj.IsValid, Is.False);
+            Assert.That(obj.Equals(InvalidObject.Instance), Is.True);
+        }
+
+        [Test]
+        public void RealmObject_EqualsADifferentType_ReturnsFalse()
+        {
+            var person = new Person();
+            var owner = new Owner();
+
+            // Unmanaged.Equals(Unmanaged)
+            Assert.That(person.Equals(owner), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            Assert.That(person.IsManaged);
+            Assert.That(owner.IsManaged, Is.False);
+
+            // Unmanaged.Equals(Managed)
+            Assert.That(person.Equals(owner), Is.False);
+
+            // Managed.Equals(Unmanaged)
+            Assert.That(owner.Equals(person), Is.False);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(owner);
+            });
+
+            Assert.That(person.IsManaged);
+            Assert.That(owner.IsManaged);
+
+            // Managed.Equals(Managed)
+            Assert.That(person.Equals(owner), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_Equals_WhenSameInstance_ReturnsTrue()
+        {
+            var person = new Person();
+            Assert.That(person.Equals(person));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            Assert.That(person.Equals(person));
+        }
+
+        [Test]
+        public void RealmObject_Equals_UnmanagedDifferentInstance()
+        {
+            var firstWithPK = new PrimaryKeyStringObject { Id = "abc" };
+            var secondWithPK = new PrimaryKeyStringObject { Id = "abc" };
+            Assert.That(firstWithPK.Equals(secondWithPK), Is.False);
+            Assert.That(ReferenceEquals(firstWithPK, secondWithPK), Is.False);
+
+            var firstNoPK = new Person();
+            var secondNoPK = new Person();
+            Assert.That(firstNoPK.Equals(secondNoPK), Is.False);
+            Assert.That(ReferenceEquals(firstNoPK, secondNoPK), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_Equals_ManagedSameInstance_WithPK()
+        {
+            var firstWithPK = new PrimaryKeyStringObject { Id = "abc" };
+            var secondWithPK = new PrimaryKeyStringObject { Id = "abc" };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(firstWithPK, update: true);
+                _realm.Add(secondWithPK, update: true);
+            });
+
+            Assert.That(ReferenceEquals(firstWithPK, secondWithPK), Is.False);
+            Assert.That(firstWithPK.Equals(secondWithPK), Is.True);
+
+            var firstTsr = ThreadSafeReference.Create(firstWithPK);
+            var objResolved = _realm.ResolveReference(firstTsr);
+
+            Assert.That(ReferenceEquals(firstWithPK, objResolved), Is.False);
+            Assert.That(ReferenceEquals(objResolved, secondWithPK), Is.False);
+
+            Assert.That(firstWithPK.Equals(objResolved), Is.True);
+            Assert.That(objResolved.Equals(secondWithPK), Is.True);
+
+            var objFromResults = _realm.All<PrimaryKeyStringObject>().Single();
+            Assert.That(ReferenceEquals(firstWithPK, objFromResults), Is.False);
+            Assert.That(firstWithPK.Equals(objFromResults), Is.True);
+
+            var objFromFind = _realm.Find<PrimaryKeyStringObject>("abc");
+            Assert.That(ReferenceEquals(secondWithPK, objFromFind), Is.False);
+            Assert.That(objFromFind.Equals(secondWithPK), Is.True);
+        }
+
+        [Test]
+        public void RealmObject_Equals_ManagedSameInstance_NoPK()
+        {
+            var person = new Person();
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var personTsr = ThreadSafeReference.Create(person);
+            var personResolved = _realm.ResolveReference(personTsr);
+
+            Assert.That(ReferenceEquals(person, personResolved), Is.False);
+            Assert.That(person.Equals(personResolved), Is.True);
+
+            var personFromResults = _realm.All<Person>().Single();
+
+            Assert.That(ReferenceEquals(person, personFromResults), Is.False);
+            Assert.That(person.Equals(personFromResults), Is.True);
+        }
+
+        [Test]
+        public void RealmObject_ToString_WhenUnmanaged()
+        {
+            var unmanaged = new Owner();
+
+            Assert.That(unmanaged.ToString(), Is.EqualTo($"Owner (unmanaged)"));
+
+            var unmanagedWithPK = new PrimaryKeyStringObject
+            {
+                Id = "abc"
+            };
+
+            Assert.That(unmanagedWithPK.ToString(), Is.EqualTo($"PrimaryKeyStringObject (unmanaged)"));
+        }
+
+        [Test]
+        public void RealmObject_ToString_WithoutPK()
+        {
+            var managed = _realm.Write(() => _realm.Add(new Owner()));
+
+            Assert.That(managed.ToString(), Is.EqualTo("Owner"));
+        }
+
+        [Test]
+        public void RealmObject_ToString_WithPK()
+        {
+            var managedWithPK = _realm.Write(() => _realm.Add(new PrimaryKeyStringObject
+            {
+                Id = "abc"
+            }));
+
+            // We're printing out the Realm name of the Id, which is _id in this case
+            Assert.That(managedWithPK.ToString(), Is.EqualTo($"PrimaryKeyStringObject (_id = abc)"));
+        }
+
+        [Test]
+        public void RealmObject_ToString_WhenDeleted()
+        {
+            var obj = _realm.Write(() => _realm.Add(new PrimaryKeyStringObject
+            {
+                Id = "abc"
+            }));
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(obj);
+            });
+
+            Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
         }
 
         [Serializable]
