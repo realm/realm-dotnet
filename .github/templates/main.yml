@@ -111,9 +111,9 @@ steps:
 #@ def uploadPackageArtifacts():
 #@ pkgNames = [ 'Realm.Fody', 'Realm' ]
 #@ relativePkgPaths = []
-#@ for i in range(0, len(pkgNames)):
-#@  finalPkgName = pkgNames[i] + ".${{ steps.find-nupkg-version.outputs.package_version }}" 
-#@  relativePkgPaths.insert(i, "Realm/packages/" + finalPkgName + ".*nupkg")
+#@ for pkgName in pkgNames:
+#@  finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}" 
+#@  relativePkgPaths.append("Realm/packages/" + finalPkgName + ".*nupkg")
 #@ end
 #@ pkgNames.append("ExtractedChangelog.md")
 #@ relativePkgPaths.append("Realm/Realm/ExtractedChangelog.md")
