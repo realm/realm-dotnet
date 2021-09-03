@@ -251,12 +251,20 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux")
+      - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97 #! 0.0.11
+        continue-on-error: true
+        #! if: #@ wrappersCacheCondition
+      - name: Build CentOS docker image
+        run: docker build -t wrappers-centos -f ./wrappers/centos.Dockerfile
+        #! if: #@ wrappersCacheCondition
       - name: Build wrappers
-        uses: ./.github/actions/wrappers-linux
+        uses: docker://wrappers-centos
+        with:
+          entrypoint: /github/workspace/wrappers/build.sh
         env:
           REALM_CMAKE_CONFIGURATION: #@ configuration
           EXTRA_CMAKE_ARGS: -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-        if: #@ wrappersCacheCondition
+        #! if: #@ wrappersCacheCondition
       - #@ storeWrapperBinaries("wrappers-linux")
   build-wrappers-android:
     runs-on: ubuntu-20.04
