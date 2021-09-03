@@ -254,16 +254,19 @@ jobs:
       - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97 #! 0.0.11
         continue-on-error: true
         #! if: #@ wrappersCacheCondition
-      - name: Build CentOS docker image
-        run: docker build -t wrappers-centos -f ./wrappers/centos.Dockerfile
+      - name: Build CentOS image
+        uses: docker/build-push-action@v2
+        with:
+          tags: wrappers-centos:latest
+          push: false
         #! if: #@ wrappersCacheCondition
       - name: Build wrappers
-        uses: docker://wrappers-centos
+        uses: addnab/docker-run-action@v3
         with:
-          entrypoint: /github/workspace/wrappers/build.sh
-        env:
-          REALM_CMAKE_CONFIGURATION: #@ configuration
-          EXTRA_CMAKE_ARGS: -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+          image: wrappers-centos:latest
+          shell: bash
+          options: -v ${{ github.workspace }}:/work
+          run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
         #! if: #@ wrappersCacheCondition
       - #@ storeWrapperBinaries("wrappers-linux")
   build-wrappers-android:
