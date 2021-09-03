@@ -379,10 +379,10 @@ jobs:
         name: Realm.${{ steps.find-nupkg-version.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.package_version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Store artifacts for ExtractedChangelog.md"
+    - name: Store artifacts for ExtractedChangelog.md
       uses: actions/upload-artifact@v2
       with:
-        name: ExtractedChangelog.md
+        name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Build Unity
