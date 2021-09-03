@@ -1,11 +1,8 @@
-## vNext (TBD)
+## 10.4.1 (2021-09-03)
 
 ### Fixed
 * Fixed a regression that would prevent the SDK from working on older Linux versions. (Issue [#2602](https://github.com/realm/realm-dotnet/issues/2602))
 * Fixed an issue that manifested in circumventing the check for changing a primary key when using the dynamic API - i.e. `myObj.DynamicApi.Set("Id", "some-new-value")` will now correctly throw a `NotSupportedException` if `"some-new-value"` is different from `myObj`'s primary key value. (PR [#2601](https://github.com/realm/realm-dotnet/pull/2601))
-
-### Enhancements
-* None
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
