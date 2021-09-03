@@ -33,7 +33,7 @@ jobs:
         $version = $Matches[0]
         echo "::set-output name=version::$version"
     - name: Create Github Release
-      uses: ncipollo/release-action@a4f828a4e5777f12a55454900a18d3e60d8803fd
+      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
       with:
         artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
