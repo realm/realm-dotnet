@@ -9,8 +9,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: main.yml
         commit: ${{ github.sha }}
@@ -32,7 +33,7 @@ jobs:
         $version = $Matches[0]
         echo "::set-output name=version::$version"
     - name: Create Github Release
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@a4f828a4e5777f12a55454900a18d3e60d8803fd
       with:
         artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}

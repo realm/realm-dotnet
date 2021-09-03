@@ -253,14 +253,14 @@ jobs:
       - #@ checkCache("wrappers-linux")
       - uses: #@ actionDockerLayerCaching
         continue-on-error: true
-        #! if: #@ wrappersCacheCondition
+        if: #@ wrappersCacheCondition
       - name: Build CentOS image
         uses: #@ actionDockerBuild
         with:
           tags: wrappers-centos:latest
           file: ./wrappers/centos.Dockerfile
           push: false
-        #! if: #@ wrappersCacheCondition
+        if: #@ wrappersCacheCondition
       - name: Build wrappers
         uses: #@ actionDockerRun
         with:
@@ -268,7 +268,7 @@ jobs:
           shell: bash
           options: -v ${{ github.workspace }}:/work
           run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
-        #! if: #@ wrappersCacheCondition
+        if: #@ wrappersCacheCondition
       - #@ storeWrapperBinaries("wrappers-linux")
   build-wrappers-android:
     runs-on: ubuntu-20.04
