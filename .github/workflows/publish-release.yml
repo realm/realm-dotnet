@@ -32,36 +32,8 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - name: Create Github Release
-      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
-      with:
-        artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-        bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
-        name: ${{ steps.get-version.outputs.version }}
-        commit: ${{ github.ref }}
-        tag: ${{ steps.get-version.outputs.version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: true
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
-        aws-region: us-east-2
-    - name: Upload docs
-      run: |
-        Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
-        $versions = "${{ steps.get-version.outputs.version }}", "latest"
-        Foreach ($ver in $versions)
-        {
-          aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/realm-sdks/dotnet/$ver/
-        }
-    - name: NuGet Publish Realm.Fody.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - name: NuGet Publish Symbols Realm.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.snupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@v2
       with:
         node-version: 12.x

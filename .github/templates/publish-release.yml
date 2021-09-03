@@ -1,14 +1,9 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "actionDownloadAllArtifacts", "actionSetupNode", "actionAWSConfigureCredentials", "actionGithubRelease")
 
-#@ def uploadToNuget(packageName, includeSymbols = False):
+#@ def uploadToNuget(packageName):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
     run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
-
-#@ if includeSymbols:
-  - name: #@ "NuGet Publish Symbols " + packageName + ".${{ steps.get-version.outputs.version }}"
-    run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.snupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
-#@ end
 #@ end
 
 #@ def uploadToNpm(packageName):
@@ -84,8 +79,8 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - #@ template.replace(publishGithubRelease())
-    - #@ template.replace(uploadDocsToS3())
-    - #@ template.replace(uploadToNuget("Realm.Fody"))
-    - #@ template.replace(uploadToNuget("Realm", True))
+    #! - #@ template.replace(publishGithubRelease())
+    #! - #@ template.replace(uploadDocsToS3())
+    #! - #@ template.replace(uploadToNuget("Realm.Fody"))
+    - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm("io.realm.unity"))
