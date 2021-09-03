@@ -43,7 +43,7 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.Handle.ReportErrorForTesting((int)errorCode, message, isFatal);
+            session.ReportErrorForTesting((int)errorCode, message, isFatal);
         }
     }
 }

@@ -69,16 +69,13 @@ namespace Realms.Tests.Sync
                 const ErrorCode code = (ErrorCode)102;
                 const string message = "Some fake error has occurred";
 
-                var result = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message);
-                CleanupOnTearDown(result.Item1);
+                var error = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message, errorSession =>
+                {
+                    Assert.That(errorSession, Is.EqualTo(session));
+                });
 
-                var error = result.Item2;
                 Assert.That(error.Message, Is.EqualTo(message));
                 Assert.That(error.ErrorCode, Is.EqualTo(code));
-
-                var errorSession = result.Item1;
-
-                Assert.That(errorSession, Is.EqualTo(session));
             });
         }
 
@@ -201,6 +198,89 @@ namespace Realms.Tests.Sync
             // Start it again
             session.Start();
             Assert.That(session.State, Is.EqualTo(SessionState.Active));
+        }
+
+        [Test]
+        public void Session_WhenDisposed_MethodsThrow()
+        {
+            var session = OpenRealmAndStopSession();
+
+            session.CloseHandle();
+
+            Assert.Throws<ObjectDisposedException>(() => session.Start());
+            Assert.Throws<ObjectDisposedException>(() => session.Stop());
+            Assert.Throws<ObjectDisposedException>(() => _ = session.State);
+            Assert.Throws<ObjectDisposedException>(() => _ = session.User);
+            Assert.Throws<ObjectDisposedException>(() => _ = session.Path);
+            Assert.Throws<ObjectDisposedException>(() => _ = session.GetHashCode());
+            Assert.Throws<ObjectDisposedException>(() => _ = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork));
+            Assert.Throws<ObjectDisposedException>(() => _ = session.Equals(session));
+            Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForDownloadAsync());
+            Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForUploadAsync());
+            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, "test", false));
+
+            // Calling CloseHandle multiple times should be fine
+            session.CloseHandle();
+            session.CloseHandle(waitForShutdown: true);
+        }
+
+        [Test]
+        public void Session_Equals_WhenSameRealm_ReturnsTrue()
+        {
+            var config = GetFakeConfig();
+            var realm = GetRealm(config);
+            var first = GetSession(realm);
+            var second = GetSession(realm);
+
+            Assert.That(ReferenceEquals(first, second), Is.False);
+            Assert.That(first.Equals(second));
+            Assert.That(second.Equals(first));
+        }
+
+        [Test]
+        public void Session_GetHashCode_WhenSameRealm_ReturnsSameValue()
+        {
+            var config = GetFakeConfig();
+            var realm = GetRealm(config);
+            var first = GetSession(realm);
+            var second = GetSession(realm);
+
+            Assert.That(first.GetHashCode(), Is.EqualTo(second.GetHashCode()));
+        }
+
+        [Test]
+        public void Session_Equals_WhenDifferentRealm_ReturnsFalse()
+        {
+            var realm1 = GetRealm(GetFakeConfig());
+            var first = GetSession(realm1);
+
+            var realm2 = GetRealm(GetFakeConfig());
+            var second = GetSession(realm2);
+
+            Assert.That(ReferenceEquals(first, second), Is.False);
+            Assert.That(first.Equals(second), Is.False);
+            Assert.That(second.Equals(first), Is.False);
+        }
+
+        [Test]
+        public void Session_GetHashCode_WhenDifferentRealm_ReturnsDiffernetValue()
+        {
+            var realm1 = GetRealm(GetFakeConfig());
+            var first = GetSession(realm1);
+
+            var realm2 = GetRealm(GetFakeConfig());
+            var second = GetSession(realm2);
+
+            Assert.That(first.GetHashCode(), Is.Not.EqualTo(second.GetHashCode()));
+        }
+
+        [Test]
+        public void Session_Equals_WhenOtherIsNotASession_ReturnsFalse()
+        {
+            var session = OpenRealmAndStopSession();
+
+            Assert.That(session.Equals(1), Is.False);
+            Assert.That(session.Equals(new object()), Is.False);
         }
 
         /// <summary>
