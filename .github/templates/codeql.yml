@@ -1,9 +1,9 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild")
 
 #@ def runCodeQL(language, buildSteps = []):
   - name: Initialize CodeQL
-    uses: github/codeql-action/init@v1
+    uses: #@ actionCodeQLInit
     with:
       languages: #@ language
       queries: security-and-quality
@@ -11,7 +11,7 @@
   - #@ template.replace(step)
   #@ end
   - name: Perform CodeQL Analysis
-    uses: github/codeql-action/analyze@v1
+    uses: #@ actionCodeQLAnalyze
 #@ end
 
 #@ def buildWrappers():
@@ -21,7 +21,7 @@
 
 #@ def buildPackages():
   - name: Add msbuild to PATH
-    uses: microsoft/setup-msbuild@v1.0.2
+    uses: #@ actionSetupMSBuild
 #@ for pkgName in nugetPackages:
   - name: #@ "Build " + pkgName
     run: #@ "msbuild Realm/" + pkgName + " -p:UseSharedCompilation=false -restore -p:Configuration=" + configuration
