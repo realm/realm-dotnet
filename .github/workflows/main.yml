@@ -406,7 +406,6 @@ jobs:
     runs-on: windows-latest
     name: Test .NET Framework
     needs: build-packages
-    if: false
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -444,7 +443,6 @@ jobs:
     runs-on: windows-latest
     name: Test UWP managed
     needs: build-packages
-    if: false
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -510,7 +508,6 @@ jobs:
         check_name: Results UWP
   run-tests-netcore:
     name: Test .NET
-    if: false
     needs: build-packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -566,7 +563,6 @@ jobs:
         check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
   run-tests-xamarin-macos:
     runs-on: macos-latest
-    if: false
     name: Test Xamarin.macOS
     needs: build-packages
     steps:
@@ -603,7 +599,6 @@ jobs:
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
-    if: false
     needs: build-packages
     steps:
     - name: Checkout code
@@ -643,7 +638,6 @@ jobs:
         check_name: Results Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
-    if: false
     name: Test Weaver
     steps:
     - name: Checkout code
@@ -672,7 +666,6 @@ jobs:
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage
-    if: false
     needs: build-packages
     steps:
     - name: Checkout code

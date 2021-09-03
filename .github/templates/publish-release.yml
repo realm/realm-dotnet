@@ -79,8 +79,8 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    #! - #@ template.replace(publishGithubRelease())
-    #! - #@ template.replace(uploadDocsToS3())
-    #! - #@ template.replace(uploadToNuget("Realm.Fody"))
+    - #@ template.replace(publishGithubRelease())
+    - #@ template.replace(uploadDocsToS3())
+    - #@ template.replace(uploadToNuget("Realm.Fody"))
     - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm("io.realm.unity"))
