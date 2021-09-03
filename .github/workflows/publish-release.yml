@@ -26,7 +26,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-        bodyFile: Realm/Realm/ExtractedChangelog.md/ExtractedChangelog.md
+        bodyFile: Realm/Realm/ExtractedChangelog/ExtractedChangelog.md
         name: ${{ steps.get-version.outputs.version }}
         commit: ${{ github.ref }}
         tag: ${{ steps.get-version.outputs.version }}
