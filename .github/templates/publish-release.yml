@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionDownloadAllArtifacts", "actionSetupNode", "actionAWSConfigureCredentials", "actionGithubRelease")
+#@ load("common.lib.yml", "checkoutCode", "actionDownloadAllArtifacts", "actionSetupNode", "actionAWSConfigureCredentials", "actionGithubRelease", "actionReleaseToSlack")
 
 #@ def uploadToNuget(packageName):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
@@ -75,3 +75,11 @@ jobs:
     - #@ template.replace(uploadToNuget("Realm.Fody"))
     - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm("io.realm.unity"))
+    - name: 'Post to #realm-releases'
+      uses: #@ actionReleaseToSlack
+      with:
+        changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        sdk: .NET
+        webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+        version: ${{ steps.get-version.outputs.version }}
+
