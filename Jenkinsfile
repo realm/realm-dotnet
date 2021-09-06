@@ -13,6 +13,10 @@ boolean enableLTO = true
 
 stage('Checkout') {
   rlmNode('docker') {
+    withCredentials([string(credentialsId: 'slack-webhook-releases-channel', variable: 'SLACK_URL_RELEASE')]) {
+      sh 'echo $SLACK_URL_RELEASE'
+    }
+
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
