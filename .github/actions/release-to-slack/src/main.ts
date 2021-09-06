@@ -17,7 +17,7 @@ async function run(): Promise<void> {
 
         const repoUrl = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}`;
 
-        const result = getPayload(changelogPath, sdk, repoUrl);
+        const result = getPayload(fs.readFileSync(changelogPath, { encoding: "utf8" }), sdk, repoUrl);
 
         const client = new http.HttpClient();
         await client.postJson(webhookUrl, result);

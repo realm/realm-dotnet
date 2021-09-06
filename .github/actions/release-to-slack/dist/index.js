@@ -145,7 +145,7 @@ function run() {
             const sdk = core.getInput("sdk");
             const webhookUrl = core.getInput("webhook-url");
             const repoUrl = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}`;
-            const result = helpers_1.getPayload(changelogPath, sdk, repoUrl);
+            const result = helpers_1.getPayload(fs.readFileSync(changelogPath, { encoding: "utf8" }), sdk, repoUrl);
             const client = new http.HttpClient();
             yield client.postJson(webhookUrl, result);
         }

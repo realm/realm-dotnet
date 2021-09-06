@@ -21,7 +21,7 @@ jobs:
         $changelogContent -match $regex
         Set-Content -Path $output_file -Value $Matches[2]
         echo "::set-output name=release-notes-path::$output_file"
-    - name: Post to \#realm-releases
+    - name: 'Post to #realm-releases'
       uses: ./.github/actions/release-to-slack
       with:
         changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
