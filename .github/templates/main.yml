@@ -115,24 +115,14 @@ steps:
 #@ end
 
 #@ def uploadPackageArtifacts():
-#@ pkgNames = [ 'Realm.Fody', 'Realm' ]
-#@ relativePkgPaths = []
-#@ for pkgName in pkgNames:
-#@  finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}" 
-#@  relativePkgPaths.append("Realm/packages/" + finalPkgName + ".*nupkg")
-#@ end
-#@ pkgNames.append("ExtractedChangelog.md")
-#@ relativePkgPaths.append("Realm/Realm/ExtractedChangelog.md")
-#@ for i in range(0, len(pkgNames)):
-#! get the filename with no extension
-#@ finalPkgName = relativePkgPaths[i][(relativePkgPaths[i].rfind("/") + 1) : len(relativePkgPaths[i])]
-#@ finalPkgName = finalPkgName[0 : finalPkgName.rfind(".")]
-  - name: #@ "Store artifacts for " + pkgNames[i]
-    uses: actions/upload-artifact@v2
+#@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
+#@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
+  - name: #@ "Store artifacts for " + pkgName
+    uses: #@ actionUploadArtifact
     with:
       name: #@ finalPkgName
-      path: #@ "${{ github.workspace }}/" + relativePkgPaths[i]
-      retention-days: "${{ github.event_name != 'pull_request' && 30 || 1 }}"
+      path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName + ".*nupkg"
+      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
 #@ end
 #@ end
 
@@ -340,6 +330,12 @@ jobs:
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(buildUnityPackage())
+      - name: Store artifacts for ExtractedChangelog.md
+        uses: actions/upload-artifact@v2
+        with:
+          name: ExtractedChangelog
+          path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
+          retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
