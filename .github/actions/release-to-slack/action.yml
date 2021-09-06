@@ -11,6 +11,9 @@ inputs:
   webhook-url:
     required: true
     description: url for the slack integration
+  version:
+    required: true
+    description: the version that is being released
 runs:
   using: node12
   main: dist/index.js

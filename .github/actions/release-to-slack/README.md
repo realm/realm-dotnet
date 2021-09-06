@@ -18,6 +18,7 @@ This action will create a slack post for a release.
     changelog: ${{ github.workspace }}/RELEASE-NOTES.md
     sdk: .NET
     webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+    version: '10.2.3'
 ```
 
 The action takes the following parameters:
@@ -25,5 +26,6 @@ The action takes the following parameters:
 1. *(Required)* `changelog`: the path to the top section of CHANGELOG.md.
 1. *(Required)* `sdk`: friendly name for the SDK.
 1. *(Required)* `webhook-url`: url for the slack integration.
+1. *(Required)* `version`: the version that is being released
 
 [![GitHub release badge](https://badgen.net/github/release/realm/ci-actions/run-ios-simulator)](https://github.com/realm/ci-actions/releases/latest)

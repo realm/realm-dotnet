@@ -4,8 +4,6 @@ import { suite, test } from "@testdeck/mocha";
 import { getPayload } from "../src/helpers";
 
 const changelog = `
-## 10.4.1 (2021-09-12)
-
 ### Enhancements
 * Added two extension methods on \`IList\` to get an \`IQueryable\` collection wrapping the list:
   * \`list.AsRealmQueryable()\` allows you to get a \`IQueryable<T>\` from \`IList<T>\` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or \`Filter(string)\`.
@@ -31,7 +29,7 @@ const changelog = `
 class helpersTests {
     @test
     testPayloadGenerator(): void {
-        const payload = getPayload(changelog, ".NET", "https://github.com/realm/realm-dotnet");
+        const payload = getPayload(changelog, ".NET", "https://github.com/realm/realm-dotnet", "10.4.1");
 
         expect(payload.blocks).to.have.lengthOf(11);
     }

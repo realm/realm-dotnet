@@ -14,10 +14,11 @@ async function run(): Promise<void> {
 
         const sdk = core.getInput("sdk");
         const webhookUrl = core.getInput("webhook-url");
+        const version = core.getInput("version");
 
         const repoUrl = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}`;
 
-        const result = getPayload(fs.readFileSync(changelogPath, { encoding: "utf8" }), sdk, repoUrl);
+        const result = getPayload(fs.readFileSync(changelogPath, { encoding: "utf8" }), sdk, repoUrl, version);
 
         const client = new http.HttpClient();
         await client.postJson(webhookUrl, result);

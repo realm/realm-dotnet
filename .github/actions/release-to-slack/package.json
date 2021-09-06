@@ -28,6 +28,7 @@
     "@actions/github": "^5.0.0",
     "@actions/http-client": "^1.0.11",
     "fs": "0.0.1-security",
+    "moment": "^2.29.1",
     "slackify-markdown": "^4.3.0"
   },
   "devDependencies": {

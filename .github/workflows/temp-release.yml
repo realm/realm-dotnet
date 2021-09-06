@@ -27,3 +27,4 @@ jobs:
         changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
         sdk: .NET
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+        version: '10.4.1'

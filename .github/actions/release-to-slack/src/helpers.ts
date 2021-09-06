@@ -1,26 +1,19 @@
 import slackifyMarkdown from "slackify-markdown";
+import moment from "moment";
 
-const changelogRegex = /^## (?<currentVersion>[^ ]*) \((?<date>[^)]*)\)[^#]*(?<sections>.*)/gms;
 const sectionsRegex = /### (?<sectionName>[^\n]*)(?<sectionContent>.+?(?=###|$))/gs;
 
-export function getPayload(changelog: string, sdk: string, repoUrl: string): SlackPayload {
-    changelogRegex.lastIndex = 0;
+export function getPayload(changelog: string, sdk: string, repoUrl: string, version: string): SlackPayload {
     sectionsRegex.lastIndex = 0;
 
-    const changelogMatch = changelogRegex.exec(changelog);
-    if (!changelogMatch || !changelogMatch.groups) {
-        throw new Error(`Failed to match changelog: ${changelog}`);
-    }
-
-    const version = changelogMatch.groups["currentVersion"];
-    const date = changelogMatch.groups["date"];
+    const date = moment().format("YYYY-MM-DD");
 
     const slackSections = new Array<{ title: string; text: string }>();
 
     let sectionMatch: RegExpExecArray | null;
-    while ((sectionMatch = sectionsRegex.exec(changelogMatch.groups["sections"]))) {
+    while ((sectionMatch = sectionsRegex.exec(changelog))) {
         if (!sectionMatch.groups) {
-            throw new Error(`Failed to match sections: ${changelogMatch.groups["sections"]}`);
+            throw new Error(`Failed to match sections: ${changelog}`);
         }
 
         slackSections.push({ title: sectionMatch.groups["sectionName"], text: sectionMatch.groups["sectionContent"] });
