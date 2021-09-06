@@ -68,3 +68,10 @@ jobs:
       run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: 'Post to #realm-releases'
+      uses: realm/ci-actions/release-toslack@v3
+      with:
+        changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        sdk: .NET
+        webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+        version: ${{ steps.get-version.outputs.version }}
