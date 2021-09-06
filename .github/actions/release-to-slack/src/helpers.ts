@@ -1,7 +1,8 @@
 import slackifyMarkdown from "slackify-markdown";
 import moment from "moment";
+import * as core from "@actions/core";
 
-const sectionsRegex = /### (?<sectionName>[^\n]*)(?<sectionContent>.+?(?=###|$))/gs;
+const sectionsRegex = /### (?<sectionName>[^\r\n]*)(?<sectionContent>.+?(?=###|$))/gs;
 
 export function getPayload(changelog: string, sdk: string, repoUrl: string, version: string): SlackPayload {
     sectionsRegex.lastIndex = 0;
@@ -40,6 +41,9 @@ class SlackPayload {
     }
 
     addSection(title: string, text: string): void {
+        core.info("---------------");
+        core.info(title);
+        core.info("---------------");
         this.blocks.push(new SectionBlock(`*${title}*`));
         this.blocks.push(new SectionBlock(slackifyMarkdown(text)));
     }
