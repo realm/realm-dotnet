@@ -331,7 +331,7 @@ jobs:
       - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(buildUnityPackage())
       - name: Store artifacts for ExtractedChangelog.md
-        uses: actions/upload-artifact@v2
+        uses: #@ actionUploadArtifact
         with:
           name: ExtractedChangelog
           path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
