@@ -231,3 +231,4 @@ Tests/Tests.Unity/Assets/Tests/Dependencies
 dashboard.charts
 !FakeRealm.nupkg
 .github/actions/benchmark-uploader/src/packageContents
+.github/actions/release-to-slack/lib

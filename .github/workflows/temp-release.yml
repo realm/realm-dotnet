@@ -12,84 +12,25 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Post to \#realm-releases
+    - name: Extract release notes
+      id: extract-release-notes
       run: |
-        curl ${{ secrets.SLACK_RELEASE_WEBHOOK }} \
-          --request POST \
-          --header 'Content-Type: application/json' \
-          --data \
-            '{
-               "username": "Realm CI",
-               "icon_emoji": ":realm_new:",
-               "blocks": [
-                  {
-                    "type": "header",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "*TEST* Realm .NET FAKE.4.1"
-                    }
-                  },
-                  {
-                    "type": "context",
-                    "elements": [
-                      {
-                        "text": "*2021-09-06* | <https://github.com/realm/realm-dotnet/releases/tag/10.4.1|.NET SDK Release>",
-                        "type": "mrkdwn"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "divider"
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "*Fixed*",
-                      "verbatim": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "•   Fixed a regression that would prevent the SDK from working on older Linux versions. (Issue <https://github.com/realm/realm-dotnet/issues/2602|#2602>)\n•   Fixed an issue that manifested in circumventing the check for changing a primary key when using the dynamic API - i.e. `myObj.DynamicApi.Set(\"Id\", \"some-new-value\")` will now correctly throw a `NotSupportedException` if `\"some-new-value\"` is different from `myObj`'s primary key value. (PR <https://github.com/realm/realm-dotnet/pull/2601|#2601>)\n",
-                      "verbatim": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "*Compatibility*",
-                      "verbatim": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "•   Realm Studio: 11.0.0 or later.\n",
-                      "verbatim": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "*Internal*",
-                      "verbatim": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "•   Using Core 11.3.1.\n•   Started uploading code coverage to coveralls. (Issue <https://github.com/realm/realm-dotnet/issues/2586|#2586>)\n•   Removed the `[Serializable]` attribute from RealmObjectBase inheritors. (PR <https://github.com/realm/realm-dotnet/pull/2600|#2600>)\n",
-                      "verbatim": true
-                    }
-                  }
-                ]
-              }'
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+        $changelogContent = Get-Content -Raw -Path "./CHANGELOG.md"
+        $output_file = "./RELEASE_NOTES.md"
+        $regex = "(?sm)^(## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))(.+?)(\n## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))"
+        $changelogContent -match $regex
+        Set-Content -Path $output_file -Value $Matches[2]
+        echo "::set-output name=release-notes-path::$output_file"
+    - name: Read version
+      id: get-version
+      run: |
+        $nupkgName = ls "Realm/packages" | Select -expandproperty Name | Select-String Realm.Fody
+        $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
+        $version = $Matches[0]
+        echo "::set-output name=version::$version"
+    - name: Post to \#realm-releases
+      uses: ./.github/actions/release-to-slack
+      with:
+        changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        sdk: .NET
+        webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
