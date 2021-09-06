@@ -32,16 +32,6 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - name: Create Github Release
-      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
-      with:
-        artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-        bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
-        name: ${{ steps.get-version.outputs.version }}
-        commit: master
-        tag: ${{ steps.get-version.outputs.version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: true
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -82,11 +72,9 @@ jobs:
     - name: Publish Github Release
       uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
       with:
-        allowUpdates: true
-        omitBodyDuringUpdate: true
-        omitNameDuringUpdate: true
-        omitPrereleaseDuringUpdate: true
-        replacesArtifacts: false
+        artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+        bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        name: ${{ steps.get-version.outputs.version }}
         commit: master
         tag: ${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}

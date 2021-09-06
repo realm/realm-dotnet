@@ -17,28 +17,13 @@
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 #@ end
 
-#@ def prepareGithubRelease():
-  - name: Create Github Release
+#@ def publishGithubRelease():
+  - name: Publish Github Release
     uses: #@ actionGithubRelease
     with:
       artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
       bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
       name: ${{ steps.get-version.outputs.version }}
-      commit: #@ mainBranch
-      tag: ${{ steps.get-version.outputs.version }}
-      token: ${{ secrets.GITHUB_TOKEN }}
-      draft: true
-#@ end
-
-#@ def publishGithubRelease():
-  - name: Publish Github Release
-    uses: #@ actionGithubRelease
-    with:
-      allowUpdates: true
-      omitBodyDuringUpdate: true
-      omitNameDuringUpdate: true
-      omitPrereleaseDuringUpdate: true
-      replacesArtifacts: false
       commit: #@ mainBranch
       tag: ${{ steps.get-version.outputs.version }}
       token: ${{ secrets.GITHUB_TOKEN }}
@@ -142,7 +127,6 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - #@ template.replace(prepareGithubRelease())
     - #@ template.replace(uploadDocsToS3())
     - #@ template.replace(uploadToNuget("Realm.Fody"))
     - #@ template.replace(uploadToNuget("Realm"))
