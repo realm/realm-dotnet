@@ -12,6 +12,7 @@
 ### Internal
 * Using Core 11.3.1.
 * Added an action to post releases to Slack. (Issue [#2501](https://github.com/realm/realm-dotnet/issues/2501))
+* When a release succeeds, merge the original PR, tag the release, then update changelog. (PR [#2609](https://github.com/realm/realm-dotnet/pull/2609))
 
 ## 10.4.1 (2021-09-03)
 
