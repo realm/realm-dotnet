@@ -1,17 +1,13 @@
 #@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "actionDownloadAllArtifacts", "actionSetupNode", "actionAWSConfigureCredentials", "actionGithubRelease")
 
-#@ def uploadToNuget(packageName, includeSymbols = False):
+#@ def uploadToNuget(packageName):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
     run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
-
-#@ if includeSymbols:
-  - name: #@ "NuGet Publish Symbols " + packageName + ".${{ steps.get-version.outputs.version }}"
-    run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.snupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
-#@ end
 #@ end
 
 #@ def uploadToNpm(packageName):
-  - uses: actions/setup-node@v2
+  - uses: #@ actionSetupNode
     with:
       node-version: '12.x'
       registry-url: 'https://registry.npmjs.org'
@@ -23,7 +19,7 @@
 
 #@ def publishGithubRelease():
   - name: Create Github Release
-    uses: ncipollo/release-action@v1
+    uses: #@ actionGithubRelease
     with:
       artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
       bodyFile: Realm/Realm/ExtractedChangelog/ExtractedChangelog.md
@@ -36,7 +32,7 @@
 
 #@ def uploadDocsToS3():
   - name: Configure AWS Credentials
-    uses: aws-actions/configure-aws-credentials@v1
+    uses: #@ actionAWSConfigureCredentials
     with:
       aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
       aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
@@ -60,12 +56,9 @@ jobs:
     runs-on: windows-latest
     environment: Production
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
+    - #@ template.replace(checkoutCode(False, False))
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@v2
+      uses: #@ actionDownloadAllArtifacts
       with:
         workflow: main.yml
         commit: ${{ github.sha }}
@@ -80,5 +73,5 @@ jobs:
     - #@ template.replace(publishGithubRelease())
     - #@ template.replace(uploadDocsToS3())
     - #@ template.replace(uploadToNuget("Realm.Fody"))
-    - #@ template.replace(uploadToNuget("Realm", True))
+    - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm("io.realm.unity"))

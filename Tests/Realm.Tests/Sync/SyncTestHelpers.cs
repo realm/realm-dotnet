@@ -148,10 +148,10 @@ namespace Realms.Tests.Sync
             });
         }
 
-        public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)
+        public static Task<T> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message, Action<Session> sessionAssertions)
             where T : Exception
         {
-            var tcs = new TaskCompletionSource<Tuple<Session, T>>();
+            var tcs = new TaskCompletionSource<T>();
             EventHandler<ErrorEventArgs> handler = null;
             handler = new EventHandler<ErrorEventArgs>((sender, e) =>
             {
@@ -159,7 +159,8 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.TypeOf<Session>());
                     Assert.That(e.Exception, Is.TypeOf<T>());
-                    tcs.TrySetResult(Tuple.Create((Session)sender, (T)e.Exception));
+                    sessionAssertions((Session)sender);
+                    tcs.TrySetResult((T)e.Exception);
                 }
                 catch (Exception ex)
                 {

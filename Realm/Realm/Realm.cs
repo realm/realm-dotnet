@@ -156,8 +156,7 @@ namespace Realms
             if (config is SyncConfiguration)
             {
                 var session = realm.GetSession();
-                session.Handle.ShutdownAndWait();
-                session.CloseHandle();
+                session.CloseHandle(waitForShutdown: true);
             }
 
             return realm.SharedRealmHandle.Compact();

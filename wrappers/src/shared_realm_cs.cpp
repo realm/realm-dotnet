@@ -117,7 +117,6 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
 
         config.encryption_key = std::vector<char>(key.begin(), key.end());
-        config.sync_config->realm_encryption_key = key;
     }
 
     config.cache = configuration.enable_cache;

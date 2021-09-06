@@ -1,9 +1,28 @@
 #@ configuration = "Release"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
+#@ actionCheckout = "actions/checkout@v2"
+#@ actionCache = "actions/cache@v2"
+#@ actionUploadArtifact = "actions/upload-artifact@v2"
+#@ actionDownloadArtifact = "actions/download-artifact@v2"
+#@ actionSetupMSBuild = "microsoft/setup-msbuild@v1.0.2"
+#@ actionSetupDotnet = "actions/setup-dotnet@v1"
+#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@v1"
+#@ actionCodeQLInit = "github/codeql-action/init@v1"
+#@ actionCodeQLAnalyze = "github/codeql-action/analyze@v1"
+#@ actionSetupNode = "actions/setup-node@v2"
+#@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1"
+
+#@ actionDockerLayerCaching = "satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97" #! 0.0.11
+#@ actionDockerBuild = "docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b" #! 2.7.0
+#@ actionDockerRun = "addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609" #! v3
+#@ actionCoveralls = "coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057" #! v1.1.3
+#@ actionDeleteArtifact = "geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44" #! v1
+#@ actionGithubRelease = "ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e" #! v1.8.8
+#@ actionDownloadAllArtifacts = "dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed" #! v2.14.1
 
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
   - name: Checkout code
-    uses: actions/checkout@v2
+    uses: #@ actionCheckout
     with:
       submodules: #@ submodules
       ref: ${{ github.event.pull_request.head.sha }}
@@ -18,7 +37,7 @@
 #@ def setupVcpkg(ifCondition = "true"):
   - name: Check Vcpkg cache
     id: check-vcpkg-cache
-    uses: actions/cache@v2
+    uses: #@ actionCache
     with:
       path: 'C:\src'
       key: vcpkg

@@ -819,8 +819,8 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    _realm.Add(new PrimaryKeyStringObject { StringProperty = "1" });
-                    _realm.Add(new PrimaryKeyStringObject { StringProperty = "1" });
+                    _realm.Add(new PrimaryKeyStringObject { Id = "1" });
+                    _realm.Add(new PrimaryKeyStringObject { Id = "1" });
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }

@@ -205,7 +205,7 @@ namespace Realms.Sync
         {
             try
             {
-                var handle = new SessionHandle(sessionHandlePtr);
+                using var handle = new SessionHandle(sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
 

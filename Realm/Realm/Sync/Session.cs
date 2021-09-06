@@ -96,10 +96,7 @@ namespace Realms.Sync
         /// If you prefer not to take a dependency on it, you can create a class that implements <see cref="IObserver{T}"/>
         /// and use it to subscribe instead.
         /// </example>
-        public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
-        {
-            return new SyncProgressObservable(this, direction, mode);
-        }
+        public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode) => new SyncProgressObservable(Handle, direction, mode);
 
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.
@@ -124,10 +121,7 @@ namespace Realms.Sync
         /// <remarks>
         /// If the session is already stopped, calling this method will do nothing.
         /// </remarks>
-        public void Stop()
-        {
-            Handle.Stop();
-        }
+        public void Stop() => Handle.Stop();
 
         /// <summary>
         /// Attempts to resume the session and enable synchronization with the server.
@@ -136,16 +130,28 @@ namespace Realms.Sync
         /// All sessions will be active by default and calling this method only makes sense if
         /// <see cref="Stop"/> was called before that.
         /// </remarks>
-        public void Start()
-        {
-            Handle.Start();
-        }
+        public void Start() => Handle.Start();
 
-        internal readonly SessionHandle Handle;
+        private readonly SessionHandle _handle;
+
+        private SessionHandle Handle
+        {
+            get
+            {
+                if (_handle.IsClosed)
+                {
+                    throw new ObjectDisposedException(
+                        nameof(Session),
+                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
+                }
+
+                return _handle;
+            }
+        }
 
         internal Session(SessionHandle handle)
         {
-            Handle = handle;
+            _handle = handle;
         }
 
         internal static void RaiseError(Session session, Exception error)
@@ -156,26 +162,26 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
-        {
-            var session = obj as Session;
-
-            return session != null &&
-                   session.Handle.GetRawPointer() == Handle.GetRawPointer();
-        }
+            => obj is Session other &&
+               Handle.GetRawPointer() == other.Handle.GetRawPointer();
 
         /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Handle.GetRawPointer().GetHashCode();
-        }
+        public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
 
-        internal void CloseHandle()
+        internal void CloseHandle(bool waitForShutdown = false)
         {
             GC.SuppressFinalize(this);
-            if (!Handle.IsClosed)
+            if (!_handle.IsClosed)
             {
-                Handle.Close();
+                if (waitForShutdown)
+                {
+                    _handle.ShutdownAndWait();
+                }
+
+                _handle.Close();
             }
         }
+
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
     }
 }

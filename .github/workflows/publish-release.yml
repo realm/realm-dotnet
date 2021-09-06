@@ -9,8 +9,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: main.yml
         commit: ${{ github.sha }}
@@ -23,7 +24,7 @@ jobs:
         $version = $Matches[0]
         echo "::set-output name=version::$version"
     - name: Create Github Release
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
       with:
         artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         bodyFile: Realm/Realm/ExtractedChangelog/ExtractedChangelog.md
@@ -50,8 +51,6 @@ jobs:
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - name: NuGet Publish Symbols Realm.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.snupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@v2
       with:
         node-version: 12.x

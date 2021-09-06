@@ -40,7 +40,7 @@ namespace Realms.Sync
             Argument.NotNull(realm, nameof(realm));
             var syncConfig = Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
-            var session = syncConfig.User.App.Handle.GetSessionForPath(realm.SharedRealmHandle);
+            var session = syncConfig.User.App.Handle.GetSessionForRealm(realm.SharedRealmHandle);
             return new Session(session);
         }
     }
