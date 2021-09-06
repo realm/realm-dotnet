@@ -69,7 +69,7 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-toslack@v3
+      uses: realm/ci-actions/release-to-slack@v3
       with:
         changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
         sdk: .NET
