@@ -38,7 +38,7 @@ jobs:
         artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
         name: ${{ steps.get-version.outputs.version }}
-        commit: ${{ github.ref }}
+        commit: master
         tag: ${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: true
