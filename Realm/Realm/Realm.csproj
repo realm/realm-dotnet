@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!--<UsingTask TaskName="MSBuildReadTask.ExtractChangelog" AssemblyFile="$(ProjectDir)\..\..\Tools\MSBuildTaskExtractChangelog\MSBuildTaskExtractChangelog.dll" />
-  -->
   <UsingTask
     TaskName="ExtractChangelog"
     TaskFactory="RoslynCodeTaskFactory"
@@ -17,7 +15,7 @@
       <Using Namespace="System"/>
       <Using Namespace="System.IO"/>
       <Using Namespace="System.Text.RegularExpressions"/>
-      <Code Type="Method" Language="cs">
+      <Code Type="Fragment" Language="cs">
 <![CDATA[
 try
 {
@@ -78,9 +76,6 @@ return true;
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
-    <ProjectReference Include="..\..\Tools\MSBuildTaskExtractChangelog\MSBuildTaskExtractChangelog.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
