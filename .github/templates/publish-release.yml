@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionDownloadAllArtifacts", "actionSetupNode", "actionAWSConfigureCredentials", "actionGithubRelease", "actionReleaseToSlack")
+#@ load("common.lib.yml", "checkoutCode", "actionDownloadAllArtifacts", "actionSetupNode", "actionAWSConfigureCredentials", "actionGithubRelease", "actionReleaseToSlack", "actionFindPR", "actionMergePR", "actionCreatePR")
 
 #@ def uploadToNuget(packageName):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
@@ -17,7 +17,7 @@
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 #@ end
 
-#@ def publishGithubRelease():
+#@ def prepareGithubRelease():
   - name: Create Github Release
     uses: #@ actionGithubRelease
     with:
@@ -28,6 +28,39 @@
       tag: ${{ steps.get-version.outputs.version }}
       token: ${{ secrets.GITHUB_TOKEN }}
       draft: true
+#@ end
+
+#@ def publishGithubRelease():
+  - name: Publish Github Release
+    uses: #@ actionGithubRelease
+    with:
+      allowUpdates: true
+      omitBodyDuringUpdate: true
+      omitNameDuringUpdate: true
+      omitPrereleaseDuringUpdate: true
+      replacesArtifacts: false
+      commit: "master"
+      tag: ${{ steps.get-version.outputs.version }}
+      token: ${{ secrets.GITHUB_TOKEN }}
+      draft: false
+#@ end
+
+#@ def mergePR(number):
+  - name: Merge Pull Request
+    uses: #@ actionMergePR
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      number: #@ number
+      method: squash
+#@ end
+
+#@ def mergeReleasePR():
+  - name: Find Release PR
+    uses: #@ actionFindPR
+    id: find-pull-request
+    with:
+      branch: ${{ github.ref }}
+  - #@ template.replace(mergePR("${{ steps.find-pull-request.outputs.number }}"))
 #@ end
 
 #@ def uploadDocsToS3():
@@ -45,6 +78,36 @@
       {
         aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/realm-sdks/dotnet/$ver/
       }
+#@ end
+
+#@ def updateChangelogForvNext():
+  - name: Update Changelog
+    run: |
+      echo "## vNext (TBD)
+
+      ### Enhancements
+      * None
+
+      ### Fixed
+      * None
+
+      ### Compatibility
+      * Realm Studio: 11.0.0 or later.
+
+      ### Internal
+      * Using Core x.y.z.
+      " | cat - CHANGELOG.md >> temp
+      mv temp CHANGELOG.md
+  - name: Create vNext PR
+    id: vnext-pr
+    uses: #@ actionCreatePR
+    with:
+      branch: prepare-vnext
+      title: Prepare for vNext
+      body: Update Changelog for vNext
+      delete-branch: true
+      base: master
+  - #@ template.replace(mergePR("${{ steps.vnext-pr.outputs.pull-request-number }}"))
 #@ end
 ---
 name: Publish Release
@@ -79,11 +142,14 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - #@ template.replace(publishGithubRelease())
+    - #@ template.replace(prepareGithubRelease())
     - #@ template.replace(uploadDocsToS3())
     - #@ template.replace(uploadToNuget("Realm.Fody"))
     - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm("io.realm.unity"))
+    - #@ template.replace(mergeReleasePR())
+    - #@ template.replace(publishGithubRelease())
+    - #@ template.replace(updateChangelogForvNext())
     - name: 'Post to #realm-releases'
       uses: #@ actionReleaseToSlack
       with:
