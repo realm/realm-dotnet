@@ -12,6 +12,7 @@
 ### Internal
 * Using Core 11.3.1.
 * Added an action to post releases to Slack. (Issue [#2501](https://github.com/realm/realm-dotnet/issues/2501))
+* Added MSBuild inline task to extract the changelog of the latest version. (Issue [#2558](https://github.com/realm/realm-dotnet/pull/2558))
 
 ## 10.4.1 (2021-09-03)
 
