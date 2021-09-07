@@ -102,52 +102,52 @@ namespace Realms.Tests.Sync
             var fromRealm1 = realm1.Write(() =>
             {
                 return (
-                    realm1.Add(new PrimaryKeyInt64Object { Int64Property = 1234567890987654321 }),
-                    realm1.Add(new PrimaryKeyObjectIdObject { ObjectIdProperty = ObjectId.GenerateNewId() }),
-                    realm1.Add(new PrimaryKeyGuidObject { GuidProperty = Guid.NewGuid() }),
-                    realm1.Add(new RequiredPrimaryKeyStringObject { StringProperty = "abcdef" }),
-                    realm1.Add(new PrimaryKeyNullableInt64Object { Int64Property = null }),
-                    realm1.Add(new PrimaryKeyNullableObjectIdObject { ObjectIdProperty = null }),
-                    realm1.Add(new PrimaryKeyNullableGuidObject { GuidProperty = null }),
-                    realm1.Add(new PrimaryKeyStringObject { StringProperty = null }));
+                    realm1.Add(new PrimaryKeyInt64Object { Id = 1234567890987654321 }),
+                    realm1.Add(new PrimaryKeyObjectIdObject { Id = ObjectId.GenerateNewId() }),
+                    realm1.Add(new PrimaryKeyGuidObject { Id = Guid.NewGuid() }),
+                    realm1.Add(new RequiredPrimaryKeyStringObject { Id = "abcdef" }),
+                    realm1.Add(new PrimaryKeyNullableInt64Object { Id = null }),
+                    realm1.Add(new PrimaryKeyNullableObjectIdObject { Id = null }),
+                    realm1.Add(new PrimaryKeyNullableGuidObject { Id = null }),
+                    realm1.Add(new PrimaryKeyStringObject { Id = null }));
             });
 
             await WaitForUploadAsync(realm1);
             await WaitForDownloadAsync(realm2);
 
-            Assert.That(realm2.Find<PrimaryKeyInt64Object>(fromRealm1.Item1.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyObjectIdObject>(fromRealm1.Item2.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.StringProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item6.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.StringProperty)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyInt64Object>(fromRealm1.Item1.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyObjectIdObject>(fromRealm1.Item2.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item6.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.Id)?.IsValid, Is.True);
 
             var fromRealm2 = realm2.Write(() =>
             {
                 return (
-                    realm2.Add(new PrimaryKeyInt64Object { Int64Property = 0 }),
-                    realm2.Add(new PrimaryKeyObjectIdObject { ObjectIdProperty = ObjectId.GenerateNewId() }),
-                    realm2.Add(new PrimaryKeyGuidObject { GuidProperty = Guid.NewGuid() }),
-                    realm2.Add(new RequiredPrimaryKeyStringObject { StringProperty = string.Empty }),
-                    realm2.Add(new PrimaryKeyNullableInt64Object { Int64Property = 123 }),
-                    realm2.Add(new PrimaryKeyNullableObjectIdObject { ObjectIdProperty = ObjectId.GenerateNewId() }),
-                    realm2.Add(new PrimaryKeyNullableGuidObject { GuidProperty = Guid.NewGuid() }),
-                    realm2.Add(new PrimaryKeyStringObject { StringProperty = "hola" }));
+                    realm2.Add(new PrimaryKeyInt64Object { Id = 0 }),
+                    realm2.Add(new PrimaryKeyObjectIdObject { Id = ObjectId.GenerateNewId() }),
+                    realm2.Add(new PrimaryKeyGuidObject { Id = Guid.NewGuid() }),
+                    realm2.Add(new RequiredPrimaryKeyStringObject { Id = string.Empty }),
+                    realm2.Add(new PrimaryKeyNullableInt64Object { Id = 123 }),
+                    realm2.Add(new PrimaryKeyNullableObjectIdObject { Id = ObjectId.GenerateNewId() }),
+                    realm2.Add(new PrimaryKeyNullableGuidObject { Id = Guid.NewGuid() }),
+                    realm2.Add(new PrimaryKeyStringObject { Id = "hola" }));
             });
 
             await WaitForUploadAsync(realm2);
             await WaitForDownloadAsync(realm1);
 
-            Assert.That(realm1.Find<PrimaryKeyInt64Object>(fromRealm2.Item1.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyObjectIdObject>(fromRealm2.Item2.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyGuidObject>(fromRealm2.Item3.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<RequiredPrimaryKeyStringObject>(fromRealm2.Item4.StringProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableInt64Object>(fromRealm2.Item5.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableObjectIdObject>(fromRealm2.Item6.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableGuidObject>(fromRealm2.Item7.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyStringObject>(fromRealm2.Item8.StringProperty)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyInt64Object>(fromRealm2.Item1.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyObjectIdObject>(fromRealm2.Item2.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyGuidObject>(fromRealm2.Item3.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<RequiredPrimaryKeyStringObject>(fromRealm2.Item4.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyNullableInt64Object>(fromRealm2.Item5.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyNullableObjectIdObject>(fromRealm2.Item6.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyNullableGuidObject>(fromRealm2.Item7.Id)?.IsValid, Is.True);
+            Assert.That(realm1.Find<PrimaryKeyStringObject>(fromRealm2.Item8.Id)?.IsValid, Is.True);
         }
     }
 }

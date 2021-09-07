@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact")
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
@@ -8,40 +8,46 @@
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 
-#@ def checkCache(key):
-name: Check cache
-id: check-cache
-uses: actions/cache@v2
-with:
-  path: ./wrappers/build/**
-  key: #@ key
-#@ end
-
-#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
+#@ def getWrapperBuildCommand(cmd):
 #@ configurationParam =  " --configuration=" + configuration
 #@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
 #@ if cmd.startswith("powershell"):
 #@   configurationParam = " -Configuration " + configuration
 #@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
 #@ end
-#@ cacheKey = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
-#@ actualCommand = cmd + configurationParam + ltoParam
+#@ return cmd + configurationParam + ltoParam
+#@ end
 
+#@ def checkCache(outputVar):
+#@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+name: Check cache
+id: check-cache
+uses: #@ actionCache
+with:
+  path: ./wrappers/build/**
+  key: #@ key
+#@ end
+
+#@ def storeWrapperBinaries(outputVar):
+name: Store artifacts
+uses: #@ actionUploadArtifact
+with:
+  name: #@ outputVar
+  path: wrappers/build/**
+  retention-days: 1
+#@ end
+
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 steps:
   - #@ template.replace(checkoutCode("recursive"))
-  - #@ checkCache(cacheKey)
+  - #@ checkCache(outputVar)
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
   #@ end
   - name: Build wrappers
-    run: #@ actualCommand
+    run: #@ getWrapperBuildCommand(cmd)
     if: #@ wrappersCacheCondition
-  - name: Store artifacts
-    uses: actions/upload-artifact@v2
-    with:
-      name: #@ outputVar
-      path: wrappers/build/**
-      retention-days: 1
+  - #@ storeWrapperBinaries(outputVar)
 #@ end
 
 #@ def setupWin81SDK():
@@ -62,7 +68,7 @@ steps:
 
 #@ def msbuildOnWin(projectPath, **properties):
   - name: Add msbuild to PATH
-    uses: microsoft/setup-msbuild@v1.0.2
+    uses: #@ actionSetupMSBuild
   - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
 #@ end
 
@@ -71,7 +77,7 @@ steps:
   - name: #@ "Build Unity"
     run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
   - name: Store Unity artifacts
-    uses: actions/upload-artifact@v2
+    uses: #@ actionUploadArtifact
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
@@ -84,7 +90,7 @@ steps:
   - name: Check Docfx cache
     id: check-docfx-cache
     if: #@ docsCondition
-    uses: actions/cache@v2
+    uses: #@ actionCache
     with:
       path: 'C:\docfx'
       key: docfx
@@ -101,7 +107,7 @@ steps:
       Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
   - name: Store docs artifacts
     if: #@ docsCondition
-    uses: actions/upload-artifact@v2
+    uses: #@ actionUploadArtifact
     with:
       name: Docs.zip
       path: ${{ github.workspace }}/Realm/packages/Docs.zip
@@ -112,7 +118,7 @@ steps:
 #@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
 #@ finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
   - name: #@ "Store artifacts for " + pkgName
-    uses: actions/upload-artifact@v2
+    uses: #@ actionUploadArtifact
     with:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/packages/" + finalPkgName + ".*nupkg"
@@ -123,7 +129,7 @@ steps:
 #@ def fetchPackageArtifacts():
 #@ for pkg in [ "Realm", "Realm.Fody" ]:
   - name: #@ "Fetch " + pkg
-    uses: actions/download-artifact@v2
+    uses: #@ actionDownloadArtifact
     with:
       name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
       path: ${{ github.workspace }}/Realm/packages/
@@ -148,7 +154,7 @@ steps:
 #@ def fetchWrapperBinaries():
 #@ for platform in getWrapperBinaryNames():
   - name: #@ "Fetch artifacts for " + platform
-    uses: actions/download-artifact@v2
+    uses: #@ actionDownloadArtifact
     with:
       name: #@ "wrappers-" + platform
       path: wrappers/build
@@ -243,9 +249,30 @@ jobs:
     name: Wrappers iOS
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Wrappers Linux
-    _: #@ template.replace(buildWrappers("./wrappers/build.sh", "wrappers-linux"))
+    steps:
+      - #@ template.replace(checkoutCode("recursive"))
+      - #@ checkCache("wrappers-linux")
+      - uses: #@ actionDockerLayerCaching
+        continue-on-error: true
+        if: #@ wrappersCacheCondition
+      - name: Build CentOS image
+        uses: #@ actionDockerBuild
+        with:
+          tags: wrappers-centos:latest
+          file: ./wrappers/centos.Dockerfile
+          push: false
+        if: #@ wrappersCacheCondition
+      - name: Build wrappers
+        uses: #@ actionDockerRun
+        with:
+          image: wrappers-centos:latest
+          shell: bash
+          options: -v ${{ github.workspace }}:/work
+          run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
+        if: #@ wrappersCacheCondition
+      - #@ storeWrapperBinaries("wrappers-linux")
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Wrappers Android
@@ -281,7 +308,7 @@ jobs:
       package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
     steps:
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: #@ actionSetupMSBuild
       - #@ template.replace(checkoutCode())
       - name: Set version suffix
         id: set-version-suffix
@@ -290,7 +317,7 @@ jobs:
           $suffix = ""
           if ($env:GITHUB_EVENT_NAME -eq "pull_request")
           {
-            if (-Not $env:GITHUB_REF.Contains("release"))
+            if (-Not "${{ github.head_ref }}".Contains("release"))
             {
               $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
             }
@@ -306,6 +333,12 @@ jobs:
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(buildUnityPackage())
+      - name: Store artifacts for ExtractedChangelog.md
+        uses: #@ actionUploadArtifact
+        with:
+          name: ExtractedChangelog
+          path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
+          retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
@@ -366,32 +399,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        os: [ macos-latest, windows-latest, ubuntu-latest, win81 ]
         targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
     steps:
+      - name: Cleanup Workspace
+        run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
+        if: matrix.os == 'win81'
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - uses: actions/setup-dotnet@v1
+      - uses: #@ actionSetupDotnet
         if: matrix.targetFramework == 'net6.0'
         with:
           dotnet-version: '6.0.x'
           include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
-  #! This should be folded in run-tests-netcore once we fix the TLS issues on win81
-  run-tests-netcore-win81:
-    name: Test .NET on Win81
-    needs: build-packages
-    runs-on: win81
-    strategy:
-      fail-fast: false
-      matrix:
-        targetFramework: [ netcoreapp3.1, net5.0 ]
-    steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
-      - #@ publishTestsResults("TestResults.xml", ".NET (win81, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -412,7 +434,7 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts())
       - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
       - name: Run the tests
-        uses: realm/ci-actions/run-ios-simulator@v1
+        uses: #@ actionRuniOSSimulator
         with:
          appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
          bundleId: 'io.realm.dotnettests'
@@ -435,7 +457,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())
-      - uses: actions/setup-dotnet@v1
+      - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '5.0.x'
       - name: Setup Coverlet & Report Generator
@@ -444,15 +466,15 @@ jobs:
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
       - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
-      - name: Generate Html Report
-        run: ./tools/reportgenerator -reports:"./report.lcov" -targetdir:"./coveragereport" -reporttypes:Html
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
+      - name: Publish Coverage
+        id: publish-coveralls
+        uses: #@ actionCoveralls
         with:
-          name: coverage-report
-          path: ${{ github.workspace }}/coveragereport/**
-          retention-days: 30
-
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./report.lcov
+          git-commit: ${{ github.event.pull_request.head.sha }}
+      - name: Output Coveralls response
+        run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
@@ -461,7 +483,7 @@ jobs:
     steps:
 #@ for platform in getWrapperBinaryNames():
       - name: #@ "Delete artifacts for " + platform
-        uses: geekyeggo/delete-artifact@v1
+        uses: #@ actionDeleteArtifact
         with:
           name: #@ "wrappers-" + platform
 #@ end
@@ -488,7 +510,7 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - name: Upload Charts Dashboard File
-        uses: actions/upload-artifact@v2
+        uses: #@ actionUploadArtifact
         with:
           name: dashboard.charts
           path: ${{ github.workspace }}/dashboard.charts

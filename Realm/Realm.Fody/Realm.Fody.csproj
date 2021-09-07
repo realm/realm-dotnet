@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\AssemblyInfo.props" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Realms.Fody</RootNamespace>
@@ -11,6 +12,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn),1591, NU5100, NU5128</NoWarn>
     <LangVersion>8.0</LangVersion>
+    <IncludeSymbols>False</IncludeSymbols>
   </PropertyGroup>
   <ItemGroup Label="References">
     <PackageReference Include="FodyHelpers" Version="6.*" PrivateAssets="All" />
@@ -34,5 +36,4 @@
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
   </ItemGroup>
   <Import Project="..\Realm.Weaver\Realm.Weaver.projitems" Label="Shared" />
-  <Import Project="..\AssemblyInfo.props" />
 </Project>

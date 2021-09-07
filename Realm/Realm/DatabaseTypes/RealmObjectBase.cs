@@ -307,9 +307,9 @@ namespace Realms
             }
 
             // Special case to cover possible bugs similar to WPF (#1903)
-            if (obj is InvalidObject && !IsValid)
+            if (obj is InvalidObject)
             {
-                return true;
+                return !IsValid;
             }
 
             // If run-time types are not exactly the same, return false.
@@ -605,7 +605,14 @@ namespace Realms
                     throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
                 }
 
-                _realmObject.SetValue(propertyName, value);
+                if (property.IsPrimaryKey)
+                {
+                    _realmObject.SetValueUnique(propertyName, value);
+                }
+                else
+                {
+                    _realmObject.SetValue(propertyName, value);
+                }
             }
 
             /// <summary>

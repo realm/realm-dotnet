@@ -1,5 +1,36 @@
 ## vNext (TBD)
 
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.3.1.
+* Added an action to post releases to Slack. (Issue [#2501](https://github.com/realm/realm-dotnet/issues/2501))
+* Added MSBuild inline task to extract the changelog of the latest version. (Issue [#2558](https://github.com/realm/realm-dotnet/pull/2558))
+* When a release succeeds, merge the original PR, tag the release, then update changelog. (PR [#2609](https://github.com/realm/realm-dotnet/pull/2609))
+
+## 10.4.1 (2021-09-03)
+
+### Fixed
+* Fixed a regression that would prevent the SDK from working on older Linux versions. (Issue [#2602](https://github.com/realm/realm-dotnet/issues/2602))
+* Fixed an issue that manifested in circumventing the check for changing a primary key when using the dynamic API - i.e. `myObj.DynamicApi.Set("Id", "some-new-value")` will now correctly throw a `NotSupportedException` if `"some-new-value"` is different from `myObj`'s primary key value. (PR [#2601](https://github.com/realm/realm-dotnet/pull/2601))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.3.1.
+* Started uploading code coverage to coveralls. (Issue [#2586](https://github.com/realm/realm-dotnet/issues/2586))
+* Removed the `[Serializable]` attribute from RealmObjectBase inheritors. (PR [#2600](https://github.com/realm/realm-dotnet/pull/2600))
+
+## 10.4.0 (2021-08-31)
+
 ### Fixed
 * Fixed an issue that would cause `Logger.Default` on Unity to always revert to `Debug.Log`, even when a custom logger was set. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
 * Fixed an issue where `Logger.Console` on Unity would still use `Console.WriteLine` instead of `Debug.Log`. (Issue [#2481](https://github.com/realm/realm-dotnet/issues/2481))
