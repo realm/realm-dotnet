@@ -1,15 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <Target Name="ExtractChangelogToPack" BeforeTargets="GenerateNuspec" Condition="'$(CI)' == 'true'">
-    <Message Text="Extracting release note" />
-    <ExtractChangelog FilePath="$(ProjectDir)\..\..\CHANGELOG.md">
-      <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
-    </ExtractChangelog>
-  </Target>
-
-  <Target Name="WriteChangelogToFile" AfterTargets="ExtractChangelogToPack">
-    <WriteLinesToFile File="ExtractedChangelog.md" Lines="$(PackageReleaseNotes)" Overwrite="true" Encoding="Unicode" />
-  </Target>
   
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -161,5 +150,16 @@ return true;
       </Code>
     </Task>
   </UsingTask>
+
+  <Target Name="ExtractChangelogToPack" BeforeTargets="GenerateNuspec" Condition="'$(CI)' == 'true'">
+    <Message Text="Extracting release note" />
+    <ExtractChangelog FilePath="$(ProjectDir)\..\..\CHANGELOG.md">
+      <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
+    </ExtractChangelog>
+  </Target>
+
+  <Target Name="WriteChangelogToFile" AfterTargets="ExtractChangelogToPack">
+    <WriteLinesToFile File="ExtractedChangelog.md" Lines="$(PackageReleaseNotes)" Overwrite="true" Encoding="Unicode" />
+  </Target>
 
 </Project>
