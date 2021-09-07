@@ -402,6 +402,12 @@ jobs:
         name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+    - name: Store artifacts for ExtractedChangelog.md
+      uses: actions/upload-artifact@v2
+      with:
+        name: ExtractedChangelog
+        path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
