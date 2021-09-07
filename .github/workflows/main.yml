@@ -529,6 +529,9 @@ jobs:
         - net5.0
         - net6.0
     steps:
+    - name: Cleanup Workspace
+      run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
+      if: matrix.os == 'win81'
     - name: Checkout code
       uses: actions/checkout@v2
       with:

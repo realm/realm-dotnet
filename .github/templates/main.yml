@@ -398,6 +398,9 @@ jobs:
         os: [ macos-latest, windows-latest, ubuntu-latest, win81 ]
         targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
     steps:
+      - name: Cleanup Workspace
+        run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
+        if: matrix.os == 'win81'
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - uses: #@ actionSetupDotnet
