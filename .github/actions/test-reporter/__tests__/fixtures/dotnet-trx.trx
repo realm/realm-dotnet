@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="29afb69d-9a66-49f7-bc93-a537a0db9862" name="Michal@DORNY-PC 2021-04-20 08:31:33" runUser="DORNY-PC\Michal" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2021-04-20T08:31:33.0390097+02:00" queuing="2021-04-20T08:31:33.0390107+02:00" start="2021-04-20T08:31:31.9866971+02:00" finish="2021-04-20T08:31:33.1023832+02:00" />
+  <TestSettings name="default" id="c6a4ef62-df4b-4845-9252-69f55bf26836">
+    <Deployment runDeploymentRoot="Michal_DORNY-PC_2021-04-20_08_31_33" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="3181d0c8-88ef-42c2-8375-0be2ff86197d" testId="41c1dee7-2d17-4cf3-ae64-fae6fd9f9105" testName="DotnetTests.XUnitTests.CalculatorTests.Timeout_Test" computerName="DORNY-PC" duration="00:00:00.1084258" startTime="2021-04-20T08:31:32.9669698+02:00" endTime="2021-04-20T08:31:32.9669721+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3181d0c8-88ef-42c2-8375-0be2ff86197d" />
+    <UnitTestResult executionId="b7b68f4a-8e66-408f-965b-23f0073b6ee7" testId="3e8432a2-ff59-c925-c08b-bb7f9ee02dd1" testName="DotnetTests.XUnitTests.CalculatorTests.Passing_Test" computerName="DORNY-PC" duration="00:00:00.0001365" startTime="2021-04-20T08:31:33.0065641+02:00" endTime="2021-04-20T08:31:33.0065647+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7b68f4a-8e66-408f-965b-23f0073b6ee7" />
+    <UnitTestResult executionId="79a318be-8f8d-42e4-8d54-58a3a054ef09" testId="c38e1acf-6419-5634-5ac6-0099b3891fe8" testName="Should be even number(i: 3)" computerName="DORNY-PC" duration="00:00:00.0006537" startTime="2021-04-20T08:31:32.9750302+02:00" endTime="2021-04-20T08:31:32.9750321+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79a318be-8f8d-42e4-8d54-58a3a054ef09">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.True() Failure&#xD;
+Expected: True&#xD;
+Actual:   False</Message>
+          <StackTrace>   at DotnetTests.XUnitTests.CalculatorTests.Theory_With_Custom_Name(Int32 i) in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 67</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9a6bc7d8-3abd-4369-aa02-418530a1bf59" testId="55ef2114-eb39-77d8-4031-3da68d0dc505" testName="DotnetTests.XUnitTests.CalculatorTests.Skipped_Test" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T08:31:33.0075607+02:00" endTime="2021-04-20T08:31:33.0075624+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a6bc7d8-3abd-4369-aa02-418530a1bf59">
+      <Output>
+        <StdOut>Skipped test</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="30c568c6-c120-48b0-8ebf-6d852b034bd9" testId="a171b9bb-97df-a0d8-c112-02ea0ea98607" testName="Custom Name" computerName="DORNY-PC" duration="00:00:00.0001371" startTime="2021-04-20T08:31:32.9751544+02:00" endTime="2021-04-20T08:31:32.9751546+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30c568c6-c120-48b0-8ebf-6d852b034bd9" />
+    <UnitTestResult executionId="623c7fd2-5b76-4a14-b0c8-300678630c3b" testId="d3708bd6-b784-b890-48b3-965f4ac35bc9" testName="Should be even number(i: 2)" computerName="DORNY-PC" duration="00:00:00.0000097" startTime="2021-04-20T08:31:32.9751012+02:00" endTime="2021-04-20T08:31:32.9751014+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="623c7fd2-5b76-4a14-b0c8-300678630c3b" />
+    <UnitTestResult executionId="4cbddbf1-3df5-4098-a6e8-715249d865df" testId="e4d3ab06-acb8-d3f7-0518-e81c04c0108a" testName="DotnetTests.XUnitTests.CalculatorTests.Exception_In_TargetTest" computerName="DORNY-PC" duration="00:00:00.0008377" startTime="2021-04-20T08:31:32.9767893+02:00" endTime="2021-04-20T08:31:32.9767912+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4cbddbf1-3df5-4098-a6e8-715249d865df">
+      <Output>
+        <ErrorInfo>
+          <Message>System.DivideByZeroException : Attempted to divide by zero.</Message>
+          <StackTrace>   at DotnetTests.Unit.Calculator.Div(Int32 a, Int32 b) in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.Unit\Calculator.cs:line 9&#xD;
+   at DotnetTests.XUnitTests.CalculatorTests.Exception_In_TargetTest() in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 33</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ef238df8-c951-4e0f-b32b-4bc9162bc031" testId="eda9288a-92d4-85a5-dd8e-96ed8a58af10" testName="DotnetTests.XUnitTests.CalculatorTests.Exception_In_Test" computerName="DORNY-PC" duration="00:00:00.0025175" startTime="2021-04-20T08:31:32.8646547+02:00" endTime="2021-04-20T08:31:32.8647418+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ef238df8-c951-4e0f-b32b-4bc9162bc031">
+      <Output>
+        <ErrorInfo>
+          <Message>System.Exception : Test</Message>
+          <StackTrace>   at DotnetTests.XUnitTests.CalculatorTests.Exception_In_Test() in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 39</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="705f6132-7d4c-48c4-afdc-cadb427a4255" testId="3bd3c92f-b8b2-2f41-9211-951100aa2540" testName="DotnetTests.XUnitTests.CalculatorTests.Failing_Test" computerName="DORNY-PC" duration="00:00:00.0038697" startTime="2021-04-20T08:31:32.9742636+02:00" endTime="2021-04-20T08:31:32.9742658+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="705f6132-7d4c-48c4-afdc-cadb427a4255">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure&#xD;
+Expected: 3&#xD;
+Actual:   2</Message>
+          <StackTrace>   at DotnetTests.XUnitTests.CalculatorTests.Failing_Test() in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 27</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cf210795-6f94-400f-afc6-a49baadfd249" testId="0980711c-d788-32eb-19b3-1d302a0e8df5" testName="DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(i: 2)" computerName="DORNY-PC" duration="00:00:00.0000078" startTime="2021-04-20T08:31:32.9775134+02:00" endTime="2021-04-20T08:31:32.9775138+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cf210795-6f94-400f-afc6-a49baadfd249" />
+    <UnitTestResult executionId="e3d9bb4a-36b1-467f-a851-85bd210301e3" testId="787d63a6-11d7-2fda-3fad-9d980fa5e70d" testName="DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(i: 3)" computerName="DORNY-PC" duration="00:00:00.0004141" startTime="2021-04-20T08:31:32.9773980+02:00" endTime="2021-04-20T08:31:32.9773999+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3d9bb4a-36b1-467f-a851-85bd210301e3">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.True() Failure&#xD;
+Expected: True&#xD;
+Actual:   False</Message>
+          <StackTrace>   at DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(Int32 i) in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 59</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Exception_In_TargetTest" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="e4d3ab06-acb8-d3f7-0518-e81c04c0108a">
+      <Execution id="4cbddbf1-3df5-4098-a6e8-715249d865df" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Exception_In_TargetTest" />
+    </UnitTest>
+    <UnitTest name="Should be even number(i: 3)" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="c38e1acf-6419-5634-5ac6-0099b3891fe8">
+      <Execution id="79a318be-8f8d-42e4-8d54-58a3a054ef09" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Theory_With_Custom_Name" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Failing_Test" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="3bd3c92f-b8b2-2f41-9211-951100aa2540">
+      <Execution id="705f6132-7d4c-48c4-afdc-cadb427a4255" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Failing_Test" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Exception_In_Test" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="eda9288a-92d4-85a5-dd8e-96ed8a58af10">
+      <Execution id="ef238df8-c951-4e0f-b32b-4bc9162bc031" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Exception_In_Test" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Skipped_Test" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="55ef2114-eb39-77d8-4031-3da68d0dc505">
+      <Execution id="9a6bc7d8-3abd-4369-aa02-418530a1bf59" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Skipped_Test" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Passing_Test" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="3e8432a2-ff59-c925-c08b-bb7f9ee02dd1">
+      <Execution id="b7b68f4a-8e66-408f-965b-23f0073b6ee7" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Passing_Test" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(i: 2)" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="0980711c-d788-32eb-19b3-1d302a0e8df5">
+      <Execution id="cf210795-6f94-400f-afc6-a49baadfd249" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Is_Even_Number" />
+    </UnitTest>
+    <UnitTest name="Custom Name" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="a171b9bb-97df-a0d8-c112-02ea0ea98607">
+      <Execution id="30c568c6-c120-48b0-8ebf-6d852b034bd9" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Passing_Test_With_Name" />
+    </UnitTest>
+    <UnitTest name="Should be even number(i: 2)" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="d3708bd6-b784-b890-48b3-965f4ac35bc9">
+      <Execution id="623c7fd2-5b76-4a14-b0c8-300678630c3b" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Theory_With_Custom_Name" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Timeout_Test" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="41c1dee7-2d17-4cf3-ae64-fae6fd9f9105">
+      <Execution id="3181d0c8-88ef-42c2-8375-0be2ff86197d" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Timeout_Test" />
+    </UnitTest>
+    <UnitTest name="DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(i: 3)" storage="c:\users\michal\workspace\dorny\test-reporter\reports\dotnet\dotnettests.xunittests\bin\debug\netcoreapp3.1\dotnettests.xunittests.dll" id="787d63a6-11d7-2fda-3fad-9d980fa5e70d">
+      <Execution id="e3d9bb4a-36b1-467f-a851-85bd210301e3" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\bin\Debug\netcoreapp3.1\DotnetTests.XUnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="DotnetTests.XUnitTests.CalculatorTests" name="Is_Even_Number" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="41c1dee7-2d17-4cf3-ae64-fae6fd9f9105" executionId="3181d0c8-88ef-42c2-8375-0be2ff86197d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3e8432a2-ff59-c925-c08b-bb7f9ee02dd1" executionId="b7b68f4a-8e66-408f-965b-23f0073b6ee7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c38e1acf-6419-5634-5ac6-0099b3891fe8" executionId="79a318be-8f8d-42e4-8d54-58a3a054ef09" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="55ef2114-eb39-77d8-4031-3da68d0dc505" executionId="9a6bc7d8-3abd-4369-aa02-418530a1bf59" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a171b9bb-97df-a0d8-c112-02ea0ea98607" executionId="30c568c6-c120-48b0-8ebf-6d852b034bd9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d3708bd6-b784-b890-48b3-965f4ac35bc9" executionId="623c7fd2-5b76-4a14-b0c8-300678630c3b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e4d3ab06-acb8-d3f7-0518-e81c04c0108a" executionId="4cbddbf1-3df5-4098-a6e8-715249d865df" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eda9288a-92d4-85a5-dd8e-96ed8a58af10" executionId="ef238df8-c951-4e0f-b32b-4bc9162bc031" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3bd3c92f-b8b2-2f41-9211-951100aa2540" executionId="705f6132-7d4c-48c4-afdc-cadb427a4255" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0980711c-d788-32eb-19b3-1d302a0e8df5" executionId="cf210795-6f94-400f-afc6-a49baadfd249" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="787d63a6-11d7-2fda-3fad-9d980fa5e70d" executionId="e3d9bb4a-36b1-467f-a851-85bd210301e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="11" executed="10" passed="5" failed="5" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.0 (64-bit .NET Core 3.1.14)&#xD;
+[xUnit.net 00:00:00.27]   Discovering: DotnetTests.XUnitTests&#xD;
+[xUnit.net 00:00:00.32]   Discovered:  DotnetTests.XUnitTests&#xD;
+[xUnit.net 00:00:00.32]   Starting:    DotnetTests.XUnitTests&#xD;
+[xUnit.net 00:00:00.39]       System.Exception : Test&#xD;
+[xUnit.net 00:00:00.39]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.39]         C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs(39,0): at DotnetTests.XUnitTests.CalculatorTests.Exception_In_Test()&#xD;
+[xUnit.net 00:00:00.51]       Assert.Equal() Failure&#xD;
+[xUnit.net 00:00:00.51]       Expected: 3&#xD;
+[xUnit.net 00:00:00.51]       Actual:   2&#xD;
+[xUnit.net 00:00:00.51]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.51]         C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs(27,0): at DotnetTests.XUnitTests.CalculatorTests.Failing_Test()&#xD;
+[xUnit.net 00:00:00.51]       Assert.True() Failure&#xD;
+[xUnit.net 00:00:00.51]       Expected: True&#xD;
+[xUnit.net 00:00:00.51]       Actual:   False&#xD;
+[xUnit.net 00:00:00.51]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.51]         C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs(67,0): at DotnetTests.XUnitTests.CalculatorTests.Theory_With_Custom_Name(Int32 i)&#xD;
+[xUnit.net 00:00:00.51]       System.DivideByZeroException : Attempted to divide by zero.&#xD;
+[xUnit.net 00:00:00.51]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.51]         C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.Unit\Calculator.cs(9,0): at DotnetTests.Unit.Calculator.Div(Int32 a, Int32 b)&#xD;
+[xUnit.net 00:00:00.51]         C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs(33,0): at DotnetTests.XUnitTests.CalculatorTests.Exception_In_TargetTest()&#xD;
+[xUnit.net 00:00:00.51]       Assert.True() Failure&#xD;
+[xUnit.net 00:00:00.51]       Expected: True&#xD;
+[xUnit.net 00:00:00.51]       Actual:   False&#xD;
+[xUnit.net 00:00:00.51]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.51]         C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs(59,0): at DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(Int32 i)&#xD;
+[xUnit.net 00:00:00.54]       Skipped test&#xD;
+[xUnit.net 00:00:00.54]   Finished:    DotnetTests.XUnitTests&#xD;
+Test 'DotnetTests.XUnitTests.CalculatorTests.Skipped_Test' was skipped in the test run.&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DORNY-PC" outcome="Error" timestamp="2021-04-20T08:31:32.8608994+02:00">
+        <Text>[xUnit.net 00:00:00.39]     DotnetTests.XUnitTests.CalculatorTests.Exception_In_Test [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DORNY-PC" outcome="Error" timestamp="2021-04-20T08:31:32.9743695+02:00">
+        <Text>[xUnit.net 00:00:00.51]     DotnetTests.XUnitTests.CalculatorTests.Failing_Test [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DORNY-PC" outcome="Error" timestamp="2021-04-20T08:31:32.9753175+02:00">
+        <Text>[xUnit.net 00:00:00.51]     Should be even number(i: 3) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DORNY-PC" outcome="Error" timestamp="2021-04-20T08:31:32.9767605+02:00">
+        <Text>[xUnit.net 00:00:00.51]     DotnetTests.XUnitTests.CalculatorTests.Exception_In_TargetTest [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DORNY-PC" outcome="Error" timestamp="2021-04-20T08:31:32.9843677+02:00">
+        <Text>[xUnit.net 00:00:00.51]     DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(i: 3) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DORNY-PC" outcome="Warning" timestamp="2021-04-20T08:31:33.1004401+02:00">
+        <Text>[xUnit.net 00:00:00.54]     DotnetTests.XUnitTests.CalculatorTests.Skipped_Test [SKIP]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

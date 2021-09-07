@@ -1,0 +1,862 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites tests="808" failures="1" errors="0" skipped="14" time="2126.5310000000004"><testsuite name="org.apache.pulsar.AddMissingPatchVersionTest" tests="2" errors="0" failures="1" skipped="1" time="0.116"><testcase name="testVersionStrings" time="0.099" classname="org.apache.pulsar.AddMissingPatchVersionTest">
+    <skipped />
+  </testcase> 
+  <testcase name="testVersionStrings" time="0.017" classname="org.apache.pulsar.AddMissingPatchVersionTest">
+    <failure type="java.lang.AssertionError" message="expected [1.2.1] but found [1.2.0]">
+      java.lang.AssertionError: expected [1.2.1] but found [1.2.0]
+at org.testng.Assert.fail(Assert.java:99)
+at org.testng.Assert.failNotEquals(Assert.java:1037)
+at org.testng.Assert.assertEqualsImpl(Assert.java:140)
+at org.testng.Assert.assertEquals(Assert.java:122)
+at org.testng.Assert.assertEquals(Assert.java:629)
+at org.testng.Assert.assertEquals(Assert.java:639)
+at org.apache.pulsar.AddMissingPatchVersionTest.testVersionStrings(AddMissingPatchVersionTest.java:29)
+at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+at java.lang.reflect.Method.invoke(Method.java:498)
+at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:132)
+at org.testng.internal.InvokeMethodRunnable.runOne(InvokeMethodRunnable.java:45)
+at org.testng.internal.InvokeMethodRunnable.call(InvokeMethodRunnable.java:73)
+at org.testng.internal.InvokeMethodRunnable.call(InvokeMethodRunnable.java:11)
+at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+at java.lang.Thread.run(Thread.java:748)
+
+    </failure>
+  </testcase> 
+  </testsuite><testsuite name="org.apache.pulsar.PulsarBrokerStarterTest" tests="9" errors="0" failures="0" skipped="0" time="0.5910000000000001"><testcase name="testMainRunBookieNoConfig" time="0.028" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testLoadConfigWithException" time="0.034" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testMainWithNoArgument" time="0.004" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testLoadBalancerConfig" time="0.019" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testGlobalZooKeeperConfig" time="0.046" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testMainRunBookieRecoveryNoConfig" time="0.015" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testLoadConfig" time="0.024" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testMainEnableRunBookieThroughBrokerConfig" time="0.366" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  <testcase name="testMainRunBookieAndAutoRecoveryNoConfig" time="0.055" classname="org.apache.pulsar.PulsarBrokerStarterTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.PulsarServiceTest" tests="2" errors="0" failures="0" skipped="0" time="0.096"><testcase name="testGetWorkerService" time="0.083" classname="org.apache.pulsar.broker.PulsarServiceTest" />
+  <testcase name="testGetWorkerServiceException" time="0.013" classname="org.apache.pulsar.broker.PulsarServiceTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.SLAMonitoringTest" tests="4" errors="0" failures="0" skipped="0" time="9.184999999999999"><testcase name="testOwnedNamespaces" time="1.171" classname="org.apache.pulsar.broker.SLAMonitoringTest" />
+  <testcase name="testOwnershipAfterSetup" time="0.016" classname="org.apache.pulsar.broker.SLAMonitoringTest" />
+  <testcase name="testUnloadIfBrokerCrashes" time="7.923" classname="org.apache.pulsar.broker.SLAMonitoringTest" />
+  <testcase name="testOwnershipViaAdminAfterSetup" time="0.075" classname="org.apache.pulsar.broker.SLAMonitoringTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.admin.AdminApiOffloadTest" tests="7" errors="0" failures="0" skipped="0" time="18.584000000000003"><testcase name="testOffloadPoliciesAppliedApi" time="1.869" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  <testcase name="testOffloadV2" time="1.614" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  <testcase name="testTopicLevelOffloadNonPartitioned" time="2.481" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  <testcase name="testTopicLevelOffloadPartitioned" time="1.749" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  <testcase name="testOffloadV1" time="7.216" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  <testcase name="testOffloadPolicies" time="1.283" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  <testcase name="testOffloadPoliciesApi" time="2.372" classname="org.apache.pulsar.broker.admin.AdminApiOffloadTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.auth.AuthLogsTest" tests="2" errors="0" failures="0" skipped="0" time="1.389"><testcase name="httpEndpoint" time="0.881" classname="org.apache.pulsar.broker.auth.AuthLogsTest" />
+  <testcase name="binaryEndpoint" time="0.508" classname="org.apache.pulsar.broker.auth.AuthLogsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.auth.AuthenticationServiceTest" tests="2" errors="0" failures="0" skipped="0" time="0.185"><testcase name="testAuthentication" time="0.005" classname="org.apache.pulsar.broker.auth.AuthenticationServiceTest" />
+  <testcase name="testAuthenticationHttp" time="0.180" classname="org.apache.pulsar.broker.auth.AuthenticationServiceTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.auth.AuthorizationTest" tests="1" errors="0" failures="0" skipped="0" time="2.384"><testcase name="simple" time="2.384" classname="org.apache.pulsar.broker.auth.AuthorizationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.lookup.http.HttpTopicLookupv2Test" tests="4" errors="0" failures="0" skipped="0" time="1.93"><testcase name="crossColoLookup" time="0.329" classname="org.apache.pulsar.broker.lookup.http.HttpTopicLookupv2Test" />
+  <testcase name="testNotEnoughLookupPermits" time="0.015" classname="org.apache.pulsar.broker.lookup.http.HttpTopicLookupv2Test" />
+  <testcase name="testValidateReplicationSettingsOnNamespace" time="1.575" classname="org.apache.pulsar.broker.lookup.http.HttpTopicLookupv2Test" />
+  <testcase name="testDataPojo" time="0.011" classname="org.apache.pulsar.broker.lookup.http.HttpTopicLookupv2Test" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.namespace.NamespaceCreateBundlesTest" tests="2" errors="0" failures="0" skipped="0" time="33.168"><testcase name="testCreateNamespaceWithDefaultBundles" time="23.401" classname="org.apache.pulsar.broker.namespace.NamespaceCreateBundlesTest" />
+  <testcase name="testSplitBundleUpdatesLocalPoliciesWithoutOverwriting" time="9.767" classname="org.apache.pulsar.broker.namespace.NamespaceCreateBundlesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.namespace.NamespaceOwnershipListenerTests" tests="2" errors="0" failures="0" skipped="0" time="32.357"><testcase name="testGetAllPartitions" time="23.274" classname="org.apache.pulsar.broker.namespace.NamespaceOwnershipListenerTests" />
+  <testcase name="testNamespaceBundleOwnershipListener" time="9.083" classname="org.apache.pulsar.broker.namespace.NamespaceOwnershipListenerTests" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.namespace.NamespaceServiceTest" tests="10" errors="0" failures="0" skipped="0" time="75.27199999999999"><testcase name="testSplitMapWithRefreshedStatMap" time="4.509" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testRemoveOwnershipNamespaceBundle" time="4.119" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testIsServiceUnitDisabled" time="5.056" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testLoadReportDeserialize" time="24.622" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testCreateLookupResult" time="6.452" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testUnloadNamespaceBundleWithStuckTopic" time="4.463" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testUnloadNamespaceBundleFailure" time="7.650" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testSplitAndOwnBundles" time="5.071" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testCreateNamespaceWithDefaultNumberOfBundles" time="7.515" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  <testcase name="testRemoveOwnershipAndSplitBundle" time="5.815" classname="org.apache.pulsar.broker.namespace.NamespaceServiceTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.namespace.NamespaceUnloadingTest" tests="2" errors="0" failures="0" skipped="0" time="13.704"><testcase name="testUnloadNotLoadedNamespace" time="7.094" classname="org.apache.pulsar.broker.namespace.NamespaceUnloadingTest" />
+  <testcase name="testUnloadPartiallyLoadedNamespace" time="6.610" classname="org.apache.pulsar.broker.namespace.NamespaceUnloadingTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.namespace.OwnerShipCacheForCurrentServerTest" tests="1" errors="0" failures="0" skipped="0" time="15.709"><testcase name="testOwnershipForCurrentServer" time="15.709" classname="org.apache.pulsar.broker.namespace.OwnerShipCacheForCurrentServerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.namespace.OwnershipCacheTest" tests="8" errors="0" failures="0" skipped="0" time="15.749999999999998"><testcase name="testGetOwnedServiceUnits" time="9.397" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testRemoveOwnership" time="1.482" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testGetOwnedServiceUnit" time="1.036" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testGetOrSetOwner" time="1.708" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testConstructor" time="0.471" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testGetOwner" time="0.492" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testDisableOwnership" time="0.669" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  <testcase name="testReestablishOwnership" time="0.495" classname="org.apache.pulsar.broker.namespace.OwnershipCacheTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.protocol.ProtocolHandlerUtilsTest" tests="3" errors="0" failures="0" skipped="0" time="7.398000000000001"><testcase name="testLoadProtocolHandler" time="7.332" classname="org.apache.pulsar.broker.protocol.ProtocolHandlerUtilsTest" />
+  <testcase name="testLoadProtocolHandlerBlankHandlerClass" time="0.025" classname="org.apache.pulsar.broker.protocol.ProtocolHandlerUtilsTest" />
+  <testcase name="testLoadProtocolHandlerWrongHandlerClass" time="0.041" classname="org.apache.pulsar.broker.protocol.ProtocolHandlerUtilsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.protocol.ProtocolHandlerWithClassLoaderTest" tests="1" errors="0" failures="0" skipped="0" time="0.015"><testcase name="testWrapper" time="0.015" classname="org.apache.pulsar.broker.protocol.ProtocolHandlerWithClassLoaderTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" tests="6" errors="0" failures="0" skipped="0" time="0.9460000000000001"><testcase name="testStart" time="0.626" classname="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" />
+  <testcase name="testGetProtocol" time="0.014" classname="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" />
+  <testcase name="testNewChannelInitializersSuccess" time="0.010" classname="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" />
+  <testcase name="testInitialize" time="0.020" classname="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" />
+  <testcase name="testNewChannelInitializersOverlapped" time="0.260" classname="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" />
+  <testcase name="testGetProtocolDataToAdvertise" time="0.016" classname="org.apache.pulsar.broker.protocol.ProtocolHandlersTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.service.MessagePublishBufferThrottleTest" tests="3" errors="0" failures="0" skipped="0" time="13.83"><testcase name="testMessagePublishBufferThrottleEnable" time="2.305" classname="org.apache.pulsar.broker.service.MessagePublishBufferThrottleTest" />
+  <testcase name="testBlockByPublishRateLimiting" time="9.449" classname="org.apache.pulsar.broker.service.MessagePublishBufferThrottleTest" />
+  <testcase name="testMessagePublishBufferThrottleDisabled" time="2.076" classname="org.apache.pulsar.broker.service.MessagePublishBufferThrottleTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.service.ReplicatorTest" tests="22" errors="0" failures="0" skipped="0" time="40.154"><testcase name="testResumptionAfterBacklogRelaxed" time="19.914" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicationOverrides" time="2.910" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testResetCursorNotFail" time="0.218" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testUpdateGlobalTopicPartition" time="0.667" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplication" time="0.429" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicatorOnPartitionedTopic" time="0.172" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testConcurrentReplicator" time="4.271" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testTopicReplicatedAndProducerCreate" time="0.240" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testDeleteReplicatorFailure" time="0.172" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicatorOnPartitionedTopic" time="0.145" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicationForBatchMessages" time="0.324" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicatorClearBacklog" time="0.428" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="verifyChecksumAfterReplication" time="0.259" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testCloseReplicatorStartProducer" time="0.369" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="activeBrokerParse" time="0.212" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicatePeekAndSkip" time="0.241" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplication" time="0.406" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicatedCluster" time="1.481" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testTopicReplicatedAndProducerCreate" time="0.372" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testConfigChange" time="4.446" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testFailures" time="0.097" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  <testcase name="testReplicatorProducerClosing" time="2.381" classname="org.apache.pulsar.broker.service.ReplicatorTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.service.TopicOwnerTest" tests="8" errors="0" failures="0" skipped="0" time="114.278"><testcase name="testReleaseOwnershipWithZookeeperDisconnectedBeforeOwnershipNodeDeleted" time="13.006" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testAcquireOwnershipWithZookeeperDisconnectedAfterOwnershipNodeCreated" time="23.726" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testConnectToInvalidateBundleCacheBroker" time="13.213" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testAcquireOwnershipWithZookeeperDisconnectedBeforeOwnershipNodeCreated" time="12.847" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testLookupPartitionedTopic" time="12.435" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testListNonPersistentTopic" time="13.123" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testReleaseOwnershipWithZookeeperDisconnectedAfterOwnershipNodeDeleted" time="14.539" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  <testcase name="testReestablishOwnershipAfterInvalidateCache" time="11.389" classname="org.apache.pulsar.broker.service.TopicOwnerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.BookieClientsStatsGeneratorTest" tests="2" errors="0" failures="0" skipped="0" time="0.049"><testcase name="testJvmDirectMemoryUsedMetric" time="0.010" classname="org.apache.pulsar.broker.stats.BookieClientsStatsGeneratorTest" />
+  <testcase name="testBookieClientStatsGenerator" time="0.039" classname="org.apache.pulsar.broker.stats.BookieClientsStatsGeneratorTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.ConsumerStatsTest" tests="3" errors="0" failures="0" skipped="0" time="21.163999999999998"><testcase name="testAckStatsOnPartitionedTopicForExclusiveSubscription" time="7.634" classname="org.apache.pulsar.broker.stats.ConsumerStatsTest" />
+  <testcase name="testConsumerStatsOnZeroMaxUnackedMessagesPerConsumer" time="8.842" classname="org.apache.pulsar.broker.stats.ConsumerStatsTest" />
+  <testcase name="testUpdateStatsForActiveConsumerAndSubscription" time="4.688" classname="org.apache.pulsar.broker.stats.ConsumerStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.ManagedCursorMetricsTest" tests="1" errors="0" failures="0" skipped="0" time="0.281"><testcase name="testManagedCursorMetrics" time="0.281" classname="org.apache.pulsar.broker.stats.ManagedCursorMetricsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.ManagedLedgerMetricsTest" tests="1" errors="0" failures="0" skipped="0" time="0.285"><testcase name="testManagedLedgerMetrics" time="0.285" classname="org.apache.pulsar.broker.stats.ManagedLedgerMetricsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.PrometheusMetricsTest" tests="15" errors="0" failures="0" skipped="0" time="83.14500000000001"><testcase name="testPerTopicStats" time="5.907" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testAuthMetrics" time="5.201" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testPerTopicExpiredStat" time="4.695" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testPerProducerStats" time="4.859" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testMetricsTopicCount" time="4.720" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testManagedLedgerBookieClientStats" time="5.617" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testDuplicateMetricTypeDefinitions" time="5.377" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testExpiringTokenMetrics" time="4.347" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testPerConsumerStats" time="12.093" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testPerNamespaceStats" time="5.014" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testManagedCursorPersistStats" time="5.362" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testDuplicateMetricTypeDefinitions" time="4.116" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testExpiredTokenMetrics" time="5.405" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testManagedLedgerCacheStats" time="5.262" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  <testcase name="testManagedLedgerStats" time="5.170" classname="org.apache.pulsar.broker.stats.PrometheusMetricsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.SubscriptionStatsTest" tests="2" errors="0" failures="0" skipped="0" time="1.806"><testcase name="testConsumersAfterMarkDelete" time="1.193" classname="org.apache.pulsar.broker.stats.SubscriptionStatsTest" />
+  <testcase name="testNonContiguousDeletedMessagesRanges" time="0.613" classname="org.apache.pulsar.broker.stats.SubscriptionStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.stats.prometheus.AggregatedNamespaceStatsTest" tests="1" errors="0" failures="0" skipped="0" time="0.04"><testcase name="testSimpleAggregation" time="0.040" classname="org.apache.pulsar.broker.stats.prometheus.AggregatedNamespaceStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.systopic.NamespaceEventsSystemTopicServiceTest" tests="1" errors="0" failures="0" skipped="0" time="1.043"><testcase name="testSendAndReceiveNamespaceEvents" time="1.043" classname="org.apache.pulsar.broker.systopic.NamespaceEventsSystemTopicServiceTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.TransactionConsumeTest" tests="2" errors="0" failures="0" skipped="0" time="29.646"><testcase name="noSortedTest" time="25.275" classname="org.apache.pulsar.broker.transaction.TransactionConsumeTest" />
+  <testcase name="sortedTest" time="4.371" classname="org.apache.pulsar.broker.transaction.TransactionConsumeTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.buffer.InMemTransactionBufferReaderTest" tests="3" errors="0" failures="0" skipped="0" time="0.028"><testcase name="testCloseReleaseAllEntries" time="0.019" classname="org.apache.pulsar.broker.transaction.buffer.InMemTransactionBufferReaderTest" />
+  <testcase name="testInvalidNumEntriesArgument" time="0.004" classname="org.apache.pulsar.broker.transaction.buffer.InMemTransactionBufferReaderTest" />
+  <testcase name="testEndOfTransactionException" time="0.005" classname="org.apache.pulsar.broker.transaction.buffer.InMemTransactionBufferReaderTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest" tests="4" errors="0" failures="0" skipped="0" time="0.093"><testcase name="testAbortOnTopic" time="0.019" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest" />
+  <testcase name="testAbortOnSubscription" time="0.037" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest" />
+  <testcase name="testCommitOnTopic" time="0.020" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest" />
+  <testcase name="testCommitOnSubscription" time="0.017" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" tests="7" errors="0" failures="0" skipped="0" time="0.08099999999999999"><testcase name="testOpenReaderOnNonExistentTxn" time="0.009" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  <testcase name="testAbortCommittedTxn" time="0.015" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  <testcase name="testAbortTxn" time="0.013" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  <testcase name="testAbortNonExistentTxn" time="0.009" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  <testcase name="testCommitNonExistentTxn" time="0.018" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  <testcase name="testCommitTxn" time="0.009" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  <testcase name="testOpenReaderOnAnOpenTxn" time="0.008" classname="org.apache.pulsar.broker.transaction.buffer.TransactionBufferTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.buffer.TransactionEntryImplTest" tests="1" errors="0" failures="0" skipped="0" time="0.014"><testcase name="testCloseShouldReleaseBuffer" time="0.014" classname="org.apache.pulsar.broker.transaction.buffer.TransactionEntryImplTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.buffer.TransactionLowWaterMarkTest" tests="2" errors="0" failures="0" skipped="0" time="37.577"><testcase name="testTransactionBufferLowWaterMark" time="21.356" classname="org.apache.pulsar.broker.transaction.buffer.TransactionLowWaterMarkTest" />
+  <testcase name="testPendingAckLowWaterMark" time="16.221" classname="org.apache.pulsar.broker.transaction.buffer.TransactionLowWaterMarkTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.buffer.TransactionStablePositionTest" tests="3" errors="0" failures="0" skipped="1" time="49.06700000000001"><testcase name="commitTxnTest" time="20.004" classname="org.apache.pulsar.broker.transaction.buffer.TransactionStablePositionTest" />
+  <testcase name="abortTxnTest" time="15.641" classname="org.apache.pulsar.broker.transaction.buffer.TransactionStablePositionTest" />
+  <testcase name="commitTxnTest" time="13.422" classname="org.apache.pulsar.broker.transaction.buffer.TransactionStablePositionTest">
+    <skipped />
+  </testcase> 
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.coordinator.TransactionCoordinatorClientTest" tests="3" errors="0" failures="0" skipped="0" time="0.095"><testcase name="testClientStart" time="0.002" classname="org.apache.pulsar.broker.transaction.coordinator.TransactionCoordinatorClientTest" />
+  <testcase name="testCommitAndAbort" time="0.080" classname="org.apache.pulsar.broker.transaction.coordinator.TransactionCoordinatorClientTest" />
+  <testcase name="testNewTxn" time="0.013" classname="org.apache.pulsar.broker.transaction.coordinator.TransactionCoordinatorClientTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.coordinator.TransactionMetaStoreAssignmentTest" tests="1" errors="0" failures="0" skipped="0" time="1.151"><testcase name="testTransactionMetaStoreAssignAndFailover" time="1.151" classname="org.apache.pulsar.broker.transaction.coordinator.TransactionMetaStoreAssignmentTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.transaction.pendingack.PendingAckInMemoryDeleteTest" tests="3" errors="0" failures="0" skipped="1" time="57.293000000000006"><testcase name="txnAckTestNoBatchAndSharedSubMemoryDeleteTest" time="17.970" classname="org.apache.pulsar.broker.transaction.pendingack.PendingAckInMemoryDeleteTest">
+    <skipped />
+  </testcase> 
+  <testcase name="txnAckTestNoBatchAndSharedSubMemoryDeleteTest" time="18.748" classname="org.apache.pulsar.broker.transaction.pendingack.PendingAckInMemoryDeleteTest" />
+  <testcase name="txnAckTestBatchAndSharedSubMemoryDeleteTest" time="20.575" classname="org.apache.pulsar.broker.transaction.pendingack.PendingAckInMemoryDeleteTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.web.RestExceptionTest" tests="3" errors="0" failures="0" skipped="0" time="0.037000000000000005"><testcase name="testRestException" time="0.008" classname="org.apache.pulsar.broker.web.RestExceptionTest" />
+  <testcase name="testWebApplicationException" time="0.021" classname="org.apache.pulsar.broker.web.RestExceptionTest" />
+  <testcase name="testOtherException" time="0.008" classname="org.apache.pulsar.broker.web.RestExceptionTest" />
+  </testsuite><testsuite name="org.apache.pulsar.broker.web.WebServiceTest" tests="9" errors="0" failures="0" skipped="0" time="27.441999999999997"><testcase name="testTlsAuthDisallowInsecure" time="2.922" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testBrokerReady" time="3.540" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testDefaultClientVersion" time="3.319" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testTlsEnabled" time="2.721" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testTlsAuthAllowInsecure" time="3.783" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testSplitPath" time="0.057" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testMaxRequestSize" time="3.723" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testTlsDisabled" time="2.290" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  <testcase name="testRateLimiting" time="5.087" classname="org.apache.pulsar.broker.web.WebServiceTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.AdminApiKeyStoreTlsAuthTest" tests="4" errors="0" failures="0" skipped="0" time="8.297"><testcase name="testAuthorizedUserAsOriginalPrincipal" time="3.330" classname="org.apache.pulsar.client.impl.AdminApiKeyStoreTlsAuthTest" />
+  <testcase name="testSuperUserCantListNamespaces" time="2.045" classname="org.apache.pulsar.client.impl.AdminApiKeyStoreTlsAuthTest" />
+  <testcase name="testPersistentList" time="1.308" classname="org.apache.pulsar.client.impl.AdminApiKeyStoreTlsAuthTest" />
+  <testcase name="testSuperUserCanListTenants" time="1.614" classname="org.apache.pulsar.client.impl.AdminApiKeyStoreTlsAuthTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.BatchMessageIdImplSerializationTest" tests="4" errors="0" failures="0" skipped="0" time="0.03"><testcase name="testSerializationEmpty" time="0.008" classname="org.apache.pulsar.client.impl.BatchMessageIdImplSerializationTest" />
+  <testcase name="testSerialization1" time="0.004" classname="org.apache.pulsar.client.impl.BatchMessageIdImplSerializationTest" />
+  <testcase name="testSerializationNull" time="0.012" classname="org.apache.pulsar.client.impl.BatchMessageIdImplSerializationTest" />
+  <testcase name="testSerialization2" time="0.006" classname="org.apache.pulsar.client.impl.BatchMessageIdImplSerializationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.BatchMessageIndexAckDisableTest" tests="4" errors="0" failures="0" skipped="0" time="13.732"><testcase name="testBatchMessageIndexAckForExclusiveSubscription" time="2.747" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckDisableTest" />
+  <testcase name="testBatchMessageIndexAckForSharedSubscription" time="5.341" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckDisableTest" />
+  <testcase name="testBatchMessageIndexAckForExclusiveSubscription" time="2.377" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckDisableTest" />
+  <testcase name="testBatchMessageIndexAckForSharedSubscription" time="3.267" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckDisableTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.BatchMessageIndexAckTest" tests="5" errors="0" failures="0" skipped="0" time="43.856"><testcase name="testBatchMessageIndexAckForSharedSubscription" time="23.212" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckTest" />
+  <testcase name="testBatchMessageIndexAckForSharedSubscription" time="10.423" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckTest" />
+  <testcase name="testDoNotRecycleAckSetMultipleTimes" time="2.170" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckTest" />
+  <testcase name="testBatchMessageIndexAckForExclusiveSubscription" time="3.536" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckTest" />
+  <testcase name="testBatchMessageIndexAckForExclusiveSubscription" time="4.515" classname="org.apache.pulsar.client.impl.BatchMessageIndexAckTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" tests="15" errors="0" failures="0" skipped="0" time="148.203"><testcase name="testDisconnectClientWithoutClosingConnection" time="7.392" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testResetCursor" time="16.341" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testResetCursor" time="14.139" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testCloseBrokerService" time="4.907" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testUnsupportedBatchMessageConsumer" time="4.583" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testAvroSchemaProducerConsumerWithSpecifiedReaderAndWriter" time="3.143" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testJsonSchemaProducerConsumerWithSpecifiedReaderAndWriter" time="5.881" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testOperationTimeout" time="8.547" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testCleanProducer" time="2.767" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testUnsupportedBatchMessageConsumer" time="4.531" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testCloseConnectionOnBrokerRejectedRequest" time="34.542" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testAddEntryOperationTimeout" time="12.747" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testInvalidDynamicConfiguration" time="5.098" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testMaxConcurrentTopicLoading" time="12.357" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  <testcase name="testCloseConnectionOnInternalServerError" time="11.228" classname="org.apache.pulsar.client.impl.BrokerClientIntegrationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.CompactedOutBatchMessageTest" tests="1" errors="0" failures="0" skipped="0" time="1.385"><testcase name="testCompactedOutMessages" time="1.385" classname="org.apache.pulsar.client.impl.CompactedOutBatchMessageTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.ConsumerAckResponseTest" tests="1" errors="0" failures="0" skipped="0" time="0.549"><testcase name="testAckResponse" time="0.549" classname="org.apache.pulsar.client.impl.ConsumerAckResponseTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.ConsumerConfigurationTest" tests="4" errors="0" failures="0" skipped="0" time="12.164"><testcase name="testReadCompactNonPersistentExclusive" time="1.617" classname="org.apache.pulsar.client.impl.ConsumerConfigurationTest" />
+  <testcase name="testReadCompactPersistentExclusive" time="5.143" classname="org.apache.pulsar.client.impl.ConsumerConfigurationTest" />
+  <testcase name="testReadCompactPersistentFailover" time="2.083" classname="org.apache.pulsar.client.impl.ConsumerConfigurationTest" />
+  <testcase name="testReadCompactPersistentShared" time="3.321" classname="org.apache.pulsar.client.impl.ConsumerConfigurationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" tests="7" errors="0" failures="0" skipped="0" time="3.5220000000000002"><testcase name="testConsumerDedup" time="0.992" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  <testcase name="testConsumerDedup" time="0.409" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  <testcase name="testConsumerDedup" time="0.286" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  <testcase name="testConsumerDedup" time="0.832" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  <testcase name="testConsumerDedup" time="0.385" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  <testcase name="testConsumerDedup" time="0.317" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  <testcase name="testConsumerDedup" time="0.301" classname="org.apache.pulsar.client.impl.ConsumerDedupPermitsUpdate" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.ConsumerUnsubscribeTest" tests="1" errors="0" failures="0" skipped="0" time="0.129"><testcase name="testConsumerUnsubscribeReference" time="0.129" classname="org.apache.pulsar.client.impl.ConsumerUnsubscribeTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithAuth" tests="3" errors="0" failures="0" skipped="0" time="23.461"><testcase name="testTlsClientAuthOverHTTPProtocol" time="8.453" classname="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithAuth" />
+  <testcase name="testTlsClientAuthOverBinaryProtocol" time="8.058" classname="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithAuth" />
+  <testcase name="testTlsLargeSizeMessage" time="6.950" classname="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithAuth" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithoutAuth" tests="3" errors="0" failures="0" skipped="0" time="7.675000000000001"><testcase name="testTlsClientAuthOverHTTPProtocol" time="3.119" classname="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithoutAuth" />
+  <testcase name="testTlsClientAuthOverBinaryProtocol" time="3.273" classname="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithoutAuth" />
+  <testcase name="testTlsLargeSizeMessage" time="1.283" classname="org.apache.pulsar.client.impl.KeyStoreTlsProducerConsumerTestWithoutAuth" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.KeyStoreTlsTest" tests="1" errors="0" failures="0" skipped="0" time="0.183"><testcase name="testValidate" time="0.183" classname="org.apache.pulsar.client.impl.KeyStoreTlsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.MessageChecksumTest" tests="3" errors="0" failures="0" skipped="0" time="46.69"><testcase name="testChecksumCompatibilityInMixedVersionBrokerCluster" time="6.984" classname="org.apache.pulsar.client.impl.MessageChecksumTest" />
+  <testcase name="testTamperingMessageIsDetected" time="7.026" classname="org.apache.pulsar.client.impl.MessageChecksumTest" />
+  <testcase name="testChecksumCompatibilityInMixedVersionBrokerCluster" time="32.680" classname="org.apache.pulsar.client.impl.MessageChecksumTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.MessageChunkingTest" tests="9" errors="0" failures="0" skipped="1" time="73.214"><testcase name="testPublishWithFailure" time="33.462" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testInvalidUseCaseForChunking" time="3.386" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testLargeMessage" time="4.229" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testExpireIncompleteChunkMessage" time="5.612" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testInvalidConfig" time="4.418" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testLargeMessageAckTimeOut" time="8.543" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testLargeMessageAckTimeOut" time="9.006" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testLargeMessage" time="4.558" classname="org.apache.pulsar.client.impl.MessageChunkingTest" />
+  <testcase name="testMaxPendingChunkMessages" classname="org.apache.pulsar.client.impl.MessageChunkingTest">
+    <skipped />
+  </testcase> 
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.MessageParserTest" tests="2" errors="0" failures="0" skipped="0" time="5.484999999999999"><testcase name="testWithoutBatches" time="3.268" classname="org.apache.pulsar.client.impl.MessageParserTest" />
+  <testcase name="testWithBatches" time="2.217" classname="org.apache.pulsar.client.impl.MessageParserTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.MultiTopicsReaderTest" tests="8" errors="0" failures="0" skipped="0" time="35.143"><testcase name="testReadMessageWithBatchingWithMessageInclusive" time="3.375" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testKeyHashRangeReader" time="4.126" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testRemoveSubscriptionForReaderNeedRemoveCursor" time="2.702" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testReadMessageWithBatching" time="2.961" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testReadMessageWithoutBatchingWithMessageInclusive" time="3.025" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testMultiReaderSeek" time="3.024" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testReadMessageWithoutBatching" time="3.572" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  <testcase name="testReaderWithTimeLong" time="12.358" classname="org.apache.pulsar.client.impl.MultiTopicsReaderTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.NegativeAcksTest" tests="32" errors="0" failures="0" skipped="0" time="10.661999999999999"><testcase name="testNegativeAcks" time="0.306" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.306" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.251" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.275" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.334" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.293" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.401" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.691" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.296" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.385" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.318" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.370" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.344" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.343" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.312" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.307" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.322" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.308" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.293" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.420" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.406" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.330" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.307" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.308" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.274" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.270" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.344" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.289" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.321" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.307" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.318" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  <testcase name="testNegativeAcks" time="0.313" classname="org.apache.pulsar.client.impl.NegativeAcksTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" tests="11" errors="0" failures="0" skipped="0" time="62.62"><testcase name="testStartEmptyPatternConsumer" time="7.254" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testBinaryProtoToGetTopicsOfNamespaceAll" time="5.205" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testPatternTopicsSubscribeWithBuilderFail" time="2.329" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testPubRateOnNonPersistent" time="10.899" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testTopicDeletion" time="4.834" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testAutoUnbubscribePatternConsumer" time="6.349" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testTopicsPatternFilter" time="3.481" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testBinaryProtoToGetTopicsOfNamespaceNonPersistent" time="5.179" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testBinaryProtoToGetTopicsOfNamespacePersistent" time="2.716" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testTopicsListMinus" time="7.952" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  <testcase name="testAutoSubscribePatternConsumer" time="6.422" classname="org.apache.pulsar.client.impl.PatternTopicsConsumerImplTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.PerMessageUnAcknowledgedRedeliveryTest" tests="5" errors="0" failures="0" skipped="0" time="33.504"><testcase name="testSharedAckedNormalTopic" time="8.135" classname="org.apache.pulsar.client.impl.PerMessageUnAcknowledgedRedeliveryTest" />
+  <testcase name="testUnAckedMessageTrackerSize" time="4.256" classname="org.apache.pulsar.client.impl.PerMessageUnAcknowledgedRedeliveryTest" />
+  <testcase name="testSharedAckedPartitionedTopic" time="6.138" classname="org.apache.pulsar.client.impl.PerMessageUnAcknowledgedRedeliveryTest" />
+  <testcase name="testExclusiveAckedNormalTopic" time="7.381" classname="org.apache.pulsar.client.impl.PerMessageUnAcknowledgedRedeliveryTest" />
+  <testcase name="testFailoverAckedNormalTopic" time="7.594" classname="org.apache.pulsar.client.impl.PerMessageUnAcknowledgedRedeliveryTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.PulsarMultiHostClientTest" tests="3" errors="0" failures="0" skipped="0" time="15.314"><testcase name="testMultiHostUrlRetrySuccess" time="3.646" classname="org.apache.pulsar.client.impl.PulsarMultiHostClientTest" />
+  <testcase name="testGetPartitionedTopicDataTimeout" time="5.677" classname="org.apache.pulsar.client.impl.PulsarMultiHostClientTest" />
+  <testcase name="testGetPartitionedTopicMetaData" time="5.991" classname="org.apache.pulsar.client.impl.PulsarMultiHostClientTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.RawMessageSerDeserTest" tests="1" errors="0" failures="0" skipped="0" time="0.01"><testcase name="testSerializationAndDeserialization" time="0.010" classname="org.apache.pulsar.client.impl.RawMessageSerDeserTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.SchemaDeleteTest" tests="1" errors="0" failures="0" skipped="0" time="1.937"><testcase name="createTopicDeleteTopicCreateTopic" time="1.937" classname="org.apache.pulsar.client.impl.SchemaDeleteTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.SequenceIdWithErrorTest" tests="5" errors="0" failures="0" skipped="2" time="17.976"><testcase name="testCheckSequenceId" time="4.085" classname="org.apache.pulsar.client.impl.SequenceIdWithErrorTest" />
+  <testcase name="testDeleteTopicWithMissingData" time="5.987" classname="org.apache.pulsar.client.impl.SequenceIdWithErrorTest" />
+  <testcase name="testTopicWithWildCardChar" time="7.904" classname="org.apache.pulsar.client.impl.SequenceIdWithErrorTest" />
+  <testcase name="testCrashBrokerWithoutCursorLedgerLeak" classname="org.apache.pulsar.client.impl.SequenceIdWithErrorTest">
+    <skipped />
+  </testcase> 
+  <testcase name="testSkipCorruptDataLedger" classname="org.apache.pulsar.client.impl.SequenceIdWithErrorTest">
+    <skipped />
+  </testcase> 
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.TopicDoesNotExistsTest" tests="2" errors="0" failures="0" skipped="0" time="4.053"><testcase name="testCreateConsumerOnNotExistsTopic" time="2.030" classname="org.apache.pulsar.client.impl.TopicDoesNotExistsTest" />
+  <testcase name="testCreateProducerOnNotExistsTopic" time="2.023" classname="org.apache.pulsar.client.impl.TopicDoesNotExistsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.TopicFromMessageTest" tests="5" errors="0" failures="0" skipped="0" time="13.659"><testcase name="testSingleTopicConsumerNoBatchFullName" time="2.554" classname="org.apache.pulsar.client.impl.TopicFromMessageTest" />
+  <testcase name="testMultiTopicConsumerBatchShortName" time="2.488" classname="org.apache.pulsar.client.impl.TopicFromMessageTest" />
+  <testcase name="testSingleTopicConsumerNoBatchShortName" time="2.704" classname="org.apache.pulsar.client.impl.TopicFromMessageTest" />
+  <testcase name="testMultiTopicConsumerNoBatchShortName" time="3.400" classname="org.apache.pulsar.client.impl.TopicFromMessageTest" />
+  <testcase name="testSingleTopicConsumerBatchShortName" time="2.513" classname="org.apache.pulsar.client.impl.TopicFromMessageTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.TopicsConsumerImplTest" tests="17" errors="0" failures="0" skipped="0" time="133.44500000000002"><testcase name="testTopicAutoUpdatePartitions" time="5.573" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testDifferentTopicsNameSubscribe" time="3.010" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testGetLastMessageId" time="5.249" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testConsumerUnackedRedelivery" time="17.692" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testSubscriptionMustCompleteWhenOperationTimeoutOnMultipleTopics" time="5.704" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testConsumerDistributionInFailoverSubscriptionWhenUpdatePartitions" time="2.862" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="multiTopicsInDifferentNameSpace" time="8.198" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testDefaultBacklogTTL" time="10.677" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testGetConsumersAndGetTopics" time="6.497" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testSubscribeUnsubscribeSingleTopic" time="4.287" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testResubscribeSameTopic" time="6.183" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testSyncProducerAndConsumer" time="4.209" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testPartitionsUpdatesForMultipleTopics" time="5.657" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testTopicsNameSubscribeWithBuilderFail" time="2.639" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testMultiTopicsMessageListener" time="8.150" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testTopicNameValid" time="6.882" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  <testcase name="testAsyncConsumer" time="29.976" classname="org.apache.pulsar.client.impl.TopicsConsumerImplTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" tests="7" errors="0" failures="0" skipped="0" time="43.828"><testcase name="testCheckUnAcknowledgedMessageTimer" time="8.669" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  <testcase name="testExclusiveSingleAckedNormalTopic" time="5.291" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  <testcase name="testFailoverSingleAckedPartitionedTopic" time="7.119" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  <testcase name="testSharedSingleAckedPartitionedTopic" time="12.054" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  <testcase name="testAckTimeoutMinValue" time="2.075" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  <testcase name="testExclusiveCumulativeAckedNormalTopic" time="6.772" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  <testcase name="testSingleMessageBatch" time="1.848" classname="org.apache.pulsar.client.impl.UnAcknowledgedMessagesTimeoutTest" />
+  </testsuite><testsuite name="org.apache.pulsar.client.impl.ZeroQueueSizeTest" tests="14" errors="0" failures="0" skipped="0" time="15.712"><testcase name="zeroQueueSizeSharedSubscription" time="0.197" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="testPauseAndResume" time="2.574" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="testZeroQueueSizeMessageRedeliveryForAsyncReceive" time="2.155" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="zeroQueueSizeConsumerListener" time="0.139" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="zeroQueueSizeFailoverSubscription" time="0.227" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="validQueueSizeConfig" time="0.013" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="zeroQueueSizeNormalConsumer" time="0.123" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="zeroQueueSizeReceieveAsyncInCompatibility" time="0.037" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="InvalidQueueSizeConfig" time="0.139" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="testZeroQueueSizeMessageRedeliveryForListener" time="2.206" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="testZeroQueueSizeMessageRedelivery" time="2.227" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="zeroQueueSizePartitionedTopicInCompatibility" time="0.161" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="testFailedZeroQueueSizeBatchMessage" time="3.302" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  <testcase name="testPauseAndResumeWithUnloading" time="2.212" classname="org.apache.pulsar.client.impl.ZeroQueueSizeTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.api.raw.RawMessageImplTest" tests="1" errors="0" failures="0" skipped="0" time="0.316"><testcase name="testGetProperties" time="0.316" classname="org.apache.pulsar.common.api.raw.RawMessageImplTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.compression.CommandsTest" tests="1" errors="0" failures="0" skipped="0" time="0.03"><testcase name="testChecksumSendCommand" time="0.030" classname="org.apache.pulsar.common.compression.CommandsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" tests="6" errors="0" failures="0" skipped="0" time="0.22300000000000003"><testcase name="testCompressDecompress" time="0.130" classname="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" />
+  <testcase name="testCompressDecompress" time="0.019" classname="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" />
+  <testcase name="testCompressDecompress" time="0.013" classname="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" />
+  <testcase name="testCompressDecompress" time="0.043" classname="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" />
+  <testcase name="testCompressDecompress" time="0.011" classname="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" />
+  <testcase name="testCompressDecompress" time="0.007" classname="org.apache.pulsar.common.compression.CompressorCodecBackwardCompatTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.compression.CompressorCodecTest" tests="45" errors="0" failures="0" skipped="0" time="0.7370000000000004"><testcase name="testCompressDecompress" time="0.040" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.015" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.002" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.055" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.013" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.018" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.037" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.008" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressFromSampleBuffer" time="0.018" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.026" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.006" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCodecProvider" time="0.029" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testEmptyInput" time="0.011" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testEmptyInput" time="0.006" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.022" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCodecProvider" time="0.010" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressFromSampleBuffer" time="0.010" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.012" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCodecProvider" time="0.030" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testEmptyInput" time="0.005" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.011" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.011" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.019" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.020" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.004" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.002" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testEmptyInput" time="0.011" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.007" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressFromSampleBuffer" time="0.018" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressFromSampleBuffer" time="0.014" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressFromSampleBuffer" time="0.016" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.032" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.018" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.032" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.023" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCodecProvider" time="0.017" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.001" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCompressDecompress" time="0.020" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.003" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.009" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testEmptyInput" time="0.017" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testCodecProvider" time="0.011" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.035" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testDecompressReadonlyByteBuf" time="0.012" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  <testcase name="testMultpileUsages" time="0.001" classname="org.apache.pulsar.common.compression.CompressorCodecTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.compression.Crc32cChecksumTest" tests="6" errors="0" failures="0" skipped="0" time="5.4030000000000005"><testcase name="testCrc32cHardware" time="0.012" classname="org.apache.pulsar.common.compression.Crc32cChecksumTest" />
+  <testcase name="testCrc32cDirectMemoryHardware" time="0.061" classname="org.apache.pulsar.common.compression.Crc32cChecksumTest" />
+  <testcase name="testCrc32c" time="0.014" classname="org.apache.pulsar.common.compression.Crc32cChecksumTest" />
+  <testcase name="testCrc32cSoftware" time="0.011" classname="org.apache.pulsar.common.compression.Crc32cChecksumTest" />
+  <testcase name="testCrc32cIncremental" time="5.296" classname="org.apache.pulsar.common.compression.Crc32cChecksumTest" />
+  <testcase name="testCrc32cIncrementalUsingProvider" time="0.009" classname="org.apache.pulsar.common.compression.Crc32cChecksumTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.lookup.data.LookupDataTest" tests="4" errors="0" failures="0" skipped="0" time="1.53"><testcase name="testLoadReportSerialization" time="0.456" classname="org.apache.pulsar.common.lookup.data.LookupDataTest" />
+  <testcase name="testUrlEncoder" time="0.025" classname="org.apache.pulsar.common.lookup.data.LookupDataTest" />
+  <testcase name="serializeToJsonTest" time="1.032" classname="org.apache.pulsar.common.lookup.data.LookupDataTest" />
+  <testcase name="withConstructor" time="0.017" classname="org.apache.pulsar.common.lookup.data.LookupDataTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.naming.MetadataTests" tests="2" errors="0" failures="0" skipped="0" time="0.161"><testcase name="testInvalidMetadata" time="0.066" classname="org.apache.pulsar.common.naming.MetadataTests" />
+  <testcase name="testValidMetadata" time="0.095" classname="org.apache.pulsar.common.naming.MetadataTests" />
+  </testsuite><testsuite name="org.apache.pulsar.common.naming.NamespaceBundleTest" tests="6" errors="0" failures="0" skipped="0" time="0.064"><testcase name="testIncludes" time="0.010" classname="org.apache.pulsar.common.naming.NamespaceBundleTest" />
+  <testcase name="testGetBundle" time="0.014" classname="org.apache.pulsar.common.naming.NamespaceBundleTest" />
+  <testcase name="testCompareTo" time="0.013" classname="org.apache.pulsar.common.naming.NamespaceBundleTest" />
+  <testcase name="testConstructor" time="0.010" classname="org.apache.pulsar.common.naming.NamespaceBundleTest" />
+  <testcase name="testToString" time="0.008" classname="org.apache.pulsar.common.naming.NamespaceBundleTest" />
+  <testcase name="testEquals" time="0.009" classname="org.apache.pulsar.common.naming.NamespaceBundleTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.naming.NamespaceBundlesTest" tests="5" errors="0" failures="0" skipped="0" time="0.09899999999999999"><testcase name="testConstructor" time="0.018" classname="org.apache.pulsar.common.naming.NamespaceBundlesTest" />
+  <testcase name="testSplitBundleInTwo" time="0.013" classname="org.apache.pulsar.common.naming.NamespaceBundlesTest" />
+  <testcase name="testsplitBundles" time="0.043" classname="org.apache.pulsar.common.naming.NamespaceBundlesTest" />
+  <testcase name="testFindBundle" time="0.012" classname="org.apache.pulsar.common.naming.NamespaceBundlesTest" />
+  <testcase name="testSplitBundleByFixBoundary" time="0.013" classname="org.apache.pulsar.common.naming.NamespaceBundlesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.naming.NamespaceNameTest" tests="2" errors="0" failures="0" skipped="0" time="0.207"><testcase name="namespace" time="0.206" classname="org.apache.pulsar.common.naming.NamespaceNameTest" />
+  <testcase name="testNewScheme" time="0.001" classname="org.apache.pulsar.common.naming.NamespaceNameTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.naming.ServiceConfigurationTest" tests="4" errors="0" failures="0" skipped="0" time="0.048"><testcase name="testOptionalSettingPresent" time="0.005" classname="org.apache.pulsar.common.naming.ServiceConfigurationTest" />
+  <testcase name="testOptionalSettingEmpty" time="0.005" classname="org.apache.pulsar.common.naming.ServiceConfigurationTest" />
+  <testcase name="testInit" time="0.024" classname="org.apache.pulsar.common.naming.ServiceConfigurationTest" />
+  <testcase name="testInitFailure" time="0.014" classname="org.apache.pulsar.common.naming.ServiceConfigurationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.naming.TopicNameTest" tests="4" errors="0" failures="0" skipped="0" time="0.529"><testcase name="testShortTopicName" time="0.029" classname="org.apache.pulsar.common.naming.TopicNameTest" />
+  <testcase name="topic" time="0.035" classname="org.apache.pulsar.common.naming.TopicNameTest" />
+  <testcase name="testTopicNameWithoutCluster" time="0.016" classname="org.apache.pulsar.common.naming.TopicNameTest" />
+  <testcase name="testDecodeEncode" time="0.449" classname="org.apache.pulsar.common.naming.TopicNameTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.net.ServiceURITest" tests="21" errors="0" failures="0" skipped="0" time="0.23700000000000004"><testcase name="testEmptyServiceUriString" time="0.029" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsSemiColon" time="0.005" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testInvalidServiceUris" time="0.018" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsWithoutHttpPorts" time="0.000" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testRootPath" time="0.009" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsMixedPorts" time="0.001" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsWithoutPulsarTlsPorts" time="0.001" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testUserInfoWithMultipleHosts" time="0.008" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsComma" time="0.000" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsMixed" time="0.001" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testUserInfo" time="0.003" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testIpv6UriWithoutPulsarPort" time="0.003" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultiIpv6Uri" time="0.011" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultiIpv6UriWithoutPulsarPort" time="0.013" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testEmptyPath" time="0.115" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testNullServiceUriString" time="0.009" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testNullServiceUriInstance" time="0.001" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMissingServiceName" time="0.006" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsWithoutHttpsPorts" time="0.000" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testMultipleHostsWithoutPulsarPorts" time="0.000" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  <testcase name="testIpv6Uri" time="0.004" classname="org.apache.pulsar.common.net.ServiceURITest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.AutoFailoverPolicyDataTest" tests="1" errors="0" failures="0" skipped="0" time="0.015"><testcase name="testAutoFailoverPolicyData" time="0.015" classname="org.apache.pulsar.common.policies.data.AutoFailoverPolicyDataTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.AutoFailoverPolicyTypeTest" tests="1" errors="0" failures="0" skipped="0" time="0.019"><testcase name="testAutoFailoverPolicyType" time="0.019" classname="org.apache.pulsar.common.policies.data.AutoFailoverPolicyTypeTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" tests="6" errors="0" failures="0" skipped="0" time="0.064"><testcase name="testInvalidTopicType" time="0.012" classname="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" />
+  <testcase name="testNumPartitionsTooLow" time="0.006" classname="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" />
+  <testcase name="testNumPartitionsNotSet" time="0.003" classname="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" />
+  <testcase name="testValidOverrideNonPartitioned" time="0.021" classname="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" />
+  <testcase name="testNumPartitionsOnNonPartitioned" time="0.018" classname="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" />
+  <testcase name="testValidOverridePartitioned" time="0.004" classname="org.apache.pulsar.common.policies.data.AutoTopicCreationOverrideTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.BacklogQuotaTest" tests="1" errors="0" failures="0" skipped="0" time="0.012"><testcase name="testBacklogQuotaIdentity" time="0.012" classname="org.apache.pulsar.common.policies.data.BacklogQuotaTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.ClusterDataTest" tests="1" errors="0" failures="0" skipped="0" time="0.009"><testcase name="simple" time="0.009" classname="org.apache.pulsar.common.policies.data.ClusterDataTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.ConsumerStatsTest" tests="1" errors="0" failures="0" skipped="0" time="0.008"><testcase name="testConsumerStats" time="0.008" classname="org.apache.pulsar.common.policies.data.ConsumerStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.EnsemblePlacementPolicyConfigTest" tests="2" errors="0" failures="0" skipped="0" time="0.948"><testcase name="testDecodeFailed" time="0.475" classname="org.apache.pulsar.common.policies.data.EnsemblePlacementPolicyConfigTest" />
+  <testcase name="testEncodeDecodeSuccessfully" time="0.473" classname="org.apache.pulsar.common.policies.data.EnsemblePlacementPolicyConfigTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.LocalPolicesTest" tests="1" errors="0" failures="0" skipped="0" time="0.048"><testcase name="testLocalPolices" time="0.048" classname="org.apache.pulsar.common.policies.data.LocalPolicesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.NamespaceIsolationDataTest" tests="1" errors="0" failures="0" skipped="0" time="0.076"><testcase name="testNamespaceIsolationData" time="0.076" classname="org.apache.pulsar.common.policies.data.NamespaceIsolationDataTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.NamespaceOwnershipStatusTest" tests="1" errors="0" failures="0" skipped="0" time="0.045"><testcase name="testSerialization" time="0.045" classname="org.apache.pulsar.common.policies.data.NamespaceOwnershipStatusTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" tests="6" errors="0" failures="0" skipped="0" time="0.216"><testcase name="testGcsConfiguration" time="0.011" classname="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" />
+  <testcase name="mergeTest" time="0.005" classname="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" />
+  <testcase name="compatibleWithConfigFileTest" time="0.154" classname="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" />
+  <testcase name="testCreateByProperties" time="0.012" classname="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" />
+  <testcase name="testS3Configuration" time="0.009" classname="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" />
+  <testcase name="oldPoliciesCompatibleTest" time="0.025" classname="org.apache.pulsar.common.policies.data.OffloadPoliciesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.PartitionedTopicStatsTest" tests="1" errors="0" failures="0" skipped="0" time="0.012"><testcase name="testPartitionedTopicStats" time="0.012" classname="org.apache.pulsar.common.policies.data.PartitionedTopicStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.PersistencePoliciesTest" tests="1" errors="0" failures="0" skipped="0" time="0.019"><testcase name="testPersistencePolicies" time="0.019" classname="org.apache.pulsar.common.policies.data.PersistencePoliciesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.PersistentOfflineTopicStatsTest" tests="1" errors="0" failures="0" skipped="0" time="0.029"><testcase name="testPersistentOfflineTopicStats" time="0.029" classname="org.apache.pulsar.common.policies.data.PersistentOfflineTopicStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.PersistentTopicStatsTest" tests="2" errors="0" failures="0" skipped="0" time="0.051"><testcase name="testPersistentTopicStatsAggregation" time="0.015" classname="org.apache.pulsar.common.policies.data.PersistentTopicStatsTest" />
+  <testcase name="testPersistentTopicStats" time="0.036" classname="org.apache.pulsar.common.policies.data.PersistentTopicStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.PoliciesDataTest" tests="4" errors="0" failures="0" skipped="0" time="1.386"><testcase name="propertyAdmin" time="0.044" classname="org.apache.pulsar.common.policies.data.PoliciesDataTest" />
+  <testcase name="policies" time="0.011" classname="org.apache.pulsar.common.policies.data.PoliciesDataTest" />
+  <testcase name="bundlesData" time="1.224" classname="org.apache.pulsar.common.policies.data.PoliciesDataTest" />
+  <testcase name="bundlesPolicies" time="0.107" classname="org.apache.pulsar.common.policies.data.PoliciesDataTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.PublisherStatsTest" tests="2" errors="0" failures="0" skipped="0" time="0.037"><testcase name="testPublisherStats" time="0.027" classname="org.apache.pulsar.common.policies.data.PublisherStatsTest" />
+  <testcase name="testPublisherStatsAggregation" time="0.010" classname="org.apache.pulsar.common.policies.data.PublisherStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.ReplicatorStatsTest" tests="2" errors="0" failures="0" skipped="0" time="0.03"><testcase name="testReplicatorStatsAdd" time="0.019" classname="org.apache.pulsar.common.policies.data.ReplicatorStatsTest" />
+  <testcase name="testReplicatorStatsNull" time="0.011" classname="org.apache.pulsar.common.policies.data.ReplicatorStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.ResourceQuotaTest" tests="2" errors="0" failures="0" skipped="0" time="0.045"><testcase name="testResourceQuotaDefault" time="0.038" classname="org.apache.pulsar.common.policies.data.ResourceQuotaTest" />
+  <testcase name="testResourceQuotaEqual" time="0.007" classname="org.apache.pulsar.common.policies.data.ResourceQuotaTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.data.RetentionPolicesTest" tests="1" errors="0" failures="0" skipped="0" time="0.008"><testcase name="testRetentionPolices" time="0.008" classname="org.apache.pulsar.common.policies.data.RetentionPolicesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.impl.AutoFailoverPolicyFactoryTest" tests="1" errors="0" failures="0" skipped="0" time="0.022"><testcase name="testAutoFailoverPolicyFactory" time="0.022" classname="org.apache.pulsar.common.policies.impl.AutoFailoverPolicyFactoryTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.impl.MinAvailablePolicyTest" tests="1" errors="0" failures="0" skipped="0" time="0.001"><testcase name="testMinAvailablePolicty" time="0.001" classname="org.apache.pulsar.common.policies.impl.MinAvailablePolicyTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" tests="7" errors="0" failures="0" skipped="0" time="0.265"><testcase name="testBrokerAssignment" time="0.204" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  <testcase name="testGetNamespaceIsolationPolicyByName" time="0.012" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  <testcase name="testDeletePolicy" time="0.003" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  <testcase name="testSetPolicy" time="0.007" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  <testcase name="testJsonSerialization" time="0.025" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  <testcase name="testDefaultConstructor" time="0.011" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  <testcase name="testGetNamespaceIsolationPolicyByNamespace" time="0.003" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPoliciesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" tests="7" errors="0" failures="0" skipped="0" time="0.30900000000000005"><testcase name="testFindBrokers" time="0.168" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  <testcase name="testGetSecondaryBrokers" time="0.018" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  <testcase name="testShouldFailover" time="0.010" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  <testcase name="testGetPrimaryBrokers" time="0.007" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  <testcase name="testGetAvailablePrimaryBrokers" time="0.028" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  <testcase name="testConstructor" time="0.070" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  <testcase name="testIsPrimaryOrSecondaryBroker" time="0.008" classname="org.apache.pulsar.common.policies.impl.NamespaceIsolationPolicyImplTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.protocol.ByteBufPairTest" tests="2" errors="0" failures="0" skipped="0" time="4.9990000000000006"><testcase name="testEncoder" time="2.376" classname="org.apache.pulsar.common.protocol.ByteBufPairTest" />
+  <testcase name="testDoubleByteBuf" time="2.623" classname="org.apache.pulsar.common.protocol.ByteBufPairTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.protocol.CommandUtilsTests" tests="7" errors="0" failures="0" skipped="0" time="2.8120000000000003"><testcase name="testSkipBrokerEntryMetadata" time="0.014" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  <testcase name="testPeekBrokerEntryMetadata" time="0.006" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  <testcase name="testParseBrokerEntryMetadata" time="0.011" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  <testcase name="testMetadataFromCommandSubscribe" time="0.013" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  <testcase name="testMetadataFromCommandProducer" time="0.032" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  <testcase name="testAddBrokerEntryMetadata" time="2.728" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  <testcase name="testByteBufComposite" time="0.008" classname="org.apache.pulsar.common.protocol.CommandUtilsTests" />
+  </testsuite><testsuite name="org.apache.pulsar.common.protocol.MarkersTest" tests="6" errors="0" failures="0" skipped="0" time="3.2329999999999997"><testcase name="testSnapshot" time="3.129" classname="org.apache.pulsar.common.protocol.MarkersTest" />
+  <testcase name="testTxnAbortMarker" time="0.038" classname="org.apache.pulsar.common.protocol.MarkersTest" />
+  <testcase name="testUpdate" time="0.017" classname="org.apache.pulsar.common.protocol.MarkersTest" />
+  <testcase name="testTxnCommitMarker" time="0.012" classname="org.apache.pulsar.common.protocol.MarkersTest" />
+  <testcase name="testSnapshotRequest" time="0.022" classname="org.apache.pulsar.common.protocol.MarkersTest" />
+  <testcase name="testSnapshotResponse" time="0.015" classname="org.apache.pulsar.common.protocol.MarkersTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.protocol.PulsarDecoderTest" tests="1" errors="0" failures="0" skipped="0" time="3.69"><testcase name="testChannelRead" time="3.690" classname="org.apache.pulsar.common.protocol.PulsarDecoderTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.stats.JvmDefaultGCMetricsLoggerTest" tests="1" errors="0" failures="0" skipped="0" time="0.082"><testcase name="testInvokeJVMInternals" time="0.082" classname="org.apache.pulsar.common.stats.JvmDefaultGCMetricsLoggerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.FieldParserTest" tests="1" errors="0" failures="0" skipped="0" time="0.242"><testcase name="testMap" time="0.242" classname="org.apache.pulsar.common.util.FieldParserTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" tests="6" errors="0" failures="0" skipped="0" time="6.1610000000000005"><testcase name="testFileNotModified" time="0.021" classname="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" />
+  <testcase name="testFileModified" time="2.036" classname="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" />
+  <testcase name="testFileModified" time="2.014" classname="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" />
+  <testcase name="testFileNotModified" time="0.037" classname="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" />
+  <testcase name="testFileModified" time="2.020" classname="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" />
+  <testcase name="testFileNotModified" time="0.033" classname="org.apache.pulsar.common.util.FileModifiedTimeUpdaterTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.RateLimiterTest" tests="11" errors="0" failures="0" skipped="0" time="7.199999999999998"><testcase name="testMultipleTryAcquire" time="0.014" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testRateLimiterWithPermitUpdater" time="3.023" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testTryAcquire" time="0.020" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testTryAcquireNoPermits" time="0.002" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testClose" time="0.012" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testResetRate" time="3.024" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testMultipleAcquire" time="0.021" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testAcquire" time="0.044" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testInvalidRenewTime" time="0.015" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testRateLimiterWithFunction" time="0.007" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  <testcase name="testAcquireBlock" time="1.018" classname="org.apache.pulsar.common.util.RateLimiterTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.ReflectionsTest" tests="12" errors="0" failures="0" skipped="0" time="0.17200000000000001"><testcase name="testCreateInstanceNoNoArgConstructor" time="0.012" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateInstanceConstructorThrowsException" time="0.040" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateInstanceAbstractClass" time="0.013" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateTypedInstanceUnassignableClass" time="0.012" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateInstanceClassNotFound" time="0.010" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateTypedInstanceConstructorThrowsException" time="0.012" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testClassExists" time="0.022" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateTypedInstanceAbstractClass" time="0.003" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateTypedInstanceClassNotFound" time="0.014" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testCreateTypedInstanceNoNoArgConstructor" time="0.004" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testLoadClass" time="0.021" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  <testcase name="testClassInJarImplementsIface" time="0.009" classname="org.apache.pulsar.common.util.ReflectionsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.RelativeTimeUtilTest" tests="1" errors="0" failures="0" skipped="0" time="0.039"><testcase name="testParseRelativeTime" time="0.039" classname="org.apache.pulsar.common.util.RelativeTimeUtilTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.BitSetRecyclableRecyclableTest" tests="2" errors="0" failures="0" skipped="0" time="0.013000000000000001"><testcase name="testResetWords" time="0.001" classname="org.apache.pulsar.common.util.collections.BitSetRecyclableRecyclableTest" />
+  <testcase name="testRecycle" time="0.012" classname="org.apache.pulsar.common.util.collections.BitSetRecyclableRecyclableTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentBitSetRecyclableTest" tests="2" errors="0" failures="0" skipped="0" time="0.063"><testcase name="testRecycle" time="0.044" classname="org.apache.pulsar.common.util.collections.ConcurrentBitSetRecyclableTest" />
+  <testcase name="testGenerateByBitSet" time="0.019" classname="org.apache.pulsar.common.util.collections.ConcurrentBitSetRecyclableTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" tests="13" errors="0" failures="0" skipped="0" time="28.351000000000003"><testcase name="testRehashingWithDeletes" time="0.010" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="concurrentInsertionsAndReads" time="1.487" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testRemove" time="0.017" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testRehashing" time="0.014" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="simpleInsertions" time="0.014" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testComputeIfAbsent" time="0.008" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testConstructor" time="0.001" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testPutIfAbsent" time="0.006" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testIteration" time="0.006" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testHashConflictWithDeletion" time="0.002" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="concurrentInsertions" time="1.329" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="stressConcurrentInsertionsAndReads" time="25.447" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  <testcase name="testNegativeUsedBucketCount" time="0.010" classname="org.apache.pulsar.common.util.collections.ConcurrentLongHashMapTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" tests="15" errors="0" failures="0" skipped="0" time="1.5190000000000001"><testcase name="concurrentInsertionsAndReads" time="0.674" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testEqualsObjects" time="0.005" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testIfRemoval" time="0.010" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testRehashing" time="0.007" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testToString" time="0.008" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testRemove" time="0.005" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testItems" time="0.019" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testRehashingWithDeletes" time="0.007" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testHashConflictWithDeletion" time="0.003" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testIteration" time="0.008" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="simpleInsertions" time="0.014" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testRehashingRemoval" time="0.036" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testRemoval" time="0.021" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="testConstructor" time="0.003" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  <testcase name="concurrentInsertions" time="0.699" classname="org.apache.pulsar.common.util.collections.ConcurrentLongPairSetTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" tests="12" errors="0" failures="0" skipped="0" time="9.241"><testcase name="testRemove" time="0.019" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="simpleInsertions" time="0.038" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testPutIfAbsent" time="0.009" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="concurrentInsertions" time="3.153" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testHashConflictWithDeletion" time="0.013" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testRehashingWithDeletes" time="0.023" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testComputeIfAbsent" time="0.019" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testRehashing" time="0.025" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testIteration" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testEqualsKeys" time="0.001" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="concurrentInsertionsAndReads" time="5.909" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  <testcase name="testConstructor" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashMapTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" tests="11" errors="0" failures="0" skipped="0" time="7.114999999999999"><testcase name="concurrentInsertions" time="5.262" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testRehashing" time="0.009" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testRemoval" time="0.024" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testEqualsObjects" time="0.009" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testHashConflictWithDeletion" time="0.014" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testConstructor" time="0.004" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="concurrentInsertionsAndReads" time="1.736" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testIteration" time="0.010" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="simpleInsertions" time="0.015" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testRehashingWithDeletes" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  <testcase name="testRemove" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenHashSetTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" tests="13" errors="0" failures="0" skipped="0" time="1.3559999999999999"><testcase name="testAddForDifferentKey" time="0.019" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testToString" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testCacheFlagConflict" time="0.084" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testDeleteWithLeastMost" time="0.011" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testDeleteForDifferentKey" time="0.069" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testLastRange" time="0.009" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testAddCompareCompareWithGuava" time="0.585" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testSpanWithGuava" time="0.020" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testDeleteCompareWithGuava" time="0.473" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testFirstRange" time="0.011" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testAddForSameKey" time="0.037" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testDeleteWithAtMost" time="0.008" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  <testcase name="testRangeContaining" time="0.014" classname="org.apache.pulsar.common.util.collections.ConcurrentOpenLongPairRangeSetTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" tests="9" errors="0" failures="0" skipped="0" time="0.342"><testcase name="concurrentInsertions" time="0.101" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testIfRemoval" time="0.041" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testRemoval" time="0.057" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testRemove" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testItems" time="0.022" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testEqualsObjects" time="0.007" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="simpleInsertions" time="0.016" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testIteration" time="0.035" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  <testcase name="testToString" time="0.047" classname="org.apache.pulsar.common.util.collections.ConcurrentSortedLongPairSetTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.FieldParserTest" tests="2" errors="0" failures="0" skipped="0" time="0.064"><testcase name="testUpdateObject" time="0.023" classname="org.apache.pulsar.common.util.collections.FieldParserTest" />
+  <testcase name="testConversion" time="0.041" classname="org.apache.pulsar.common.util.collections.FieldParserTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" tests="6" errors="0" failures="0" skipped="0" time="0.35"><testcase name="removeTest" time="0.014" classname="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" />
+  <testcase name="growArray" time="0.032" classname="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" />
+  <testcase name="pollTimeout" time="0.039" classname="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" />
+  <testcase name="simple" time="0.029" classname="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" />
+  <testcase name="pollTimeout2" time="0.111" classname="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" />
+  <testcase name="blockingTake" time="0.125" classname="org.apache.pulsar.common.util.collections.GrowableArrayBlockingQueueTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" tests="15" errors="0" failures="0" skipped="0" time="3.0929999999999995"><testcase name="testItems" time="0.014" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testRemove" time="0.009" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testExpandQueue" time="0.000" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testInsertAndRemove" time="0.018" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testEqualsObjects" time="0.010" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testExpandRemoval" time="1.711" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testIteration" time="0.019" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="simpleInsertions" time="0.117" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="concurrentInsertions" time="0.679" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testConstructor" time="0.020" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testSetWithDuplicateInsert" time="0.010" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testExpandWithDeletes" time="0.018" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="concurrentInsertionsAndReads" time="0.401" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testRemoval" time="0.010" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  <testcase name="testIfRemoval" time="0.057" classname="org.apache.pulsar.common.util.collections.GrowablePriorityLongPairQueueTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.collections.TripleLongPriorityQueueTest" tests="3" errors="0" failures="0" skipped="0" time="0.238"><testcase name="testQueue" time="0.096" classname="org.apache.pulsar.common.util.collections.TripleLongPriorityQueueTest" />
+  <testcase name="testCheckForEmpty" time="0.118" classname="org.apache.pulsar.common.util.collections.TripleLongPriorityQueueTest" />
+  <testcase name="testCompareWithSamePrefix" time="0.024" classname="org.apache.pulsar.common.util.collections.TripleLongPriorityQueueTest" />
+  </testsuite><testsuite name="org.apache.pulsar.common.util.netty.ChannelFuturesTest" tests="5" errors="0" failures="0" skipped="0" time="1.5490000000000002"><testcase name="toCompletableFuture_shouldCompleteExceptionally_channelFutureCompletedAfter" time="0.050" classname="org.apache.pulsar.common.util.netty.ChannelFuturesTest" />
+  <testcase name="toCompletableFuture_shouldCompleteSuccessfully_channelFutureCompletedAfter" time="0.031" classname="org.apache.pulsar.common.util.netty.ChannelFuturesTest" />
+  <testcase name="toCompletableFuture_shouldCompleteSuccessfully_channelFutureCompletedBefore" time="0.008" classname="org.apache.pulsar.common.util.netty.ChannelFuturesTest" />
+  <testcase name="toCompletableFuture_shouldCompleteExceptionally_channelFutureCompletedBefore" time="0.009" classname="org.apache.pulsar.common.util.netty.ChannelFuturesTest" />
+  <testcase name="toCompletableFuture_shouldRequireNonNullArgument" time="1.451" classname="org.apache.pulsar.common.util.netty.ChannelFuturesTest" />
+  </testsuite><testsuite name="org.apache.pulsar.discovery.service.web.DiscoveryServiceWebTest" tests="1" errors="0" failures="0" skipped="0" time="4.904"><testcase name="testRedirectUrlWithServerStarted" time="4.904" classname="org.apache.pulsar.discovery.service.web.DiscoveryServiceWebTest" />
+  </testsuite><testsuite name="org.apache.pulsar.functions.worker.PulsarFunctionE2ESecurityTest" tests="2" errors="0" failures="0" skipped="0" time="27.527"><testcase name="testAuthorizationWithAnonymousUser" time="10.923" classname="org.apache.pulsar.functions.worker.PulsarFunctionE2ESecurityTest" />
+  <testcase name="testAuthorization" time="16.604" classname="org.apache.pulsar.functions.worker.PulsarFunctionE2ESecurityTest" />
+  </testsuite><testsuite name="org.apache.pulsar.functions.worker.PulsarFunctionPublishTest" tests="3" errors="0" failures="0" skipped="0" time="42.238"><testcase name="testPulsarFunctionState" time="10.642" classname="org.apache.pulsar.functions.worker.PulsarFunctionPublishTest" />
+  <testcase name="testMultipleAddress" time="12.951" classname="org.apache.pulsar.functions.worker.PulsarFunctionPublishTest" />
+  <testcase name="testPulsarFunctionBKCleanup" time="18.645" classname="org.apache.pulsar.functions.worker.PulsarFunctionPublishTest" />
+  </testsuite><testsuite name="org.apache.pulsar.functions.worker.PulsarFunctionTlsTest" tests="1" errors="0" failures="0" skipped="0" time="12.012"><testcase name="testFunctionsCreation" time="12.012" classname="org.apache.pulsar.functions.worker.PulsarFunctionTlsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.io.PulsarFunctionTlsTest" tests="1" errors="0" failures="0" skipped="0" time="30.213"><testcase name="testAuthorization" time="30.213" classname="org.apache.pulsar.io.PulsarFunctionTlsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.AdminProxyHandlerTest" tests="1" errors="0" failures="0" skipped="0" time="0.474"><testcase name="replayableProxyContentProviderTest" time="0.474" classname="org.apache.pulsar.proxy.server.AdminProxyHandlerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.AuthedAdminProxyHandlerTest" tests="1" errors="0" failures="0" skipped="0" time="2.159"><testcase name="testAuthenticatedProxyAsNonAdmin" time="2.159" classname="org.apache.pulsar.proxy.server.AuthedAdminProxyHandlerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.FunctionWorkerRoutingTest" tests="1" errors="0" failures="0" skipped="0" time="0.01"><testcase name="testFunctionWorkerRedirect" time="0.010" classname="org.apache.pulsar.proxy.server.FunctionWorkerRoutingTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyAdditionalServletTest" tests="1" errors="0" failures="0" skipped="0" time="0.125"><testcase name="test" time="0.125" classname="org.apache.pulsar.proxy.server.ProxyAdditionalServletTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyAuthenticatedProducerConsumerTest" tests="1" errors="0" failures="0" skipped="0" time="2.279"><testcase name="testTlsSyncProducerAndConsumer" time="2.279" classname="org.apache.pulsar.proxy.server.ProxyAuthenticatedProducerConsumerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyAuthenticationTest" tests="1" errors="0" failures="0" skipped="0" time="16.696"><testcase name="testAuthentication" time="16.696" classname="org.apache.pulsar.proxy.server.ProxyAuthenticationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyConnectionThrottlingTest" tests="1" errors="0" failures="0" skipped="0" time="1.792"><testcase name="testInboundConnection" time="1.792" classname="org.apache.pulsar.proxy.server.ProxyConnectionThrottlingTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyEnableHAProxyProtocolTest" tests="1" errors="0" failures="0" skipped="0" time="0.511"><testcase name="testSimpleProduceAndConsume" time="0.511" classname="org.apache.pulsar.proxy.server.ProxyEnableHAProxyProtocolTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyForwardAuthDataTest" tests="1" errors="0" failures="0" skipped="0" time="31.924"><testcase name="testForwardAuthData" time="31.924" classname="org.apache.pulsar.proxy.server.ProxyForwardAuthDataTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" tests="10" errors="0" failures="0" skipped="0" time="1.66"><testcase name="testProxyToEndsInSlash" time="0.232" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testStreaming" time="0.460" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testLongPath" time="0.230" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testLongPathInProxyTo" time="0.220" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testPathEndsInSlash" time="0.144" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testPathNotSpecified" time="0.002" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testTryingToUseExistingPath" time="0.025" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testMultipleRedirect" time="0.178" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testSingleRedirect" time="0.167" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  <testcase name="testRedirectNotSpecified" time="0.002" classname="org.apache.pulsar.proxy.server.ProxyIsAHttpProxyTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithAuth" tests="3" errors="0" failures="0" skipped="0" time="6.7010000000000005"><testcase name="testProducerFailed" time="3.049" classname="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithAuth" />
+  <testcase name="testPartitions" time="1.856" classname="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithAuth" />
+  <testcase name="testProducer" time="1.796" classname="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithAuth" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithoutAuth" tests="3" errors="0" failures="0" skipped="0" time="7.220000000000001"><testcase name="testPartitions" time="2.438" classname="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithoutAuth" />
+  <testcase name="testProducerFailed" time="2.837" classname="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithoutAuth" />
+  <testcase name="testProducer" time="1.945" classname="org.apache.pulsar.proxy.server.ProxyKeyStoreTlsTestWithoutAuth" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyLookupThrottlingTest" tests="1" errors="0" failures="0" skipped="0" time="2.568"><testcase name="testLookup" time="2.568" classname="org.apache.pulsar.proxy.server.ProxyLookupThrottlingTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyParserTest" tests="5" errors="0" failures="0" skipped="0" time="1.3459999999999999"><testcase name="testRegexSubscription" time="0.300" classname="org.apache.pulsar.proxy.server.ProxyParserTest" />
+  <testcase name="testProducerConsumer" time="0.147" classname="org.apache.pulsar.proxy.server.ProxyParserTest" />
+  <testcase name="testProducer" time="0.111" classname="org.apache.pulsar.proxy.server.ProxyParserTest" />
+  <testcase name="testPartitions" time="0.641" classname="org.apache.pulsar.proxy.server.ProxyParserTest" />
+  <testcase name="testProtocolVersionAdvertisement" time="0.147" classname="org.apache.pulsar.proxy.server.ProxyParserTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyRolesEnforcementTest" tests="1" errors="0" failures="0" skipped="0" time="10.403"><testcase name="testIncorrectRoles" time="10.403" classname="org.apache.pulsar.proxy.server.ProxyRolesEnforcementTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyStatsTest" tests="3" errors="0" failures="0" skipped="0" time="0.533"><testcase name="testChangeLogLevel" time="0.031" classname="org.apache.pulsar.proxy.server.ProxyStatsTest" />
+  <testcase name="testConnectionsStats" time="0.268" classname="org.apache.pulsar.proxy.server.ProxyStatsTest" />
+  <testcase name="testTopicStats" time="0.234" classname="org.apache.pulsar.proxy.server.ProxyStatsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyTest" tests="6" errors="0" failures="0" skipped="0" time="2.9469999999999996"><testcase name="testPartitions" time="1.162" classname="org.apache.pulsar.proxy.server.ProxyTest" />
+  <testcase name="testRegexSubscription" time="0.336" classname="org.apache.pulsar.proxy.server.ProxyTest" />
+  <testcase name="testProtocolVersionAdvertisement" time="0.158" classname="org.apache.pulsar.proxy.server.ProxyTest" />
+  <testcase name="testGetSchema" time="0.982" classname="org.apache.pulsar.proxy.server.ProxyTest" />
+  <testcase name="testProducer" time="0.151" classname="org.apache.pulsar.proxy.server.ProxyTest" />
+  <testcase name="testProducerConsumer" time="0.158" classname="org.apache.pulsar.proxy.server.ProxyTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyTlsTest" tests="2" errors="0" failures="0" skipped="0" time="0.41400000000000003"><testcase name="testProducer" time="0.100" classname="org.apache.pulsar.proxy.server.ProxyTlsTest" />
+  <testcase name="testPartitions" time="0.314" classname="org.apache.pulsar.proxy.server.ProxyTlsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyTlsTestWithAuth" tests="1" errors="0" failures="0" skipped="0" time="0.004"><testcase name="testServiceStartup" time="0.004" classname="org.apache.pulsar.proxy.server.ProxyTlsTestWithAuth" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyWithAuthorizationNegTest" tests="1" errors="0" failures="0" skipped="0" time="2.128"><testcase name="testProxyAuthorization" time="2.128" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationNegTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" tests="13" errors="0" failures="0" skipped="0" time="32.897"><testcase name="tlsCiphersAndProtocols" time="3.181" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="testTlsHostVerificationProxyToClient" time="3.092" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="2.974" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="testProxyAuthorization" time="2.294" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="1.998" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="testTlsHostVerificationProxyToBroker" time="2.446" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="2.990" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="2.056" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="2.104" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="testTlsHostVerificationProxyToBroker" time="3.554" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="1.921" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="testTlsHostVerificationProxyToClient" time="2.164" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  <testcase name="tlsCiphersAndProtocols" time="2.123" classname="org.apache.pulsar.proxy.server.ProxyWithAuthorizationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.ProxyWithoutServiceDiscoveryTest" tests="1" errors="0" failures="0" skipped="0" time="2.045"><testcase name="testDiscoveryService" time="2.045" classname="org.apache.pulsar.proxy.server.ProxyWithoutServiceDiscoveryTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.SuperUserAuthedAdminProxyHandlerTest" tests="3" errors="0" failures="0" skipped="0" time="8.235"><testcase name="testAuthWithRandoCert" time="3.184" classname="org.apache.pulsar.proxy.server.SuperUserAuthedAdminProxyHandlerTest" />
+  <testcase name="testAuthenticatedProxyAsAdmin" time="2.549" classname="org.apache.pulsar.proxy.server.SuperUserAuthedAdminProxyHandlerTest" />
+  <testcase name="testAuthenticatedProxyAsNonAdmin" time="2.502" classname="org.apache.pulsar.proxy.server.SuperUserAuthedAdminProxyHandlerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.proxy.server.UnauthedAdminProxyHandlerTest" tests="2" errors="0" failures="0" skipped="0" time="0.11399999999999999"><testcase name="testUnauthenticatedProxy" time="0.072" classname="org.apache.pulsar.proxy.server.UnauthedAdminProxyHandlerTest" />
+  <testcase name="testVipStatus" time="0.042" classname="org.apache.pulsar.proxy.server.UnauthedAdminProxyHandlerTest" />
+  </testsuite><testsuite name="org.apache.pulsar.schema.PartitionedTopicSchemaTest" tests="1" errors="0" failures="0" skipped="0" time="29.041"><testcase name="test" time="29.041" classname="org.apache.pulsar.schema.PartitionedTopicSchemaTest" />
+  </testsuite><testsuite name="org.apache.pulsar.schema.SchemaTest" tests="3" errors="0" failures="0" skipped="0" time="30.858999999999998"><testcase name="testIsUsingAvroSchemaParser" time="15.549" classname="org.apache.pulsar.schema.SchemaTest" />
+  <testcase name="testBytesSchemaDeserialize" time="9.226" classname="org.apache.pulsar.schema.SchemaTest" />
+  <testcase name="testMultiTopicSetSchemaProvider" time="6.084" classname="org.apache.pulsar.schema.SchemaTest" />
+  </testsuite><testsuite name="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" tests="23" errors="0" failures="0" skipped="0" time="107.43700000000001"><testcase name="testConsumerCompatibilityCheckCanReadLastTest" time="2.532" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerWithNotCompatibilitySchema" time="3.386" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testProducerSendWithOldSchemaAndConsumerCanRead" time="4.159" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerCompatibilityCheckCanReadLastTest" time="8.513" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testProducerSendWithOldSchemaAndConsumerCanRead" time="4.927" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testSchemaComparison" time="5.111" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerCompatibilityCheckCanReadLastTest" time="2.560" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerCompatibilityReadAllCheckTest" time="4.842" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerWithNotCompatibilitySchema" time="5.097" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testIsAutoUpdateSchema" time="4.996" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testProducerSendWithOldSchemaAndConsumerCanRead" time="3.708" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerCompatibilityReadAllCheckTest" time="5.646" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testIsAutoUpdateSchema" time="5.362" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testProducerSendWithOldSchemaAndConsumerCanRead" time="3.960" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerWithNotCompatibilitySchema" time="7.686" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testIsAutoUpdateSchema" time="3.021" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testProducerSendWithOldSchemaAndConsumerCanRead" time="3.654" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerWithNotCompatibilitySchema" time="4.217" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testProducerSendWithOldSchemaAndConsumerCanRead" time="4.805" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testIsAutoUpdateSchema" time="4.487" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testIsAutoUpdateSchema" time="5.471" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testConsumerCompatibilityCheckCanReadLastTest" time="3.544" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  <testcase name="testIsAutoUpdateSchema" time="5.753" classname="org.apache.pulsar.schema.compatibility.SchemaCompatibilityCheckTest" />
+  </testsuite><testsuite name="org.apache.pulsar.stats.client.PulsarBrokerStatsClientTest" tests="2" errors="0" failures="0" skipped="0" time="40.751999999999995"><testcase name="testServiceException" time="8.855" classname="org.apache.pulsar.stats.client.PulsarBrokerStatsClientTest" />
+  <testcase name="testTopicInternalStats" time="31.897" classname="org.apache.pulsar.stats.client.PulsarBrokerStatsClientTest" />
+  </testsuite><testsuite name="org.apache.pulsar.tests.EnumValuesDataProviderTest" tests="6" errors="0" failures="0" skipped="0" time="0.023"><testcase name="shouldFailIfEnumParameterIsMissing" time="0.002" classname="org.apache.pulsar.tests.EnumValuesDataProviderTest" />
+  <testcase name="testEnumValuesProvider" time="0.001" classname="org.apache.pulsar.tests.EnumValuesDataProviderTest" />
+  <testcase name="testEnumValuesProvider" time="0.001" classname="org.apache.pulsar.tests.EnumValuesDataProviderTest" />
+  <testcase name="shouldDetermineEnumValuesFromMethod" time="0.005" classname="org.apache.pulsar.tests.EnumValuesDataProviderTest" />
+  <testcase name="shouldContainAllEnumValues" time="0.014" classname="org.apache.pulsar.tests.EnumValuesDataProviderTest" />
+  <testcase name="testEnumValuesProvider" time="0.000" classname="org.apache.pulsar.tests.EnumValuesDataProviderTest" />
+  </testsuite><testsuite name="org.apache.pulsar.tests.TestRetrySupportBeforeMethodRetryTest" tests="5" errors="0" failures="0" skipped="4" time="0.036000000000000004"><testcase name="shouldNotDoAnythingWhenThereIsBeforeAndAfterMethod" time="0.005" classname="org.apache.pulsar.tests.TestRetrySupportBeforeMethodRetryTest" />
+  <testcase name="shouldNotDoAnythingWhenThereIsBeforeAndAfterMethod" time="0.006" classname="org.apache.pulsar.tests.TestRetrySupportBeforeMethodRetryTest">
+    <skipped />
+  </testcase> 
+  <testcase name="shouldNotDoAnythingWhenThereIsBeforeAndAfterMethod" time="0.012" classname="org.apache.pulsar.tests.TestRetrySupportBeforeMethodRetryTest">
+    <skipped />
+  </testcase> 
+  <testcase name="shouldNotDoAnythingWhenThereIsBeforeAndAfterMethod" time="0.005" classname="org.apache.pulsar.tests.TestRetrySupportBeforeMethodRetryTest">
+    <skipped />
+  </testcase> 
+  <testcase name="shouldNotDoAnythingWhenThereIsBeforeAndAfterMethod" time="0.008" classname="org.apache.pulsar.tests.TestRetrySupportBeforeMethodRetryTest">
+    <skipped />
+  </testcase> 
+  </testsuite><testsuite name="org.apache.pulsar.tests.TestRetrySupportRetryTest" tests="5" errors="0" failures="0" skipped="4" time="0.027"><testcase name="shouldCallSetupBeforeRetrying" time="0.004" classname="org.apache.pulsar.tests.TestRetrySupportRetryTest">
+    <skipped />
+  </testcase> 
+  <testcase name="shouldCallSetupBeforeRetrying" time="0.001" classname="org.apache.pulsar.tests.TestRetrySupportRetryTest" />
+  <testcase name="shouldCallSetupBeforeRetrying" time="0.006" classname="org.apache.pulsar.tests.TestRetrySupportRetryTest">
+    <skipped />
+  </testcase> 
+  <testcase name="shouldCallSetupBeforeRetrying" time="0.012" classname="org.apache.pulsar.tests.TestRetrySupportRetryTest">
+    <skipped />
+  </testcase> 
+  <testcase name="shouldCallSetupBeforeRetrying" time="0.004" classname="org.apache.pulsar.tests.TestRetrySupportRetryTest">
+    <skipped />
+  </testcase> 
+  </testsuite><testsuite name="org.apache.pulsar.tests.TestRetrySupportSuccessTest" tests="3" errors="0" failures="0" skipped="0" time="0.001"><testcase name="shouldCallSetupOnce1" time="0.000" classname="org.apache.pulsar.tests.TestRetrySupportSuccessTest" />
+  <testcase name="shouldCallSetupOnce3" time="0.001" classname="org.apache.pulsar.tests.TestRetrySupportSuccessTest" />
+  <testcase name="shouldCallSetupOnce2" time="0.000" classname="org.apache.pulsar.tests.TestRetrySupportSuccessTest" />
+  </testsuite><testsuite name="org.apache.pulsar.tests.ThreadDumpUtilTest" tests="2" errors="0" failures="0" skipped="0" time="0.017"><testcase name="testHelp" time="0.002" classname="org.apache.pulsar.tests.ThreadDumpUtilTest" />
+  <testcase name="testThreadDump" time="0.015" classname="org.apache.pulsar.tests.ThreadDumpUtilTest" />
+  </testsuite><testsuite name="org.apache.pulsar.utils.SimpleTextOutputStreamTest" tests="4" errors="0" failures="0" skipped="0" time="0.049999999999999996"><testcase name="testBooleanFormat" time="0.006" classname="org.apache.pulsar.utils.SimpleTextOutputStreamTest" />
+  <testcase name="testDoubleFormat" time="0.023" classname="org.apache.pulsar.utils.SimpleTextOutputStreamTest" />
+  <testcase name="testLongFormat" time="0.008" classname="org.apache.pulsar.utils.SimpleTextOutputStreamTest" />
+  <testcase name="testString" time="0.013" classname="org.apache.pulsar.utils.SimpleTextOutputStreamTest" />
+  </testsuite><testsuite name="org.apache.pulsar.utils.StatsOutputStreamTest" tests="6" errors="0" failures="0" skipped="0" time="0.059"><testcase name="testLists" time="0.013" classname="org.apache.pulsar.utils.StatsOutputStreamTest" />
+  <testcase name="testNamedObjects" time="0.009" classname="org.apache.pulsar.utils.StatsOutputStreamTest" />
+  <testcase name="testNestedObjects" time="0.006" classname="org.apache.pulsar.utils.StatsOutputStreamTest" />
+  <testcase name="testNamedLists" time="0.012" classname="org.apache.pulsar.utils.StatsOutputStreamTest" />
+  <testcase name="testPairs" time="0.008" classname="org.apache.pulsar.utils.StatsOutputStreamTest" />
+  <testcase name="testObjects" time="0.011" classname="org.apache.pulsar.utils.StatsOutputStreamTest" />
+  </testsuite><testsuite name="org.apache.pulsar.websocket.proxy.ProxyAuthenticationTest" tests="4" errors="0" failures="0" skipped="0" time="28.904000000000003"><testcase name="unauthenticatedSocketTest" time="6.510" classname="org.apache.pulsar.websocket.proxy.ProxyAuthenticationTest" />
+  <testcase name="authenticatedSocketTest" time="7.780" classname="org.apache.pulsar.websocket.proxy.ProxyAuthenticationTest" />
+  <testcase name="statsTest" time="6.682" classname="org.apache.pulsar.websocket.proxy.ProxyAuthenticationTest" />
+  <testcase name="anonymousSocketTest" time="7.932" classname="org.apache.pulsar.websocket.proxy.ProxyAuthenticationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.websocket.proxy.ProxyAuthorizationTest" tests="1" errors="0" failures="0" skipped="0" time="1.263"><testcase name="test" time="1.263" classname="org.apache.pulsar.websocket.proxy.ProxyAuthorizationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.websocket.proxy.ProxyConfigurationTest" tests="2" errors="0" failures="0" skipped="0" time="8.943"><testcase name="configTest" time="4.667" classname="org.apache.pulsar.websocket.proxy.ProxyConfigurationTest" />
+  <testcase name="configTest" time="4.276" classname="org.apache.pulsar.websocket.proxy.ProxyConfigurationTest" />
+  </testsuite><testsuite name="org.apache.pulsar.websocket.proxy.ProxyPublishConsumeTlsTest" tests="1" errors="0" failures="0" skipped="0" time="10.821"><testcase name="socketTest" time="10.821" classname="org.apache.pulsar.websocket.proxy.ProxyPublishConsumeTlsTest" />
+  </testsuite><testsuite name="org.apache.pulsar.websocket.proxy.ProxyPublishConsumeWithoutZKTest" tests="1" errors="0" failures="0" skipped="0" time="7.28"><testcase name="socketTest" time="7.280" classname="org.apache.pulsar.websocket.proxy.ProxyPublishConsumeWithoutZKTest" />
+  </testsuite><testsuite name="org.apache.pulsar.websocket.proxy.v1.V1_ProxyAuthenticationTest" tests="4" errors="0" failures="0" skipped="0" time="29.941000000000003"><testcase name="anonymousSocketTest" time="8.880" classname="org.apache.pulsar.websocket.proxy.v1.V1_ProxyAuthenticationTest" />
+  <testcase name="authenticatedSocketTest" time="8.345" classname="org.apache.pulsar.websocket.proxy.v1.V1_ProxyAuthenticationTest" />
+  <testcase name="statsTest" time="5.366" classname="org.apache.pulsar.websocket.proxy.v1.V1_ProxyAuthenticationTest" />
+  <testcase name="unauthenticatedSocketTest" time="7.350" classname="org.apache.pulsar.websocket.proxy.v1.V1_ProxyAuthenticationTest" />
+  </testsuite></testsuites>

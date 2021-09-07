@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotnetTests.Unit", "DotnetTests.Unit\DotnetTests.Unit.csproj", "{A47249E3-01A3-4E0A-9601-A3B2F7437C46}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BCAC3B31-ADB1-4221-9D5B-182EE868648C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotnetTests.XUnitTests", "DotnetTests.XUnitTests\DotnetTests.XUnitTests.csproj", "{F8607EDB-D25D-47AA-8132-38ACA242E845}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A47249E3-01A3-4E0A-9601-A3B2F7437C46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A47249E3-01A3-4E0A-9601-A3B2F7437C46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A47249E3-01A3-4E0A-9601-A3B2F7437C46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A47249E3-01A3-4E0A-9601-A3B2F7437C46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8607EDB-D25D-47AA-8132-38ACA242E845}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8607EDB-D25D-47AA-8132-38ACA242E845}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8607EDB-D25D-47AA-8132-38ACA242E845}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8607EDB-D25D-47AA-8132-38ACA242E845}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F8607EDB-D25D-47AA-8132-38ACA242E845} = {BCAC3B31-ADB1-4221-9D5B-182EE868648C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6ED5543C-74AA-4B21-8050-943550F3F66E}
+	EndGlobalSection
+EndGlobal

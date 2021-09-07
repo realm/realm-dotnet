@@ -1,0 +1,14 @@
+{
+  "name": "mocha-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generates test fixtures for test-reporter action",
+  "scripts": {
+    "test": "mocha --reporter json > ../../__tests__/fixtures/mocha-json.json"
+  },
+  "author": "Michal Dorner <dorner.michal@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^8.3.0"
+  }
+}

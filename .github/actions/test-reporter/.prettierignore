@@ -1,0 +1,5 @@
+dist/
+lib/
+node_modules/
+__tests__/__outputs__
+__tests__/__snapshots__

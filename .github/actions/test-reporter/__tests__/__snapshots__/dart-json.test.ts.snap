@@ -1,0 +1,2052 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`dart-json tests matches report snapshot 1`] = `
+TestRunResult {
+  "path": "fixtures/dart-json.json",
+  "suites": Array [
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "Test 1",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "Passing test",
+              "result": "success",
+              "time": 36,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "Test 1 Test 1.1",
+          "tests": Array [
+            TestCaseResult {
+              "error": Object {
+                "details": "package:test_api          expect
+test\\\\main_test.dart 13:9  main.<fn>.<fn>.<fn>
+",
+                "line": 13,
+                "message": "Expected: <2>
+  Actual: <1>
+",
+                "path": "test/main_test.dart",
+              },
+              "name": "Failing test",
+              "result": "failed",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": Object {
+                "details": "package:darttest/main.dart 2:3  throwError
+test\\\\main_test.dart 17:9        main.<fn>.<fn>.<fn>
+",
+                "line": 17,
+                "message": "Exception: Some error",
+                "path": "test/main_test.dart",
+              },
+              "name": "Exception in target unit",
+              "result": "failed",
+              "time": 6,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "Test 2",
+          "tests": Array [
+            TestCaseResult {
+              "error": Object {
+                "details": "test\\\\main_test.dart 24:7  main.<fn>.<fn>
+",
+                "line": 24,
+                "message": "Exception: Some error",
+                "path": "test/main_test.dart",
+              },
+              "name": "Exception in test",
+              "result": "failed",
+              "time": 12,
+            },
+          ],
+        },
+      ],
+      "name": "test/main_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": null,
+          "tests": Array [
+            TestCaseResult {
+              "error": Object {
+                "details": "dart:isolate  _RawReceivePortImpl._handleMessage
+",
+                "line": 5,
+                "message": "TimeoutException after 0:00:00.000001: Test timed out after 0 seconds.",
+                "path": "test/second_test.dart",
+              },
+              "name": "Timeout test",
+              "result": "failed",
+              "time": 37,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Skipped test",
+              "result": "skipped",
+              "time": 14,
+            },
+          ],
+        },
+      ],
+      "name": "test/second_test.dart",
+      "totalTime": undefined,
+    },
+  ],
+  "totalTime": 3760,
+}
+`;
+
+exports[`dart-json tests report from rrousselGit/provider test results matches snapshot 1`] = `
+TestRunResult {
+  "path": "fixtures/external/flutter/provider-test-results.json",
+  "suites": Array [
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "valueListenableProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "rebuilds when value change",
+              "result": "success",
+              "time": 200,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "don't rebuild dependents by default",
+              "result": "success",
+              "time": 26,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "pass keys",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "don't listen again if stream instance doesn't change",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": Object {
+                "details": "══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure object was thrown running a test:
+  Expected: <2>
+  Actual: <1>
+Unexpected number of calls
+
+When the exception was thrown, this was the stack:
+#0      fail (package:test_api/src/frontend/expect.dart:155:31)
+#1      _expect (package:test_api/src/frontend/expect.dart:150:3)
+#2      expect (package:test_api/src/frontend/expect.dart:59:3)
+#3      VerificationResult.called (package:mockito/src/mock.dart:853:5)
+#4      main.<anonymous closure>.<anonymous closure> (file:///__w/provider/provider/test/value_listenable_provider_test.dart:112:34)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  pass updateShouldNotify
+════════════════════════════════════════════════════════════════════════════════════════════════════",
+                "line": 112,
+                "message": "The following TestFailure object was thrown running a test:
+  Expected: <2>
+  Actual: <1>
+Unexpected number of calls
+",
+                "path": "test/value_listenable_provider_test.dart",
+              },
+              "name": "pass updateShouldNotify",
+              "result": "failed",
+              "time": 69,
+            },
+          ],
+        },
+      ],
+      "name": "test/value_listenable_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "ListenableProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 173,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "asserts that the created notifier can have listeners",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "don't listen again if listenable instance doesn't change",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with null (default)",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with null (create)",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "stateful create called once",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "dispose called on unmount",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "dispose can be null",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "changing listenable rebuilds descendants",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "rebuilding with the same provider don't rebuilds descendants",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "notifylistener rebuilds descendants",
+              "result": "success",
+              "time": 9,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ListenableProvider value constructor",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "pass down key",
+              "result": "success",
+              "time": 17,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "changing the Listenable instance rebuilds dependents",
+              "result": "success",
+              "time": 29,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ListenableProvider stateful constructor",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "called with context",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "pass down key",
+              "result": "success",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if create is null",
+              "result": "success",
+              "time": 4,
+            },
+          ],
+        },
+      ],
+      "name": "test/listenable_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "consumer",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "obtains value from Provider<T>",
+              "result": "success",
+              "time": 181,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashed with no builder",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used inside MultiProvider",
+              "result": "success",
+              "time": 16,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "consumer2",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "obtains value from Provider<T>",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashed with no builder",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used inside MultiProvider",
+              "result": "success",
+              "time": 9,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "consumer3",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "obtains value from Provider<T>",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashed with no builder",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used inside MultiProvider",
+              "result": "success",
+              "time": 8,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "consumer4",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "obtains value from Provider<T>",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashed with no builder",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used inside MultiProvider",
+              "result": "success",
+              "time": 8,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "consumer5",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "obtains value from Provider<T>",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashed with no builder",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used inside MultiProvider",
+              "result": "success",
+              "time": 9,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "consumer6",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "obtains value from Provider<T>",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashed with no builder",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used inside MultiProvider",
+              "result": "success",
+              "time": 8,
+            },
+          ],
+        },
+      ],
+      "name": "test/consumer_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "Use builder property, not child",
+              "result": "success",
+              "time": 10,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ChangeNotifierProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "value",
+              "result": "success",
+              "time": 185,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder",
+              "result": "success",
+              "time": 18,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder1",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder2",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder3",
+              "result": "success",
+              "time": 19,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder4",
+              "result": "success",
+              "time": 14,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder5",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder6",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder0",
+              "result": "success",
+              "time": 10,
+            },
+          ],
+        },
+      ],
+      "name": "test/change_notifier_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "ChangeNotifierProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "default",
+              "result": "success",
+              "time": 189,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": ".value",
+              "result": "success",
+              "time": 10,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ListenableProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "default",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": ".value",
+              "result": "success",
+              "time": 16,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "Provider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "default",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": ".value",
+              "result": "success",
+              "time": 8,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ProxyProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "0",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "1",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "2",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "3",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "4",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "5",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "6",
+              "result": "success",
+              "time": 9,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "MultiProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "with 1 ChangeNotifierProvider default",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with 2 ChangeNotifierProvider default",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ListenableProvider default",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with Provider default",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider0",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider1",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider2",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider3",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider4",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider5",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "with ProxyProvider6",
+              "result": "success",
+              "time": 7,
+            },
+          ],
+        },
+      ],
+      "name": "test/builder_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "MultiProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "throw if providers is null",
+              "result": "success",
+              "time": 30,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "MultiProvider children can only access parent providers",
+              "result": "success",
+              "time": 160,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "MultiProvider.providers with ignored child",
+              "result": "success",
+              "time": 8,
+            },
+          ],
+        },
+      ],
+      "name": "test/multi_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 191,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "transition from stream to stream preserve state",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if stream has error and catchError is missing",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "calls catchError if present and stream has error",
+              "result": "success",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with null",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "StreamProvider() crashes if builder is null",
+              "result": "success",
+              "time": 5,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "StreamProvider()",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "create and dispose stream with builder",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashes if builder is null",
+              "result": "success",
+              "time": 4,
+            },
+          ],
+        },
+      ],
+      "name": "test/stream_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "watch in layoutbuilder",
+              "result": "success",
+              "time": 179,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select in layoutbuilder",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "cannot select in listView",
+              "result": "success",
+              "time": 138,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "watch in listView",
+              "result": "success",
+              "time": 33,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "watch in gridView",
+              "result": "success",
+              "time": 21,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "clears select dependencies for all dependents",
+              "result": "success",
+              "time": 19,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "BuildContext",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "internal selected value is updated",
+              "result": "success",
+              "time": 32,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "create can use read without being lazy",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "watch can be used inside InheritedProvider.update",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select doesn't fail if it loads a provider that depends on other providers",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "don't call old selectors if the child rebuilds individually",
+              "result": "success",
+              "time": 21,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "selects throws inside click handlers",
+              "result": "success",
+              "time": 40,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if try to read dynamic",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws ProviderNotFoundException",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if watch called inside the callback from build",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if read called inside the callback from build",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if select called inside the callback from build",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if read called inside the callback on dependency change",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if watch called inside the callback on dependency change",
+              "result": "success",
+              "time": 17,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select throws if select called inside the callback on dependency change",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can call read inside didChangeDependencies",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select cannot be called inside didChangeDependencies",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "select in initState throws",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "watch in initState throws",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "read in initState works",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "consumer can be removed and selector stops to be called",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "context.select deeply compares maps",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "context.select deeply compares lists",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "context.select deeply compares iterables",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "context.select deeply compares sets",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "context.watch listens to value changes",
+              "result": "success",
+              "time": 10,
+            },
+          ],
+        },
+      ],
+      "name": "test/context_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "ReassembleHandler",
+              "result": "success",
+              "time": 194,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "unevaluated create",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "unevaluated create",
+              "result": "success",
+              "time": 16,
+            },
+          ],
+        },
+      ],
+      "name": "test/reassemble_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 184,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "(catchError) previous future completes after transition is no-op",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "previous future completes after transition is no-op",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "transition from future to future preserve state",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if future has error and catchError is missing",
+              "result": "success",
+              "time": 24,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "calls catchError if present and future has error",
+              "result": "success",
+              "time": 21,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with null",
+              "result": "success",
+              "time": 14,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "create and dispose future with builder",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "FutureProvider() crashes if builder is null",
+              "result": "success",
+              "time": 4,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "FutureProvider()",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "crashes if builder is null",
+              "result": "success",
+              "time": 3,
+            },
+          ],
+        },
+      ],
+      "name": "test/future_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 172,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "Provider.of",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if T is dynamic",
+              "result": "success",
+              "time": 26,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "listen defaults to true when building widgets",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "listen defaults to false outside of the widget tree",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "listen:false doesn't trigger rebuild",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "listen:true outside of the widget tree throws",
+              "result": "success",
+              "time": 11,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "Provider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if the provided value is a Listenable/Stream",
+              "result": "success",
+              "time": 28,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "debugCheckInvalidValueType can be disabled",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "simple usage",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws an error if no provider found",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "update should notify",
+              "result": "success",
+              "time": 8,
+            },
+          ],
+        },
+      ],
+      "name": "test/provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "regression test #377",
+              "result": "success",
+              "time": 167,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "rebuild on dependency flags update",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "properly update debug flags if a create triggers another deferred create",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "properly update debug flags if a create triggers another deferred create",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "properly update debug flags if an update triggers another create/update",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "properly update debug flags if a create triggers another create/update",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Provider.of(listen: false) outside of build works when it loads a provider",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "new value is available in didChangeDependencies",
+              "result": "success",
+              "time": 26,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder receives the current value and updates independently from \`update\`",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder can _not_ rebuild when provider updates",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder rebuilds if provider is recreated",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "provider.of throws if listen:true outside of the widget tree",
+              "result": "success",
+              "time": 23,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider throws if no child is provided with default constructor",
+              "result": "success",
+              "time": 14,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider throws if no child is provided with value constructor",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider throws if no child is provided with default constructor",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider throws if no child is provided with value constructor",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening markNeedsNotifyDependents",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider can be subclassed",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider can be subclassed",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can be used with MultiProvider",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throw if the widget ctor changes",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider lazy loading can be disabled",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider.value lazy loading can be disabled",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider subclass don't have to specify default lazy value",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider lazy loading can be disabled",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider.value lazy loading can be disabled",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "selector",
+              "result": "success",
+              "time": 14,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can select multiple types from same provider",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can select same type on two different providers",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "can select same type twice on same provider",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Provider.of has a proper error message if context is null",
+              "result": "success",
+              "time": 6,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "diagnostics",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider.value",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider doesn't break lazy loading",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "InheritedProvider show if listening",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider.value",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "DeferredInheritedProvider",
+              "result": "success",
+              "time": 16,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "InheritedProvider.value()",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "markNeedsNotifyDependents during startListening is noop",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening called again when create returns new value",
+              "result": "success",
+              "time": 27,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening",
+              "result": "success",
+              "time": 19,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "stopListening not called twice if rebuild doesn't have listeners",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "removeListener cannot be null",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "pass down current value",
+              "result": "success",
+              "time": 17,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "default updateShouldNotify",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "custom updateShouldNotify",
+              "result": "success",
+              "time": 32,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "InheritedProvider()",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "hasValue",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "provider calls update if rebuilding only due to didChangeDependencies",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "provider notifying dependents doesn't call update",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "update can call Provider.of with listen:true",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "update lazy loaded can call Provider.of with listen:true",
+              "result": "success",
+              "time": 10,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "markNeedsNotifyDependents during startListening is noop",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "update can obtain parent of the same type than self",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "_debugCheckInvalidValueType",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening",
+              "result": "success",
+              "time": 18,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening called again when create returns new value",
+              "result": "success",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "stopListening not called twice if rebuild doesn't have listeners",
+              "result": "success",
+              "time": 18,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "removeListener cannot be null",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "fails if initialValueBuilder calls inheritFromElement/inheritFromWiggetOfExactType",
+              "result": "success",
+              "time": 17,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder is called on every rebuild and after a dependency change",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder with no updateShouldNotify use ==",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder calls updateShouldNotify callback",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "initialValue is transmitted to valueBuilder",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "calls builder again if dependencies change",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "exposes initialValue if valueBuilder is null",
+              "result": "success",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "call dispose on unmount",
+              "result": "success",
+              "time": 22,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "builder unmount, dispose not called if value never read",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "call dispose after new value",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "valueBuilder works without initialBuilder",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "calls initialValueBuilder lazily once",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if both builder and initialBuilder are missing",
+              "result": "success",
+              "time": 5,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "DeferredInheritedProvider.value()",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "hasValue",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "stopListening cannot be null",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening doesn't need setState if already initialized",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "setState without updateShouldNotify",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "setState with updateShouldNotify",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening never leave the widget uninitialized",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "startListening called again on controller change",
+              "result": "success",
+              "time": 10,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "DeferredInheritedProvider()",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "create can't call inherited widgets",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "creates the value lazily",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "dispose",
+              "result": "success",
+              "time": 7,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "dispose no-op if never built",
+              "result": "success",
+              "time": 7,
+            },
+          ],
+        },
+      ],
+      "name": "test/inherited_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "ListenableProxyProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if update is missing",
+              "result": "success",
+              "time": 43,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "asserts that the created notifier has no listener",
+              "result": "success",
+              "time": 177,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "asserts that the created notifier has no listener after rebuild",
+              "result": "success",
+              "time": 18,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "rebuilds dependendents when listeners are called",
+              "result": "success",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "update returning a new Listenable disposes the previously created value and update dependents",
+              "result": "success",
+              "time": 25,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "disposes of created value",
+              "result": "success",
+              "time": 13,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ListenableProxyProvider variants",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "ListenableProxyProvider",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ListenableProxyProvider2",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ListenableProxyProvider3",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ListenableProxyProvider4",
+              "result": "success",
+              "time": 17,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ListenableProxyProvider5",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ListenableProxyProvider6",
+              "result": "success",
+              "time": 17,
+            },
+          ],
+        },
+      ],
+      "name": "test/listenable_proxy_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "asserts that builder/selector are not null",
+              "result": "success",
+              "time": 32,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Deep compare maps by default",
+              "result": "success",
+              "time": 158,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Deep compare iterables by default",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Deep compare sets by default",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Deep compare lists by default",
+              "result": "success",
+              "time": 14,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "custom shouldRebuid",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "passes \`child\` and \`key\`",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "calls builder if the callback changes",
+              "result": "success",
+              "time": 14,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "don't call builder again if it rebuilds but selector returns the same thing",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "call builder again if it rebuilds abd selector returns the a different variable",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Selector",
+              "result": "success",
+              "time": 15,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Selector2",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Selector3",
+              "result": "success",
+              "time": 8,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Selector4",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Selector5",
+              "result": "success",
+              "time": 19,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "Selector6",
+              "result": "success",
+              "time": 11,
+            },
+          ],
+        },
+      ],
+      "name": "test/selector_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "asserts",
+              "result": "success",
+              "time": 6,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 203,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "calls create only once",
+              "result": "success",
+              "time": 27,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "dispose",
+              "result": "success",
+              "time": 18,
+            },
+          ],
+        },
+      ],
+      "name": "test/stateful_provider_test.dart",
+      "totalTime": undefined,
+    },
+    TestSuiteResult {
+      "groups": Array [
+        TestGroupResult {
+          "name": "ProxyProvider",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if the provided value is a Listenable/Stream",
+              "result": "success",
+              "time": 209,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "debugCheckInvalidValueType can be disabled",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "create creates initial value",
+              "result": "success",
+              "time": 23,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "consume another providers",
+              "result": "success",
+              "time": 18,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "rebuild descendants if value change",
+              "result": "success",
+              "time": 13,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "call dispose when unmounted with the latest result",
+              "result": "success",
+              "time": 11,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "don't rebuild descendants if value doesn't change",
+              "result": "success",
+              "time": 12,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "pass down updateShouldNotify",
+              "result": "success",
+              "time": 19,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "works with MultiProvider",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "update callback can trigger descendants setState synchronously",
+              "result": "success",
+              "time": 24,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "throws if update is null",
+              "result": "success",
+              "time": 7,
+            },
+          ],
+        },
+        TestGroupResult {
+          "name": "ProxyProvider variants",
+          "tests": Array [
+            TestCaseResult {
+              "error": undefined,
+              "name": "ProxyProvider2",
+              "result": "success",
+              "time": 18,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ProxyProvider3",
+              "result": "success",
+              "time": 16,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ProxyProvider4",
+              "result": "success",
+              "time": 9,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ProxyProvider5",
+              "result": "success",
+              "time": 20,
+            },
+            TestCaseResult {
+              "error": undefined,
+              "name": "ProxyProvider6",
+              "result": "success",
+              "time": 10,
+            },
+          ],
+        },
+      ],
+      "name": "test/proxy_provider_test.dart",
+      "totalTime": undefined,
+    },
+  ],
+  "totalTime": 0,
+}
+`;

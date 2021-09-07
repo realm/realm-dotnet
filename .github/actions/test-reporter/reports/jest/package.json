@@ -1,0 +1,25 @@
+{
+  "name": "jest-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generates test fixtures for test-check action",
+  "scripts": {
+    "test": "jest --ci --reporters=default --reporters=jest-junit"
+  },
+  "author": "Michal Dorner <dorner.michal@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^26.5.3",
+    "jest-junit": "^12.0.0"
+  },
+  "jest-junit": {
+    "suiteName": "jest tests",
+    "outputDirectory": "../../__tests__/fixtures",
+    "outputName": "jest-junit.xml",
+    "ancestorSeparator": " › ",
+    "uniqueOutputName": "false",
+    "suiteNameTemplate": "{filepath}",
+    "classNameTemplate": "{classname}",
+    "titleTemplate": "{title}"
+  }
+}

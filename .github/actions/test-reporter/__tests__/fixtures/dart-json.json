@@ -1,0 +1,32 @@
+{"protocolVersion":"0.1.1","runnerVersion":"1.15.4","pid":7504,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"test\\main_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading test\\main_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"suite":{"id":2,"platform":"vm","path":"test\\second_test.dart"},"type":"suite","time":11}
+{"test":{"id":3,"name":"loading test\\second_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":11}
+{"count":2,"type":"allSuites","time":11}
+{"testID":1,"messageType":"print","message":"Hello from the test","type":"print","time":3828}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":3649}
+{"group":{"id":4,"suiteID":2,"parentID":null,"name":null,"metadata":{"skip":false,"skipReason":null},"testCount":2,"line":null,"column":null,"url":null},"type":"group","time":3654}
+{"test":{"id":5,"name":"Timeout test","suiteID":2,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":5,"column":3,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/second_test.dart"},"type":"testStart","time":3655}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":3672}
+{"group":{"id":6,"suiteID":0,"parentID":null,"name":null,"metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":3672}
+{"group":{"id":7,"suiteID":0,"parentID":6,"name":"Test 1","metadata":{"skip":false,"skipReason":null},"testCount":3,"line":6,"column":3,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"group","time":3672}
+{"test":{"id":8,"name":"Test 1 Passing test","suiteID":0,"groupIDs":[6,7],"metadata":{"skip":false,"skipReason":null},"line":7,"column":5,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"testStart","time":3672}
+{"testID":5,"error":"TimeoutException after 0:00:00.000001: Test timed out after 0 seconds.","stackTrace":"dart:isolate  _RawReceivePortImpl._handleMessage\n","isFailure":false,"type":"error","time":3692}
+{"testID":5,"result":"error","skipped":false,"hidden":false,"type":"testDone","time":3692}
+{"test":{"id":9,"name":"Skipped test","suiteID":2,"groupIDs":[4],"metadata":{"skip":true,"skipReason":"skipped test"},"line":9,"column":3,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/second_test.dart"},"type":"testStart","time":3693}
+{"testID":9,"messageType":"skip","message":"Skip: skipped test","type":"print","time":3706}
+{"testID":9,"result":"success","skipped":true,"hidden":false,"type":"testDone","time":3707}
+{"testID":8,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":3708}
+{"group":{"id":10,"suiteID":0,"parentID":7,"name":"Test 1 Test 1.1","metadata":{"skip":false,"skipReason":null},"testCount":2,"line":11,"column":5,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"group","time":3715}
+{"test":{"id":11,"name":"Test 1 Test 1.1 Failing test","suiteID":0,"groupIDs":[6,7,10],"metadata":{"skip":false,"skipReason":null},"line":12,"column":7,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"testStart","time":3716}
+{"testID":11,"error":"Expected: <2>\n  Actual: <1>\n","stackTrace":"package:test_api          expect\ntest\\main_test.dart 13:9  main.<fn>.<fn>.<fn>\n","isFailure":true,"type":"error","time":3736}
+{"testID":11,"result":"failure","skipped":false,"hidden":false,"type":"testDone","time":3736}
+{"test":{"id":12,"name":"Test 1 Test 1.1 Exception in target unit","suiteID":0,"groupIDs":[6,7,10],"metadata":{"skip":false,"skipReason":null},"line":16,"column":7,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"testStart","time":3737}
+{"testID":12,"error":"Exception: Some error","stackTrace":"package:darttest/main.dart 2:3  throwError\ntest\\main_test.dart 17:9        main.<fn>.<fn>.<fn>\n","isFailure":false,"type":"error","time":3743}
+{"testID":12,"result":"error","skipped":false,"hidden":false,"type":"testDone","time":3743}
+{"group":{"id":13,"suiteID":0,"parentID":6,"name":"Test 2","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":22,"column":3,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"group","time":3744}
+{"test":{"id":14,"name":"Test 2 Exception in test","suiteID":0,"groupIDs":[6,13],"metadata":{"skip":false,"skipReason":null},"line":23,"column":5,"url":"file:///C:/Users/Michal/Workspace/dorny/test-check/reports/dart/test/main_test.dart"},"type":"testStart","time":3744}
+{"testID":14,"error":"Exception: Some error","stackTrace":"test\\main_test.dart 24:7  main.<fn>.<fn>\n","isFailure":false,"type":"error","time":3756}
+{"testID":14,"result":"error","skipped":false,"hidden":false,"type":"testDone","time":3756}
+{"success":false,"type":"done","time":3760}

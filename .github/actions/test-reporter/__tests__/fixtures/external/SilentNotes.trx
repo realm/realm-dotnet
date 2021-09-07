@@ -1,0 +1,609 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="424d6b43-160d-46b3-a497-44bf6eb5f1d4" name="Michal@DORNY-PC 2021-04-20 21:20:35" runUser="DORNY-PC\Michal" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2021-04-20T21:20:35.5616820+02:00" queuing="2021-04-20T21:20:35.5616829+02:00" start="2021-04-20T21:20:34.6319183+02:00" finish="2021-04-20T21:20:35.8887367+02:00" />
+  <TestSettings name="default" id="9fddc3fc-3d7a-4dc6-8498-145e1dab25b7">
+    <Deployment runDeploymentRoot="Michal_DORNY-PC_2021-04-20_21_20_35" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e0f60156-4a28-4d04-8336-040ffe215e8f" testId="a500e09e-b66a-a804-eaae-a237a3b689b9" testName="FetchTokenReturnsNullForDeniedAccess" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.7679347+02:00" endTime="2021-04-20T21:20:35.7688008+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e0f60156-4a28-4d04-8336-040ffe215e8f" />
+    <UnitTestResult executionId="4401f9ea-5a99-4275-a333-18655e9517ce" testId="49ceb249-d1ca-f3dc-41f8-28a41637f4d7" testName="SerializedJsonDoesNotContainPlaintextData" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.8030865+02:00" endTime="2021-04-20T21:20:35.8032634+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4401f9ea-5a99-4275-a333-18655e9517ce" />
+    <UnitTestResult executionId="83d32025-8d5e-4a58-92b3-e797e4ea3bfa" testId="5dab3a75-ff5f-1e46-20cf-bc072154bb33" testName="ReallyDoOpenAuthorizationPageInBrowser" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.4897854+02:00" endTime="2021-04-20T21:20:35.4897938+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="83d32025-8d5e-4a58-92b3-e797e4ea3bfa">
+      <Output>
+        <StdOut>Opens the authorization page in the system browse, to get a real access-token</StdOut>
+        <ErrorInfo>
+          <Message>Opens the authorization page in the system browse, to get a real access-token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7c73d2a6-34a5-400d-8163-40375210062f" testId="89dd1b67-c0ca-dcc6-ca42-c4f3660c0208" testName="FileLifecycleWorks" computerName="DORNY-PC" duration="00:00:00.1610000" startTime="2021-04-20T21:20:35.4970636+02:00" endTime="2021-04-20T21:20:35.6579410+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7c73d2a6-34a5-400d-8163-40375210062f" />
+    <UnitTestResult executionId="cd601b6c-919f-4585-b5e6-d220a0ba17be" testId="916a4c11-6ebe-26db-3769-b9df2051743c" testName="CorrectlyConvertsStringToSecureString" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7732857+02:00" endTime="2021-04-20T21:20:35.7734692+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd601b6c-919f-4585-b5e6-d220a0ba17be" />
+    <UnitTestResult executionId="f33ac19b-8781-4127-a232-7c7a2e6d6c32" testId="034a71d4-f7f9-43e6-fc0a-59a23ef2cd9b" testName="ValidateAcceptsValidCredentials" computerName="DORNY-PC" duration="00:00:00.0030000" startTime="2021-04-20T21:20:35.3807412+02:00" endTime="2021-04-20T21:20:35.3837140+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f33ac19b-8781-4127-a232-7c7a2e6d6c32" />
+    <UnitTestResult executionId="ddc1f371-da00-4b39-bc51-e4467d1f519d" testId="f7c94d67-56c9-6418-8a42-ddc79dc57ea2" testName="BuildAuthorizationRequestUrlThrowsWithMissingRedirectUrlForTokenFlow" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7494602+02:00" endTime="2021-04-20T21:20:35.7497592+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ddc1f371-da00-4b39-bc51-e4467d1f519d" />
+    <UnitTestResult executionId="b4b53ef3-c8be-4bcd-8ec3-84fef1e42440" testId="6d6d9696-e968-4583-999f-f73ff1b5b40e" testName="ParseRealWorldDropboxSuccessResponse" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7595223+02:00" endTime="2021-04-20T21:20:35.7597223+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b4b53ef3-c8be-4bcd-8ec3-84fef1e42440" />
+    <UnitTestResult executionId="e7b019dd-c6ee-40b6-91d9-c7f4bfb03f55" testId="275ce8fa-d4c1-63f1-9add-641a70fb73e6" testName="BuildAuthorizationRequestUrlUsesAllParameters" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7497706+02:00" endTime="2021-04-20T21:20:35.7499131+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7b019dd-c6ee-40b6-91d9-c7f4bfb03f55" />
+    <UnitTestResult executionId="60e6f439-58a9-40ac-b6f1-8120f2f04c87" testId="fbed828f-38a9-0e13-af25-e507fd37c36e" testName="SerializedDatacontractDoesNotContainNullProperties" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7935921+02:00" endTime="2021-04-20T21:20:35.7938935+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="60e6f439-58a9-40ac-b6f1-8120f2f04c87" />
+    <UnitTestResult executionId="705cbcf0-24cb-427d-848e-ed2970b0ab58" testId="cc085a0d-1f67-be85-d187-865a89737f10" testName="CorrectlyConvertsSecureStringToString" computerName="DORNY-PC" duration="00:00:00.0070000" startTime="2021-04-20T21:20:35.3682792+02:00" endTime="2021-04-20T21:20:35.3752099+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="705cbcf0-24cb-427d-848e-ed2970b0ab58" />
+    <UnitTestResult executionId="a9e342c2-bc62-4b01-835b-842bec9f2d4c" testId="4340b799-0666-32b6-4fdd-1daf8a626bc7" testName="SerializedJsonDoesNotContainNullProperties" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.8028668+02:00" endTime="2021-04-20T21:20:35.8030750+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a9e342c2-bc62-4b01-835b-842bec9f2d4c" />
+    <UnitTestResult executionId="8073954d-cee8-455e-a86d-97e8a4ec614d" testId="75ed4b0d-8eff-6a45-b5e4-0db6070c60bb" testName="SerializedDatacontractCanBeReadBack" computerName="DORNY-PC" duration="00:00:00.0160000" startTime="2021-04-20T21:20:35.7775276+02:00" endTime="2021-04-20T21:20:35.7935720+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8073954d-cee8-455e-a86d-97e8a4ec614d" />
+    <UnitTestResult executionId="df1e2af3-79ce-4ddc-87e9-aaee93bb557b" testId="28e75f1f-48b9-972a-3113-38add5d40440" testName="ReallyDoRefreshToken" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.7257934+02:00" endTime="2021-04-20T21:20:35.7257944+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df1e2af3-79ce-4ddc-87e9-aaee93bb557b">
+      <Output>
+        <StdOut>Refreshes a real token</StdOut>
+        <ErrorInfo>
+          <Message>Refreshes a real token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="998a6ba8-0502-4c0f-8ca8-f4ee77326d18" testId="e740f944-23a8-ca0e-606c-a36651ed4b4f" testName="ParseStratoWebdavResponseCorrectly" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7401823+02:00" endTime="2021-04-20T21:20:35.7405396+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="998a6ba8-0502-4c0f-8ca8-f4ee77326d18" />
+    <UnitTestResult executionId="ea83c2aa-3b60-4ddc-bc14-f7e8c0f4cc2a" testId="767acdfc-0e73-c887-803e-31c8aaa97dde" testName="SerializedXmlDoesNotContainNullProperties" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.8188264+02:00" endTime="2021-04-20T21:20:35.8191161+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ea83c2aa-3b60-4ddc-bc14-f7e8c0f4cc2a" />
+    <UnitTestResult executionId="99ffb4ca-843c-48e2-ba37-90424746c53f" testId="ca777d22-3b0f-e952-bd8a-c5660245a81f" testName="ThrowsWithInvalidUrl" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.6633657+02:00" endTime="2021-04-20T21:20:35.6633670+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99ffb4ca-843c-48e2-ba37-90424746c53f">
+      <Output>
+        <StdOut>Too many consecutive fails seems to block an FTP server.</StdOut>
+        <ErrorInfo>
+          <Message>Too many consecutive fails seems to block an FTP server.</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8a597631-5dd4-4119-a2e8-c86478191d1e" testId="fa59d18c-2c0d-3f7a-7b89-8b05c8530c98" testName="NeedsRefreshReturnsFalseIfNotExpired" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7426491+02:00" endTime="2021-04-20T21:20:35.7427983+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8a597631-5dd4-4119-a2e8-c86478191d1e" />
+    <UnitTestResult executionId="502e3c21-4407-4b5a-85ff-ed1eb355da72" testId="61b1c53a-6b35-a0bd-cf9f-996f45b4c761" testName="ThrowsWithInvalidUsername" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7411291+02:00" endTime="2021-04-20T21:20:35.7415912+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="502e3c21-4407-4b5a-85ff-ed1eb355da72" />
+    <UnitTestResult executionId="1804b7c8-7729-426c-91d9-691ce82a1d7a" testId="736ef283-7bdf-6b3e-0caf-6c21f948cdc6" testName="ThrowsWithHttpInsteadOfFtp" computerName="DORNY-PC" duration="00:00:00.0040000" startTime="2021-04-20T21:20:35.6594895+02:00" endTime="2021-04-20T21:20:35.6633287+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1804b7c8-7729-426c-91d9-691ce82a1d7a" />
+    <UnitTestResult executionId="6234ffeb-0f16-4775-9eb0-759232f07cb4" testId="49a69aa8-9346-0600-d464-81784b9e612b" testName="SerializedXmlDoesNotContainPlaintextData" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.8191301+02:00" endTime="2021-04-20T21:20:35.8193578+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6234ffeb-0f16-4775-9eb0-759232f07cb4" />
+    <UnitTestResult executionId="a56e0451-e540-43ee-b30c-1948a059cbe7" testId="c04d2194-9d0c-6f49-84c9-4d2691f2d076" testName="ThrowsWithInvalidPath" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.7405510+02:00" endTime="2021-04-20T21:20:35.7411167+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a56e0451-e540-43ee-b30c-1948a059cbe7" />
+    <UnitTestResult executionId="0e32eb27-9a2c-497d-8d96-4852e04f9247" testId="50701c3a-d1b9-0423-26e6-4be52cf1d5f0" testName="BuildAuthorizationRequestUrlLeavesOutOptionalParameters" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7492579+02:00" endTime="2021-04-20T21:20:35.7494479+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e32eb27-9a2c-497d-8d96-4852e04f9247" />
+    <UnitTestResult executionId="208fc10c-948d-4641-b459-a3249b341dcb" testId="ebe21dff-4309-2b2e-75d7-dd55a44ce033" testName="SanitizeCredentials_ChangesInvalidPrefix" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.6579581+02:00" endTime="2021-04-20T21:20:35.6582444+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="208fc10c-948d-4641-b459-a3249b341dcb" />
+    <UnitTestResult executionId="7660f5b8-b4fa-4388-9118-e136c6490dd8" testId="4af5858f-3f1a-a886-5596-87475d64aeb3" testName="CorrectlyConvertsUnicodeBytesToSecureString" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7734767+02:00" endTime="2021-04-20T21:20:35.7738713+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7660f5b8-b4fa-4388-9118-e136c6490dd8" />
+    <UnitTestResult executionId="f48f72ef-ec73-4839-b314-7d22a3cfec69" testId="537e4579-87e2-7283-ca3f-eb8ddb93ae39" testName="NeedsRefreshReturnsTrueIfNoExpirationDate" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7429408+02:00" endTime="2021-04-20T21:20:35.7430304+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f48f72ef-ec73-4839-b314-7d22a3cfec69" />
+    <UnitTestResult executionId="0a807015-4876-4110-888e-ba37dfcce38a" testId="89e1d4aa-9217-7c34-fc4d-99ef9efe7a7d" testName="ParseRealWorldDropboxRejectResponse" computerName="DORNY-PC" duration="00:00:00.0090000" startTime="2021-04-20T21:20:35.7506657+02:00" endTime="2021-04-20T21:20:35.7595015+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0a807015-4876-4110-888e-ba37dfcce38a" />
+    <UnitTestResult executionId="426d15ea-cd3e-4e87-8e2a-14502afbd98f" testId="e22320ba-05cc-579d-8c7d-c693d9b6406e" testName="SerializedJsonCanBeReadBack" computerName="DORNY-PC" duration="00:00:00.0070000" startTime="2021-04-20T21:20:35.7955984+02:00" endTime="2021-04-20T21:20:35.8028478+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="426d15ea-cd3e-4e87-8e2a-14502afbd98f" />
+    <UnitTestResult executionId="093b7fc9-4477-4bcf-9443-6cc760333b4a" testId="d941f923-cd04-ee0a-427c-b81e14aafa3d" testName="ChoosesCorrectUrlForGmxNetEmail" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.6694256+02:00" endTime="2021-04-20T21:20:35.6703787+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="093b7fc9-4477-4bcf-9443-6cc760333b4a" />
+    <UnitTestResult executionId="06a2ec7f-dc87-4ee9-8394-fd650312a2ab" testId="5fa805b8-ec79-3c7c-8e87-3db6dc58f83e" testName="ThrowsAccessDeniedExceptionWithInvalidToken" computerName="DORNY-PC" duration="00:00:00.0060000" startTime="2021-04-20T21:20:35.4898039+02:00" endTime="2021-04-20T21:20:35.4961132+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="06a2ec7f-dc87-4ee9-8394-fd650312a2ab" />
+    <UnitTestResult executionId="01ecb439-d050-4ac9-95c9-a7378091bcc5" testId="9da3226a-a96e-91f6-c5b6-b3102b5b332a" testName="SerializedDatacontractDoesNotContainPlaintextData" computerName="DORNY-PC" duration="00:00:00.0020000" startTime="2021-04-20T21:20:35.7939062+02:00" endTime="2021-04-20T21:20:35.7955862+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="01ecb439-d050-4ac9-95c9-a7378091bcc5" />
+    <UnitTestResult executionId="5e0c0e75-9fc9-40ce-ba0a-9c2a0887bdac" testId="a4f5c6bf-c950-cfa4-1f50-3ce62d833293" testName="RefreshTokenCanInterpretGoogleResponse" computerName="DORNY-PC" duration="00:00:00.0030000" startTime="2021-04-20T21:20:35.7696326+02:00" endTime="2021-04-20T21:20:35.7722741+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e0c0e75-9fc9-40ce-ba0a-9c2a0887bdac" />
+    <UnitTestResult executionId="14edf9a2-4d91-4d49-bbee-0400d51f8950" testId="819198e9-75c1-9681-32e4-669dfa258e8a" testName="ParseGmxWebdavResponseCorrectly" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.7396472+02:00" endTime="2021-04-20T21:20:35.7401701+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="14edf9a2-4d91-4d49-bbee-0400d51f8950" />
+    <UnitTestResult executionId="52fca9fd-4e45-4f44-9857-f267268b0924" testId="a436d607-b2be-f301-d56f-50716e7b321a" testName="CorrectlyConvertsUtf8BytesToSecureString" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7738825+02:00" endTime="2021-04-20T21:20:35.7741056+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="52fca9fd-4e45-4f44-9857-f267268b0924" />
+    <UnitTestResult executionId="aa3eef6e-4555-49bd-a1fa-ef6f663a5d22" testId="64d76ddb-a88f-9c22-6ed0-af3ecb98ffb9" testName="CorrectlyConvertsStringToSecureString" computerName="DORNY-PC" duration="00:00:00.0060000" startTime="2021-04-20T21:20:35.3752233+02:00" endTime="2021-04-20T21:20:35.3807261+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa3eef6e-4555-49bd-a1fa-ef6f663a5d22" />
+    <UnitTestResult executionId="cd51e1e5-acf8-4a63-a556-0dfd4d99b491" testId="c6bece37-31ea-7f18-10f5-6b96a09f4154" testName="AreEqualWorksWithSameContent" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.3670949+02:00" endTime="2021-04-20T21:20:35.3681934+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cd51e1e5-acf8-4a63-a556-0dfd4d99b491" />
+    <UnitTestResult executionId="fa2b22e8-c121-4f97-8849-4cbe45734f9f" testId="72ed0c35-21ea-7829-893f-73c9214b4f4a" testName="CorrectlyConvertsSecureStringToString" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7726187+02:00" endTime="2021-04-20T21:20:35.7727590+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fa2b22e8-c121-4f97-8849-4cbe45734f9f" />
+    <UnitTestResult executionId="0c9508da-1207-4eb3-891c-e66e5e768788" testId="ad03a66d-a9e8-9ade-31df-92fa6cac714b" testName="ParsesNullErrorCodeCorrectly" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7472239+02:00" endTime="2021-04-20T21:20:35.7473437+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0c9508da-1207-4eb3-891c-e66e5e768788" />
+    <UnitTestResult executionId="1c925dd1-edfa-46f1-8b9b-d9ce8cbf2635" testId="e9788947-b431-c470-eb25-13f39858c423" testName="ChoosesCorrectUrlForGmxComEmail" computerName="DORNY-PC" duration="00:00:00.0060000" startTime="2021-04-20T21:20:35.6634852+02:00" endTime="2021-04-20T21:20:35.6694047+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c925dd1-edfa-46f1-8b9b-d9ce8cbf2635" />
+    <UnitTestResult executionId="80c55db9-4d42-4fd2-a48c-22ad4cd39105" testId="b251efa4-be1f-5ed7-99ba-5339059780ec" testName="FileLifecycleWorks" computerName="DORNY-PC" duration="00:00:00.0140000" startTime="2021-04-20T21:20:35.7259035+02:00" endTime="2021-04-20T21:20:35.7396295+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="80c55db9-4d42-4fd2-a48c-22ad4cd39105" />
+    <UnitTestResult executionId="1624ee85-3987-47af-9822-074bcbca9106" testId="22de815b-16af-03c5-d819-7c8851c1da3c" testName="SetExpiryDateBySecondsWorksWithNull" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7434736+02:00" endTime="2021-04-20T21:20:35.7435860+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1624ee85-3987-47af-9822-074bcbca9106" />
+    <UnitTestResult executionId="ed88606c-3b41-49bc-ae3f-f226d9464261" testId="c262190d-9c9e-6be3-5e5d-634c12813410" testName="ValidateRejectsInvalidCredentials" computerName="DORNY-PC" duration="00:00:00.0060000" startTime="2021-04-20T21:20:35.3837274+02:00" endTime="2021-04-20T21:20:35.3894951+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ed88606c-3b41-49bc-ae3f-f226d9464261" />
+    <UnitTestResult executionId="414673ca-5d78-4202-842b-7f13e7b40f2b" testId="951f28a9-26ae-8567-a07e-eef0e1def226" testName="EncryptBeforeSerializationProtectsAllNecessaryProperties" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7768521+02:00" endTime="2021-04-20T21:20:35.7773429+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="414673ca-5d78-4202-842b-7f13e7b40f2b" />
+    <UnitTestResult executionId="a1f2867a-47fb-49db-901b-7114af3845bd" testId="f43fb36c-bb2f-88d6-fd89-bda7c22b6c91" testName="DecryptAfterDesrializationRespectsNullProperties" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7765941+02:00" endTime="2021-04-20T21:20:35.7768387+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a1f2867a-47fb-49db-901b-7114af3845bd" />
+    <UnitTestResult executionId="30222c71-5fd6-48d2-ac28-fcd942c4ed39" testId="2281e288-4c7c-bbf6-5b39-72098edf13cc" testName="ReallyDoFetchToken" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.4892590+02:00" endTime="2021-04-20T21:20:35.4897152+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30222c71-5fd6-48d2-ac28-fcd942c4ed39">
+      <Output>
+        <StdOut>Gets a real access-token</StdOut>
+        <ErrorInfo>
+          <Message>Gets a real access-token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ed9923ba-9af6-4558-b34e-f49eb0456eff" testId="13e39882-2195-72c3-053f-9cff2ec1d67d" testName="ReallyDoOpenAuthorizationPageInBrowser" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.7257885+02:00" endTime="2021-04-20T21:20:35.7257895+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ed9923ba-9af6-4558-b34e-f49eb0456eff">
+      <Output>
+        <StdOut>Opens the authorization page in the system browse, to get a real authorization-code</StdOut>
+        <ErrorInfo>
+          <Message>Opens the authorization page in the system browse, to get a real authorization-code</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0d72415d-fdfd-4cc2-b812-74abc7818f4e" testId="30bd1939-4032-847c-f269-bb1757915f16" testName="DecryptAfterDesrializationCanReadAllPropertiesBack" computerName="DORNY-PC" duration="00:00:00.0020000" startTime="2021-04-20T21:20:35.7742296+02:00" endTime="2021-04-20T21:20:35.7765786+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0d72415d-fdfd-4cc2-b812-74abc7818f4e" />
+    <UnitTestResult executionId="5fbd98cc-68bb-4536-8a46-43b979e213a6" testId="432b7e9a-53e9-d7c7-531a-b22f10d8a0f5" testName="SecureSslConnectionWorks" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.6582561+02:00" endTime="2021-04-20T21:20:35.6594767+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5fbd98cc-68bb-4536-8a46-43b979e213a6" />
+    <UnitTestResult executionId="29177f57-4100-4d14-9def-92aee48433ab" testId="ebbd2ea6-e642-f74f-abc0-f79e1e19896c" testName="NeedsRefreshReturnsFalseForTokenFlow" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7423452+02:00" endTime="2021-04-20T21:20:35.7426379+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="29177f57-4100-4d14-9def-92aee48433ab" />
+    <UnitTestResult executionId="0d4f644d-4bfc-49e5-9983-56d071104b86" testId="3640390a-9ea3-e873-ecaf-b1f0acce39dc" testName="FetchTokenCanInterpretGoogleResponse" computerName="DORNY-PC" duration="00:00:00.0070000" startTime="2021-04-20T21:20:35.7608329+02:00" endTime="2021-04-20T21:20:35.7679172+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0d4f644d-4bfc-49e5-9983-56d071104b86" />
+    <UnitTestResult executionId="6f544caa-1014-485e-95b2-60c343c818cb" testId="de4ced25-0268-f393-cea0-bb04d4c5a29e" testName="NeedsRefreshReturnsTrueIfExpired" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7428060+02:00" endTime="2021-04-20T21:20:35.7429335+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f544caa-1014-485e-95b2-60c343c818cb" />
+    <UnitTestResult executionId="4c6f6322-a4c6-4738-b068-1baf9c286a03" testId="e684ae1a-ebd6-8708-4f88-d018712c6d26" testName="ParseRealWorldGoogleSuccessResponse" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7599219+02:00" endTime="2021-04-20T21:20:35.7600718+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4c6f6322-a4c6-4738-b068-1baf9c286a03" />
+    <UnitTestResult executionId="4536485e-ee25-4d61-9353-14a984535b8e" testId="3fa575d3-8c64-4e79-fa65-acc9170b3c5a" testName="FileLifecycleWorks" computerName="DORNY-PC" duration="00:00:00.0400000" startTime="2021-04-20T21:20:35.6705081+02:00" endTime="2021-04-20T21:20:35.7105603+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4536485e-ee25-4d61-9353-14a984535b8e" />
+    <UnitTestResult executionId="5c34792d-1eb8-4798-b9f5-a37a5601d982" testId="5d03904b-0ce2-14e9-560e-6097c6faa283" testName="SetExpiryDateBySecondsWorks" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7430373+02:00" endTime="2021-04-20T21:20:35.7434618+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5c34792d-1eb8-4798-b9f5-a37a5601d982" />
+    <UnitTestResult executionId="b2c31d72-0f6f-4fd3-aadf-519c526ba627" testId="be9e3070-8b2d-4cc8-2595-fb57d16c6cdd" testName="SetExpiryDateBySecondsWorksWithVeryShortPeriod" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7435932+02:00" endTime="2021-04-20T21:20:35.7438176+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2c31d72-0f6f-4fd3-aadf-519c526ba627" />
+    <UnitTestResult executionId="0b40b822-b7ff-400e-8c5b-26717502ad01" testId="176fe880-e16d-469b-88c8-2560bc54254b" testName="ReallyDoFetchToken" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.7105789+02:00" endTime="2021-04-20T21:20:35.7105821+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b40b822-b7ff-400e-8c5b-26717502ad01">
+      <Output>
+        <StdOut>Gets a real access-token</StdOut>
+        <ErrorInfo>
+          <Message>Gets a real access-token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0e832195-44c2-41d5-931b-fa2dc4d4655f" testId="11d38d36-4090-e9ae-0dfe-52c8ffa930a6" testName="FileLifecycleWorks" computerName="DORNY-PC" duration="00:00:00.0150000" startTime="2021-04-20T21:20:35.7108717+02:00" endTime="2021-04-20T21:20:35.7257614+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0e832195-44c2-41d5-931b-fa2dc4d4655f" />
+    <UnitTestResult executionId="ca75b323-cd43-4a26-9e6f-fa3650cc9eca" testId="e3bf520c-cf79-f90b-dc21-9c25e58a369d" testName="ParsesAllErrorCodesCorrectly" computerName="DORNY-PC" duration="00:00:00.0030000" startTime="2021-04-20T21:20:35.7439327+02:00" endTime="2021-04-20T21:20:35.7472036+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca75b323-cd43-4a26-9e6f-fa3650cc9eca" />
+    <UnitTestResult executionId="eeeeda37-81c3-4432-93c3-6197cc86aec4" testId="ce42ac62-8706-8922-cf93-ac01f045e42d" testName="ReallyDoFetchToken" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.7257805+02:00" endTime="2021-04-20T21:20:35.7257838+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eeeeda37-81c3-4432-93c3-6197cc86aec4">
+      <Output>
+        <StdOut>Gets a real access-token</StdOut>
+        <ErrorInfo>
+          <Message>Gets a real access-token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a036e7ee-f4ac-442d-827c-9c1103d6fd35" testId="da7235ad-2f42-43de-0593-6a35cf28a618" testName="ReallyDoRefreshToken" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.7106574+02:00" endTime="2021-04-20T21:20:35.7107168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a036e7ee-f4ac-442d-827c-9c1103d6fd35">
+      <Output>
+        <StdOut>Refreshes a real token</StdOut>
+        <ErrorInfo>
+          <Message>Refreshes a real token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4646c279-d3ea-4c5f-8d7e-bc474dff36a0" testId="78fb2759-932d-72a7-9e7e-ac929f17aa89" testName="FileLifecycleWorks" computerName="DORNY-PC" duration="00:00:00.0950000" startTime="2021-04-20T21:20:35.3941586+02:00" endTime="2021-04-20T21:20:35.4892394+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4646c279-d3ea-4c5f-8d7e-bc474dff36a0" />
+    <UnitTestResult executionId="323ec250-debb-4974-a77c-b2e462205ee5" testId="4f4c9855-a72a-565f-2470-2a0c650d1bed" testName="ParseRealWorldGoogleRejectResponse" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7597346+02:00" endTime="2021-04-20T21:20:35.7599106+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="323ec250-debb-4974-a77c-b2e462205ee5" />
+    <UnitTestResult executionId="689b6dee-0717-4c98-8311-8209865a4f64" testId="36be699c-4582-1e8a-20db-4c133825364b" testName="ReallyDoOpenAuthorizationPageInBrowser" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.7105869+02:00" endTime="2021-04-20T21:20:35.7105879+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="689b6dee-0717-4c98-8311-8209865a4f64">
+      <Output>
+        <StdOut>Opens the authorization page in the system browse, to get a real authorization-code</StdOut>
+        <ErrorInfo>
+          <Message>Opens the authorization page in the system browse, to get a real authorization-code</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="bb6db51d-b3b6-4e49-aa85-191ae39f1037" testId="a9a707d5-0f10-eedc-d978-b6a36a0c8856" testName="CorrectlyConvertsSecureStringToUnicodeBytes" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7727689+02:00" endTime="2021-04-20T21:20:35.7731239+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bb6db51d-b3b6-4e49-aa85-191ae39f1037" />
+    <UnitTestResult executionId="17bf26a1-1224-4ece-91b3-c22a23c8aabd" testId="38cf86d6-f477-94c5-ae5a-bfe5908ca917" testName="ThrowsWithInvalidUsername" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.6633708+02:00" endTime="2021-04-20T21:20:35.6633717+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17bf26a1-1224-4ece-91b3-c22a23c8aabd">
+      <Output>
+        <StdOut>Too many consecutive fails seems to block an FTP server.</StdOut>
+        <ErrorInfo>
+          <Message>Too many consecutive fails seems to block an FTP server.</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="aa9960ae-203a-4e06-8fa5-72221f1f76ae" testId="c6442343-bfe7-0dd6-2de0-bf97d26d89ba" testName="BuildAuthorizationRequestUrlEscapesParameters" computerName="DORNY-PC" duration="00:00:00.0020000" startTime="2021-04-20T21:20:35.7475699+02:00" endTime="2021-04-20T21:20:35.7492413+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa9960ae-203a-4e06-8fa5-72221f1f76ae" />
+    <UnitTestResult executionId="cadbf9fb-9bfe-4193-9efa-cc02a33a13bd" testId="df7f153f-97b0-b127-aad8-16ec21c92a8b" testName="FetchTokenThrowsWithWrongState" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.7688159+02:00" endTime="2021-04-20T21:20:35.7696200+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cadbf9fb-9bfe-4193-9efa-cc02a33a13bd" />
+    <UnitTestResult executionId="94dd40b9-b1ce-470c-8c0e-f6bbaa100a54" testId="c62f7f2c-529c-dc57-520f-bbd68be945a7" testName="BuildOAuth2AuthorizationRequestUrlWorks" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.7601913+02:00" endTime="2021-04-20T21:20:35.7608168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="94dd40b9-b1ce-470c-8c0e-f6bbaa100a54" />
+    <UnitTestResult executionId="1bb8b762-a68d-4341-b1de-7e6f835a0711" testId="8a4a2c3a-671a-6167-0ea9-afbf6f12c47f" testName="AreEqualsWorksCorrectly" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7723992+02:00" endTime="2021-04-20T21:20:35.7726078+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1bb8b762-a68d-4341-b1de-7e6f835a0711" />
+    <UnitTestResult executionId="585b5a0f-9271-46a1-b8c3-0dae87316e94" testId="ad676737-0a35-dba6-3ba9-cec823374fda" testName="EncryptBeforeSerializationRespectsNullProperties" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7773547+02:00" endTime="2021-04-20T21:20:35.7775198+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="585b5a0f-9271-46a1-b8c3-0dae87316e94" />
+    <UnitTestResult executionId="8c79c5a4-5298-40ae-95b7-546701afd83a" testId="7cfb656b-616e-5dab-c649-021521679abb" testName="ThrowsWithInvalidPassword" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.6633473+02:00" endTime="2021-04-20T21:20:35.6633604+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8c79c5a4-5298-40ae-95b7-546701afd83a">
+      <Output>
+        <StdOut>Too many consecutive fails seems to block an FTP server.</StdOut>
+        <ErrorInfo>
+          <Message>Too many consecutive fails seems to block an FTP server.</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2a90bce3-7856-4e93-b710-ca7c3ce5b3dc" testId="ab91e3c1-6d51-74c8-f790-8c37d82e665d" testName="AreEqualWorksWithDifferentPassword" computerName="DORNY-PC" duration="00:00:00.0070000" startTime="2021-04-20T21:20:35.3580525+02:00" endTime="2021-04-20T21:20:35.3649197+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2a90bce3-7856-4e93-b710-ca7c3ce5b3dc" />
+    <UnitTestResult executionId="913d29d6-2c2e-4fbe-9c8f-d98ee5b00423" testId="60635b8d-24f2-11d2-6983-d8dee19f4282" testName="AreEqualWorksWithNullDate" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7417093+02:00" endTime="2021-04-20T21:20:35.7420941+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="913d29d6-2c2e-4fbe-9c8f-d98ee5b00423" />
+    <UnitTestResult executionId="4652ec4f-b2e8-4f57-8608-da377196ffda" testId="dba5c72e-5a00-8132-c3c9-ae0e981adf72" testName="SerializedXmlCanBeReadBack" computerName="DORNY-PC" duration="00:00:00.0160000" startTime="2021-04-20T21:20:35.8032746+02:00" endTime="2021-04-20T21:20:35.8188059+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4652ec4f-b2e8-4f57-8608-da377196ffda" />
+    <UnitTestResult executionId="b3a2df60-79e7-4182-940c-95c638007796" testId="c5f9094a-f978-a711-21dd-69c261de1b9a" testName="BuildAuthorizationRequestUrlUsesCodeVerifier" computerName="DORNY-PC" duration="00:00:00.0010000" startTime="2021-04-20T21:20:35.7499237+02:00" endTime="2021-04-20T21:20:35.7506530+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b3a2df60-79e7-4182-940c-95c638007796" />
+    <UnitTestResult executionId="119bdc21-2d3d-4ce0-bed8-1dfe806a6450" testId="06eb9298-0f08-8297-1ae0-b93dff5bc18d" testName="CorrectlyConvertsSecureStringToUtf8Bytes" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7731349+02:00" endTime="2021-04-20T21:20:35.7732784+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="119bdc21-2d3d-4ce0-bed8-1dfe806a6450" />
+    <UnitTestResult executionId="dd41ab72-b415-46bf-aa6c-be2b038acc3a" testId="1c366be0-e44e-8e31-b7f2-e17b393d6db3" testName="ReallyDoRefreshToken" computerName="DORNY-PC" startTime="2021-04-20T21:20:35.4897989+02:00" endTime="2021-04-20T21:20:35.4898000+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dd41ab72-b415-46bf-aa6c-be2b038acc3a">
+      <Output>
+        <StdOut>Refreshes a real token</StdOut>
+        <ErrorInfo>
+          <Message>Refreshes a real token</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b6b90c5b-0b91-48b9-b160-eaae1740e609" testId="1bca23e2-1e33-fa8a-6cb7-6c20c96558d3" testName="ParsesUnknownErrorCodeCorrectly" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7473520+02:00" endTime="2021-04-20T21:20:35.7474597+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b6b90c5b-0b91-48b9-b160-eaae1740e609" />
+    <UnitTestResult executionId="f73fc410-415a-405e-89e2-9146b483ec2c" testId="67ebdd70-ceee-6efa-b3eb-07b0cb165f16" testName="AreEqualWorksWithSameContent" computerName="DORNY-PC" duration="00:00:00.0000001" startTime="2021-04-20T21:20:35.7421072+02:00" endTime="2021-04-20T21:20:35.7423337+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f73fc410-415a-405e-89e2-9146b483ec2c" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="ParseRealWorldGoogleSuccessResponse" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="e684ae1a-ebd6-8708-4f88-d018712c6d26">
+      <Execution id="4c6f6322-a4c6-4738-b068-1baf9c286a03" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="ParseRealWorldGoogleSuccessResponse" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsUnicodeBytesToSecureString" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="4af5858f-3f1a-a886-5596-87475d64aeb3">
+      <Execution id="7660f5b8-b4fa-4388-9118-e136c6490dd8" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="CorrectlyConvertsUnicodeBytesToSecureString" />
+    </UnitTest>
+    <UnitTest name="AreEqualsWorksCorrectly" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="8a4a2c3a-671a-6167-0ea9-afbf6f12c47f">
+      <Execution id="1bb8b762-a68d-4341-b1de-7e6f835a0711" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="AreEqualsWorksCorrectly" />
+    </UnitTest>
+    <UnitTest name="FileLifecycleWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="89dd1b67-c0ca-dcc6-ca42-c4f3660c0208">
+      <Execution id="7c73d2a6-34a5-400d-8163-40375210062f" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="FileLifecycleWorks" />
+    </UnitTest>
+    <UnitTest name="ChoosesCorrectUrlForGmxNetEmail" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="d941f923-cd04-ee0a-427c-b81e14aafa3d">
+      <Execution id="093b7fc9-4477-4bcf-9443-6cc760333b4a" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.GmxCloudStorageClientTest" name="ChoosesCorrectUrlForGmxNetEmail" />
+    </UnitTest>
+    <UnitTest name="SerializedJsonDoesNotContainNullProperties" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="4340b799-0666-32b6-4fdd-1daf8a626bc7">
+      <Execution id="a9e342c2-bc62-4b01-835b-842bec9f2d4c" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedJsonDoesNotContainNullProperties" />
+    </UnitTest>
+    <UnitTest name="BuildOAuth2AuthorizationRequestUrlWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="c62f7f2c-529c-dc57-520f-bbd68be945a7">
+      <Execution id="94dd40b9-b1ce-470c-8c0e-f6bbaa100a54" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2CloudStorageClientTest" name="BuildOAuth2AuthorizationRequestUrlWorks" />
+    </UnitTest>
+    <UnitTest name="FetchTokenThrowsWithWrongState" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="df7f153f-97b0-b127-aad8-16ec21c92a8b">
+      <Execution id="cadbf9fb-9bfe-4193-9efa-cc02a33a13bd" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2CloudStorageClientTest" name="FetchTokenThrowsWithWrongState" />
+    </UnitTest>
+    <UnitTest name="BuildAuthorizationRequestUrlUsesCodeVerifier" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="c5f9094a-f978-a711-21dd-69c261de1b9a">
+      <Execution id="b3a2df60-79e7-4182-940c-95c638007796" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="BuildAuthorizationRequestUrlUsesCodeVerifier" />
+    </UnitTest>
+    <UnitTest name="ReallyDoFetchToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ce42ac62-8706-8922-cf93-ac01f045e42d">
+      <Execution id="eeeeda37-81c3-4432-93c3-6197cc86aec4" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.OnedriveCloudStorageClientTest" name="ReallyDoFetchToken" />
+    </UnitTest>
+    <UnitTest name="ThrowsWithInvalidUrl" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ca777d22-3b0f-e952-bd8a-c5660245a81f">
+      <Execution id="99ffb4ca-843c-48e2-ba37-90424746c53f" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="ThrowsWithInvalidUrl" />
+    </UnitTest>
+    <UnitTest name="SerializedXmlDoesNotContainNullProperties" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="767acdfc-0e73-c887-803e-31c8aaa97dde">
+      <Execution id="ea83c2aa-3b60-4ddc-bc14-f7e8c0f4cc2a" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedXmlDoesNotContainNullProperties" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsStringToSecureString" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="64d76ddb-a88f-9c22-6ed0-af3ecb98ffb9">
+      <Execution id="aa3eef6e-4555-49bd-a1fa-ef6f663a5d22" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageCredentialsTest" name="CorrectlyConvertsStringToSecureString" />
+    </UnitTest>
+    <UnitTest name="FetchTokenCanInterpretGoogleResponse" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="3640390a-9ea3-e873-ecaf-b1f0acce39dc">
+      <Execution id="0d4f644d-4bfc-49e5-9983-56d071104b86" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2CloudStorageClientTest" name="FetchTokenCanInterpretGoogleResponse" />
+    </UnitTest>
+    <UnitTest name="ReallyDoOpenAuthorizationPageInBrowser" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="36be699c-4582-1e8a-20db-4c133825364b">
+      <Execution id="689b6dee-0717-4c98-8311-8209865a4f64" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.GoogleCloudStorageClientTest" name="ReallyDoOpenAuthorizationPageInBrowser" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsUtf8BytesToSecureString" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="a436d607-b2be-f301-d56f-50716e7b321a">
+      <Execution id="52fca9fd-4e45-4f44-9857-f267268b0924" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="CorrectlyConvertsUtf8BytesToSecureString" />
+    </UnitTest>
+    <UnitTest name="BuildAuthorizationRequestUrlLeavesOutOptionalParameters" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="50701c3a-d1b9-0423-26e6-4be52cf1d5f0">
+      <Execution id="0e32eb27-9a2c-497d-8d96-4852e04f9247" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="BuildAuthorizationRequestUrlLeavesOutOptionalParameters" />
+    </UnitTest>
+    <UnitTest name="ParsesAllErrorCodesCorrectly" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="e3bf520c-cf79-f90b-dc21-9c25e58a369d">
+      <Execution id="ca75b323-cd43-4a26-9e6f-fa3650cc9eca" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.AuthorizationResponseErrorTest" name="ParsesAllErrorCodesCorrectly" />
+    </UnitTest>
+    <UnitTest name="SerializedDatacontractCanBeReadBack" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="75ed4b0d-8eff-6a45-b5e4-0db6070c60bb">
+      <Execution id="8073954d-cee8-455e-a86d-97e8a4ec614d" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedDatacontractCanBeReadBack" />
+    </UnitTest>
+    <UnitTest name="BuildAuthorizationRequestUrlUsesAllParameters" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="275ce8fa-d4c1-63f1-9add-641a70fb73e6">
+      <Execution id="e7b019dd-c6ee-40b6-91d9-c7f4bfb03f55" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="BuildAuthorizationRequestUrlUsesAllParameters" />
+    </UnitTest>
+    <UnitTest name="SecureSslConnectionWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="432b7e9a-53e9-d7c7-531a-b22f10d8a0f5">
+      <Execution id="5fbd98cc-68bb-4536-8a46-43b979e213a6" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="SecureSslConnectionWorks" />
+    </UnitTest>
+    <UnitTest name="AreEqualWorksWithSameContent" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="c6bece37-31ea-7f18-10f5-6b96a09f4154">
+      <Execution id="cd51e1e5-acf8-4a63-a556-0dfd4d99b491" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageCredentialsTest" name="AreEqualWorksWithSameContent" />
+    </UnitTest>
+    <UnitTest name="FileLifecycleWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="11d38d36-4090-e9ae-0dfe-52c8ffa930a6">
+      <Execution id="0e832195-44c2-41d5-931b-fa2dc4d4655f" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.OnedriveCloudStorageClientTest" name="FileLifecycleWorks" />
+    </UnitTest>
+    <UnitTest name="SerializedDatacontractDoesNotContainPlaintextData" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="9da3226a-a96e-91f6-c5b6-b3102b5b332a">
+      <Execution id="01ecb439-d050-4ac9-95c9-a7378091bcc5" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedDatacontractDoesNotContainPlaintextData" />
+    </UnitTest>
+    <UnitTest name="RefreshTokenCanInterpretGoogleResponse" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="a4f5c6bf-c950-cfa4-1f50-3ce62d833293">
+      <Execution id="5e0c0e75-9fc9-40ce-ba0a-9c2a0887bdac" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2CloudStorageClientTest" name="RefreshTokenCanInterpretGoogleResponse" />
+    </UnitTest>
+    <UnitTest name="ThrowsWithInvalidUsername" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="38cf86d6-f477-94c5-ae5a-bfe5908ca917">
+      <Execution id="17bf26a1-1224-4ece-91b3-c22a23c8aabd" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="ThrowsWithInvalidUsername" />
+    </UnitTest>
+    <UnitTest name="ReallyDoRefreshToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="1c366be0-e44e-8e31-b7f2-e17b393d6db3">
+      <Execution id="dd41ab72-b415-46bf-aa6c-be2b038acc3a" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.DropboxCloudStorageClientTest" name="ReallyDoRefreshToken" />
+    </UnitTest>
+    <UnitTest name="BuildAuthorizationRequestUrlEscapesParameters" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="c6442343-bfe7-0dd6-2de0-bf97d26d89ba">
+      <Execution id="aa9960ae-203a-4e06-8fa5-72221f1f76ae" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="BuildAuthorizationRequestUrlEscapesParameters" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsStringToSecureString" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="916a4c11-6ebe-26db-3769-b9df2051743c">
+      <Execution id="cd601b6c-919f-4585-b5e6-d220a0ba17be" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="CorrectlyConvertsStringToSecureString" />
+    </UnitTest>
+    <UnitTest name="AreEqualWorksWithDifferentPassword" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ab91e3c1-6d51-74c8-f790-8c37d82e665d">
+      <Execution id="2a90bce3-7856-4e93-b710-ca7c3ce5b3dc" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageCredentialsTest" name="AreEqualWorksWithDifferentPassword" />
+    </UnitTest>
+    <UnitTest name="ParseGmxWebdavResponseCorrectly" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="819198e9-75c1-9681-32e4-669dfa258e8a">
+      <Execution id="14edf9a2-4d91-4d49-bbee-0400d51f8950" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.WebdavCloudStorageClientTest" name="ParseGmxWebdavResponseCorrectly" />
+    </UnitTest>
+    <UnitTest name="ThrowsAccessDeniedExceptionWithInvalidToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="5fa805b8-ec79-3c7c-8e87-3db6dc58f83e">
+      <Execution id="06a2ec7f-dc87-4ee9-8394-fd650312a2ab" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.DropboxCloudStorageClientTest" name="ThrowsAccessDeniedExceptionWithInvalidToken" />
+    </UnitTest>
+    <UnitTest name="SetExpiryDateBySecondsWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="5d03904b-0ce2-14e9-560e-6097c6faa283">
+      <Execution id="5c34792d-1eb8-4798-b9f5-a37a5601d982" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="SetExpiryDateBySecondsWorks" />
+    </UnitTest>
+    <UnitTest name="BuildAuthorizationRequestUrlThrowsWithMissingRedirectUrlForTokenFlow" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="f7c94d67-56c9-6418-8a42-ddc79dc57ea2">
+      <Execution id="ddc1f371-da00-4b39-bc51-e4467d1f519d" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="BuildAuthorizationRequestUrlThrowsWithMissingRedirectUrlForTokenFlow" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsSecureStringToUnicodeBytes" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="a9a707d5-0f10-eedc-d978-b6a36a0c8856">
+      <Execution id="bb6db51d-b3b6-4e49-aa85-191ae39f1037" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="CorrectlyConvertsSecureStringToUnicodeBytes" />
+    </UnitTest>
+    <UnitTest name="EncryptBeforeSerializationProtectsAllNecessaryProperties" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="951f28a9-26ae-8567-a07e-eef0e1def226">
+      <Execution id="414673ca-5d78-4202-842b-7f13e7b40f2b" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="EncryptBeforeSerializationProtectsAllNecessaryProperties" />
+    </UnitTest>
+    <UnitTest name="AreEqualWorksWithSameContent" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="67ebdd70-ceee-6efa-b3eb-07b0cb165f16">
+      <Execution id="f73fc410-415a-405e-89e2-9146b483ec2c" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="AreEqualWorksWithSameContent" />
+    </UnitTest>
+    <UnitTest name="ReallyDoRefreshToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="28e75f1f-48b9-972a-3113-38add5d40440">
+      <Execution id="df1e2af3-79ce-4ddc-87e9-aaee93bb557b" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.OnedriveCloudStorageClientTest" name="ReallyDoRefreshToken" />
+    </UnitTest>
+    <UnitTest name="SerializedJsonCanBeReadBack" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="e22320ba-05cc-579d-8c7d-c693d9b6406e">
+      <Execution id="426d15ea-cd3e-4e87-8e2a-14502afbd98f" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedJsonCanBeReadBack" />
+    </UnitTest>
+    <UnitTest name="ReallyDoFetchToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="2281e288-4c7c-bbf6-5b39-72098edf13cc">
+      <Execution id="30222c71-5fd6-48d2-ac28-fcd942c4ed39" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.DropboxCloudStorageClientTest" name="ReallyDoFetchToken" />
+    </UnitTest>
+    <UnitTest name="SerializedXmlDoesNotContainPlaintextData" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="49a69aa8-9346-0600-d464-81784b9e612b">
+      <Execution id="6234ffeb-0f16-4775-9eb0-759232f07cb4" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedXmlDoesNotContainPlaintextData" />
+    </UnitTest>
+    <UnitTest name="ParseRealWorldDropboxRejectResponse" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="89e1d4aa-9217-7c34-fc4d-99ef9efe7a7d">
+      <Execution id="0a807015-4876-4110-888e-ba37dfcce38a" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="ParseRealWorldDropboxRejectResponse" />
+    </UnitTest>
+    <UnitTest name="ParsesUnknownErrorCodeCorrectly" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="1bca23e2-1e33-fa8a-6cb7-6c20c96558d3">
+      <Execution id="b6b90c5b-0b91-48b9-b160-eaae1740e609" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.AuthorizationResponseErrorTest" name="ParsesUnknownErrorCodeCorrectly" />
+    </UnitTest>
+    <UnitTest name="ValidateRejectsInvalidCredentials" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="c262190d-9c9e-6be3-5e5d-634c12813410">
+      <Execution id="ed88606c-3b41-49bc-ae3f-f226d9464261" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageCredentialsTest" name="ValidateRejectsInvalidCredentials" />
+    </UnitTest>
+    <UnitTest name="ReallyDoOpenAuthorizationPageInBrowser" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="13e39882-2195-72c3-053f-9cff2ec1d67d">
+      <Execution id="ed9923ba-9af6-4558-b34e-f49eb0456eff" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.OnedriveCloudStorageClientTest" name="ReallyDoOpenAuthorizationPageInBrowser" />
+    </UnitTest>
+    <UnitTest name="ThrowsWithHttpInsteadOfFtp" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="736ef283-7bdf-6b3e-0caf-6c21f948cdc6">
+      <Execution id="1804b7c8-7729-426c-91d9-691ce82a1d7a" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="ThrowsWithHttpInsteadOfFtp" />
+    </UnitTest>
+    <UnitTest name="FileLifecycleWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="b251efa4-be1f-5ed7-99ba-5339059780ec">
+      <Execution id="80c55db9-4d42-4fd2-a48c-22ad4cd39105" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.WebdavCloudStorageClientTest" name="FileLifecycleWorks" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsSecureStringToString" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="cc085a0d-1f67-be85-d187-865a89737f10">
+      <Execution id="705cbcf0-24cb-427d-848e-ed2970b0ab58" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageCredentialsTest" name="CorrectlyConvertsSecureStringToString" />
+    </UnitTest>
+    <UnitTest name="DecryptAfterDesrializationCanReadAllPropertiesBack" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="30bd1939-4032-847c-f269-bb1757915f16">
+      <Execution id="0d72415d-fdfd-4cc2-b812-74abc7818f4e" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="DecryptAfterDesrializationCanReadAllPropertiesBack" />
+    </UnitTest>
+    <UnitTest name="ThrowsWithInvalidUsername" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="61b1c53a-6b35-a0bd-cf9f-996f45b4c761">
+      <Execution id="502e3c21-4407-4b5a-85ff-ed1eb355da72" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.WebdavCloudStorageClientTest" name="ThrowsWithInvalidUsername" />
+    </UnitTest>
+    <UnitTest name="NeedsRefreshReturnsTrueIfExpired" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="de4ced25-0268-f393-cea0-bb04d4c5a29e">
+      <Execution id="6f544caa-1014-485e-95b2-60c343c818cb" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="NeedsRefreshReturnsTrueIfExpired" />
+    </UnitTest>
+    <UnitTest name="ReallyDoFetchToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="176fe880-e16d-469b-88c8-2560bc54254b">
+      <Execution id="0b40b822-b7ff-400e-8c5b-26717502ad01" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.GoogleCloudStorageClientTest" name="ReallyDoFetchToken" />
+    </UnitTest>
+    <UnitTest name="ReallyDoOpenAuthorizationPageInBrowser" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="5dab3a75-ff5f-1e46-20cf-bc072154bb33">
+      <Execution id="83d32025-8d5e-4a58-92b3-e797e4ea3bfa" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.DropboxCloudStorageClientTest" name="ReallyDoOpenAuthorizationPageInBrowser" />
+    </UnitTest>
+    <UnitTest name="ParsesNullErrorCodeCorrectly" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ad03a66d-a9e8-9ade-31df-92fa6cac714b">
+      <Execution id="0c9508da-1207-4eb3-891c-e66e5e768788" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.AuthorizationResponseErrorTest" name="ParsesNullErrorCodeCorrectly" />
+    </UnitTest>
+    <UnitTest name="ReallyDoRefreshToken" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="da7235ad-2f42-43de-0593-6a35cf28a618">
+      <Execution id="a036e7ee-f4ac-442d-827c-9c1103d6fd35" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.GoogleCloudStorageClientTest" name="ReallyDoRefreshToken" />
+    </UnitTest>
+    <UnitTest name="SetExpiryDateBySecondsWorksWithVeryShortPeriod" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="be9e3070-8b2d-4cc8-2595-fb57d16c6cdd">
+      <Execution id="b2c31d72-0f6f-4fd3-aadf-519c526ba627" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="SetExpiryDateBySecondsWorksWithVeryShortPeriod" />
+    </UnitTest>
+    <UnitTest name="SetExpiryDateBySecondsWorksWithNull" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="22de815b-16af-03c5-d819-7c8851c1da3c">
+      <Execution id="1624ee85-3987-47af-9822-074bcbca9106" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="SetExpiryDateBySecondsWorksWithNull" />
+    </UnitTest>
+    <UnitTest name="EncryptBeforeSerializationRespectsNullProperties" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ad676737-0a35-dba6-3ba9-cec823374fda">
+      <Execution id="585b5a0f-9271-46a1-b8c3-0dae87316e94" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="EncryptBeforeSerializationRespectsNullProperties" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsSecureStringToString" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="72ed0c35-21ea-7829-893f-73c9214b4f4a">
+      <Execution id="fa2b22e8-c121-4f97-8849-4cbe45734f9f" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="CorrectlyConvertsSecureStringToString" />
+    </UnitTest>
+    <UnitTest name="SerializedJsonDoesNotContainPlaintextData" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="49ceb249-d1ca-f3dc-41f8-28a41637f4d7">
+      <Execution id="4401f9ea-5a99-4275-a333-18655e9517ce" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedJsonDoesNotContainPlaintextData" />
+    </UnitTest>
+    <UnitTest name="FetchTokenReturnsNullForDeniedAccess" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="a500e09e-b66a-a804-eaae-a237a3b689b9">
+      <Execution id="e0f60156-4a28-4d04-8336-040ffe215e8f" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2CloudStorageClientTest" name="FetchTokenReturnsNullForDeniedAccess" />
+    </UnitTest>
+    <UnitTest name="ThrowsWithInvalidPassword" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="7cfb656b-616e-5dab-c649-021521679abb">
+      <Execution id="8c79c5a4-5298-40ae-95b7-546701afd83a" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="ThrowsWithInvalidPassword" />
+    </UnitTest>
+    <UnitTest name="CorrectlyConvertsSecureStringToUtf8Bytes" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="06eb9298-0f08-8297-1ae0-b93dff5bc18d">
+      <Execution id="119bdc21-2d3d-4ce0-bed8-1dfe806a6450" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SecureStringExtensionsTest" name="CorrectlyConvertsSecureStringToUtf8Bytes" />
+    </UnitTest>
+    <UnitTest name="ValidateAcceptsValidCredentials" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="034a71d4-f7f9-43e6-fc0a-59a23ef2cd9b">
+      <Execution id="f33ac19b-8781-4127-a232-7c7a2e6d6c32" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageCredentialsTest" name="ValidateAcceptsValidCredentials" />
+    </UnitTest>
+    <UnitTest name="SerializedDatacontractDoesNotContainNullProperties" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="fbed828f-38a9-0e13-af25-e507fd37c36e">
+      <Execution id="60e6f439-58a9-40ac-b6f1-8120f2f04c87" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedDatacontractDoesNotContainNullProperties" />
+    </UnitTest>
+    <UnitTest name="ParseRealWorldDropboxSuccessResponse" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="6d6d9696-e968-4583-999f-f73ff1b5b40e">
+      <Execution id="b4b53ef3-c8be-4bcd-8ec3-84fef1e42440" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="ParseRealWorldDropboxSuccessResponse" />
+    </UnitTest>
+    <UnitTest name="SanitizeCredentials_ChangesInvalidPrefix" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ebe21dff-4309-2b2e-75d7-dd55a44ce033">
+      <Execution id="208fc10c-948d-4641-b459-a3249b341dcb" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.FtpCloudStorageClientTest" name="SanitizeCredentials_ChangesInvalidPrefix" />
+    </UnitTest>
+    <UnitTest name="AreEqualWorksWithNullDate" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="60635b8d-24f2-11d2-6983-d8dee19f4282">
+      <Execution id="913d29d6-2c2e-4fbe-9c8f-d98ee5b00423" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="AreEqualWorksWithNullDate" />
+    </UnitTest>
+    <UnitTest name="DecryptAfterDesrializationRespectsNullProperties" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="f43fb36c-bb2f-88d6-fd89-bda7c22b6c91">
+      <Execution id="a1f2867a-47fb-49db-901b-7114af3845bd" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="DecryptAfterDesrializationRespectsNullProperties" />
+    </UnitTest>
+    <UnitTest name="NeedsRefreshReturnsTrueIfNoExpirationDate" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="537e4579-87e2-7283-ca3f-eb8ddb93ae39">
+      <Execution id="f48f72ef-ec73-4839-b314-7d22a3cfec69" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="NeedsRefreshReturnsTrueIfNoExpirationDate" />
+    </UnitTest>
+    <UnitTest name="FileLifecycleWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="3fa575d3-8c64-4e79-fa65-acc9170b3c5a">
+      <Execution id="4536485e-ee25-4d61-9353-14a984535b8e" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.GoogleCloudStorageClientTest" name="FileLifecycleWorks" />
+    </UnitTest>
+    <UnitTest name="SerializedXmlCanBeReadBack" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="dba5c72e-5a00-8132-c3c9-ae0e981adf72">
+      <Execution id="4652ec4f-b2e8-4f57-8608-da377196ffda" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.SerializeableCloudStorageCredentialsTest" name="SerializedXmlCanBeReadBack" />
+    </UnitTest>
+    <UnitTest name="NeedsRefreshReturnsFalseForTokenFlow" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="ebbd2ea6-e642-f74f-abc0-f79e1e19896c">
+      <Execution id="29177f57-4100-4d14-9def-92aee48433ab" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="NeedsRefreshReturnsFalseForTokenFlow" />
+    </UnitTest>
+    <UnitTest name="ThrowsWithInvalidPath" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="c04d2194-9d0c-6f49-84c9-4d2691f2d076">
+      <Execution id="a56e0451-e540-43ee-b30c-1948a059cbe7" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.WebdavCloudStorageClientTest" name="ThrowsWithInvalidPath" />
+    </UnitTest>
+    <UnitTest name="ParseStratoWebdavResponseCorrectly" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="e740f944-23a8-ca0e-606c-a36651ed4b4f">
+      <Execution id="998a6ba8-0502-4c0f-8ca8-f4ee77326d18" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.WebdavCloudStorageClientTest" name="ParseStratoWebdavResponseCorrectly" />
+    </UnitTest>
+    <UnitTest name="ChoosesCorrectUrlForGmxComEmail" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="e9788947-b431-c470-eb25-13f39858c423">
+      <Execution id="1c925dd1-edfa-46f1-8b9b-d9ce8cbf2635" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.GmxCloudStorageClientTest" name="ChoosesCorrectUrlForGmxComEmail" />
+    </UnitTest>
+    <UnitTest name="FileLifecycleWorks" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="78fb2759-932d-72a7-9e7e-ac929f17aa89">
+      <Execution id="4646c279-d3ea-4c5f-8d7e-bc474dff36a0" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageProviders.DropboxCloudStorageClientTest" name="FileLifecycleWorks" />
+    </UnitTest>
+    <UnitTest name="NeedsRefreshReturnsFalseIfNotExpired" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="fa59d18c-2c0d-3f7a-7b89-8b05c8530c98">
+      <Execution id="8a597631-5dd4-4119-a2e8-c86478191d1e" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.CloudStorageTokenTest" name="NeedsRefreshReturnsFalseIfNotExpired" />
+    </UnitTest>
+    <UnitTest name="ParseRealWorldGoogleRejectResponse" storage="c:\users\michal\workspace\github\silentnotes\bin\vanillacloudstorageclienttest\netcoreapp2.1\vanillacloudstorageclienttest.dll" id="4f4c9855-a72a-565f-2470-2a0c650d1bed">
+      <Execution id="323ec250-debb-4974-a77c-b2e462205ee5" />
+      <TestMethod codeBase="C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll" adapterTypeName="executor://nunit3testexecutor/" className="VanillaCloudStorageClientTest.OAuth2.OAuth2UtilsTest" name="ParseRealWorldGoogleRejectResponse" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="a500e09e-b66a-a804-eaae-a237a3b689b9" executionId="e0f60156-4a28-4d04-8336-040ffe215e8f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="49ceb249-d1ca-f3dc-41f8-28a41637f4d7" executionId="4401f9ea-5a99-4275-a333-18655e9517ce" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5dab3a75-ff5f-1e46-20cf-bc072154bb33" executionId="83d32025-8d5e-4a58-92b3-e797e4ea3bfa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="89dd1b67-c0ca-dcc6-ca42-c4f3660c0208" executionId="7c73d2a6-34a5-400d-8163-40375210062f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="916a4c11-6ebe-26db-3769-b9df2051743c" executionId="cd601b6c-919f-4585-b5e6-d220a0ba17be" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="034a71d4-f7f9-43e6-fc0a-59a23ef2cd9b" executionId="f33ac19b-8781-4127-a232-7c7a2e6d6c32" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f7c94d67-56c9-6418-8a42-ddc79dc57ea2" executionId="ddc1f371-da00-4b39-bc51-e4467d1f519d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6d6d9696-e968-4583-999f-f73ff1b5b40e" executionId="b4b53ef3-c8be-4bcd-8ec3-84fef1e42440" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="275ce8fa-d4c1-63f1-9add-641a70fb73e6" executionId="e7b019dd-c6ee-40b6-91d9-c7f4bfb03f55" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fbed828f-38a9-0e13-af25-e507fd37c36e" executionId="60e6f439-58a9-40ac-b6f1-8120f2f04c87" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cc085a0d-1f67-be85-d187-865a89737f10" executionId="705cbcf0-24cb-427d-848e-ed2970b0ab58" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4340b799-0666-32b6-4fdd-1daf8a626bc7" executionId="a9e342c2-bc62-4b01-835b-842bec9f2d4c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="75ed4b0d-8eff-6a45-b5e4-0db6070c60bb" executionId="8073954d-cee8-455e-a86d-97e8a4ec614d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="28e75f1f-48b9-972a-3113-38add5d40440" executionId="df1e2af3-79ce-4ddc-87e9-aaee93bb557b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e740f944-23a8-ca0e-606c-a36651ed4b4f" executionId="998a6ba8-0502-4c0f-8ca8-f4ee77326d18" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="767acdfc-0e73-c887-803e-31c8aaa97dde" executionId="ea83c2aa-3b60-4ddc-bc14-f7e8c0f4cc2a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ca777d22-3b0f-e952-bd8a-c5660245a81f" executionId="99ffb4ca-843c-48e2-ba37-90424746c53f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fa59d18c-2c0d-3f7a-7b89-8b05c8530c98" executionId="8a597631-5dd4-4119-a2e8-c86478191d1e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="61b1c53a-6b35-a0bd-cf9f-996f45b4c761" executionId="502e3c21-4407-4b5a-85ff-ed1eb355da72" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="736ef283-7bdf-6b3e-0caf-6c21f948cdc6" executionId="1804b7c8-7729-426c-91d9-691ce82a1d7a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="49a69aa8-9346-0600-d464-81784b9e612b" executionId="6234ffeb-0f16-4775-9eb0-759232f07cb4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c04d2194-9d0c-6f49-84c9-4d2691f2d076" executionId="a56e0451-e540-43ee-b30c-1948a059cbe7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="50701c3a-d1b9-0423-26e6-4be52cf1d5f0" executionId="0e32eb27-9a2c-497d-8d96-4852e04f9247" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ebe21dff-4309-2b2e-75d7-dd55a44ce033" executionId="208fc10c-948d-4641-b459-a3249b341dcb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4af5858f-3f1a-a886-5596-87475d64aeb3" executionId="7660f5b8-b4fa-4388-9118-e136c6490dd8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="537e4579-87e2-7283-ca3f-eb8ddb93ae39" executionId="f48f72ef-ec73-4839-b314-7d22a3cfec69" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="89e1d4aa-9217-7c34-fc4d-99ef9efe7a7d" executionId="0a807015-4876-4110-888e-ba37dfcce38a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e22320ba-05cc-579d-8c7d-c693d9b6406e" executionId="426d15ea-cd3e-4e87-8e2a-14502afbd98f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d941f923-cd04-ee0a-427c-b81e14aafa3d" executionId="093b7fc9-4477-4bcf-9443-6cc760333b4a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5fa805b8-ec79-3c7c-8e87-3db6dc58f83e" executionId="06a2ec7f-dc87-4ee9-8394-fd650312a2ab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9da3226a-a96e-91f6-c5b6-b3102b5b332a" executionId="01ecb439-d050-4ac9-95c9-a7378091bcc5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a4f5c6bf-c950-cfa4-1f50-3ce62d833293" executionId="5e0c0e75-9fc9-40ce-ba0a-9c2a0887bdac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="819198e9-75c1-9681-32e4-669dfa258e8a" executionId="14edf9a2-4d91-4d49-bbee-0400d51f8950" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a436d607-b2be-f301-d56f-50716e7b321a" executionId="52fca9fd-4e45-4f44-9857-f267268b0924" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64d76ddb-a88f-9c22-6ed0-af3ecb98ffb9" executionId="aa3eef6e-4555-49bd-a1fa-ef6f663a5d22" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c6bece37-31ea-7f18-10f5-6b96a09f4154" executionId="cd51e1e5-acf8-4a63-a556-0dfd4d99b491" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="72ed0c35-21ea-7829-893f-73c9214b4f4a" executionId="fa2b22e8-c121-4f97-8849-4cbe45734f9f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ad03a66d-a9e8-9ade-31df-92fa6cac714b" executionId="0c9508da-1207-4eb3-891c-e66e5e768788" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e9788947-b431-c470-eb25-13f39858c423" executionId="1c925dd1-edfa-46f1-8b9b-d9ce8cbf2635" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b251efa4-be1f-5ed7-99ba-5339059780ec" executionId="80c55db9-4d42-4fd2-a48c-22ad4cd39105" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22de815b-16af-03c5-d819-7c8851c1da3c" executionId="1624ee85-3987-47af-9822-074bcbca9106" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c262190d-9c9e-6be3-5e5d-634c12813410" executionId="ed88606c-3b41-49bc-ae3f-f226d9464261" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="951f28a9-26ae-8567-a07e-eef0e1def226" executionId="414673ca-5d78-4202-842b-7f13e7b40f2b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f43fb36c-bb2f-88d6-fd89-bda7c22b6c91" executionId="a1f2867a-47fb-49db-901b-7114af3845bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2281e288-4c7c-bbf6-5b39-72098edf13cc" executionId="30222c71-5fd6-48d2-ac28-fcd942c4ed39" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13e39882-2195-72c3-053f-9cff2ec1d67d" executionId="ed9923ba-9af6-4558-b34e-f49eb0456eff" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="30bd1939-4032-847c-f269-bb1757915f16" executionId="0d72415d-fdfd-4cc2-b812-74abc7818f4e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="432b7e9a-53e9-d7c7-531a-b22f10d8a0f5" executionId="5fbd98cc-68bb-4536-8a46-43b979e213a6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ebbd2ea6-e642-f74f-abc0-f79e1e19896c" executionId="29177f57-4100-4d14-9def-92aee48433ab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3640390a-9ea3-e873-ecaf-b1f0acce39dc" executionId="0d4f644d-4bfc-49e5-9983-56d071104b86" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de4ced25-0268-f393-cea0-bb04d4c5a29e" executionId="6f544caa-1014-485e-95b2-60c343c818cb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e684ae1a-ebd6-8708-4f88-d018712c6d26" executionId="4c6f6322-a4c6-4738-b068-1baf9c286a03" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3fa575d3-8c64-4e79-fa65-acc9170b3c5a" executionId="4536485e-ee25-4d61-9353-14a984535b8e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5d03904b-0ce2-14e9-560e-6097c6faa283" executionId="5c34792d-1eb8-4798-b9f5-a37a5601d982" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="be9e3070-8b2d-4cc8-2595-fb57d16c6cdd" executionId="b2c31d72-0f6f-4fd3-aadf-519c526ba627" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="176fe880-e16d-469b-88c8-2560bc54254b" executionId="0b40b822-b7ff-400e-8c5b-26717502ad01" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11d38d36-4090-e9ae-0dfe-52c8ffa930a6" executionId="0e832195-44c2-41d5-931b-fa2dc4d4655f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e3bf520c-cf79-f90b-dc21-9c25e58a369d" executionId="ca75b323-cd43-4a26-9e6f-fa3650cc9eca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ce42ac62-8706-8922-cf93-ac01f045e42d" executionId="eeeeda37-81c3-4432-93c3-6197cc86aec4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="da7235ad-2f42-43de-0593-6a35cf28a618" executionId="a036e7ee-f4ac-442d-827c-9c1103d6fd35" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78fb2759-932d-72a7-9e7e-ac929f17aa89" executionId="4646c279-d3ea-4c5f-8d7e-bc474dff36a0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4f4c9855-a72a-565f-2470-2a0c650d1bed" executionId="323ec250-debb-4974-a77c-b2e462205ee5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36be699c-4582-1e8a-20db-4c133825364b" executionId="689b6dee-0717-4c98-8311-8209865a4f64" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a9a707d5-0f10-eedc-d978-b6a36a0c8856" executionId="bb6db51d-b3b6-4e49-aa85-191ae39f1037" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="38cf86d6-f477-94c5-ae5a-bfe5908ca917" executionId="17bf26a1-1224-4ece-91b3-c22a23c8aabd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c6442343-bfe7-0dd6-2de0-bf97d26d89ba" executionId="aa9960ae-203a-4e06-8fa5-72221f1f76ae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="df7f153f-97b0-b127-aad8-16ec21c92a8b" executionId="cadbf9fb-9bfe-4193-9efa-cc02a33a13bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c62f7f2c-529c-dc57-520f-bbd68be945a7" executionId="94dd40b9-b1ce-470c-8c0e-f6bbaa100a54" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8a4a2c3a-671a-6167-0ea9-afbf6f12c47f" executionId="1bb8b762-a68d-4341-b1de-7e6f835a0711" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ad676737-0a35-dba6-3ba9-cec823374fda" executionId="585b5a0f-9271-46a1-b8c3-0dae87316e94" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7cfb656b-616e-5dab-c649-021521679abb" executionId="8c79c5a4-5298-40ae-95b7-546701afd83a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ab91e3c1-6d51-74c8-f790-8c37d82e665d" executionId="2a90bce3-7856-4e93-b710-ca7c3ce5b3dc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="60635b8d-24f2-11d2-6983-d8dee19f4282" executionId="913d29d6-2c2e-4fbe-9c8f-d98ee5b00423" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dba5c72e-5a00-8132-c3c9-ae0e981adf72" executionId="4652ec4f-b2e8-4f57-8608-da377196ffda" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c5f9094a-f978-a711-21dd-69c261de1b9a" executionId="b3a2df60-79e7-4182-940c-95c638007796" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06eb9298-0f08-8297-1ae0-b93dff5bc18d" executionId="119bdc21-2d3d-4ce0-bed8-1dfe806a6450" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1c366be0-e44e-8e31-b7f2-e17b393d6db3" executionId="dd41ab72-b415-46bf-aa6c-be2b038acc3a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1bca23e2-1e33-fa8a-6cb7-6c20c96558d3" executionId="b6b90c5b-0b91-48b9-b160-eaae1740e609" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67ebdd70-ceee-6efa-b3eb-07b0cb165f16" executionId="f73fc410-415a-405e-89e2-9146b483ec2c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="79" executed="67" passed="67" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>NUnit Adapter 3.17.0.0: Test execution started&#xD;
+Running all tests in C:\Users\Michal\Workspace\github\SilentNotes\bin\VanillaCloudStorageClientTest\netcoreapp2.1\VanillaCloudStorageClientTest.dll&#xD;
+   NUnit3TestExecutor discovered 79 of 79 NUnit test cases&#xD;
+ReallyDoFetchToken: Gets a real access-token&#xD;
+ReallyDoOpenAuthorizationPageInBrowser: Opens the authorization page in the system browse, to get a real access-token&#xD;
+Test 'ReallyDoFetchToken' was skipped in the test run.&#xD;
+Test 'ReallyDoOpenAuthorizationPageInBrowser' was skipped in the test run.&#xD;
+ReallyDoRefreshToken: Refreshes a real token&#xD;
+ThrowsWithInvalidPassword: Too many consecutive fails seems to block an FTP server.&#xD;
+ThrowsWithInvalidUrl: Too many consecutive fails seems to block an FTP server.&#xD;
+ThrowsWithInvalidUsername: Too many consecutive fails seems to block an FTP server.&#xD;
+Test 'ReallyDoRefreshToken' was skipped in the test run.&#xD;
+Test 'ThrowsWithInvalidPassword' was skipped in the test run.&#xD;
+Test 'ThrowsWithInvalidUrl' was skipped in the test run.&#xD;
+Test 'ThrowsWithInvalidUsername' was skipped in the test run.&#xD;
+ReallyDoFetchToken: Gets a real access-token&#xD;
+ReallyDoOpenAuthorizationPageInBrowser: Opens the authorization page in the system browse, to get a real authorization-code&#xD;
+ReallyDoRefreshToken: Refreshes a real token&#xD;
+ReallyDoFetchToken: Gets a real access-token&#xD;
+ReallyDoOpenAuthorizationPageInBrowser: Opens the authorization page in the system browse, to get a real authorization-code&#xD;
+Test 'ReallyDoFetchToken' was skipped in the test run.&#xD;
+Test 'ReallyDoOpenAuthorizationPageInBrowser' was skipped in the test run.&#xD;
+Test 'ReallyDoRefreshToken' was skipped in the test run.&#xD;
+Test 'ReallyDoFetchToken' was skipped in the test run.&#xD;
+Test 'ReallyDoOpenAuthorizationPageInBrowser' was skipped in the test run.&#xD;
+ReallyDoRefreshToken: Refreshes a real token&#xD;
+Test 'ReallyDoRefreshToken' was skipped in the test run.&#xD;
+NUnit Adapter 3.17.0.0: Test execution complete&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

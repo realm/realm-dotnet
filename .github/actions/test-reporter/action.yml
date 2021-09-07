@@ -1,0 +1,93 @@
+name: Test Reporter
+description: |
+  Shows test results in GitHub UI: .NET (xUnit, NUnit, MSTest), Dart, Flutter, Java (JUnit), JavaScript (JEST, Mocha)
+author: Michal Dorner <dorner.michal@gmail.com>
+inputs:
+  artifact:
+    description: Name or regex of artifact containing test results
+    required: false
+  name:
+    description: Name of the check run
+    required: true
+  path:
+    description: |
+      Coma separated list of paths to test results
+      Supports wildcards via [fast-glob](https://github.com/mrmlnc/fast-glob)
+      All matched result files must be of same format
+    required: true
+  path-replace-backslashes:
+    description: |
+      The fast-glob library that is internally used interprets backslashes as escape characters.
+      If enabled, all backslashes in provided path will be replaced by forward slashes and act as directory separators.
+      It might be useful when path input variable is composed dynamically from existing directory paths on Windows.
+    default: 'false'
+    required: false
+  reporter:
+    description: |
+      Format of test results. Supported options:
+        - dart-json
+        - dotnet-trx
+        - flutter-json
+        - java-junit
+        - jest-junit
+        - mocha-json
+    required: true
+  list-suites:
+    description: |
+      Limits which test suites are listed. Supported options:
+        - all
+        - only-failed
+    required: true
+    default: 'all'
+  list-tests:
+    description: |
+      Limits which test cases are listed. Supported options:
+        - all
+        - only-failed
+        - none
+    required: true
+    default: 'all'
+  max-annotations:
+    description: |
+      Limits number of created annotations with error message and stack trace captured during test execution.
+      Must be less or equal to 50.
+    required: true
+    default: '10'
+  fail-on-error:
+    description: Set this action as failed if test report contain any failed test
+    required: true
+    default: 'true'
+  working-directory:
+    description: Relative path under $GITHUB_WORKSPACE where the repository was checked out
+    required: false
+  only-summary:
+    description: |
+      Allows you to generate only the summary.
+      If enabled, the report will contain a table listing each test results file and the number of passed, failed, and skipped tests.
+      Detailed listing of test suites and test cases will be skipped.
+    default: 'false'
+    required: false
+  token:
+    description: GitHub Access Token
+    required: false
+    default: ${{ github.token }}
+outputs:
+  conclusion:
+    description: |
+      Final conclusion of the created check run:
+        - 'success' if no failed tests was found
+        - 'failure' if any failed test was found
+  passed:
+    description: Count of passed tests
+  failed:
+    description: Count of failed tests
+  skipped:
+    description: Count of skipped tests
+  time:
+    description: Test execution time [ms]
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+branding:
+  color: blue
+  icon: file-text

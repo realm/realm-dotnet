@@ -1,0 +1,158 @@
+{
+  "stats": {
+    "suites": 3,
+    "tests": 6,
+    "passes": 1,
+    "pending": 1,
+    "failures": 4,
+    "start": "2021-02-24T20:26:09.297Z",
+    "end": "2021-02-24T20:26:09.309Z",
+    "duration": 12
+  },
+  "tests": [
+    {
+      "title": "Timeout test",
+      "fullTitle": "Timeout test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Timeout of 1ms exceeded. For async tests and hooks, ensure \"done()\" is called; if returning a Promise, ensure it resolves. (C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js)\n    at listOnTimeout (internal/timers.js:554:17)\n    at processTimers (internal/timers.js:497:7)",
+        "message": "Timeout of 1ms exceeded. For async tests and hooks, ensure \"done()\" is called; if returning a Promise, ensure it resolves. (C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js)",
+        "code": "ERR_MOCHA_TIMEOUT",
+        "timeout": 1,
+        "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js"
+      }
+    },
+    {
+      "title": "Skipped test",
+      "fullTitle": "Skipped test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js",
+      "currentRetry": 0,
+      "err": {}
+    },
+    {
+      "title": "Passing test",
+      "fullTitle": "Test 1 Passing test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    },
+    {
+      "title": "Failing test",
+      "fullTitle": "Test 1 Test 1.1 Failing test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {
+        "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at Context.<anonymous> (test\\main.test.js:11:14)\n    at processImmediate (internal/timers.js:461:21)",
+        "message": "Expected values to be strictly equal:\n\nfalse !== true\n",
+        "generatedMessage": true,
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "actual": "false",
+        "expected": "true",
+        "operator": "strictEqual"
+      }
+    },
+    {
+      "title": "Exception in target unit",
+      "fullTitle": "Test 1 Test 1.1 Exception in target unit",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Some error\n    at Object.throwError (lib\\main.js:2:9)\n    at Context.<anonymous> (test\\main.test.js:15:11)\n    at processImmediate (internal/timers.js:461:21)",
+        "message": "Some error"
+      }
+    },
+    {
+      "title": "Exception in test",
+      "fullTitle": "Test 2 Exception in test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Some error\n    at Context.<anonymous> (test\\main.test.js:22:11)\n    at processImmediate (internal/timers.js:461:21)",
+        "message": "Some error"
+      }
+    }
+  ],
+  "pending": [
+    {
+      "title": "Skipped test",
+      "fullTitle": "Skipped test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js",
+      "currentRetry": 0,
+      "err": {}
+    }
+  ],
+  "failures": [
+    {
+      "title": "Timeout test",
+      "fullTitle": "Timeout test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js",
+      "duration": 8,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Timeout of 1ms exceeded. For async tests and hooks, ensure \"done()\" is called; if returning a Promise, ensure it resolves. (C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js)\n    at listOnTimeout (internal/timers.js:554:17)\n    at processTimers (internal/timers.js:497:7)",
+        "message": "Timeout of 1ms exceeded. For async tests and hooks, ensure \"done()\" is called; if returning a Promise, ensure it resolves. (C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js)",
+        "code": "ERR_MOCHA_TIMEOUT",
+        "timeout": 1,
+        "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\second.test.js"
+      }
+    },
+    {
+      "title": "Failing test",
+      "fullTitle": "Test 1 Test 1.1 Failing test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 1,
+      "currentRetry": 0,
+      "err": {
+        "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at Context.<anonymous> (test\\main.test.js:11:14)\n    at processImmediate (internal/timers.js:461:21)",
+        "message": "Expected values to be strictly equal:\n\nfalse !== true\n",
+        "generatedMessage": true,
+        "name": "AssertionError",
+        "code": "ERR_ASSERTION",
+        "actual": "false",
+        "expected": "true",
+        "operator": "strictEqual"
+      }
+    },
+    {
+      "title": "Exception in target unit",
+      "fullTitle": "Test 1 Test 1.1 Exception in target unit",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Some error\n    at Object.throwError (lib\\main.js:2:9)\n    at Context.<anonymous> (test\\main.test.js:15:11)\n    at processImmediate (internal/timers.js:461:21)",
+        "message": "Some error"
+      }
+    },
+    {
+      "title": "Exception in test",
+      "fullTitle": "Test 2 Exception in test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "err": {
+        "stack": "Error: Some error\n    at Context.<anonymous> (test\\main.test.js:22:11)\n    at processImmediate (internal/timers.js:461:21)",
+        "message": "Some error"
+      }
+    }
+  ],
+  "passes": [
+    {
+      "title": "Passing test",
+      "fullTitle": "Test 1 Passing test",
+      "file": "C:\\Users\\Michal\\Workspace\\dorny\\test-reporter\\reports\\mocha\\test\\main.test.js",
+      "duration": 0,
+      "currentRetry": 0,
+      "speed": "fast",
+      "err": {}
+    }
+  ]
+}
