@@ -231,6 +231,10 @@ async function main() {
         await testReporter.run();
     }
     catch (error) {
+        console.log("Print error in the following line");
+        console.log("error.stack:\n" + error.stack);
+        console.log("trying with console.trace\n");
+        console.trace();
         core.setFailed(error.message);
     }
 }
@@ -8354,13 +8358,12 @@ module.exports = function (/**String*/input) {
 	}
 
     function fixPath(zipPath){
-        // convert windows file separators
-        zipPath = zipPath.split("\\").join("/");
-        // add separator if it wasnt given
-        if (zipPath.charAt(zipPath.length - 1) !== "/") {
-            zipPath += "/";
-        }        
-        return zipPath;
+        // convert windows file separators and normalize
+        zipPath = pth.posix.normalize(zipPath.split("\\").join("/"));
+        // cleanup, remove invalid folder names
+        var names = zipPath.split("/").filter((c) => c !== "" && c !== "." && c !== "..");
+        // if we have name we return it
+        return names.length ? names.join("/") + "/" : "";
     }
 
 	return {
@@ -8526,7 +8529,7 @@ module.exports = function (/**String*/input) {
 				// add file name into zippath
 				zipPath += (zipName) ? zipName : p;
 
-				// read file attributes 
+				// read file attributes
 				const _attr = fs.statSync(localPath);
 
 				// add file into zip file
@@ -8546,7 +8549,7 @@ module.exports = function (/**String*/input) {
 		 */
         addLocalFolder: function (/**String*/localPath, /**String=*/zipPath, /**=RegExp|Function*/filter) {
             // Prepare filter
-            if (filter instanceof RegExp) {                 // if filter is RegExp wrap it 
+            if (filter instanceof RegExp) {                 // if filter is RegExp wrap it
                 filter = (function (rx){
                     return function (filename) {
                         return rx.test(filename);
@@ -8573,10 +8576,11 @@ module.exports = function (/**String*/input) {
                     items.forEach(function (filepath) {
                         var p = pth.relative(localPath, filepath).split("\\").join("/"); //windows fix
                         if (filter(p)) {
-                            if (filepath.charAt(filepath.length - 1) !== pth.sep) {
-                                self.addFile(zipPath + p, fs.readFileSync(filepath), "", fs.statSync(filepath));
+                            var stats = fs.statSync(filepath);
+                            if (stats.isFile()) {
+                                self.addFile(zipPath + p, fs.readFileSync(filepath), "", stats);
                             } else {
-                                self.addFile(zipPath + p + '/', Buffer.alloc(0), "", 0);
+                                self.addFile(zipPath + p + '/', Buffer.alloc(0), "", stats);
                             }
                         }
                     });
@@ -8594,75 +8598,83 @@ module.exports = function (/**String*/input) {
 		 * @param filter optional RegExp or Function if files match will
 		 *               be included.
 		 */
-		addLocalFolderAsync: function (/*String*/localPath, /*Function*/callback, /*String*/zipPath, /*RegExp|Function*/filter) {
-			if (filter === undefined) {
-				filter = function () {
-					return true;
-				};
-			} else if (filter instanceof RegExp) {
-				filter = function (filter) {
-					return function (filename) {
-						return filter.test(filename);
-					}
-				}(filter);
-			}
+        addLocalFolderAsync: function (/*String*/localPath, /*Function*/callback, /*String*/zipPath, /*RegExp|Function*/filter) {
+            if (filter instanceof RegExp) {
+                filter = (function (rx) {
+                    return function (filename) {
+                        return rx.test(filename);
+                    };
+                })(filter);
+            } else if ("function" !== typeof filter) {
+                filter = function () {
+                    return true;
+                };
+            }
 
-			if (zipPath) {
-				zipPath = zipPath.split("\\").join("/");
-				if (zipPath.charAt(zipPath.length - 1) !== "/") {
-					zipPath += "/";
-				}
-			} else {
-				zipPath = "";
-			}
-			// normalize the path first
-			localPath = pth.normalize(localPath);
-			localPath = localPath.split("\\").join("/"); //windows fix
-			if (localPath.charAt(localPath.length - 1) !== "/")
-				localPath += "/";
+            // fix ZipPath
+            zipPath = zipPath ? fixPath(zipPath) : "";
 
-			var self = this;
-			fs.open(localPath, 'r', function (err, fd) {
-				if (err && err.code === 'ENOENT') {
-					callback(undefined, Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath));
-				} else if (err) {
-					callback(undefined, err);
-				} else {
-					var items = Utils.findFiles(localPath);
-					var i = -1;
+            // normalize the path first
+            localPath = pth.normalize(localPath);
 
-					var next = function () {
-						i += 1;
-						if (i < items.length) {
-							var p = items[i].split("\\").join("/").replace(new RegExp(localPath.replace(/(\(|\))/g, '\\$1'), 'i'), ""); //windows fix
-							p = p.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7E]/g, '') // accent fix
-							if (filter(p)) {
-								if (p.charAt(p.length - 1) !== "/") {
-									fs.readFile(items[i], function (err, data) {
-										if (err) {
-											callback(undefined, err);
-										} else {
-											self.addFile(zipPath + p, data, '', 0);
-											next();
-										}
-									})
-								} else {
-									self.addFile(zipPath + p, Buffer.alloc(0), "", 0);
-									next();
-								}
-							} else {
-								next();
-							}
+            var self = this;
+            fs.open(localPath, 'r', function (err) {
+                if (err && err.code === 'ENOENT') {
+                    callback(undefined, Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath));
+                } else if (err) {
+                    callback(undefined, err);
+                } else {
+                    var items = Utils.findFiles(localPath);
+                    var i = -1;
 
-						} else {
-							callback(true, undefined);
-						}
-					}
+                    var next = function () {
+                        i += 1;
+                        if (i < items.length) {
+                            var filepath = items[i];
+                            var p = pth.relative(localPath, filepath).split("\\").join("/"); //windows fix
+                            p = p.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7E]/g, '') // accent fix
+                            if (filter(p)) {
+                                fs.stat(filepath, function (er0, stats) {
+                                    if (er0) callback(undefined, er0);
+                                    if (stats.isFile()) {
+                                        fs.readFile(filepath, function (er1, data) {
+                                            if (er1) {
+                                                callback(undefined, er1);
+                                            } else {
+                                                self.addFile(zipPath + p, data, "", stats);
+                                                next();
+                                            }
+                                        });
+                                    } else {
+                                        self.addFile(zipPath + p + "/", Buffer.alloc(0), "", stats);
+                                        next();
+                                    }
+                                });
+                            } else {
+                                next();
+                            }
 
-					next();
-				}
-			});
-		},
+                        } else {
+                            callback(true, undefined);
+                        }
+                    }
+
+                    next();
+                }
+            });
+        },
+
+        addLocalFolderPromise: function (/*String*/ localPath, /* object */ options) {
+            return new Promise((resolve, reject) => {
+                const { filter, zipPath } = Object.assign({}, options);
+                this.addLocalFolderAsync(localPath,
+                    (done, err) => {
+                        if (err) reject(err);
+                        if (done) resolve(this);
+                    }, zipPath, filter
+                );
+            });
+        },
 
 		/**
 		 * Allows you to create a entry (file or directory) in the zip file.
@@ -8696,10 +8708,10 @@ module.exports = function (/**String*/input) {
 				var unix = (entry.isDirectory) ? 0x4000 : 0x8000;
 
 				if (isStat) { 										// File attributes from file stats
-					unix |= (0xfff & attr.mode) 
+					unix |= (0xfff & attr.mode);
 				}else if ('number' === typeof attr){ 				// attr from given attr values
 					unix |= (0xfff & attr);
-				}else{												// Default values: 
+				}else{												// Default values:
 					unix |= (entry.isDirectory) ? 0o755 : 0o644;  	// permissions (drwxr-xr-x) or (-r-wr--r--)
 				}
 
@@ -8781,8 +8793,9 @@ module.exports = function (/**String*/input) {
 					}
 					var name = canonical(child.entryName)
 					var childName = sanitize(targetPath, maintainEntryPath ? name : pth.basename(name));
-
-					Utils.writeFileTo(childName, content, overwrite);
+					// The reverse operation for attr depend on method addFile()
+					var fileAttr = child.attr ? (((child.attr >>> 0) | 0) >> 16) & 0xfff : 0;
+					Utils.writeFileTo(childName, content, overwrite, fileAttr);
 				});
 				return true;
 			}
@@ -8793,7 +8806,9 @@ module.exports = function (/**String*/input) {
 			if (fs.existsSync(target) && !overwrite) {
 				throw new Error(Utils.Errors.CANT_OVERRIDE);
 			}
-			Utils.writeFileTo(target, content, overwrite);
+			// The reverse operation for attr depend on method addFile()
+			var fileAttr = item.attr ? (((item.attr >>> 0) | 0) >> 16) & 0xfff : 0;
+			Utils.writeFileTo(target, content, overwrite, fileAttr);
 
 			return true;
 		},
@@ -8845,7 +8860,9 @@ module.exports = function (/**String*/input) {
 				if (!content) {
 					throw new Error(Utils.Errors.CANT_EXTRACT_FILE);
 				}
-				Utils.writeFileTo(entryName, content, overwrite);
+				// The reverse operation for attr depend on method addFile()
+				var fileAttr = entry.attr ? (((entry.attr >>> 0) | 0) >> 16) & 0xfff : 0;
+				Utils.writeFileTo(entryName, content, overwrite, fileAttr);
 				try {
 					fs.utimesSync(entryName, entry.header.time, entry.header.time)
 				} catch (err) {
@@ -8897,7 +8914,9 @@ module.exports = function (/**String*/input) {
 						return;
 					}
 
-					Utils.writeFileToAsync(sanitize(targetPath, entryName), content, overwrite, function (succ) {
+					// The reverse operation for attr depend on method addFile()
+					var fileAttr = entry.attr ? (((entry.attr >>> 0) | 0) >> 16) & 0xfff : 0;
+					Utils.writeFileToAsync(sanitize(targetPath, entryName), content, overwrite, fileAttr, function (succ) {
 						try {
 							fs.utimesSync(pth.resolve(targetPath, entryName), entry.header.time, entry.header.time);
 						} catch (err) {
@@ -8941,6 +8960,27 @@ module.exports = function (/**String*/input) {
 				if (typeof callback === 'function') callback(!ok ? new Error("failed") : null, "");
 			}
 		},
+
+        writeZipPromise: function (/**String*/ targetFileName, /* object */ options) {
+            const { overwrite, perm } = Object.assign({ overwrite: true }, options);
+
+            return new Promise((resolve, reject) => {
+                // find file name
+                if (!targetFileName && _filename) targetFileName = _filename;
+                if (!targetFileName) reject("ADM-ZIP: ZIP File Name Missing");
+
+                this.toBufferPromise().then((zipData) => {
+                    const ret = (done) => (done ? resolve(done) : reject("ADM-ZIP: Wasn't able to write zip file"));
+                    Utils.writeFileToAsync(targetFileName, zipData, overwrite, perm, ret);
+                }, reject);
+            });
+        },
+
+        toBufferPromise: function () {
+            return new Promise((resolve, reject) => {
+                _zip.toAsyncBuffer(resolve, reject);
+            });
+        },
 
 		/**
 		 * Returns the content of the entire zip file as a Buffer object
@@ -10306,17 +10346,17 @@ module.exports = function (/*Buffer*/input) {
 
         getData : function(pass) {
             if (_entryHeader.changed) {
-				return uncompressedData;
-			} else {
-				return decompress(false, null, pass);
+                return uncompressedData;
+            } else {
+                return decompress(false, null, pass);
             }
         },
 
         getDataAsync : function(/*Function*/callback, pass) {
-			if (_entryHeader.changed) {
-				callback(uncompressedData)
-			} else {
-				decompress(true, callback, pass)
+            if (_entryHeader.changed) {
+                callback(uncompressedData);
+            } else {
+                decompress(true, callback, pass);
             }
         },
 
@@ -10332,14 +10372,20 @@ module.exports = function (/*Buffer*/input) {
         },
 
         packHeader : function() {
+            // 1. create header (buffer)
             var header = _entryHeader.entryHeaderToBinary();
-            // add
-            _entryName.copy(header, Utils.Constants.CENHDR);
+            var addpos = Utils.Constants.CENHDR;
+            // 2. add file name
+            _entryName.copy(header, addpos);
+            addpos += _entryName.length;
+            // 3. add extra data
             if (_entryHeader.extraLength) {
-                _extra.copy(header, Utils.Constants.CENHDR + _entryName.length)
+                _extra.copy(header, addpos);
+                addpos += _entryHeader.extraLength;
             }
+            // 4. add file comment
             if (_entryHeader.commentLength) {
-                _comment.copy(header, Utils.Constants.CENHDR + _entryName.length + _entryHeader.extraLength, _comment.length);
+                _comment.copy(header, addpos);
             }
             return header;
         },
@@ -11960,12 +12006,14 @@ module.exports = (fromStream, toStream) => {
 /***/ }),
 
 /***/ 6214:
-/***/ ((module, exports, __nccwpck_require__) => {
+/***/ ((module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const tls_1 = __nccwpck_require__(4016);
+function isTLSSocket(socket) {
+    return socket.encrypted;
+}
 const deferToConnect = (socket, fn) => {
     let listeners;
     if (typeof fn === 'function') {
@@ -11982,7 +12030,7 @@ const deferToConnect = (socket, fn) => {
         if (hasConnectListener) {
             listeners.connect();
         }
-        if (socket instanceof tls_1.TLSSocket && hasSecureConnectListener) {
+        if (isTLSSocket(socket) && hasSecureConnectListener) {
             if (socket.authorized) {
                 listeners.secureConnect();
             }
@@ -15992,7 +16040,7 @@ const is_response_ok_1 = __nccwpck_require__(9298);
 const deprecation_warning_1 = __nccwpck_require__(397);
 const normalize_arguments_1 = __nccwpck_require__(1048);
 const calculate_retry_delay_1 = __nccwpck_require__(3462);
-const globalDnsCache = new cacheable_lookup_1.default();
+let globalDnsCache;
 const kRequest = Symbol('request');
 const kResponse = Symbol('response');
 const kResponseSize = Symbol('responseSize');
@@ -16549,6 +16597,9 @@ class Request extends stream_1.Duplex {
         options.cacheOptions = { ...options.cacheOptions };
         // `options.dnsCache`
         if (options.dnsCache === true) {
+            if (!globalDnsCache) {
+                globalDnsCache = new cacheable_lookup_1.default();
+            }
             options.dnsCache = globalDnsCache;
         }
         else if (!is_1.default.undefined(options.dnsCache) && !options.dnsCache.lookup) {
