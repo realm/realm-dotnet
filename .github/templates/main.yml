@@ -28,20 +28,11 @@ with:
   key: #@ key
 #@ end
 
-#@ def storeWrapperBinaries(outputVar):
-name: Store artifacts
+#@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
+name: #@ "Store artifacts for " + artifactName
 uses: #@ actionUploadArtifact
 with:
-  name: #@ outputVar
-  path: wrappers/build/**
-  retention-days: 1
-#@ end
-
-#@ def uploadArtifacts(titleName, uploadName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
-name: #@ "Store artifacts for " + titleName
-uses: #@ actionUploadArtifact
-with:
-  name: #@ uploadName
+  name: #@ artifactName
   path: #@ "${{ github.workspace }}/" + relPath
   retention-days: #@ retentionDays
 #@ end
@@ -56,7 +47,7 @@ steps:
   - name: Build wrappers
     run: #@ getWrapperBuildCommand(cmd)
     if: #@ wrappersCacheCondition
-  - #@ storeWrapperBinaries(outputVar)
+  - #@ uploadArtifacts(outputVar, "wrappers/build/**", 1)
 #@ end
 
 #@ def setupWin81SDK():
@@ -85,7 +76,7 @@ steps:
 #@ finalPkgName = "io.realm.unity-" + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
   - name: #@ "Build Unity"
     run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
-  - #@ uploadArtifacts("Unity", finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
+  - #@ uploadArtifacts(finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
 #@ end
 
 #@ def buildDocs():
@@ -109,19 +100,14 @@ steps:
     run: |
       C:\docfx\docfx Docs/docfx.json
       Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
-  - name: Store docs artifacts
+  - _: #@ template.replace(uploadArtifacts("Docs.zip", "Realm/packages/Docs.zip"))
     if: #@ docsCondition
-    uses: #@ actionUploadArtifact
-    with:
-      name: Docs.zip
-      path: ${{ github.workspace }}/Realm/packages/Docs.zip
-      retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
 #@ end
 
 #@ def uploadPackageArtifacts():
 #@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
 #@  finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
-  - #@ uploadArtifacts(pkgName, finalPkgName, "Realm/packages/" + finalPkgName + ".*nupkg")
+  - #@ uploadArtifacts(finalPkgName, "Realm/packages/" + finalPkgName + ".*nupkg")
 #@ end
 #@ end
 
@@ -268,7 +254,7 @@ jobs:
           options: -v ${{ github.workspace }}:/work
           run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
         if: #@ wrappersCacheCondition
-      - #@ storeWrapperBinaries("wrappers-linux")
+      - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
   build-wrappers-android:
     runs-on: ubuntu-20.04
     name: Wrappers Android
@@ -329,7 +315,7 @@ jobs:
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(buildUnityPackage())
-      - #@ uploadArtifacts("ExtractedChangelog.md", "ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+      - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
@@ -499,4 +485,4 @@ jobs:
           file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
-      - #@ uploadArtifacts("Charts Dashboard", "dashboard.charts", "dashboard.charts", "30")
+      - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
