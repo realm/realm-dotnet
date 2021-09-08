@@ -55,6 +55,8 @@ function execCmd(cmd, args) {
                     stderr += data.toString();
                 },
             },
+            failOnStdErr: false,
+            ignoreReturnCode: true,
         };
         const exitCode = yield exec.exec(cmd, args, options);
         if (exitCode !== 0) {
@@ -65,7 +67,15 @@ function execCmd(cmd, args) {
 }
 function execCliCmd(cmd) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield execCmd(`realm-cli --profile local ${cmd}`);
+        try {
+            return yield execCmd(`realm-cli --profile local ${cmd}`);
+        }
+        catch (error) {
+            if (error.message.indexOf("503") > -1) {
+                return yield execCliCmd(cmd);
+            }
+            throw error;
+        }
     });
 }
 function execAtlasRequest(route, payload, config) {

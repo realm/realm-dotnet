@@ -17,6 +17,8 @@ async function execCmd(cmd: string, args?: string[]): Promise<string> {
                 stderr += data.toString();
             },
         },
+        failOnStdErr: false,
+        ignoreReturnCode: true,
     };
 
     const exitCode = await exec.exec(cmd, args, options);
@@ -28,7 +30,15 @@ async function execCmd(cmd: string, args?: string[]): Promise<string> {
 }
 
 async function execCliCmd(cmd: string): Promise<string> {
-    return await execCmd(`realm-cli --profile local ${cmd}`);
+    try {
+        return await execCmd(`realm-cli --profile local ${cmd}`);
+    } catch (error: any) {
+        if (error.message.indexOf("503") > -1) {
+            return await execCliCmd(cmd);
+        }
+
+        throw error;
+    }
 }
 
 async function execAtlasRequest(route: string, payload: any, config: EnvironmentConfig): Promise<any> {
