@@ -1994,6 +1994,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getExceptionSource = void 0;
 const path_utils_1 = __nccwpck_require__(4070);
 function getExceptionSource(stackTrace, trackedFiles, getRelativePath) {
+    if (stackTrace === undefined) {
+        return undefined;
+    }
     const lines = stackTrace.split(/\r?\n/);
     const re = /\((.*):(\d+):\d+\)$/;
     for (const str of lines) {
@@ -2046,6 +2049,9 @@ function parseIsoDate(str) {
 }
 exports.parseIsoDate = parseIsoDate;
 function getFirstNonEmptyLine(stackTrace) {
+    if (stackTrace === undefined) {
+        return undefined;
+    }
     const lines = stackTrace.split(/\r?\n/g);
     return lines.find(str => !/^\s*$/.test(str));
 }

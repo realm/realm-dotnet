@@ -19,6 +19,9 @@ export function parseIsoDate(str: string): Date {
 }
 
 export function getFirstNonEmptyLine(stackTrace: string): string | undefined {
+  if (stackTrace === undefined) {
+    return undefined
+  }
   const lines = stackTrace.split(/\r?\n/g)
   return lines.find(str => !/^\s*$/.test(str))
 }
