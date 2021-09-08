@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import * as fs from "fs";
 import { configureRealmCli, createCluster, deployApplication, waitForClusterDeployment } from "./helpers";
 import { EnvironmentConfig } from "./config";
+import path from "path";
 
 async function run(): Promise<void> {
     try {
@@ -23,7 +24,7 @@ async function run(): Promise<void> {
 
         const deployedApps: { [key: string]: string } = {};
         for (const appPath of fs.readdirSync(appsPath)) {
-            const deployInfo = await deployApplication(appPath, clusterInfo.name);
+            const deployInfo = await deployApplication(path.join(appsPath, appPath), clusterInfo.name);
             deployedApps[deployInfo.name] = deployInfo.id;
         }
 

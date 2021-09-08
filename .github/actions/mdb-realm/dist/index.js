@@ -235,10 +235,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
 const fs = __importStar(__webpack_require__(5747));
 const helpers_1 = __webpack_require__(433);
+const path_1 = __importDefault(__webpack_require__(5622));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -255,7 +259,7 @@ function run() {
             const appsPath = core.getInput("appsPath", { required: true });
             const deployedApps = {};
             for (const appPath of fs.readdirSync(appsPath)) {
-                const deployInfo = yield helpers_1.deployApplication(appPath, clusterInfo.name);
+                const deployInfo = yield helpers_1.deployApplication(path_1.default.join(appsPath, appPath), clusterInfo.name);
                 deployedApps[deployInfo.name] = deployInfo.id;
             }
             core.setOutput("deployedApps", deployedApps);
