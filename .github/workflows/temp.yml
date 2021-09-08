@@ -1,0 +1,16 @@
+name: 'temp'
+on:
+  pull_request:
+jobs:
+  build:
+    environment: Dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/mdb-realm
+        id: deploy-mdb-apps
+        with:
+          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+      - run: echo ${{ steps.deploy-mdb-apps.outputs.clusterName }}

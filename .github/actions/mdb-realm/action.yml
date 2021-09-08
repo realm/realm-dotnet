@@ -1,0 +1,19 @@
+name: release-to-slack
+description: Creates a Slack post containing the release notes and publishes it
+author: Realm
+inputs:
+  changelog:
+    required: true
+    description: path to the changelog
+  sdk:
+    required: true
+    description: friendly name for the SDK
+  webhook-url:
+    required: true
+    description: url for the slack integration
+  version:
+    required: true
+    description: the version that is being released
+runs:
+  using: node12
+  main: dist/index.js
