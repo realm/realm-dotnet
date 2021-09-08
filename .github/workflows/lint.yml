@@ -1,6 +1,9 @@
 name: lint
 "on":
-  pull_request:
+  push:
+    branches:
+    - master
+    - main
 jobs:
   verify-todos:
     runs-on: ubuntu-latest

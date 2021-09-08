@@ -4,7 +4,6 @@ name: main
     branches:
     - main
     - master
-  pull_request: null
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
