@@ -1,4 +1,4 @@
-## 10.5.0 (2021-09-08)
+## 10.5.0 (2021-09-09)
 
 ### Enhancements
 * ThreadSafeReference no longer pins the source transaction version for anything other than a Results backed by a Query. (Core upgrade)
