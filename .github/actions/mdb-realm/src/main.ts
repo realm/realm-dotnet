@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
-import { configureRealmCli, createCluster } from "./helpers";
+import * as fs from "fs/promises";
+import { configureRealmCli, createCluster, deployApplication, waitForClusterDeployment } from "./helpers";
 import { EnvironmentConfig } from "./config";
 
 async function run(): Promise<void> {
@@ -17,7 +18,19 @@ async function run(): Promise<void> {
         await configureRealmCli(config);
 
         core.setOutput("clusterName", clusterInfo.name);
-    } catch (error) {
+
+        const appsPath = core.getInput("appsPath", { required: true });
+
+        const deployedApps: { [key: string]: string } = {};
+        for (const appPath of await fs.readdir(appsPath)) {
+            const deployInfo = await deployApplication(appPath, clusterInfo.name);
+            deployedApps[deployInfo.name] = deployInfo.id;
+        }
+
+        core.setOutput("deployedApps", deployedApps);
+
+        await waitForClusterDeployment(clusterInfo.name, config);
+    } catch (error: any) {
         core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }
 }

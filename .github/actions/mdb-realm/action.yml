@@ -17,6 +17,9 @@ inputs:
   privateapiKey:
     required: true
     description: The private API key.
+  appsPath:
+    requireD: true
+    description: The path to the apps to import into MongoDB Realm.
 
 runs:
   using: node12

@@ -1,7 +1,8 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
+import * as fs from "fs/promises";
+import * as path from "path";
 import * as urllib from "urllib";
-import * as uuid from "uuid";
 import { EnvironmentConfig } from "./config";
 
 async function execCmd(cmd: string, args?: string[]): Promise<string> {
@@ -30,10 +31,34 @@ async function execCliCmd(cmd: string): Promise<string> {
     return await execCmd(`realm-cli --profile local ${cmd}`);
 }
 
+async function execAtlasRequest(route: string, payload: any, config: EnvironmentConfig): Promise<any> {
+    const url = `${config.atlasUrl}/api/atlas/v1.0/groups/${config.projectId}/${route}`;
+
+    const request: urllib.RequestOptions = {
+        digestAuth: `${config.apiKey}:${config.privateApiKey}`,
+        method: "GET",
+    };
+
+    if (payload) {
+        request.method = "POST";
+        request.data = JSON.stringify(payload);
+        request.headers = {
+            "content-type": "application/json",
+        };
+    }
+
+    const response = await urllib.request(url, request);
+
+    if (response.status < 200 || response.status > 300) {
+        throw new Error(`Failed to execute ${request.method} ${route}: ${response.status}: ${response.data}`);
+    }
+
+    return response.data;
+}
+
 export async function createCluster(config: EnvironmentConfig): Promise<{ name: string; id: string }> {
-    const url = `${config.atlasUrl}/api/atlas/v1.0/groups/${config.projectId}/clusters`;
     const payload = {
-        name: uuid.v4(),
+        name: `GHA-${process.env.GITHUB_RUN_ID}`,
         providerSettings: {
             instanceSizeName: "M2",
             providerName: "TENANT",
@@ -44,19 +69,40 @@ export async function createCluster(config: EnvironmentConfig): Promise<{ name: 
 
     core.info("Creating Atlas cluster");
 
-    const response = await urllib.request(url, {
-        digestAuth: `${config.apiKey}:${config.privateApiKey}`,
-        method: "POST",
-        data: payload,
-    });
+    const response = await execAtlasRequest("clusters", payload, config);
 
-    core.info(`Cluster created: ${response.status}`);
-    core.info(`Cluster created: ${response.data}`);
+    core.info(`Cluster created: ${response}`);
 
     return {
         name: payload.name,
-        id: response.data.id,
+        id: response.id,
     };
+}
+
+export async function waitForClusterDeployment(clusterName: string, config: EnvironmentConfig): Promise<void> {
+    const pollDelay = 10;
+    let attempt = 0;
+    while (attempt++ < 100) {
+        try {
+            const response = await execAtlasRequest(`clusters/${clusterName}`, undefined, config);
+
+            if (response.data.stateName === "IDLE") {
+                return;
+            }
+
+            core.info(
+                `Cluster state is: ${response.data.stateName} after ${
+                    attempt * pollDelay
+                } seconds. Waiting ${pollDelay} seconds for IDLE`,
+            );
+        } catch (error: any) {
+            core.info(`Failed to check cluster status: ${error.message}`);
+        }
+
+        await delay(pollDelay * 1000);
+    }
+
+    throw new Error(`Cluster failed to deploy after ${100 * pollDelay} seconds`);
 }
 
 export async function configureRealmCli(config: EnvironmentConfig): Promise<void> {
@@ -65,4 +111,67 @@ export async function configureRealmCli(config: EnvironmentConfig): Promise<void
     await execCliCmd(
         `login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`,
     );
+}
+
+export async function deployApplication(appPath: string, clusterName: string): Promise<{ name: string; id: string }> {
+    const appConfig = await readAppConfig(appPath);
+
+    const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
+    core.info(`Creating app ${appName}`);
+
+    const createResponse = await execCliCmd(`apps create --name ${appName}`);
+    const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{") + 1));
+
+    const appId = parsedResponse.client_app_id;
+
+    core.info(`Created app ${appName} with Id: ${appId}`);
+
+    const secrets = await readJson(path.join(appPath, "secrets.json"));
+
+    for (const secret in secrets) {
+        core.info(`Importing secret ${secret}`);
+        await execCliCmd(`secrets create --app ${appId} --name ${secret} --value ${secrets[secret]}`);
+    }
+
+    const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
+    const backingDBConfig = await readJson(backingDBConfigPath);
+    backingDBConfig.type = "mongodb-atlas";
+    backingDBConfig.config.clusterName = clusterName;
+
+    await writeJson(backingDBConfigPath, backingDBConfig);
+
+    core.info(`Updated BackingDB config with cluster: ${clusterName}`);
+
+    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
+
+    core.info(`Imported ${appName} successfully`);
+
+    return {
+        name: appConfig.name,
+        id: appId,
+    };
+}
+
+async function readAppConfig(appPath: string): Promise<any> {
+    const legacyConfigPath = path.join(appPath, "config.json");
+    if ((await fs.stat(legacyConfigPath)).isFile()) {
+        return await readJson(legacyConfigPath);
+    }
+
+    return await readJson(path.join(appPath, "realm_config.json"));
+}
+
+async function readJson(filePath: string): Promise<any> {
+    const content = await fs.readFile(filePath, { encoding: "utf8" });
+    return JSON.parse(content);
+}
+
+async function writeJson(filePath: string, contents: any): Promise<void> {
+    await fs.writeFile(filePath, JSON.stringify(contents));
+}
+
+async function delay(ms: number): Promise<void> {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
 }
