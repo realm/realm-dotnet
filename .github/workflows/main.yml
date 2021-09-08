@@ -396,7 +396,7 @@ jobs:
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
-    - name: Store Unity artifacts
+    - name: Store artifacts for Unity
       uses: actions/upload-artifact@v2
       with:
         name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
@@ -870,9 +870,9 @@ jobs:
         file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
         dashboard-path: dashboard.charts
         nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
-    - name: Upload Charts Dashboard File
+    - name: Store artifacts for Charts Dashboard
       uses: actions/upload-artifact@v2
       with:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
-        retention-days: 30
+        retention-days: "30"
