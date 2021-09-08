@@ -154,8 +154,7 @@ function deployApplication(appPath, clusterName) {
         const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
         core.info(`Creating app ${appName}`);
         const createResponse = yield execCliCmd(`apps create --name ${appName}`);
-        const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{")));
-        const appId = parsedResponse.client_app_id;
+        const appId = extractJsonContent(createResponse).client_app_id;
         core.info(`Created app ${appName} with Id: ${appId}`);
         const secrets = readJson(path.join(appPath, "secrets.json"));
         for (const secret in secrets) {
@@ -197,6 +196,17 @@ function delay(ms) {
             setTimeout(resolve, ms);
         });
     });
+}
+function extractJsonContent(text) {
+    try {
+        const openIndex = text.indexOf("{");
+        const closeIndex = text.indexOf("}");
+        const json = text.substring(openIndex, closeIndex + 1);
+        return JSON.parse(json);
+    }
+    catch (error) {
+        throw new Error(`Failed to parse '${text}': ${error}`);
+    }
 }
 
 

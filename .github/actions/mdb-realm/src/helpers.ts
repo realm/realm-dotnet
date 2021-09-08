@@ -130,9 +130,8 @@ export async function deployApplication(appPath: string, clusterName: string): P
     core.info(`Creating app ${appName}`);
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
-    const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{")));
 
-    const appId = parsedResponse.client_app_id;
+    const appId = extractJsonContent(createResponse).client_app_id;
 
     core.info(`Created app ${appName} with Id: ${appId}`);
 
@@ -184,4 +183,16 @@ async function delay(ms: number): Promise<void> {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
+}
+
+function extractJsonContent(text: string): any {
+    try {
+        const openIndex = text.indexOf("{");
+        const closeIndex = text.indexOf("}");
+
+        const json = text.substring(openIndex, closeIndex + 1);
+        return JSON.parse(json);
+    } catch (error: any) {
+        throw new Error(`Failed to parse '${text}': ${error}`);
+    }
 }
