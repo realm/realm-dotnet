@@ -132,6 +132,9 @@ export class JavaJunitParser implements TestParser {
     if (src) {
       filePath = src.filePath
       line = src.line
+    } else {
+      filePath = "No path available"
+      line = -1
     }
 
     return {
@@ -143,6 +146,9 @@ export class JavaJunitParser implements TestParser {
   }
 
   private exceptionThrowSource(stackTrace: string): {filePath: string; line: number} | undefined {
+    if (stackTrace === undefined) {
+      return undefined
+    }
     const lines = stackTrace.split(/\r?\n/)
     const re = /^at (.*)\((.*):(\d+)\)$/
 
