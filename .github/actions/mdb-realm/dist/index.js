@@ -37,6 +37,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.configureRealmCli = exports.createCluster = void 0;
+const core = __importStar(__webpack_require__(2186));
 const exec = __importStar(__webpack_require__(1514));
 const urllib = __importStar(__webpack_require__(4783));
 const uuid = __importStar(__webpack_require__(4552));
@@ -78,11 +79,14 @@ function createCluster(config) {
                 backingProviderName: "AWS",
             },
         };
+        core.info("Creating Atlas cluster");
         const response = yield urllib.request(url, {
             digestAuth: `${config.apiKey}:${config.privateApiKey}`,
             method: "POST",
             data: payload,
         });
+        core.info(`Cluster created: ${response.status}`);
+        core.info(`Cluster created: ${response.data}`);
         return {
             name: payload.name,
             id: response.data.id,

@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as urllib from "urllib";
 import * as uuid from "uuid";
@@ -41,11 +42,16 @@ export async function createCluster(config: EnvironmentConfig): Promise<{ name: 
         },
     };
 
+    core.info("Creating Atlas cluster");
+
     const response = await urllib.request(url, {
         digestAuth: `${config.apiKey}:${config.privateApiKey}`,
         method: "POST",
         data: payload,
     });
+
+    core.info(`Cluster created: ${response.status}`);
+    core.info(`Cluster created: ${response.data}`);
 
     return {
         name: payload.name,
