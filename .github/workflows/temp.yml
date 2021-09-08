@@ -13,4 +13,5 @@ jobs:
           projectId: ${{ secrets.ATLAS_PROJECT_ID }}
           apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          appsPath: ${{ github.workspace }}/Tests/TestApps
       - run: echo ${{ steps.deploy-mdb-apps.outputs.clusterName }}

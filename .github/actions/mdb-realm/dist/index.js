@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deployApplication = exports.configureRealmCli = exports.waitForClusterDeployment = exports.createCluster = void 0;
 const core = __importStar(__webpack_require__(2186));
 const exec = __importStar(__webpack_require__(1514));
-const fs = __importStar(__webpack_require__(9225));
+const fs = __importStar(__webpack_require__(5747));
 const path = __importStar(__webpack_require__(5622));
 const urllib = __importStar(__webpack_require__(4783));
 function execCmd(cmd, args) {
@@ -140,23 +140,23 @@ function configureRealmCli(config) {
 exports.configureRealmCli = configureRealmCli;
 function deployApplication(appPath, clusterName) {
     return __awaiter(this, void 0, void 0, function* () {
-        const appConfig = yield readAppConfig(appPath);
+        const appConfig = readAppConfig(appPath);
         const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
         core.info(`Creating app ${appName}`);
         const createResponse = yield execCliCmd(`apps create --name ${appName}`);
         const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{") + 1));
         const appId = parsedResponse.client_app_id;
         core.info(`Created app ${appName} with Id: ${appId}`);
-        const secrets = yield readJson(path.join(appPath, "secrets.json"));
+        const secrets = readJson(path.join(appPath, "secrets.json"));
         for (const secret in secrets) {
             core.info(`Importing secret ${secret}`);
             yield execCliCmd(`secrets create --app ${appId} --name ${secret} --value ${secrets[secret]}`);
         }
         const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
-        const backingDBConfig = yield readJson(backingDBConfigPath);
+        const backingDBConfig = readJson(backingDBConfigPath);
         backingDBConfig.type = "mongodb-atlas";
         backingDBConfig.config.clusterName = clusterName;
-        yield writeJson(backingDBConfigPath, backingDBConfig);
+        writeJson(backingDBConfigPath, backingDBConfig);
         core.info(`Updated BackingDB config with cluster: ${clusterName}`);
         yield execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
         core.info(`Imported ${appName} successfully`);
@@ -168,24 +168,18 @@ function deployApplication(appPath, clusterName) {
 }
 exports.deployApplication = deployApplication;
 function readAppConfig(appPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const legacyConfigPath = path.join(appPath, "config.json");
-        if ((yield fs.stat(legacyConfigPath)).isFile()) {
-            return yield readJson(legacyConfigPath);
-        }
-        return yield readJson(path.join(appPath, "realm_config.json"));
-    });
+    const legacyConfigPath = path.join(appPath, "config.json");
+    if (fs.existsSync(legacyConfigPath)) {
+        return readJson(legacyConfigPath);
+    }
+    return readJson(path.join(appPath, "realm_config.json"));
 }
 function readJson(filePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const content = yield fs.readFile(filePath, { encoding: "utf8" });
-        return JSON.parse(content);
-    });
+    const content = fs.readFileSync(filePath, { encoding: "utf8" });
+    return JSON.parse(content);
 }
 function writeJson(filePath, contents) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield fs.writeFile(filePath, JSON.stringify(contents));
-    });
+    fs.writeFileSync(filePath, JSON.stringify(contents));
 }
 function delay(ms) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -233,7 +227,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
-const fs = __importStar(__webpack_require__(9225));
+const fs = __importStar(__webpack_require__(5747));
 const helpers_1 = __webpack_require__(433);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -250,7 +244,7 @@ function run() {
             core.setOutput("clusterName", clusterInfo.name);
             const appsPath = core.getInput("appsPath", { required: true });
             const deployedApps = {};
-            for (const appPath of yield fs.readdir(appsPath)) {
+            for (const appPath of fs.readdirSync(appsPath)) {
                 const deployInfo = yield helpers_1.deployApplication(appPath, clusterInfo.name);
                 deployedApps[deployInfo.name] = deployInfo.id;
             }
@@ -54180,14 +54174,6 @@ module.exports = require("events");;
 
 "use strict";
 module.exports = require("fs");;
-
-/***/ }),
-
-/***/ 9225:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs/promises");;
 
 /***/ }),
 

@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
-import * as fs from "fs/promises";
+import * as fs from "fs";
 import * as path from "path";
 import * as urllib from "urllib";
 import { EnvironmentConfig } from "./config";
@@ -114,7 +114,7 @@ export async function configureRealmCli(config: EnvironmentConfig): Promise<void
 }
 
 export async function deployApplication(appPath: string, clusterName: string): Promise<{ name: string; id: string }> {
-    const appConfig = await readAppConfig(appPath);
+    const appConfig = readAppConfig(appPath);
 
     const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
     core.info(`Creating app ${appName}`);
@@ -126,7 +126,7 @@ export async function deployApplication(appPath: string, clusterName: string): P
 
     core.info(`Created app ${appName} with Id: ${appId}`);
 
-    const secrets = await readJson(path.join(appPath, "secrets.json"));
+    const secrets = readJson(path.join(appPath, "secrets.json"));
 
     for (const secret in secrets) {
         core.info(`Importing secret ${secret}`);
@@ -134,11 +134,11 @@ export async function deployApplication(appPath: string, clusterName: string): P
     }
 
     const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
-    const backingDBConfig = await readJson(backingDBConfigPath);
+    const backingDBConfig = readJson(backingDBConfigPath);
     backingDBConfig.type = "mongodb-atlas";
     backingDBConfig.config.clusterName = clusterName;
 
-    await writeJson(backingDBConfigPath, backingDBConfig);
+    writeJson(backingDBConfigPath, backingDBConfig);
 
     core.info(`Updated BackingDB config with cluster: ${clusterName}`);
 
@@ -152,22 +152,22 @@ export async function deployApplication(appPath: string, clusterName: string): P
     };
 }
 
-async function readAppConfig(appPath: string): Promise<any> {
+function readAppConfig(appPath: string): any {
     const legacyConfigPath = path.join(appPath, "config.json");
-    if ((await fs.stat(legacyConfigPath)).isFile()) {
-        return await readJson(legacyConfigPath);
+    if (fs.existsSync(legacyConfigPath)) {
+        return readJson(legacyConfigPath);
     }
 
-    return await readJson(path.join(appPath, "realm_config.json"));
+    return readJson(path.join(appPath, "realm_config.json"));
 }
 
-async function readJson(filePath: string): Promise<any> {
-    const content = await fs.readFile(filePath, { encoding: "utf8" });
+function readJson(filePath: string): any {
+    const content = fs.readFileSync(filePath, { encoding: "utf8" });
     return JSON.parse(content);
 }
 
-async function writeJson(filePath: string, contents: any): Promise<void> {
-    await fs.writeFile(filePath, JSON.stringify(contents));
+function writeJson(filePath: string, contents: any): void {
+    fs.writeFileSync(filePath, JSON.stringify(contents));
 }
 
 async function delay(ms: number): Promise<void> {
