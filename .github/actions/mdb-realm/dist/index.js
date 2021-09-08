@@ -154,7 +154,7 @@ function deployApplication(appPath, clusterName) {
         const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
         core.info(`Creating app ${appName}`);
         const createResponse = yield execCliCmd(`apps create --name ${appName}`);
-        const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{") + 1));
+        const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{")));
         const appId = parsedResponse.client_app_id;
         core.info(`Created app ${appName} with Id: ${appId}`);
         const secrets = readJson(path.join(appPath, "secrets.json"));

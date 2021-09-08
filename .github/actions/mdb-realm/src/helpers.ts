@@ -130,7 +130,7 @@ export async function deployApplication(appPath: string, clusterName: string): P
     core.info(`Creating app ${appName}`);
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
-    const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{") + 1));
+    const parsedResponse = JSON.parse(createResponse.substring(createResponse.indexOf("{")));
 
     const appId = parsedResponse.client_app_id;
 
