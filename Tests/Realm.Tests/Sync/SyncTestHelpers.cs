@@ -179,7 +179,7 @@ namespace Realms.Tests.Sync
 
         private static AppConfigType GetConfigTypeForId(string appName)
         {
-            if (appName == "dotnet-integration-tests")
+            if (appName == "integration-tests")
             {
                 return AppConfigType.Default;
             }
