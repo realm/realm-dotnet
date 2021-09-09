@@ -68,7 +68,8 @@ function execCmd(cmd, args) {
 function execCliCmd(cmd) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            return yield execCmd(`realm-cli --profile local ${cmd}`);
+            const response = yield execCmd(`realm-cli --profile local --format json ${cmd}`);
+            return JSON.parse(`[${response}]`);
         }
         catch (error) {
             if (error.message.indexOf("503") > -1) {
@@ -127,10 +128,10 @@ function waitForClusterDeployment(clusterName, config) {
         while (attempt++ < 100) {
             try {
                 const response = yield execAtlasRequest(`clusters/${clusterName}`, undefined, config);
-                if (response.data.stateName === "IDLE") {
+                if (response.stateName === "IDLE") {
                     return;
                 }
-                core.info(`Cluster state is: ${response.data.stateName} after ${attempt * pollDelay} seconds. Waiting ${pollDelay} seconds for IDLE`);
+                core.info(`Cluster state is: ${response.stateName} after ${attempt * pollDelay} seconds. Waiting ${pollDelay} seconds for IDLE`);
             }
             catch (error) {
                 core.info(`Failed to check cluster status: ${error.message}`);
@@ -154,7 +155,7 @@ function deployApplication(appPath, clusterName) {
         const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
         core.info(`Creating app ${appName}`);
         const createResponse = yield execCliCmd(`apps create --name ${appName}`);
-        const appId = extractJsonContent(createResponse).client_app_id;
+        const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
         core.info(`Created app ${appName} with Id: ${appId}`);
         const secrets = readJson(path.join(appPath, "secrets.json"));
         for (const secret in secrets) {
@@ -196,17 +197,6 @@ function delay(ms) {
             setTimeout(resolve, ms);
         });
     });
-}
-function extractJsonContent(text) {
-    try {
-        const openIndex = text.indexOf("{");
-        const closeIndex = text.indexOf("}");
-        const json = text.substring(openIndex, closeIndex + 1);
-        return JSON.parse(json);
-    }
-    catch (error) {
-        throw new Error(`Failed to parse '${text}': ${error}`);
-    }
 }
 
 

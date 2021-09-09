@@ -29,9 +29,10 @@ async function execCmd(cmd: string, args?: string[]): Promise<string> {
     return stdout.trim();
 }
 
-async function execCliCmd(cmd: string): Promise<string> {
+async function execCliCmd(cmd: string): Promise<any[]> {
     try {
-        return await execCmd(`realm-cli --profile local ${cmd}`);
+        const response = await execCmd(`realm-cli --profile local --format json ${cmd}`);
+        return JSON.parse(`[${response}]`);
     } catch (error: any) {
         if (error.message.indexOf("503") > -1) {
             return await execCliCmd(cmd);
@@ -96,12 +97,12 @@ export async function waitForClusterDeployment(clusterName: string, config: Envi
         try {
             const response = await execAtlasRequest(`clusters/${clusterName}`, undefined, config);
 
-            if (response.data.stateName === "IDLE") {
+            if (response.stateName === "IDLE") {
                 return;
             }
 
             core.info(
-                `Cluster state is: ${response.data.stateName} after ${
+                `Cluster state is: ${response.stateName} after ${
                     attempt * pollDelay
                 } seconds. Waiting ${pollDelay} seconds for IDLE`,
             );
@@ -131,7 +132,7 @@ export async function deployApplication(appPath: string, clusterName: string): P
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
 
-    const appId = extractJsonContent(createResponse).client_app_id;
+    const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
 
     core.info(`Created app ${appName} with Id: ${appId}`);
 
@@ -183,16 +184,4 @@ async function delay(ms: number): Promise<void> {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
-}
-
-function extractJsonContent(text: string): any {
-    try {
-        const openIndex = text.indexOf("{");
-        const closeIndex = text.indexOf("}");
-
-        const json = text.substring(openIndex, closeIndex + 1);
-        return JSON.parse(json);
-    } catch (error: any) {
-        throw new Error(`Failed to parse '${text}': ${error}`);
-    }
 }
