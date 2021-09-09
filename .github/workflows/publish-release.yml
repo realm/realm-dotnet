@@ -23,14 +23,6 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - uses: actions/setup-node@v2
-      with:
-        node-version: 12.x
-        registry-url: https://registry.npmjs.org
-    - name: Npm Publish io.realm.unity-${{ steps.get-version.outputs.version }}
-      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Find Release PR
       uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
       id: find-pull-request
