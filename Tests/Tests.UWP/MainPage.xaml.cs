@@ -60,9 +60,8 @@ namespace Realms.Tests.UWP
                     }
 
                     _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
-                    var sfFileToCopy = await StorageFile.GetFileFromPathAsync(_nunit.Options.ResultFilePath);
-                    var sfFolderDst = await StorageFolder.GetFolderFromPathAsync(ApplicationData.Current.LocalFolder.Path);
-                    var sfOriginalFile = await sfFileToCopy.CopyAsync(sfFolderDst, "nonConvertedTestResults.xml");
+                    var sfFileToCopy = await ApplicationData.Current.LocalFolder.GetFileAsync(resultPath);
+                    var sfOriginalFile = await sfFileToCopy.CopyAsync(ApplicationData.Current.LocalFolder, "nonConvertedTestResults.xml", NameCollisionOption.ReplaceExisting);
                     _nunit.Options.OnCompletedCallback = async () =>
                     {
                         await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
