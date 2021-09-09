@@ -189,7 +189,7 @@ namespace Realms.Tests.Sync
                 return AppConfigType.IntPartitionKey;
             }
 
-            if (appName == "objectid-partition-key")
+            if (appName == "objectid-part-key")
             {
                 return AppConfigType.ObjectIdPartitionKey;
             }

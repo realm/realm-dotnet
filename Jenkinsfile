@@ -366,7 +366,7 @@ def NetCoreTest(String nodeName, String targetFramework) {
           appsToImport: [
             "integration-tests": "${env.WORKSPACE}/Tests/TestApps/integration-tests",
             "int-partition-key": "${env.WORKSPACE}/Tests/TestApps/int-partition-key",
-            "objectid-partition-key": "${env.WORKSPACE}/Tests/TestApps/objectid-partition-key",
+            "objectid-part-key": "${env.WORKSPACE}/Tests/TestApps/objectid-part-key",
             "uuid-partition-key": "${env.WORKSPACE}/Tests/TestApps/uuid-partition-key"
           ]) { networkName ->
           test_runner_image.inside("--network=${networkName} --ulimit core=-1:-1") {

@@ -1,7 +1,7 @@
 {
-    "app_id": "objectid-partition-key-abcde",
+    "app_id": "objectid-part-key-abcde",
     "config_version": 20180301,
-    "name": "objectid-partition-key",
+    "name": "objectid-part-key",
     "location": "US-VA",
     "deployment_model": "GLOBAL",
     "security": {},
