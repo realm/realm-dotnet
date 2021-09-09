@@ -498,7 +498,8 @@ jobs:
             $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
             $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
         } while ($uwp_test_app -and !$file_available)
-        echo "::set-output name=uwp-xml-test-result-path::$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml"
+        echo "::set-output name=original-uwp-xml-test-result-path::$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\nonConvertedTestResults.xml"
+        echo "::set-output name=converted-junit-uwp-xml-test-result-path::$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml"
         $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
         if (!$file_available)
         {
@@ -510,11 +511,17 @@ jobs:
           Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
         }
       shell: powershell
-    - name: Upload test report
+    - name: Upload non-converted test report
       uses: actions/upload-artifact@v2
       with:
-        name: UwpTestReportXML
-        path: ${{ steps.run-uwp-tests.outputs.uwp-xml-test-result-path }}
+        name: OriginalUwpTestReportXML
+        path: ${{ steps.run-uwp-tests.outputs.original-uwp-xml-test-result-path }}
+        retention-days: 30
+    - name: Upload junit converted test report
+      uses: actions/upload-artifact@v2
+      with:
+        name: JUnitUwpTestReportXML
+        path: ${{ steps.run-uwp-tests.outputs.junit-uwp-xml-test-result-path }}
         retention-days: 30
     - name: Publish Unit Test Results
       uses: ./.github/actions/test-reporter
