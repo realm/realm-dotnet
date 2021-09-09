@@ -139,7 +139,7 @@ export async function deployApplication(appPath: string, clusterName: string): P
 
     for (const secret in secrets) {
         core.info(`Importing secret ${secret}`);
-        await execCliCmd(`secrets create --app ${appId} --name ${secret} --value ${secrets[secret]}`);
+        await execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
     }
 
     const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");

@@ -159,7 +159,7 @@ function deployApplication(appPath, clusterName) {
         const secrets = readJson(path.join(appPath, "secrets.json"));
         for (const secret in secrets) {
             core.info(`Importing secret ${secret}`);
-            yield execCliCmd(`secrets create --app ${appId} --name ${secret} --value ${secrets[secret]}`);
+            yield execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
         }
         const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
         const backingDBConfig = readJson(backingDBConfigPath);
