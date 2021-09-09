@@ -14,7 +14,7 @@ jobs:
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: main.yml
-        commit: ${{ github.sha }}
+        commit: 11777136f471106f93aac9bb157f6e7050244987
         path: ${{ github.workspace }}/Realm/packages/
     - name: Read version
       id: get-version
@@ -23,32 +23,6 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
-        aws-region: us-east-2
-    - name: Upload docs
-      run: |
-        Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
-        $versions = "${{ steps.get-version.outputs.version }}", "latest"
-        Foreach ($ver in $versions)
-        {
-          aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/realm-sdks/dotnet/$ver/
-        }
-    - name: NuGet Publish Realm.Fody.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - uses: actions/setup-node@v2
-      with:
-        node-version: 12.x
-        registry-url: https://registry.npmjs.org
-    - name: Npm Publish io.realm.unity-${{ steps.get-version.outputs.version }}
-      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Find Release PR
       uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
       id: find-pull-request
