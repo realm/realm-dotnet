@@ -3,11 +3,11 @@ description: Creates a Slack post containing the release notes and publishes it
 author: Realm
 inputs:
   atlasUrl:
-    required: false
-    description: The Atlas url. Default is https://cloud-dev.mongodb.com.
+    required: true
+    description: The Atlas url - e.g. https://cloud-dev.mongodb.com.
   realmUrl:
-    required: false
-    description: The MongoDB Realm url. Default is https://realm-dev.mongodb.com.
+    required: true
+    description: The MongoDB Realm url - e.g. https://realm-dev.mongodb.com.
   projectId:
     required: true
     description: The Atlas project Id.

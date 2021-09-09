@@ -14,8 +14,8 @@ import path from "path";
 async function run(): Promise<void> {
     try {
         const config: EnvironmentConfig = {
-            atlasUrl: core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com",
-            realmUrl: core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com",
+            atlasUrl: core.getInput("atlasUrl", { required: true }),
+            realmUrl: core.getInput("realmUrl", { required: true }),
             projectId: core.getInput("projectId", { required: true }),
             apiKey: core.getInput("apiKey", { required: true }),
             privateApiKey: core.getInput("privateApiKey", { required: true }),

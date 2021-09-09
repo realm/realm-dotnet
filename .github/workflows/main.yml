@@ -8,6 +8,21 @@ name: main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
+  prepare-baas-server:
+    runs-on: ubuntu-latest
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
@@ -411,7 +426,9 @@ jobs:
   run-tests-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
-    needs: build-packages
+    needs:
+    - build-packages
+    - prepare-baas-server
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -448,7 +465,9 @@ jobs:
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
-    needs: build-packages
+    needs:
+    - build-packages
+    - prepare-baas-server
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -514,7 +533,9 @@ jobs:
         check_name: Results UWP
   run-tests-netcore:
     name: Test .NET
-    needs: build-packages
+    needs:
+    - build-packages
+    - prepare-baas-server
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -573,7 +594,9 @@ jobs:
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
-    needs: build-packages
+    needs:
+    - build-packages
+    - prepare-baas-server
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -608,7 +631,9 @@ jobs:
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
-    needs: build-packages
+    needs:
+    - build-packages
+    - prepare-baas-server
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -672,30 +697,13 @@ jobs:
         files: TestResults.Weaver.xml
         comment_mode: "off"
         check_name: Results Weaver
-  prepare-sync-code-coverage:
-    runs-on: ubuntu-latest
-    environment: Dev
-    outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/mdb-realm
-      id: deploy-mdb-apps
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
   code-coverage:
     runs-on: ubuntu-latest
-    environment: Dev
     name: Code Coverage
     needs:
     - build-packages
-    - prepare-sync-code-coverage
-    env: ${{ needs.prepare-sync-code-coverage.outputs.deployedApps }}
+    - prepare-baas-server
+    env: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -790,10 +798,14 @@ jobs:
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-  cleanup-sync-code-coverage:
-    environment: Dev
+  cleanup-baas-server:
     needs:
     - code-coverage
+    - run-tests-net-framework
+    - run-tests-uwp
+    - run-tests-netcore
+    - run-tests-xamarin-macos
+    - run-tests-xamarin-ios
     if: always()
     runs-on: ubuntu-latest
     steps:
