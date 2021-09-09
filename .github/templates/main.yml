@@ -477,7 +477,8 @@ jobs:
     needs:
     - build-packages
     - prepare-baas-server
-    env: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())
