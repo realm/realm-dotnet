@@ -469,7 +469,7 @@ jobs:
     needs:
     - build-packages
     - prepare-sync-code-coverage
-    env: ${{ needs.prepare-sync-code-coverage.outputs.deployedApps }
+    env: ${{ needs.prepare-sync-code-coverage.outputs.deployedApps }}
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())
