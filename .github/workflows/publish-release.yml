@@ -23,16 +23,6 @@ jobs:
         $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
         $version = $Matches[0]
         echo "::set-output name=version::$version"
-    - name: Publish Github Release
-      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
-      with:
-        artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-        bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
-        name: ${{ steps.get-version.outputs.version }}
-        commit: master
-        tag: ${{ steps.get-version.outputs.version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: false
     - name: Update Changelog
       run: |
         echo "## vNext (TBD)
@@ -50,6 +40,7 @@ jobs:
         * Using Core x.y.z.
         " | cat - CHANGELOG.md >> temp
         mv temp CHANGELOG.md
+      shell: bash
     - name: Create vNext PR
       id: vnext-pr
       uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad
