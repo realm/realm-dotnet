@@ -188,7 +188,7 @@ steps:
 #@ def dotnetPublishAndRunCoverage(framework):
   - #@ template.replace(dotnetPublish("Tests/Realm.Tests", framework, { "AdditionalFrameworks": framework }))
   - name: Run the tests
-    run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+    run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After --baasurl ${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
 #@ end
 
 #@ def publishTestsResults(files, test_title):
@@ -236,6 +236,7 @@ name: main
   pull_request:
 env:
   REALM_DISABLE_ANALYTICS: true
+environment: Dev
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
@@ -446,10 +447,28 @@ jobs:
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
+  prepare-sync-code-coverage:
+    runs-on: ubuntu-latest
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/mdb-realm
+        id: deploy-mdb-apps
+        with:
+          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          appsPath: ${{ github.workspace }}/Tests/TestApps
+          atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+          realmUrl: ${{ secrets.REALM_BASE_URL }}
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage
-    needs: build-packages
+    needs:
+    - build-packages
+    - prepare-sync-code-coverage
+    env: ${{ needs.prepare-sync-code-coverage.outputs.deployedApps }
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())
@@ -471,6 +490,23 @@ jobs:
           git-commit: ${{ github.event.pull_request.head.sha }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+  cleanup-sync-code-coverage:
+    environment: Dev
+    needs:
+    - code-coverage
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/mdb-realm
+        with:
+          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          appsPath: ${{ github.workspace }}/Tests/TestApps
+          atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+          realmUrl: ${{ secrets.REALM_BASE_URL }}
+          cleanup: true
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup

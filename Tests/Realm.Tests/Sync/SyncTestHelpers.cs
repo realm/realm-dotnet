@@ -24,6 +24,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using Newtonsoft.Json;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -137,9 +138,21 @@ namespace Realms.Tests.Sync
 
             AsyncContext.Run(async () =>
             {
-                using var client = new BaasClient(_baseUri);
+                (string, string)[] apps;
+                var appsConfig = Environment.GetEnvironmentVariable("APPS_CONFIG");
 
-                var apps = await client.GetApps();
+                if (string.IsNullOrEmpty(appsConfig))
+                {
+                    using var client = new BaasClient(_baseUri);
+
+                    apps = await client.GetApps();
+                }
+                else
+                {
+                    apps = JsonConvert.DeserializeObject<Dictionary<string, string>>(appsConfig)
+                                      .Select(kvp => (kvp.Key, kvp.Value))
+                                      .ToArray();
+                }
 
                 foreach (var (appName, appId) in apps)
                 {
