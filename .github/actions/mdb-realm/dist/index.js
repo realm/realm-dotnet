@@ -89,6 +89,7 @@ function execAtlasRequest(route, payload, config) {
             digestAuth: `${config.apiKey}:${config.privateApiKey}`,
             method: "GET",
         };
+        core.info(`Sending request to: ${url}`);
         if (payload) {
             request.method = "POST";
             request.data = JSON.stringify(payload);
@@ -100,6 +101,7 @@ function execAtlasRequest(route, payload, config) {
         if (response.status < 200 || response.status > 300) {
             throw new Error(`Failed to execute ${request.method} ${route}: ${response.status}: ${response.data}`);
         }
+        core.info(`Response: ${JSON.stringify(response.data)}`);
         return response.data;
     });
 }
