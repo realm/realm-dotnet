@@ -45,20 +45,26 @@ async function execCliCmd(cmd: string): Promise<any[]> {
     }
 }
 
-async function execAtlasRequest(route: string, payload: any, config: EnvironmentConfig): Promise<any> {
+async function execAtlasRequest(
+    route: string,
+    payload: any,
+    config: EnvironmentConfig,
+    method?: urllib.HttpMethod,
+): Promise<any> {
     const url = `${config.atlasUrl}/api/atlas/v1.0/groups/${config.projectId}/${route}`;
 
     const request: urllib.RequestOptions = {
         digestAuth: `${config.apiKey}:${config.privateApiKey}`,
-        method: "GET",
+        method: method || "GET",
+        headers: {
+            "content-type": "application/json",
+            accept: "application/json",
+        },
     };
 
     if (payload) {
-        request.method = "POST";
+        request.method = method || "POST";
         request.data = JSON.stringify(payload);
-        request.headers = {
-            "content-type": "application/json",
-        };
     }
 
     const response = await urllib.request(url, request);
@@ -70,9 +76,9 @@ async function execAtlasRequest(route: string, payload: any, config: Environment
     return JSON.parse(response.data);
 }
 
-export async function createCluster(config: EnvironmentConfig): Promise<{ name: string }> {
+export async function createCluster(name: string, config: EnvironmentConfig): Promise<void> {
     const payload = {
-        name: `GHA-${process.env.GITHUB_RUN_ID}`,
+        name,
         providerSettings: {
             instanceSizeName: "M2",
             providerName: "TENANT",
@@ -81,15 +87,19 @@ export async function createCluster(config: EnvironmentConfig): Promise<{ name: 
         },
     };
 
-    core.info("Creating Atlas cluster");
+    core.info(`Creating Atlas cluster: ${name}`);
 
     const response = await execAtlasRequest("clusters", payload, config);
 
     core.info(`Cluster created: ${response}`);
+}
 
-    return {
-        name: payload.name,
-    };
+export async function deleteCluster(name: string, config: EnvironmentConfig): Promise<void> {
+    core.info(`Deleting Atlas cluster: ${name}`);
+
+    await execAtlasRequest(`clusters/${name}`, undefined, config, "DELETE");
+
+    core.info(`Deleted Atlas cluster: ${name}`);
 }
 
 export async function waitForClusterDeployment(clusterName: string, config: EnvironmentConfig): Promise<void> {
@@ -126,10 +136,8 @@ export async function configureRealmCli(config: EnvironmentConfig): Promise<void
     );
 }
 
-export async function deployApplication(appPath: string, clusterName: string): Promise<{ name: string; id: string }> {
-    const appConfig = readAppConfig(appPath);
-
-    const appName = `${appConfig.name}-${process.env.GITHUB_RUN_ID}`;
+export async function publishApplication(appPath: string, clusterName: string): Promise<{ id: string }> {
+    const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
     core.info(`Creating app ${appName}`);
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
@@ -145,32 +153,57 @@ export async function deployApplication(appPath: string, clusterName: string): P
         await execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
     }
 
+    await deployApplication(appPath, clusterName, appId);
+
+    core.info(`Imported ${appName} successfully`);
+
+    return {
+        id: appId,
+    };
+}
+
+export async function deleteApplication(appPath: string, clusterName: string): Promise<void> {
+    const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
+    const listResponse = await execCliCmd("apps list");
+    const allApps: string[] = listResponse[0].data;
+
+    const existingApp = allApps.find(a => a.startsWith(appName));
+
+    if (!existingApp) {
+        core.info(`Could not find an existing app with name ${appName}. Found apps: ${JSON.stringify(allApps)}`);
+        return;
+    }
+
+    const appId = existingApp.split(" ")[0];
+    await deployApplication(appPath, clusterName, appId, false);
+
+    core.info(`Disabled sync service for ${appName}`);
+
+    await execCliCmd(`apps delete -a ${appId}`);
+
+    core.info(`Deleted ${appName}`);
+}
+
+async function deployApplication(
+    appPath: string,
+    clusterName: string,
+    appId: string,
+    syncEnabled = true,
+): Promise<void> {
     const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
     const backingDBConfig = readJson(backingDBConfigPath);
     backingDBConfig.type = "mongodb-atlas";
     backingDBConfig.config.clusterName = clusterName;
 
-    writeJson(backingDBConfigPath, backingDBConfig);
-
-    core.info(`Updated BackingDB config with cluster: ${clusterName}`);
-
-    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
-
-    core.info(`Imported ${appName} successfully`);
-
-    return {
-        name: appConfig.name,
-        id: appId,
-    };
-}
-
-function readAppConfig(appPath: string): any {
-    const legacyConfigPath = path.join(appPath, "config.json");
-    if (fs.existsSync(legacyConfigPath)) {
-        return readJson(legacyConfigPath);
+    if (!syncEnabled) {
+        delete backingDBConfig.config.sync;
     }
 
-    return readJson(path.join(appPath, "realm_config.json"));
+    writeJson(backingDBConfigPath, backingDBConfig);
+
+    core.info(`Updated BackingDB config with cluster: ${clusterName}, sync enabled: ${syncEnabled}`);
+
+    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
 }
 
 function readJson(filePath: string): any {

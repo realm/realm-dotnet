@@ -1,6 +1,13 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
-import { configureRealmCli, createCluster, deployApplication, waitForClusterDeployment } from "./helpers";
+import {
+    configureRealmCli,
+    createCluster,
+    deleteApplication,
+    deleteCluster,
+    publishApplication,
+    waitForClusterDeployment,
+} from "./helpers";
 import { EnvironmentConfig } from "./config";
 import path from "path";
 
@@ -14,23 +21,32 @@ async function run(): Promise<void> {
             privateApiKey: core.getInput("privateApiKey", { required: true }),
         };
 
-        const clusterInfo = await createCluster(config);
+        const appsPath = core.getInput("appsPath", { required: true });
+
+        const isCleanup = core.getInput("cleanup", { required: false }) === "true";
+        const clusterName = `GHA-${process.env.GITHUB_RUN_ID}`;
 
         await configureRealmCli(config);
 
-        core.setOutput("clusterName", clusterInfo.name);
+        if (isCleanup) {
+            for (const appPath of fs.readdirSync(appsPath)) {
+                await deleteApplication(path.join(appsPath, appPath), clusterName);
+            }
 
-        const appsPath = core.getInput("appsPath", { required: true });
+            await deleteCluster(clusterName, config);
+        } else {
+            await createCluster(clusterName, config);
 
-        const deployedApps: { [key: string]: string } = {};
-        for (const appPath of fs.readdirSync(appsPath)) {
-            const deployInfo = await deployApplication(path.join(appsPath, appPath), clusterInfo.name);
-            deployedApps[deployInfo.name] = deployInfo.id;
+            const deployedApps: { [key: string]: string } = {};
+            for (const appPath of fs.readdirSync(appsPath)) {
+                const deployInfo = await publishApplication(path.join(appsPath, appPath), clusterName);
+                deployedApps[appPath] = deployInfo.id;
+            }
+
+            core.setOutput("deployedApps", deployedApps);
+
+            await waitForClusterDeployment(clusterName, config);
         }
-
-        core.setOutput("deployedApps", deployedApps);
-
-        await waitForClusterDeployment(clusterInfo.name, config);
     } catch (error: any) {
         core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }
