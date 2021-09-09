@@ -32,7 +32,10 @@ async function execCmd(cmd: string, args?: string[]): Promise<string> {
 async function execCliCmd(cmd: string): Promise<any[]> {
     try {
         const response = await execCmd(`realm-cli --profile local -f json ${cmd}`);
-        return response.split(/\r?\n/).map(s => JSON.parse(s));
+        return response
+            .split(/\r?\n/)
+            .filter(s => s && s.trim() && s.includes("Deploying app changes..."))
+            .map(s => JSON.parse(s));
     } catch (error: any) {
         if (error.message.indexOf("503") > -1) {
             return await execCliCmd(cmd);
