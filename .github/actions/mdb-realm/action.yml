@@ -2,47 +2,25 @@ name: release-to-slack
 description: Creates a Slack post containing the release notes and publishes it
 author: Realm
 inputs:
-  atlas-url:
+  atlasUrl:
     required: false
     description: The Atlas url. Default is https://cloud-dev.mongodb.com.
-    default: https://cloud-dev.mongodb.com
-  realm-url:
+  realmUrl:
     required: false
     description: The MongoDB Realm url. Default is https://realm-dev.mongodb.com.
-    default: https://realm-dev.mongodb.com
-  project-id:
+  projectId:
     required: true
     description: The Atlas project Id.
-  api-key:
+  apiKey:
     required: true
     description: The public API key.
-  private-api-key:
+  privateapiKey:
     required: true
     description: The private API key.
-  apps-path:
+  appsPath:
     requireD: true
     description: The path to the apps to import into MongoDB Realm.
 
 runs:
-  using: composite
-  steps:
-    - name: Create Cluster
-      run: |
-        curl --user "${{ inputs.api-key }}:${{ inputs.private-api-key }}" --digest \
-           --header "Content-Type: application/json" \
-           --include \
-	         --request POST "${{ inputs.atlas-url }}/api/atlas/v1.0/groups/${{ inputs.project-id }}/clusters" \
-           --data '
-             {
-               "name": "GHA-${{ github.run_id }}",
-               "providerSettings": {
-                 "instanceSizeName": "M2",
-                 "providerName": "TENANT",
-                 "regionName": "US_EAST_1",
-                 "backingProviderName": "AWS",
-               },
-            }'
-    - name: Install Realm CLI
-      run: npm i -g mongodb-realm-cli
-    - name: Login with the CLI
-      run: realm-cli login --api-key ${{ inputs.api-key }} --private-api-key ${{ inputs.private-api-key }} --atlas-url ${{ inputs.atlas-url }} --realm-url ${{ inputs.realm-url }}
+  using: node12
+  main: dist/index.js

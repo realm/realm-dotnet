@@ -10,8 +10,8 @@ jobs:
       - uses: ./.github/actions/mdb-realm
         id: deploy-mdb-apps
         with:
-          project-id: ${{ secrets.ATLAS_PROJECT_ID }}
-          api-key: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          private-api-key: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-          apps-path: ${{ github.workspace }}/Tests/TestApps
+          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          appsPath: ${{ github.workspace }}/Tests/TestApps
       - run: echo ${{ steps.deploy-mdb-apps.outputs.clusterName }}
