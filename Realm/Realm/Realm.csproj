@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Realms</RootNamespace>
@@ -159,7 +159,7 @@ return true;
   </Target>
 
   <Target Name="WriteChangelogToFile" AfterTargets="ExtractChangelogToPack">
-    <WriteLinesToFile File="ExtractedChangelog.md" Lines="$(PackageReleaseNotes)" Overwrite="true" Encoding="Unicode" />
+    <WriteLinesToFile File="ExtractedChangelog.md" Lines="$(PackageReleaseNotes)" Overwrite="true" />
   </Target>
 
 </Project>
