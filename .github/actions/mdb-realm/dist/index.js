@@ -68,7 +68,7 @@ function execCmd(cmd, args) {
 function execCliCmd(cmd) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield execCmd(`realm-cli --profile local --format json ${cmd}`);
+            const response = yield execCmd(`realm-cli --profile local -f json ${cmd}`);
             return JSON.parse(`[${response}]`);
         }
         catch (error) {
