@@ -236,7 +236,6 @@ name: main
   pull_request:
 env:
   REALM_DISABLE_ANALYTICS: true
-environment: Dev
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
@@ -449,6 +448,7 @@ jobs:
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
   prepare-sync-code-coverage:
     runs-on: ubuntu-latest
+    environment: Dev
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -464,6 +464,7 @@ jobs:
           realmUrl: ${{ secrets.REALM_BASE_URL }}
   code-coverage:
     runs-on: ubuntu-latest
+    environment: Dev
     name: Code Coverage
     needs:
     - build-packages
