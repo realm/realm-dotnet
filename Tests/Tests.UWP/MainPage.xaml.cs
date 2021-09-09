@@ -60,7 +60,7 @@ namespace Realms.Tests.UWP
                     }
 
                     _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
-                    File.Copy(_nunit.Options.ResultFilePath, Path.Combine(ApplicationData.Current.LocalFolder.Path, "nonConvertedTestResults.xml"));
+                    // File.Copy(_nunit.Options.ResultFilePath, Path.Combine(ApplicationData.Current.LocalFolder.Path, "nonConvertedTestResults.xml"), true);
                     _nunit.Options.OnCompletedCallback = async () =>
                     {
                         await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
