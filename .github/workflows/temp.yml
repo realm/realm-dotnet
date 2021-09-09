@@ -17,6 +17,8 @@ jobs:
       - run: echo ${{ steps.deploy-mdb-apps.outputs.clusterName }}
   cleanup:
     environment: Dev
+    needs:
+    - build
     if: always()
     runs-on: ubuntu-latest
     steps:
