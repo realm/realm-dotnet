@@ -14,7 +14,7 @@ jobs:
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: main.yml
-        commit: ${{ github.sha }}
+        commit: 11777136f471106f93aac9bb157f6e7050244987
         path: ${{ github.workspace }}/Realm/packages/
     - name: Read version
       id: get-version
