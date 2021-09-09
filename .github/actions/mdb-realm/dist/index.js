@@ -71,7 +71,7 @@ function execCliCmd(cmd) {
             const response = yield execCmd(`realm-cli --profile local -f json ${cmd}`);
             return response
                 .split(/\r?\n/)
-                .filter(s => s && s.trim() && s.includes("Deploying app changes..."))
+                .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
                 .map(s => JSON.parse(s));
         }
         catch (error) {
