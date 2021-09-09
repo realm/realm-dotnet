@@ -35,7 +35,7 @@ namespace Realms.Tests.UWP
             InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             StreamWriter outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
             _nunit = new NUnit.Runner.App(outputWriter);
@@ -60,7 +60,9 @@ namespace Realms.Tests.UWP
                     }
 
                     _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
-                    // File.Copy(_nunit.Options.ResultFilePath, Path.Combine(ApplicationData.Current.LocalFolder.Path, "nonConvertedTestResults.xml"), true);
+                    var sfFileToCopy = await StorageFile.GetFileFromPathAsync(_nunit.Options.ResultFilePath);
+                    var sfFolderDst = await StorageFolder.GetFolderFromPathAsync(ApplicationData.Current.LocalFolder.Path);
+                    var sfOriginalFile = await sfFileToCopy.CopyAsync(sfFolderDst, "nonConvertedTestResults.xml");
                     _nunit.Options.OnCompletedCallback = async () =>
                     {
                         await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);

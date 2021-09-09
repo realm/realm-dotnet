@@ -521,7 +521,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: JUnitUwpTestReportXML
-        path: ${{ steps.run-uwp-tests.outputs.junit-uwp-xml-test-result-path }}
+        path: ${{ steps.run-uwp-tests.outputs.converted-junit-uwp-xml-test-result-path }}
         retention-days: 30
     - name: Publish Unit Test Results
       uses: ./.github/actions/test-reporter
