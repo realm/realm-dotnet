@@ -53,8 +53,6 @@ async function execAtlasRequest(route: string, payload: any, config: Environment
         method: "GET",
     };
 
-    core.info(`Sending request to: ${url}`);
-
     if (payload) {
         request.method = "POST";
         request.data = JSON.stringify(payload);
@@ -69,12 +67,10 @@ async function execAtlasRequest(route: string, payload: any, config: Environment
         throw new Error(`Failed to execute ${request.method} ${route}: ${response.status}: ${response.data}`);
     }
 
-    core.info(`Response: ${JSON.stringify(response.data)}`);
-
-    return response.data;
+    return JSON.parse(response.data);
 }
 
-export async function createCluster(config: EnvironmentConfig): Promise<{ name: string; id: string }> {
+export async function createCluster(config: EnvironmentConfig): Promise<{ name: string }> {
     const payload = {
         name: `GHA-${process.env.GITHUB_RUN_ID}`,
         providerSettings: {
@@ -93,7 +89,6 @@ export async function createCluster(config: EnvironmentConfig): Promise<{ name: 
 
     return {
         name: payload.name,
-        id: response.id,
     };
 }
 
