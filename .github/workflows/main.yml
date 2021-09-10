@@ -1010,7 +1010,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Workflow cleanup
     needs:
-    - code-coverage
+    - test-code-coverage
     if: always()
     steps:
     - name: Delete artifacts for macos

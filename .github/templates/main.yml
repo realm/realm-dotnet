@@ -500,7 +500,8 @@ jobs:
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
-    needs: [ code-coverage ]
+    needs:
+      - test-code-coverage
     if: always()
     steps:
 #@ for platform in getWrapperBinaryNames():
