@@ -436,7 +436,7 @@ jobs:
     - build-packages
     - baas-net-framework
     env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+      APPS_CONFIG: ${{ needs.baas-net-framework.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -520,7 +520,7 @@ jobs:
     - build-packages
     - baas-uwp-managed
     env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+      APPS_CONFIG: ${{ needs.baas-uwp-managed.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -693,7 +693,7 @@ jobs:
     - build-packages
     - baas-xamarinmacos
     env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+      APPS_CONFIG: ${{ needs.baas-xamarinmacos.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -775,7 +775,7 @@ jobs:
     - build-packages
     - baas-xamarinios
     env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+      APPS_CONFIG: ${{ needs.baas-xamarinios.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -889,7 +889,7 @@ jobs:
     - build-packages
     - baas-code-coverage
     env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+      APPS_CONFIG: ${{ needs.baas-code-coverage.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2

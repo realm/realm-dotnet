@@ -55,7 +55,7 @@ with:
   - build-packages
   - #@ "baas-" + name.replace(".", "").replace(" ", "-").lower()
   env:
-    APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    APPS_CONFIG: #@ "${{ needs.baas-" + name.replace(".", "").replace(" ", "-").lower() + ".outputs.deployedApps }}"
   steps:
     - #@ template.replace(checkoutCode())
     #@ if usePackage:
