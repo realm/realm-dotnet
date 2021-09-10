@@ -2,6 +2,328 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 433:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.deleteApplication = exports.publishApplication = exports.configureRealmCli = exports.waitForClusterDeployment = exports.deleteCluster = exports.createCluster = exports.getSuffix = void 0;
+const core = __importStar(__webpack_require__(2186));
+const exec = __importStar(__webpack_require__(1514));
+const fs = __importStar(__webpack_require__(5747));
+const path = __importStar(__webpack_require__(5622));
+const urllib = __importStar(__webpack_require__(4783));
+const crypto_1 = __webpack_require__(6417);
+function execCmd(cmd, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let stdout = "";
+        let stderr = "";
+        const options = {
+            listeners: {
+                stdout: (data) => {
+                    stdout += data.toString();
+                },
+                stderr: (data) => {
+                    stderr += data.toString();
+                },
+            },
+            failOnStdErr: false,
+            ignoreReturnCode: true,
+        };
+        const exitCode = yield exec.exec(cmd, args, options);
+        if (exitCode !== 0) {
+            throw new Error(`"${cmd}" failed with code ${exitCode} giving error:\n ${stderr.trim()}`);
+        }
+        return stdout.trim();
+    });
+}
+function execCliCmd(cmd) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let actualCmd = `realm-cli --profile local -f json ${cmd}`;
+            if (process.platform === "win32") {
+                actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
+            }
+            const response = yield execCmd(actualCmd);
+            return response
+                .split(/\r?\n/)
+                .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
+                .map(s => JSON.parse(s));
+        }
+        catch (error) {
+            if (error.message.indexOf("503") > -1) {
+                return yield execCliCmd(cmd);
+            }
+            throw error;
+        }
+    });
+}
+function execAtlasRequest(method, route, config, payload) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const url = `${config.atlasUrl}/api/atlas/v1.0/groups/${config.projectId}/${route}`;
+        const request = {
+            digestAuth: `${config.apiKey}:${config.privateApiKey}`,
+            method,
+            headers: {
+                "content-type": "application/json",
+                accept: "application/json",
+            },
+        };
+        if (payload) {
+            request.data = JSON.stringify(payload);
+        }
+        const response = yield urllib.request(url, request);
+        if (response.status < 200 || response.status > 300) {
+            throw new Error(`Failed to execute ${request.method} ${route}: ${response.status}: ${response.data}`);
+        }
+        return JSON.parse(response.data);
+    });
+}
+function getSuffix(differentiator) {
+    return crypto_1.createHash("md5")
+        .update(`${process.env.GITHUB_RUN_ID}-${differentiator}`)
+        .digest("base64")
+        .replace(/\+/g, "")
+        .replace(/-/g, "")
+        .toLowerCase()
+        .substring(0, 8);
+}
+exports.getSuffix = getSuffix;
+function getClusterName(suffix) {
+    return `GHA-${suffix}`;
+}
+function getAppName(name, suffix) {
+    return `${name}-${suffix}`;
+}
+function createCluster(config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const clusterName = getClusterName(config.differentitingSuffix);
+        const payload = {
+            name: clusterName,
+            providerSettings: {
+                instanceSizeName: "M5",
+                providerName: "TENANT",
+                regionName: "US_EAST_1",
+                backingProviderName: "AWS",
+            },
+        };
+        core.info(`Creating Atlas cluster: ${clusterName}`);
+        const response = yield execAtlasRequest("POST", "clusters", config, payload);
+        core.info(`Cluster created: ${JSON.stringify(response)}`);
+    });
+}
+exports.createCluster = createCluster;
+function deleteCluster(config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const clusterName = getClusterName(config.differentitingSuffix);
+        core.info(`Deleting Atlas cluster: ${clusterName}`);
+        yield execAtlasRequest("DELETE", `clusters/${clusterName}`, config);
+        core.info(`Deleted Atlas cluster: ${clusterName}`);
+    });
+}
+exports.deleteCluster = deleteCluster;
+function waitForClusterDeployment(config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const clusterName = getClusterName(config.differentitingSuffix);
+        const pollDelay = 10;
+        let attempt = 0;
+        while (attempt++ < 100) {
+            try {
+                const response = yield execAtlasRequest("GET", `clusters/${clusterName}`, config);
+                if (response.stateName === "IDLE") {
+                    return;
+                }
+                core.info(`Cluster state is: ${response.stateName} after ${attempt * pollDelay} seconds. Waiting ${pollDelay} seconds for IDLE`);
+            }
+            catch (error) {
+                core.info(`Failed to check cluster status: ${error.message}`);
+            }
+            yield delay(pollDelay * 1000);
+        }
+        throw new Error(`Cluster failed to deploy after ${100 * pollDelay} seconds`);
+    });
+}
+exports.waitForClusterDeployment = waitForClusterDeployment;
+function configureRealmCli(config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield execCmd("npm i -g mongodb-realm-cli");
+        yield execCliCmd(`login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`);
+    });
+}
+exports.configureRealmCli = configureRealmCli;
+function publishApplication(appPath, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const clusterName = getClusterName(config.differentitingSuffix);
+        const appName = getAppName(path.basename(appPath), config.differentitingSuffix);
+        core.info(`Creating app ${appName}`);
+        const createResponse = yield execCliCmd(`apps create --name ${appName}`);
+        const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
+        core.info(`Created app ${appName} with Id: ${appId}`);
+        const secrets = readJson(path.join(appPath, "secrets.json"));
+        for (const secret in secrets) {
+            core.info(`Importing secret ${secret}`);
+            yield execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
+        }
+        const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
+        const backingDBConfig = readJson(backingDBConfigPath);
+        backingDBConfig.type = "mongodb-atlas";
+        backingDBConfig.config.clusterName = clusterName;
+        writeJson(backingDBConfigPath, backingDBConfig);
+        core.info(`Updated BackingDB config with cluster: ${clusterName}`);
+        yield execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
+        core.info(`Imported ${appName} successfully`);
+        return {
+            id: appId,
+        };
+    });
+}
+exports.publishApplication = publishApplication;
+function deleteApplication(name, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const appName = getAppName(name, config.differentitingSuffix);
+        const listResponse = yield execCliCmd("apps list");
+        const allApps = listResponse[0].data;
+        const existingApp = allApps === null || allApps === void 0 ? void 0 : allApps.find(a => a.startsWith(appName));
+        if (!existingApp) {
+            core.info(`Could not find an existing app with name ${appName}. Found apps: ${JSON.stringify(allApps)}`);
+            return;
+        }
+        const appId = existingApp.split(" ")[0];
+        core.info(`Deleting ${appName} with id: ${appId}`);
+        yield execCliCmd(`apps delete -a ${appId}`);
+        core.info(`Deleted ${appName}`);
+    });
+}
+exports.deleteApplication = deleteApplication;
+function readJson(filePath) {
+    const content = fs.readFileSync(filePath, { encoding: "utf8" });
+    return JSON.parse(content);
+}
+function writeJson(filePath, contents) {
+    fs.writeFileSync(filePath, JSON.stringify(contents));
+}
+function delay(ms) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            setTimeout(resolve, ms);
+        });
+    });
+}
+
+
+/***/ }),
+
+/***/ 9536:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__webpack_require__(2186));
+const fs = __importStar(__webpack_require__(5747));
+const helpers_1 = __webpack_require__(433);
+const path_1 = __importDefault(__webpack_require__(5622));
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const config = {
+                atlasUrl: core.getInput("atlasUrl", { required: true }),
+                realmUrl: core.getInput("realmUrl", { required: true }),
+                projectId: core.getInput("projectId", { required: true }),
+                apiKey: core.getInput("apiKey", { required: true }),
+                privateApiKey: core.getInput("privateApiKey", { required: true }),
+                differentitingSuffix: helpers_1.getSuffix(core.getInput("cluster-differentiator", { required: true }))
+            };
+            const appsPath = core.getInput("appsPath", { required: true });
+            yield helpers_1.configureRealmCli(config);
+            if (core.getInput("cleanup", { required: false }) === "true") {
+                for (const appName of fs.readdirSync(appsPath)) {
+                    yield helpers_1.deleteApplication(appName, config);
+                }
+                yield helpers_1.deleteCluster(config);
+            }
+            else {
+                yield helpers_1.createCluster(config);
+                const deployedApps = {};
+                for (const appPath of fs.readdirSync(appsPath)) {
+                    const deployInfo = yield helpers_1.publishApplication(path_1.default.join(appsPath, appPath), config);
+                    deployedApps[appPath] = deployInfo.id;
+                }
+                core.setOutput("deployedApps", deployedApps);
+                yield helpers_1.waitForClusterDeployment(config);
+            }
+        }
+        catch (error) {
+            core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
+        }
+    });
+}
+run();
+exports.default = run;
+
+
+/***/ }),
+
 /***/ 7351:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -9764,7 +10086,7 @@ function onOpenClose() {
  */
 
 var crypto = __webpack_require__(6417);
-var utility = __webpack_require__(9536);
+var utility = __webpack_require__(3320);
 
 var AUTH_KEY_VALUE_RE = /(\w+)=["']?([^'"]+)["']?/;
 var NC = 0;
@@ -9842,7 +10164,7 @@ module.exports = digestAuthHeader;
 
 /***/ }),
 
-/***/ 9536:
+/***/ 3320:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 module.exports = __webpack_require__(4928);
@@ -53749,318 +54071,6 @@ XRegExp = XRegExp || (function (undef) {
 
 /***/ }),
 
-/***/ 3015:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.deleteApplication = exports.publishApplication = exports.configureRealmCli = exports.waitForClusterDeployment = exports.deleteCluster = exports.createCluster = void 0;
-const core = __importStar(__webpack_require__(2186));
-const exec = __importStar(__webpack_require__(1514));
-const fs = __importStar(__webpack_require__(5747));
-const path = __importStar(__webpack_require__(5622));
-const urllib = __importStar(__webpack_require__(4783));
-const crypto_1 = __webpack_require__(6417);
-function execCmd(cmd, args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let stdout = "";
-        let stderr = "";
-        const options = {
-            listeners: {
-                stdout: (data) => {
-                    stdout += data.toString();
-                },
-                stderr: (data) => {
-                    stderr += data.toString();
-                },
-            },
-            failOnStdErr: false,
-            ignoreReturnCode: true,
-        };
-        const exitCode = yield exec.exec(cmd, args, options);
-        if (exitCode !== 0) {
-            throw new Error(`"${cmd}" failed with code ${exitCode} giving error:\n ${stderr.trim()}`);
-        }
-        return stdout.trim();
-    });
-}
-function execCliCmd(cmd) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let actualCmd = `realm-cli --profile local -f json ${cmd}`;
-            if (process.platform === "win32") {
-                actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
-            }
-            const response = yield execCmd(actualCmd);
-            return response
-                .split(/\r?\n/)
-                .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
-                .map(s => JSON.parse(s));
-        }
-        catch (error) {
-            if (error.message.indexOf("503") > -1) {
-                return yield execCliCmd(cmd);
-            }
-            throw error;
-        }
-    });
-}
-function execAtlasRequest(method, route, config, payload) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const url = `${config.atlasUrl}/api/atlas/v1.0/groups/${config.projectId}/${route}`;
-        const request = {
-            digestAuth: `${config.apiKey}:${config.privateApiKey}`,
-            method,
-            headers: {
-                "content-type": "application/json",
-                accept: "application/json",
-            },
-        };
-        if (payload) {
-            request.data = JSON.stringify(payload);
-        }
-        const response = yield urllib.request(url, request);
-        if (response.status < 200 || response.status > 300) {
-            throw new Error(`Failed to execute ${request.method} ${route}: ${response.status}: ${response.data}`);
-        }
-        return JSON.parse(response.data);
-    });
-}
-function getSuffix() {
-    return crypto_1.createHash("md5")
-        .update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`)
-        .digest("base64")
-        .replace(/\+/g, "")
-        .replace(/-/g, "")
-        .toLowerCase()
-        .substring(0, 8);
-}
-function getClusterName() {
-    return `GHA-${getSuffix()}`;
-}
-function getAppName(name) {
-    return `${name}-${getSuffix()}`;
-}
-function createCluster(config) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
-        const payload = {
-            name: clusterName,
-            providerSettings: {
-                instanceSizeName: "M5",
-                providerName: "TENANT",
-                regionName: "US_EAST_1",
-                backingProviderName: "AWS",
-            },
-        };
-        core.info(`Creating Atlas cluster: ${clusterName}`);
-        const response = yield execAtlasRequest("POST", "clusters", config, payload);
-        core.info(`Cluster created: ${JSON.stringify(response)}`);
-    });
-}
-exports.createCluster = createCluster;
-function deleteCluster(config) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
-        core.info(`Deleting Atlas cluster: ${clusterName}`);
-        yield execAtlasRequest("DELETE", `clusters/${clusterName}`, config);
-        core.info(`Deleted Atlas cluster: ${clusterName}`);
-    });
-}
-exports.deleteCluster = deleteCluster;
-function waitForClusterDeployment(config) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
-        const pollDelay = 10;
-        let attempt = 0;
-        while (attempt++ < 100) {
-            try {
-                const response = yield execAtlasRequest("GET", `clusters/${clusterName}`, config);
-                if (response.stateName === "IDLE") {
-                    return;
-                }
-                core.info(`Cluster state is: ${response.stateName} after ${attempt * pollDelay} seconds. Waiting ${pollDelay} seconds for IDLE`);
-            }
-            catch (error) {
-                core.info(`Failed to check cluster status: ${error.message}`);
-            }
-            yield delay(pollDelay * 1000);
-        }
-        throw new Error(`Cluster failed to deploy after ${100 * pollDelay} seconds`);
-    });
-}
-exports.waitForClusterDeployment = waitForClusterDeployment;
-function configureRealmCli(config) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield execCmd("npm i -g mongodb-realm-cli");
-        yield execCliCmd(`login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`);
-    });
-}
-exports.configureRealmCli = configureRealmCli;
-function publishApplication(appPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
-        const appName = getAppName(path.basename(appPath));
-        core.info(`Creating app ${appName}`);
-        const createResponse = yield execCliCmd(`apps create --name ${appName}`);
-        const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
-        core.info(`Created app ${appName} with Id: ${appId}`);
-        const secrets = readJson(path.join(appPath, "secrets.json"));
-        for (const secret in secrets) {
-            core.info(`Importing secret ${secret}`);
-            yield execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
-        }
-        const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
-        const backingDBConfig = readJson(backingDBConfigPath);
-        backingDBConfig.type = "mongodb-atlas";
-        backingDBConfig.config.clusterName = clusterName;
-        writeJson(backingDBConfigPath, backingDBConfig);
-        core.info(`Updated BackingDB config with cluster: ${clusterName}`);
-        yield execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
-        core.info(`Imported ${appName} successfully`);
-        return {
-            id: appId,
-        };
-    });
-}
-exports.publishApplication = publishApplication;
-function deleteApplication(name) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const appName = getAppName(name);
-        const listResponse = yield execCliCmd("apps list");
-        const allApps = listResponse[0].data;
-        const existingApp = allApps === null || allApps === void 0 ? void 0 : allApps.find(a => a.startsWith(appName));
-        if (!existingApp) {
-            core.info(`Could not find an existing app with name ${appName}. Found apps: ${JSON.stringify(allApps)}`);
-            return;
-        }
-        const appId = existingApp.split(" ")[0];
-        core.info(`Deleting ${appName} with id: ${appId}`);
-        yield execCliCmd(`apps delete -a ${appId}`);
-        core.info(`Deleted ${appName}`);
-    });
-}
-exports.deleteApplication = deleteApplication;
-function readJson(filePath) {
-    const content = fs.readFileSync(filePath, { encoding: "utf8" });
-    return JSON.parse(content);
-}
-function writeJson(filePath, contents) {
-    fs.writeFileSync(filePath, JSON.stringify(contents));
-}
-function delay(ms) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            setTimeout(resolve, ms);
-        });
-    });
-}
-
-
-/***/ }),
-
-/***/ 399:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__webpack_require__(2186));
-const fs = __importStar(__webpack_require__(5747));
-const helpers_1 = __webpack_require__(3015);
-const path_1 = __importDefault(__webpack_require__(5622));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const config = {
-                atlasUrl: core.getInput("atlasUrl", { required: true }),
-                realmUrl: core.getInput("realmUrl", { required: true }),
-                projectId: core.getInput("projectId", { required: true }),
-                apiKey: core.getInput("apiKey", { required: true }),
-                privateApiKey: core.getInput("privateApiKey", { required: true }),
-            };
-            const appsPath = core.getInput("appsPath", { required: true });
-            yield helpers_1.configureRealmCli(config);
-            yield helpers_1.createCluster(config);
-            const deployedApps = {};
-            for (const appPath of fs.readdirSync(appsPath)) {
-                const deployInfo = yield helpers_1.publishApplication(path_1.default.join(appsPath, appPath));
-                deployedApps[appPath] = deployInfo.id;
-            }
-            core.setOutput("deployedApps", deployedApps);
-            yield helpers_1.waitForClusterDeployment(config);
-        }
-        catch (error) {
-            core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
-        }
-    });
-}
-run();
-exports.default = run;
-
-
-/***/ }),
-
 /***/ 8188:
 /***/ ((module) => {
 
@@ -54415,7 +54425,7 @@ module.exports = require("zlib");;
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(399);
+/******/ 	return __webpack_require__(9536);
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map

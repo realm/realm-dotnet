@@ -1,6 +1,14 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
-import { configureRealmCli, createCluster, publishApplication, waitForClusterDeployment, deleteApplication, deleteCluster, getSuffix } from "./helpers";
+import {
+    configureRealmCli,
+    createCluster,
+    publishApplication,
+    waitForClusterDeployment,
+    deleteApplication,
+    deleteCluster,
+    getSuffix,
+} from "./helpers";
 import { EnvironmentConfig } from "./config";
 import path from "path";
 
@@ -12,14 +20,14 @@ async function run(): Promise<void> {
             projectId: core.getInput("projectId", { required: true }),
             apiKey: core.getInput("apiKey", { required: true }),
             privateApiKey: core.getInput("privateApiKey", { required: true }),
-            differentitingSuffix: getSuffix(core.getInput("cluster-differentiator", {required: true}))
+            differentitingSuffix: getSuffix(core.getInput("cluster-differentiator", { required: true })),
         };
 
         const appsPath = core.getInput("appsPath", { required: true });
 
         await configureRealmCli(config);
 
-        if (core.getInput("cleanup", {required: false}) === "true") {
+        if (core.getInput("cleanup", { required: false }) === "true") {
             for (const appName of fs.readdirSync(appsPath)) {
                 await deleteApplication(appName, config);
             }
