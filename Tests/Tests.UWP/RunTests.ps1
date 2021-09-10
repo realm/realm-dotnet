@@ -14,46 +14,32 @@ if (-not (Test-Path -Path "$PackageLocation/Install.ps1")) {
 
 & $PackageLocation/Install.ps1 -Force
 
-$PackagePath = get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName
+$PackagePath = get-appxpackage -name realm.uwp.tests | Select-Object -expandproperty PackageFamilyName
 $ResultsPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestResults.UWP.xml"
 $RunOutputPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestRunOutput.txt"
 
-Write-Output "Found package path: $PackagePath"
-
-$oldTest = "shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App"
-Write-Output "Old: $oldTest"
-
-$newTest = "shell:AppsFolder\$PackagePath!App"
-Write-Output "New: $newTest"
-
-$TestAppProcess = Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml" -PassThru -RedirectStandardOutput pwshout.txt -RedirectStandardError pwsherr.txt
+Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
 
 do
 {
     Start-Sleep -s 3
-} while (-not $TestAppProcess.HasExited -and -not (Test-Path -Path $ResultsPath))
+    
+    if (!$TestAppProcess) {
+        $TestAppProcess = Get-Process Tests.UWP -ErrorAction SilentlyContinue
+    }
+} while (!($TestAppProcess -and $TestAppProcess.HasExited ) -and !(Test-Path -Path $ResultsPath))
 
-Write-Output "Test run completed with exit code $TestAppProcess.ExitCode"
-
-if (Test-Path -Path pwshout.txt) {
-    Write-Output "Found powershell output at pwshout.txt"
-    Get-Content $RunOutputPath
-}
-
-if (Test-Path -Path pwsherr.txt) {
-    Write-Output "Found powershell error output at pwsherr.txt"
-    Get-Content $RunOutputPath
-}
+Write-Output "Test run completed with exit code $($TestAppProcess.ExitCode)"
 
 if (Test-Path -Path $RunOutputPath) {
     Write-Output "Found run output at $RunOutputPath"
     Get-Content $RunOutputPath
 }
 
-if (-not (Test-Path -Path $ResultPath))
+if (-not (Test-Path -Path $ResultsPath))
 {
-    Write-Output "Failed to find results file at: $ResultPath, exiting."
+    Write-Output "Failed to find results file at: $ResultsPath, exiting."
     exit 3
 }
 

@@ -58,6 +58,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.Id, Is.Not.Null);
             });
         }
 
