@@ -22,7 +22,7 @@ inputs:
     description: The path to the apps to import into MongoDB Realm.
   cluster-differentiator:
     required: true
-    description: Provide a differentiator for the build - e.g. "${{ matrix.os }}-${{ matrix.node-version }}"  or "integration tests"
+    description: Provide a differentiator for the build - e.g. "{{ matrix.os }}-{{ matrix.node-version }}"  or "integration tests"
   cleanup:
     required: false
     description: A flag to indicate this is a cleanup job - it will tear down any apps and clusters created with the same parameters.
