@@ -553,11 +553,7 @@ jobs:
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
-      run: |
-        ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }}
-        $ResultPath = Get-Content -Path ResultsPath
-
-        echo "TEST_RESULTS=$ResultsPath" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }}
       shell: powershell
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1

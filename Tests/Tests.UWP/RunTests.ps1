@@ -48,4 +48,6 @@ if (-not (Test-Path -Path $ResultsPath))
     exit 3
 }
 
-Set-Content -Path ResultsPath -Value $ResultPath
+Write-Output "Results file is located at $ResultsPath"
+
+echo "TEST_RESULTS=$ResultsPath" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
