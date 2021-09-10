@@ -29,8 +29,8 @@ async function run(): Promise<void> {
         await configureRealmCli(config);
 
         if (isCleanup) {
-            for (const appPath of fs.readdirSync(appsPath)) {
-                await deleteApplication(path.join(appsPath, appPath), clusterName);
+            for (const appName of fs.readdirSync(appsPath)) {
+                await deleteApplication(appName);
             }
 
             await deleteCluster(clusterName, config);

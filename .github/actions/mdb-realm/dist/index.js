@@ -176,9 +176,9 @@ function publishApplication(appPath, clusterName) {
     });
 }
 exports.publishApplication = publishApplication;
-function deleteApplication(appPath, clusterName) {
+function deleteApplication(name) {
     return __awaiter(this, void 0, void 0, function* () {
-        const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
+        const appName = `${name}-${process.env.GITHUB_RUN_ID}`;
         const listResponse = yield execCliCmd("apps list");
         const allApps = listResponse[0].data;
         const existingApp = allApps.find(a => a.startsWith(appName));
@@ -187,15 +187,7 @@ function deleteApplication(appPath, clusterName) {
             return;
         }
         const appId = existingApp.split(" ")[0];
-        // Due to a poorly thought-out behavior of BaaS, we need to first disable
-        // sync which is only possible through a deployment. We're deploying the
-        // old version of the app, just removing the `sync` field. However, this
-        // fails because we're also removing some rules that were added automatically
-        // during the test runs. Removing the rules folder will assume we don't want
-        // to change the rules.
-        fs.rmdirSync(path.join(appPath, "services", "BackingDB", "rules"), { recursive: true });
-        yield deployApplication(appPath, clusterName, appId, false);
-        core.info(`Disabled sync service for ${appName}`);
+        core.info(`Deleting ${appName} with id: ${appId}`);
         yield execCliCmd(`apps delete -a ${appId}`);
         core.info(`Deleted ${appName}`);
     });
@@ -289,8 +281,8 @@ function run() {
             const clusterName = `GHA-${process.env.GITHUB_RUN_ID}`;
             yield helpers_1.configureRealmCli(config);
             if (isCleanup) {
-                for (const appPath of fs.readdirSync(appsPath)) {
-                    yield helpers_1.deleteApplication(path_1.default.join(appsPath, appPath), clusterName);
+                for (const appName of fs.readdirSync(appsPath)) {
+                    yield helpers_1.deleteApplication(appName);
                 }
                 yield helpers_1.deleteCluster(clusterName, config);
             }
