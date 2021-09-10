@@ -18,6 +18,14 @@ $PackagePath = get-appxpackage -name realm.uwp.tests | select -expandproperty Pa
 $ResultsPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestResults.UWP.xml"
 $RunOutputPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestRunOutput.txt"
 
+Write-Output "Found package path: $PackagePath"
+
+$oldTest = "shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App"
+Write-Output "Old: $oldTest"
+
+$newTest = "shell:AppsFolder\$PackagePath!App"
+Write-Output "New: $newTest"
+
 $TestAppProcess = Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml" -PassThru -RedirectStandardOutput pwshout.txt -RedirectStandardError pwsherr.txt
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
 
