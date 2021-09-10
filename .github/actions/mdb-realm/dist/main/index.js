@@ -53815,7 +53815,7 @@ function execCmd(cmd, args) {
 function execCliCmd(cmd) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield execCmd(`realm-cli --profile local -f json ${cmd}`);
+            const response = yield execCmd("realm-cli", ["--profile", "local", "-f", "json", ...cmd]);
             return response
                 .split(/\r?\n/)
                 .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
@@ -53899,7 +53899,17 @@ exports.waitForClusterDeployment = waitForClusterDeployment;
 function configureRealmCli(config) {
     return __awaiter(this, void 0, void 0, function* () {
         yield execCmd("npm i -g mongodb-realm-cli");
-        yield execCliCmd(`login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`);
+        yield execCliCmd([
+            "login",
+            "--api-key",
+            config.apiKey,
+            "--private-api-key",
+            config.privateApiKey,
+            "--atlas-url",
+            config.atlasUrl,
+            "--realm-url",
+            config.realmUrl,
+        ]);
     });
 }
 exports.configureRealmCli = configureRealmCli;
@@ -53907,13 +53917,13 @@ function publishApplication(appPath, clusterName) {
     return __awaiter(this, void 0, void 0, function* () {
         const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
         core.info(`Creating app ${appName}`);
-        const createResponse = yield execCliCmd(`apps create --name ${appName}`);
+        const createResponse = yield execCliCmd(["apps", "create", "--name", appName]);
         const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
         core.info(`Created app ${appName} with Id: ${appId}`);
         const secrets = readJson(path.join(appPath, "secrets.json"));
         for (const secret in secrets) {
             core.info(`Importing secret ${secret}`);
-            yield execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
+            yield execCliCmd(["secrets", "create", "--app", appId, "--name", secret, "--value", secrets[secret]]);
         }
         yield deployApplication(appPath, clusterName, appId);
         core.info(`Imported ${appName} successfully`);
@@ -53926,7 +53936,7 @@ exports.publishApplication = publishApplication;
 function deleteApplication(name) {
     return __awaiter(this, void 0, void 0, function* () {
         const appName = `${name}-${process.env.GITHUB_RUN_ID}`;
-        const listResponse = yield execCliCmd("apps list");
+        const listResponse = yield execCliCmd(["apps", "list"]);
         const allApps = listResponse[0].data;
         const existingApp = allApps.find(a => a.startsWith(appName));
         if (!existingApp) {
@@ -53935,7 +53945,7 @@ function deleteApplication(name) {
         }
         const appId = existingApp.split(" ")[0];
         core.info(`Deleting ${appName} with id: ${appId}`);
-        yield execCliCmd(`apps delete -a ${appId}`);
+        yield execCliCmd(["apps", "delete", "-a", appId]);
         core.info(`Deleted ${appName}`);
     });
 }
@@ -53951,7 +53961,7 @@ function deployApplication(appPath, clusterName, appId, syncEnabled = true) {
         }
         writeJson(backingDBConfigPath, backingDBConfig);
         core.info(`Updated BackingDB config with cluster: ${clusterName}, sync enabled: ${syncEnabled}`);
-        yield execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
+        yield execCliCmd(["push", "--local", appPath, "--remote", appId, "-y"]);
     });
 }
 function readJson(filePath) {
