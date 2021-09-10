@@ -160,7 +160,7 @@ function publishApplication(appPath, clusterName) {
     return __awaiter(this, void 0, void 0, function* () {
         const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
         core.info(`Creating app ${appName}`);
-        const createResponse = yield execCliCmd(`apps create --name ${appName} -l US-VA -d LOCAL`);
+        const createResponse = yield execCliCmd(`apps create --name ${appName}`);
         const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
         core.info(`Created app ${appName} with Id: ${appId}`);
         const secrets = readJson(path.join(appPath, "secrets.json"));

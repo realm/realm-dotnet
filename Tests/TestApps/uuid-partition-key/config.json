@@ -3,7 +3,7 @@
     "config_version": 20180301,
     "name": "uuid-partition-key",
     "location": "US-VA",
-    "deployment_model": "LOCAL",
+    "deployment_model": "GLOBAL",
     "security": {},
     "custom_user_data_config": {
         "enabled": false

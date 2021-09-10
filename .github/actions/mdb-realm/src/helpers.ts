@@ -139,7 +139,7 @@ export async function publishApplication(appPath: string, clusterName: string): 
     const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
     core.info(`Creating app ${appName}`);
 
-    const createResponse = await execCliCmd(`apps create --name ${appName} -l US-VA -d LOCAL`);
+    const createResponse = await execCliCmd(`apps create --name ${appName}`);
 
     const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
 
