@@ -53921,8 +53921,12 @@ function execAtlasRequest(method, route, config, payload) {
     });
 }
 function getSuffix() {
-    const hash = crypto_1.createHash("md5").update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`).digest("base64");
-    return hash.substring(0, 8);
+    return crypto_1.createHash("md5")
+        .update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`)
+        .digest("base64")
+        .replace("+", "")
+        .replace("-", "")
+        .substring(0, 8);
 }
 function getClusterName() {
     return `GHA-${getSuffix()}`;

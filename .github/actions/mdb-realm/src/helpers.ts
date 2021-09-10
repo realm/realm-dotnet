@@ -81,8 +81,12 @@ async function execAtlasRequest(
 }
 
 function getSuffix(): string {
-    const hash = createHash("md5").update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`).digest("base64");
-    return hash.substring(0, 8);
+    return createHash("md5")
+        .update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`)
+        .digest("base64")
+        .replace("+", "")
+        .replace("-", "")
+        .substring(0, 8);
 }
 
 function getClusterName(): string {
