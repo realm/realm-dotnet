@@ -30,23 +30,26 @@ async function execCmd(cmd: string, args?: string[]): Promise<string> {
     return stdout.trim();
 }
 
-async function execCliCmd(cmd: string): Promise<any[]> {
-    try {
-        let actualCmd = `realm-cli --profile local -f json ${cmd}`;
-        if (process.platform === "win32") {
-            actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
+async function execCliCmd(cmd: string, retries = 5): Promise<any[]> {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        try {
+            let actualCmd = `realm-cli --profile local -f json ${cmd}`;
+            if (process.platform === "win32") {
+                actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
+            }
+            const response = await execCmd(actualCmd);
+            return response
+                .split(/\r?\n/)
+                .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
+                .map(s => JSON.parse(s));
+        } catch (error: any) {
+            if (retries-- < 2) {
+                throw error;
+            } else {
+                core.info(`Failed to execute ${cmd} with ${error}. Retrying ${retries} more time(s)`);
+            }
         }
-        const response = await execCmd(actualCmd);
-        return response
-            .split(/\r?\n/)
-            .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
-            .map(s => JSON.parse(s));
-    } catch (error: any) {
-        if (error.message.indexOf("503") > -1) {
-            return await execCliCmd(cmd);
-        }
-
-        throw error;
     }
 }
 

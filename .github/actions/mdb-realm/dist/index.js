@@ -66,24 +66,29 @@ function execCmd(cmd, args) {
         return stdout.trim();
     });
 }
-function execCliCmd(cmd) {
+function execCliCmd(cmd, retries = 5) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let actualCmd = `realm-cli --profile local -f json ${cmd}`;
-            if (process.platform === "win32") {
-                actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            try {
+                let actualCmd = `realm-cli --profile local -f json ${cmd}`;
+                if (process.platform === "win32") {
+                    actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
+                }
+                const response = yield execCmd(actualCmd);
+                return response
+                    .split(/\r?\n/)
+                    .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
+                    .map(s => JSON.parse(s));
             }
-            const response = yield execCmd(actualCmd);
-            return response
-                .split(/\r?\n/)
-                .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
-                .map(s => JSON.parse(s));
-        }
-        catch (error) {
-            if (error.message.indexOf("503") > -1) {
-                return yield execCliCmd(cmd);
+            catch (error) {
+                if (retries-- < 2) {
+                    throw error;
+                }
+                else {
+                    core.info(`Failed to execute ${cmd} with ${error}. Retrying ${retries} more time(s)`);
+                }
             }
-            throw error;
         }
     });
 }
