@@ -80,10 +80,9 @@ export async function createCluster(name: string, config: EnvironmentConfig): Pr
     const payload = {
         name,
         providerSettings: {
-            instanceSizeName: "M2",
-            providerName: "TENANT",
+            instanceSizeName: "M10",
+            providerName: "AWS",
             regionName: "US_EAST_1",
-            backingProviderName: "AWS",
         },
     };
 
@@ -140,7 +139,7 @@ export async function publishApplication(appPath: string, clusterName: string): 
     const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
     core.info(`Creating app ${appName}`);
 
-    const createResponse = await execCliCmd(`apps create --name ${appName}`);
+    const createResponse = await execCliCmd(`apps create --name ${appName} -l US-VA -d LOCAL`);
 
     const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
 
