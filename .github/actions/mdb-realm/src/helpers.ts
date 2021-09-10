@@ -34,7 +34,7 @@ async function execCliCmd(cmd: string): Promise<any[]> {
     try {
         let actualCmd = `realm-cli --profile local -f json ${cmd}`;
         if (process.platform === "win32") {
-            actualCmd = `pwsh -Command "${actualCmd.replace('"', '\\"').split("\n").join("`n")}"`;
+            actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
         }
         const response = await execCmd(actualCmd);
         return response
@@ -84,8 +84,8 @@ function getSuffix(): string {
     return createHash("md5")
         .update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`)
         .digest("base64")
-        .replace("+", "")
-        .replace("-", "")
+        .replace(/\+/g, "")
+        .replace(/-/g, "")
         .substring(0, 8);
 }
 

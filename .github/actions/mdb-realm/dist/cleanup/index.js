@@ -53883,7 +53883,7 @@ function execCliCmd(cmd) {
         try {
             let actualCmd = `realm-cli --profile local -f json ${cmd}`;
             if (process.platform === "win32") {
-                actualCmd = `pwsh -Command "${actualCmd.replace('"', '\\"').split("\n").join("`n")}"`;
+                actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
             }
             const response = yield execCmd(actualCmd);
             return response
@@ -53924,8 +53924,8 @@ function getSuffix() {
     return crypto_1.createHash("md5")
         .update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`)
         .digest("base64")
-        .replace("+", "")
-        .replace("-", "")
+        .replace(/\+/g, "")
+        .replace(/-/g, "")
         .substring(0, 8);
 }
 function getClusterName() {
