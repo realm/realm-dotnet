@@ -20,9 +20,7 @@ inputs:
   appsPath:
     required: true
     description: The path to the apps to import into MongoDB Realm.
-  cleanup:
-    required: false
-    description: Designates whether this step is a cleanup step.
 runs:
   using: node12
-  main: dist/index.js
+  main: dist/main/index.js
+  post: dist/cleanup/index.js

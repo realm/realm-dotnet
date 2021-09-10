@@ -46,16 +46,16 @@ async function execCliCmd(cmd: string): Promise<any[]> {
 }
 
 async function execAtlasRequest(
+    method: urllib.HttpMethod,
     route: string,
-    payload: any,
     config: EnvironmentConfig,
-    method?: urllib.HttpMethod,
+    payload?: any,
 ): Promise<any> {
     const url = `${config.atlasUrl}/api/atlas/v1.0/groups/${config.projectId}/${route}`;
 
     const request: urllib.RequestOptions = {
         digestAuth: `${config.apiKey}:${config.privateApiKey}`,
-        method: method || "GET",
+        method,
         headers: {
             "content-type": "application/json",
             accept: "application/json",
@@ -63,7 +63,6 @@ async function execAtlasRequest(
     };
 
     if (payload) {
-        request.method = method || "POST";
         request.data = JSON.stringify(payload);
     }
 
@@ -80,15 +79,16 @@ export async function createCluster(name: string, config: EnvironmentConfig): Pr
     const payload = {
         name,
         providerSettings: {
-            instanceSizeName: "M10",
-            providerName: "AWS",
+            instanceSizeName: "M5",
+            providerName: "TENANT",
             regionName: "US_EAST_1",
+            backingProviderName: "AWS",
         },
     };
 
     core.info(`Creating Atlas cluster: ${name}`);
 
-    const response = await execAtlasRequest("clusters", payload, config);
+    const response = await execAtlasRequest("POST", "clusters", config, payload);
 
     core.info(`Cluster created: ${response}`);
 }
@@ -96,7 +96,7 @@ export async function createCluster(name: string, config: EnvironmentConfig): Pr
 export async function deleteCluster(name: string, config: EnvironmentConfig): Promise<void> {
     core.info(`Deleting Atlas cluster: ${name}`);
 
-    await execAtlasRequest(`clusters/${name}`, undefined, config, "DELETE");
+    await execAtlasRequest("DELETE", `clusters/${name}`, config);
 
     core.info(`Deleted Atlas cluster: ${name}`);
 }
@@ -106,7 +106,7 @@ export async function waitForClusterDeployment(clusterName: string, config: Envi
     let attempt = 0;
     while (attempt++ < 100) {
         try {
-            const response = await execAtlasRequest(`clusters/${clusterName}`, undefined, config);
+            const response = await execAtlasRequest("GET", `clusters/${clusterName}`, config);
 
             if (response.stateName === "IDLE") {
                 return;

@@ -42,9 +42,6 @@ runs-on: #@ os
 name: #@ name
 needs:
 - build-packages
-- prepare-baas-server
-env:
-  APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
@@ -201,6 +198,22 @@ steps:
     run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After --baasurl ${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
 #@ end
 
+#@ def prepareTestRun():
+  - #@ template.replace(checkoutCode())
+  - name: Deploy BaaS
+    uses: ./.github/actions/mdb-realm
+    id: deploy-mdb-apps
+    with:
+      projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+      apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+      privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+      appsPath: ${{ github.workspace }}/Tests/TestApps
+      atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+      realmUrl: ${{ secrets.REALM_BASE_URL }}
+  - run: echo 'APPS_CONFIG=${{ steps.deploy-mdb-apps.outputs.deployedApps }}' >> $GITHUB_ENV
+  - #@ template.replace(fetchPackageArtifacts())
+#@ end
+
 #@ def publishTestsResults(files, test_title):
 name: Publish Unit Test Results
 uses: EnricoMi/publish-unit-test-result-action/composite@v1
@@ -247,21 +260,6 @@ name: main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
-  prepare-baas-server:
-    runs-on: ubuntu-latest
-    outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/mdb-realm
-        id: deploy-mdb-apps
-        with:
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-          appsPath: ${{ github.workspace }}/Tests/TestApps
-          atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
@@ -364,8 +362,7 @@ jobs:
   run-tests-net-framework:
     _: #@ template.replace(testsJob("Test .NET Framework", "windows-latest"))
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTestRun())
       - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
       - name: Run the tests
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"
@@ -484,27 +481,6 @@ jobs:
           git-commit: ${{ github.event.pull_request.head.sha }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-  cleanup-baas-server:
-    needs:
-    - code-coverage
-    - run-tests-net-framework
-    - run-tests-uwp
-    - run-tests-netcore
-    - run-tests-xamarin-macos
-    - run-tests-xamarin-ios
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/mdb-realm
-        with:
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-          appsPath: ${{ github.workspace }}/Tests/TestApps
-          atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
-          cleanup: true
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
