@@ -1,5 +1,6 @@
-param(
-    [string]$PackageLocation = "$PSScriptRoot/AppPackages/Tests.UWP_1.0.0.0_Test"
+ param(
+    [string]$PackageLocation = "$PSScriptRoot/AppPackages/Tests.UWP_1.0.0.0_Test",
+    [string]$BaasUrl = ""
 )
 
 if (-not (Test-Path -Path $PackageLocation)) {
@@ -18,13 +19,17 @@ $PackagePath = get-appxpackage -name realm.uwp.tests | Select-Object -expandprop
 $ResultsPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestResults.UWP.xml"
 $RunOutputPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestRunOutput.txt"
 
-Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
+if ($BaasUrl) {
+    $BaasArgs = "--baasurl $BaasUrl"
+}
+
+Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml $BaasArgs"
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
 
 do
 {
     Start-Sleep -s 3
-    
+
     if (!$TestAppProcess) {
         $TestAppProcess = Get-Process Tests.UWP -ErrorAction SilentlyContinue
     }
