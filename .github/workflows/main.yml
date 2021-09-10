@@ -554,7 +554,8 @@ jobs:
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
       run: |
-        $ResultsPath = & ./Tests/Tests.UWP/RunTests.ps1
+        ./Tests/Tests.UWP/RunTests.ps1
+        $ResultPath = Get-Content -Path ResultsPath
 
         echo "TEST_RESULTS=$ResultsPath" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell

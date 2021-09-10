@@ -57,4 +57,4 @@ if (-not (Test-Path -Path $ResultPath))
     exit 3
 }
 
-return $ResultsPath
+Set-Content -Path ResultsPath -Value $ResultPath
