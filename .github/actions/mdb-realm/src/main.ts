@@ -16,21 +16,19 @@ async function run(): Promise<void> {
 
         const appsPath = core.getInput("appsPath", { required: true });
 
-        const clusterName = `GHA-${process.env.GITHUB_RUN_ID}`;
-
         await configureRealmCli(config);
 
-        await createCluster(clusterName, config);
+        await createCluster(config);
 
         const deployedApps: { [key: string]: string } = {};
         for (const appPath of fs.readdirSync(appsPath)) {
-            const deployInfo = await publishApplication(path.join(appsPath, appPath), clusterName);
+            const deployInfo = await publishApplication(path.join(appsPath, appPath));
             deployedApps[appPath] = deployInfo.id;
         }
 
         core.setOutput("deployedApps", deployedApps);
 
-        await waitForClusterDeployment(clusterName, config);
+        await waitForClusterDeployment(config);
     } catch (error: any) {
         core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }

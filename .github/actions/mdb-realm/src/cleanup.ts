@@ -15,15 +15,13 @@ async function run(): Promise<void> {
 
         const appsPath = core.getInput("appsPath", { required: true });
 
-        const clusterName = `GHA-${process.env.GITHUB_RUN_ID}`;
-
         await configureRealmCli(config);
 
         for (const appName of fs.readdirSync(appsPath)) {
             await deleteApplication(appName);
         }
 
-        await deleteCluster(clusterName, config);
+        await deleteCluster(config);
     } catch (error: any) {
         core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }

@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as urllib from "urllib";
 import { EnvironmentConfig } from "./config";
+import { createHash } from "crypto";
 
 async function execCmd(cmd: string, args?: string[]): Promise<string> {
     let stdout = "";
@@ -79,9 +80,23 @@ async function execAtlasRequest(
     return JSON.parse(response.data);
 }
 
-export async function createCluster(name: string, config: EnvironmentConfig): Promise<void> {
+function getSuffix(): string {
+    const hash = createHash("md5").update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`).digest("base64");
+    return hash.substring(0, 8);
+}
+
+function getClusterName(): string {
+    return `GHA-${getSuffix()}`;
+}
+
+function getAppName(name: string): string {
+    return `${name}-${getSuffix()}`;
+}
+
+export async function createCluster(config: EnvironmentConfig): Promise<void> {
+    const clusterName = getClusterName();
     const payload = {
-        name,
+        name: clusterName,
         providerSettings: {
             instanceSizeName: "M5",
             providerName: "TENANT",
@@ -90,22 +105,24 @@ export async function createCluster(name: string, config: EnvironmentConfig): Pr
         },
     };
 
-    core.info(`Creating Atlas cluster: ${name}`);
+    core.info(`Creating Atlas cluster: ${clusterName}`);
 
     const response = await execAtlasRequest("POST", "clusters", config, payload);
 
     core.info(`Cluster created: ${response}`);
 }
 
-export async function deleteCluster(name: string, config: EnvironmentConfig): Promise<void> {
-    core.info(`Deleting Atlas cluster: ${name}`);
+export async function deleteCluster(config: EnvironmentConfig): Promise<void> {
+    const clusterName = getClusterName();
+    core.info(`Deleting Atlas cluster: ${clusterName}`);
 
-    await execAtlasRequest("DELETE", `clusters/${name}`, config);
+    await execAtlasRequest("DELETE", `clusters/${clusterName}`, config);
 
-    core.info(`Deleted Atlas cluster: ${name}`);
+    core.info(`Deleted Atlas cluster: ${clusterName}`);
 }
 
-export async function waitForClusterDeployment(clusterName: string, config: EnvironmentConfig): Promise<void> {
+export async function waitForClusterDeployment(config: EnvironmentConfig): Promise<void> {
+    const clusterName = getClusterName();
     const pollDelay = 10;
     let attempt = 0;
     while (attempt++ < 100) {
@@ -139,8 +156,9 @@ export async function configureRealmCli(config: EnvironmentConfig): Promise<void
     );
 }
 
-export async function publishApplication(appPath: string, clusterName: string): Promise<{ id: string }> {
-    const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
+export async function publishApplication(appPath: string): Promise<{ id: string }> {
+    const clusterName = getClusterName();
+    const appName = getAppName(path.basename(appPath));
     core.info(`Creating app ${appName}`);
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
@@ -156,7 +174,16 @@ export async function publishApplication(appPath: string, clusterName: string): 
         await execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
     }
 
-    await deployApplication(appPath, clusterName, appId);
+    const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
+    const backingDBConfig = readJson(backingDBConfigPath);
+    backingDBConfig.type = "mongodb-atlas";
+    backingDBConfig.config.clusterName = clusterName;
+
+    writeJson(backingDBConfigPath, backingDBConfig);
+
+    core.info(`Updated BackingDB config with cluster: ${clusterName}`);
+
+    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
 
     core.info(`Imported ${appName} successfully`);
 
@@ -166,7 +193,7 @@ export async function publishApplication(appPath: string, clusterName: string): 
 }
 
 export async function deleteApplication(name: string): Promise<void> {
-    const appName = `${name}-${process.env.GITHUB_RUN_ID}`;
+    const appName = getAppName(name);
     const listResponse = await execCliCmd("apps list");
     const allApps: string[] = listResponse[0].data;
 
@@ -184,28 +211,6 @@ export async function deleteApplication(name: string): Promise<void> {
     await execCliCmd(`apps delete -a ${appId}`);
 
     core.info(`Deleted ${appName}`);
-}
-
-async function deployApplication(
-    appPath: string,
-    clusterName: string,
-    appId: string,
-    syncEnabled = true,
-): Promise<void> {
-    const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
-    const backingDBConfig = readJson(backingDBConfigPath);
-    backingDBConfig.type = "mongodb-atlas";
-    backingDBConfig.config.clusterName = clusterName;
-
-    if (!syncEnabled) {
-        delete backingDBConfig.config.sync;
-    }
-
-    writeJson(backingDBConfigPath, backingDBConfig);
-
-    core.info(`Updated BackingDB config with cluster: ${clusterName}, sync enabled: ${syncEnabled}`);
-
-    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
 }
 
 function readJson(filePath: string): any {

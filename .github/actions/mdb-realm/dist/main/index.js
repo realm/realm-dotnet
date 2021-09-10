@@ -53789,6 +53789,7 @@ const exec = __importStar(__webpack_require__(1514));
 const fs = __importStar(__webpack_require__(5747));
 const path = __importStar(__webpack_require__(5622));
 const urllib = __importStar(__webpack_require__(4783));
+const crypto_1 = __webpack_require__(6417);
 function execCmd(cmd, args) {
     return __awaiter(this, void 0, void 0, function* () {
         let stdout = "";
@@ -53854,10 +53855,21 @@ function execAtlasRequest(method, route, config, payload) {
         return JSON.parse(response.data);
     });
 }
-function createCluster(name, config) {
+function getSuffix() {
+    const hash = crypto_1.createHash("md5").update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`).digest("base64");
+    return hash.substring(0, 8);
+}
+function getClusterName() {
+    return `GHA-${getSuffix()}`;
+}
+function getAppName(name) {
+    return `${name}-${getSuffix()}`;
+}
+function createCluster(config) {
     return __awaiter(this, void 0, void 0, function* () {
+        const clusterName = getClusterName();
         const payload = {
-            name,
+            name: clusterName,
             providerSettings: {
                 instanceSizeName: "M5",
                 providerName: "TENANT",
@@ -53865,22 +53877,24 @@ function createCluster(name, config) {
                 backingProviderName: "AWS",
             },
         };
-        core.info(`Creating Atlas cluster: ${name}`);
+        core.info(`Creating Atlas cluster: ${clusterName}`);
         const response = yield execAtlasRequest("POST", "clusters", config, payload);
         core.info(`Cluster created: ${response}`);
     });
 }
 exports.createCluster = createCluster;
-function deleteCluster(name, config) {
+function deleteCluster(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`Deleting Atlas cluster: ${name}`);
-        yield execAtlasRequest("DELETE", `clusters/${name}`, config);
-        core.info(`Deleted Atlas cluster: ${name}`);
+        const clusterName = getClusterName();
+        core.info(`Deleting Atlas cluster: ${clusterName}`);
+        yield execAtlasRequest("DELETE", `clusters/${clusterName}`, config);
+        core.info(`Deleted Atlas cluster: ${clusterName}`);
     });
 }
 exports.deleteCluster = deleteCluster;
-function waitForClusterDeployment(clusterName, config) {
+function waitForClusterDeployment(config) {
     return __awaiter(this, void 0, void 0, function* () {
+        const clusterName = getClusterName();
         const pollDelay = 10;
         let attempt = 0;
         while (attempt++ < 100) {
@@ -53907,9 +53921,10 @@ function configureRealmCli(config) {
     });
 }
 exports.configureRealmCli = configureRealmCli;
-function publishApplication(appPath, clusterName) {
+function publishApplication(appPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
+        const clusterName = getClusterName();
+        const appName = getAppName(path.basename(appPath));
         core.info(`Creating app ${appName}`);
         const createResponse = yield execCliCmd(`apps create --name ${appName}`);
         const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
@@ -53919,7 +53934,13 @@ function publishApplication(appPath, clusterName) {
             core.info(`Importing secret ${secret}`);
             yield execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
         }
-        yield deployApplication(appPath, clusterName, appId);
+        const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
+        const backingDBConfig = readJson(backingDBConfigPath);
+        backingDBConfig.type = "mongodb-atlas";
+        backingDBConfig.config.clusterName = clusterName;
+        writeJson(backingDBConfigPath, backingDBConfig);
+        core.info(`Updated BackingDB config with cluster: ${clusterName}`);
+        yield execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
         core.info(`Imported ${appName} successfully`);
         return {
             id: appId,
@@ -53929,7 +53950,7 @@ function publishApplication(appPath, clusterName) {
 exports.publishApplication = publishApplication;
 function deleteApplication(name) {
     return __awaiter(this, void 0, void 0, function* () {
-        const appName = `${name}-${process.env.GITHUB_RUN_ID}`;
+        const appName = getAppName(name);
         const listResponse = yield execCliCmd("apps list");
         const allApps = listResponse[0].data;
         const existingApp = allApps.find(a => a.startsWith(appName));
@@ -53944,20 +53965,6 @@ function deleteApplication(name) {
     });
 }
 exports.deleteApplication = deleteApplication;
-function deployApplication(appPath, clusterName, appId, syncEnabled = true) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
-        const backingDBConfig = readJson(backingDBConfigPath);
-        backingDBConfig.type = "mongodb-atlas";
-        backingDBConfig.config.clusterName = clusterName;
-        if (!syncEnabled) {
-            delete backingDBConfig.config.sync;
-        }
-        writeJson(backingDBConfigPath, backingDBConfig);
-        core.info(`Updated BackingDB config with cluster: ${clusterName}, sync enabled: ${syncEnabled}`);
-        yield execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
-    });
-}
 function readJson(filePath) {
     const content = fs.readFileSync(filePath, { encoding: "utf8" });
     return JSON.parse(content);
@@ -54028,16 +54035,15 @@ function run() {
                 privateApiKey: core.getInput("privateApiKey", { required: true }),
             };
             const appsPath = core.getInput("appsPath", { required: true });
-            const clusterName = `GHA-${process.env.GITHUB_RUN_ID}`;
             yield helpers_1.configureRealmCli(config);
-            yield helpers_1.createCluster(clusterName, config);
+            yield helpers_1.createCluster(config);
             const deployedApps = {};
             for (const appPath of fs.readdirSync(appsPath)) {
-                const deployInfo = yield helpers_1.publishApplication(path_1.default.join(appsPath, appPath), clusterName);
+                const deployInfo = yield helpers_1.publishApplication(path_1.default.join(appsPath, appPath));
                 deployedApps[appPath] = deployInfo.id;
             }
             core.setOutput("deployedApps", deployedApps);
-            yield helpers_1.waitForClusterDeployment(clusterName, config);
+            yield helpers_1.waitForClusterDeployment(config);
         }
         catch (error) {
             core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
