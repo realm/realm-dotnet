@@ -558,7 +558,7 @@ jobs:
     - name: Run the tests
       run: |
         echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
-        Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml --baasurl ${{ secrets.REALM_BASE_URL }}"
+        Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
         Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
         do
         {
@@ -657,7 +657,7 @@ jobs:
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
