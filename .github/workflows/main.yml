@@ -429,6 +429,8 @@ jobs:
     needs:
     - build-packages
     - prepare-baas-server
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -454,7 +456,7 @@ jobs:
     - name: Build Tests/Realm.Tests
       run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:TargetFramework=net461
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -468,6 +470,8 @@ jobs:
     needs:
     - build-packages
     - prepare-baas-server
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -505,7 +509,7 @@ jobs:
     - name: Run the tests
       run: |
         echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
-        Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
+        Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml --baasurl ${{ secrets.REALM_BASE_URL }}"
         Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
         do
         {
@@ -537,6 +541,8 @@ jobs:
     - build-packages
     - prepare-baas-server
     runs-on: ${{ matrix.os }}
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     strategy:
       fail-fast: false
       matrix:
@@ -583,7 +589,7 @@ jobs:
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -597,6 +603,8 @@ jobs:
     needs:
     - build-packages
     - prepare-baas-server
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -620,7 +628,7 @@ jobs:
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
@@ -634,6 +642,8 @@ jobs:
     needs:
     - build-packages
     - prepare-baas-server
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -662,7 +672,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
+        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }}
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
