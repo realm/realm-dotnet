@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
-import { configureRealmCli, createCluster, publishApplication, waitForClusterDeployment } from "./helpers";
+import { configureRealmCli, createCluster, publishApplication, waitForClusterDeployment, deleteApplication, deleteCluster, getSuffix } from "./helpers";
 import { EnvironmentConfig } from "./config";
 import path from "path";
 
@@ -12,23 +12,32 @@ async function run(): Promise<void> {
             projectId: core.getInput("projectId", { required: true }),
             apiKey: core.getInput("apiKey", { required: true }),
             privateApiKey: core.getInput("privateApiKey", { required: true }),
+            differentitingSuffix: getSuffix(core.getInput("cluster-differentiator", {required: true}))
         };
 
         const appsPath = core.getInput("appsPath", { required: true });
 
         await configureRealmCli(config);
 
-        await createCluster(config);
+        if (core.getInput("cleanup", {required: false}) === "true") {
+            for (const appName of fs.readdirSync(appsPath)) {
+                await deleteApplication(appName, config);
+            }
 
-        const deployedApps: { [key: string]: string } = {};
-        for (const appPath of fs.readdirSync(appsPath)) {
-            const deployInfo = await publishApplication(path.join(appsPath, appPath));
-            deployedApps[appPath] = deployInfo.id;
+            await deleteCluster(config);
+        } else {
+            await createCluster(config);
+
+            const deployedApps: { [key: string]: string } = {};
+            for (const appPath of fs.readdirSync(appsPath)) {
+                const deployInfo = await publishApplication(path.join(appsPath, appPath), config);
+                deployedApps[appPath] = deployInfo.id;
+            }
+
+            core.setOutput("deployedApps", deployedApps);
+
+            await waitForClusterDeployment(config);
         }
-
-        core.setOutput("deployedApps", deployedApps);
-
-        await waitForClusterDeployment(config);
     } catch (error: any) {
         core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
     }

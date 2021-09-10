@@ -408,11 +408,35 @@ jobs:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-  run-tests-net-framework:
+  baas-net-framework:
+    runs-on: ubuntu-latest
+    name: Deploy BaaS for .NET Framework
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cluster-differentiator: .NET Framework
+  test-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
     needs:
     - build-packages
+    - baas-net-framework
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -423,17 +447,6 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Deploy BaaS
-      uses: ./.github/actions/mdb-realm
-      id: deploy-mdb-apps
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-    - run: echo 'APPS_CONFIG=${{ steps.deploy-mdb-apps.outputs.deployedApps }}' >> $GITHUB_ENV
     - name: Fetch Realm
       uses: actions/download-artifact@v2
       with:
@@ -457,11 +470,57 @@ jobs:
         files: TestResults.Windows.xml
         comment_mode: "off"
         check_name: Results .NET Framework
-  run-tests-uwp:
+  cleanup-net-framework:
+    runs-on: ubuntu-latest
+    name: Cleanup BaaS for .NET Framework
+    needs:
+    - test-net-framework
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cleanup: true
+        cluster-differentiator: .NET Framework
+  baas-uwp-managed:
+    runs-on: ubuntu-latest
+    name: Deploy BaaS for UWP Managed
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cluster-differentiator: UWP Managed
+  test-uwp-managed:
     runs-on: windows-latest
-    name: Test UWP managed
+    name: Test UWP Managed
     needs:
     - build-packages
+    - baas-uwp-managed
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -524,7 +583,29 @@ jobs:
       with:
         files: ${{ env.test_results }}
         comment_mode: "off"
-        check_name: Results UWP
+        check_name: Results UWP Managed
+  cleanup-uwp-managed:
+    runs-on: ubuntu-latest
+    name: Cleanup BaaS for UWP Managed
+    needs:
+    - test-uwp-managed
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cleanup: true
+        cluster-differentiator: UWP Managed
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: Test .NET
@@ -584,11 +665,35 @@ jobs:
         files: TestResults.xml
         comment_mode: "off"
         check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
-  run-tests-xamarin-macos:
+  baas-xamarinmacos:
+    runs-on: ubuntu-latest
+    name: Deploy BaaS for Xamarin.macOS
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cluster-differentiator: Xamarin.macOS
+  test-xamarinmacos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
     needs:
     - build-packages
+    - baas-xamarinmacos
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -620,11 +725,57 @@ jobs:
         files: TestResults.macOS.xml
         comment_mode: "off"
         check_name: Results Xamarin.macOS
-  run-tests-xamarin-ios:
+  cleanup-xamarinmacos:
+    runs-on: ubuntu-latest
+    name: Cleanup BaaS for Xamarin.macOS
+    needs:
+    - test-xamarinmacos
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cleanup: true
+        cluster-differentiator: Xamarin.macOS
+  baas-xamarinios:
+    runs-on: ubuntu-latest
+    name: Deploy BaaS for Xamarin.iOS
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cluster-differentiator: Xamarin.iOS
+  test-xamarinios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
     needs:
     - build-packages
+    - baas-xamarinios
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -661,6 +812,28 @@ jobs:
         files: TestResults.iOS.xml
         comment_mode: "off"
         check_name: Results Xamarin.iOS
+  cleanup-xamarinios:
+    runs-on: ubuntu-latest
+    name: Cleanup BaaS for Xamarin.iOS
+    needs:
+    - test-xamarinios
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cleanup: true
+        cluster-differentiator: Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -688,11 +861,35 @@ jobs:
         files: TestResults.Weaver.xml
         comment_mode: "off"
         check_name: Results Weaver
-  code-coverage:
+  baas-code-coverage:
     runs-on: ubuntu-latest
-    name: Code Coverage
+    name: Deploy BaaS for Code Coverage
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cluster-differentiator: Code Coverage
+  test-code-coverage:
+    runs-on: ubuntu-latest
+    name: Test Code Coverage
     needs:
     - build-packages
+    - baas-code-coverage
+    env:
+      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -703,17 +900,6 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Deploy BaaS
-      uses: ./.github/actions/mdb-realm
-      id: deploy-mdb-apps
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-    - run: echo 'APPS_CONFIG=${{ steps.deploy-mdb-apps.outputs.deployedApps }}' >> $GITHUB_ENV
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v2
       with:
@@ -798,6 +984,28 @@ jobs:
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+  cleanup-code-coverage:
+    runs-on: ubuntu-latest
+    name: Cleanup BaaS for Code Coverage
+    needs:
+    - test-code-coverage
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cleanup: true
+        cluster-differentiator: Code Coverage
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup

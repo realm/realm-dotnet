@@ -80,9 +80,9 @@ async function execAtlasRequest(
     return JSON.parse(response.data);
 }
 
-function getSuffix(): string {
+export function getSuffix(differentiator: string): string {
     return createHash("md5")
-        .update(`${process.env.GITHUB_JOB}-${process.env.GITHUB_RUN_ID}`)
+        .update(`${process.env.GITHUB_RUN_ID}-${differentiator}`)
         .digest("base64")
         .replace(/\+/g, "")
         .replace(/-/g, "")
@@ -90,16 +90,16 @@ function getSuffix(): string {
         .substring(0, 8);
 }
 
-function getClusterName(): string {
-    return `GHA-${getSuffix()}`;
+function getClusterName(suffix: string): string {
+    return `GHA-${suffix}`;
 }
 
-function getAppName(name: string): string {
-    return `${name}-${getSuffix()}`;
+function getAppName(name: string, suffix: string): string {
+    return `${name}-${suffix}`;
 }
 
 export async function createCluster(config: EnvironmentConfig): Promise<void> {
-    const clusterName = getClusterName();
+    const clusterName = getClusterName(config.differentitingSuffix);
     const payload = {
         name: clusterName,
         providerSettings: {
@@ -118,7 +118,7 @@ export async function createCluster(config: EnvironmentConfig): Promise<void> {
 }
 
 export async function deleteCluster(config: EnvironmentConfig): Promise<void> {
-    const clusterName = getClusterName();
+    const clusterName = getClusterName(config.differentitingSuffix);
     core.info(`Deleting Atlas cluster: ${clusterName}`);
 
     await execAtlasRequest("DELETE", `clusters/${clusterName}`, config);
@@ -127,7 +127,7 @@ export async function deleteCluster(config: EnvironmentConfig): Promise<void> {
 }
 
 export async function waitForClusterDeployment(config: EnvironmentConfig): Promise<void> {
-    const clusterName = getClusterName();
+    const clusterName = getClusterName(config.differentitingSuffix);
     const pollDelay = 10;
     let attempt = 0;
     while (attempt++ < 100) {
@@ -161,9 +161,9 @@ export async function configureRealmCli(config: EnvironmentConfig): Promise<void
     );
 }
 
-export async function publishApplication(appPath: string): Promise<{ id: string }> {
-    const clusterName = getClusterName();
-    const appName = getAppName(path.basename(appPath));
+export async function publishApplication(appPath: string, config: EnvironmentConfig): Promise<{ id: string }> {
+    const clusterName = getClusterName(config.differentitingSuffix);
+    const appName = getAppName(path.basename(appPath), config.differentitingSuffix);
     core.info(`Creating app ${appName}`);
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
@@ -197,12 +197,12 @@ export async function publishApplication(appPath: string): Promise<{ id: string 
     };
 }
 
-export async function deleteApplication(name: string): Promise<void> {
-    const appName = getAppName(name);
+export async function deleteApplication(name: string, config: EnvironmentConfig): Promise<void> {
+    const appName = getAppName(name, config.differentitingSuffix);
     const listResponse = await execCliCmd("apps list");
     const allApps: string[] = listResponse[0].data;
 
-    const existingApp = allApps.find(a => a.startsWith(appName));
+    const existingApp = allApps?.find(a => a.startsWith(appName));
 
     if (!existingApp) {
         core.info(`Could not find an existing app with name ${appName}. Found apps: ${JSON.stringify(allApps)}`);

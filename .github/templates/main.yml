@@ -28,6 +28,66 @@ with:
   key: #@ key
 #@ end
 
+#@ def testJob(name, os, intermediateSteps, usePackage = True):
+#@yaml/text-templated-strings
+(@= "baas-" + name.replace(".", "").replace(" ", "-").lower() @):
+  runs-on: ubuntu-latest
+  name: #@ "Deploy BaaS for " + name
+  outputs:
+    deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+  steps:
+    - #@ template.replace(checkoutCode(False, False))
+    - uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cluster-differentiator: #@ name
+#@yaml/text-templated-strings
+(@= "test-" + name.replace(".", "").replace(" ", "-").lower() @):
+  runs-on: #@ os
+  name: #@ "Test " + name
+  needs:
+  - build-packages
+  - #@ "baas-" + name.replace(".", "").replace(" ", "-").lower()
+  env:
+    APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+  steps:
+    - #@ template.replace(checkoutCode())
+    #@ if usePackage:
+    - #@ template.replace(fetchPackageArtifacts())
+    #@ else:
+    - #@ template.replace(fetchWrapperBinaries())
+    #@ end
+
+    #@ for step in intermediateSteps:
+    - #@ step
+    #@ end
+#@yaml/text-templated-strings
+(@= "cleanup-" + name.replace(".", "").replace(" ", "-").lower() @):
+  runs-on: ubuntu-latest
+  name: #@ "Cleanup BaaS for " + name
+  needs:
+  - #@ "test-" + name.replace(".", "").replace(" ", "-").lower()
+  if: always()
+  steps:
+    - #@ template.replace(checkoutCode(False, False))
+    - uses: ./.github/actions/mdb-realm
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+        cleanup: true
+        cluster-differentiator: #@ name
+#@ end
+
 #@ def storeWrapperBinaries(outputVar):
 name: Store artifacts
 uses: #@ actionUploadArtifact
@@ -35,13 +95,6 @@ with:
   name: #@ outputVar
   path: wrappers/build/**
   retention-days: 1
-#@ end
-
-#@ def testsJob(name, os):
-runs-on: #@ os
-name: #@ name
-needs:
-- build-packages
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
@@ -89,6 +142,90 @@ steps:
       name: #@ finalPkgName
       path: #@ "${{ github.workspace }}/Realm/Realm.Unity/" + finalPkgName
       retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+#@ end
+
+#@ def netFrameworkTestSteps():
+  - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
+  - name: Run the tests
+    run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"
+  - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
+#@ end
+
+#@ def uwpTestSteps():
+  - name: Import test certificate
+    run: |
+      $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+      $currentDirectory = Get-Location
+      [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
+      certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
+    shell: powershell
+  - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
+  - name: Install the UWP test app
+    run: Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
+    shell: powershell
+  - name: Run the tests
+    run: |
+      echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml --baasurl ${{ secrets.REALM_BASE_URL }}"
+      Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
+      do
+      {
+          Start-Sleep -s 3
+          $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+          $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
+      } while ($uwp_test_app -and !$file_available)
+
+      $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+      if (!$file_available)
+      {
+        exit 1
+      }
+      else
+      {
+        Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
+      }
+    shell: powershell
+  - #@ publishTestsResults("${{ env.test_results }}", "UWP Managed")
+#@ end
+
+#@ def xamarinMacTestSteps():
+  - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - name: Run the tests
+    run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml"
+  - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
+#@ end
+
+#@ def xamariniOSTestSteps():
+  - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - name: Run the tests
+    uses: #@ actionRuniOSSimulator
+    with:
+      appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
+      bundleId: 'io.realm.dotnettests'
+      iphoneToSimulate: 'iPhone-8'
+      arguments: '--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }}'
+  - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
+#@ end
+
+#@ def codeCoverageTestSteps():
+  - uses: #@ actionSetupDotnet
+    with:
+      dotnet-version: '5.0.x'
+  - name: Setup Coverlet & Report Generator
+    run: |
+      dotnet tool install coverlet.console --tool-path tools
+      dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+      echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+  - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
+  - name: Publish Coverage
+    id: publish-coveralls
+    uses: #@ actionCoveralls
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      path-to-lcov: ./report.lcov
+      git-commit: ${{ github.event.pull_request.head.sha }}
+  - name: Output Coveralls response
+    run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
 #@ end
 
 #@ def buildDocs():
@@ -196,26 +333,6 @@ steps:
   - #@ template.replace(dotnetPublish("Tests/Realm.Tests", framework, { "AdditionalFrameworks": framework }))
   - name: Run the tests
     run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After --baasurl ${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
-#@ end
-
-#@ def prepareTestRun(fetchPackages = True):
-  - #@ template.replace(checkoutCode())
-  - name: Deploy BaaS
-    uses: ./.github/actions/mdb-realm
-    id: deploy-mdb-apps
-    with:
-      projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-      apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-      privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-      appsPath: ${{ github.workspace }}/Tests/TestApps
-      atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-      realmUrl: ${{ secrets.REALM_BASE_URL }}
-  - run: echo 'APPS_CONFIG=${{ steps.deploy-mdb-apps.outputs.deployedApps }}' >> $GITHUB_ENV
-#@ if fetchPackages:
-  - #@ template.replace(fetchPackageArtifacts())
-#@ else:
-  - #@ template.replace(fetchWrapperBinaries())
-#@ end
 #@ end
 
 #@ def publishTestsResults(files, test_title):
@@ -363,55 +480,13 @@ jobs:
           name: ExtractedChangelog
           path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
           retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-  run-tests-net-framework:
-    _: #@ template.replace(testsJob("Test .NET Framework", "windows-latest"))
-    steps:
-      - #@ template.replace(prepareTestRun())
-      - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
-      - name: Run the tests
-        run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"
-      - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
-  run-tests-uwp:
-    _: #@ template.replace(testsJob("Test UWP managed", "windows-latest"))
-    steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - name: Import test certificate
-        run: |
-          $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-          $currentDirectory = Get-Location
-          [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-          certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-        shell: powershell
-      - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
-      - name: Install the UWP test app
-        run: Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
-        shell: powershell
-      - name: Run the tests
-        run: |
-          echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
-          Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml --baasurl ${{ secrets.REALM_BASE_URL }}"
-          Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
-          do
-          {
-              Start-Sleep -s 3
-              $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
-              $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
-          } while ($uwp_test_app -and !$file_available)
-
-          $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
-          if (!$file_available)
-          {
-            exit 1
-          }
-          else
-          {
-            Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
-          }
-        shell: powershell
-      - #@ publishTestsResults( "${{ env.test_results }}", "UWP")
+  _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
+  _: #@ template.replace(testJob("UWP Managed", "windows-latest", uwpTestSteps()))
   run-tests-netcore:
-    _: #@ template.replace(testsJob("Test .NET", "${{ matrix.os}}"))
+    runs-on: ${{ matrix.os}}
+    name: "Test .NET"
+    needs:
+    - build-packages
     strategy:
       fail-fast: false
       matrix:
@@ -430,29 +505,8 @@ jobs:
           include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
-  run-tests-xamarin-macos:
-    _: #@ template.replace(testsJob("Test Xamarin.macOS", "macos-latest"))
-    steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
-      - name: Run the tests
-        run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml"
-      - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
-  run-tests-xamarin-ios:
-    _: #@ template.replace(testsJob("Test Xamarin.iOS", "macos-latest"))
-    steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
-      - name: Run the tests
-        uses: #@ actionRuniOSSimulator
-        with:
-         appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
-         bundleId: 'io.realm.dotnettests'
-         iphoneToSimulate: 'iPhone-8'
-         arguments: '--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }}'
-      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
+  _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
+  _: #@ template.replace(testJob("Xamarin.iOS", "macos-latest", xamariniOSTestSteps()))
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -462,28 +516,7 @@ jobs:
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
-  code-coverage:
-    _: #@ template.replace(testsJob("Code Coverage", "ubuntu-latest"))
-    steps:
-      - #@ template.replace(prepareTestRun(False))
-      - uses: #@ actionSetupDotnet
-        with:
-          dotnet-version: '5.0.x'
-      - name: Setup Coverlet & Report Generator
-        run: |
-          dotnet tool install coverlet.console --tool-path tools
-          dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
-          echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-      - #@ template.replace(dotnetPublishAndRunCoverage("net5.0"))
-      - name: Publish Coverage
-        id: publish-coveralls
-        uses: #@ actionCoveralls
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./report.lcov
-          git-commit: ${{ github.event.pull_request.head.sha }}
-      - name: Output Coveralls response
-        run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+  _: #@ template.replace(testJob("Code Coverage", "ubuntu-latest", codeCoverageTestSteps(), False))
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup

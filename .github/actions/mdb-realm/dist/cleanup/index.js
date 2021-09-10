@@ -54023,7 +54023,7 @@ function deleteApplication(name) {
         const appName = getAppName(name);
         const listResponse = yield execCliCmd("apps list");
         const allApps = listResponse[0].data;
-        const existingApp = allApps.find(a => a.startsWith(appName));
+        const existingApp = allApps === null || allApps === void 0 ? void 0 : allApps.find(a => a.startsWith(appName));
         if (!existingApp) {
             core.info(`Could not find an existing app with name ${appName}. Found apps: ${JSON.stringify(allApps)}`);
             return;
