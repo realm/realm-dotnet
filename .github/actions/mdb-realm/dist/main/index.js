@@ -53861,6 +53861,7 @@ function getSuffix() {
         .digest("base64")
         .replace(/\+/g, "")
         .replace(/-/g, "")
+        .toLowerCase()
         .substring(0, 8);
 }
 function getClusterName() {
@@ -53883,7 +53884,7 @@ function createCluster(config) {
         };
         core.info(`Creating Atlas cluster: ${clusterName}`);
         const response = yield execAtlasRequest("POST", "clusters", config, payload);
-        core.info(`Cluster created: ${response}`);
+        core.info(`Cluster created: ${JSON.stringify(response)}`);
     });
 }
 exports.createCluster = createCluster;

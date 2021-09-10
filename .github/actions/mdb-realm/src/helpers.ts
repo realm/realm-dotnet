@@ -86,6 +86,7 @@ function getSuffix(): string {
         .digest("base64")
         .replace(/\+/g, "")
         .replace(/-/g, "")
+        .toLowerCase()
         .substring(0, 8);
 }
 
@@ -113,7 +114,7 @@ export async function createCluster(config: EnvironmentConfig): Promise<void> {
 
     const response = await execAtlasRequest("POST", "clusters", config, payload);
 
-    core.info(`Cluster created: ${response}`);
+    core.info(`Cluster created: ${JSON.stringify(response)}`);
 }
 
 export async function deleteCluster(config: EnvironmentConfig): Promise<void> {
