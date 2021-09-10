@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Runner.Services;
+using Realms.Tests.Sync;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Xaml.Navigation;
@@ -48,7 +49,7 @@ namespace Realms.Tests.UWP
 
             if (e.Parameter != null && e.Parameter is string launchParams)
             {
-                var args = TestHelpersUWP.SplitArguments(launchParams);
+                var args = SyncTestHelpers.ExtractBaasSettings(TestHelpersUWP.SplitArguments(launchParams));
                 if (args.Any(a =>  a == "--headless"))
                 {
                     _nunit.Options.AutoRun = true;

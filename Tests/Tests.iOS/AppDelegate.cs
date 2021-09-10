@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Foundation;
 using NUnit.Runner;
 using NUnit.Runner.Services;
+using Realms.Tests.Sync;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
@@ -45,6 +46,8 @@ namespace Realms.Tests.iOS
             var arguments = NSProcessInfo.ProcessInfo.Arguments
                                          .Select(a => a.Replace("-app-arg=", string.Empty))
                                          .ToArray();
+
+            arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
 
             if (arguments.Any("--headless".Equals))
             {
