@@ -143,9 +143,8 @@ try
 catch (Exception ex)
 {
     Log.LogError($"The changelog could not be extracted because of the following exception:\n{ex.ToString()}\nAborting the build.");
-    return false;
+    Success = false;
 }
-return true;
 ]]>
       </Code>
     </Task>
