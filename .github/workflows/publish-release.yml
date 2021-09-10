@@ -64,7 +64,7 @@ jobs:
       uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
       with:
         artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-        bodyFile: Realm/Realm/ExtractedChangelog/ExtractedChangelog.md
+        bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         name: ${{ steps.get-version.outputs.version }}
         commit: master
         tag: ${{ steps.get-version.outputs.version }}
@@ -87,6 +87,7 @@ jobs:
         * Using Core x.y.z.
         " | cat - CHANGELOG.md >> temp
         mv temp CHANGELOG.md
+      shell: bash
     - name: Create vNext PR
       id: vnext-pr
       uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad
@@ -105,7 +106,7 @@ jobs:
     - name: 'Post to #realm-releases'
       uses: realm/ci-actions/release-to-slack@v3
       with:
-        changelog: Realm/Realm/ExtractedChangelog/ExtractedChangelog.md
+        changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
         version: ${{ steps.get-version.outputs.version }}

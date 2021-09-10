@@ -10,7 +10,24 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.3.1.
+* Using Core x.y.z.
+
+## 10.5.0 (2021-09-09)
+
+### Enhancements
+* ThreadSafeReference no longer pins the source transaction version for anything other than a Results backed by a Query. (Core upgrade)
+* A ThreadSafeReference to a Results backed by a collection can now be created inside a write transaction as long as the collection was not created in the current write transaction. (Core upgrade)
+* Synchronized Realms are no longer opened twice, cutting the address space and file descriptors used in half. (Core upgrade)
+
+### Fixed
+* If an object with a null primary key was deleted by another sync client, the exception `KeyNotFound: No such object` could be triggered. (Core upgrade)
+* Fixed a race condition that could result in an assertion `m_state == SyncUser::State::LoggedIn` if the app previously crashed during user logout. (Core upgrade)
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.4.1.
 * Added an action to post releases to Slack. (Issue [#2501](https://github.com/realm/realm-dotnet/issues/2501))
 * Added MSBuild inline task to extract the changelog of the latest version. (Issue [#2558](https://github.com/realm/realm-dotnet/pull/2558))
 * When a release succeeds, merge the original PR, tag the release, then update changelog. (PR [#2609](https://github.com/realm/realm-dotnet/pull/2609))
