@@ -101,7 +101,7 @@ namespace Realms.Helpers
 
             _ = new ObjectSerializer();
 
-            _ = new EnumerableInterfaceImplementerSerializer<IList<object>, object>();
+            _ = new EnumerableInterfaceImplementerSerializer<IEnumerable<object>, object>();
             _ = new ExpandoObjectSerializer();
         }
 
