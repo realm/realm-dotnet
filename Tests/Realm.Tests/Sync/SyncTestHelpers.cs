@@ -111,6 +111,8 @@ namespace Realms.Tests.Sync
         {
             var result = new List<string>();
 
+            string baasApps = null;
+
             for (var i = 0; i < args.Length; i++)
             {
                 switch (args[i])
@@ -118,18 +120,21 @@ namespace Realms.Tests.Sync
                     case "--baasurl":
                         _baseUri = new Uri(args[++i]);
                         break;
+                    case "--baasapps":
+                        baasApps = args[++i];
+                        break;
                     default:
                         result.Add(args[i]);
                         break;
                 }
             }
 
-            ExtractBaasApps();
+            ExtractBaasApps(baasApps);
 
             return result.ToArray();
         }
 
-        private static void ExtractBaasApps()
+        private static void ExtractBaasApps(string appsJson = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {
@@ -139,9 +144,10 @@ namespace Realms.Tests.Sync
             AsyncContext.Run(async () =>
             {
                 (string, string)[] apps;
-                var appsConfig = Environment.GetEnvironmentVariable("APPS_CONFIG");
 
-                if (string.IsNullOrEmpty(appsConfig))
+                appsJson ??= Environment.GetEnvironmentVariable("APPS_CONFIG");
+
+                if (string.IsNullOrEmpty(appsJson))
                 {
                     using var client = new BaasClient(_baseUri);
 
@@ -149,7 +155,7 @@ namespace Realms.Tests.Sync
                 }
                 else
                 {
-                    apps = JsonConvert.DeserializeObject<Dictionary<string, string>>(appsConfig)
+                    apps = JsonConvert.DeserializeObject<Dictionary<string, string>>(appsJson)
                                       .Select(kvp => (kvp.Key, kvp.Value))
                                       .ToArray();
                 }

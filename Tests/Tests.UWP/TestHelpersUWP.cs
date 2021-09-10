@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Threading.Tasks;
-using Windows.Data.Xml.Xsl;
 using Windows.Data.Xml.Dom;
+using Windows.Data.Xml.Xsl;
 using Windows.Storage;
 
 namespace Realms.Tests.UWP
@@ -44,21 +43,30 @@ namespace Realms.Tests.UWP
         public static string[] SplitArguments(string commandLine)
         {
             var paramChars = commandLine.ToCharArray();
-            var inQuote = false;
+
+            var inSingleQuote = false;
+            var inDoubleQuote = false;
             for (var index = 0; index < paramChars.Length; index++)
             {
-                if (paramChars[index] == '"')
+                if (paramChars[index] == '"' && !inSingleQuote)
                 {
-                    inQuote = !inQuote;
+                    inDoubleQuote = !inDoubleQuote;
+                    paramChars[index] = '\n';
                 }
 
-                if (!inQuote && paramChars[index] == ' ')
+                if (paramChars[index] == '\'' && !inDoubleQuote)
+                {
+                    inSingleQuote = !inSingleQuote;
+                    paramChars[index] = '\n';
+                }
+
+                if (!inSingleQuote && !inDoubleQuote && paramChars[index] == ' ')
                 {
                     paramChars[index] = '\n';
                 }
             }
 
-            return new string(paramChars).Replace("\"", string.Empty).Split('\n');
+            return new string(paramChars).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

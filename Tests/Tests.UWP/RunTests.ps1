@@ -1,6 +1,7 @@
- param(
+param(
     [string]$PackageLocation = "$PSScriptRoot/AppPackages/Tests.UWP_1.0.0.0_Test",
-    [string]$BaasUrl = ""
+    [string]$BaasUrl = "",
+    [string]$BaasApps = ""
 )
 
 if (-not (Test-Path -Path $PackageLocation)) {
@@ -23,13 +24,17 @@ if ($BaasUrl) {
     $BaasArgs = "--baasurl $BaasUrl"
 }
 
+if ($BaasApps) {
+    $BaasArgs += " --baasapps $BaasApps"
+}
+
 Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml $BaasArgs"
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
 
 do
 {
     Start-Sleep -s 3
-
+    
     if (!$TestAppProcess) {
         $TestAppProcess = Get-Process Tests.UWP -ErrorAction SilentlyContinue
     }

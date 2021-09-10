@@ -156,7 +156,7 @@ steps:
     shell: powershell
   - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
   - name: Run the tests
-    run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }}
+    run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }} -BaasApps '${{ env.APPS_CONFIG }}'
     shell: powershell
   - #@ publishTestsResults("${{ env.TEST_RESULTS }}", "UWP Managed")
 #@ end
