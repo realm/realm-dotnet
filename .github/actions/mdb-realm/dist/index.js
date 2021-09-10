@@ -113,7 +113,7 @@ function getSuffix(differentiator) {
         .update(`${process.env.GITHUB_RUN_ID}-${differentiator}`)
         .digest("base64")
         .replace(/\+/g, "")
-        .replace(/-/g, "")
+        .replace(/\//g, "")
         .toLowerCase()
         .substring(0, 8);
 }
@@ -292,7 +292,7 @@ function run() {
                 projectId: core.getInput("projectId", { required: true }),
                 apiKey: core.getInput("apiKey", { required: true }),
                 privateApiKey: core.getInput("privateApiKey", { required: true }),
-                differentitingSuffix: helpers_1.getSuffix(core.getInput("cluster-differentiator", { required: true }))
+                differentitingSuffix: helpers_1.getSuffix(core.getInput("cluster-differentiator", { required: true })),
             };
             const appsPath = core.getInput("appsPath", { required: true });
             yield helpers_1.configureRealmCli(config);

@@ -85,7 +85,7 @@ export function getSuffix(differentiator: string): string {
         .update(`${process.env.GITHUB_RUN_ID}-${differentiator}`)
         .digest("base64")
         .replace(/\+/g, "")
-        .replace(/-/g, "")
+        .replace(/\//g, "")
         .toLowerCase()
         .substring(0, 8);
 }
