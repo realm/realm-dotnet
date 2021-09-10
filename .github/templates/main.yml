@@ -37,6 +37,16 @@ with:
   retention-days: 1
 #@ end
 
+#@ def testsJob(name, os):
+runs-on: #@ os
+name: #@ name
+needs:
+- build-packages
+- prepare-baas-server
+env:
+  APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+#@ end
+
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 steps:
   - #@ template.replace(checkoutCode("recursive"))
@@ -352,13 +362,7 @@ jobs:
           path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
           retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-net-framework:
-    runs-on: windows-latest
-    name: Test .NET Framework
-    needs:
-    - build-packages
-    - prepare-baas-server
-    env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    _: #@ template.replace(testsJob("Test .NET Framework", "windows-latest"))
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -367,13 +371,7 @@ jobs:
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"
       - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
   run-tests-uwp:
-    runs-on: windows-latest
-    name: Test UWP managed
-    needs:
-    - build-packages
-    - prepare-baas-server
-    env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    _: #@ template.replace(testsJob("Test UWP managed", "windows-latest"))
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -412,13 +410,7 @@ jobs:
         shell: powershell
       - #@ publishTestsResults( "${{ env.test_results }}", "UWP")
   run-tests-netcore:
-    name: Test .NET
-    needs:
-    - build-packages
-    - prepare-baas-server
-    runs-on: ${{ matrix.os }}
-    env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    _: #@ template.replace(testsJob("Test .NET", "${{ matrix.os}}"))
     strategy:
       fail-fast: false
       matrix:
@@ -438,13 +430,7 @@ jobs:
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   run-tests-xamarin-macos:
-    runs-on: macos-latest
-    name: Test Xamarin.macOS
-    needs:
-    - build-packages
-    - prepare-baas-server
-    env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    _: #@ template.replace(testsJob("Test Xamarin.macOS", "macos-latest"))
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -453,13 +439,7 @@ jobs:
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml"
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
   run-tests-xamarin-ios:
-    runs-on: macos-latest
-    name: Test Xamarin.iOS
-    needs:
-    - build-packages
-    - prepare-baas-server
-    env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    _: #@ template.replace(testsJob("Test Xamarin.iOS", "macos-latest"))
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -482,13 +462,7 @@ jobs:
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
   code-coverage:
-    runs-on: ubuntu-latest
-    name: Code Coverage
-    needs:
-    - build-packages
-    - prepare-baas-server
-    env:
-      APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
+    _: #@ template.replace(testsJob("Code Coverage", "ubuntu-latest"))
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())

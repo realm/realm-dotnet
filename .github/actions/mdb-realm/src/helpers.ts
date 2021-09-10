@@ -175,6 +175,15 @@ export async function deleteApplication(appPath: string, clusterName: string): P
     }
 
     const appId = existingApp.split(" ")[0];
+
+    // Due to a poorly thought-out behavior of BaaS, we need to first disable
+    // sync which is only possible through a deployment. We're deploying the
+    // old version of the app, just removing the `sync` field. However, this
+    // fails because we're also removing some rules that were added automatically
+    // during the test runs. Removing the rules folder will assume we don't want
+    // to change the rules.
+    fs.rmdirSync(path.join(appPath, "services", "BackingDB", "rules"), { recursive: true });
+
     await deployApplication(appPath, clusterName, appId, false);
 
     core.info(`Disabled sync service for ${appName}`);

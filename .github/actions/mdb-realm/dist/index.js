@@ -188,6 +188,13 @@ function deleteApplication(appPath, clusterName) {
             return;
         }
         const appId = existingApp.split(" ")[0];
+        // Due to a poorly thought-out behavior of BaaS, we need to first disable
+        // sync which is only possible through a deployment. We're deploying the
+        // old version of the app, just removing the `sync` field. However, this
+        // fails because we're also removing some rules that were added automatically
+        // during the test runs. Removing the rules folder will assume we don't want
+        // to change the rules.
+        fs.rmdirSync(path.join(appPath, "services", "BackingDB", "rules"), { recursive: true });
         yield deployApplication(appPath, clusterName, appId, false);
         core.info(`Disabled sync service for ${appName}`);
         yield execCliCmd(`apps delete -a ${appId}`);
@@ -272,8 +279,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const config = {
-                atlasUrl: core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com",
-                realmUrl: core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com",
+                atlasUrl: core.getInput("atlasUrl", { required: true }),
+                realmUrl: core.getInput("realmUrl", { required: true }),
                 projectId: core.getInput("projectId", { required: true }),
                 apiKey: core.getInput("apiKey", { required: true }),
                 privateApiKey: core.getInput("privateApiKey", { required: true }),

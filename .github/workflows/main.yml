@@ -536,11 +536,11 @@ jobs:
         comment_mode: "off"
         check_name: Results UWP
   run-tests-netcore:
+    runs-on: ${{ matrix.os}}
     name: Test .NET
     needs:
     - build-packages
     - prepare-baas-server
-    runs-on: ${{ matrix.os }}
     env:
       APPS_CONFIG: ${{ needs.prepare-baas-server.outputs.deployedApps }}
     strategy:
