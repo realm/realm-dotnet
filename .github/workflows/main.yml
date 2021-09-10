@@ -703,6 +703,17 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Deploy BaaS
+      uses: ./.github/actions/mdb-realm
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+        realmUrl: ${{ secrets.REALM_BASE_URL }}
+    - run: echo 'APPS_CONFIG=${{ steps.deploy-mdb-apps.outputs.deployedApps }}' >> $GITHUB_ENV
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v2
       with:

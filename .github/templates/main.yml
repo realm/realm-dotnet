@@ -198,7 +198,7 @@ steps:
     run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After --baasurl ${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
 #@ end
 
-#@ def prepareTestRun():
+#@ def prepareTestRun(fetchPackages = True):
   - #@ template.replace(checkoutCode())
   - name: Deploy BaaS
     uses: ./.github/actions/mdb-realm
@@ -211,7 +211,11 @@ steps:
       atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
       realmUrl: ${{ secrets.REALM_BASE_URL }}
   - run: echo 'APPS_CONFIG=${{ steps.deploy-mdb-apps.outputs.deployedApps }}' >> $GITHUB_ENV
+#@ if fetchPackages:
   - #@ template.replace(fetchPackageArtifacts())
+#@ else:
+  - #@ template.replace(fetchWrapperBinaries())
+#@ end
 #@ end
 
 #@ def publishTestsResults(files, test_title):
@@ -461,8 +465,7 @@ jobs:
   code-coverage:
     _: #@ template.replace(testsJob("Code Coverage", "ubuntu-latest"))
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchWrapperBinaries())
+      - #@ template.replace(prepareTestRun(False))
       - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '5.0.x'

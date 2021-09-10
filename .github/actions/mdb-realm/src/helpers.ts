@@ -29,9 +29,13 @@ async function execCmd(cmd: string, args?: string[]): Promise<string> {
     return stdout.trim();
 }
 
-async function execCliCmd(cmd: string[]): Promise<any[]> {
+async function execCliCmd(cmd: string): Promise<any[]> {
     try {
-        const response = await execCmd("realm-cli", ["--profile", "local", "-f", "json", ...cmd]);
+        let actualCmd = `realm-cli --profile local -f json ${cmd}`;
+        if (process.platform === "win32") {
+            actualCmd = `pwsh -Command "${actualCmd.replace('"', '\\"').split("\n").join("`n")}"`;
+        }
+        const response = await execCmd(actualCmd);
         return response
             .split(/\r?\n/)
             .filter(s => s && s.trim() && !s.includes("Deploying app changes..."))
@@ -130,24 +134,16 @@ export async function waitForClusterDeployment(clusterName: string, config: Envi
 export async function configureRealmCli(config: EnvironmentConfig): Promise<void> {
     await execCmd("npm i -g mongodb-realm-cli");
 
-    await execCliCmd([
-        "login",
-        "--api-key",
-        config.apiKey,
-        "--private-api-key",
-        config.privateApiKey,
-        "--atlas-url",
-        config.atlasUrl,
-        "--realm-url",
-        config.realmUrl,
-    ]);
+    await execCliCmd(
+        `login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`,
+    );
 }
 
 export async function publishApplication(appPath: string, clusterName: string): Promise<{ id: string }> {
     const appName = `${path.basename(appPath)}-${process.env.GITHUB_RUN_ID}`;
     core.info(`Creating app ${appName}`);
 
-    const createResponse = await execCliCmd(["apps", "create", "--name", appName]);
+    const createResponse = await execCliCmd(`apps create --name ${appName}`);
 
     const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
 
@@ -157,7 +153,7 @@ export async function publishApplication(appPath: string, clusterName: string): 
 
     for (const secret in secrets) {
         core.info(`Importing secret ${secret}`);
-        await execCliCmd(["secrets", "create", "--app", appId, "--name", secret, "--value", secrets[secret]]);
+        await execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
     }
 
     await deployApplication(appPath, clusterName, appId);
@@ -171,7 +167,7 @@ export async function publishApplication(appPath: string, clusterName: string): 
 
 export async function deleteApplication(name: string): Promise<void> {
     const appName = `${name}-${process.env.GITHUB_RUN_ID}`;
-    const listResponse = await execCliCmd(["apps", "list"]);
+    const listResponse = await execCliCmd("apps list");
     const allApps: string[] = listResponse[0].data;
 
     const existingApp = allApps.find(a => a.startsWith(appName));
@@ -185,7 +181,7 @@ export async function deleteApplication(name: string): Promise<void> {
 
     core.info(`Deleting ${appName} with id: ${appId}`);
 
-    await execCliCmd(["apps", "delete", "-a", appId]);
+    await execCliCmd(`apps delete -a ${appId}`);
 
     core.info(`Deleted ${appName}`);
 }
@@ -209,7 +205,7 @@ async function deployApplication(
 
     core.info(`Updated BackingDB config with cluster: ${clusterName}, sync enabled: ${syncEnabled}`);
 
-    await execCliCmd(["push", "--local", appPath, "--remote", appId, "-y"]);
+    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
 }
 
 function readJson(filePath: string): any {
