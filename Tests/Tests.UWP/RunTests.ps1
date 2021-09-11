@@ -20,15 +20,18 @@ $PackagePath = get-appxpackage -name realm.uwp.tests | Select-Object -expandprop
 $ResultsPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestResults.UWP.xml"
 $RunOutputPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestRunOutput.txt"
 
+$AppArgs = "--headless --labels=After --result=TestResults.UWP.xml"
 if ($BaasUrl) {
-    $BaasArgs = "--baasurl $BaasUrl"
+    $AppArgs = "$AppArgs --baasurl $BaasUrl"
 }
 
 if ($BaasApps) {
-    $BaasArgs += " --baasapps $BaasApps"
+    $AppArgs = "$AppArgs --baasapps '$BaasApps'"
 }
 
-Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml $BaasArgs"
+Write-Output "Launching $(shell:AppsFolder\$PackagePath) with arguments: $AppArgs"
+
+Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "$AppArgs"
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
 
 do
