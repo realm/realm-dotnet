@@ -29,7 +29,7 @@ if ($BaasApps) {
     $AppArgs = "$AppArgs --baasapps '$BaasApps'"
 }
 
-Write-Output "Launching $(shell:AppsFolder\$PackagePath) with arguments: $AppArgs"
+Write-Output "Launching shell:AppsFolder\$PackagePath!App with arguments: $AppArgs"
 
 Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "$AppArgs"
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
