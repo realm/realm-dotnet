@@ -314,7 +314,8 @@ function run() {
                     const deployInfo = yield helpers_1.publishApplication(path_1.default.join(appsPath, appPath), config);
                     deployedApps[appPath] = deployInfo.id;
                 }
-                core.setOutput("deployedApps", deployedApps);
+                const deployedAppsOutput = Buffer.from(JSON.stringify(deployedApps)).toString("base64");
+                core.setOutput("deployedApps", deployedAppsOutput);
                 yield helpers_1.waitForClusterDeployment(config);
             }
         }

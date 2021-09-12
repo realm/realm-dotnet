@@ -26,6 +26,9 @@ inputs:
   cleanup:
     required: false
     description: A flag to indicate this is a cleanup job - it will tear down any apps and clusters created with the same parameters.
+outputs:
+  deployedApps:
+    description: "A base64-encoded json object keyed on the app name containing the app ids of the deployed apps - e.g. { \"app1\": \"app1-abcde\"}"
 runs:
   using: node12
   main: dist/index.js

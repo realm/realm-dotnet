@@ -170,18 +170,13 @@ steps:
 
 #@ def xamariniOSTestSteps():
   - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
-  - name: Base64 Encode apps config
-    id: base64-apps-config
-    run: |
-      encoded=$(echo $APPS_CONFIG | base64)
-      echo "::set-output name=encoded_apps_config::$encoded"
   - name: Run the tests
     uses: #@ actionRuniOSSimulator
     with:
       appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
       bundleId: 'io.realm.dotnettests'
       iphoneToSimulate: 'iPhone-8'
-      arguments: "--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps ${{ steps.base64-apps-config.outputs.encoded_apps_config }}"
+      arguments: "--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps ${{ env.APPS_CONFIG }}"
   - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
 #@ end
 

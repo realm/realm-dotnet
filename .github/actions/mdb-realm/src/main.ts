@@ -42,7 +42,8 @@ async function run(): Promise<void> {
                 deployedApps[appPath] = deployInfo.id;
             }
 
-            core.setOutput("deployedApps", deployedApps);
+            const deployedAppsOutput = Buffer.from(JSON.stringify(deployedApps)).toString("base64");
+            core.setOutput("deployedApps", deployedAppsOutput);
 
             await waitForClusterDeployment(config);
         }
