@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -145,7 +146,7 @@ namespace Realms.Tests.Sync
             {
                 (string, string)[] apps;
 
-                appsJson ??= Environment.GetEnvironmentVariable("APPS_CONFIG");
+                appsJson = GetAppsJson(appsJson);
 
                 if (string.IsNullOrEmpty(appsJson))
                 {
@@ -219,6 +220,34 @@ namespace Realms.Tests.Sync
             }
 
             return (AppConfigType)(-1);
+        }
+
+        private static string GetAppsJson(string cliArgument)
+        {
+            var json = cliArgument;
+            if (string.IsNullOrEmpty(json))
+            {
+                // Try to get the apps config from an environment variable if possible
+                Environment.GetEnvironmentVariable("APPS_CONFIG");
+            }
+
+            if (string.IsNullOrEmpty(json))
+            {
+                return null;
+            }
+
+            // Try to decode the argument from base64 as it may be encoded
+            try
+            {
+                var decodedBytes = Convert.FromBase64String(json);
+                return Encoding.UTF8.GetString(decodedBytes);
+            }
+            catch
+            {
+            }
+
+            // Assume it's a json encoded string and just return it.
+            return json;
         }
 
         private class BaasClient : IDisposable

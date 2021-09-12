@@ -776,13 +776,18 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:TargetFrameworkVersion=v1.0 -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
+    - name: Base64 Encode apps config
+      id: base64-apps-config
+      run: |
+        encoded=$(echo $APPS_CONFIG | openssl base64)
+        echo "::set-output name=encoded_apps_config::$encoded"
     - name: Run the tests
       uses: realm/ci-actions/run-ios-simulator@v1
       with:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps '$APPS_CONFIG'
+        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps ${{ steps.base64-apps-config.outputs.encoded_apps_config }}
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v1
       if: always()
