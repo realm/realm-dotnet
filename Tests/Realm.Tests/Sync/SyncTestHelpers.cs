@@ -228,7 +228,7 @@ namespace Realms.Tests.Sync
             if (string.IsNullOrEmpty(json))
             {
                 // Try to get the apps config from an environment variable if possible
-                Environment.GetEnvironmentVariable("APPS_CONFIG");
+                json = Environment.GetEnvironmentVariable("APPS_CONFIG");
             }
 
             if (string.IsNullOrEmpty(json))
