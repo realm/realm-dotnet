@@ -305,7 +305,12 @@ REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor object_type(object_type_buf, object_type_len);
-        return ObjectStore::table_for_object_type(realm->read_group(), object_type)->get_key().value;
+        auto table_ref = ObjectStore::table_for_object_type(realm->read_group(), object_type);
+        if (!table_ref) {
+            throw InvalidSchemaException(util::format("Table with name '%1' doesn't exist in the Realm schema.", object_type.to_string()));
+        }
+
+        return table_ref->get_key().value;
     });
 }
 

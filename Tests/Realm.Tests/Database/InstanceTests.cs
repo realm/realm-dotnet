@@ -938,6 +938,28 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void GetInstance_WhenReadonly_ValidatesSchema()
+        {
+            var id = Guid.NewGuid().ToString();
+            var config = new RealmConfiguration(id)
+            {
+                ObjectClasses = new[] { typeof(AllTypesObject) }
+            };
+            using (var realm = GetRealm(config))
+            {
+            }
+
+            var readonlyConfig = new RealmConfiguration(id)
+            {
+                ObjectClasses = new[] { typeof(AllTypesObject), typeof(IntPrimaryKeyWithValueObject) },
+                IsReadOnly = true
+            };
+
+            var ex = Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(readonlyConfig));
+            Assert.That(ex.Message, Does.Contain(nameof(IntPrimaryKeyWithValueObject)));
+        }
+
+        [Test]
         public void GetInstance_WithManualSchema_CanReadAndWrite()
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
