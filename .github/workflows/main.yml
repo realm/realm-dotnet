@@ -779,7 +779,7 @@ jobs:
     - name: Base64 Encode apps config
       id: base64-apps-config
       run: |
-        encoded=$(echo $APPS_CONFIG | openssl base64)
+        encoded=$(echo $APPS_CONFIG | base64)
         echo "::set-output name=encoded_apps_config::$encoded"
     - name: Run the tests
       uses: realm/ci-actions/run-ios-simulator@v1
