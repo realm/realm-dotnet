@@ -34,6 +34,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool SetDllDirectory(string lpPathName);
+
         private static int _isInitialized;
 
         internal static void Initialize()
@@ -44,14 +47,9 @@ namespace Realms
 
                 if (platform == PlatformID.Win32NT)
                 {
-                    // This is the path for regular windows apps using NuGet.
-                    AddWindowsWrappersToPath("lib\\win32");
-
-                    // This is the path for Unity apps built as standalone.
-                    AddWindowsWrappersToPath("..\\Plugins", isUnityTarget: true);
-
-                    // This is the path in the Unity package - it is what the Editor uses.
-                    AddWindowsWrappersToPath("Windows", isUnityTarget: true);
+                    _ = TryLoadWindowsWrappers("lib\\win32") || // This is the path for regular windows apps using NuGet.
+                        TryLoadWindowsWrappers("..\\Plugins", isUnityTarget: true) || // This is the path for Unity apps built as standalone.
+                        TryLoadWindowsWrappers("Windows", isUnityTarget: true); // This is the path in the Unity package - it is what the Editor uses.
                 }
 
                 SynchronizationContextScheduler.Install();
@@ -89,19 +87,25 @@ namespace Realms
             }
         }
 
-        private static void AddWindowsWrappersToPath(string relativePath, bool isUnityTarget = false)
+        private static bool TryLoadWindowsWrappers(string relativePath, bool isUnityTarget = false)
         {
             try
             {
                 var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
 
                 var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, getArchitecture()));
-                var path = expectedFilePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
-                Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.Process);
+                if (Directory.Exists(expectedFilePath))
+                {
+                    SetDllDirectory(expectedFilePath);
+
+                    return true;
+                }
             }
             catch
             {
             }
+
+            return false;
 
             string getArchitecture()
             {
