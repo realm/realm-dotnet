@@ -248,7 +248,7 @@ Analytics payload
                     }
                     else
                     {
-                        var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
+                        var sequencePoint = prop.GetSequencePoint();
                         if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
                         {
                             // We only want one error point, so even though there may be more problems, we only log the first one.
@@ -279,7 +279,7 @@ Analytics payload
                 }
                 catch (Exception e)
                 {
-                    var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
+                    var sequencePoint = prop.GetSequencePoint();
                     _logger.Error(
                         $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                         sequencePoint);
@@ -340,6 +340,11 @@ Analytics payload
             if (mapToAttribute != null)
             {
                 columnName = (string)mapToAttribute.ConstructorArguments[0].Value;
+            }
+
+            if (prop.GetMethod == null)
+            {
+                return WeavePropertyResult.Skipped();
             }
 
             var backingField = prop.GetBackingField();
@@ -446,6 +451,11 @@ Analytics payload
             }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
+                if (prop.SetMethod == null)
+                {
+                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} does not have a setter but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
+                }
+
                 // with casting in the _realmObject methods, should just work
                 ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
                 ReplaceSetter(prop, backingField, columnName, _references.RealmObject_SetValue);

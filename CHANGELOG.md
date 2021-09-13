@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug that would cause a `NullReferenceException` to be reported during compilation of a class containing a getter-only `RealmObject` property. (Issue [#2576](https://github.com/realm/realm-dotnet/issues/2576))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
