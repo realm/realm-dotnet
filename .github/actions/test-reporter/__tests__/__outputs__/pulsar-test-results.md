@@ -183,7 +183,7 @@
 ```
 ✖️ testVersionStrings
 ❌ testVersionStrings
-	java.lang.AssertionError: expected [1.2.1] but found [1.2.0]
+	expected [1.2.1] but found [1.2.0]
 ```
 ### ✔️ <a id="user-content-r0s1" href="#r0s1">org.apache.pulsar.broker.admin.AdminApiOffloadTest</a>
 ```

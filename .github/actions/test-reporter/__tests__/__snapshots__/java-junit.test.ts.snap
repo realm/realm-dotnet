@@ -41,7 +41,7 @@ at java.lang.Thread.run(Thread.java:748)
 
     ",
                 "line": 29,
-                "message": undefined,
+                "message": "expected [1.2.1] but found [1.2.0]",
                 "path": "pulsar-common/src/test/java/org/apache/pulsar/AddMissingPatchVersionTest.java",
               },
               "name": "testVersionStrings",
@@ -100,7 +100,7 @@ at java.lang.Thread.run(Thread.java:748)
 
     ",
                 "line": 29,
-                "message": undefined,
+                "message": "expected [1.2.1] but found [1.2.0]",
                 "path": "pulsar-common/src/test/java/org/apache/pulsar/AddMissingPatchVersionTest.java",
               },
               "name": "testVersionStrings",

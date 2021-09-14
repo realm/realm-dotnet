@@ -141,7 +141,7 @@ export class JavaJunitParser implements TestParser {
       path: filePath,
       line,
       details,
-      message: typeof failure === 'object' ? failure.message : undefined
+      message: typeof failure === 'object' ? failure.$.message : undefined
     }
   }
 
