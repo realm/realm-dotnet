@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -72,8 +73,16 @@ namespace Realms.Schema
 
         internal static RealmSchema Empty => new RealmSchema(Enumerable.Empty<ObjectSchema>());
 
-        private RealmSchema(IEnumerable<ObjectSchema> objects)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RealmSchema"/> class with a collection of <see cref="ObjectSchema"/>s.
+        /// </summary>
+        /// <param name="objects">
+        /// A collection of <see cref="ObjectSchema"/> instances that will describe the types of objects contained in the <see cref="Realm"/>
+        /// instance.
+        /// </param>
+        public RealmSchema(IEnumerable<ObjectSchema> objects)
         {
+            Argument.NotNull(objects, nameof(objects));
             _objects = new ReadOnlyDictionary<string, ObjectSchema>(objects.ToDictionary(o => o.Name));
         }
 
@@ -94,19 +103,13 @@ namespace Realms.Schema
             return obj;
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
         public IEnumerator<ObjectSchema> GetEnumerator()
         {
             return _objects.Values.GetEnumerator();
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -114,14 +117,13 @@ namespace Realms.Schema
 
         internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes, RealmSchema existing = null)
         {
-            var builder = new Builder();
-            var classNames = new HashSet<string>();
+            var objectSchemas = new Dictionary<string, ObjectSchema>();
+
             if (existing != null)
             {
-                builder.AddRange(existing);
                 foreach (var item in existing)
                 {
-                    classNames.Add(item.Name);
+                    objectSchemas.Add(item.Name, item);
                 }
             }
 
@@ -130,13 +132,9 @@ namespace Realms.Schema
                 var typeInfo = @class.GetTypeInfo();
                 var objectSchema = ObjectSchema.FromType(@class.GetTypeInfo());
 
-                if (classNames.Add(objectSchema.Name))
+                if (objectSchemas.TryGetValue(objectSchema.Name, out var existingOS))
                 {
-                    builder.Add(objectSchema);
-                }
-                else
-                {
-                    var duplicateType = builder.FirstOrDefault(s => s.Name == objectSchema.Name).Type;
+                    var duplicateType = existingOS.Type;
                     if (typeInfo.FullName != duplicateType.FullName)
                     {
                         var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
@@ -145,9 +143,13 @@ namespace Realms.Schema
                         throw new NotSupportedException(errorMessage);
                     }
                 }
+                else
+                {
+                    objectSchemas.Add(objectSchema.Name, objectSchema);
+                }
             }
 
-            return builder.Build();
+            return new RealmSchema(objectSchemas.Values);
         }
 
         internal static RealmSchema GetSchema()
@@ -182,12 +184,12 @@ namespace Realms.Schema
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
 
-                var builder = new ObjectSchema.Builder(objectSchema.name, objectSchema.is_embedded);
+                var properties = new Dictionary<string, Property>();
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {
                     var nativeProperty = Marshal.PtrToStructure<Native.SchemaProperty>(IntPtr.Add(nativeSchema.properties, n * Native.SchemaProperty.Size));
-                    builder.Add(new Property
+                    properties.Add(nativeProperty.name, new Property
                     {
                         Name = nativeProperty.name,
                         Type = nativeProperty.type,
@@ -198,30 +200,10 @@ namespace Realms.Schema
                     });
                 }
 
-                objects[i] = builder.Build();
+                objects[i] = new ObjectSchema(objectSchema.name, objectSchema.is_embedded, properties);
             }
 
             return new RealmSchema(objects);
-        }
-
-        internal class Builder : List<ObjectSchema>
-        {
-            public RealmSchema Build()
-            {
-                if (Count == 0)
-                {
-                    var message = InteropConfig.Platform switch
-                    {
-                        InteropConfig.UnityPlatform => "Try weaving assemblies again ('Realm' -> 'Weave Assemblies' from the editor or simply make a code change) and make sure you don't have any Realm-related errors in the logs.",
-                        InteropConfig.DotNetPlatform => "Has linker stripped them? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/",
-                        _ => string.Empty
-                    };
-
-                    throw new InvalidOperationException($"No RealmObjects. {message}");
-                }
-
-                return new RealmSchema(this);
-            }
         }
     }
 }

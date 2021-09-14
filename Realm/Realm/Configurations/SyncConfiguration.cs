@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Helpers;
-using Realms.Schema;
 
 namespace Realms.Sync
 {
@@ -141,8 +140,9 @@ namespace Realms.Sync
             DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, Partition.ToNativeJson()));
         }
 
-        internal override Realm CreateRealm(RealmSchema schema)
+        internal override Realm CreateRealm()
         {
+            var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
 
@@ -150,8 +150,9 @@ namespace Realms.Sync
             return GetRealm(srHandle, schema);
         }
 
-        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
+            var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
 

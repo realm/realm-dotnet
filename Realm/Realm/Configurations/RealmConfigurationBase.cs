@@ -147,9 +147,9 @@ namespace Realms
             return (RealmConfigurationBase)MemberwiseClone();
         }
 
-        internal abstract Realm CreateRealm(RealmSchema schema);
+        internal abstract Realm CreateRealm();
 
-        internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
+        internal abstract Task<Realm> CreateRealmAsync(CancellationToken cancellationToken);
 
         internal Native.Configuration CreateNativeConfiguration()
         {
@@ -178,6 +178,21 @@ namespace Realms
             }
 
             return new Realm(sharedRealmHandle, this, schema);
+        }
+
+        internal RealmSchema GetSchema()
+        {
+            if (ObjectClasses != null)
+            {
+                return RealmSchema.CreateSchemaForClasses(ObjectClasses);
+            }
+
+            if (IsDynamic)
+            {
+                return RealmSchema.Empty;
+            }
+
+            return RealmSchema.Default;
         }
     }
 }
