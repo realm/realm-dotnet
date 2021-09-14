@@ -225,12 +225,14 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObjectClassesOnlyAllowRealmObjects()
         {
-            // Arrange
-            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass), typeof(object) };
-
-            // Act and assert
             // Can't have classes in the list which are not RealmObjects
-            Assert.That(() => GetRealm(), Throws.TypeOf<ArgumentException>());
+            var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
+            {
+                ObjectClasses = new[] { typeof(LoneClass), typeof(object) }
+            });
+
+            Assert.That(ex.Message, Does.Contain("System.Object"));
+            Assert.That(ex.Message, Does.Contain("must descend directly from RealmObject or EmbeddedObject"));
         }
 
         [TestCase(true)]
@@ -693,6 +695,22 @@ namespace Realms.Tests.Database
                 dynamic dynamicEmbeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
                 Assert.That(dynamicEmbeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
             }
+        }
+
+        [Test]
+        public void GetInstance_WhenIsDynamic_AndOSSchemaHasEmptyTable_DoesntThrow()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                IsDynamic = true
+            };
+
+            TestHelpers.CopyBundledFileToDocuments("v6db.realm", config.DatabasePath);
+
+            Assert.DoesNotThrow(() =>
+            {
+                using var realm = GetRealm(config);
+            });
         }
 
         [Test]

@@ -42,7 +42,7 @@ namespace Realms.Schema
         /// Gets the name of the original class declaration from which the schema was built.
         /// </summary>
         /// <value>The name of the class.</value>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets the number of properties in the schema, which is the persistent properties from the original class.
@@ -68,7 +68,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the object described by this <see cref="ObjectSchema"/>.</param>
         /// <param name="isEmbedded">A flag indicating that the object described by this <see cref="ObjectSchema"/> is an embedded object (i.e. <see cref="EmbeddedObject"/>).</param>
         /// <param name="properties">A dictionary describing the properties of the object.</param>
-        public ObjectSchema(string name, bool isEmbedded, IDictionary<string, Property> properties)
+        public ObjectSchema(string name, bool isEmbedded, IEnumerable<Property> properties)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
             Argument.NotNull(properties, nameof(properties));
@@ -76,7 +76,7 @@ namespace Realms.Schema
             Name = name;
             IsEmbedded = isEmbedded;
 
-            _properties = new ReadOnlyDictionary<string, Property>(properties);
+            _properties = new ReadOnlyDictionary<string, Property>(properties.ToDictionary(p => p.Name));
 
             foreach (var kvp in _properties.Where(kvp => kvp.Value.IsPrimaryKey))
             {
@@ -114,12 +114,12 @@ namespace Realms.Schema
                 return result;
             }
 
-            Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
+            Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
 
             var name = type.GetMappedOrOriginalName();
             var isEmbedded = type.IsEmbeddedObject();
 
-            var properties = new Dictionary<string, Property>();
+            var properties = new List<Property>();
             foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
                 var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();
@@ -152,7 +152,13 @@ namespace Realms.Schema
                     schemaProperty.Type &= ~PropertyType.Nullable;
                 }
 
-                properties.Add(schemaProperty.Name, schemaProperty);
+                properties.Add(schemaProperty);
+            }
+
+            if (properties.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
             }
 
             result = new ObjectSchema(type.GetMappedOrOriginalName(), type.IsEmbeddedObject(), properties);

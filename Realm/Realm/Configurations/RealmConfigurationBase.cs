@@ -70,7 +70,14 @@ namespace Realms
         /// </code>
         /// </example>
         /// <value>The classes that can be persisted in the Realm.</value>
-        public Type[] ObjectClasses { get; set; }
+        [Obsolete("Use Schema = new[] { typeof(...) } instead.")]
+        public Type[] ObjectClasses
+        {
+            get => Schema?.Select(s => s.Type).ToArray();
+            set => Schema = value;
+        }
+
+        public RealmSchema Schema { get; set; }
 
         /// <summary>
         /// Utility to build a path in which a Realm will be created so can consistently use filenames and relative paths.
@@ -180,11 +187,14 @@ namespace Realms
             return new Realm(sharedRealmHandle, this, schema);
         }
 
+        /// <summary>
+        /// Method to use when opening a Realm with this configuration. It takes care of 
+        /// </summary>
         internal RealmSchema GetSchema()
         {
-            if (ObjectClasses != null)
+            if (Schema != null)
             {
-                return RealmSchema.CreateSchemaForClasses(ObjectClasses);
+                return Schema;
             }
 
             if (IsDynamic)
