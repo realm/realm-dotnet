@@ -193,7 +193,7 @@ steps:
 
 #@ def publishTestsResults(files, test_title):
 name: Publish Unit Test Results
-uses: ./.github/actions/test-reporter
+uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
 if: always()
 with:
   name: #@ "Results " + test_title
