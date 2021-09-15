@@ -178,14 +178,23 @@ export async function publishApplication(appPath: string, config: EnvironmentCon
     const secrets = readJson(path.join(appPath, "secrets.json"));
 
     for (const secret in secrets) {
+        if (secret === "BackingDB_uri") {
+            continue;
+        }
+
         core.info(`Importing secret ${secret}`);
         await execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
     }
 
+    // This code does the following:
+    // 1. Updates the service type to mongodb-atlas (instead of mongo)
+    // 2. Updates the linked cluster to match the one we just created
+    // 3. Deletes the secret config since that is only relevant for the docker deployment
     const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
     const backingDBConfig = readJson(backingDBConfigPath);
     backingDBConfig.type = "mongodb-atlas";
     backingDBConfig.config.clusterName = clusterName;
+    delete backingDBConfig.secret_config;
 
     writeJson(backingDBConfigPath, backingDBConfig);
 
