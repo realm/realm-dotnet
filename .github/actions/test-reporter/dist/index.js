@@ -972,7 +972,7 @@ class JavaJunitParser {
             path: filePath,
             line,
             details,
-            message: typeof failure === 'object' ? failure.message : undefined
+            message: typeof failure === 'object' ? failure.$.message : undefined
         };
     }
     exceptionThrowSource(stackTrace) {
