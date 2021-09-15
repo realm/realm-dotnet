@@ -34,7 +34,7 @@ async function execCliCmd(cmd: string, retries = 5): Promise<any[]> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
         try {
-            let actualCmd = `realm-cli --profile local -f json ${cmd}`;
+            let actualCmd = `realm-cli --profile local -f json ${cmd} -y`;
             if (process.platform === "win32") {
                 actualCmd = `pwsh -Command "${actualCmd.replace(/"/g, '\\"').split("\n").join("`n")}"`;
             }
@@ -191,7 +191,7 @@ export async function publishApplication(appPath: string, config: EnvironmentCon
 
     core.info(`Updated BackingDB config with cluster: ${clusterName}`);
 
-    await execCliCmd(`push --local ${appPath} --remote ${appId} -y`);
+    await execCliCmd(`push --local ${appPath} --remote ${appId}`);
 
     core.info(`Imported ${appName} successfully`);
 
