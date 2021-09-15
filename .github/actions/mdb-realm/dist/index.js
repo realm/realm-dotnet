@@ -159,9 +159,9 @@ exports.deleteCluster = deleteCluster;
 function waitForClusterDeployment(config) {
     return __awaiter(this, void 0, void 0, function* () {
         const clusterName = getClusterName(config.differentitingSuffix);
-        const pollDelay = 10;
+        const pollDelay = 5;
         let attempt = 0;
-        while (attempt++ < 100) {
+        while (attempt++ < 200) {
             try {
                 const response = yield execAtlasRequest("GET", `clusters/${clusterName}`, config);
                 if (response.stateName === "IDLE") {
@@ -309,6 +309,7 @@ function run() {
             }
             else {
                 yield helpers_1.createCluster(config);
+                yield helpers_1.waitForClusterDeployment(config);
                 const deployedApps = {};
                 for (const appPath of fs.readdirSync(appsPath)) {
                     const deployInfo = yield helpers_1.publishApplication(path_1.default.join(appsPath, appPath), config);
@@ -316,7 +317,6 @@ function run() {
                 }
                 const deployedAppsOutput = Buffer.from(JSON.stringify(deployedApps)).toString("base64");
                 core.setOutput("deployedApps", deployedAppsOutput);
-                yield helpers_1.waitForClusterDeployment(config);
             }
         }
         catch (error) {

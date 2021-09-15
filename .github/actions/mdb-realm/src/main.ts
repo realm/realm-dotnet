@@ -35,6 +35,7 @@ async function run(): Promise<void> {
             await deleteCluster(config);
         } else {
             await createCluster(config);
+            await waitForClusterDeployment(config);
 
             const deployedApps: { [key: string]: string } = {};
             for (const appPath of fs.readdirSync(appsPath)) {
@@ -44,8 +45,6 @@ async function run(): Promise<void> {
 
             const deployedAppsOutput = Buffer.from(JSON.stringify(deployedApps)).toString("base64");
             core.setOutput("deployedApps", deployedAppsOutput);
-
-            await waitForClusterDeployment(config);
         }
     } catch (error: any) {
         core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);

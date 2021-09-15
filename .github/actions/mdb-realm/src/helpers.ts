@@ -131,9 +131,9 @@ export async function deleteCluster(config: EnvironmentConfig): Promise<void> {
 
 export async function waitForClusterDeployment(config: EnvironmentConfig): Promise<void> {
     const clusterName = getClusterName(config.differentitingSuffix);
-    const pollDelay = 10;
+    const pollDelay = 5;
     let attempt = 0;
-    while (attempt++ < 100) {
+    while (attempt++ < 200) {
         try {
             const response = await execAtlasRequest("GET", `clusters/${clusterName}`, config);
 
