@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -27,22 +26,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AccessTests : RealmInstanceTest
     {
-        [Test]
-        public void AAAA_Async()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                await Task.Delay(100);
-                Assert.That(false, Is.True);
-            });
-        }
-
-        [Test]
-        public void AAAA_NoAsync()
-        {
-            Assert.That(false, Is.True);
-        }
-
         [TestCaseSource(nameof(SetAndGetValueCases))]
         public void SetAndGetValue(string propertyName, object propertyValue)
         {
