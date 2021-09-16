@@ -35,7 +35,7 @@ namespace Realms.Tests.UWP
             InitializeComponent();
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             StreamWriter outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
             _nunit = new NUnit.Runner.App(outputWriter);

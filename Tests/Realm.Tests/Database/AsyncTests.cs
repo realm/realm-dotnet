@@ -46,7 +46,6 @@ namespace Realms.Tests.Database
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
                 Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
-                Assert.That(false);
             });
         }
 
@@ -107,7 +106,6 @@ namespace Realms.Tests.Database
                 const string message = "this is an exception from user code";
                 var ex = await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)));
                 Assert.That(ex.Message, Is.EqualTo(message));
-                Assert.That(false);
             });
         }
 
