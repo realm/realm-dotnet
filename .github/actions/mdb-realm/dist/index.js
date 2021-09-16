@@ -201,6 +201,8 @@ function publishApplication(appPath, config) {
             core.info(`Importing secret ${secret}`);
             yield execCliCmd(`secrets create --app ${appId} --name "${secret}" --value "${secrets[secret]}"`);
         }
+        core.info("Waiting 10s to try and ensure the import will succeed");
+        yield delay(10000);
         // This code does the following:
         // 1. Updates the service type to mongodb-atlas (instead of mongo)
         // 2. Updates the linked cluster to match the one we just created
