@@ -22,7 +22,7 @@
 
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
   </PropertyGroup>
-    
+
   <PropertyGroup>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
