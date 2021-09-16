@@ -204,7 +204,7 @@ function publishApplication(appPath, config) {
         // This code does the following:
         // 1. Updates the service type to mongodb-atlas (instead of mongo)
         // 2. Updates the linked cluster to match the one we just created
-        // 3. Deletes the secret config
+        // 3. Deletes the secret config since that is only relevant for the docker deployment
         const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
         const backingDBConfig = readJson(backingDBConfigPath);
         backingDBConfig.type = "mongodb-atlas";

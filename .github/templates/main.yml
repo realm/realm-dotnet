@@ -67,25 +67,25 @@ with:
     #@ for step in intermediateSteps:
     - #@ step
     #@ end
-#@yaml/text-templated-strings
-(@= "cleanup-" + name.replace(".", "").replace(" ", "-").lower() @):
-  runs-on: ubuntu-latest
-  name: #@ "Cleanup BaaS for " + name
-  needs:
-  - #@ "test-" + name.replace(".", "").replace(" ", "-").lower()
-  if: always()
-  steps:
-    - #@ template.replace(checkoutCode(False, False))
-    - uses: ./.github/actions/mdb-realm
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cleanup: true
-        cluster-differentiator: #@ name
+#! #@yaml/text-templated-strings
+#! (@= "cleanup-" + name.replace(".", "").replace(" ", "-").lower() @):
+#!   runs-on: ubuntu-latest
+#!   name: #@ "Cleanup BaaS for " + name
+#!   needs:
+#!   - #@ "test-" + name.replace(".", "").replace(" ", "-").lower()
+#!   if: always()
+#!   steps:
+#!     - #@ template.replace(checkoutCode(False, False))
+#!     - uses: ./.github/actions/mdb-realm
+#!       with:
+#!         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+#!         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+#!         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+#!         appsPath: ${{ github.workspace }}/Tests/TestApps
+#!         atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
+#!         realmUrl: ${{ secrets.REALM_BASE_URL }}
+#!         cleanup: true
+#!         cluster-differentiator: #@ name
 #@ end
 
 #@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
