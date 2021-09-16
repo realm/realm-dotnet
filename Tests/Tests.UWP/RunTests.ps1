@@ -17,8 +17,8 @@ if (-not (Test-Path -Path "$PackageLocation/Install.ps1")) {
 & $PackageLocation/Install.ps1 -Force
 
 $PackagePath = get-appxpackage -name realm.uwp.tests | Select-Object -expandproperty PackageFamilyName
-$ResultsPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestResults.UWP.xml"
-$RunOutputPath = "$env:LOCALAPPDATA/Packages/$PackagePath/LocalState/TestRunOutput.txt"
+$ResultsPath = "$env:LOCALAPPDATA\Packages\$PackagePath\LocalState\TestResults.UWP.xml"
+$RunOutputPath = "$env:LOCALAPPDATA\Packages\$PackagePath\LocalState\TestRunOutput.txt"
 
 $AppArgs = "--headless --labels=After --result=TestResults.UWP.xml"
 if ($BaasUrl) {
@@ -37,7 +37,7 @@ Write-Output "The test application is launched, this step is monitoring it and i
 do
 {
     Start-Sleep -s 3
-    
+
     if (!$TestAppProcess) {
         $TestAppProcess = Get-Process Tests.UWP -ErrorAction SilentlyContinue
     }

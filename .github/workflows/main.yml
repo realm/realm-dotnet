@@ -464,12 +464,16 @@ jobs:
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.Windows.xml
-        comment_mode: "off"
-        check_name: Results .NET Framework
+        name: Results .NET Framework
+        path: TestResults.Windows.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   baas-uwp-managed:
     runs-on: ubuntu-latest
     name: Deploy BaaS for UWP Managed
@@ -534,12 +538,16 @@ jobs:
       run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }} -BaasApps '${{ env.APPS_CONFIG }}'
       shell: powershell
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: ${{ env.TEST_RESULTS }}
-        comment_mode: "off"
-        check_name: Results UWP Managed
+        name: Results UWP Managed
+        path: ${{ env.TEST_RESULTS }}
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: Test .NET
@@ -593,12 +601,16 @@ jobs:
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.xml
-        comment_mode: "off"
-        check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   baas-xamarinmacos:
     runs-on: ubuntu-latest
     name: Deploy BaaS for Xamarin.macOS
@@ -653,12 +665,16 @@ jobs:
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.macOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.macOS
+        name: Results Xamarin.macOS
+        path: TestResults.macOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   baas-xamarinios:
     runs-on: ubuntu-latest
     name: Deploy BaaS for Xamarin.iOS
@@ -718,12 +734,16 @@ jobs:
         iphoneToSimulate: iPhone-8
         arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps ${{ env.APPS_CONFIG }}
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.iOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.iOS
+        name: Results Xamarin.iOS
+        path: TestResults.iOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -745,12 +765,16 @@ jobs:
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.Weaver.xml
-        comment_mode: "off"
-        check_name: Results Weaver
+        name: Results Weaver
+        path: TestResults.Weaver.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   baas-code-coverage:
     runs-on: ubuntu-latest
     name: Deploy BaaS for Code Coverage

@@ -300,12 +300,16 @@ steps:
 
 #@ def publishTestsResults(files, test_title):
 name: Publish Unit Test Results
-uses: EnricoMi/publish-unit-test-result-action/composite@v1
+uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
 if: always()
 with:
-  files: #@ files
-  comment_mode: "off"
-  check_name: #@ "Results " + test_title
+  name: #@ "Results " + test_title
+  path: #@ files
+  reporter: java-junit
+  list-suites: failed
+  list-tests: failed
+  path-replace-backslashes: true
+  fail-on-error: false
 #@ end
 
 #@ def findPackageVersion():
