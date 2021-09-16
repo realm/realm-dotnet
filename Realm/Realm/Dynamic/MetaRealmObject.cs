@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
@@ -230,9 +231,7 @@ namespace Realms.Dynamic
         }
 
         public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return _metadata.Schema.PropertyNames;
-        }
+            => _metadata.Schema.Select(s => s.Name);
 
         private Expression GetLimitedSelf()
         {

@@ -60,15 +60,7 @@ namespace Realms.Schema
         /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
         public bool IsEmbedded { get; }
 
-        internal IEnumerable<string> PropertyNames => _properties.Keys;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ObjectSchema"/> class with a provided name and properties.
-        /// </summary>
-        /// <param name="name">The name of the object described by this <see cref="ObjectSchema"/>.</param>
-        /// <param name="isEmbedded">A flag indicating that the object described by this <see cref="ObjectSchema"/> is an embedded object (i.e. <see cref="EmbeddedObject"/>).</param>
-        /// <param name="properties">A dictionary describing the properties of the object.</param>
-        public ObjectSchema(string name, bool isEmbedded, IEnumerable<Property> properties)
+        private ObjectSchema(string name, bool isEmbedded, IDictionary<string, Property> properties)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
             Argument.NotNull(properties, nameof(properties));
@@ -76,7 +68,7 @@ namespace Realms.Schema
             Name = name;
             IsEmbedded = isEmbedded;
 
-            _properties = new ReadOnlyDictionary<string, Property>(properties.ToDictionary(p => p.Name));
+            _properties = new ReadOnlyDictionary<string, Property>(properties);
 
             foreach (var kvp in _properties.Where(kvp => kvp.Value.IsPrimaryKey))
             {
@@ -116,55 +108,46 @@ namespace Realms.Schema
 
             Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
 
-            var name = type.GetMappedOrOriginalName();
-            var isEmbedded = type.IsEmbeddedObject();
-
-            var properties = new List<Property>();
+            var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
             foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
-                var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();
-                var schemaProperty = new Property
-                {
-                    Name = property.GetMappedOrOriginalName(),
-                    IsPrimaryKey = isPrimaryKey,
-                    IsIndexed = isPrimaryKey || property.HasCustomAttribute<IndexedAttribute>(),
-                    PropertyInfo = property
-                };
-
-                var backlinks = property.GetCustomAttribute<BacklinkAttribute>();
-                if (backlinks != null)
-                {
-                    var innerType = property.PropertyType.GenericTypeArguments.Single();
-                    var linkOriginProperty = innerType.GetProperty(backlinks.Property);
-
-                    schemaProperty.Type = PropertyType.LinkingObjects | PropertyType.Array;
-                    schemaProperty.ObjectType = innerType.GetTypeInfo().GetMappedOrOriginalName();
-                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetMappedOrOriginalName();
-                }
-                else
-                {
-                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var objectType);
-                    schemaProperty.ObjectType = objectType?.GetTypeInfo().GetMappedOrOriginalName();
-                }
-
-                if (property.HasCustomAttribute<RequiredAttribute>())
-                {
-                    schemaProperty.Type &= ~PropertyType.Nullable;
-                }
-
-                properties.Add(schemaProperty);
+                builder.Add(Property.FromPropertyInfo(property));
             }
 
-            if (properties.Count == 0)
+            if (builder.Count == 0)
             {
                 throw new InvalidOperationException(
                     $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
             }
 
-            result = new ObjectSchema(type.GetMappedOrOriginalName(), type.IsEmbeddedObject(), properties);
+            result = builder.Build();
             result.Type = type;
             _cache[type] = result;
             return result;
+        }
+
+        public class Builder : SchemaBuilderBase<Property>
+        {
+            public string Name { get; }
+
+            public bool IsEmbedded { get; }
+
+            public Builder(string name, bool isEmbedded)
+            {
+                Name = name;
+                IsEmbedded = isEmbedded;
+            }
+
+            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values);
+
+            public Builder Add(Property item)
+            {
+                base.Add(item);
+
+                return this;
+            }
+
+            protected override string GetKey(Property item) => item.Name;
         }
     }
 }

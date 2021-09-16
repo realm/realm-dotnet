@@ -170,6 +170,27 @@ namespace Realms.Schema
             };
         }
 
+        public static PropertyType ToPropertyType(this RealmValueType type, bool isNullable)
+        {
+            var nullabilityModifier = isNullable ? PropertyType.Nullable : PropertyType.Required;
+
+            return nullabilityModifier | type switch
+            {
+                RealmValueType.Int => PropertyType.Int,
+                RealmValueType.Bool => PropertyType.Bool,
+                RealmValueType.String => PropertyType.String,
+                RealmValueType.Data => PropertyType.Data,
+                RealmValueType.Date => PropertyType.Date,
+                RealmValueType.Float => PropertyType.Float,
+                RealmValueType.Double => PropertyType.Double,
+                RealmValueType.Object => PropertyType.Object,
+                RealmValueType.ObjectId => PropertyType.ObjectId,
+                RealmValueType.Decimal128 => PropertyType.Decimal,
+                RealmValueType.Guid => PropertyType.Guid,
+                _ => throw new NotSupportedException($"Type {type} can't be converted to {nameof(PropertyType)}"),
+            };
+        }
+
         public static bool IsComputed(this PropertyType propertyType) => propertyType == (PropertyType.LinkingObjects | PropertyType.Array);
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);

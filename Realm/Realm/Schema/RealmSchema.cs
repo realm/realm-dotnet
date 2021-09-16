@@ -41,8 +41,31 @@ namespace Realms.Schema
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(GetSchema);
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() =>
+        {
+            if (_defaultTypes.Count == 0)
+            {
+                // this was introduced because Unity's IL2CPP won't behave as expected with module initializers
+                // so we manually do what .Net-like frameworks usually do with module initializers
+                try
+                {
+                    var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()
+                        .Select(assembly => assembly.GetType("RealmModuleInitializer")?.GetMethod("Initialize"))
+                        .Where(method => method != null);
+
+                    foreach (var moduleInitializer in moduleInitializers)
+                    {
+                        moduleInitializer.Invoke(null, null);
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return _defaultTypes;
+        });
 
         /// <summary>
         /// Adds a collection of types to the default schema.
@@ -71,7 +94,7 @@ namespace Realms.Schema
 
         internal static RealmSchema Default => _default.Value;
 
-        internal static RealmSchema Empty { get; } = new RealmSchema(Enumerable.Empty<ObjectSchema>());
+        internal static RealmSchema Empty { get; } = new RealmSchema(new Dictionary<string, ObjectSchema>());
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmSchema"/> class with a collection of <see cref="ObjectSchema"/>s.
@@ -80,52 +103,9 @@ namespace Realms.Schema
         /// A collection of <see cref="ObjectSchema"/> instances that will describe the types of objects contained in the <see cref="Realm"/>
         /// instance.
         /// </param>
-        public RealmSchema(IEnumerable<ObjectSchema> objectSchemas)
+        private RealmSchema(IDictionary<string, ObjectSchema> objectSchemas)
         {
             Argument.NotNull(objectSchemas, nameof(objectSchemas));
-
-            _objects = new ReadOnlyDictionary<string, ObjectSchema>(objectSchemas.ToDictionary(o => o.Name));
-        }
-
-        public RealmSchema(IEnumerable<Type> types)
-        {
-            Argument.NotNull(types, nameof(types));
-
-            var objectSchemas = new Dictionary<string, ObjectSchema>();
-
-            foreach (var type in types)
-            {
-                var typeInfo = type.GetTypeInfo();
-                var objectSchema = ObjectSchema.FromType(type.GetTypeInfo());
-
-                if (objectSchemas.TryGetValue(objectSchema.Name, out var existingOS))
-                {
-                    var duplicateType = existingOS.Type;
-                    if (typeInfo.FullName != duplicateType.FullName)
-                    {
-                        var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
-                            $"The duplicate types are {type.FullName} and {duplicateType.FullName}. Either rename one" +
-                            " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
-                        throw new NotSupportedException(errorMessage);
-                    }
-                }
-                else
-                {
-                    objectSchemas.Add(objectSchema.Name, objectSchema);
-                }
-            }
-
-            if (objectSchemas.Count == 0)
-            {
-                var message = InteropConfig.Platform switch
-                {
-                    InteropConfig.UnityPlatform => "Try weaving assemblies again ('Realm' -> 'Weave Assemblies' from the editor or simply make a code change) and make sure you don't have any Realm-related errors in the logs.",
-                    InteropConfig.DotNetPlatform => "Has linker stripped them? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/",
-                    _ => string.Empty
-                };
-
-                throw new InvalidOperationException($"No objects in the schema. {message}");
-            }
 
             _objects = new ReadOnlyDictionary<string, ObjectSchema>(objectSchemas);
         }
@@ -136,16 +116,16 @@ namespace Realms.Schema
         /// <param name="name">A valid class name which may be in this schema.</param>
         /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
         /// <returns>An <see cref="ObjectSchema"/> or <c>null</c> to indicate not found.</returns>
+        [Obsolete("This method is obsolete. Use TryFindObjectSchema instead.")]
         public ObjectSchema Find(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
-            }
+            Argument.NotNullOrEmpty(name, nameof(name));
 
             _objects.TryGetValue(name, out var obj);
             return obj;
         }
+
+        public bool TryFindObjectSchema(string name, out ObjectSchema schema) => _objects.TryGetValue(name, out schema);
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
         public IEnumerator<ObjectSchema> GetEnumerator()
@@ -159,66 +139,102 @@ namespace Realms.Schema
             return GetEnumerator();
         }
 
-        internal static RealmSchema GetSchema()
-        {
-            if (_defaultTypes.Count == 0)
-            {
-                // this was introduced because Unity's IL2CPP won't behave as expected with module initializers
-                // so we manually do what .Net-like frameworks usually do with module initializers
-                try
-                {
-                    var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()
-                        .Select(assembly => assembly.GetType("RealmModuleInitializer")?.GetMethod("Initialize"))
-                        .Where(method => method != null);
-
-                    foreach (var moduleInitializer in moduleInitializers)
-                    {
-                        moduleInitializer.Invoke(null, null);
-                    }
-                }
-                catch
-                {
-                }
-            }
-
-            return new RealmSchema(_defaultTypes);
-        }
-
         internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
         {
-            var objects = new ObjectSchema[nativeSchema.objects_len];
+            var builder = new Builder();
             for (var i = 0; i < nativeSchema.objects_len; i++)
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
 
-                var properties = new List<Property>();
+                var osBuilder = new ObjectSchema.Builder(objectSchema.name, objectSchema.is_embedded);
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {
                     var nativeProperty = Marshal.PtrToStructure<Native.SchemaProperty>(IntPtr.Add(nativeSchema.properties, n * Native.SchemaProperty.Size));
-                    properties.Add(new Property
-                    {
-                        Name = nativeProperty.name,
-                        Type = nativeProperty.type,
-                        ObjectType = nativeProperty.object_type,
-                        LinkOriginPropertyName = nativeProperty.link_origin_property_name,
-                        IsPrimaryKey = nativeProperty.is_primary,
-                        IsIndexed = nativeProperty.is_indexed
-                    });
+                    osBuilder.Add(new Property(nativeProperty));
                 }
 
-                objects[i] = new ObjectSchema(objectSchema.name, objectSchema.is_embedded, properties);
+                builder.Add(osBuilder);
             }
 
-            return new RealmSchema(objects);
+            return builder.Build();
         }
 
-        public static implicit operator RealmSchema(ObjectSchema[] objects) => new RealmSchema(objects);
+        public static implicit operator RealmSchema(ObjectSchema[] objects) => new RealmSchema(objects.ToDictionary(s => s.Name));
 
-        public static implicit operator RealmSchema(List<ObjectSchema> objects) => new RealmSchema(objects);
+        public static implicit operator RealmSchema(List<ObjectSchema> objects) => new RealmSchema(objects.ToDictionary(s => s.Name));
 
-        public static implicit operator RealmSchema(Type[] objects) => new RealmSchema(objects);
+        public static implicit operator RealmSchema(Type[] objects) => new Builder(objects).Build();
 
-        public static implicit operator RealmSchema(List<Type> objects) => new RealmSchema(objects);
+        public static implicit operator RealmSchema(List<Type> objects) => new Builder(objects).Build();
+
+        public static implicit operator RealmSchema(HashSet<Type> objects) => new Builder(objects).Build();
+
+        public static implicit operator RealmSchema(Builder builder) => builder.Build();
+
+        public class Builder : SchemaBuilderBase<ObjectSchema>
+        {
+            public Builder()
+            {
+            }
+
+            internal Builder(IEnumerable<Type> types)
+            {
+                Argument.NotNull(types, nameof(types));
+
+                foreach (var type in types)
+                {
+                    Add(type);
+                }
+            }
+
+            public RealmSchema Build()
+            {
+                return new RealmSchema(_values);
+            }
+
+            public Builder Add(ObjectSchema schema)
+            {
+                Argument.NotNull(schema, nameof(schema));
+
+                base.Add(schema);
+                return this;
+            }
+
+            public Builder Add(ObjectSchema.Builder schemaBuilder)
+            {
+                Argument.NotNull(schemaBuilder, nameof(schemaBuilder));
+
+                base.Add(schemaBuilder.Build());
+                return this;
+            }
+
+            public Builder Add(Type type)
+            {
+                Argument.NotNull(type, nameof(type));
+
+                var objectSchema = ObjectSchema.FromType(type.GetTypeInfo());
+
+                if (_values.TryGetValue(objectSchema.Name, out var existingOS) && existingOS.Type != null)
+                {
+                    var duplicateType = existingOS.Type;
+                    if (objectSchema.Type.FullName != duplicateType.FullName)
+                    {
+                        var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
+                            $"The duplicate types are {type.FullName} and {duplicateType.FullName}. Either rename one" +
+                            " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
+                        throw new NotSupportedException(errorMessage);
+                    }
+
+                    return this;
+                }
+
+                base.Add(objectSchema);
+
+                return this;
+            }
+
+            protected override string GetKey(ObjectSchema item) => item?.Name;
+        }
     }
 }

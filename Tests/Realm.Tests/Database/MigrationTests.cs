@@ -128,13 +128,13 @@ namespace Realms.Tests.Database
             var oldConfig = new RealmConfiguration(path)
             {
                 IsDynamic = true,
-                Schema = new RealmSchema(new[]
+                Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema("Person", isEmbedded: false, new[]
+                    new ObjectSchema.Builder("Person", isEmbedded: false)
                     {
-                        new Property { Name = "Name", Type = PropertyType.String }
-                    })
-                })
+                        Property.FromType<string>("Name")
+                    }
+                }
             };
 
             using (var realm = GetRealm(oldConfig))
@@ -150,13 +150,13 @@ namespace Realms.Tests.Database
             {
                 IsDynamic = true,
                 ShouldDeleteIfMigrationNeeded = true,
-                Schema = new RealmSchema(new[]
+                Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema("Person", isEmbedded: false, new[]
+                    new ObjectSchema.Builder("Person", isEmbedded: false)
                     {
-                        new Property { Name = "Name", Type = PropertyType.Int }
-                    })
-                })
+                        Property.FromType<int>("Name")
+                    }
+                }
             };
 
             using (var realm = GetRealm(newConfig))
