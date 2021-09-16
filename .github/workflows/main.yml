@@ -448,6 +448,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
+        fail-on-error: false
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -519,6 +520,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
+        fail-on-error: false
   run-tests-netcore:
     name: Test .NET
     needs: build-packages
@@ -580,6 +582,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
+        fail-on-error: false
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -618,6 +621,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
+        fail-on-error: false
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
@@ -661,6 +665,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
+        fail-on-error: false
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -691,6 +696,7 @@ jobs:
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
+        fail-on-error: false
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage
