@@ -133,5 +133,9 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
+    <None Include="..\App.config" Link="App.config" />
+    <None Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
