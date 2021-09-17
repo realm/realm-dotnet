@@ -160,17 +160,17 @@ namespace Realms.Schema
             return builder.Build();
         }
 
-        public static implicit operator RealmSchema(ObjectSchema[] objects) => new RealmSchema(objects.ToDictionary(s => s.Name));
+        public static implicit operator RealmSchema(ObjectSchema[] objects) => objects == null ? null : new RealmSchema(objects.ToDictionary(s => s.Name));
 
-        public static implicit operator RealmSchema(List<ObjectSchema> objects) => new RealmSchema(objects.ToDictionary(s => s.Name));
+        public static implicit operator RealmSchema(List<ObjectSchema> objects) => objects == null ? null : new RealmSchema(objects.ToDictionary(s => s.Name));
 
-        public static implicit operator RealmSchema(Type[] objects) => new Builder(objects).Build();
+        public static implicit operator RealmSchema(Type[] objects) => objects == null ? null : new Builder(objects).Build();
 
-        public static implicit operator RealmSchema(List<Type> objects) => new Builder(objects).Build();
+        public static implicit operator RealmSchema(List<Type> objects) => objects == null ? null : new Builder(objects).Build();
 
-        public static implicit operator RealmSchema(HashSet<Type> objects) => new Builder(objects).Build();
+        public static implicit operator RealmSchema(HashSet<Type> objects) => objects == null ? null : new Builder(objects).Build();
 
-        public static implicit operator RealmSchema(Builder builder) => builder.Build();
+        public static implicit operator RealmSchema(Builder builder) => builder?.Build();
 
         public class Builder : SchemaBuilderBase<ObjectSchema>
         {

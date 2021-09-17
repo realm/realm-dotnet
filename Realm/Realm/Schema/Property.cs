@@ -159,24 +159,30 @@ namespace Realms.Schema
         {
             var propertyName = prop.GetMappedOrOriginalName();
             var backlinksAttribute = prop.GetCustomAttribute<BacklinkAttribute>();
+            Property result;
             if (backlinksAttribute != null)
             {
                 var innerType = prop.PropertyType.GenericTypeArguments.Single();
                 var linkOriginProperty = innerType.GetProperty(backlinksAttribute.Property);
 
-                return LinkingObjects(propertyName, innerType.GetTypeInfo().GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
+                result = LinkingObjects(propertyName, innerType.GetTypeInfo().GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
             }
-
-            var propertyType = prop.PropertyType.ToPropertyType(out var objectType);
-            if (prop.HasCustomAttribute<RequiredAttribute>())
+            else
             {
-                propertyType &= ~PropertyType.Nullable;
+                var propertyType = prop.PropertyType.ToPropertyType(out var objectType);
+                if (prop.HasCustomAttribute<RequiredAttribute>())
+                {
+                    propertyType &= ~PropertyType.Nullable;
+                }
+
+                var objectTypeName = objectType?.GetTypeInfo().GetMappedOrOriginalName();
+                var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
+                var isIndexed = prop.HasCustomAttribute<IndexedAttribute>();
+                result = new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
             }
 
-            var objectTypeName = objectType?.GetTypeInfo().GetMappedOrOriginalName();
-            var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
-            var isIndexed = prop.HasCustomAttribute<IndexedAttribute>();
-            return new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
+            result.PropertyInfo = prop;
+            return result;
         }
 
         private static Property ScalarCore(string name, RealmValueType type, PropertyType collectionModifier = PropertyType.Required, bool isNullable = false, bool isPrimaryKey = false, bool isIndexed = false)
