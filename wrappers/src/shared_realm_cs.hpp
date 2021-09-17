@@ -34,10 +34,15 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using namespace realm;
 using namespace realm::binding;
 
-class ManagedExceptionDuringMigration : public std::runtime_error
-{
+class ManagedExceptionDuringMigration : public std::runtime_error {
 public:
     ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
+    }
+};
+
+class RemoveTypeInSchemaException : public std::runtime_error {
+public:
+    RemoveTypeInSchemaException() : std::runtime_error("Attempted to remove a type present in the current schema") {
     }
 };
 

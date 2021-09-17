@@ -152,5 +152,100 @@ namespace Realms.Tests.Database
                 Assert.That(realm.DynamicApi.All("Person"), Is.Empty);
             }
         }
+
+        [Test]
+        public void MigrationRenameProperty()
+        {
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
+
+            var triggersSchemaFieldValue = string.Empty;
+
+            var configuration = new RealmConfiguration(path)
+            {
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var newPeople = migration.NewRealm.All<Person>();
+
+                    //Here rename triggersSchema to Email or FullName and check it worked
+
+                    for (var i = 0; i < newPeople.Count(); i++)
+                    {
+                        var oldPerson = oldPeople.ElementAt(i);
+                        var newPerson = newPeople.ElementAt(i);
+
+                        Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        newPerson.LastName = triggersSchemaFieldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
+
+                        if (!TestHelpers.IsUnity)
+                        {
+                            // Ensure we can still use the dynamic API during migrations
+                            dynamic dynamicOldPerson = oldPeople.ElementAt(i);
+                            Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        }
+                    }
+                }
+            };
+
+            var realm = GetRealm(configuration);
+            var person = realm.All<Person>().Single();
+            Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
+        }
+
+        [Test]
+        public void MigrationRemoveTypeInSchema()
+        {
+            var oldRealmConfig = new RealmConfiguration()
+            {
+                SchemaVersion = 0,
+                ObjectClasses = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
+            };
+
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+            }
+
+            var newRealmConfig = new RealmConfiguration()
+            {
+                SchemaVersion = 1,
+                ObjectClasses = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    migration.RemoveType(nameof(Person));
+                }
+            };
+
+            var ex = Assert.Throws<AggregateException>(() => GetRealm(newRealmConfig));
+            Assert.That(ex.Flatten().InnerException.Message, Does.Contain("Attempted to remove a type present in the current schema"));
+        }
+
+        [Test]
+        public void MigrationRemoveTypeNotInSchema()
+        {
+            var oldRealmConfig = new RealmConfiguration()
+            {
+                SchemaVersion = 0,
+                ObjectClasses = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
+            };
+
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+            }
+
+            var newRealmConfig = new RealmConfiguration()
+            {
+                IsDynamic = true,
+                SchemaVersion = 1,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    migration.RemoveType(nameof(Person));
+                }
+            };
+
+            using (var newRealm = GetRealm(newRealmConfig))
+            {
+                //TODO Finish this
+            }
+        }
     }
 }

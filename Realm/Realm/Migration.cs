@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms
@@ -92,6 +93,22 @@ namespace Realms
         {
             _handle?.Free();
             _handle = null;
+        }
+
+        //TODO Add docs
+        public bool RemoveType(string typeName)
+        {
+            Argument.NotNullOrEmpty(typeName, nameof(typeName));
+            return NewRealm.RemoveType(typeName);
+        }
+
+        //TODO Add docs
+        public void RenameProperty(string typeName, string oldPropertyName, string newPropertyName)
+        {
+            Argument.NotNullOrEmpty(typeName, nameof(typeName));
+            Argument.NotNullOrEmpty(oldPropertyName, nameof(oldPropertyName));
+            Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
+
         }
     }
 }

@@ -462,6 +462,16 @@ namespace Realms
             return Metadata;
         }
 
+        internal void RenameProperty(string typeName, string oldName, string newName)
+        {
+            SharedRealmHandle.RenameProperty(typeName, oldName, newName);
+        }
+
+        internal bool RemoveType(string typeName)
+        {
+            return SharedRealmHandle.RemoveType(typeName);
+        }
+
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>

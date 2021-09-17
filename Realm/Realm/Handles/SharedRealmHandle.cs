@@ -181,6 +181,16 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_rename_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void rename_property(SharedRealmHandle sharedRealm, 
+                [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeNameLength,
+                [MarshalAs(UnmanagedType.LPWStr)] string oldName, IntPtr oldNameLength,
+                [MarshalAs(UnmanagedType.LPWStr)] string newName, IntPtr newNameLength,
+                out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_type", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool remove_type(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeLength, out NativeException ex);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -462,6 +472,20 @@ namespace Realms
 
             objectHandle = new ObjectHandle(this, result);
             return true;
+        }
+
+        public void RenameProperty(string typeName, string oldName, string newName)
+        {
+            NativeMethods.rename_property(this, typeName, (IntPtr)typeName.Length,
+                oldName, (IntPtr)oldName.Length, newName, (IntPtr)newName.Length, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public bool RemoveType(string typeName)
+        {
+            var result = NativeMethods.remove_type(this, typeName, (IntPtr)typeName.Length, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
 
         public ResultsHandle CreateResults(TableKey tableKey)

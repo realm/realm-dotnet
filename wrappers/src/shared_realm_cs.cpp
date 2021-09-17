@@ -181,6 +181,10 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         if (configuration.managed_migration_handle) {
             config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
+
+                //TODO Nead to save schema (is mutable and we can use it later if we need to rename proeprties) -- Heap allocate, create a pointer and pass it to migration callback
+                //Save it in Migration class and pass it back it later in the rename property method
+
                 std::vector<SchemaObject> schema_objects;
                 std::vector<SchemaProperty> schema_properties;
 
@@ -544,6 +548,47 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
 
         const TableRef table = get_table(realm, table_key);
         return new Results(realm, table);
+    });
+}
+
+REALM_EXPORT void shared_realm_rename_property(const SharedRealm& realm, uint16_t* type_name_buf, size_t type_name_len,
+    uint16_t* old_name_buf, size_t old_Name_len, uint16_t* new_name_buf, size_t new_name_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
+        Utf16StringAccessor old_name_str(old_name_buf, old_Name_len);
+        Utf16StringAccessor new_name_str(new_name_buf, new_name_len);
+
+        auto schema = realm->schema();  //TODO Useless, see comment up
+        ObjectStore::rename_property(realm->read_group(), schema, type_name_str, old_name_str, new_name_str);
+    });
+}
+
+REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* type_name_buf, size_t type_name_len, NativeException::Marshallable& ex)
+{
+    //TODO Remove type
+    //TODO Need docs type in JIRA
+
+    //TODO Open with dynamic to check if it's still there for testing
+
+    //What happens if we delete a table, and we try to access it in the old realm
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
+
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), type_name_str);
+        if (!table)
+        {
+            return false;
+        }
+
+        const auto obj_schema = realm->schema().find(type_name_str);
+        if (obj_schema != realm->schema().end())
+        {
+            throw RemoveTypeInSchemaException();
+        }
+
+        realm->read_group().remove_table(table->get_key());
+        return true;
     });
 }
 
