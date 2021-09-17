@@ -44,7 +44,7 @@ namespace Realms.Schema
             Argument.NotNull(type, nameof(type));
 
             objectType = null;
-            var nullabilityModifier = PropertyType.Required;
+            PropertyType nullabilityModifier = default;
 
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null)
@@ -172,7 +172,7 @@ namespace Realms.Schema
 
         public static PropertyType ToPropertyType(this RealmValueType type, bool isNullable)
         {
-            var nullabilityModifier = isNullable ? PropertyType.Nullable : PropertyType.Required;
+            var nullabilityModifier = isNullable ? PropertyType.Nullable : default;
 
             return nullabilityModifier | type switch
             {

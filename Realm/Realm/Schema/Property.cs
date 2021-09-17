@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -31,6 +32,24 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Type = {Type}")]
     public struct Property
     {
+        internal static HashSet<PropertyType> IndexableTypes = new HashSet<PropertyType>
+        {
+            PropertyType.String,
+            PropertyType.Int,
+            PropertyType.Bool,
+            PropertyType.ObjectId,
+            PropertyType.Guid,
+            PropertyType.Date,
+        };
+
+        internal static HashSet<PropertyType> PrimaryKeyTypes = new HashSet<PropertyType>
+        {
+            PropertyType.String,
+            PropertyType.Int,
+            PropertyType.ObjectId,
+            PropertyType.Guid,
+        };
+
         /// <summary>
         /// Gets the name of the property.
         /// </summary>
@@ -93,7 +112,35 @@ namespace Realms.Schema
             Type = type;
             ObjectType = objectType;
             LinkOriginPropertyName = linkOriginPropertyName;
+
+            var nonNullableType = type & ~PropertyType.Nullable;
+            if (isPrimaryKey && !PrimaryKeyTypes.Contains(nonNullableType))
+            {
+                throw new ArgumentException($"Property of type {type} cannot be primary key. The only valid primary key types are {string.Join(", ", PrimaryKeyTypes)}.");
+            }
+
             IsPrimaryKey = isPrimaryKey;
+
+            if (isIndexed && !IndexableTypes.Contains(nonNullableType))
+            {
+                throw new ArgumentException($"Property of type {type} cannot be indexed. The only valid indexable types are {string.Join(", ", IndexableTypes)}.");
+            }
+
+            if (type.HasFlag(PropertyType.Object))
+            {
+                var shouldBeNullable = !type.HasFlag(PropertyType.Array) && !type.HasFlag(PropertyType.Set);
+                var isTypeNullable = type.HasFlag(PropertyType.Nullable);
+                if (isTypeNullable && !shouldBeNullable)
+                {
+                    throw new ArgumentException("Property of type IList<RealmObject> or ISet<RealmObject> cannot be nullable.");
+                }
+
+                if (!isTypeNullable && shouldBeNullable)
+                {
+                    throw new ArgumentException("Property of type RealmObject or IDictionary<string, RealmObject> cannot be required.");
+                }
+            }
+
             IsIndexed = isPrimaryKey || isIndexed;
 
             PropertyInfo = null;
@@ -111,17 +158,57 @@ namespace Realms.Schema
             PropertyInfo = null;
         }
 
-        public static Property FromType(string name, Type type, bool isPrimaryKey = false, bool isIndexed = false)
+        /// <summary>
+        /// Initializes a new property from a <see cref="System.Type"/> value.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="type">
+        /// The <see cref="System.Type"/> value that will be used to infer the <see cref="PropertyType"/>. Nullability
+        /// will be inferred for value types, but must be specified via <paramref name="isNullable"/> for reference types.
+        /// </param>
+        /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
+        /// <param name="isIndexed">A flag indicating whether the property will be indexed. Primary key properties are always indexed.</param>
+        /// <param name="isNullable">
+        /// A flag indicating whether the property is nullable. Pass <c>null</c> to infer nullability from the <paramref name="type"/> argument.
+        /// Pass a non-null value to override it.
+        /// </param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property FromType(string name, Type type, bool isPrimaryKey = false, bool isIndexed = false, bool? isNullable = null)
         {
             Argument.NotNull(type, nameof(type));
             var propertyType = type.ToPropertyType(out var objectType);
             var objectTypeName = objectType?.GetTypeInfo().GetMappedOrOriginalName();
 
+            switch (isNullable)
+            {
+                case true:
+                    propertyType |= PropertyType.Nullable;
+                    break;
+                case false:
+                    propertyType &= ~PropertyType.Nullable;
+                    break;
+            }
+
             return new Property(name, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
         }
 
-        public static Property FromType<T>(string name, bool isPrimaryKey = false, bool isIndexed = false)
-            => FromType(name, typeof(T), isPrimaryKey, isIndexed);
+        /// <summary>
+        /// Initializes a new property describing the provided type.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The type that will be used to infer the <see cref="PropertyType"/>. Nullability
+        /// will be inferred for value types, but must be specified via <paramref name="isNullable"/> for reference types.
+        /// </typeparam>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
+        /// <param name="isIndexed">A flag indicating whether the property will be indexed. Primary key properties are always indexed.</param>
+        /// <param name="isNullable">
+        /// A flag indicating whether the property is nullable. Pass <c>null</c> to infer nullability from the <paramref name="type"/> argument.
+        /// Pass a non-null value to override it.
+        /// </param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property FromType<T>(string name, bool isPrimaryKey = false, bool isIndexed = false, bool? isNullable = null)
+            => FromType(name, typeof(T), isPrimaryKey, isIndexed, isNullable);
 
         public static Property Scalar(string name, RealmValueType type, bool isNullable = false, bool isPrimaryKey = false, bool isIndexed = false)
             => ScalarCore(name, type, isNullable: isNullable, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
@@ -185,7 +272,7 @@ namespace Realms.Schema
             return result;
         }
 
-        private static Property ScalarCore(string name, RealmValueType type, PropertyType collectionModifier = PropertyType.Required, bool isNullable = false, bool isPrimaryKey = false, bool isIndexed = false)
+        private static Property ScalarCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isNullable = false, bool isPrimaryKey = false, bool isIndexed = false)
         {
             Argument.Ensure(type != RealmValueType.Null, $"{nameof(type)} can't be {RealmValueType.Null}", nameof(type));
             Argument.Ensure(type != RealmValueType.Object, $"{nameof(type)} can't be {RealmValueType.Object}. Use Property.Object instead.", nameof(type));
@@ -193,7 +280,7 @@ namespace Realms.Schema
             return new Property(name, type.ToPropertyType(isNullable) | collectionModifier, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
         }
 
-        private static Property ObjectCore(string name, string objectType, PropertyType collectionModifier = PropertyType.Required)
+        private static Property ObjectCore(string name, string objectType, PropertyType collectionModifier = default)
             => new Property(name, PropertyType.Object | PropertyType.Nullable | collectionModifier, objectType);
 
         internal PropertyInfo PropertyInfo;
