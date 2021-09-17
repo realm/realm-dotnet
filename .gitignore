@@ -216,7 +216,7 @@ Tests/Tests.Unity/PlayModeTestPlayer/
 Tests/Tests.Unity/*.xml
 Tests/Tests.Unity/PlayModeTestPlayer*
 *.pfx
-Tests/App.config
+Tests/App.Local.config
 Tests/LocalDev.props
 Realm/Realm.Unity/CHANGELOG.md
 Realm/Realm.Unity/LICENSE.md
