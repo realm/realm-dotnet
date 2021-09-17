@@ -203,24 +203,66 @@ namespace Realms.Schema
         /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
         /// <param name="isIndexed">A flag indicating whether the property will be indexed. Primary key properties are always indexed.</param>
         /// <param name="isNullable">
-        /// A flag indicating whether the property is nullable. Pass <c>null</c> to infer nullability from the <paramref name="type"/> argument.
+        /// A flag indicating whether the property is nullable. Pass <c>null</c> to infer nullability from the <typeparamref name="T"/> argument.
         /// Pass a non-null value to override it.
         /// </param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property FromType<T>(string name, bool isPrimaryKey = false, bool isIndexed = false, bool? isNullable = null)
             => FromType(name, typeof(T), isPrimaryKey, isIndexed, isNullable);
 
-        public static Property Scalar(string name, RealmValueType type, bool isNullable = false, bool isPrimaryKey = false, bool isIndexed = false)
-            => ScalarCore(name, type, isNullable: isNullable, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
+        /// <summary>
+        /// Initializes a new scalar property.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="type">
+        /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
+        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// </param>
+        /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
+        /// <param name="isIndexed">A flag indicating whether the property will be indexed. Primary key properties are always indexed.</param>
+        /// <param name="isNullable">A flag indicating whether the property is nullable.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property Primitive(string name, RealmValueType type, bool isPrimaryKey = false, bool isIndexed = false, bool isNullable = false)
+            => PrimitiveCore(name, type, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed, isNullable: isNullable);
 
-        public static Property ScalarList(string name, RealmValueType type, bool areElementsNullable = false)
-            => ScalarCore(name, type, PropertyType.Array, areElementsNullable);
+        /// <summary>
+        /// Initializes a new property describing a list of primitive values.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="type">
+        /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
+        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// </param>
+        /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property PrimitiveList(string name, RealmValueType type, bool areElementsNullable = false)
+            => PrimitiveCore(name, type, PropertyType.Array, isNullable: areElementsNullable);
 
-        public static Property ScalarSet(string name, RealmValueType type, bool areElementsNullable = false)
-            => ScalarCore(name, type, PropertyType.Set, areElementsNullable);
+        /// <summary>
+        /// Initializes a new property describing a set of primitive values.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="type">
+        /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
+        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// </param>
+        /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property PrimitiveSet(string name, RealmValueType type, bool areElementsNullable = false)
+            => PrimitiveCore(name, type, PropertyType.Set, isNullable: areElementsNullable);
 
-        public static Property ScalarDictionary(string name, RealmValueType type, bool areElementsNullable = false)
-            => ScalarCore(name, type, PropertyType.Dictionary, areElementsNullable);
+        /// <summary>
+        /// Initializes a new property describing a dictionary of strings to primitive values.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="type">
+        /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
+        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// </param>
+        /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property PrimitiveDictionary(string name, RealmValueType type, bool areElementsNullable = false)
+            => PrimitiveCore(name, type, PropertyType.Dictionary, isNullable: areElementsNullable);
 
         public static Property Object(string name, string objectType)
             => ObjectCore(name, objectType);
@@ -272,7 +314,7 @@ namespace Realms.Schema
             return result;
         }
 
-        private static Property ScalarCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isNullable = false, bool isPrimaryKey = false, bool isIndexed = false)
+        private static Property PrimitiveCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isPrimaryKey = false, bool isIndexed = false, bool isNullable = false)
         {
             Argument.Ensure(type != RealmValueType.Null, $"{nameof(type)} can't be {RealmValueType.Null}", nameof(type));
             Argument.Ensure(type != RealmValueType.Object, $"{nameof(type)} can't be {RealmValueType.Object}. Use Property.Object instead.", nameof(type));

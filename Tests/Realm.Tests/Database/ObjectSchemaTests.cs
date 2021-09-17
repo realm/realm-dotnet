@@ -42,6 +42,13 @@ namespace Realms.Tests.Database
             PropertyType.Set
         };
 
+        public static readonly PropertyType[] CollectionTypes = new[]
+        {
+            PropertyType.Array,
+            PropertyType.Dictionary,
+            PropertyType.Set
+        };
+
         public static readonly bool[] BoolValues = new[] { true, false };
 
         public static readonly bool?[] NullableBoolValues = new[] { true, false, (bool?)null };
@@ -328,6 +335,80 @@ namespace Realms.Tests.Database
                 Assert.That(property.Type, Is.EqualTo(PropertyType.Object | nullableModifier | collectionModifier));
                 Assert.That(property.ObjectType, Is.EqualTo(nameof(Person)));
             }
+        }
+
+        public static readonly RealmValueType[] PrimitiveTypes = ReflectionExtensions.GetEnumValues<RealmValueType>();
+
+        [Test]
+        public void Property_Primitive_Tests(
+            [ValueSource(nameof(PrimitiveTypes))] RealmValueType type,
+            [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
+            [ValueSource(nameof(BoolValues))] bool isIndexed,
+            [ValueSource(nameof(BoolValues))] bool isNullable)
+        {
+            Property getProperty() => Property.Primitive("foo", type, isPrimaryKey, isIndexed, isNullable);
+
+            if (type == RealmValueType.Null || type == RealmValueType.Object)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty());
+                Assert.That(ex.Message, Does.Contain($"can't be {type}"));
+                return;
+            }
+
+            var expectedType = type.ToPropertyType(isNullable);
+
+            if (isPrimaryKey && !Property.PrimaryKeyTypes.Contains(expectedType & ~PropertyType.Nullable))
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty());
+                Assert.That(ex.Message, Does.Contain("cannot be primary key"));
+            }
+            else if (isIndexed && !Property.IndexableTypes.Contains(expectedType & ~PropertyType.Nullable))
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty());
+                Assert.That(ex.Message, Does.Contain("cannot be indexed"));
+            }
+            else
+            {
+                var property = getProperty();
+                Assert.That(property.Name, Is.EqualTo("foo"));
+                Assert.That(property.ObjectType, Is.Null);
+                Assert.That(property.LinkOriginPropertyName, Is.Null);
+                Assert.That(property.IsPrimaryKey, Is.EqualTo(isPrimaryKey), $"Expect property.IsPrimaryKey to be {isPrimaryKey}");
+                Assert.That(property.IsIndexed, Is.EqualTo(isPrimaryKey || isIndexed), $"Expect property.IsIndexed to be {isIndexed} || {isPrimaryKey}");
+                Assert.That(property.Type, Is.EqualTo(expectedType));
+            }
+        }
+
+        [Test]
+        public void Property_PrimitiveCollection_Tests(
+            [ValueSource(nameof(CollectionTypes))] PropertyType collectionType,
+            [ValueSource(nameof(PrimitiveTypes))] RealmValueType type,
+            [ValueSource(nameof(BoolValues))] bool isNullable)
+        {
+            Property getProperty() => collectionType switch
+            {
+                PropertyType.Array => Property.PrimitiveList("foo", type, isNullable),
+                PropertyType.Set => Property.PrimitiveSet("foo", type, isNullable),
+                PropertyType.Dictionary => Property.PrimitiveDictionary("foo", type, isNullable),
+                _ => throw new Exception($"Unexpected modifier: {CollectionTypes}"),
+            };
+
+            if (type == RealmValueType.Null || type == RealmValueType.Object)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty());
+                Assert.That(ex.Message, Does.Contain($"can't be {type}"));
+                return;
+            }
+
+            var expectedType = type.ToPropertyType(isNullable) | collectionType;
+
+            var property = getProperty();
+            Assert.That(property.Name, Is.EqualTo("foo"));
+            Assert.That(property.IsPrimaryKey, Is.False);
+            Assert.That(property.IsIndexed, Is.False);
+            Assert.That(property.ObjectType, Is.Null);
+            Assert.That(property.LinkOriginPropertyName, Is.Null);
+            Assert.That(property.Type, Is.EqualTo(expectedType));
         }
     }
 }
