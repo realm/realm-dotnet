@@ -20,7 +20,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -125,19 +124,27 @@ namespace Realms.Schema
             return obj;
         }
 
-        public bool TryFindObjectSchema(string name, out ObjectSchema schema) => _objects.TryGetValue(name, out schema);
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
-        public IEnumerator<ObjectSchema> GetEnumerator()
+        /// <summary>
+        /// Attempts to find the definition of a class in this schema.
+        /// </summary>
+        /// <param name="name">A valid class name which may be in this schema.</param>
+        /// <param name="schema">The schema corresponding to the provided <paramref name="name"/> or <c>null</c> if the schema is not found.</param>
+        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
+        /// <returns>
+        /// <c>true</c> if this <see cref="RealmSchema"/> contains a class definition with the supplied <paramref name="name"/>; <c>false</c> otherwise.
+        /// </returns>
+        public bool TryFindObjectSchema(string name, out ObjectSchema schema)
         {
-            return _objects.Values.GetEnumerator();
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return _objects.TryGetValue(name, out schema);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        /// <inheritdoc/>
+        public IEnumerator<ObjectSchema> GetEnumerator() => _objects.Values.GetEnumerator();
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
         {
@@ -160,20 +167,76 @@ namespace Realms.Schema
             return builder.Build();
         }
 
-        public static implicit operator RealmSchema(ObjectSchema[] objects) => objects == null ? null : new RealmSchema(objects.ToDictionary(s => s.Name));
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="ObjectSchema"/> instances.
+        /// </summary>
+        /// <param name="objects">The object schemas that will be contained in the newly constructed <see cref="RealmSchema"/>.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the array contains multiple <see cref="ObjectSchema"/> instances with the same <see cref="ObjectSchema.Name"/>.
+        /// </exception>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        public static implicit operator RealmSchema(ObjectSchema[] objects) => objects == null ? null : new Builder(objects).Build();
 
-        public static implicit operator RealmSchema(List<ObjectSchema> objects) => objects == null ? null : new RealmSchema(objects.ToDictionary(s => s.Name));
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from a list of <see cref="ObjectSchema"/> instances.
+        /// </summary>
+        /// <param name="objects">The object schemas that will be contained in the newly constructed <see cref="RealmSchema"/>.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the list contains multiple <see cref="ObjectSchema"/> instances with the same <see cref="ObjectSchema.Name"/>.
+        /// </exception>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        public static implicit operator RealmSchema(List<ObjectSchema> objects) => objects == null ? null : new Builder(objects).Build();
 
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="Type"/> instances.
+        /// </summary>
+        /// <param name="objects">The <see cref="Type"/>s that will be converted to <see cref="ObjectSchema"/> and added to the resulting <see cref="RealmSchema"/>.</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        /// <seealso cref="Builder.Add(Type)"/>
         public static implicit operator RealmSchema(Type[] objects) => objects == null ? null : new Builder(objects).Build();
 
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from a List of <see cref="Type"/> instances.
+        /// </summary>
+        /// <param name="objects">The <see cref="Type"/>s that will be converted to <see cref="ObjectSchema"/> and added to the resulting <see cref="RealmSchema"/>.</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        /// <seealso cref="Builder.Add(Type)"/>
         public static implicit operator RealmSchema(List<Type> objects) => objects == null ? null : new Builder(objects).Build();
 
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from a HashSet of <see cref="Type"/> instances.
+        /// </summary>
+        /// <param name="objects">The <see cref="Type"/>s that will be converted to <see cref="ObjectSchema"/> and added to the resulting <see cref="RealmSchema"/>.</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        /// <seealso cref="Builder.Add(Type)"/>
         public static implicit operator RealmSchema(HashSet<Type> objects) => objects == null ? null : new Builder(objects).Build();
 
+        /// <summary>
+        /// A convenience operator to construct a <see cref="RealmSchema"/> from a <see cref="Builder"/> by calling the
+        /// <see cref="Builder.Build"/> method.
+        /// </summary>
+        /// <param name="builder">The builder that describes the newly created schema.</param>
+        /// <returns><c>null</c> if <paramref name="builder"/> is <c>null</c>; the result of <see cref="Builder.Build"/> otherwise.</returns>
         public static implicit operator RealmSchema(Builder builder) => builder?.Build();
 
+        /// <summary>
+        /// A mutable builder that allows you to construct a <see cref="RealmSchema"/> instance.
+        /// </summary>
         public class Builder : SchemaBuilderBase<ObjectSchema>
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class.
+            /// </summary>
             public Builder()
             {
             }
@@ -188,12 +251,28 @@ namespace Realms.Schema
                 }
             }
 
-            public RealmSchema Build()
+            internal Builder(IEnumerable<ObjectSchema> schemas)
             {
-                return new RealmSchema(_values);
+                Argument.NotNull(schemas, nameof(schemas));
+
+                foreach (var schema in schemas)
+                {
+                    Add(schema);
+                }
             }
 
-            public Builder Add(ObjectSchema schema)
+            /// <summary>
+            /// Constructs a <see cref="RealmSchema"/> from the properties added to this <see cref="Builder"/>.
+            /// </summary>
+            /// <returns>An immutable <see cref="RealmSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
+            public RealmSchema Build() => new RealmSchema(_values);
+
+            /// <summary>
+            /// Adds a new <see cref="ObjectSchema"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="schema">The <see cref="ObjectSchema"/> to add.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(ObjectSchema)"/> calls.</returns>
+            public new Builder Add(ObjectSchema schema)
             {
                 Argument.NotNull(schema, nameof(schema));
 
@@ -201,6 +280,24 @@ namespace Realms.Schema
                 return this;
             }
 
+            /// <summary>
+            /// Adds a new <see cref="ObjectSchema.Builder"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="schemaBuilder">The <see cref="ObjectSchema.Builder"/> to add.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(ObjectSchema.Builder)"/> calls.</returns>
+            /// <remarks>
+            /// This is a convenience method that will call <see cref="ObjectSchema.Builder.Build"/> internally. It is intended to simplify declarative
+            /// schema construction via collection initializers:
+            /// <code>
+            /// var schema = new RealmSchema.Builder
+            /// {
+            ///     new ObjectSchema.Builder("MyClass", isEmbedded: false)
+            ///     {
+            ///         Property.Primitive("MyProperty", RealmValueType.Int)
+            ///     }
+            /// }
+            /// </code>
+            /// </remarks>
             public Builder Add(ObjectSchema.Builder schemaBuilder)
             {
                 Argument.NotNull(schemaBuilder, nameof(schemaBuilder));
@@ -209,6 +306,11 @@ namespace Realms.Schema
                 return this;
             }
 
+            /// <summary>
+            /// Adds a new <see cref="Type"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="type">The <see cref="Type"/> to add. It will be converted to <see cref="ObjectSchema"/> and added to the builder.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(Type)"/> calls.</returns>
             public Builder Add(Type type)
             {
                 Argument.NotNull(type, nameof(type));

@@ -21,7 +21,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Realms.Helpers;
@@ -92,10 +91,10 @@ namespace Realms.Schema
         /// <param name="property"><see cref="Property"/> returned only if found matching Name.</param>
         public bool TryFindProperty(string name, out Property property) => _properties.TryGetValue(name, out property);
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
+        /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "We don't need to document GetEnumerator.")]
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         internal static ObjectSchema FromType(TypeInfo type)
@@ -126,21 +125,51 @@ namespace Realms.Schema
             return result;
         }
 
+        /// <summary>
+        /// A mutable builder that allows you to construct an <see cref="ObjectSchema"/> instance.
+        /// </summary>
         public class Builder : SchemaBuilderBase<Property>
         {
+            /// <summary>
+            /// Gets the name of the class described by the builder.
+            /// </summary>
+            /// <value>The name of the class.</value>
             public string Name { get; }
 
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="Builder"/> describes an embedded object.
+            /// </summary>
+            /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
             public bool IsEmbedded { get; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class with the provided name.
+            /// </summary>
+            /// <param name="name">The name of the <see cref="ObjectSchema"/> this builder describes.</param>
+            /// <param name="isEmbedded">A flag indicating whether the object is embedded or not.</param>
+            /// <seealso cref="EmbeddedObject"/>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
+            /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is the empty string.</exception>
             public Builder(string name, bool isEmbedded)
             {
+                Argument.NotNullOrEmpty(name, nameof(name));
+
                 Name = name;
                 IsEmbedded = isEmbedded;
             }
 
+            /// <summary>
+            /// Constructs an <see cref="ObjectSchema"/> from the properties added to this <see cref="Builder"/>.
+            /// </summary>
+            /// <returns>An immutable <see cref="ObjectSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
             public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values);
 
-            public Builder Add(Property item)
+            /// <summary>
+            /// Adds a new <see cref="Property"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="item">The <see cref="Property"/> to add.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(Property)"/> calls.</returns>
+            public new Builder Add(Property item)
             {
                 base.Add(item);
 

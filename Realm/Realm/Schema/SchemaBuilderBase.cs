@@ -22,16 +22,30 @@ using System.Collections.Generic;
 
 namespace Realms.Schema
 {
+    /// <summary>
+    /// A base class for the schema builders exposed by Realm.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements contained in the builder.</typeparam>
     public abstract class SchemaBuilderBase<T> : IEnumerable<T>
     {
-        protected IDictionary<string, T> _values = new Dictionary<string, T>();
+        protected readonly IDictionary<string, T> _values = new Dictionary<string, T>();
 
+        /// <summary>
+        /// Gets or sets an element in the builder by name.
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <returns>The element with the specified name.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown if the builder doesn't contain an element with the specified <paramref name="name"/>.</exception>
         public T this[string name]
         {
             get => _values[name];
             set => _values[name] = value;
         }
 
+        /// <summary>
+        /// Gets the number of elements the builder contains.
+        /// </summary>
         public int Count => _values.Count;
 
         protected void Add(T item)
@@ -45,18 +59,40 @@ namespace Realms.Schema
             _values.Add(key, item);
         }
 
+        /// <summary>
+        /// Removes an element from the builder.
+        /// </summary>
+        /// <param name="item">The element to remove.</param>
+        /// <returns><c>true</c> if the element was found and removed; <c>false</c> otherwise.</returns>
         public bool Remove(T item) => _values.Remove(new KeyValuePair<string, T>(GetKey(item), item));
 
-        public bool Remove(string propertyName) => _values.Remove(propertyName);
+        /// <summary>
+        /// Removes an element from the builder by name.
+        /// </summary>
+        /// <param name="name">The name of the element to remove.</param>
+        /// <returns><c>true</c> if the element was found and removed; <c>false</c> otherwise.</returns>
+        public bool Remove(string name) => _values.Remove(name);
 
+        /// <summary>
+        /// Checks if the builder contains the provided element.
+        /// </summary>
+        /// <param name="item">The item to check for existence.</param>
+        /// <returns><c>true</c> if the builder contains the specified item; <c>false</c> otherwise.</returns>
         public bool Contains(T item) => _values.Contains(new KeyValuePair<string, T>(GetKey(item), item));
 
-        public bool Contains(string propertyName) => _values.ContainsKey(propertyName);
+        /// <summary>
+        /// Checks if the builder contains the provided element by name.
+        /// </summary>
+        /// <param name="name">The name of the element being searched for.</param>
+        /// <returns><c>true</c> if the builder contains the specified item; <c>false</c> otherwise.</returns>
+        public bool Contains(string name) => _values.ContainsKey(name);
 
         protected abstract string GetKey(T item);
 
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator() => _values.Values.GetEnumerator();
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => _values.Values.GetEnumerator();
     }
 }
