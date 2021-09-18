@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Realms.Helpers;
@@ -211,7 +212,7 @@ namespace Realms.Schema
             => FromType(name, typeof(T), isPrimaryKey, isIndexed, isNullable);
 
         /// <summary>
-        /// Initializes a new scalar property.
+        /// Initializes a new property of a primitive (string, int, date, etc.) type.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
@@ -231,7 +232,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// in an exception being thrown. If you want to create a list of objects property, use <see cref="ObjectList(string, string)"/>.
         /// </param>
         /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
@@ -244,7 +245,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// in an exception being thrown. If you want to create a set of objects property, use <see cref="ObjectSet(string, string)"/>.
         /// </param>
         /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
@@ -257,26 +258,59 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// in an exception being thrown. If you want to create a dictionary of objects property, use <see cref="ObjectDictionary(string, string)"/>.
         /// </param>
         /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property PrimitiveDictionary(string name, RealmValueType type, bool areElementsNullable = false)
             => PrimitiveCore(name, type, PropertyType.Dictionary, isNullable: areElementsNullable);
 
+        /// <summary>
+        /// Initializes a new property linking to a RealmObject.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="objectType">The object type. Both standalone and embedded objects are valid.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The property type describes an object.")]
         public static Property Object(string name, string objectType)
-            => ObjectCore(name, objectType);
+            => ObjectCore(name, objectType, PropertyType.Nullable);
 
+        /// <summary>
+        /// Initializes a new property describing a list of RealmObjects.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="objectType">The object type. Both standalone and embedded objects are valid.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property ObjectList(string name, string objectType)
             => ObjectCore(name, objectType, PropertyType.Array);
 
+        /// <summary>
+        /// Initializes a new property describing a set of RealmObjects.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="objectType">The object type. Both standalone and embedded objects are valid.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property ObjectSet(string name, string objectType)
             => ObjectCore(name, objectType, PropertyType.Set);
 
+        /// <summary>
+        /// Initializes a new property describing a dictionary of strings to RealmObjects.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="objectType">The object type. Both standalone and embedded objects are valid.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property ObjectDictionary(string name, string objectType)
-            => ObjectCore(name, objectType, PropertyType.Dictionary);
+            => ObjectCore(name, objectType, PropertyType.Dictionary | PropertyType.Nullable);
 
-        public static Property LinkingObjects(string name, string originObjectType, string originPropertyName)
+        /// <summary>
+        /// Initializes a new property describing a collection of backlinks (all objects linking to this one via the specified property).
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <param name="originObjectType">The object on the other side of the relationship.</param>
+        /// <param name="originPropertyName">The property that is on the other end of the relationship.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        /// <seealso cref="BacklinkAttribute"/>
+        public static Property Backlinks(string name, string originObjectType, string originPropertyName)
         {
             Argument.NotNullOrEmpty(originObjectType, nameof(originObjectType));
             Argument.NotNullOrEmpty(originPropertyName, nameof(originPropertyName));
@@ -294,7 +328,7 @@ namespace Realms.Schema
                 var innerType = prop.PropertyType.GenericTypeArguments.Single();
                 var linkOriginProperty = innerType.GetProperty(backlinksAttribute.Property);
 
-                result = LinkingObjects(propertyName, innerType.GetTypeInfo().GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
+                result = Backlinks(propertyName, innerType.GetTypeInfo().GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
             }
             else
             {
@@ -322,8 +356,12 @@ namespace Realms.Schema
             return new Property(name, type.ToPropertyType(isNullable) | collectionModifier, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);
         }
 
-        private static Property ObjectCore(string name, string objectType, PropertyType collectionModifier = default)
-            => new Property(name, PropertyType.Object | PropertyType.Nullable | collectionModifier, objectType);
+        private static Property ObjectCore(string name, string objectType, PropertyType typeModifier = default)
+        {
+            Argument.NotNullOrEmpty(objectType, nameof(objectType));
+
+            return new Property(name, PropertyType.Object | typeModifier, objectType);
+        }
 
         internal PropertyInfo PropertyInfo;
     }

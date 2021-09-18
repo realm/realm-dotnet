@@ -410,5 +410,133 @@ namespace Realms.Tests.Database
             Assert.That(property.LinkOriginPropertyName, Is.Null);
             Assert.That(property.Type, Is.EqualTo(expectedType));
         }
+
+        [Test]
+        public void Property_Object_Tests([ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier)
+        {
+            Property getProperty() => collectionModifier switch
+            {
+                PropertyType.Array => Property.ObjectList("foo", "Bar"),
+                PropertyType.Set => Property.ObjectSet("foo", "Bar"),
+                PropertyType.Dictionary => Property.ObjectDictionary("foo", "Bar"),
+                _ => Property.Object("foo", "Bar"),
+            };
+
+            var nullabilityModifier = collectionModifier == PropertyType.Array || collectionModifier == PropertyType.Set ? default : PropertyType.Nullable;
+            var expectedType = PropertyType.Object | collectionModifier | nullabilityModifier;
+
+            var property = getProperty();
+            Assert.That(property.Name, Is.EqualTo("foo"));
+            Assert.That(property.IsPrimaryKey, Is.False);
+            Assert.That(property.IsIndexed, Is.False);
+            Assert.That(property.ObjectType, Is.EqualTo("Bar"));
+            Assert.That(property.LinkOriginPropertyName, Is.Null);
+            Assert.That(property.Type, Is.EqualTo(expectedType));
+        }
+
+        [Test]
+        public void Property_Backlinks()
+        {
+            var property = Property.Backlinks("foo", "Bar", "OriginProperty");
+            Assert.That(property.Name, Is.EqualTo("foo"));
+            Assert.That(property.IsPrimaryKey, Is.False);
+            Assert.That(property.IsIndexed, Is.False);
+            Assert.That(property.ObjectType, Is.EqualTo("Bar"));
+            Assert.That(property.LinkOriginPropertyName, Is.EqualTo("OriginProperty"));
+            Assert.That(property.Type, Is.EqualTo(PropertyType.Array | PropertyType.LinkingObjects));
+        }
+
+        [Test]
+        public void Property_FromType_InvalidArguments()
+        {
+            var ex1 = Assert.Throws<ArgumentNullException>(() => Property.FromType(null, typeof(string)));
+            Assert.That(ex1.ParamName, Is.EqualTo("name"));
+
+            var ex2 = Assert.Throws<ArgumentException>(() => Property.FromType(string.Empty, typeof(string)));
+            Assert.That(ex2.ParamName, Is.EqualTo("name"));
+
+            var ex3 = Assert.Throws<ArgumentNullException>(() => Property.FromType("foo", null));
+            Assert.That(ex3.ParamName, Is.EqualTo("type"));
+
+            var ex4 = Assert.Throws<ArgumentException>(() => Property.FromType("foo", typeof(Exception)));
+            Assert.That(ex4.ParamName, Is.EqualTo("type"));
+        }
+
+        [Test]
+        public void Property_FromType_Generic_InvalidArguments()
+        {
+            var ex1 = Assert.Throws<ArgumentNullException>(() => Property.FromType<string>(null));
+            Assert.That(ex1.ParamName, Is.EqualTo("name"));
+
+            var ex2 = Assert.Throws<ArgumentException>(() => Property.FromType<string>(string.Empty));
+            Assert.That(ex2.ParamName, Is.EqualTo("name"));
+
+            var ex3 = Assert.Throws<ArgumentException>(() => Property.FromType<Exception>("foo"));
+            Assert.That(ex3.ParamName, Is.EqualTo("type"));
+        }
+
+        [Test]
+        public void Property_Primitive_InvalidArguments([ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier)
+        {
+            Property getProperty(string name) => collectionModifier switch
+            {
+                PropertyType.Array => Property.PrimitiveList(name, RealmValueType.Int),
+                PropertyType.Set => Property.PrimitiveSet(name, RealmValueType.Int),
+                PropertyType.Dictionary => Property.PrimitiveDictionary(name, RealmValueType.Int),
+                _ => Property.Primitive(name, RealmValueType.Int),
+            };
+
+            var ex1 = Assert.Throws<ArgumentNullException>(() => getProperty(null));
+            Assert.That(ex1.ParamName, Is.EqualTo("name"));
+
+            var ex2 = Assert.Throws<ArgumentException>(() => getProperty(string.Empty));
+            Assert.That(ex2.ParamName, Is.EqualTo("name"));
+        }
+
+        [Test]
+        public void Property_Object_InvalidArguments([ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier)
+        {
+            Property getProperty(string name, string objectType) => collectionModifier switch
+            {
+                PropertyType.Array => Property.ObjectList(name, objectType),
+                PropertyType.Set => Property.ObjectSet(name, objectType),
+                PropertyType.Dictionary => Property.ObjectDictionary(name, objectType),
+                _ => Property.Object(name, objectType),
+            };
+
+            var ex1 = Assert.Throws<ArgumentNullException>(() => getProperty(null, "Bar"));
+            Assert.That(ex1.ParamName, Is.EqualTo("name"));
+
+            var ex2 = Assert.Throws<ArgumentException>(() => getProperty(string.Empty, "Bar"));
+            Assert.That(ex2.ParamName, Is.EqualTo("name"));
+
+            var ex3 = Assert.Throws<ArgumentNullException>(() => getProperty("Foo", null));
+            Assert.That(ex3.ParamName, Is.EqualTo("objectType"));
+
+            var ex4 = Assert.Throws<ArgumentException>(() => getProperty("Foo", string.Empty));
+            Assert.That(ex4.ParamName, Is.EqualTo("objectType"));
+        }
+
+        [Test]
+        public void Property_Backlinks_InvalidArguments()
+        {
+            var ex1 = Assert.Throws<ArgumentNullException>(() => Property.Backlinks(null, "Bar", "Origin"));
+            Assert.That(ex1.ParamName, Is.EqualTo("name"));
+
+            var ex2 = Assert.Throws<ArgumentException>(() => Property.Backlinks(string.Empty, "Bar", "Origin"));
+            Assert.That(ex2.ParamName, Is.EqualTo("name"));
+
+            var ex3 = Assert.Throws<ArgumentNullException>(() => Property.Backlinks("Foo", null, "Origin"));
+            Assert.That(ex3.ParamName, Is.EqualTo("originObjectType"));
+
+            var ex4 = Assert.Throws<ArgumentException>(() => Property.Backlinks("Foo", string.Empty, "Origin"));
+            Assert.That(ex4.ParamName, Is.EqualTo("originObjectType"));
+
+            var ex5 = Assert.Throws<ArgumentNullException>(() => Property.Backlinks("Foo", "Bar", null));
+            Assert.That(ex5.ParamName, Is.EqualTo("originPropertyName"));
+
+            var ex6 = Assert.Throws<ArgumentException>(() => Property.Backlinks("Foo", "Bar", string.Empty));
+            Assert.That(ex6.ParamName, Is.EqualTo("originPropertyName"));
+        }
     }
 }
