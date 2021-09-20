@@ -28,7 +28,8 @@ using Realms.Helpers;
 namespace Realms.Schema
 {
     /// <summary>
-    /// Public description of a class stored in a Realm, as a collection of managed Property objects.
+    /// Public description of a class stored in a Realm, as a collection of managed Property objects. To construct
+    /// a new instance, use the <see cref="Builder">ObjectSchema.Builder</see> API.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>

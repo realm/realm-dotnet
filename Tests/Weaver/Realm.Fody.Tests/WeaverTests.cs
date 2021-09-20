@@ -222,7 +222,7 @@ namespace RealmWeaver
         }
 
         [TestCaseSource(nameof(RandomValues))]
-        public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
+        public void GetValueManagedShouldGetQueryDatabase(string typeName, object _)
         {
             // Arrange
             var propertyName = typeName + "Property";

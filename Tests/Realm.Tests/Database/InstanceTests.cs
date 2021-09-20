@@ -190,7 +190,7 @@ namespace Realms.Tests.Database
         public void RealmWithOneClassWritesDesiredClass()
         {
             // Arrange
-            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass) };
+            RealmConfiguration.DefaultConfiguration.Schema = new[] { typeof(LoneClass) };
 
             // Act
             using var lonelyRealm = GetRealm();
@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
         public void RealmWithOneClassThrowsIfUseOther()
         {
             // Arrange
-            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass) };
+            RealmConfiguration.DefaultConfiguration.Schema = new[] { typeof(LoneClass) };
 
             // Act and assert
             using var lonelyRealm = GetRealm();
@@ -228,7 +228,7 @@ namespace Realms.Tests.Database
             // Can't have classes in the list which are not RealmObjects
             var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
             {
-                ObjectClasses = new[] { typeof(LoneClass), typeof(object) }
+                Schema = new[] { typeof(LoneClass), typeof(object) }
             });
 
             Assert.That(ex.Message, Does.Contain("System.Object"));
@@ -635,7 +635,7 @@ namespace Realms.Tests.Database
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(EmbeddedLevel1), typeof(EmbeddedLevel2), typeof(EmbeddedLevel3) }
+                Schema = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(EmbeddedLevel1), typeof(EmbeddedLevel2), typeof(EmbeddedLevel3) }
             };
 
             // Create the realm and add some objects
@@ -662,7 +662,7 @@ namespace Realms.Tests.Database
             using var dynamicRealm = GetRealm(config);
             Assert.That(dynamicRealm.Schema.Count, Is.EqualTo(6));
 
-            var allTypesSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+            Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
             Assert.That(allTypesSchema.IsEmbedded, Is.False);
 
@@ -679,7 +679,7 @@ namespace Realms.Tests.Database
                 Assert.That(dynamicAto.RequiredStringProperty, Is.EqualTo("This is required!"));
             }
 
-            var embeddedAllTypesSchema = dynamicRealm.Schema.Find(nameof(EmbeddedAllTypesObject));
+            Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
             Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
 

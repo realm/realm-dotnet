@@ -208,7 +208,7 @@ namespace Realms.Sync
                 SyncUserHandle = User.Handle,
                 Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
-                schema_mode = ObjectClasses == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
             };
         }
     }

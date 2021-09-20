@@ -227,9 +227,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DuplicateClassNames_ThrowsException()
         {
-            var ex = Assert.Throws<NotSupportedException>(() => _ = new RealmConfiguration
+            var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
             {
-                ObjectClasses = new[]
+                Schema = new[]
                 {
                     typeof(Foo.DuplicateClass),
                     typeof(Bar.DuplicateClass)
