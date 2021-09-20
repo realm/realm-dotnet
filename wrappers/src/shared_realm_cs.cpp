@@ -46,7 +46,7 @@ using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using OnBindingContextDestructedT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
-using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -199,7 +199,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                     schema_properties.data()
                 };
 
-                if (!s_on_migration(&oldRealm, &newRealm, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
+                if (!s_on_migration(&oldRealm, &newRealm, &schema, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
                     throw ManagedExceptionDuringMigration();
                 }
             };
@@ -552,26 +552,19 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
 }
 
 REALM_EXPORT void shared_realm_rename_property(const SharedRealm& realm, uint16_t* type_name_buf, size_t type_name_len,
-    uint16_t* old_name_buf, size_t old_Name_len, uint16_t* new_name_buf, size_t new_name_len, NativeException::Marshallable& ex)
+    uint16_t* old_name_buf, size_t old_Name_len, uint16_t* new_name_buf, size_t new_name_len, Schema* migration_schema, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
         Utf16StringAccessor old_name_str(old_name_buf, old_Name_len);
         Utf16StringAccessor new_name_str(new_name_buf, new_name_len);
 
-        auto schema = realm->schema();  //TODO Useless, see comment up
-        ObjectStore::rename_property(realm->read_group(), schema, type_name_str, old_name_str, new_name_str);
+        ObjectStore::rename_property(realm->read_group(), *migration_schema, type_name_str, old_name_str, new_name_str);
     });
 }
 
 REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* type_name_buf, size_t type_name_len, NativeException::Marshallable& ex)
 {
-    //TODO Remove type
-    //TODO Need docs type in JIRA
-
-    //TODO Open with dynamic to check if it's still there for testing
-
-    //What happens if we delete a table, and we try to access it in the old realm
     return handle_errors(ex, [&]() {
         Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
 

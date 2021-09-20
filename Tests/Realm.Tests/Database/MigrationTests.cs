@@ -162,34 +162,36 @@ namespace Realms.Tests.Database
 
             var configuration = new RealmConfiguration(path)
             {
+                SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
+                    var oldSchema = migration.OldRealm.Schema;
+                    var newSchema = migration.NewRealm.Schema;
+
                     var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
-
-                    //Here rename triggersSchema to Email or FullName and check it worked
 
                     for (var i = 0; i < newPeople.Count(); i++)
                     {
                         var oldPerson = oldPeople.ElementAt(i);
                         var newPerson = newPeople.ElementAt(i);
 
-                        Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
-                        newPerson.LastName = triggersSchemaFieldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
+                        Assert.That(newPerson.OptionalAddress, Is.Not.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                    }
 
-                        if (!TestHelpers.IsUnity)
-                        {
-                            // Ensure we can still use the dynamic API during migrations
-                            dynamic dynamicOldPerson = oldPeople.ElementAt(i);
-                            Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
-                        }
+                    migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
+
+                    for (var i = 0; i < newPeople.Count(); i++)
+                    {
+                        var oldPerson = oldPeople.ElementAt(i);
+                        var newPerson = newPeople.ElementAt(i);
+
+                        Assert.That(newPerson.OptionalAddress, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
                     }
                 }
             };
 
-            var realm = GetRealm(configuration);
-            var person = realm.All<Person>().Single();
-            Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
+            using var realm = GetRealm(configuration);
         }
 
         [Test]
@@ -220,7 +222,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void MigrationRemoveTypeNotInSchema()
+        public void MigrationRemoveTypeNotInSchemaRemoved()
         {
             var oldRealmConfig = new RealmConfiguration()
             {
@@ -230,21 +232,57 @@ namespace Realms.Tests.Database
 
             using (var oldRealm = GetRealm(oldRealmConfig))
             {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new Person { FirstName = "Maria" });
+                });
             }
 
+            bool migrationCallbackCalled = false;
             var newRealmConfig = new RealmConfiguration()
             {
-                IsDynamic = true,
                 SchemaVersion = 1,
+                ObjectClasses = new[] { typeof(Dog), typeof(Owner) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    migration.RemoveType(nameof(Person));
+                    migrationCallbackCalled = true;
+
+                    //TODO Do we prefer an exception here...?
+                    var migrationResultNotInSchema = migration.RemoveType("NotInSchemaType");
+                    Assert.That(migrationResultNotInSchema, Is.False);
+
+                    var migrationResult = migration.RemoveType(nameof(Person));
+                    Assert.That(migrationResult, Is.True);
+
+                    // Removed type in oldRealm is still available for the duration of the migration
+                    var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPerson = oldPeople.First();
+
+                    Assert.That(oldPeople.Count(), Is.EqualTo(1));
+                    Assert.That(oldPerson.DynamicApi.Get<string>("FirstName"), Is.EqualTo("Maria"));
                 }
             };
 
             using (var newRealm = GetRealm(newRealmConfig))
             {
-                //TODO Finish this
+                Assert.That(migrationCallbackCalled, Is.True);
+
+                // This just means that "Person" is not in the schema that we pass in the config, but we're not sure it has been removed.
+                var ex = Assert.Throws<ArgumentException>(() => newRealm.DynamicApi.All("Person"));
+                Assert.That(ex.Message, Does.Contain("The class Person is not in the limited set of classes for this realm"));
+            }
+
+            var newRealmDynamicConfig = new RealmConfiguration()
+            {
+                SchemaVersion = 1,
+                IsDynamic = true,
+            };
+
+            using (var newRealmDynamic = GetRealm(newRealmDynamicConfig))
+            {
+                // This means that "Person" is not in the schema anymore, as we retrieve it directly from core.
+                var ex = Assert.Throws<ArgumentException>(() => newRealmDynamic.DynamicApi.All("Person"));
+                Assert.That(ex.Message, Does.Contain("The class Person is not in the limited set of classes for this realm"));
             }
         }
     }

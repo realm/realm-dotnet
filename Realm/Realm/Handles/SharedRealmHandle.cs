@@ -55,7 +55,7 @@ namespace Realms
 
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
+            internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -186,6 +186,7 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeNameLength,
                 [MarshalAs(UnmanagedType.LPWStr)] string oldName, IntPtr oldNameLength,
                 [MarshalAs(UnmanagedType.LPWStr)] string newName, IntPtr newNameLength,
+                IntPtr migrationSchema,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_type", CallingConvention = CallingConvention.Cdecl)]
@@ -474,10 +475,10 @@ namespace Realms
             return true;
         }
 
-        public void RenameProperty(string typeName, string oldName, string newName)
+        public void RenameProperty(string typeName, string oldName, string newName, IntPtr migrationSchema)
         {
             NativeMethods.rename_property(this, typeName, (IntPtr)typeName.Length,
-                oldName, (IntPtr)oldName.Length, newName, (IntPtr)newName.Length, out var nativeException);
+                oldName, (IntPtr)oldName.Length, newName, (IntPtr)newName.Length, migrationSchema, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -545,7 +546,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
-        private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
+        private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
             var migration = (Migration)migrationHandle.Target;
@@ -562,7 +563,7 @@ namespace Realms
             var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
             var newRealm = new Realm(newRealmHandle, migration.Configuration, migration.Schema);
 
-            var result = migration.Execute(oldRealm, newRealm);
+            var result = migration.Execute(oldRealm, newRealm, migrationSchema);
 
             return result;
         }

@@ -35,7 +35,7 @@ namespace Realms
     public class Migration
     {
         private GCHandle? _handle;
-
+        private IntPtr _migrationSchema;
         internal GCHandle MigrationHandle => _handle ?? throw new ObjectDisposedException(nameof(Migration));
 
         internal RealmConfiguration Configuration { get; }
@@ -63,10 +63,11 @@ namespace Realms
             _handle = GCHandle.Alloc(this);
         }
 
-        internal bool Execute(Realm oldRealm, Realm newRealm)
+        internal bool Execute(Realm oldRealm, Realm newRealm, IntPtr migrationSchema)
         {
             OldRealm = oldRealm;
             NewRealm = newRealm;
+            _migrationSchema = migrationSchema;
 
             try
             {
@@ -108,6 +109,8 @@ namespace Realms
             Argument.NotNullOrEmpty(typeName, nameof(typeName));
             Argument.NotNullOrEmpty(oldPropertyName, nameof(oldPropertyName));
             Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
+
+            NewRealm.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
 
         }
     }

@@ -462,9 +462,9 @@ namespace Realms
             return Metadata;
         }
 
-        internal void RenameProperty(string typeName, string oldName, string newName)
+        internal void RenameProperty(string typeName, string oldName, string newName, IntPtr migrationSchema)
         {
-            SharedRealmHandle.RenameProperty(typeName, oldName, newName);
+            SharedRealmHandle.RenameProperty(typeName, oldName, newName, migrationSchema);
         }
 
         internal bool RemoveType(string typeName)
