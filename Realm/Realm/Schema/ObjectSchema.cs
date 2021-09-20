@@ -61,9 +61,6 @@ namespace Realms.Schema
 
         private ObjectSchema(string name, bool isEmbedded, IDictionary<string, Property> properties)
         {
-            Argument.NotNullOrEmpty(name, nameof(name));
-            Argument.NotNull(properties, nameof(properties));
-
             Name = name;
             IsEmbedded = isEmbedded;
 
@@ -150,7 +147,7 @@ namespace Realms.Schema
             /// <seealso cref="EmbeddedObject"/>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
             /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is the empty string.</exception>
-            public Builder(string name, bool isEmbedded)
+            public Builder(string name, bool isEmbedded = false)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 

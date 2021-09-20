@@ -28,12 +28,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectSchemaTests
     {
-        private class RequiredPropertyClass : RealmObject
-        {
-            [Required]
-            public string FooRequired { get; set; }
-        }
-
         public static readonly PropertyType[] CollectionModifiers = new[]
         {
             PropertyType.Int,
@@ -58,18 +52,8 @@ namespace Realms.Tests.Database
         {
             var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass).GetTypeInfo());
 
-            if (!schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out var prop))
-            {
-                Assert.Fail("Could not find property");
-            }
-
+            Assert.That(schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out var prop), Is.True);
             Assert.That(prop.Type.HasFlag(PropertyType.Nullable), Is.False);
-        }
-
-        [Realms.Explicit]
-        private class ExplicitClass : RealmObject
-        {
-            public int Foo { get; set; }
         }
 
         [Test]
@@ -85,21 +69,6 @@ namespace Realms.Tests.Database
             var isInSchema = RealmSchema.Default.TryFindObjectSchema(nameof(ExplicitClass), out var schema);
             Assert.That(isInSchema, Is.False);
             Assert.That(schema, Is.Null);
-        }
-
-        public class FromTypeTestData
-        {
-            public Type Type { get; }
-
-            public PropertyType InherentType { get; }
-
-            public FromTypeTestData(Type type, PropertyType propertyType)
-            {
-                Type = type;
-                InherentType = propertyType;
-            }
-
-            public override string ToString() => Type.FullName;
         }
 
         public static FromTypeTestData[] FromTypeTestCases =
@@ -176,21 +145,6 @@ namespace Realms.Tests.Database
                 Assert.That(property.IsIndexed, Is.EqualTo(expectedIsIndexed), $"Expect property.IsIndexed to be {isIndexed} || {isPrimaryKey}");
                 Assert.That(property.Type, Is.EqualTo(expectedType | collectionModifier));
             }
-        }
-
-        public class TypeInfoTestCase
-        {
-            public Type Type { get; }
-
-            public string ExpectedObjectName { get; }
-
-            public TypeInfoTestCase(Type type, string expectedObjectName)
-            {
-                Type = type;
-                ExpectedObjectName = expectedObjectName;
-            }
-
-            public override string ToString() => ExpectedObjectName;
         }
 
         public static TypeInfoTestCase[] ObjectTypeTestCases =
@@ -537,6 +491,382 @@ namespace Realms.Tests.Database
 
             var ex6 = Assert.Throws<ArgumentException>(() => Property.Backlinks("Foo", "Bar", string.Empty));
             Assert.That(ex6.ParamName, Is.EqualTo("originPropertyName"));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_CanBuildEmptySchema()
+        {
+            var builder = new ObjectSchema.Builder("MyClass", isEmbedded: true);
+            var schema = builder.Build();
+
+            Assert.That(schema.Count, Is.Zero);
+            Assert.That(schema.Name, Is.EqualTo("MyClass"));
+            Assert.That(schema.IsEmbedded, Is.True);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_InvalidArguments()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ObjectSchema.Builder(null, isEmbedded: true));
+            Assert.Throws<ArgumentException>(() => new ObjectSchema.Builder(string.Empty, isEmbedded: true));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Indexer_InvalidArguments()
+        {
+            var builder = new ObjectSchema.Builder("MyClass");
+
+            // null is not a valid name
+            Assert.Throws<ArgumentNullException>(() => _ = builder[null]);
+            Assert.Throws<ArgumentNullException>(() => builder[null] = Property.Primitive("Foo", RealmValueType.Int));
+
+            // Getting a non-existent item
+            Assert.Throws<KeyNotFoundException>(() => _ = builder["non-existent"]);
+
+            // Mismatch between provided name and property name
+            var ex = Assert.Throws<ArgumentException>(() => builder["Bar"] = Property.Primitive("Foo", RealmValueType.Int));
+            Assert.That(ex.Message, Does.Contain("Bar"));
+            Assert.That(ex.Message, Does.Contain("Foo"));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Indexer_GetSet()
+        {
+            var builder = new ObjectSchema.Builder("MyClass");
+
+            Assert.That(builder.Count, Is.Zero);
+
+            var propertyToSet = Property.Primitive("Foo", RealmValueType.Int);
+            builder["Foo"] = propertyToSet;
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            var propertyFromGet = builder["Foo"];
+            Assert.That(propertyFromGet, Is.EqualTo(propertyToSet));
+
+            ValidateBuiltSchema(builder, propertyToSet);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Indexer_ReplaceExisting()
+        {
+            var builder = new ObjectSchema.Builder("MyClass");
+
+            var propertyToSet = Property.Primitive("Foo", RealmValueType.Int);
+            builder["Foo"] = propertyToSet;
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder["Foo"].Type, Is.EqualTo(PropertyType.Int));
+
+            var propertyToReplace = Property.Primitive("Foo", RealmValueType.String, isNullable: true);
+            builder["Foo"] = propertyToReplace;
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder["Foo"].Type, Is.EqualTo(PropertyType.NullableString));
+            Assert.That(builder["Foo"], Is.EqualTo(propertyToReplace));
+
+            ValidateBuiltSchema(builder, propertyToReplace);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Add_AddsProperty()
+        {
+            var builder = new ObjectSchema.Builder("MyClass");
+
+            var propertyFoo = Property.Primitive("Foo", RealmValueType.Int);
+            var propertyBar = Property.Primitive("Bar", RealmValueType.Int);
+
+            builder.Add(propertyFoo);
+            builder.Add(propertyBar);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+            Assert.That(builder["Foo"], Is.EqualTo(propertyFoo));
+            Assert.That(builder["Bar"], Is.EqualTo(propertyBar));
+
+            ValidateBuiltSchema(builder, propertyFoo, propertyBar);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Add_WhenDuplicate_Throws()
+        {
+            var builder = new ObjectSchema.Builder("MyClass");
+
+            var propertyFoo = Property.Primitive("Foo", RealmValueType.Int);
+            var propertyFooAgain = Property.Primitive("Foo", RealmValueType.String);
+
+            builder.Add(propertyFoo);
+
+            Assert.Throws<ArgumentException>(() => builder.Add(propertyFoo));
+            Assert.Throws<ArgumentException>(() => builder.Add(propertyFooAgain));
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder["Foo"], Is.EqualTo(propertyFoo));
+
+            ValidateBuiltSchema(builder, propertyFoo);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Add_ReturnsSameBuilderInstance()
+        {
+            var builder = new ObjectSchema.Builder("MyClass");
+
+            var propertyFoo = Property.Primitive("Foo", RealmValueType.Int);
+
+            var returnedBuilder = builder.Add(propertyFoo);
+
+            Assert.AreSame(builder, returnedBuilder);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_ContainsItem_ReturnsTrueForMatches()
+        {
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                Property.Primitive("Foo", RealmValueType.Int)
+            };
+
+            // Contains should return true for both the added property and an equivalent one
+            Assert.That(builder.Contains(builder["Foo"]), Is.True);
+            Assert.That(builder.Contains(Property.Primitive("Foo", RealmValueType.Int)), Is.True);
+
+            // Should return false for wrong type or different name
+            Assert.That(builder.Contains(Property.Primitive("Bar", RealmValueType.Int)), Is.False);
+            Assert.That(builder.Contains(Property.Primitive("Foo", RealmValueType.String)), Is.False);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_RemoveItem()
+        {
+            var propertyToRemain = Property.Primitive("Foo", RealmValueType.Decimal128);
+            var propertyToRemove = Property.Object("Bar", "MyOtherClass");
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                propertyToRemain,
+                propertyToRemove
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove(propertyToRemove), Is.True);
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            ValidateBuiltSchema(builder, propertyToRemain);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_RemoveItem_WhenItemIsNotEquivalent_DoesntRemove()
+        {
+            var foo = Property.Primitive("Foo", RealmValueType.Decimal128);
+            var bar = Property.Object("Bar", "MyOtherClass");
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                foo,
+                bar
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove(Property.Primitive("Foo", RealmValueType.Int)), Is.False);
+            Assert.That(builder.Remove(Property.Primitive("FooFoo", RealmValueType.Decimal128)), Is.False);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            ValidateBuiltSchema(builder, foo, bar);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_RemoveString()
+        {
+            var propertyToRemain = Property.Primitive("Foo", RealmValueType.Decimal128);
+            var propertyToRemove = Property.Object("Bar", "MyOtherClass");
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                propertyToRemain,
+                propertyToRemove
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove("Bar"), Is.True);
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            ValidateBuiltSchema(builder, propertyToRemain);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_RemoveString_WhenItemIsNotEquivalent_DoesntRemove()
+        {
+            var foo = Property.Primitive("Foo", RealmValueType.Decimal128);
+            var bar = Property.Object("Bar", "MyOtherClass");
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                foo,
+                bar
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove("FooFoo"), Is.False);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            ValidateBuiltSchema(builder, foo, bar);
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_ContainsString_ReturnsTrueForMatches()
+        {
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                Property.Primitive("Foo", RealmValueType.Int)
+            };
+
+            Assert.That(builder.Contains("Foo"), Is.True);
+            Assert.That(builder.Contains("Bar"), Is.False);
+
+            Assert.Throws<ArgumentNullException>(() => builder.Contains(null));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Build_WhenMultiplePKProperties_Throws()
+        {
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                Property.Primitive("PK1", RealmValueType.Int, isPrimaryKey: true),
+                Property.Primitive("PK2", RealmValueType.Int, isPrimaryKey: true),
+            };
+
+            var ex = Assert.Throws<ArgumentException>(() => builder.Build());
+            Assert.That(ex.Message, Does.Contain("PK1"));
+            Assert.That(ex.Message, Does.Contain("PK2"));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Build_ResolvesPrimaryKey()
+        {
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                Property.Primitive("Foo", RealmValueType.Date, isNullable: true),
+                Property.Primitive("PK", RealmValueType.Int, isPrimaryKey: true),
+                Property.Primitive("SomeOtherProp", RealmValueType.Int, isIndexed: true),
+            };
+
+            var schema = builder.Build();
+            Assert.That(schema.PrimaryKeyProperty, Is.Not.Null);
+            Assert.That(schema.PrimaryKeyProperty.Value, Is.EqualTo(builder["PK"]));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_Build_WhenNoPK()
+        {
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                Property.Primitive("Foo", RealmValueType.Date, isNullable: true),
+                Property.Primitive("SomeOtherProp", RealmValueType.Int, isIndexed: true),
+            };
+
+            var schema = builder.Build();
+            Assert.That(schema.PrimaryKeyProperty, Is.Null);
+        }
+
+        [Test]
+        public void ObjectSchema_FromType_AssignsTypeInfo([Values(typeof(Person), typeof(EmbeddedAllTypesObject))] Type type)
+        {
+            var schema = ObjectSchema.FromType(type.GetTypeInfo());
+
+            Assert.That(schema.Name, Is.EqualTo(type.Name));
+            Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
+            Assert.That(schema.Type, Is.EqualTo(type.GetTypeInfo()));
+        }
+
+        [Test]
+        public void ObjectSchema_FromType_RemappedType()
+        {
+            var schema = ObjectSchema.FromType(typeof(RemappedTypeObject).GetTypeInfo());
+
+            Assert.That(schema.Name, Is.EqualTo("__RemappedTypeObject"));
+            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.TryFindProperty("__mappedLink", out var remappedProp), Is.True);
+            Assert.That(remappedProp.Type, Is.EqualTo(PropertyType.Object | PropertyType.Nullable));
+            Assert.That(remappedProp.ObjectType, Is.EqualTo("__RemappedTypeObject"));
+        }
+
+        [Test]
+        public void ObjectSchema_FromType_ResolvesPrimaryKey()
+        {
+            var schema = ObjectSchema.FromType(typeof(PrimaryKeyStringObject).GetTypeInfo());
+
+            Assert.That(schema.Name, Is.EqualTo(nameof(PrimaryKeyStringObject)));
+            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.PrimaryKeyProperty, Is.Not.Null);
+            Assert.That(schema.PrimaryKeyProperty.Value.IsPrimaryKey, Is.True);
+            Assert.That(schema.PrimaryKeyProperty.Value.Type, Is.EqualTo(PropertyType.NullableString));
+            Assert.That(schema.PrimaryKeyProperty.Value.Name, Is.EqualTo("_id"));
+        }
+
+        [Test]
+        public void ObjectSchema_FromType_InvalidCases()
+        {
+            Assert.Throws<ArgumentNullException>(() => ObjectSchema.FromType(null));
+            Assert.Throws<ArgumentException>(() => ObjectSchema.FromType(typeof(string).GetTypeInfo()));
+        }
+
+        private static void ValidateBuiltSchema(ObjectSchema.Builder builder, params Property[] expectedProperties)
+        {
+            var schema = builder.Build();
+            Assert.That(schema.Name, Is.EqualTo("MyClass"));
+            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.Count, Is.EqualTo(expectedProperties.Length));
+
+            foreach (var prop in expectedProperties)
+            {
+                Assert.That(schema.TryFindProperty(prop.Name, out var schemaProperty), Is.True);
+                Assert.That(schemaProperty, Is.EqualTo(prop));
+            }
+
+            Assert.That(schema, Is.EquivalentTo(expectedProperties));
+        }
+
+        public class TypeInfoTestCase
+        {
+            public Type Type { get; }
+
+            public string ExpectedObjectName { get; }
+
+            public TypeInfoTestCase(Type type, string expectedObjectName)
+            {
+                Type = type;
+                ExpectedObjectName = expectedObjectName;
+            }
+
+            public override string ToString() => ExpectedObjectName;
+        }
+
+        public class FromTypeTestData
+        {
+            public Type Type { get; }
+
+            public PropertyType InherentType { get; }
+
+            public FromTypeTestData(Type type, PropertyType propertyType)
+            {
+                Type = type;
+                InherentType = propertyType;
+            }
+
+            public override string ToString() => Type.FullName;
+        }
+
+        private class RequiredPropertyClass : RealmObject
+        {
+            [Required]
+            public string FooRequired { get; set; }
+        }
+
+        [Explicit]
+        private class ExplicitClass : RealmObject
+        {
+            public int Foo { get; set; }
         }
     }
 }

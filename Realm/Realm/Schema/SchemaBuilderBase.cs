@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Realms.Helpers;
 
 namespace Realms.Schema
 {
@@ -36,11 +37,20 @@ namespace Realms.Schema
         /// <param name="name">The name of the element.</param>
         /// <returns>The element with the specified name.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
-        /// <exception cref="KeyNotFoundException">Thrown if the builder doesn't contain an element with the specified <paramref name="name"/>.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown by the getter if the builder doesn't contain an element with the specified <paramref name="name"/>.</exception>
         public T this[string name]
         {
             get => _values[name];
-            set => _values[name] = value;
+            set
+            {
+                Argument.NotNull(name, nameof(name));
+                if (name != GetKey(value))
+                {
+                    throw new ArgumentException($"The name of the element ('{GetKey(value)}') doesn't match the provided name ('{name}'). ", nameof(name));
+                }
+
+                _values[name] = value;
+            }
         }
 
         /// <summary>
