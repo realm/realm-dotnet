@@ -77,6 +77,11 @@ namespace Realms.Schema
 
             foreach (var type in types)
             {
+                if (!type.IsRealmObject() && !type.IsEmbeddedObject())
+                {
+                    throw new ArgumentException($"The type {type.FullName} must inherit directly from RealmObject or EmbeddedObject to be used in the Realm schema.");
+                }
+
                 if (_defaultTypes.Add(type) &&
                     _default.IsValueCreated)
                 {
@@ -325,7 +330,7 @@ namespace Realms.Schema
                         var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
                             $"The duplicate types are {type.FullName} and {duplicateType.FullName}. Either rename one" +
                             " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
-                        throw new NotSupportedException(errorMessage);
+                        throw new ArgumentException(errorMessage);
                     }
 
                     return this;

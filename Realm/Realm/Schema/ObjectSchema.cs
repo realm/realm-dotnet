@@ -86,7 +86,12 @@ namespace Realms.Schema
         /// <c>false</c> otherwise.</returns>
         /// <param name="name"><see cref="Property.Name"/> of the <see cref="Property"/> to match exactly.</param>
         /// <param name="property"><see cref="Property"/> returned only if found matching Name.</param>
-        public bool TryFindProperty(string name, out Property property) => _properties.TryGetValue(name, out property);
+        public bool TryFindProperty(string name, out Property property)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return _properties.TryGetValue(name, out property);
+        }
 
         /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();

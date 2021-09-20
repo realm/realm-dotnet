@@ -635,6 +635,20 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ObjectSchemaBuilder_ContainsString_ReturnsTrueForMatches()
+        {
+            var builder = new ObjectSchema.Builder("MyClass")
+            {
+                Property.Primitive("Foo", RealmValueType.Int)
+            };
+
+            Assert.That(builder.Contains("Foo"), Is.True);
+            Assert.That(builder.Contains("Bar"), Is.False);
+
+            Assert.Throws<ArgumentNullException>(() => builder.Contains(null));
+        }
+
+        [Test]
         public void ObjectSchemaBuilder_RemoveItem()
         {
             var propertyToRemain = Property.Primitive("Foo", RealmValueType.Decimal128);
@@ -711,20 +725,6 @@ namespace Realms.Tests.Database
             Assert.That(builder.Count, Is.EqualTo(2));
 
             ValidateBuiltSchema(builder, foo, bar);
-        }
-
-        [Test]
-        public void ObjectSchemaBuilder_ContainsString_ReturnsTrueForMatches()
-        {
-            var builder = new ObjectSchema.Builder("MyClass")
-            {
-                Property.Primitive("Foo", RealmValueType.Int)
-            };
-
-            Assert.That(builder.Contains("Foo"), Is.True);
-            Assert.That(builder.Contains("Bar"), Is.False);
-
-            Assert.Throws<ArgumentNullException>(() => builder.Contains(null));
         }
 
         [Test]
@@ -811,6 +811,548 @@ namespace Realms.Tests.Database
             Assert.Throws<ArgumentException>(() => ObjectSchema.FromType(typeof(string).GetTypeInfo()));
         }
 
+        [Test]
+        public void ObjectSchema_TryFindProperty_InvalidCases()
+        {
+            var schema = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
+
+            Assert.Throws<ArgumentNullException>(() => schema.TryFindProperty(null, out _));
+            Assert.Throws<ArgumentException>(() => schema.TryFindProperty(string.Empty, out _));
+        }
+
+        [Test]
+        public void RealmSchema_AddDefaultTypes_InvalidTestCases()
+        {
+            // Can't pass null for types
+            Assert.Throws<ArgumentNullException>(() => RealmSchema.AddDefaultTypes(null));
+
+            // Can't pass a non-RealmObject inheritor
+            Assert.Throws<ArgumentException>(() => RealmSchema.AddDefaultTypes(new[] { typeof(string) }));
+
+            // Can't add a new type after defaultTypes has been evaluated
+            _ = RealmSchema.Default;
+            Assert.Throws<NotSupportedException>(() => RealmSchema.AddDefaultTypes(new[] { typeof(ExplicitClass) }));
+        }
+
+        [Test]
+        public void RealmSchema_AddDefaultTypes_WhenTypeIsAlreadyPresent_IsNoOp()
+        {
+            // Evaluate default schema, then try to add a class already in there
+            _ = RealmSchema.Default;
+            Assert.DoesNotThrow(() => RealmSchema.AddDefaultTypes(new[] { typeof(Person) }));
+        }
+
+        [Test]
+        public void RealmSchema_TryFindProperty_InvalidCases()
+        {
+            var schema = RealmSchema.Empty;
+
+            Assert.Throws<ArgumentNullException>(() => schema.TryFindObjectSchema(null, out _));
+            Assert.Throws<ArgumentException>(() => schema.TryFindObjectSchema(string.Empty, out _));
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromObjectSchemas([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
+        {
+            var atoSchema = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
+            var personSchema = ObjectSchema.FromType(typeof(Person).GetTypeInfo());
+            RealmSchema schema = collectionType switch
+            {
+                BclCollectionType.Array => new[] { atoSchema, personSchema },
+                BclCollectionType.List => new List<ObjectSchema> { atoSchema, personSchema },
+                _ => throw new NotSupportedException(),
+            };
+
+            Assert.That(schema.Count, Is.EqualTo(2));
+            Assert.That(schema, Is.EquivalentTo(new[] { atoSchema, personSchema }));
+
+            Assert.That(schema.TryFindObjectSchema(nameof(AllTypesObject), out var foundAtoSchema), Is.True);
+            Assert.That(foundAtoSchema, Is.EqualTo(atoSchema));
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromNullObjectSchemas([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
+        {
+            RealmSchema schema = collectionType switch
+            {
+                BclCollectionType.Array => (ObjectSchema[])null,
+                BclCollectionType.List => (List<ObjectSchema>)null,
+                _ => throw new NotSupportedException(),
+            };
+
+            Assert.That(schema, Is.Null);
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromObjectSchemas_WithDuplicates([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
+        {
+            var foo1 = new ObjectSchema.Builder("Foo").Build();
+            var foo2 = new ObjectSchema.Builder("Foo").Build();
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                RealmSchema schema = collectionType switch
+                {
+                    BclCollectionType.Array => new[] { foo1, foo2 },
+                    BclCollectionType.List => new List<ObjectSchema> { foo1, foo2 },
+                    _ => throw new NotSupportedException(),
+                };
+            });
+
+            Assert.That(ex.Message, Does.Contain("Foo"));
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromObjectSchemas_WithNulls([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
+        {
+            var foo = new ObjectSchema.Builder("Foo").Build();
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+            {
+                RealmSchema schema = collectionType switch
+                {
+                    BclCollectionType.Array => new[] { foo, null },
+                    BclCollectionType.List => new List<ObjectSchema> { foo, null },
+                    _ => throw new NotSupportedException(),
+                };
+            });
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromTypes(
+            [Values(BclCollectionType.Array, BclCollectionType.List, BclCollectionType.HashSet)] BclCollectionType collectionType)
+        {
+            var atoSchema = typeof(AllTypesObject);
+            var personSchema = typeof(Person);
+            RealmSchema schema = collectionType switch
+            {
+                BclCollectionType.Array => new[] { atoSchema, personSchema },
+                BclCollectionType.List => new List<Type> { atoSchema, personSchema },
+                BclCollectionType.HashSet => new HashSet<Type> { atoSchema, personSchema },
+                _ => throw new NotSupportedException(),
+            };
+
+            Assert.That(schema.Count, Is.EqualTo(2));
+
+            Assert.That(schema.TryFindObjectSchema(nameof(AllTypesObject), out var foundAtoSchema), Is.True);
+            Assert.That(foundAtoSchema, Is.EquivalentTo(ObjectSchema.FromType(atoSchema.GetTypeInfo())));
+            Assert.That(foundAtoSchema.Type, Is.EqualTo(atoSchema.GetTypeInfo()));
+
+            Assert.That(schema.TryFindObjectSchema(nameof(Person), out var foundPersonSchema), Is.True);
+            Assert.That(foundPersonSchema, Is.EquivalentTo(ObjectSchema.FromType(personSchema.GetTypeInfo())));
+            Assert.That(foundPersonSchema.Type, Is.EqualTo(personSchema.GetTypeInfo()));
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromNullTypes(
+            [Values(BclCollectionType.Array, BclCollectionType.List, BclCollectionType.HashSet)] BclCollectionType collectionType)
+        {
+            RealmSchema schema = collectionType switch
+            {
+                BclCollectionType.Array => (Type[])null,
+                BclCollectionType.List => (List<Type>)null,
+                BclCollectionType.HashSet => (HashSet<Type>)null,
+                _ => throw new NotSupportedException(),
+            };
+
+            Assert.That(schema, Is.Null);
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromTypes_WithDuplicates(
+            [Values(BclCollectionType.Array, BclCollectionType.List, BclCollectionType.HashSet)] BclCollectionType collectionType)
+        {
+            var type1 = typeof(Person);
+            var type2 = typeof(Person);
+            RealmSchema schema = collectionType switch
+            {
+                BclCollectionType.Array => new[] { type1, type2 },
+                BclCollectionType.List => new List<Type> { type1, type2 },
+                BclCollectionType.HashSet => new HashSet<Type> { type1, type2 },
+                _ => throw new NotSupportedException(),
+            };
+
+            Assert.That(schema.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromTypes_WithDuplicatesFromDifferentNamespaces(
+            [Values(BclCollectionType.Array, BclCollectionType.List, BclCollectionType.HashSet)] BclCollectionType collectionType)
+        {
+            var type1 = typeof(Foo.DuplicateClass);
+            var type2 = typeof(Bar.DuplicateClass);
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                RealmSchema schema = collectionType switch
+                {
+                    BclCollectionType.Array => new[] { type1, type2 },
+                    BclCollectionType.List => new List<Type> { type1, type2 },
+                    BclCollectionType.HashSet => new HashSet<Type> { type1, type2 },
+                    _ => throw new NotSupportedException(),
+                };
+            });
+
+            Assert.That(ex.Message, Does.Contain("Foo"));
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromTypes_WithNulls(
+            [Values(BclCollectionType.Array, BclCollectionType.List, BclCollectionType.HashSet)] BclCollectionType collectionType)
+        {
+            var type = typeof(AllTypesObject);
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+            {
+                RealmSchema schema = collectionType switch
+                {
+                    BclCollectionType.Array => new[] { type, null },
+                    BclCollectionType.List => new List<Type> { type, null },
+                    BclCollectionType.HashSet => new HashSet<Type> { type, null },
+                    _ => throw new NotSupportedException(),
+                };
+            });
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_CanBuildEmptySchema()
+        {
+            var builder = new RealmSchema.Builder();
+            var schema = builder.Build();
+
+            Assert.That(schema.Count, Is.Zero);
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_InvalidArguments()
+        {
+            Assert.Throws<ArgumentNullException>(() => new RealmSchema.Builder((IEnumerable<ObjectSchema>)null));
+            Assert.Throws<ArgumentNullException>(() => new RealmSchema.Builder((IEnumerable<Type>)null));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_Indexer_InvalidArguments()
+        {
+            var builder = new RealmSchema.Builder();
+
+            // null is not a valid name
+            Assert.Throws<ArgumentNullException>(() => _ = builder[null]);
+            Assert.Throws<ArgumentNullException>(() => builder[null] = new ObjectSchema.Builder("Foo").Build());
+
+            // Getting a non-existent item
+            Assert.Throws<KeyNotFoundException>(() => _ = builder["non-existent"]);
+
+            // Mismatch between provided name and property name
+            var ex = Assert.Throws<ArgumentException>(() => builder["Bar"] = new ObjectSchema.Builder("Foo").Build());
+            Assert.That(ex.Message, Does.Contain("Bar"));
+            Assert.That(ex.Message, Does.Contain("Foo"));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_Indexer_GetSet()
+        {
+            var builder = new RealmSchema.Builder();
+
+            Assert.That(builder.Count, Is.Zero);
+
+            var schemaToSet = new ObjectSchema.Builder("Foo").Build();
+            builder["Foo"] = schemaToSet;
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            var schemaFromGet = builder["Foo"];
+            Assert.That(schemaFromGet, Is.EqualTo(schemaToSet));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_Indexer_ReplaceExisting()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var schemaToSet = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
+            builder[nameof(AllTypesObject)] = schemaToSet;
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(typeof(AllTypesObject).GetTypeInfo()));
+
+            var schemaToReplace = new ObjectSchema.Builder(nameof(AllTypesObject))
+                .Add(Property.Primitive("Foo", RealmValueType.String))
+                .Build();
+            builder[nameof(AllTypesObject)] = schemaToReplace;
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder[nameof(AllTypesObject)], Is.EqualTo(schemaToReplace));
+            Assert.That(builder[nameof(AllTypesObject)].Type, Is.Null);
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddObjectSchema()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var atoSchema = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
+            var personSchema = ObjectSchema.FromType(typeof(Person).GetTypeInfo());
+
+            builder.Add(atoSchema);
+            builder.Add(personSchema);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+            Assert.That(builder[nameof(AllTypesObject)], Is.EqualTo(atoSchema));
+            Assert.That(builder[nameof(Person)], Is.EqualTo(personSchema));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddObjectSchema_WhenDuplicate_Throws()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var schemaFoo = new ObjectSchema.Builder("Foo").Build();
+            var schemaFooAgain = new ObjectSchema.Builder("Foo").Build();
+
+            builder.Add(schemaFoo);
+
+            Assert.Throws<ArgumentException>(() => builder.Add(schemaFoo));
+            Assert.Throws<ArgumentException>(() => builder.Add(schemaFooAgain));
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder["Foo"], Is.EqualTo(schemaFoo));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddObjectSchema_ReturnsSameBuilderInstance()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var schemaFoo = new ObjectSchema.Builder("Foo").Build();
+
+            var returnedBuilder = builder.Add(schemaFoo);
+
+            Assert.AreSame(builder, returnedBuilder);
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddObjectSchemaBuilder()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var fooBuilder = new ObjectSchema.Builder("Foo")
+            {
+                Property.Primitive("Prop1", RealmValueType.String)
+            };
+
+            var barBuilder = new ObjectSchema.Builder("Bar")
+            {
+                Property.Primitive("Prop2", RealmValueType.Float)
+            };
+
+            builder.Add(fooBuilder);
+            builder.Add(barBuilder);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+            Assert.That(builder["Foo"], Is.EquivalentTo(fooBuilder));
+            Assert.That(builder["Bar"], Is.EquivalentTo(barBuilder));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddObjectSchemaBuilder_WhenDuplicate_Throws()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var fooBuilder = new ObjectSchema.Builder("Foo")
+            {
+                Property.Primitive("Prop", RealmValueType.String)
+            };
+
+            var fooBuilderAgain = new ObjectSchema.Builder("Foo");
+
+            builder.Add(fooBuilder);
+
+            Assert.Throws<ArgumentException>(() => builder.Add(fooBuilder));
+            Assert.Throws<ArgumentException>(() => builder.Add(fooBuilderAgain));
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder["Foo"], Is.EquivalentTo(fooBuilder));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddObjectSchemaBuilder_ReturnsSameBuilderInstance()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var schemaFoo = new ObjectSchema.Builder("Foo");
+
+            var returnedBuilder = builder.Add(schemaFoo);
+
+            Assert.AreSame(builder, returnedBuilder);
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddType()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var atoType = typeof(AllTypesObject);
+            var personType = typeof(Person);
+
+            builder.Add(atoType);
+            builder.Add(personType);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+            Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(atoType.GetTypeInfo()));
+            Assert.That(builder[nameof(Person)].Type, Is.EqualTo(personType.GetTypeInfo()));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddType_WhenDuplicate_Throws()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var fooDuplicate = typeof(Foo.DuplicateClass);
+            var barDuplicate = typeof(Bar.DuplicateClass);
+
+            builder.Add(fooDuplicate);
+
+            // Adding the same type should be ignored
+            Assert.DoesNotThrow(() => builder.Add(fooDuplicate));
+            var ex = Assert.Throws<ArgumentException>(() => builder.Add(barDuplicate));
+            Assert.That(ex.Message, Does.Contain(fooDuplicate.FullName));
+            Assert.That(ex.Message, Does.Contain(barDuplicate.FullName));
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+            Assert.That(builder[nameof(Foo.DuplicateClass)].Type, Is.EqualTo(fooDuplicate.GetTypeInfo()));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_AddType_ReturnsSameBuilderInstance()
+        {
+            var builder = new RealmSchema.Builder();
+
+            var returnedBuilder = builder.Add(typeof(AllTypesObject));
+
+            Assert.AreSame(builder, returnedBuilder);
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_Add_InvalidArguments()
+        {
+            var builder = new RealmSchema.Builder();
+
+            Assert.Throws<ArgumentNullException>(() => builder.Add((ObjectSchema)null));
+            Assert.Throws<ArgumentNullException>(() => builder.Add((Type)null));
+            Assert.Throws<ArgumentNullException>(() => builder.Add((ObjectSchema.Builder)null));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_ContainsItem_ReturnsTrueForMatches()
+        {
+            var fooBuilder = new ObjectSchema.Builder("Foo")
+            {
+                Property.Primitive("Bar", RealmValueType.Double)
+            };
+
+            var builder = new RealmSchema.Builder
+            {
+                fooBuilder
+            };
+
+            // Contains should return true for both the added property and an equivalent one
+            Assert.That(builder.Contains(builder["Foo"]), Is.True);
+
+            // Should return false for different name or different instance
+            Assert.That(builder.Contains(fooBuilder.Build()), Is.False);
+            Assert.That(builder.Contains(new ObjectSchema.Builder("Bar").Build()), Is.False);
+
+            Assert.Throws<ArgumentNullException>(() => builder.Contains((ObjectSchema)null));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_ContainsString_ReturnsTrueForMatches()
+        {
+            var builder = new RealmSchema.Builder
+            {
+                new ObjectSchema.Builder("Foo")
+            };
+
+            Assert.That(builder.Contains("Foo"), Is.True);
+            Assert.That(builder.Contains("Bar"), Is.False);
+
+            Assert.Throws<ArgumentNullException>(() => builder.Contains((string)null));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_RemoveItem()
+        {
+            var foo = new ObjectSchema.Builder("Foo").Build();
+            var bar = new ObjectSchema.Builder("Bar").Build();
+            var builder = new RealmSchema.Builder
+            {
+                foo,
+                bar
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove(bar), Is.True);
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            Assert.That(builder["Foo"], Is.EqualTo(foo));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_RemoveItem_WhenItemIsNotEqual_DoesntRemove()
+        {
+            var foo = new ObjectSchema.Builder("Foo").Build();
+            var bar = new ObjectSchema.Builder("Bar").Build();
+            var builder = new RealmSchema.Builder
+            {
+                foo,
+                bar
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            var fooAgain = new ObjectSchema.Builder("Foo").Build();
+            Assert.That(builder.Remove(fooAgain), Is.False);
+            Assert.That(builder.Remove(new ObjectSchema.Builder("FooFoo").Build()), Is.False);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_RemoveString()
+        {
+            var foo = new ObjectSchema.Builder("Foo").Build();
+            var bar = new ObjectSchema.Builder("Bar").Build();
+            var builder = new RealmSchema.Builder
+            {
+                foo,
+                bar
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove("Bar"), Is.True);
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            Assert.That(builder["Foo"], Is.EqualTo(foo));
+        }
+
+        [Test]
+        public void RealmSchemaBuilder_RemoveString_WhenItemIsNotEquivalent_DoesntRemove()
+        {
+            var foo = new ObjectSchema.Builder("Foo").Build();
+            var bar = new ObjectSchema.Builder("Bar").Build();
+            var builder = new RealmSchema.Builder
+            {
+                foo,
+                bar
+            };
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder.Remove("FooFoo"), Is.False);
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+            Assert.That(builder["Foo"], Is.EqualTo(foo));
+            Assert.That(builder["Bar"], Is.EqualTo(bar));
+        }
+
         private static void ValidateBuiltSchema(ObjectSchema.Builder builder, params Property[] expectedProperties)
         {
             var schema = builder.Build();
@@ -855,6 +1397,13 @@ namespace Realms.Tests.Database
             }
 
             public override string ToString() => Type.FullName;
+        }
+
+        public enum BclCollectionType
+        {
+            Array,
+            List,
+            HashSet
         }
 
         private class RequiredPropertyClass : RealmObject
