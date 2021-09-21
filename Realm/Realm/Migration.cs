@@ -86,6 +86,8 @@ namespace Realms
 
                 NewRealm.Dispose();
                 NewRealm = null;
+
+                _migrationSchema = IntPtr.Zero;
             }
 
             return true;

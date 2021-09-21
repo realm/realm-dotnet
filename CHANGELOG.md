@@ -1,7 +1,9 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added two new methods on `Migration`:
+  * `RemoveType(typeName)` allows to completely remove a type and its schema from a realm during a migration.
+  * `RenameProperty(typeName, oldPropertyName, newPropertyName)` allows to rename a property during a migration.
 
 ### Fixed
 * Fixed a bug that would cause a `NullReferenceException` to be reported during compilation of a class containing a getter-only `RealmObject` property. (Issue [#2576](https://github.com/realm/realm-dotnet/issues/2576))
