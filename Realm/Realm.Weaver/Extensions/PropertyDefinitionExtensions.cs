@@ -238,4 +238,6 @@ internal static class PropertyDefinitionExtensions
     {
         return property.PropertyType.Name == name && property.PropertyType.Namespace == @namespace;
     }
+
+    public static SequencePoint GetSequencePoint(this PropertyDefinition property) => property.GetMethod?.DebugInformation?.SequencePoints.FirstOrDefault() ?? property.SetMethod?.DebugInformation?.SequencePoints.FirstOrDefault();
 }

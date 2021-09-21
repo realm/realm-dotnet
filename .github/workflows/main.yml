@@ -439,12 +439,16 @@ jobs:
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.Windows.xml
-        comment_mode: "off"
-        check_name: Results .NET Framework
+        name: Results .NET Framework
+        path: TestResults.Windows.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -485,33 +489,38 @@ jobs:
       shell: powershell
     - name: Run the tests
       run: |
-        echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "test_results=$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
         Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
         Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
         do
         {
             Start-Sleep -s 3
-            $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+            $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
             $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
         } while ($uwp_test_app -and !$file_available)
 
-        $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+        $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
         if (!$file_available)
         {
           exit 1
         }
         else
         {
+          # print test results in GH Action's console
           Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
         }
       shell: powershell
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: ${{ env.test_results }}
-        comment_mode: "off"
-        check_name: Results UWP
+        name: Results UWP
+        path: ${{ env.test_results }}
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-netcore:
     name: Test .NET
     needs: build-packages
@@ -564,12 +573,16 @@ jobs:
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.xml
-        comment_mode: "off"
-        check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -599,12 +612,16 @@ jobs:
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.macOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.macOS
+        name: Results Xamarin.macOS
+        path: TestResults.macOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
@@ -639,12 +656,16 @@ jobs:
         iphoneToSimulate: iPhone-8
         arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.iOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.iOS
+        name: Results Xamarin.iOS
+        path: TestResults.iOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -666,12 +687,16 @@ jobs:
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.Weaver.xml
-        comment_mode: "off"
-        check_name: Results Weaver
+        name: Results Weaver
+        path: TestResults.Weaver.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage
