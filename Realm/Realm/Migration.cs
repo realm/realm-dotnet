@@ -90,20 +90,30 @@ namespace Realms
             return true;
         }
 
-        internal void ReleaseHandle()
-        {
-            _handle?.Free();
-            _handle = null;
-        }
-
-        //TODO Add docs
+        /// <summary>
+        /// Removes a type during a migration. All the data associated with the type, as well as its schema, will be removed from <see cref="Realm"/>.
+        /// </summary>
+        /// <param name="typeName">The type that needs to be removed. </param>
+        /// <remarks>
+        /// The removed type will still be accessible from <see cref="OldRealm"/> in the migration block.
+        /// </remarks>
+        /// <returns><c>true</c> if the type does exist in the old schema, <c>false</c> otherwise.</returns>
         public bool RemoveType(string typeName)
         {
             Argument.NotNullOrEmpty(typeName, nameof(typeName));
             return NewRealm.RemoveType(typeName);
         }
 
-        //TODO Add docs
+        /// <summary>
+        /// Renames a property during a migration.
+        /// </summary>
+        /// <param name="typeName">The type for which the property rename needs to be performed. </param>
+        /// <param name="oldPropertyName">The previous name of the property. </param>
+        /// <param name="newPropertyName">The new name of the property. </param>
+        /// <remarks>
+        /// It is not possible to access the renamed property in <see cref="NewRealm"/> in the migration block after this method is called.
+        /// If this is necessary, the method should be called after the property access, or the value retrieved from <see cref="OldRealm"/> can be used.
+        /// </remarks>
         public void RenameProperty(string typeName, string oldPropertyName, string newPropertyName)
         {
             Argument.NotNullOrEmpty(typeName, nameof(typeName));
@@ -111,7 +121,12 @@ namespace Realms
             Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
 
             NewRealm.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
+        }
 
+        internal void ReleaseHandle()
+        {
+            _handle?.Free();
+            _handle = null;
         }
     }
 }

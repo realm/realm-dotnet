@@ -180,10 +180,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.schema_version = configuration.schema_version;
 
         if (configuration.managed_migration_handle) {
-            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
-
-                //TODO Nead to save schema (is mutable and we can use it later if we need to rename proeprties) -- Heap allocate, create a pointer and pass it to migration callback
-                //Save it in Migration class and pass it back it later in the rename property method
+            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema migrationSchema) {
 
                 std::vector<SchemaObject> schema_objects;
                 std::vector<SchemaProperty> schema_properties;
@@ -199,7 +196,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                     schema_properties.data()
                 };
 
-                if (!s_on_migration(&oldRealm, &newRealm, &schema, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
+                if (!s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
                     throw ManagedExceptionDuringMigration();
                 }
             };

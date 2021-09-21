@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -159,6 +160,7 @@ namespace Realms.Tests.Database
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
             var triggersSchemaFieldValue = string.Empty;
+            var oldValues = new List<string>();
 
             var configuration = new RealmConfiguration(path)
             {
@@ -176,22 +178,24 @@ namespace Realms.Tests.Database
                         var oldPerson = oldPeople.ElementAt(i);
                         var newPerson = newPeople.ElementAt(i);
 
-                        Assert.That(newPerson.OptionalAddress, Is.Not.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+                        var oldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
+                        oldValues.Add(oldValue);
+                        Assert.That(newPerson.OptionalAddress, Is.Not.EqualTo(oldValue));
                     }
 
                     migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
-
-                    for (var i = 0; i < newPeople.Count(); i++)
-                    {
-                        var oldPerson = oldPeople.ElementAt(i);
-                        var newPerson = newPeople.ElementAt(i);
-
-                        Assert.That(newPerson.OptionalAddress, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
-                    }
                 }
             };
 
             using var realm = GetRealm(configuration);
+            var newPeople = realm.All<Person>();
+
+            // We cannod do this check in the migration block because we cannot access the renamed property after RenameProperty is called.
+            for (var i = 0; i < newPeople.Count(); i++)
+            {
+                var newPerson = newPeople.ElementAt(i);
+                Assert.That(newPerson.OptionalAddress, Is.EqualTo(oldValues[i]));
+            }
         }
 
         [Test]
@@ -222,7 +226,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void MigrationRemoveTypeNotInSchemaRemoved()
+        public void MigrationRemoveTypeNotInSchema()
         {
             var oldRealmConfig = new RealmConfiguration()
             {
@@ -247,7 +251,6 @@ namespace Realms.Tests.Database
                 {
                     migrationCallbackCalled = true;
 
-                    //TODO Do we prefer an exception here...?
                     var migrationResultNotInSchema = migration.RemoveType("NotInSchemaType");
                     Assert.That(migrationResultNotInSchema, Is.False);
 
