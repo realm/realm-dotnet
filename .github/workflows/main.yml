@@ -852,8 +852,7 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
+    runs-on: performance-tests
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
