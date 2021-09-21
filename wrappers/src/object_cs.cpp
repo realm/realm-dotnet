@@ -94,7 +94,6 @@ extern "C" {
                 }
             }
             else {
-                auto schema = object.get_object_schema();
                 auto val = object.obj().get_any(prop.column_key);
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
                     *value = to_capi(val.get<ObjLink>(), object.realm());

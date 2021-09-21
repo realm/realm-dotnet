@@ -36,6 +36,7 @@ namespace Realms
     {
         private GCHandle? _handle;
         private IntPtr _migrationSchema;
+
         internal GCHandle MigrationHandle => _handle ?? throw new ObjectDisposedException(nameof(Migration));
 
         internal RealmConfiguration Configuration { get; }

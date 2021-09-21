@@ -159,7 +159,6 @@ namespace Realms.Tests.Database
         {
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
-            var triggersSchemaFieldValue = string.Empty;
             var oldValues = new List<string>();
 
             var configuration = new RealmConfiguration(path)
@@ -167,9 +166,6 @@ namespace Realms.Tests.Database
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var oldSchema = migration.OldRealm.Schema;
-                    var newSchema = migration.NewRealm.Schema;
-
                     var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
