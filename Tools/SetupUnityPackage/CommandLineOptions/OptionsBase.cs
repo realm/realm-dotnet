@@ -31,9 +31,5 @@ namespace SetupUnityPackage
         public abstract string PackageBasePath { get; }
 
         public abstract ISet<string> IgnoredDependencies { get; }
-
-        public abstract string MainPackagePath { get; }
-
-        public abstract DependencyInfo[] Dependencies { get; }
     }
 }
