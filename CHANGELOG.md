@@ -10,7 +10,8 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.4.1.
+* Moved perf tests to run on a self-hosted runner. (PR [#2638](https://github.com/realm/realm-dotnet/pull/2638))
 
 ## 10.5.1 (2021-09-22)
 
@@ -24,7 +25,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.4.1.
 
 ## 10.5.0 (2021-09-09)
 
