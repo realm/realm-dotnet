@@ -532,7 +532,6 @@ jobs:
         - macos-latest
         - windows-latest
         - ubuntu-latest
-        - win81
         targetFramework:
         - netcoreapp3.1
         - net5.0
