@@ -741,7 +741,7 @@ namespace Realms.Tests.Database
                 {
                     Name = "George",
                     TopDog = dog,
-                    Dogs = { dog }
+                    ListOfDogs = { dog }
                 });
             });
 
@@ -754,8 +754,8 @@ namespace Realms.Tests.Database
             var owner = query.Single();
             Assert.That(owner.IsFrozen);
             Assert.That(owner.TopDog.IsFrozen);
-            Assert.That(owner.Dogs.AsRealmCollection().IsFrozen);
-            Assert.That(owner.Dogs[0].IsFrozen);
+            Assert.That(owner.ListOfDogs.AsRealmCollection().IsFrozen);
+            Assert.That(owner.ListOfDogs[0].IsFrozen);
         }
 
         [Test]
@@ -774,7 +774,7 @@ namespace Realms.Tests.Database
                 {
                     Name = "George",
                     TopDog = dog,
-                    Dogs = { dog }
+                    ListOfDogs = { dog }
                 });
             });
 
@@ -834,7 +834,7 @@ namespace Realms.Tests.Database
                     {
                         Name = "George",
                         TopDog = dog,
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
                 });
 

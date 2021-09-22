@@ -162,6 +162,44 @@ namespace Realms
         }
 
         /// <summary>
+        /// Converts a Realm-backed <see cref="ISet{T}"/> to a Realm-backed <see cref="IQueryable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects contained in the set.</typeparam>
+        /// <param name="set">The set of objects as obtained from a to-many relationship property.</param>
+        /// <returns>A queryable collection that represents the objects contained in the set.</returns>
+        /// <remarks>
+        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it actually creates
+        /// an underlying Realm query to represent the set. This means that all LINQ methods will be executed
+        /// by the database and also that you can subscribe for notifications even after applying LINQ filters
+        /// or ordering.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dogs = owner.Dogs;
+        /// var query = dogs.AsRealmQueryable()
+        ///                 .Where(d => d.Age > 3)
+        ///                 .OrderBy(d =>x d.Name);
+        ///
+        /// var token = query.SubscribeForNotifications((sender, changes, error) =>
+        /// {
+        ///     // You'll be notified only when dogs older than 3 have been added/removed/updated
+        ///     // and the sender collection will be ordered by Name
+        /// });
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentException">Thrown if the list is not managed by Realm.</exception>
+        public static IQueryable<T> AsRealmQueryable<T>(this ISet<T> set)
+            where T : RealmObjectBase
+        {
+            if (set is RealmSet<T> realmSet)
+            {
+                return realmSet.ToResults();
+            }
+
+            throw new ArgumentException($"{nameof(set)} must be managed by Realm.", nameof(set));
+        }
+
+        /// <summary>
         /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="list">The <see cref="IList{T}"/> to observe for changes.</param>
@@ -363,6 +401,42 @@ namespace Realms
             Argument.NotNull(arguments, nameof(arguments));
             var realmList = Argument.EnsureType<RealmList<T>>(list, $"{nameof(list)} must be a Realm List property.", nameof(list));
             return realmList.GetFilteredResults(predicate, arguments);
+        }
+
+        /// <summary>
+        /// Apply an NSPredicate-based filter over a collection. It can be used to create
+        /// more complex queries, that are currently unsupported by the LINQ provider and
+        /// supports SORT and DISTINCT clauses in addition to filtering.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
+        /// <param name="set">A Realm Set.</param>
+        /// <param name="predicate">The predicate that will be applied.</param>
+        /// <param name="arguments">Values used for substitution in the predicate. Note that all primitive types are accepted as they are implicitly converted to RealmValue.</param>
+        /// <returns>A queryable observable collection of objects that match the predicate.</returns>
+        /// <remarks>
+        /// This method can be used in combination with LINQ filtering, but it is strongly recommended
+        /// to avoid combining it if a <c>SORT</c> clause appears in the predicate.
+        /// <para/>
+        /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
+        /// after applying the predicate.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var results1 = realm.All&lt;Foo&gt;("Bar.IntValue > 0");
+        /// var results2 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC)");
+        /// var results3 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC) DISTINCT(Bar.IntValue)");
+        /// </code>
+        /// </example>
+        /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
+        /// Examples of the NSPredicate syntax
+        /// </seealso>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params RealmValue[] arguments)
+            where T : RealmObjectBase
+        {
+            Argument.NotNull(arguments, nameof(arguments));
+            var realmSet = Argument.EnsureType<RealmSet<T>>(set, $"{nameof(set)} must be a Realm Set property.", nameof(set));
+            return realmSet.GetFilteredResults(predicate, arguments);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

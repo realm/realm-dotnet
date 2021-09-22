@@ -19,12 +19,15 @@
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/object-store/keypath_helpers.hpp>
+#include <realm/parser/query_parser.hpp>
 
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
+#include "schema_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -258,6 +261,45 @@ REALM_EXPORT bool realm_set_set_equals(object_store::Set& set, const object_stor
 {
     return handle_errors(ex, [&]() -> bool {
         return set.set_equals(hack_remove_me(other_collection));
+    });
+}
+
+REALM_EXPORT Results* set_to_results(const object_store::Set& set, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(set.as_results());
+    });
+}
+
+REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor query_string(query_buf, query_len);
+        auto const& realm = set.get_realm();
+
+        auto query = set.get_query();
+
+        query_parser::KeyPathMapping mapping;
+        realm::populate_keypath_mapping(mapping, *realm);
+
+        std::vector<Mixed> mixed_args;
+        mixed_args.reserve(args_count);
+        for (size_t i = 0; i < args_count; ++i) {
+            if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
+                mixed_args.push_back(from_capi(arguments[i]));
+            }
+            else {
+                mixed_args.push_back(from_capi(arguments[i].link.object, true));
+            }
+        }
+
+        Query parsed_query = set.get_table()->query(query_string, mixed_args, mapping);
+        DescriptorOrdering new_order;
+        if (auto parsed_ordering = parsed_query.get_ordering()) {
+            new_order.append(*parsed_ordering);
+        }
+
+        return new Results(realm, set.get_query().and_query(std::move(parsed_query)), std::move(new_order));
     });
 }
 

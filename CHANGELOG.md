@@ -1,7 +1,11 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added two extension methods on `ISet` to get an `IQueryable` collection wrapping the set:
+  * `set.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `ISet<T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `set.Filter(query, arguments)` will filter the set and return the filtered collection. It is roughly equivalent to `set.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2555](https://github.com/realm/realm-dotnet/issues/2555))
 
 ### Fixed
 * Fixed a bug that would cause a `NullReferenceException` to be reported during compilation of a class containing a getter-only `RealmObject` property. (Issue [#2576](https://github.com/realm/realm-dotnet/issues/2576))

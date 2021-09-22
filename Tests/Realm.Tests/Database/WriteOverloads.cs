@@ -85,20 +85,20 @@ namespace Realms.Tests.Database
                     Name = "Owen"
                 });
 
-                owner.Dogs.Add(new Dog
+                owner.ListOfDogs.Add(new Dog
                 {
                     Name = "Puppy1"
                 });
 
-                owner.Dogs.Add(new Dog
+                owner.ListOfDogs.Add(new Dog
                 {
                     Name = "Puppy2"
                 });
 
-                return owner.Dogs;
+                return owner.ListOfDogs;
             });
 
-            var queried = _realm.All<Owner>().First().Dogs;
+            var queried = _realm.All<Owner>().First().ListOfDogs;
             Assert.That(queried, Is.EqualTo(dogs));
         }
 
@@ -221,20 +221,20 @@ namespace Realms.Tests.Database
                             Name = "Owen"
                         });
 
-                        owner.Dogs.Add(new Dog
+                        owner.ListOfDogs.Add(new Dog
                         {
                             Name = "Puppy1"
                         });
 
-                        owner.Dogs.Add(new Dog
+                        owner.ListOfDogs.Add(new Dog
                         {
                             Name = "Puppy2"
                         });
 
-                        return owner.Dogs;
+                        return owner.ListOfDogs;
                     });
 
-                var queried = _realm.All<Owner>().First().Dogs;
+                var queried = _realm.All<Owner>().First().ListOfDogs;
                 Assert.That(queried, Is.EqualTo(dogs));
             });
         }
@@ -247,12 +247,12 @@ namespace Realms.Tests.Database
                 Name = "Owen"
             };
 
-            owner.Dogs.Add(new Dog
+            owner.ListOfDogs.Add(new Dog
             {
                 Name = "Puppy1"
             });
 
-            owner.Dogs.Add(new Dog
+            owner.ListOfDogs.Add(new Dog
             {
                 Name = "Puppy2"
             });
@@ -261,10 +261,10 @@ namespace Realms.Tests.Database
             {
                 var collectionResult = await _realm.WriteAsync(realm =>
                 {
-                    return owner.Dogs;
+                    return owner.ListOfDogs;
                 });
 
-                Assert.That(owner.Dogs, Is.EqualTo(collectionResult));
+                Assert.That(owner.ListOfDogs, Is.EqualTo(collectionResult));
             });
         }
 

@@ -178,8 +178,8 @@ namespace Realms.Tests.Database
             var owner = new Owner();
             _realm.Write(() => _realm.Add(owner));
 
-            Assert.That(() => owner.Dogs.AsRealmCollection()[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
-            Assert.That(() => owner.Dogs.AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => owner.ListOfDogs.AsRealmCollection()[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => owner.ListOfDogs.AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
@@ -286,7 +286,7 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(joe));
 
-            var oldDogs = joe.Dogs.AsRealmQueryable().Where(d => d.Age >= 5);
+            var oldDogs = joe.ListOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
             var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
@@ -299,7 +299,7 @@ namespace Realms.Tests.Database
 
             for (var i = 0; i < 10; i++)
             {
-                _realm.Write(() => joe.Dogs.Add(new Dog { Age = i }));
+                _realm.Write(() => joe.ListOfDogs.Add(new Dog { Age = i }));
                 _realm.Refresh();
 
                 if (i >= 5)
@@ -326,13 +326,13 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(joe));
 
-            var oldDogs = joe.Dogs.Filter("Age >= 5");
+            var oldDogs = joe.ListOfDogs.Filter("Age >= 5");
 
             _realm.Write(() =>
             {
                 for (var i = 0; i < 10; i++)
                 {
-                    joe.Dogs.Add(new Dog { Age = i });
+                    joe.ListOfDogs.Add(new Dog { Age = i });
                 }
             });
 
@@ -353,15 +353,15 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(joe));
 
-            var fiDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0", "Fi");
+            var fiDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0", "Fi");
 
             _realm.Write(() =>
             {
-                joe.Dogs.Add(new Dog { Name = "Rick" });
-                joe.Dogs.Add(new Dog { Name = "Fido" });
-                joe.Dogs.Add(new Dog { Name = "Fester" });
-                joe.Dogs.Add(new Dog { Name = "Fifi" });
-                joe.Dogs.Add(new Dog { Name = "Bango" });
+                joe.ListOfDogs.Add(new Dog { Name = "Rick" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fido" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fester" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango" });
             });
 
             Assert.That(fiDogs.Count(), Is.EqualTo(2));
@@ -378,14 +378,14 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(joe));
 
-            var fiDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
+            var fiDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
 
             _realm.Write(() =>
             {
-                joe.Dogs.Add(new Dog { Name = "Rick" });
-                joe.Dogs.Add(new Dog { Name = "Fido" });
-                joe.Dogs.Add(new Dog { Name = "Fifi" });
-                joe.Dogs.Add(new Dog { Name = "Bango" });
+                joe.ListOfDogs.Add(new Dog { Name = "Rick" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fido" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango" });
             });
 
             Assert.That(fiDogs.Count(), Is.EqualTo(2));
@@ -403,16 +403,16 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(joe));
 
-            var rDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+            var rDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
 
             _realm.Write(() =>
             {
-                joe.Dogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
-                joe.Dogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
-                joe.Dogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
-                joe.Dogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
-                joe.Dogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
-                joe.Dogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.ListOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.ListOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
             });
 
             Assert.That(rDogs.Count(), Is.EqualTo(4));
@@ -435,16 +435,16 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(joe));
 
-            var rDogs = joe.Dogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+            var rDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
 
             _realm.Write(() =>
             {
-                joe.Dogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
-                joe.Dogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
-                joe.Dogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
-                joe.Dogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
-                joe.Dogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
-                joe.Dogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.ListOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.ListOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
             });
 
             Assert.That(rDogs.Count(), Is.EqualTo(4));
@@ -538,6 +538,187 @@ namespace Realms.Tests.Database
             Assert.That(container.Items.Count, Is.EqualTo(1));
             Assert.That(container.Items[0], Is.EqualTo(objectToSet));
             Assert.That(container.Items[0].Int, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void SetAsRealmQueryable_RaisesNotifications()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.SetOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => joe.SetOfDogs.Add(new Dog { Age = i }));
+                _realm.Refresh();
+
+                if (i >= 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 4));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                }
+            }
+        }
+
+        [Test]
+        public void SetFilter_ReturnsCorrectElementAtResult()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.SetOfDogs.Filter("Age >= 5");
+
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    joe.SetOfDogs.Add(new Dog { Age = i });
+                }
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                var dog = oldDogs.ElementAt(i);
+                Assert.That(dog.Age, Is.EqualTo(i + 5));
+            }
+        }
+
+        [Test]
+        public void SetFilter_PassesArgumentsCorrectly()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Rick" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fido" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fester" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ToArray().Select(d => d.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
+        }
+
+        [Test]
+        public void SetFilter_CanSortResults()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Rick" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fido" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ElementAt(0).Name, Is.EqualTo("Fifi"));
+            Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
+        }
+
+        [Test]
+        public void SetFilter_CanBeFilteredWithLinq()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.SetOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.SetOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Where(d => d.Vaccinated).OrderBy(d => d.Age);
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void SetFilter_CanBeFilteredWithStringPredicate()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.SetOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.SetOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Filter("Vaccinated = true SORT(Age asc)");
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
         }
 
         [Test]
@@ -824,8 +1005,8 @@ namespace Realms.Tests.Database
             var dog2 = new Dog { Name = "Pluto", Color = "white", Vaccinated = true };
             var dog3 = new Dog { Name = "Pippo", Color = "brown", Vaccinated = false };
             var dog4 = new Dog { Name = "JustDog", Color = "pink", Vaccinated = false };
-            var marioOwner = new Owner { Name = "Mario", TopDog = dog1, Dogs = { dog1, dog2, dog3 } };
-            var luigiOwner = new Owner { Name = "Luigi", TopDog = dog4, Dogs = { dog4 } };
+            var marioOwner = new Owner { Name = "Mario", TopDog = dog1, ListOfDogs = { dog1, dog2, dog3 } };
+            var luigiOwner = new Owner { Name = "Luigi", TopDog = dog4, ListOfDogs = { dog4 } };
 
             _realm.Write(() =>
             {
@@ -834,7 +1015,7 @@ namespace Realms.Tests.Database
             });
             IList<Dog> list = new List<Dog>();
             list.Add(dog1);
-            var matches = queryList ? _realm.All<Owner>().Filter("ANY Dogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
+            var matches = queryList ? _realm.All<Owner>().Filter("ANY ListOfDogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
             Assert.AreEqual(marioOwner, matches.Single());
         }
 
@@ -892,7 +1073,7 @@ namespace Realms.Tests.Database
                     var owner = new Owner
                     {
                         Name = $"Owner {i}",
-                        Dogs =
+                        ListOfDogs =
                         {
                             new Dog
                             {
@@ -910,9 +1091,9 @@ namespace Realms.Tests.Database
                 }
             });
 
-            var owners = _realm.All<Owner>().Filter("Dogs.Vaccinated == true");
+            var owners = _realm.All<Owner>().Filter("ListOfDogs.Vaccinated == true");
             Assert.That(owners.Count(), Is.EqualTo(4));
-            Assert.That(owners.ToArray().All(o => o.Dogs.Any(d => d.Vaccinated)));
+            Assert.That(owners.ToArray().All(o => o.ListOfDogs.Any(d => d.Vaccinated)));
         }
 
         [Test]
@@ -930,13 +1111,13 @@ namespace Realms.Tests.Database
                     _realm.Add(new Owner
                     {
                         Name = $"Person {(2 * i) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
 
                     _realm.Add(new Owner
                     {
                         Name = $"Person {((2 * i) + 1) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
                 }
             });
@@ -961,18 +1142,18 @@ namespace Realms.Tests.Database
                     _realm.Add(new Owner
                     {
                         Name = $"Person {(2 * i) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
 
                     _realm.Add(new Owner
                     {
                         Name = $"Person {((2 * i) + 1) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
                 }
             });
 
-            var dogs = _realm.All<Dog>().Filter("@links.Owner.Dogs.Name == 'Person 0'");
+            var dogs = _realm.All<Dog>().Filter("@links.Owner.ListOfDogs.Name == 'Person 0'");
             Assert.That(dogs.Count(), Is.EqualTo(4));
             Assert.That(dogs.ToArray().All(d => d.Owners.Any(o => o.Name == "Person 0")));
         }
@@ -1102,7 +1283,7 @@ namespace Realms.Tests.Database
                 otherRealm.Add(otherRealmDog);
             });
 
-            Assert.That(() => owner.Dogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
+            Assert.That(() => owner.ListOfDogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
         }
 
         [Test]
@@ -1111,7 +1292,7 @@ namespace Realms.Tests.Database
             var obj = new Owner
             {
                 Name = "Peter",
-                Dogs =
+                ListOfDogs =
                 {
                     new Dog { Name = "Alpha" },
                     new Dog { Name = "Beta" }
@@ -1125,12 +1306,12 @@ namespace Realms.Tests.Database
 
             Assert.That(obj.IsManaged);
 
-            var frozenDogs = Freeze(obj.Dogs);
+            var frozenDogs = Freeze(obj.ListOfDogs);
 
             Assert.That(obj.IsManaged);
             Assert.That(obj.IsValid);
             Assert.That(obj.IsFrozen, Is.False);
-            Assert.That(obj.Dogs.AsRealmCollection().IsFrozen, Is.False);
+            Assert.That(obj.ListOfDogs.AsRealmCollection().IsFrozen, Is.False);
             Assert.That(obj.Realm.IsFrozen, Is.False);
 
             Assert.That(frozenDogs.AsRealmCollection().IsFrozen);
@@ -1153,11 +1334,11 @@ namespace Realms.Tests.Database
                     {
                         return _realm.Add(new Owner
                         {
-                            Dogs = { new Dog { Name = "Lasse" } }
+                            ListOfDogs = { new Dog { Name = "Lasse" } }
                         });
                     });
 
-                    var frozenList = owner.Dogs.Freeze();
+                    var frozenList = owner.ListOfDogs.Freeze();
                     var frozenRealm = frozenList.AsRealmCollection().Realm;
                     return new object[] { frozenList, frozenRealm };
                 });
@@ -1236,8 +1417,8 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            var frozenList = Freeze(obj.Dogs);
-            Assert.That(ReferenceEquals(frozenList, obj.Dogs), Is.False);
+            var frozenList = Freeze(obj.ListOfDogs);
+            Assert.That(ReferenceEquals(frozenList, obj.ListOfDogs), Is.False);
 
             var deepFrozenList = Freeze(frozenList);
             Assert.That(ReferenceEquals(frozenList, deepFrozenList));
@@ -1265,7 +1446,7 @@ namespace Realms.Tests.Database
         {
             var obj = new Owner
             {
-                Dogs =
+                ListOfDogs =
                 {
                     new Dog { Name = "Rex" },
                     new Dog { Name = "Luthor" }
@@ -1277,14 +1458,14 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            var frozenList = Freeze(obj.Dogs);
+            var frozenList = Freeze(obj.ListOfDogs);
 
             Assert.That(frozenList.Count, Is.EqualTo(2));
 
             _realm.Write(() =>
             {
-                obj.Dogs[0].Name = "Lex";
-                obj.Dogs.Insert(1, new Dog());
+                obj.ListOfDogs[0].Name = "Lex";
+                obj.ListOfDogs.Insert(1, new Dog());
             });
 
             Assert.That(frozenList.Count, Is.EqualTo(2));
