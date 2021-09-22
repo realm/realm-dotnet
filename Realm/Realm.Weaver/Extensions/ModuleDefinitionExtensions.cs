@@ -38,5 +38,4 @@ internal static class ModuleDefinitionExtensions
     {
         return module.AssemblyReferences.SingleOrDefault(a => a.Name == assembly);
     }
-
 }
