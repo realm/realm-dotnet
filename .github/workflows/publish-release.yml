@@ -13,7 +13,6 @@ jobs:
     - name: Download all artifacts
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
-        workflow_conclusion: completed
         workflow: main.yml
         commit: ${{ github.sha }}
         path: ${{ github.workspace }}/Realm/packages/

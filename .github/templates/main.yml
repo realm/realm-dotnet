@@ -471,9 +471,11 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: ubuntu-latest
+    runs-on: performance-tests
     if: ${{ github.event_name == 'push' }}
     steps:
+      - name: Cleanup Workspace
+        run: rm -rf ${{ github.workspace }}/*
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))

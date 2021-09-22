@@ -852,9 +852,11 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: ubuntu-latest
+    runs-on: performance-tests
     if: ${{ github.event_name == 'push' }}
     steps:
+    - name: Cleanup Workspace
+      run: rm -rf ${{ github.workspace }}/*
     - name: Checkout code
       uses: actions/checkout@v2
       with:
