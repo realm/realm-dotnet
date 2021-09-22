@@ -6,6 +6,7 @@
 ### Fixed
 * Fixed a bug that would cause a `NullReferenceException` to be reported during compilation of a class containing a getter-only `RealmObject` property. (Issue [#2576](https://github.com/realm/realm-dotnet/issues/2576))
 * Fixed an issue that would result in `Unable to load DLL 'realm-wrappers'` when deploying a WPF .NET Framework application with ClickOnce. This was due to the incorrect BuildAction type being applied to the native libraries that Realm depends on. (Issue [#1877](https://github.com/realm/realm-dotnet/issues/1877))
+* Fixed a bug that would sometimes result in assemblies not found at runtime in a very specific edge scenario. More details about such a scenario can be found in its [PR](https://github.com/realm/realm-dotnet/pull/2639)'s description. (Issue [#1568](https://github.com/realm/realm-dotnet/issues/1568))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
