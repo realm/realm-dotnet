@@ -854,6 +854,9 @@ jobs:
     needs: build-packages
     runs-on: performance-tests
     steps:
+    - name: Cleanup Workspace
+      run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
+      shell: powershell
     - name: Checkout code
       uses: actions/checkout@v2
       with:

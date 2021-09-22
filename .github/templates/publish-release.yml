@@ -110,7 +110,6 @@ jobs:
     - name: Download all artifacts
       uses: #@ actionDownloadAllArtifacts
       with:
-        workflow_conclusion: completed
         workflow: main.yml
         commit: ${{ github.sha }}
         path: ${{ github.workspace }}/Realm/packages/
