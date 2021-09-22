@@ -99,12 +99,13 @@ namespace Realms
         /// <param name="typeName">The type that needs to be removed. </param>
         /// <remarks>
         /// The removed type will still be accessible from <see cref="OldRealm"/> in the migration block.
+        /// The type must not be present in the new schema. <see cref="Realm.RemoveAll{T}"/> can be used on <see cref="NewRealm"/> if one needs to delete the content of the table.
         /// </remarks>
         /// <returns><c>true</c> if the type does exist in the old schema, <c>false</c> otherwise.</returns>
         public bool RemoveType(string typeName)
         {
             Argument.NotNullOrEmpty(typeName, nameof(typeName));
-            return NewRealm.RemoveType(typeName);
+            return NewRealm.SharedRealmHandle.RemoveType(typeName);
         }
 
         /// <summary>
@@ -115,15 +116,40 @@ namespace Realms
         /// <param name="newPropertyName">The new name of the property. </param>
         /// <remarks>
         /// It is not possible to access the renamed property in <see cref="NewRealm"/> in the migration block after this method is called.
-        /// If this is necessary, the method should be called after the property access, or the value retrieved from <see cref="OldRealm"/> can be used.
+        /// If it is necessary to access the renamed property, the method should be called after the property access, or the value retrieved from <see cref="OldRealm"/> can be used.
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// // Model in the old schema
+        /// class Dog : RealmObject
+        /// {
+        ///     public string DogName { get; set; }
+        /// }
+        ///
+        /// // Model in the new schema
+        /// class Dog : RealmObject
+        /// {
+        ///     public string Name { get; set; }
+        /// }
+        ///
+        /// //After the migration Dog.Name will contain the same values as Dog.DogName from the old realm, without the need to copy them explicitly
+        /// var config = new RealmConfiguration
+        /// {
+        ///     SchemaVersion = 1,
+        ///     MigrationCallback = (migration, oldSchemaVersion) =>
+        ///     {
+        ///         migration.RenameProperty("Dog", "DogName", "Name");
+        ///     }
+        /// };
+        /// </code>
+        /// </example>
         public void RenameProperty(string typeName, string oldPropertyName, string newPropertyName)
         {
             Argument.NotNullOrEmpty(typeName, nameof(typeName));
             Argument.NotNullOrEmpty(oldPropertyName, nameof(oldPropertyName));
             Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
 
-            NewRealm.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
+            NewRealm.SharedRealmHandle.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
         }
 
         internal void ReleaseHandle()

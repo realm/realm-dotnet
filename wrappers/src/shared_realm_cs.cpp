@@ -566,15 +566,18 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
         Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
 
         auto table = ObjectStore::table_for_object_type(realm->read_group(), type_name_str);
+        // If the table does not exist then we return false
         if (!table)
         {
             return false;
         }
 
         const auto obj_schema = realm->schema().find(type_name_str);
+        // If the table exists, but it's in the current schema, then we throw an exception
+        // User can always exclude it from schema in config, or remove it completely
         if (obj_schema != realm->schema().end())
         {
-            throw RemoveTypeInSchemaException();
+            throw std::runtime_error(util::format("Attempted to remove type '%1', that is present in the current schema", type_name_str.to_string()));
         }
 
         realm->read_group().remove_table(table->get_key());

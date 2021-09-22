@@ -40,12 +40,6 @@ public:
     }
 };
 
-class RemoveTypeInSchemaException : public std::runtime_error {
-public:
-    RemoveTypeInSchemaException() : std::runtime_error("Attempted to remove a type present in the current schema") {
-    }
-};
-
 struct Configuration
 {
     uint16_t* path;

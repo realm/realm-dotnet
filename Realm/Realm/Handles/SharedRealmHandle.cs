@@ -53,6 +53,8 @@ namespace Realms
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
 
+            // migrationSchema is a special schema that is used only in the context of a migration block.
+            // It is a pointer because we need to be able to modify this schema in some migration methods directly in core.
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
