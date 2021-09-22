@@ -525,7 +525,7 @@ namespace Realms
         internal void ManageEmbedded(EmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
             obj.SetOwner(this, handle, metadata);
@@ -542,7 +542,7 @@ namespace Realms
                 return;
             }
 
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(objectType));
 
             ObjectHandle objectHandle;
@@ -994,7 +994,7 @@ namespace Realms
 
             var type = typeof(T);
             Argument.Ensure(
-                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                Metadata.TryGetValue(type.GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type == type,
                 $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
@@ -1008,7 +1008,7 @@ namespace Realms
 
             var type = typeof(T);
             Argument.Ensure(
-                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                Metadata.TryGetValue(type.GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type == type,
                 $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
@@ -1073,7 +1073,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
+            var metadata = Metadata[typeof(T).GetMappedOrOriginalName()];
             if (SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);

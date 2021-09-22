@@ -21,7 +21,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Realms.Helpers;
 
@@ -321,7 +320,7 @@ namespace Realms.Schema
             {
                 Argument.NotNull(type, nameof(type));
 
-                var objectSchema = ObjectSchema.FromType(type.GetTypeInfo());
+                var objectSchema = ObjectSchema.FromType(type);
 
                 if (_values.TryGetValue(objectSchema.Name, out var existingOS) && existingOS.Type != null)
                 {

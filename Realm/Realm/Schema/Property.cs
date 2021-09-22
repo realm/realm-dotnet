@@ -178,7 +178,7 @@ namespace Realms.Schema
         {
             Argument.NotNull(type, nameof(type));
             var propertyType = type.ToPropertyType(out var objectType);
-            var objectTypeName = objectType?.GetTypeInfo().GetMappedOrOriginalName();
+            var objectTypeName = objectType?.GetMappedOrOriginalName();
 
             switch (isNullable)
             {
@@ -328,7 +328,7 @@ namespace Realms.Schema
                 var innerType = prop.PropertyType.GenericTypeArguments.Single();
                 var linkOriginProperty = innerType.GetProperty(backlinksAttribute.Property);
 
-                result = Backlinks(propertyName, innerType.GetTypeInfo().GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
+                result = Backlinks(propertyName, innerType.GetMappedOrOriginalName(), linkOriginProperty.GetMappedOrOriginalName());
             }
             else
             {
@@ -338,7 +338,7 @@ namespace Realms.Schema
                     propertyType &= ~PropertyType.Nullable;
                 }
 
-                var objectTypeName = objectType?.GetTypeInfo().GetMappedOrOriginalName();
+                var objectTypeName = objectType?.GetMappedOrOriginalName();
                 var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
                 var isIndexed = prop.HasCustomAttribute<IndexedAttribute>();
                 result = new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, isIndexed: isIndexed);

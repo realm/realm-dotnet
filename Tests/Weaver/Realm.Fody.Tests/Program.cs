@@ -18,7 +18,6 @@
 
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using NUnitLite;
 using Realms.Tests;
 
@@ -28,7 +27,7 @@ namespace Realms.Fody.Tests
     {
         public static int Main(string[] args)
         {
-            var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
+            var autorun = new AutoRun(typeof(Program).Assembly);
             autorun.Execute(args);
 
             var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);

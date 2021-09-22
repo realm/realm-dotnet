@@ -34,7 +34,7 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
-        private static readonly IDictionary<TypeInfo, ObjectSchema> _cache = new Dictionary<TypeInfo, ObjectSchema>();
+        private static readonly IDictionary<Type, ObjectSchema> _cache = new Dictionary<Type, ObjectSchema>();
 
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
@@ -52,7 +52,7 @@ namespace Realms.Schema
 
         internal Property? PrimaryKeyProperty { get; }
 
-        internal TypeInfo Type { get; private set; }
+        internal Type Type { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="ObjectSchema"/> describes an embedded object.
@@ -94,13 +94,24 @@ namespace Realms.Schema
             return _properties.TryGetValue(name, out property);
         }
 
+        public Builder GetBuilder()
+        {
+            var builder = new Builder(Name, IsEmbedded);
+            foreach (var prop in this)
+            {
+                builder.Add(prop);
+            }
+
+            return builder;
+        }
+
         /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        internal static ObjectSchema FromType(TypeInfo type)
+        internal static ObjectSchema FromType(Type type)
         {
             Argument.NotNull(type, nameof(type));
             if (_cache.TryGetValue(type, out var result))
@@ -108,22 +119,7 @@ namespace Realms.Schema
                 return result;
             }
 
-            Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
-
-            var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
-            foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
-            {
-                builder.Add(Property.FromPropertyInfo(property));
-            }
-
-            if (builder.Count == 0)
-            {
-                throw new InvalidOperationException(
-                    $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
-            }
-
-            result = builder.Build();
-            result.Type = type;
+            result = new Builder(type).Build();
             _cache[type] = result;
             return result;
         }
@@ -133,17 +129,19 @@ namespace Realms.Schema
         /// </summary>
         public class Builder : SchemaBuilderBase<Property>
         {
-            /// <summary>
-            /// Gets the name of the class described by the builder.
-            /// </summary>
-            /// <value>The name of the class.</value>
-            public string Name { get; }
+            private readonly Type _type;
 
             /// <summary>
-            /// Gets a value indicating whether this <see cref="Builder"/> describes an embedded object.
+            /// Gets or sets the name of the class described by the builder.
+            /// </summary>
+            /// <value>The name of the class.</value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this <see cref="Builder"/> describes an embedded object.
             /// </summary>
             /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
-            public bool IsEmbedded { get; }
+            public bool IsEmbedded { get; set; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Builder"/> class with the provided name.
@@ -161,11 +159,31 @@ namespace Realms.Schema
                 IsEmbedded = isEmbedded;
             }
 
+            public Builder(Type type)
+            {
+                Argument.NotNull(type, nameof(type));
+                Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
+
+                var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
+                foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                {
+                    builder.Add(Property.FromPropertyInfo(property));
+                }
+
+                if (builder.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
+                }
+
+                _type = type;
+            }
+
             /// <summary>
             /// Constructs an <see cref="ObjectSchema"/> from the properties added to this <see cref="Builder"/>.
             /// </summary>
             /// <returns>An immutable <see cref="ObjectSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
-            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values);
+            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values) { Type = _type };
 
             /// <summary>
             /// Adds a new <see cref="Property"/> to this <see cref="Builder"/>.
