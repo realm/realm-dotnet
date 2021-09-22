@@ -855,8 +855,7 @@ jobs:
     runs-on: performance-tests
     steps:
     - name: Cleanup Workspace
-      run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-      shell: powershell
+      run: rm -rf ${{ github.workspace }}/*
     - name: Checkout code
       uses: actions/checkout@v2
       with:

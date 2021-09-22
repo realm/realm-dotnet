@@ -475,8 +475,7 @@ jobs:
     #! if: ${{ github.event_name == 'push' }}
     steps:
       - name: Cleanup Workspace
-        run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-        shell: powershell
+        run: rm -rf ${{ github.workspace }}/*
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
