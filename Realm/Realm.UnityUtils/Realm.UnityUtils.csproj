@@ -19,7 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Unity3D.SDK" Version="2020.1.15.1" />
+    <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
   </ItemGroup>
 
   <ItemGroup>

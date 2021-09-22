@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace SetupUnityPackage
 {
@@ -25,11 +27,11 @@ namespace SetupUnityPackage
     {
         private readonly IDictionary<string, string> _paths;
 
-        public bool IncludeDependencies { get; }
+        public IEnumerable<DependencyInfo> Dependencies { get; }
 
-        public PackageInfo(string id, IDictionary<string, string> paths, bool includeDependencies = true) : base(id)
+        public PackageInfo(string id, IDictionary<string, string> paths, IEnumerable<DependencyInfo> dependencies = null) : base(id)
         {
-            IncludeDependencies = includeDependencies;
+            Dependencies = dependencies;
             _paths = paths;
         }
 
@@ -40,5 +42,7 @@ namespace SetupUnityPackage
                 yield return (kvp.Key, Path.Combine(basePath, kvp.Value));
             }
         }
+
+        public string MainPackagePath => _paths.Single(kvp => kvp.Key.EndsWith($"{Id}.dll", StringComparison.OrdinalIgnoreCase)).Value;
     }
 }
