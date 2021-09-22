@@ -164,13 +164,14 @@ namespace Realms.Schema
                 Argument.NotNull(type, nameof(type));
                 Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
 
-                var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
+                Name = type.GetMappedOrOriginalName();
+                IsEmbedded = type.IsEmbeddedObject();
                 foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
                 {
-                    builder.Add(Property.FromPropertyInfo(property));
+                    Add(Property.FromPropertyInfo(property));
                 }
 
-                if (builder.Count == 0)
+                if (Count == 0)
                 {
                     throw new InvalidOperationException(
                         $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
