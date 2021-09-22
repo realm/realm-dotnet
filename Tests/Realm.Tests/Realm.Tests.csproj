@@ -139,7 +139,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-</Project>
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\v6db.realm">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
