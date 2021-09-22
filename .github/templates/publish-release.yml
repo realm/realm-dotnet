@@ -93,6 +93,7 @@
       body: Update Changelog for vNext
       delete-branch: true
       base: #@ mainBranch
+      commit-message: Prepare for vNext
   - #@ template.replace(mergePR("${{ steps.vnext-pr.outputs.pull-request-number }}"))
 #@ end
 ---
