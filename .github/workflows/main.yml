@@ -44,7 +44,7 @@ jobs:
         key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for macos
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-macos.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-macos.outputs.cache-hit == 'true'
       with:
         name: macos
         path: ${{ github.workspace }}/wrappers/build/**
@@ -57,7 +57,7 @@ jobs:
         key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for ios
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-ios.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-ios.outputs.cache-hit == 'true'
       with:
         name: ios
         path: ${{ github.workspace }}/wrappers/build/**
@@ -70,7 +70,7 @@ jobs:
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for linux
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-linux.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-linux.outputs.cache-hit == 'true'
       with:
         name: linux
         path: ${{ github.workspace }}/wrappers/build/**
@@ -83,7 +83,7 @@ jobs:
         key: wrappers-android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-armeabi-v7a
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-android-armeabi-v7a.outputs.cache-hit == 'true'
       with:
         name: android-armeabi-v7a
         path: ${{ github.workspace }}/wrappers/build/**
@@ -96,7 +96,7 @@ jobs:
         key: wrappers-android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-arm64-v8a
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-android-arm64-v8a.outputs.cache-hit == 'true'
       with:
         name: android-arm64-v8a
         path: ${{ github.workspace }}/wrappers/build/**
@@ -109,7 +109,7 @@ jobs:
         key: wrappers-android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-x86
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-android-x86.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-android-x86.outputs.cache-hit == 'true'
       with:
         name: android-x86
         path: ${{ github.workspace }}/wrappers/build/**
@@ -122,7 +122,7 @@ jobs:
         key: wrappers-android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-x86_64
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-android-x86_64.outputs.cache-hit == 'true'
       with:
         name: android-x86_64
         path: ${{ github.workspace }}/wrappers/build/**
@@ -135,7 +135,7 @@ jobs:
         key: wrappers-windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-Win32
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-windows-Win32.outputs.cache-hit == 'true'
       with:
         name: windows-Win32
         path: ${{ github.workspace }}/wrappers/build/**
@@ -148,7 +148,7 @@ jobs:
         key: wrappers-windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-x64
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-windows-x64.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-windows-x64.outputs.cache-hit == 'true'
       with:
         name: windows-x64
         path: ${{ github.workspace }}/wrappers/build/**
@@ -161,7 +161,7 @@ jobs:
         key: wrappers-windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-uwp-Win32
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-windows-uwp-Win32.outputs.cache-hit == 'true'
       with:
         name: windows-uwp-Win32
         path: ${{ github.workspace }}/wrappers/build/**
@@ -174,7 +174,7 @@ jobs:
         key: wrappers-windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-uwp-x64
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-windows-uwp-x64.outputs.cache-hit == 'true'
       with:
         name: windows-uwp-x64
         path: ${{ github.workspace }}/wrappers/build/**
@@ -187,7 +187,7 @@ jobs:
         key: wrappers-windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-uwp-ARM
       uses: actions/upload-artifact@v2
-      if: steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
+      if: steps.check-cache-wrappers-windows-uwp-ARM.outputs.cache-hit == 'true'
       with:
         name: windows-uwp-ARM
         path: ${{ github.workspace }}/wrappers/build/**

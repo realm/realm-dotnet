@@ -251,7 +251,7 @@ jobs:
       - #@ checkCache("wrappers-" + platform)
       - name: #@ "Store artifacts for " + platform
         uses: #@ actionUploadArtifact
-        if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
+        if: #@ "steps.check-cache-wrappers-" + platform + ".outputs.cache-hit == 'true'"
         with:
           name: #@ platform
           path: "${{ github.workspace }}/wrappers/build/**"
