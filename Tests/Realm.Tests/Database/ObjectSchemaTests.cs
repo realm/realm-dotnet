@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Schema;
@@ -1103,6 +1104,37 @@ namespace Realms.Tests.Database
                     _ => throw new NotSupportedException(),
                 };
             });
+        }
+
+        [Test]
+        public void RealmSchema_GetBuilder_Build_CreatesNewInstance()
+        {
+            RealmSchema originalSchema = new[] { typeof(PrimaryKeyGuidObject) };
+            var newlyBuiltSchema = originalSchema.GetBuilder().Build();
+
+            Assert.That(originalSchema, Is.Not.SameAs(newlyBuiltSchema));
+        }
+
+        [Test]
+        public void RealmSchema_GetBuilder_ContainsAllSchemas()
+        {
+            var types = new[] { typeof(Person), typeof(AllTypesObject), typeof(EmbeddedIntPropertyObject) };
+            RealmSchema originalSchema = types;
+            var builder = originalSchema.GetBuilder();
+
+            Assert.That(builder, Is.EquivalentTo(originalSchema));
+            Assert.That(builder.Select(b => b.Name), Is.EquivalentTo(types.Select(t => t.Name)));
+        }
+
+        [Test]
+        public void RealmSchema_GetBuilder_DoesntModifyOriginal()
+        {
+            RealmSchema schema = new[] { typeof(PrimaryKeyGuidObject) };
+            var builder = schema.GetBuilder();
+            builder.Add(typeof(AllTypesObject));
+
+            Assert.That(schema.Select(t => t.Name), Is.Not.EquivalentTo(builder.Select(t => t.Name)));
+            Assert.That(schema.Select(t => t.Name), Is.Not.EquivalentTo(builder.Build().Select(t => t.Name)));
         }
 
         [Test]

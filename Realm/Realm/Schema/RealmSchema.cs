@@ -145,6 +145,24 @@ namespace Realms.Schema
             return _objects.TryGetValue(name, out schema);
         }
 
+        /// <summary>
+        /// Create a mutable <see cref="Builder"/> containing the object schemas in this Realm schema.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Builder"/> instance that can be used to mutate the schema and eventually
+        /// produce a new one by calling <see cref="Builder.Build"/>.
+        /// </returns>
+        public Builder GetBuilder()
+        {
+            var builder = new Builder();
+            foreach (var schema in this)
+            {
+                builder.Add(schema);
+            }
+
+            return builder;
+        }
+
         /// <inheritdoc/>
         public IEnumerator<ObjectSchema> GetEnumerator() => _objects.Values.GetEnumerator();
 
