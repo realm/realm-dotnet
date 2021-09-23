@@ -35,13 +35,12 @@ jobs:
       with:
         path: C:\src
         key: vcpkg
-      if: "true"
     - name: Setup Vcpkg
       run: |
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
-      if: true && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
     - name: Perform CodeQL Analysis

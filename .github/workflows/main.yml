@@ -8,9 +8,22 @@ name: main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
-  build-wrappers-macos:
-    runs-on: macos-latest
-    name: Wrappers macOS
+  check-wrappers-cache:
+    runs-on: ubuntu-latest
+    name: Check for wrappers cache
+    outputs:
+      macos: steps-cache-macos.outputs.cache-hit
+      ios: steps-cache-ios.outputs.cache-hit
+      linux: steps-cache-linux.outputs.cache-hit
+      android-armeabi-v7a: steps-cache-android-armeabi-v7a.outputs.cache-hit
+      android-arm64-v8a: steps-cache-android-arm64-v8a.outputs.cache-hit
+      android-x86: steps-cache-android-x86.outputs.cache-hit
+      android-x86_64: steps-cache-android-x86_64.outputs.cache-hit
+      windows-Win32: steps-cache-windows-Win32.outputs.cache-hit
+      windows-x64: steps-cache-windows-x64.outputs.cache-hit
+      windows-uwp-Win32: steps-cache-windows-uwp-Win32.outputs.cache-hit
+      windows-uwp-x64: steps-cache-windows-uwp-x64.outputs.cache-hit
+      windows-uwp-ARM: steps-cache-windows-uwp-ARM.outputs.cache-hit
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -21,15 +34,186 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
+    - name: Check cache for macos
+      id: check-cache-macos
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for macos
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-macos.outputs.cache-hit == 'true'
+      with:
+        name: macos
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for ios
+      id: check-cache-ios
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for ios
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-ios.outputs.cache-hit == 'true'
+      with:
+        name: ios
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for linux
+      id: check-cache-linux
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for linux
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-linux.outputs.cache-hit == 'true'
+      with:
+        name: linux
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for android-armeabi-v7a
+      id: check-cache-android-armeabi-v7a
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for android-armeabi-v7a
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
+      with:
+        name: android-armeabi-v7a
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for android-arm64-v8a
+      id: check-cache-android-arm64-v8a
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for android-arm64-v8a
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
+      with:
+        name: android-arm64-v8a
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for android-x86
+      id: check-cache-android-x86
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for android-x86
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-android-x86.outputs.cache-hit == 'true'
+      with:
+        name: android-x86
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for android-x86_64
+      id: check-cache-android-x86_64
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for android-x86_64
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
+      with:
+        name: android-x86_64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for windows-Win32
+      id: check-cache-windows-Win32
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for windows-Win32
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
+      with:
+        name: windows-Win32
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for windows-x64
+      id: check-cache-windows-x64
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for windows-x64
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-windows-x64.outputs.cache-hit == 'true'
+      with:
+        name: windows-x64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for windows-uwp-Win32
+      id: check-cache-windows-uwp-Win32
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for windows-uwp-Win32
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
+      with:
+        name: windows-uwp-Win32
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for windows-uwp-x64
+      id: check-cache-windows-uwp-x64
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for windows-uwp-x64
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
+      with:
+        name: windows-uwp-x64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+    - name: Check cache for windows-uwp-ARM
+      id: check-cache-windows-uwp-ARM
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for windows-uwp-ARM
+      uses: actions/upload-artifact@v2
+      if: steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
+      with:
+        name: windows-uwp-ARM
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+  build-wrappers-macos:
+    runs-on: macos-latest
+    name: Wrappers macOS
+    needs:
+    - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-macos != 'true'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Check cache for wrappers-macos
+      id: check-cache-wrappers-macos
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
       with:
@@ -39,6 +223,9 @@ jobs:
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
+    needs:
+    - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-ios != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -49,15 +236,14 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
+    - name: Check cache for wrappers-ios
+      id: check-cache-wrappers-ios
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
       with:
@@ -67,6 +253,9 @@ jobs:
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
+    needs:
+    - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-linux != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -77,22 +266,20 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
+    - name: Check cache for wrappers-linux
+      id: check-cache-wrappers-linux
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97
       continue-on-error: true
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build CentOS image
       uses: docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b
       with:
         tags: wrappers-centos:latest
         file: ./wrappers/centos.Dockerfile
         push: false
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       uses: addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609
       with:
@@ -100,7 +287,6 @@ jobs:
         shell: bash
         options: -v ${{ github.workspace }}:/work
         run: /work/wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
       with:
@@ -117,6 +303,9 @@ jobs:
         - arm64-v8a
         - x86
         - x86_64
+    needs:
+    - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-android-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -127,15 +316,14 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
+    - name: Check cache for wrappers-android-${{ matrix.arch }}
+      id: check-cache-wrappers-android-${{ matrix.arch }}
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
         key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-android-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
@@ -150,6 +338,9 @@ jobs:
         arch:
         - Win32
         - x64
+    needs:
+    - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -160,8 +351,8 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
+    - name: Check cache for wrappers-windows-${{ matrix.arch }}
+      id: check-cache-wrappers-windows-${{ matrix.arch }}
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -172,23 +363,20 @@ jobs:
       with:
         path: C:\src
         key: vcpkg
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Install Win8.1 SDK
       run: |
         md C:\win81sdk
         Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
         Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
       shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
@@ -204,6 +392,9 @@ jobs:
         - Win32
         - x64
         - ARM
+    needs:
+    - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -214,8 +405,8 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache
-      id: check-cache
+    - name: Check cache for wrappers-windows-uwp-${{ matrix.arch }}
+      id: check-cache-wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -226,16 +417,14 @@ jobs:
       with:
         path: C:\src
         key: vcpkg
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Setup Vcpkg
       run: |
         Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:

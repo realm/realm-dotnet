@@ -40,18 +40,17 @@
 #@ end
 #@ end
 
-#@ def setupVcpkg(ifCondition = "true"):
+#@ def setupVcpkg():
   - name: Check Vcpkg cache
     id: check-vcpkg-cache
     uses: #@ actionCache
     with:
       path: 'C:\src'
       key: vcpkg
-    if: #@ ifCondition
   - name: Setup Vcpkg
     run: |
       Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
       Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
     shell: powershell
-    if: #@ ifCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
+    if: steps.check-vcpkg-cache.outputs.cache-hit != 'true'
 #@ end

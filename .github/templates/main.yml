@@ -5,7 +5,6 @@
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
-#@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 
 #@ def getWrapperBuildCommand(cmd):
@@ -20,8 +19,8 @@
 
 #@ def checkCache(outputVar):
 #@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
-name: Check cache
-id: check-cache
+name: #@ "Check cache for " + outputVar
+id: #@ "check-cache-" + outputVar
 uses: #@ actionCache
 with:
   path: ./wrappers/build/**
@@ -38,6 +37,9 @@ with:
 #@ end
 
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
+needs:
+  - check-wrappers-cache
+if: #@ "needs.check-wrappers-cache.outputs.check-cache-" + outputVar + " != 'true'"
 steps:
   - #@ template.replace(checkoutCode("recursive"))
   - #@ checkCache(outputVar)
@@ -46,7 +48,6 @@ steps:
   #@ end
   - name: Build wrappers
     run: #@ getWrapperBuildCommand(cmd)
-    if: #@ wrappersCacheCondition
   - #@ uploadArtifacts(outputVar, "wrappers/build/**", 1)
 #@ end
 
@@ -57,7 +58,6 @@ steps:
       Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
       Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
     shell: powershell
-    if: #@ wrappersCacheCondition
 #@ end
 
 #@ def buildPackages():
@@ -226,6 +226,25 @@ name: main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
+  check-wrappers-cache:
+    runs-on: ubuntu-latest
+    name: Check for wrappers cache
+    outputs:
+    #@ for platform in getWrapperBinaryNames():
+      _: #@ template.replace({platform: "steps-cache-" + platform + ".outputs.cache-hit"})
+    #@ end
+    steps:
+      - #@ template.replace(checkoutCode("recursive"))
+    #@ for platform in getWrapperBinaryNames():
+      - #@ checkCache(platform)
+      - name: #@ "Store artifacts for " + platform
+        uses: #@ actionUploadArtifact
+        if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
+        with:
+          name: #@ platform
+          path: "${{ github.workspace }}/wrappers/build/**"
+          retention-days: 1
+    #@ end
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
@@ -237,19 +256,20 @@ jobs:
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
+    needs:
+      - check-wrappers-cache
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-linux != 'true'
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux")
       - uses: #@ actionDockerLayerCaching
         continue-on-error: true
-        if: #@ wrappersCacheCondition
       - name: Build CentOS image
         uses: #@ actionDockerBuild
         with:
           tags: wrappers-centos:latest
           file: ./wrappers/centos.Dockerfile
           push: false
-        if: #@ wrappersCacheCondition
       - name: Build wrappers
         uses: #@ actionDockerRun
         with:
@@ -257,7 +277,6 @@ jobs:
           shell: bash
           options: -v ${{ github.workspace }}:/work
           run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
-        if: #@ wrappersCacheCondition
       - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
   build-wrappers-android:
     runs-on: ubuntu-20.04
@@ -272,14 +291,14 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(), setupWin81SDK() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ]))
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg() ]))
   build-packages:
     runs-on: windows-latest
     name: Package
