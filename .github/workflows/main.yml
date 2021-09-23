@@ -511,7 +511,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Workflow cleanup
     needs:
-    - code-coverage
+    - run-tests-netcore
     if: always()
     steps:
     - name: Delete artifacts for macos
