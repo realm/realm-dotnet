@@ -7,6 +7,15 @@
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 
+#@ def getWrappersCacheCondition(prefix, abis):
+#@ conditions = []
+#@ for abi in abis:
+#@ conditions.append("needs.check-wrappers-cache.outputs.check-cache-" + prefix + abi + " != 'true'")
+#@ end
+#@
+#@ return " || ".join(conditions)
+#@ end
+
 #@ def getWrapperBuildCommand(cmd):
 #@ configurationParam =  " --configuration=" + configuration
 #@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
@@ -39,7 +48,6 @@ with:
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
 needs:
   - check-wrappers-cache
-if: #@ "needs.check-wrappers-cache.outputs.check-cache-" + outputVar + " != 'true'"
 steps:
   - #@ template.replace(checkoutCode("recursive"))
   - #@ checkCache(outputVar)
@@ -248,10 +256,12 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-macos != 'true'
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-ios != 'true'
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
     runs-on: ubuntu-latest
@@ -284,6 +294,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ androidABIs
+    if: #@ getWrappersCacheCondition("wrappers-android-", androidABIs)
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
   build-wrappers-windows:
     runs-on: windows-latest
@@ -291,6 +302,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
+    if: #@ getWrappersCacheCondition("wrappers-windows-", windowsArchs)
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(), setupWin81SDK() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
@@ -298,6 +310,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
+    if: #@ getWrappersCacheCondition("wrappers-windows-uwp-", windowsUWPArchs)
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg() ]))
   build-packages:
     runs-on: windows-latest

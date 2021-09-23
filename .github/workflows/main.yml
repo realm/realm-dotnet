@@ -193,9 +193,9 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-macos != 'true'
     needs:
     - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-macos != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -223,9 +223,9 @@ jobs:
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-ios != 'true'
     needs:
     - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-ios != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -303,9 +303,9 @@ jobs:
         - arm64-v8a
         - x86
         - x86_64
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-android-armeabi-v7a != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-android-arm64-v8a != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-android-x86 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-android-x86_64 != 'true'
     needs:
     - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-android-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -338,9 +338,9 @@ jobs:
         arch:
         - Win32
         - x64
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-Win32 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-x64 != 'true'
     needs:
     - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -392,9 +392,9 @@ jobs:
         - Win32
         - x64
         - ARM
+    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-x64 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-ARM != 'true'
     needs:
     - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
