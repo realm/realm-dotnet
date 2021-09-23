@@ -852,8 +852,7 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: performance-tests
-    if: ${{ github.event_name == 'push' }}
+    runs-on: aard-ssd
     steps:
     - name: Cleanup Workspace
       run: rm -rf ${{ github.workspace }}/*
