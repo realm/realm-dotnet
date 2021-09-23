@@ -239,6 +239,8 @@ jobs:
   check-wrappers-cache:
     runs-on: ubuntu-latest
     name: Check for wrappers cache
+    env:
+      CACHE_SKIP_SAVE: true
     outputs:
     #@ for platform in getWrapperBinaryNames():
       _: #@ template.replace({platform: "steps-cache-" + platform + ".outputs.cache-hit"})

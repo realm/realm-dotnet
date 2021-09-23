@@ -11,6 +11,8 @@ jobs:
   check-wrappers-cache:
     runs-on: ubuntu-latest
     name: Check for wrappers cache
+    env:
+      CACHE_SKIP_SAVE: true
     outputs:
       macos: steps-cache-macos.outputs.cache-hit
       ios: steps-cache-ios.outputs.cache-hit
@@ -36,7 +38,7 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for macos
       id: check-cache-macos
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -49,7 +51,7 @@ jobs:
         retention-days: 1
     - name: Check cache for ios
       id: check-cache-ios
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -62,7 +64,7 @@ jobs:
         retention-days: 1
     - name: Check cache for linux
       id: check-cache-linux
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -75,7 +77,7 @@ jobs:
         retention-days: 1
     - name: Check cache for android-armeabi-v7a
       id: check-cache-android-armeabi-v7a
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -88,7 +90,7 @@ jobs:
         retention-days: 1
     - name: Check cache for android-arm64-v8a
       id: check-cache-android-arm64-v8a
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -101,7 +103,7 @@ jobs:
         retention-days: 1
     - name: Check cache for android-x86
       id: check-cache-android-x86
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -114,7 +116,7 @@ jobs:
         retention-days: 1
     - name: Check cache for android-x86_64
       id: check-cache-android-x86_64
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -127,7 +129,7 @@ jobs:
         retention-days: 1
     - name: Check cache for windows-Win32
       id: check-cache-windows-Win32
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -140,7 +142,7 @@ jobs:
         retention-days: 1
     - name: Check cache for windows-x64
       id: check-cache-windows-x64
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -153,7 +155,7 @@ jobs:
         retention-days: 1
     - name: Check cache for windows-uwp-Win32
       id: check-cache-windows-uwp-Win32
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -166,7 +168,7 @@ jobs:
         retention-days: 1
     - name: Check cache for windows-uwp-x64
       id: check-cache-windows-uwp-x64
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -179,7 +181,7 @@ jobs:
         retention-days: 1
     - name: Check cache for windows-uwp-ARM
       id: check-cache-windows-uwp-ARM
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -207,7 +209,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-macos
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -236,7 +238,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-ios
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -265,7 +267,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-linux
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -314,7 +316,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-android-${{ matrix.arch }}
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
@@ -348,13 +350,13 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-windows-${{ matrix.arch }}
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: C:\src
         key: vcpkg
@@ -401,13 +403,13 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-windows-uwp-${{ matrix.arch }}
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: C:\src
         key: vcpkg
@@ -543,7 +545,7 @@ jobs:
     - name: Check Docfx cache
       id: check-docfx-cache
       if: ${{ contains(github.head_ref, 'release') }}
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: C:\docfx
         key: docfx

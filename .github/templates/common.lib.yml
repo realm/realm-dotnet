@@ -1,7 +1,7 @@
 #@ configuration = "Release"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 #@ actionCheckout = "actions/checkout@v2"
-#@ actionCache = "actions/cache@v2"
+#@ actionCache = "nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9" #! 2.1.3-no-save
 #@ actionUploadArtifact = "actions/upload-artifact@v2"
 #@ actionDownloadArtifact = "actions/download-artifact@v2"
 #@ actionSetupMSBuild = "microsoft/setup-msbuild@v1.0.2"

@@ -31,7 +31,7 @@ jobs:
         queries: security-and-quality
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: C:\src
         key: vcpkg
