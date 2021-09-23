@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -933,6 +934,168 @@ namespace Realms.Tests.Database
 
                     return new object[] { state };
                 });
+            });
+        }
+
+        [Test]
+        public void GetInstance_WithManualSchema_CanReadAndWrite()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new RealmSchema.Builder
+                {
+                    new ObjectSchema.Builder("MyType")
+                    {
+                        Property.Primitive("IntValue", RealmValueType.Int),
+                        Property.PrimitiveList("ListValue", RealmValueType.Date),
+                        Property.PrimitiveSet("SetValue", RealmValueType.Guid),
+                        Property.PrimitiveDictionary("DictionaryValue", RealmValueType.Double),
+                        Property.Object("ObjectValue", "OtherObject"),
+                        Property.ObjectList("ObjectListValue", "OtherObject"),
+                        Property.ObjectSet("ObjectSetValue", "OtherObject"),
+                        Property.ObjectDictionary("ObjectDictionaryValue", "OtherObject"),
+                    },
+                    new ObjectSchema.Builder("OtherObject")
+                    {
+                        Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true),
+                        Property.Backlinks("MyTypes", "MyType", "ObjectValue")
+                    }
+                }
+            };
+
+            using var realm = GetRealm(config);
+
+            realm.Write(() =>
+            {
+                var other = (RealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
+                var myType1 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                myType1.DynamicApi.Set("IntValue", 123);
+                myType1.DynamicApi.GetList<DateTimeOffset>("ListValue").Add(DateTimeOffset.UtcNow);
+                myType1.DynamicApi.GetSet<Guid>("SetValue").Add(Guid.NewGuid());
+                myType1.DynamicApi.GetDictionary<double>("DictionaryValue").Add("key", 123.456);
+                myType1.DynamicApi.Set("ObjectValue", other);
+                myType1.DynamicApi.GetList<RealmObject>("ObjectListValue").Add(other);
+                myType1.DynamicApi.GetSet<RealmObject>("ObjectSetValue").Add(other);
+                myType1.DynamicApi.GetDictionary<RealmObject>("ObjectDictionaryValue").Add("key", other);
+
+                var myType2 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                myType2.DynamicApi.Set("IntValue", 456);
+                myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("foo", 123.456);
+                myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("bar", 987.654);
+                myType2.DynamicApi.Set("ObjectValue", other);
+
+                Assert.Throws<MissingMemberException>(() => other.DynamicApi.Set("hoho", 123));
+            });
+
+            var myTypes = (IQueryable<RealmObject>)realm.DynamicApi.All("MyType");
+            var otherObjects = (IQueryable<RealmObject>)realm.DynamicApi.All("OtherObject");
+
+            Assert.That(myTypes.Count(), Is.EqualTo(2));
+            Assert.That(otherObjects.Count(), Is.EqualTo(1));
+
+            var foundById = (RealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
+            Assert.Throws<MissingMemberException>(() => foundById.DynamicApi.Get<int>("hoho"));
+            var backlinks = foundById.DynamicApi.GetBacklinks("MyTypes");
+
+            Assert.That(backlinks.Count(), Is.EqualTo(2));
+            Assert.That(backlinks.ToArray().Select(o => o.DynamicApi.Get<int>("IntValue")), Is.EquivalentTo(new[] { 123, 456 }));
+        }
+
+        [Test]
+        public void GetInstance_WithMixOfManualAndTypedSchema_CanReadAndWrite()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new RealmSchema.Builder
+                {
+                    new ObjectSchema.Builder(typeof(Person))
+                    {
+                        Property.FromType<string>("SalesforceId"),
+                        Property.FromType<IDictionary<string, string>>("Tags"),
+                        Property.FromType<EmbeddedIntPropertyObject>("EmbeddedInt")
+                    },
+                    new ObjectSchema.Builder(typeof(EmbeddedIntPropertyObject))
+                    {
+                        Property.FromType<DateTimeOffset>("LastModified")
+                    }
+                }
+            };
+
+            using var realm = GetRealm(config);
+
+            realm.Write(() =>
+            {
+                var person = realm.Add(new Person
+                {
+                    FirstName = "John",
+                    LastName = "Smith"
+                });
+
+                person.DynamicApi.Set("SalesforceId", "sf-123");
+                var tags = person.DynamicApi.GetDictionary<string>("Tags");
+                tags["tag1"] = "abc";
+                tags["tag2"] = "cde";
+
+                var embeddedInt = new EmbeddedIntPropertyObject
+                {
+                    Int = 999
+                };
+
+                person.DynamicApi.Set("EmbeddedInt", embeddedInt);
+                embeddedInt.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
+            });
+
+            var person = realm.All<Person>().Single();
+
+            var sfId = person.DynamicApi.Get<string>("SalesforceId");
+            Assert.That(sfId, Is.EqualTo("sf-123"));
+
+            var embedded = person.DynamicApi.Get<EmbeddedIntPropertyObject>("EmbeddedInt");
+            Assert.That(embedded, Is.Not.Null);
+            Assert.That(embedded.Int, Is.EqualTo(999));
+            var oldLastModified = embedded.DynamicApi.Get<DateTimeOffset>("LastModified");
+            Assert.That(oldLastModified, Is.LessThanOrEqualTo(DateTimeOffset.UtcNow));
+
+            realm.Write(() =>
+            {
+                embedded.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
+                embedded.Int = 111;
+            });
+
+            Assert.That(embedded.Int, Is.EqualTo(111));
+            Assert.That(embedded.DynamicApi.Get<DateTimeOffset>("LastModified"), Is.GreaterThan(oldLastModified));
+        }
+
+        [Test]
+        public void GetInstance_WithTypedSchemaWithMissingProperties_ThrowsException()
+        {
+            var personSchema = new ObjectSchema.Builder(typeof(Person));
+            personSchema.Remove(nameof(Person.FirstName));
+
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { personSchema.Build() }
+            };
+
+            using var realm = GetRealm(config);
+
+            var person = realm.Write(() =>
+            {
+                return realm.Add(new Person
+                {
+                    LastName = "Smith"
+                });
+            });
+
+            var exGet = Assert.Throws<MissingMemberException>(() => _ = person.FirstName);
+            Assert.That(exGet.Message, Does.Contain(nameof(Person)));
+            Assert.That(exGet.Message, Does.Contain(nameof(Person.FirstName)));
+
+            realm.Write(() =>
+            {
+                var exSet = Assert.Throws<MissingMemberException>(() => person.FirstName = "John");
+                Assert.That(exSet.Message, Does.Contain(nameof(Person)));
+                Assert.That(exSet.Message, Does.Contain(nameof(Person.FirstName)));
             });
         }
 

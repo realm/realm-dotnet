@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Schema;
@@ -50,7 +49,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Property_WhenRequired_ShouldBeNonNullable()
         {
-            var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass).GetTypeInfo());
+            var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass));
 
             Assert.That(schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out var prop), Is.True);
             Assert.That(prop.Type.HasFlag(PropertyType.Nullable), Is.False);
@@ -494,6 +493,53 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ObjectSchemaBuilder_FromType_AddsCorrectProperties()
+        {
+            var builder = new ObjectSchema.Builder(typeof(ClassWithUnqueryableMembers));
+            Assert.That(builder.Name, Is.EqualTo(nameof(ClassWithUnqueryableMembers)));
+            Assert.That(builder.IsEmbedded, Is.False);
+
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PublicField)), Is.False);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PublicMethod)), Is.False);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.IgnoredProperty)), Is.False);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.NonAutomaticProperty)), Is.False);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PropertyWithOnlyGet)), Is.False);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.StaticProperty)), Is.False);
+
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.RealPropertyToSatisfyWeaver)), Is.True);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.RealmObjectProperty)), Is.True);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.RealmListProperty)), Is.True);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.FirstName)), Is.True);
+            Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.BacklinkProperty)), Is.True);
+
+            Assert.That(builder.Build().Type, Is.EqualTo(typeof(ClassWithUnqueryableMembers)));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_FromType_CanAddProperties()
+        {
+            var builder = new ObjectSchema.Builder(typeof(PrimaryKeyGuidObject));
+            Assert.That(builder.Name, Is.EqualTo(nameof(PrimaryKeyGuidObject)));
+            Assert.That(builder.IsEmbedded, Is.False);
+
+            Assert.That(builder.Count, Is.EqualTo(1));
+
+            builder.Add(Property.FromType<int>("Foo"));
+
+            Assert.That(builder.Count, Is.EqualTo(2));
+
+            Assert.That(builder["_id"].Type, Is.EqualTo(PropertyType.Guid));
+            Assert.That(builder["Foo"].Type, Is.EqualTo(PropertyType.Int));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_FromType_InvalidCases()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ObjectSchema.Builder(null));
+            Assert.Throws<ArgumentException>(() => new ObjectSchema.Builder(typeof(string)));
+        }
+
+        [Test]
         public void ObjectSchemaBuilder_CanBuildEmptySchema()
         {
             var builder = new ObjectSchema.Builder("MyClass", isEmbedded: true);
@@ -772,17 +818,17 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchema_FromType_AssignsTypeInfo([Values(typeof(Person), typeof(EmbeddedAllTypesObject))] Type type)
         {
-            var schema = ObjectSchema.FromType(type.GetTypeInfo());
+            var schema = ObjectSchema.FromType(type);
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
             Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
-            Assert.That(schema.Type, Is.EqualTo(type.GetTypeInfo()));
+            Assert.That(schema.Type, Is.EqualTo(type));
         }
 
         [Test]
         public void ObjectSchema_FromType_RemappedType()
         {
-            var schema = ObjectSchema.FromType(typeof(RemappedTypeObject).GetTypeInfo());
+            var schema = ObjectSchema.FromType(typeof(RemappedTypeObject));
 
             Assert.That(schema.Name, Is.EqualTo("__RemappedTypeObject"));
             Assert.That(schema.IsEmbedded, Is.False);
@@ -794,7 +840,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchema_FromType_ResolvesPrimaryKey()
         {
-            var schema = ObjectSchema.FromType(typeof(PrimaryKeyStringObject).GetTypeInfo());
+            var schema = ObjectSchema.FromType(typeof(PrimaryKeyStringObject));
 
             Assert.That(schema.Name, Is.EqualTo(nameof(PrimaryKeyStringObject)));
             Assert.That(schema.IsEmbedded, Is.False);
@@ -808,16 +854,65 @@ namespace Realms.Tests.Database
         public void ObjectSchema_FromType_InvalidCases()
         {
             Assert.Throws<ArgumentNullException>(() => ObjectSchema.FromType(null));
-            Assert.Throws<ArgumentException>(() => ObjectSchema.FromType(typeof(string).GetTypeInfo()));
+            Assert.Throws<ArgumentException>(() => ObjectSchema.FromType(typeof(string)));
         }
 
         [Test]
         public void ObjectSchema_TryFindProperty_InvalidCases()
         {
-            var schema = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
+            var schema = ObjectSchema.FromType(typeof(AllTypesObject));
 
             Assert.Throws<ArgumentNullException>(() => schema.TryFindProperty(null, out _));
             Assert.Throws<ArgumentException>(() => schema.TryFindProperty(string.Empty, out _));
+        }
+
+        [Test]
+        public void ObjectSchema_GetBuilder_Build_CreatesNewInstance()
+        {
+            var originalSchema = ObjectSchema.FromType(typeof(PrimaryKeyGuidObject));
+            var newlyBuiltSchema = originalSchema.GetBuilder().Build();
+
+            Assert.That(originalSchema, Is.Not.SameAs(newlyBuiltSchema));
+        }
+
+        [Test]
+        public void ObjectSchema_GetBuilder_ContainsAllProperties()
+        {
+            var originalSchema = ObjectSchema.FromType(typeof(PrimaryKeyGuidObject));
+            var builder = originalSchema.GetBuilder();
+
+            Assert.That(originalSchema, Is.EquivalentTo(builder));
+            Assert.That(originalSchema.Name, Is.EqualTo(builder.Name));
+            Assert.That(originalSchema.IsEmbedded, Is.EqualTo(builder.IsEmbedded));
+        }
+
+        [Test]
+        public void ObjectSchema_GetBuilder_PreservesTypeInfo()
+        {
+            var typedSchema = ObjectSchema.FromType(typeof(PrimaryKeyGuidObject));
+            var typedBuilder = typedSchema.GetBuilder();
+
+            Assert.That(typedSchema.Type, Is.EqualTo(typedBuilder.Type));
+            Assert.That(typedBuilder.Type, Is.EqualTo(typeof(PrimaryKeyGuidObject)));
+
+            var untypedSchema = new ObjectSchema.Builder("Foo")
+            {
+                Property.FromType<int>("Bar")
+            }.Build();
+            var untypedBuilder = untypedSchema.GetBuilder();
+            Assert.That(untypedSchema.Type, Is.EqualTo(untypedBuilder.Type));
+            Assert.That(untypedBuilder.Type, Is.Null);
+        }
+
+        [Test]
+        public void ObjectSchema_GetBuilder_DoesntModifyOriginal()
+        {
+            var schema = ObjectSchema.FromType(typeof(PrimaryKeyGuidObject));
+            var builder = schema.GetBuilder();
+            builder.Add(Property.FromType<int>("Foo"));
+
+            Assert.That(schema, Is.Not.EquivalentTo(builder));
+            Assert.That(schema, Is.Not.EquivalentTo(builder.Build()));
         }
 
         [Test]
@@ -854,8 +949,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchema_ImplicitConversion_FromObjectSchemas([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
         {
-            var atoSchema = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
-            var personSchema = ObjectSchema.FromType(typeof(Person).GetTypeInfo());
+            var atoSchema = ObjectSchema.FromType(typeof(AllTypesObject));
+            var personSchema = ObjectSchema.FromType(typeof(Person));
             RealmSchema schema = collectionType switch
             {
                 BclCollectionType.Array => new[] { atoSchema, personSchema },
@@ -933,12 +1028,12 @@ namespace Realms.Tests.Database
             Assert.That(schema.Count, Is.EqualTo(2));
 
             Assert.That(schema.TryFindObjectSchema(nameof(AllTypesObject), out var foundAtoSchema), Is.True);
-            Assert.That(foundAtoSchema, Is.EquivalentTo(ObjectSchema.FromType(atoSchema.GetTypeInfo())));
-            Assert.That(foundAtoSchema.Type, Is.EqualTo(atoSchema.GetTypeInfo()));
+            Assert.That(foundAtoSchema, Is.EquivalentTo(ObjectSchema.FromType(atoSchema)));
+            Assert.That(foundAtoSchema.Type, Is.EqualTo(atoSchema));
 
             Assert.That(schema.TryFindObjectSchema(nameof(Person), out var foundPersonSchema), Is.True);
-            Assert.That(foundPersonSchema, Is.EquivalentTo(ObjectSchema.FromType(personSchema.GetTypeInfo())));
-            Assert.That(foundPersonSchema.Type, Is.EqualTo(personSchema.GetTypeInfo()));
+            Assert.That(foundPersonSchema, Is.EquivalentTo(ObjectSchema.FromType(personSchema)));
+            Assert.That(foundPersonSchema.Type, Is.EqualTo(personSchema));
         }
 
         [Test]
@@ -1065,11 +1160,11 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var schemaToSet = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
+            var schemaToSet = ObjectSchema.FromType(typeof(AllTypesObject));
             builder[nameof(AllTypesObject)] = schemaToSet;
 
             Assert.That(builder.Count, Is.EqualTo(1));
-            Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(typeof(AllTypesObject).GetTypeInfo()));
+            Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(typeof(AllTypesObject)));
 
             var schemaToReplace = new ObjectSchema.Builder(nameof(AllTypesObject))
                 .Add(Property.Primitive("Foo", RealmValueType.String))
@@ -1086,8 +1181,8 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var atoSchema = ObjectSchema.FromType(typeof(AllTypesObject).GetTypeInfo());
-            var personSchema = ObjectSchema.FromType(typeof(Person).GetTypeInfo());
+            var atoSchema = ObjectSchema.FromType(typeof(AllTypesObject));
+            var personSchema = ObjectSchema.FromType(typeof(Person));
 
             builder.Add(atoSchema);
             builder.Add(personSchema);
@@ -1194,8 +1289,8 @@ namespace Realms.Tests.Database
             builder.Add(personType);
 
             Assert.That(builder.Count, Is.EqualTo(2));
-            Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(atoType.GetTypeInfo()));
-            Assert.That(builder[nameof(Person)].Type, Is.EqualTo(personType.GetTypeInfo()));
+            Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(atoType));
+            Assert.That(builder[nameof(Person)].Type, Is.EqualTo(personType));
         }
 
         [Test]
@@ -1215,7 +1310,7 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain(barDuplicate.FullName));
 
             Assert.That(builder.Count, Is.EqualTo(1));
-            Assert.That(builder[nameof(Foo.DuplicateClass)].Type, Is.EqualTo(fooDuplicate.GetTypeInfo()));
+            Assert.That(builder[nameof(Foo.DuplicateClass)].Type, Is.EqualTo(fooDuplicate));
         }
 
         [Test]

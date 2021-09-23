@@ -94,6 +94,13 @@ namespace Realms.Schema
             return _properties.TryGetValue(name, out property);
         }
 
+        /// <summary>
+        /// Create a mutable <see cref="Builder"/> containing the properties in this schema.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Builder"/> instance that can be used to mutate the schema and eventually
+        /// produce a new one by calling <see cref="Builder.Build"/>.
+        /// </returns>
         public Builder GetBuilder()
         {
             var builder = new Builder(Name, IsEmbedded);
@@ -101,6 +108,8 @@ namespace Realms.Schema
             {
                 builder.Add(prop);
             }
+
+            builder.Type = Type;
 
             return builder;
         }
@@ -129,7 +138,7 @@ namespace Realms.Schema
         /// </summary>
         public class Builder : SchemaBuilderBase<Property>
         {
-            private readonly Type _type;
+            internal Type Type;
 
             /// <summary>
             /// Gets or sets the name of the class described by the builder.
@@ -159,6 +168,52 @@ namespace Realms.Schema
                 IsEmbedded = isEmbedded;
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class populated with properties from the
+            /// provided <paramref name="type"/>.
+            /// </summary>
+            /// <param name="type">
+            /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/>
+            /// or <see cref="EmbeddedObject"/> inheritor.
+            /// </param>
+            /// <remarks>
+            /// If you want to use strongly typed API, such as <see cref="Realm.Add{T}(T, bool)">Realm.Add&lt;T&gt;</see> or
+            /// <see cref="Realm.All{T}">Realm.All&lt;T&gt;</see>, you must use this method to build your schema.
+            /// <br/>
+            /// Adding new properties is fully supported, but removing or changing properties defined on the class will result
+            /// in runtime errors being thrown if those properties are accessed via the object property accessors.
+            /// </remarks>
+            /// <example>
+            /// <code>
+            /// class Person : RealmObject
+            /// {
+            ///     public string Name { get; set; }
+            /// }
+            ///
+            /// var personSchema = new Builder(typeof(Person));
+            ///
+            /// // someTagsCollection is a collection of tags determined at runtime - e.g. obtained
+            /// // from a REST API.
+            /// foreach (var tag in someTagsCollection)
+            /// {
+            ///     personSchema.Add(Property.Primitive(tag, RealmValueType.Bool));
+            /// }
+            ///
+            /// var config = new RealmConfiguration
+            /// {
+            ///     Schema = new[] { personSchema.Build() }
+            /// }
+            /// using var realm = Realm.GetInstance(config);
+            ///
+            /// // Query for all people with a particular tag
+            /// var tag = "Tall";
+            /// var matches = realm.All&lt;Person&gt;().Filter($"{tag} = TRUE");
+            ///
+            /// // Get/set the tag of a particular person
+            /// var hasTag = person.DynamicApi.Get&lt;bool&gt;(tag);
+            /// person.DynamicApi.Set(tag, true);
+            /// </code>
+            /// </example>
             public Builder(Type type)
             {
                 Argument.NotNull(type, nameof(type));
@@ -177,14 +232,14 @@ namespace Realms.Schema
                         $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
                 }
 
-                _type = type;
+                Type = type;
             }
 
             /// <summary>
             /// Constructs an <see cref="ObjectSchema"/> from the properties added to this <see cref="Builder"/>.
             /// </summary>
             /// <returns>An immutable <see cref="ObjectSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
-            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values) { Type = _type };
+            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values) { Type = Type };
 
             /// <summary>
             /// Adds a new <see cref="Property"/> to this <see cref="Builder"/>.

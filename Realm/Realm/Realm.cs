@@ -1545,7 +1545,7 @@ namespace Realms
                 Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
-                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(parent.ObjectMetadata.PropertyIndices[propertyName]);
+                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(propertyName, parent.ObjectMetadata);
 
                 obj.SetOwner(_realm, handle, metadata);
                 obj.OnManaged();
