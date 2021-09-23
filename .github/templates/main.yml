@@ -30,7 +30,7 @@
 #@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
 name: #@ "Check cache for " + outputVar
 #@ if setId:
-id: #@ "check-cache-" + outputVar
+id: #@ "cache-" + outputVar
 #@ end
 uses: #@ actionCache
 with:
@@ -251,7 +251,7 @@ jobs:
       - #@ checkCache("wrappers-" + platform)
       - name: #@ "Store artifacts for " + platform
         uses: #@ actionUploadArtifact
-        if: #@ "steps.check-cache-wrappers-" + platform + ".outputs.cache-hit == 'true'"
+        if: #@ "steps.cache-wrappers-" + platform + ".outputs.cache-hit == 'true'"
         with:
           name: #@ platform
           path: "${{ github.workspace }}/wrappers/build/**"
