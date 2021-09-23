@@ -6,6 +6,7 @@
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
+#@ wrappersFileHash = "${{hashFiles('./wrappers/**')}}"
 
 #@ def getWrappersCacheCondition(prefix, abis):
 #@ conditions = []
@@ -26,8 +27,8 @@
 #@ return cmd + configurationParam + ltoParam
 #@ end
 
-#@ def checkCache(outputVar, setId = True):
-#@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+#@ def checkCache(outputVar, fileHash, setId = True):
+#@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-" + fileHash
 name: #@ "Check cache for " + outputVar
 #@ if setId:
 id: #@ "cache-" + outputVar
@@ -52,7 +53,7 @@ needs:
   - check-wrappers-cache
 steps:
   - #@ template.replace(checkoutCode("recursive"))
-  - #@ checkCache(outputVar, False)
+  - #@ checkCache(outputVar, wrappersFileHash, False)
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
   #@ end
@@ -243,12 +244,15 @@ jobs:
       CACHE_SKIP_SAVE: true
     outputs:
     #@ for platform in getWrapperBinaryNames():
-      _: #@ template.replace({platform: "steps.cache-wrappers-" + platform + ".outputs.cache-hit"})
+      _: #@ template.replace({platform: "${{ steps.cache-wrappers-" + platform + ".outputs.cache-hit }}"})
     #@ end
     steps:
       - #@ template.replace(checkoutCode("recursive"))
+      - name: Calculate wrappers hash
+        id: wrapper-hash
+        run: #@ "echo \"::set-output name=hash::" + wrappersFileHash + "\""
     #@ for platform in getWrapperBinaryNames():
-      - #@ checkCache("wrappers-" + platform)
+      - #@ checkCache("wrappers-" + platform, "${{ steps.wrapper-hash.outputs.hash }}")
       - name: #@ "Store artifacts for " + platform
         uses: #@ actionUploadArtifact
         if: #@ "steps.cache-wrappers-" + platform + ".outputs.cache-hit == 'true'"
@@ -275,7 +279,7 @@ jobs:
     if: needs.check-wrappers-cache.outputs.linux != 'true'
     steps:
       - #@ template.replace(checkoutCode("recursive"))
-      - #@ checkCache("wrappers-linux", False)
+      - #@ checkCache("wrappers-linux", wrappersFileHash, False)
       - uses: #@ actionDockerLayerCaching
         continue-on-error: true
       - name: Build CentOS image

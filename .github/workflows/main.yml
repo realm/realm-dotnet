@@ -14,18 +14,18 @@ jobs:
     env:
       CACHE_SKIP_SAVE: true
     outputs:
-      macos: steps.cache-wrappers-macos.outputs.cache-hit
-      ios: steps.cache-wrappers-ios.outputs.cache-hit
-      linux: steps.cache-wrappers-linux.outputs.cache-hit
-      android-armeabi-v7a: steps.cache-wrappers-android-armeabi-v7a.outputs.cache-hit
-      android-arm64-v8a: steps.cache-wrappers-android-arm64-v8a.outputs.cache-hit
-      android-x86: steps.cache-wrappers-android-x86.outputs.cache-hit
-      android-x86_64: steps.cache-wrappers-android-x86_64.outputs.cache-hit
-      windows-Win32: steps.cache-wrappers-windows-Win32.outputs.cache-hit
-      windows-x64: steps.cache-wrappers-windows-x64.outputs.cache-hit
-      windows-uwp-Win32: steps.cache-wrappers-windows-uwp-Win32.outputs.cache-hit
-      windows-uwp-x64: steps.cache-wrappers-windows-uwp-x64.outputs.cache-hit
-      windows-uwp-ARM: steps.cache-wrappers-windows-uwp-ARM.outputs.cache-hit
+      macos: ${{ steps.cache-wrappers-macos.outputs.cache-hit }}
+      ios: ${{ steps.cache-wrappers-ios.outputs.cache-hit }}
+      linux: ${{ steps.cache-wrappers-linux.outputs.cache-hit }}
+      android-armeabi-v7a: ${{ steps.cache-wrappers-android-armeabi-v7a.outputs.cache-hit }}
+      android-arm64-v8a: ${{ steps.cache-wrappers-android-arm64-v8a.outputs.cache-hit }}
+      android-x86: ${{ steps.cache-wrappers-android-x86.outputs.cache-hit }}
+      android-x86_64: ${{ steps.cache-wrappers-android-x86_64.outputs.cache-hit }}
+      windows-Win32: ${{ steps.cache-wrappers-windows-Win32.outputs.cache-hit }}
+      windows-x64: ${{ steps.cache-wrappers-windows-x64.outputs.cache-hit }}
+      windows-uwp-Win32: ${{ steps.cache-wrappers-windows-uwp-Win32.outputs.cache-hit }}
+      windows-uwp-x64: ${{ steps.cache-wrappers-windows-uwp-x64.outputs.cache-hit }}
+      windows-uwp-ARM: ${{ steps.cache-wrappers-windows-uwp-ARM.outputs.cache-hit }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -36,12 +36,15 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Calculate wrappers hash
+      id: wrapper-hash
+      run: echo "::set-output name=hash::${{hashFiles('./wrappers/**')}}"
     - name: Check cache for wrappers-macos
       id: cache-wrappers-macos
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for macos
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-macos.outputs.cache-hit == 'true'
@@ -54,7 +57,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for ios
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-ios.outputs.cache-hit == 'true'
@@ -67,7 +70,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for linux
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-linux.outputs.cache-hit == 'true'
@@ -80,7 +83,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for android-armeabi-v7a
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-android-armeabi-v7a.outputs.cache-hit == 'true'
@@ -93,7 +96,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for android-arm64-v8a
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-android-arm64-v8a.outputs.cache-hit == 'true'
@@ -106,7 +109,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for android-x86
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-android-x86.outputs.cache-hit == 'true'
@@ -119,7 +122,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for android-x86_64
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-android-x86_64.outputs.cache-hit == 'true'
@@ -132,7 +135,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for windows-Win32
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-windows-Win32.outputs.cache-hit == 'true'
@@ -145,7 +148,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for windows-x64
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-windows-x64.outputs.cache-hit == 'true'
@@ -158,7 +161,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for windows-uwp-Win32
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-windows-uwp-Win32.outputs.cache-hit == 'true'
@@ -171,7 +174,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for windows-uwp-x64
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-windows-uwp-x64.outputs.cache-hit == 'true'
@@ -184,7 +187,7 @@ jobs:
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{ steps.wrapper-hash.outputs.hash }}
     - name: Store artifacts for windows-uwp-ARM
       uses: actions/upload-artifact@v2
       if: steps.cache-wrappers-windows-uwp-ARM.outputs.cache-hit == 'true'
