@@ -73,7 +73,7 @@ namespace Realms
         [Obsolete("Use Schema = new[] { typeof(...) } instead.")]
         public Type[] ObjectClasses
         {
-            get => Schema?.Select(s => s.Type).ToArray();
+            get => Schema?.Select(s => s.Type).Where(t => t != null).ToArray();
             set => Schema = value;
         }
 

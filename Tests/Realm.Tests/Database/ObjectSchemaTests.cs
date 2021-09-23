@@ -1107,6 +1107,26 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmSchema_ImplicitConversion_FromNullBuilder()
+        {
+            RealmSchema.Builder builder = null;
+            RealmSchema schema = builder;
+
+            Assert.That(schema, Is.Null);
+        }
+
+        [Test]
+        public void RealmSchema_ImplicitConversion_FromBuilder()
+        {
+            var builder = new RealmSchema.Builder(new[] { typeof(Person) });
+            RealmSchema schema = builder;
+
+            Assert.That(schema.Count, Is.EqualTo(1));
+            Assert.That(schema.TryFindObjectSchema(nameof(Person), out var personSchema), Is.True);
+            Assert.That(personSchema.Type, Is.EqualTo(typeof(Person)));
+        }
+
+        [Test]
         public void RealmSchema_GetBuilder_Build_CreatesNewInstance()
         {
             RealmSchema originalSchema = new[] { typeof(PrimaryKeyGuidObject) };

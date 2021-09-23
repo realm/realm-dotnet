@@ -1099,6 +1099,90 @@ namespace Realms.Tests.Database
             });
         }
 
+        [Test]
+        [Obsolete("Tests obsoleted functionality")]
+        public void GetInstance_WithObjectClasses_SetsCorrectSchema()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                ObjectClasses = new[] { typeof(AllTypesObject) }
+            };
+
+            Assert.That(config.ObjectClasses, Is.Not.Null);
+            Assert.That(config.Schema, Is.Not.Null);
+
+            Assert.That(config.Schema.Count, Is.EqualTo(1));
+            Assert.That(config.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var atoSchema), Is.True);
+            Assert.That(atoSchema.Type, Is.EqualTo(typeof(AllTypesObject)));
+
+            using var realm = GetRealm(config);
+
+            var allAtos = realm.All<AllTypesObject>();
+            Assert.That(allAtos.Count(), Is.EqualTo(0));
+
+            var ex = Assert.Throws<ArgumentException>(() => realm.All<Person>());
+            Assert.That(ex.Message, Does.Contain($"The class {nameof(Person)} is not in the limited set of classes for this realm"));
+        }
+
+        [Test]
+        [Obsolete("Tests obsoleted functionality")]
+        public void GetInstance_WithSchema_ReturnsCorrectObjectClasses()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { typeof(AllTypesObject) }
+            };
+
+            Assert.That(config.ObjectClasses, Is.Not.Null);
+            Assert.That(config.Schema, Is.Not.Null);
+
+            Assert.That(config.ObjectClasses.Count, Is.EqualTo(1));
+            Assert.That(config.ObjectClasses.Single(), Is.EqualTo(typeof(AllTypesObject)));
+
+            using var realm = GetRealm(config);
+
+            var allAtos = realm.All<AllTypesObject>();
+            Assert.That(allAtos.Count(), Is.EqualTo(0));
+
+            var ex = Assert.Throws<ArgumentException>(() => realm.All<Person>());
+            Assert.That(ex.Message, Does.Contain($"The class {nameof(Person)} is not in the limited set of classes for this realm"));
+        }
+
+        [Test]
+        [Obsolete("Tests obsoleted functionality")]
+        public void GetInstance_WithSchema_MixingManualAndTyped_ReturnsCorrectObjectClasses()
+        {
+            var builder = new RealmSchema.Builder(new[] { typeof(AllTypesObject) });
+            builder.Add(new ObjectSchema.Builder("Foo")
+            {
+                Property.FromType<string>("Bar")
+            });
+
+            builder.Add(typeof(Person));
+
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = builder.Build()
+            };
+
+            Assert.That(config.ObjectClasses, Is.Not.Null);
+            Assert.That(config.Schema, Is.Not.Null);
+
+            Assert.That(config.ObjectClasses.Count, Is.EqualTo(2));
+            Assert.That(config.ObjectClasses, Is.EquivalentTo(new[] { typeof(AllTypesObject), typeof(Person) }));
+
+            using var realm = GetRealm(config);
+
+            var allAtos = realm.All<AllTypesObject>();
+            Assert.That(allAtos.Count(), Is.EqualTo(0));
+
+            var ex = Assert.Throws<ArgumentException>(() => realm.All<IntPropertyObject>());
+            Assert.That(ex.Message, Does.Contain($"The class {nameof(IntPropertyObject)} is not in the limited set of classes for this realm"));
+
+            var allFoos = (IQueryable<RealmObject>)realm.DynamicApi.All("Foo");
+            Assert.That(allFoos.Count(), Is.EqualTo(0));
+        }
+
         private const int DummyDataSize = 200;
 
         private static void AddDummyData(Realm realm)
