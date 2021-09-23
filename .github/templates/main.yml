@@ -471,7 +471,7 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: aard-rust
+    runs-on: performance-tests
     #! if: ${{ github.event_name == 'push' }}
     steps:
       - name: Cleanup Workspace
@@ -493,4 +493,3 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-
