@@ -471,7 +471,7 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: aard-ssd
+    runs-on: aard-rust
     #! if: ${{ github.event_name == 'push' }}
     steps:
       - name: Cleanup Workspace
