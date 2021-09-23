@@ -14,18 +14,18 @@ jobs:
     env:
       CACHE_SKIP_SAVE: true
     outputs:
-      macos: steps-cache-macos.outputs.cache-hit
-      ios: steps-cache-ios.outputs.cache-hit
-      linux: steps-cache-linux.outputs.cache-hit
-      android-armeabi-v7a: steps-cache-android-armeabi-v7a.outputs.cache-hit
-      android-arm64-v8a: steps-cache-android-arm64-v8a.outputs.cache-hit
-      android-x86: steps-cache-android-x86.outputs.cache-hit
-      android-x86_64: steps-cache-android-x86_64.outputs.cache-hit
-      windows-Win32: steps-cache-windows-Win32.outputs.cache-hit
-      windows-x64: steps-cache-windows-x64.outputs.cache-hit
-      windows-uwp-Win32: steps-cache-windows-uwp-Win32.outputs.cache-hit
-      windows-uwp-x64: steps-cache-windows-uwp-x64.outputs.cache-hit
-      windows-uwp-ARM: steps-cache-windows-uwp-ARM.outputs.cache-hit
+      macos: steps.cache-wrappers-macos.outputs.cache-hit
+      ios: steps.cache-wrappers-ios.outputs.cache-hit
+      linux: steps.cache-wrappers-linux.outputs.cache-hit
+      android-armeabi-v7a: steps.cache-wrappers-android-armeabi-v7a.outputs.cache-hit
+      android-arm64-v8a: steps.cache-wrappers-android-arm64-v8a.outputs.cache-hit
+      android-x86: steps.cache-wrappers-android-x86.outputs.cache-hit
+      android-x86_64: steps.cache-wrappers-android-x86_64.outputs.cache-hit
+      windows-Win32: steps.cache-wrappers-windows-Win32.outputs.cache-hit
+      windows-x64: steps.cache-wrappers-windows-x64.outputs.cache-hit
+      windows-uwp-Win32: steps.cache-wrappers-windows-uwp-Win32.outputs.cache-hit
+      windows-uwp-x64: steps.cache-wrappers-windows-uwp-x64.outputs.cache-hit
+      windows-uwp-ARM: steps.cache-wrappers-windows-uwp-ARM.outputs.cache-hit
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -36,12 +36,12 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Check cache for macos
-      id: check-cache-macos
+    - name: Check cache for wrappers-macos
+      id: check-cache-wrappers-macos
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for macos
       uses: actions/upload-artifact@v2
       if: steps.check-cache-macos.outputs.cache-hit == 'true'
@@ -49,12 +49,12 @@ jobs:
         name: macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for ios
-      id: check-cache-ios
+    - name: Check cache for wrappers-ios
+      id: check-cache-wrappers-ios
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for ios
       uses: actions/upload-artifact@v2
       if: steps.check-cache-ios.outputs.cache-hit == 'true'
@@ -62,12 +62,12 @@ jobs:
         name: ios
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for linux
-      id: check-cache-linux
+    - name: Check cache for wrappers-linux
+      id: check-cache-wrappers-linux
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for linux
       uses: actions/upload-artifact@v2
       if: steps.check-cache-linux.outputs.cache-hit == 'true'
@@ -75,12 +75,12 @@ jobs:
         name: linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for android-armeabi-v7a
-      id: check-cache-android-armeabi-v7a
+    - name: Check cache for wrappers-android-armeabi-v7a
+      id: check-cache-wrappers-android-armeabi-v7a
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-armeabi-v7a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-armeabi-v7a
       uses: actions/upload-artifact@v2
       if: steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
@@ -88,12 +88,12 @@ jobs:
         name: android-armeabi-v7a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for android-arm64-v8a
-      id: check-cache-android-arm64-v8a
+    - name: Check cache for wrappers-android-arm64-v8a
+      id: check-cache-wrappers-android-arm64-v8a
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-arm64-v8a-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-arm64-v8a
       uses: actions/upload-artifact@v2
       if: steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
@@ -101,12 +101,12 @@ jobs:
         name: android-arm64-v8a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for android-x86
-      id: check-cache-android-x86
+    - name: Check cache for wrappers-android-x86
+      id: check-cache-wrappers-android-x86
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-x86
       uses: actions/upload-artifact@v2
       if: steps.check-cache-android-x86.outputs.cache-hit == 'true'
@@ -114,12 +114,12 @@ jobs:
         name: android-x86
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for android-x86_64
-      id: check-cache-android-x86_64
+    - name: Check cache for wrappers-android-x86_64
+      id: check-cache-wrappers-android-x86_64
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86_64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for android-x86_64
       uses: actions/upload-artifact@v2
       if: steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
@@ -127,12 +127,12 @@ jobs:
         name: android-x86_64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for windows-Win32
-      id: check-cache-windows-Win32
+    - name: Check cache for wrappers-windows-Win32
+      id: check-cache-wrappers-windows-Win32
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-Win32
       uses: actions/upload-artifact@v2
       if: steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
@@ -140,12 +140,12 @@ jobs:
         name: windows-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for windows-x64
-      id: check-cache-windows-x64
+    - name: Check cache for wrappers-windows-x64
+      id: check-cache-wrappers-windows-x64
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-x64
       uses: actions/upload-artifact@v2
       if: steps.check-cache-windows-x64.outputs.cache-hit == 'true'
@@ -153,12 +153,12 @@ jobs:
         name: windows-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for windows-uwp-Win32
-      id: check-cache-windows-uwp-Win32
+    - name: Check cache for wrappers-windows-uwp-Win32
+      id: check-cache-wrappers-windows-uwp-Win32
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-Win32-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-uwp-Win32
       uses: actions/upload-artifact@v2
       if: steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
@@ -166,12 +166,12 @@ jobs:
         name: windows-uwp-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for windows-uwp-x64
-      id: check-cache-windows-uwp-x64
+    - name: Check cache for wrappers-windows-uwp-x64
+      id: check-cache-wrappers-windows-uwp-x64
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-x64-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-uwp-x64
       uses: actions/upload-artifact@v2
       if: steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
@@ -179,12 +179,12 @@ jobs:
         name: windows-uwp-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    - name: Check cache for windows-uwp-ARM
-      id: check-cache-windows-uwp-ARM
+    - name: Check cache for wrappers-windows-uwp-ARM
+      id: check-cache-wrappers-windows-uwp-ARM
       uses: nirinchev/cache@87d4b02bddacbf1f2f0f0bc18500da69b6498ba9
       with:
         path: ./wrappers/build/**
-        key: windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-ARM-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Store artifacts for windows-uwp-ARM
       uses: actions/upload-artifact@v2
       if: steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
@@ -195,7 +195,7 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-macos != 'true'
+    if: needs.check-wrappers-cache.outputs.macos != 'true'
     needs:
     - check-wrappers-cache
     steps:
@@ -224,7 +224,7 @@ jobs:
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-ios != 'true'
+    if: needs.check-wrappers-cache.outputs.ios != 'true'
     needs:
     - check-wrappers-cache
     steps:
@@ -255,7 +255,7 @@ jobs:
     name: Wrappers Linux
     needs:
     - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-linux != 'true'
+    if: needs.check-wrappers-cache.outputs.linux != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -302,7 +302,7 @@ jobs:
         - arm64-v8a
         - x86
         - x86_64
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-android-armeabi-v7a != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-android-arm64-v8a != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-android-x86 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-android-x86_64 != 'true'
+    if: needs.check-wrappers-cache.outputs.android-armeabi-v7a != 'true' || needs.check-wrappers-cache.outputs.android-arm64-v8a != 'true' || needs.check-wrappers-cache.outputs.android-x86 != 'true' || needs.check-wrappers-cache.outputs.android-x86_64 != 'true'
     needs:
     - check-wrappers-cache
     steps:
@@ -336,7 +336,7 @@ jobs:
         arch:
         - Win32
         - x64
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-Win32 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-x64 != 'true'
+    if: needs.check-wrappers-cache.outputs.windows-Win32 != 'true' || needs.check-wrappers-cache.outputs.windows-x64 != 'true'
     needs:
     - check-wrappers-cache
     steps:
@@ -389,7 +389,7 @@ jobs:
         - Win32
         - x64
         - ARM
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-x64 != 'true' || needs.check-wrappers-cache.outputs.check-cache-wrappers-windows-uwp-ARM != 'true'
+    if: needs.check-wrappers-cache.outputs.windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.outputs.windows-uwp-x64 != 'true' || needs.check-wrappers-cache.outputs.windows-uwp-ARM != 'true'
     needs:
     - check-wrappers-cache
     steps:

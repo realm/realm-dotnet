@@ -10,7 +10,7 @@
 #@ def getWrappersCacheCondition(prefix, abis):
 #@ conditions = []
 #@ for abi in abis:
-#@ conditions.append("needs.check-wrappers-cache.outputs.check-cache-" + prefix + abi + " != 'true'")
+#@ conditions.append("needs.check-wrappers-cache.outputs." + prefix + abi + " != 'true'")
 #@ end
 #@
 #@ return " || ".join(conditions)
@@ -243,12 +243,12 @@ jobs:
       CACHE_SKIP_SAVE: true
     outputs:
     #@ for platform in getWrapperBinaryNames():
-      _: #@ template.replace({platform: "steps-cache-" + platform + ".outputs.cache-hit"})
+      _: #@ template.replace({platform: "steps.cache-wrappers-" + platform + ".outputs.cache-hit"})
     #@ end
     steps:
       - #@ template.replace(checkoutCode("recursive"))
     #@ for platform in getWrapperBinaryNames():
-      - #@ checkCache(platform)
+      - #@ checkCache("wrappers-" + platform)
       - name: #@ "Store artifacts for " + platform
         uses: #@ actionUploadArtifact
         if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
@@ -260,19 +260,19 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-macos != 'true'
+    if: needs.check-wrappers-cache.outputs.macos != 'true'
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-ios != 'true'
+    if: needs.check-wrappers-cache.outputs.ios != 'true'
     _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
     needs:
       - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.check-cache-wrappers-linux != 'true'
+    if: needs.check-wrappers-cache.outputs.linux != 'true'
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux", False)
@@ -298,7 +298,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ androidABIs
-    if: #@ getWrappersCacheCondition("wrappers-android-", androidABIs)
+    if: #@ getWrappersCacheCondition("android-", androidABIs)
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
   build-wrappers-windows:
     runs-on: windows-latest
@@ -306,7 +306,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    if: #@ getWrappersCacheCondition("wrappers-windows-", windowsArchs)
+    if: #@ getWrappersCacheCondition("windows-", windowsArchs)
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(), setupWin81SDK() ]))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
@@ -314,7 +314,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    if: #@ getWrappersCacheCondition("wrappers-windows-uwp-", windowsUWPArchs)
+    if: #@ getWrappersCacheCondition("windows-uwp-", windowsUWPArchs)
     _: #@ template.replace(buildWrappers("powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg() ]))
   build-packages:
     runs-on: windows-latest
