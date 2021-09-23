@@ -26,10 +26,12 @@
 #@ return cmd + configurationParam + ltoParam
 #@ end
 
-#@ def checkCache(outputVar):
+#@ def checkCache(outputVar, setId = True):
 #@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
 name: #@ "Check cache for " + outputVar
+#@ if setId:
 id: #@ "check-cache-" + outputVar
+#@ end
 uses: #@ actionCache
 with:
   path: ./wrappers/build/**
@@ -50,7 +52,7 @@ needs:
   - check-wrappers-cache
 steps:
   - #@ template.replace(checkoutCode("recursive"))
-  - #@ checkCache(outputVar)
+  - #@ checkCache(outputVar, False)
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
   #@ end
@@ -271,7 +273,7 @@ jobs:
     if: needs.check-wrappers-cache.outputs.check-cache-wrappers-linux != 'true'
     steps:
       - #@ template.replace(checkoutCode("recursive"))
-      - #@ checkCache("wrappers-linux")
+      - #@ checkCache("wrappers-linux", False)
       - uses: #@ actionDockerLayerCaching
         continue-on-error: true
       - name: Build CentOS image

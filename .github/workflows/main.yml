@@ -207,7 +207,6 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-macos
-      id: check-cache-wrappers-macos
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -237,7 +236,6 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-ios
-      id: check-cache-wrappers-ios
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -267,7 +265,6 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-linux
-      id: check-cache-wrappers-linux
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -317,7 +314,6 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-android-${{ matrix.arch }}
-      id: check-cache-wrappers-android-${{ matrix.arch }}
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -352,7 +348,6 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-windows-${{ matrix.arch }}
-      id: check-cache-wrappers-windows-${{ matrix.arch }}
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
@@ -406,7 +401,6 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache for wrappers-windows-uwp-${{ matrix.arch }}
-      id: check-cache-wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
