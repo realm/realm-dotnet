@@ -39,23 +39,21 @@ namespace SetupUnityPackage
             "System.Configuration.ConfigurationManager"
         };
 
+        private static readonly IEnumerable<DependencyInfo> _testsDependencies = new[]
+        {
+            new DependencyInfo("Nito.AsyncEx.Context", "lib/netstandard2.0/Nito.AsyncEx.Context.dll"),
+            new DependencyInfo("Nito.AsyncEx.Tasks", "lib/netstandard2.0/Nito.AsyncEx.Tasks.dll"),
+            new DependencyInfo("Nito.Disposables", "lib/netstandard2.0/Nito.Disposables.dll"),
+            new DependencyInfo("System.Collections.Immutable", "lib/netstandard2.0/System.Collections.Immutable.dll"),
+        };
+
         public override PackageInfo[] Files { get; } = new[]
         {
             new PackageInfo("Realm.Tests", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.Tests.dll", "Tests/Realm.Tests.dll" },
                 { "lib/netstandard2.0/Realm.Tests.pdb", "Tests/Realm.Tests.pdb" },
-            })
-        };
-
-        public override string MainPackagePath => "Tests/Realm.Tests.dll";
-
-        public override DependencyInfo[] Dependencies => new[]
-        {
-            new DependencyInfo("Nito.AsyncEx.Context", "lib/netstandard2.0/Nito.AsyncEx.Context.dll"),
-            new DependencyInfo("Nito.AsyncEx.Tasks", "lib/netstandard2.0/Nito.AsyncEx.Tasks.dll"),
-            new DependencyInfo("Nito.Disposables", "lib/netstandard2.0/Nito.Disposables.dll"),
-            new DependencyInfo("System.Collections.Immutable", "lib/netstandard2.0/System.Collections.Immutable.dll"),
+            }, _testsDependencies)
         };
     }
 }
