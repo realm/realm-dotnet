@@ -37,7 +37,7 @@ jobs:
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-wrappers-ios:
-    runs-on: macos-latest
+    runs-on: macos-11
     name: Wrappers iOS
     steps:
     - name: Checkout code
@@ -56,7 +56,7 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
+      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
       with:
