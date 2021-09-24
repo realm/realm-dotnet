@@ -38,7 +38,7 @@ namespace Realms.Tests.Database
             {
                 var config = new RealmConfiguration(Guid.NewGuid().ToString())
                 {
-                    ObjectClasses = new[]
+                    Schema = new[]
                     {
                         typeof(AllTypesObject),
                         typeof(IntPropertyObject),

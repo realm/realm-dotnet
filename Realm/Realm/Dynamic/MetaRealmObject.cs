@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
@@ -70,13 +71,15 @@ namespace Realms.Dynamic
             MethodInfo getter = null;
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
-                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                arguments.Add(Expression.Constant(property.Name));
+                arguments.Add(Expression.Constant(_metadata));
                 getter = GetGetMethod(DummyHandle.GetBacklinks);
             }
             else if (property.Type.IsList())
             {
                 arguments.Add(Expression.Field(self, RealmObjectRealmField));
-                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                arguments.Add(Expression.Constant(property.Name));
+                arguments.Add(Expression.Constant(_metadata));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 getter = property.Type.UnderlyingType() switch
                 {
@@ -97,7 +100,8 @@ namespace Realms.Dynamic
             else if (property.Type.IsSet())
             {
                 arguments.Add(Expression.Field(self, RealmObjectRealmField));
-                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                arguments.Add(Expression.Constant(property.Name));
+                arguments.Add(Expression.Constant(_metadata));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 getter = property.Type.UnderlyingType() switch
                 {
@@ -118,7 +122,8 @@ namespace Realms.Dynamic
             else if (property.Type.IsDictionary())
             {
                 arguments.Add(Expression.Field(self, RealmObjectRealmField));
-                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                arguments.Add(Expression.Constant(property.Name));
+                arguments.Add(Expression.Constant(_metadata));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 getter = property.Type.UnderlyingType() switch
                 {
@@ -187,7 +192,8 @@ namespace Realms.Dynamic
 
             var arguments = new List<Expression>
             {
-                Expression.Constant(_metadata.PropertyIndices[property.Name])
+                Expression.Constant(property.Name),
+                Expression.Constant(_metadata),
             };
 
             var self = GetLimitedSelf();
@@ -230,9 +236,7 @@ namespace Realms.Dynamic
         }
 
         public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return _metadata.Schema.PropertyNames;
-        }
+            => _metadata.Schema.Select(s => s.Name);
 
         private Expression GetLimitedSelf()
         {
@@ -255,29 +259,25 @@ namespace Realms.Dynamic
             return metadata.Schema.IsEmbedded;
         }
 
-        // GetString(propertyIndex)
         // GetBacklinks(propertyIndex)
-        private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetGetMethod<TResult>(Func<string, RealmObjectBase.Metadata, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        // GetValue(propertyIndex)
+        // GetValue(propertyName, metadata)
         private static MethodInfo GetGetMethod<TResult>(Func<string, RealmObjectBase.Metadata, Realm, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        // GetList(realm, propertyIndex, objectType)
-        // GetSet(realm, propertyIndex, objectType)
-        // GetObject(realm, propertyIndex, objectType)
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, IntPtr, string, TResult> @delegate) => @delegate.GetMethodInfo();
+        // GetList(realm, propertyName, metadata, objectType)
+        // GetSet(realm, propertyName, metadata, objectType)
+        // GetDictionary(realm, propertyName, metadata, objectType)
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, string, RealmObjectBase.Metadata, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private delegate void SetUniqueDelegate(IntPtr index, in RealmValue value);
+        private delegate void SetUniqueDelegate(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value);
 
-        // SetValueUnique(propertyIndex)
+        // SetValueUnique(propertyName, metadata)
         private static MethodInfo GetSetMethod<TValue>(SetUniqueDelegate @delegate) => @delegate.GetMethodInfo();
 
-        private delegate void SetValueDelegate(IntPtr index, in RealmValue value, Realm realm);
+        private delegate void SetValueDelegate(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value, Realm realm);
 
         // SetValue
         private static MethodInfo GetSetMethod<TValue>(SetValueDelegate @delegate) => @delegate.GetMethodInfo();
-
-        // SetObject(this, propertyIndex)
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }

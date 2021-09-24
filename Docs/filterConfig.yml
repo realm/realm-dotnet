@@ -62,6 +62,9 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\.CollectionExtensions\.PopulateCollection
     type: Method
+- exclude:
+    uidRegex: ^Realms\..*GetEnumerator$
+    type: Method
 - include:
     hasAttribute:
       uid: System.ComponentModel.EditorBrowsableAttribute

@@ -121,8 +121,9 @@ namespace Realms
             return ret;
         }
 
-        internal override Realm CreateRealm(RealmSchema schema)
+        internal override Realm CreateRealm()
         {
+            var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             configuration.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
             configuration.read_only = IsReadOnly;
@@ -159,7 +160,7 @@ namespace Realms
             return GetRealm(sharedRealmHandle, schema);
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
@@ -167,13 +168,13 @@ namespace Realms
             {
                 return Task.Run(() =>
                 {
-                    using (CreateRealm(schema))
+                    using (CreateRealm())
                     {
                     }
-                }, cancellationToken).ContinueWith(_ => CreateRealm(schema), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateRealm(), scheduler);
             }
 
-            return Task.FromResult(CreateRealm(schema));
+            return Task.FromResult(CreateRealm());
         }
     }
 }

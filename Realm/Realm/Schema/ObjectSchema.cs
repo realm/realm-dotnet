@@ -28,12 +28,13 @@ using Realms.Helpers;
 namespace Realms.Schema
 {
     /// <summary>
-    /// Public description of a class stored in a Realm, as a collection of managed Property objects.
+    /// Public description of a class stored in a Realm, as a collection of managed Property objects. To construct
+    /// a new instance, use the <see cref="Builder">ObjectSchema.Builder</see> API.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
-        private static readonly IDictionary<TypeInfo, ObjectSchema> _cache = new Dictionary<TypeInfo, ObjectSchema>();
+        private static readonly IDictionary<Type, ObjectSchema> _cache = new Dictionary<Type, ObjectSchema>();
 
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
@@ -41,7 +42,7 @@ namespace Realms.Schema
         /// Gets the name of the original class declaration from which the schema was built.
         /// </summary>
         /// <value>The name of the class.</value>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets the number of properties in the schema, which is the persistent properties from the original class.
@@ -51,30 +52,30 @@ namespace Realms.Schema
 
         internal Property? PrimaryKeyProperty { get; }
 
-        internal TypeInfo Type { get; private set; }
+        internal Type Type { get; private set; }
 
-        internal bool IsEmbedded { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="ObjectSchema"/> describes an embedded object.
+        /// </summary>
+        /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
+        public bool IsEmbedded { get; }
 
-        internal IEnumerable<string> PropertyNames => _properties.Keys;
-
-        private ObjectSchema(string name, IDictionary<string, Property> properties)
+        private ObjectSchema(string name, bool isEmbedded, IDictionary<string, Property> properties)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Object name cannot be empty", nameof(name));
-            }
-
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
             Name = name;
+            IsEmbedded = isEmbedded;
+
             _properties = new ReadOnlyDictionary<string, Property>(properties);
-            var primaryKeyKvp = properties.FirstOrDefault(kvp => kvp.Value.IsPrimaryKey);
-            if (primaryKeyKvp.Key != null)
+
+            foreach (var kvp in _properties.Where(kvp => kvp.Value.IsPrimaryKey))
             {
-                PrimaryKeyProperty = primaryKeyKvp.Value;
+                if (PrimaryKeyProperty != null)
+                {
+                    var pkProperties = _properties.Where(p => p.Value.IsPrimaryKey).Select(p => p.Value.Name);
+                    throw new ArgumentException($"This schema already contains more than one property that is designated as primary key: {string.Join(",", pkProperties)}", nameof(properties));
+                }
+
+                PrimaryKeyProperty = kvp.Value;
             }
         }
 
@@ -86,29 +87,40 @@ namespace Realms.Schema
         /// <c>false</c> otherwise.</returns>
         /// <param name="name"><see cref="Property.Name"/> of the <see cref="Property"/> to match exactly.</param>
         /// <param name="property"><see cref="Property"/> returned only if found matching Name.</param>
-        public bool TryFindProperty(string name, out Property property) => _properties.TryGetValue(name, out property);
+        public bool TryFindProperty(string name, out Property property)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return _properties.TryGetValue(name, out property);
+        }
 
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
+        /// Create a mutable <see cref="Builder"/> containing the properties in this schema.
         /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+        /// <returns>
+        /// A <see cref="Builder"/> instance that can be used to mutate the schema and eventually
+        /// produce a new one by calling <see cref="Builder.Build"/>.
+        /// </returns>
+        public Builder GetBuilder()
+        {
+            var builder = new Builder(Name, IsEmbedded);
+            foreach (var prop in this)
+            {
+                builder.Add(prop);
+            }
+
+            builder.Type = Type;
+
+            return builder;
+        }
+
+        /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>
-        /// Creates a schema describing a <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> subclass in terms of its persisted members.
-        /// </summary>
-        /// <exception cref="ArgumentException">
-        /// Thrown if no class Type is provided or if it doesn't descend directly from <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.
-        /// </exception>
-        /// <returns>An <see cref="ObjectSchema"/> describing the specified Type.</returns>
-        /// <param name="type">Type of a <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> descendant for which you want a schema.</param>
-        public static ObjectSchema FromType(TypeInfo type)
+        internal static ObjectSchema FromType(Type type)
         {
             Argument.NotNull(type, nameof(type));
             if (_cache.TryGetValue(type, out var result))
@@ -116,80 +128,132 @@ namespace Realms.Schema
                 return result;
             }
 
-            Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
-
-            var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
-            foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
-            {
-                var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();
-                var schemaProperty = new Property
-                {
-                    Name = property.GetMappedOrOriginalName(),
-                    IsPrimaryKey = isPrimaryKey,
-                    IsIndexed = isPrimaryKey || property.HasCustomAttribute<IndexedAttribute>(),
-                    PropertyInfo = property
-                };
-
-                var backlinks = property.GetCustomAttribute<BacklinkAttribute>();
-                if (backlinks != null)
-                {
-                    var innerType = property.PropertyType.GenericTypeArguments.Single();
-                    var linkOriginProperty = innerType.GetProperty(backlinks.Property);
-
-                    schemaProperty.Type = PropertyType.LinkingObjects | PropertyType.Array;
-                    schemaProperty.ObjectType = innerType.GetTypeInfo().GetMappedOrOriginalName();
-                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetMappedOrOriginalName();
-                }
-                else
-                {
-                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var objectType);
-                    schemaProperty.ObjectType = objectType?.GetTypeInfo().GetMappedOrOriginalName();
-                }
-
-                if (property.HasCustomAttribute<RequiredAttribute>())
-                {
-                    schemaProperty.Type &= ~PropertyType.Nullable;
-                }
-
-                builder.Add(schemaProperty);
-            }
-
-            result = builder.Build();
-            result.Type = type;
+            result = new Builder(type).Build();
             _cache[type] = result;
             return result;
         }
 
-        internal class Builder : List<Property>
+        /// <summary>
+        /// A mutable builder that allows you to construct an <see cref="ObjectSchema"/> instance.
+        /// </summary>
+        public class Builder : SchemaBuilderBase<Property>
         {
-            public string Name { get; }
+            internal Type Type;
 
-            private readonly bool _isEmbedded;
+            /// <summary>
+            /// Gets or sets the name of the class described by the builder.
+            /// </summary>
+            /// <value>The name of the class.</value>
+            public string Name { get; set; }
 
-            public Builder(string name, bool isEmbedded)
+            /// <summary>
+            /// Gets or sets a value indicating whether this <see cref="Builder"/> describes an embedded object.
+            /// </summary>
+            /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
+            public bool IsEmbedded { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class with the provided name.
+            /// </summary>
+            /// <param name="name">The name of the <see cref="ObjectSchema"/> this builder describes.</param>
+            /// <param name="isEmbedded">A flag indicating whether the object is embedded or not.</param>
+            /// <seealso cref="EmbeddedObject"/>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
+            /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is the empty string.</exception>
+            public Builder(string name, bool isEmbedded = false)
             {
-                if (string.IsNullOrEmpty(name))
-                {
-                    throw new ArgumentException("Object name cannot be empty", nameof(name));
-                }
+                Argument.NotNullOrEmpty(name, nameof(name));
 
                 Name = name;
-                _isEmbedded = isEmbedded;
+                IsEmbedded = isEmbedded;
             }
 
-            public ObjectSchema Build()
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class populated with properties from the
+            /// provided <paramref name="type"/>.
+            /// </summary>
+            /// <param name="type">
+            /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/>
+            /// or <see cref="EmbeddedObject"/> inheritor.
+            /// </param>
+            /// <remarks>
+            /// If you want to use strongly typed API, such as <see cref="Realm.Add{T}(T, bool)">Realm.Add&lt;T&gt;</see> or
+            /// <see cref="Realm.All{T}">Realm.All&lt;T&gt;</see>, you must use this method to build your schema.
+            /// <br/>
+            /// Adding new properties is fully supported, but removing or changing properties defined on the class will result
+            /// in runtime errors being thrown if those properties are accessed via the object property accessors.
+            /// </remarks>
+            /// <example>
+            /// <code>
+            /// class Person : RealmObject
+            /// {
+            ///     public string Name { get; set; }
+            /// }
+            ///
+            /// var personSchema = new Builder(typeof(Person));
+            ///
+            /// // someTagsCollection is a collection of tags determined at runtime - e.g. obtained
+            /// // from a REST API.
+            /// foreach (var tag in someTagsCollection)
+            /// {
+            ///     personSchema.Add(Property.Primitive(tag, RealmValueType.Bool));
+            /// }
+            ///
+            /// var config = new RealmConfiguration
+            /// {
+            ///     Schema = new[] { personSchema.Build() }
+            /// }
+            /// using var realm = Realm.GetInstance(config);
+            ///
+            /// // Query for all people with a particular tag
+            /// var tag = "Tall";
+            /// var matches = realm.All&lt;Person&gt;().Filter($"{tag} = TRUE");
+            ///
+            /// // Get/set the tag of a particular person
+            /// var hasTag = person.DynamicApi.Get&lt;bool&gt;(tag);
+            /// person.DynamicApi.Set(tag, true);
+            /// </code>
+            /// </example>
+            public Builder(Type type)
             {
+                Argument.NotNull(type, nameof(type));
+                Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
+
+                Name = type.GetMappedOrOriginalName();
+                IsEmbedded = type.IsEmbeddedObject();
+                foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                {
+                    Add(Property.FromPropertyInfo(property));
+                }
+
                 if (Count == 0)
                 {
                     throw new InvalidOperationException(
-                        $"No properties in {Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
+                        $"No properties in {type.Name}, has linker stripped it? See https://docs.mongodb.com/realm/sdk/dotnet/troubleshooting/#resolve-a--no-properties-in-class--exception");
                 }
 
-                return new ObjectSchema(Name, this.ToDictionary(p => p.Name))
-                {
-                    IsEmbedded = _isEmbedded
-                };
+                Type = type;
             }
+
+            /// <summary>
+            /// Constructs an <see cref="ObjectSchema"/> from the properties added to this <see cref="Builder"/>.
+            /// </summary>
+            /// <returns>An immutable <see cref="ObjectSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
+            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values) { Type = Type };
+
+            /// <summary>
+            /// Adds a new <see cref="Property"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="item">The <see cref="Property"/> to add.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(Property)"/> calls.</returns>
+            public new Builder Add(Property item)
+            {
+                base.Add(item);
+
+                return this;
+            }
+
+            protected override string GetKey(Property item) => item.Name;
         }
     }
 }
