@@ -1,7 +1,68 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* A Realm Schema can now be constructed at runtime as opposed to generated automatically from the model classes. The automatic generation continues to work and should cover the needs of the vast majority of Realm users. Manually constructing the schema may be required when the shape of the objects depends on some information only known at runtime or in very rare cases where it may provide performance benefits by representing a collection of known size as properties on the class. (Issue [#824](https://github.com/realm/realm-dotnet/issues/824))
+  * `RealmConfiguration.ObjectClasses` has now been deprecated in favor of `RealmConfiguration.Schema`. `RealmSchema` has an implicit conversion operator from `Type[]` so code that previously looked like `ObjectClasses = new[] { typeof(Foo), typeof(Bar) }` can be trivially updated to `Schema = new[] { typeof(Foo), typeof(Bar) }`.
+  * `Property` has been converted to a read-only struct by removing the setters from its properties. Those didn't do anything previously, so we don't expect anyone was using them.
+  * Added several factory methods on `Property` to simplify declaration of Realm properties by being explicit about the range of valid options - e.g. `Property.FromType<int>("IntProperty")` or `Property.Object("MyPersonProp", "Person")`. The constructor of `Property` is now public to support advanced scenarios, but we recommend using the factory methods.
+  * Made `ObjectSchema.Builder` public and streamlined its API. It allows you to construct a mutable representation of the schema of a single object and add/remove properties to it. You can either get an empty builder or you can see it with the information from an existing model class (i.e. inheriting from `RealmObject` or `EmbeddedObject`).
+  * Made `RealmSchema.Builder` public and streamlined its API. It allows you to construct a mutable representation of the schema of an entire Realm and add/remove object schemas to it.
+  * A simple example for how to use the new API would look like:
+  ```csharp
+  public class Person : RealmObject
+  {
+    public string Name { get; set; }
+    public Address Address { get; set; }
+  }
+
+  // Declare schema from existing model classes
+  var config = new RealmConfiguration
+  {
+    Schema = new[] { typeof(Person), typeof(Address) }
+  };
+
+  // Manually construct a schema - we don't need to call .Build() on the builders
+  // because we have implicit conversion operators defined that will call it for us.
+  // Explicitly calling .Build() is also perfectly fine, if a little more verbose.
+  var config = new RealmConfiguration
+  {
+    Schema = new RealmSchema.Builder
+    {
+      new ObjectSchema.Builder("MyClass", isEmbedded: false)
+      {
+        Property.FromType<int>("Id", isPrimaryKey: true),
+        Property.PrimitiveDictionary("Tags", RealmValueType.String)
+      },
+      new ObjectSchema.Builder("EmbeddedClass", isEmbedded: true)
+      {
+        Property.Primitive("DateProp", RealmValueType.Date, isNullable: true)
+      }
+    }
+  };
+
+  // Enhance an existing model with new properties that will be accessible via
+  // the dynamic API.
+  var personSchema = new ObjectSchema.Builder(typeof(Person))
+  {
+    Property.FromType<string>("NewStringProp")
+  };
+
+  var config = new RealmConfiguration
+  {
+    Schema = new RealmSchema.Builder
+    {
+      personSchema,
+      new ObjectSchema.Builder(typeof(Address))
+    }
+  };
+
+  // Regular Person properties can be accessed as usual while runtime defined ones
+  // need to go through the dynamic API.
+  var person = realm.All<Person>().First();
+  var name = person.Name;
+  var stringPropValue = person.DynamicApi.Get<string>("NewStringProp");
+  ```
+* Fixed an issue that would result in SIGABORT on macOS/Linux when opening a Realm in dynamic mode (i.e. read the schema from disk) and the schema contains an object with no properties. (Issue [#1978](https://github.com/realm/realm-dotnet/issues/1978))
 
 ### Fixed
 * None
