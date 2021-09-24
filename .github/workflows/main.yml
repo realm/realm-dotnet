@@ -57,7 +57,6 @@ jobs:
         key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
       with:
