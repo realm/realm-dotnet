@@ -184,7 +184,7 @@ namespace Realms
             public static extern IntPtr create_results(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_rename_property", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void rename_property(SharedRealmHandle sharedRealm, 
+            public static extern void rename_property(SharedRealmHandle sharedRealm,
                 [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeNameLength,
                 [MarshalAs(UnmanagedType.LPWStr)] string oldName, IntPtr oldNameLength,
                 [MarshalAs(UnmanagedType.LPWStr)] string newName, IntPtr newNameLength,

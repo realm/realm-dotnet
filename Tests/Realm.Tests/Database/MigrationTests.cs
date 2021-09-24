@@ -193,7 +193,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void MigrationRenamePropertyNotInSchema()
+        public void MigrationRenamPropertyErrors()
         {
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
@@ -222,6 +222,42 @@ namespace Realms.Tests.Database
 
             var ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
             Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.PropertyNotInOldSchema' because it does not exist"));
+
+            configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 100,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    migration.RenameProperty("NonExistingType", "TriggersSchema", nameof(Person.OptionalAddress));
+                }
+            };
+
+            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
+            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename properties for type 'NonExistingType' because it does not exist"));
+
+            configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 100,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.Birthday));
+                }
+            };
+
+            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
+            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.TriggersSchema' to 'Birthday' because it would change from type 'string' to 'date'."));
+
+            configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 100,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    migration.RenameProperty(nameof(Person), nameof(Person.Latitude), nameof(Person.Longitude));
+                }
+            };
+
+            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
+            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.Latitude' to 'Longitude' because the source property still exists."));
         }
 
         [TestCase(null, "TriggersSchema", "OptionalAddress")]
