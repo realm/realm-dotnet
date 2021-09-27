@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Added two new methods on `Migration`:
+* Added two new methods on `Migration` (Issue [#2543](https://github.com/realm/realm-dotnet/issues/2543)):
   * `RemoveType(typeName)` allows to completely remove a type and its schema from a realm during a migration.
   * `RenameProperty(typeName, oldPropertyName, newPropertyName)` allows to rename a property during a migration.
 * A Realm Schema can now be constructed at runtime as opposed to generated automatically from the model classes. The automatic generation continues to work and should cover the needs of the vast majority of Realm users. Manually constructing the schema may be required when the shape of the objects depends on some information only known at runtime or in very rare cases where it may provide performance benefits by representing a collection of known size as properties on the class. (Issue [#824](https://github.com/realm/realm-dotnet/issues/824))
