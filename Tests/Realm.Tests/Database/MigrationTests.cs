@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
@@ -126,32 +127,49 @@ namespace Realms.Tests.Database
         {
             var path = RealmConfiguration.DefaultConfiguration.DatabasePath;
 
-            var oldSchema = new Schema.RealmSchema.Builder();
+            var oldConfig = new RealmConfiguration(path)
             {
-                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
-                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
-                oldSchema.Add(person.Build());
-            }
+                IsDynamic = true,
+                Schema = new RealmSchema.Builder
+                {
+                    new ObjectSchema.Builder("Person", isEmbedded: false)
+                    {
+                        Property.FromType<string>("Name")
+                    }
+                }
+            };
 
-            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true }, oldSchema.Build()))
+            using (var realm = GetRealm(oldConfig))
             {
                 realm.Write(() =>
                 {
-                    dynamic person = realm.DynamicApi.CreateObject("Person", null);
-                    person.Name = "Foo";
+                    var person = (RealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    person.DynamicApi.Set("Name", "Foo");
                 });
             }
 
-            var newSchema = new Schema.RealmSchema.Builder();
+            var newConfig = new RealmConfiguration
             {
-                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
-                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.Int });
-                newSchema.Add(person.Build());
-            }
+                IsDynamic = true,
+                ShouldDeleteIfMigrationNeeded = true,
+                Schema = new RealmSchema.Builder
+                {
+                    new ObjectSchema.Builder("Person", isEmbedded: false)
+                    {
+                        Property.FromType<int>("Name")
+                    }
+                }
+            };
 
-            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true, ShouldDeleteIfMigrationNeeded = true }, newSchema.Build()))
+            using (var realm = GetRealm(newConfig))
             {
                 Assert.That(realm.DynamicApi.All("Person"), Is.Empty);
+
+                realm.Write(() =>
+                {
+                    var person = (RealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    person.DynamicApi.Set("Name", 123);
+                });
             }
         }
 

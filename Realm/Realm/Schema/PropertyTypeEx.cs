@@ -44,7 +44,7 @@ namespace Realms.Schema
             Argument.NotNull(type, nameof(type));
 
             objectType = null;
-            var nullabilityModifier = PropertyType.Required;
+            PropertyType nullabilityModifier = default;
 
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null)
@@ -167,6 +167,27 @@ namespace Realms.Schema
                 PropertyType.Decimal => RealmValueType.Decimal128,
                 PropertyType.Guid => RealmValueType.Guid,
                 _ => throw new NotSupportedException($"The type {type} can't be mapped to RealmValueType."),
+            };
+        }
+
+        public static PropertyType ToPropertyType(this RealmValueType type, bool isNullable)
+        {
+            var nullabilityModifier = isNullable ? PropertyType.Nullable : default;
+
+            return nullabilityModifier | type switch
+            {
+                RealmValueType.Int => PropertyType.Int,
+                RealmValueType.Bool => PropertyType.Bool,
+                RealmValueType.String => PropertyType.String,
+                RealmValueType.Data => PropertyType.Data,
+                RealmValueType.Date => PropertyType.Date,
+                RealmValueType.Float => PropertyType.Float,
+                RealmValueType.Double => PropertyType.Double,
+                RealmValueType.Object => PropertyType.Object,
+                RealmValueType.ObjectId => PropertyType.ObjectId,
+                RealmValueType.Decimal128 => PropertyType.Decimal,
+                RealmValueType.Guid => PropertyType.Guid,
+                _ => throw new NotSupportedException($"Type {type} can't be converted to {nameof(PropertyType)}"),
             };
         }
 

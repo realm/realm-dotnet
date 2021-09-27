@@ -96,11 +96,6 @@ namespace Realms.Schema
         Guid = 12,
 
         /// <summary>
-        /// A required property. Can be combined with other values.
-        /// </summary>
-        Required = 0,
-
-        /// <summary>
         /// A nullable (optional) property. Can be combined with other values.
         /// </summary>
         Nullable = 64,

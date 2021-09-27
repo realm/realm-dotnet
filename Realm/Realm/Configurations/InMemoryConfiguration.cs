@@ -18,7 +18,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -48,8 +47,9 @@ namespace Realms
             Identifier = identifier;
         }
 
-        internal override Realm CreateRealm(RealmSchema schema)
+        internal override Realm CreateRealm()
         {
+            var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             configuration.in_memory = true;
 
@@ -57,9 +57,9 @@ namespace Realms
             return new Realm(srHandle, this, schema);
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(CreateRealm(schema));
+            return Task.FromResult(CreateRealm());
         }
     }
 }

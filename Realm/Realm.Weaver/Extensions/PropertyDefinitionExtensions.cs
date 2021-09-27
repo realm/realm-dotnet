@@ -42,6 +42,7 @@ internal static class PropertyDefinitionExtensions
         Int64TypeName,
         BooleanTypeName,
         DateTimeOffsetTypeName,
+        ObjectIdTypeName,
         GuidTypeName,
     };
 
