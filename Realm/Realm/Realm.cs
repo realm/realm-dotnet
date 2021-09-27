@@ -162,9 +162,9 @@ namespace Realms
         public Dynamic DynamicApi { get; }
 
         /// <summary>
-        /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
+        /// Gets a value indicating whether there is an active <see cref="Transaction"/>.
         /// </summary>
-        /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if in a transaction; otherwise, <c>false</c>.</value>
         public bool IsInTransaction
         {
             get
