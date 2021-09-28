@@ -178,7 +178,7 @@ namespace Realms
         /// var dogs = owner.Dogs;
         /// var query = dogs.AsRealmQueryable()
         ///                 .Where(d => d.Age > 3)
-        ///                 .OrderBy(d =>x d.Name);
+        ///                 .OrderBy(d => d.Name);
         ///
         /// var token = query.SubscribeForNotifications((sender, changes, error) =>
         /// {
