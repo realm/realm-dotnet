@@ -45,12 +45,8 @@ namespace Realms
         {
             Argument.NotNull(query, nameof(query));
 
-            if (query is IRealmCollection<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
+            var realmCollection = Argument.EnsureType<IRealmCollection<T>>(query, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
+            return realmCollection;
         }
 
         /// <summary>
@@ -82,12 +78,8 @@ namespace Realms
         {
             Argument.NotNull(set, nameof(set));
 
-            if (set is IRealmCollection<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
+            var realmCollection = Argument.EnsureType<IRealmCollection<T>>(set, $"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
+            return realmCollection;
         }
 
         /// <summary>
@@ -115,12 +107,8 @@ namespace Realms
         {
             Argument.NotNull(list, nameof(list));
 
-            if (list is IRealmCollection<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
+            var realmCollection = Argument.EnsureType<IRealmCollection<T>>(list, $"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
+            return realmCollection;
         }
 
         /// <summary>
@@ -153,12 +141,10 @@ namespace Realms
         public static IQueryable<T> AsRealmQueryable<T>(this IList<T> list)
             where T : RealmObjectBase
         {
-            if (list is RealmList<T> realmList)
-            {
-                return realmList.ToResults();
-            }
+            Argument.NotNull(list, nameof(list));
 
-            throw new ArgumentException($"{nameof(list)} must be managed by Realm.", nameof(list));
+            var realmList = Argument.EnsureType<RealmList<T>>(list, $"{nameof(list)} must be a Realm List property.", nameof(list));
+            return realmList.ToResults();
         }
 
         /// <summary>
@@ -191,12 +177,10 @@ namespace Realms
         public static IQueryable<T> AsRealmQueryable<T>(this ISet<T> set)
             where T : RealmObjectBase
         {
-            if (set is RealmSet<T> realmSet)
-            {
-                return realmSet.ToResults();
-            }
+            Argument.NotNull(set, nameof(set));
 
-            throw new ArgumentException($"{nameof(set)} must be managed by Realm.", nameof(set));
+            var realmSet = Argument.EnsureType<RealmSet<T>>(set, $"{nameof(set)} must be a Realm Set property.", nameof(set));
+            return realmSet.ToResults();
         }
 
         /// <summary>
@@ -282,12 +266,8 @@ namespace Realms
         {
             Argument.NotNull(dictionary, nameof(dictionary));
 
-            if (dictionary is RealmDictionary<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            return realmDictionary;
         }
 
         /// <summary>
@@ -321,12 +301,8 @@ namespace Realms
         {
             Argument.NotNull(dictionary, nameof(dictionary));
 
-            if (dictionary is RealmDictionary<T> collection)
-            {
-                return collection.SubscribeForKeyNotifications(callback);
-            }
-
-            throw new ArgumentException($"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            return realmDictionary.SubscribeForKeyNotifications(callback);
         }
 
         /// <summary>
@@ -363,6 +339,7 @@ namespace Realms
         public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
         {
             Argument.NotNull(arguments, nameof(arguments));
+
             var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return realmResults.GetFilteredResults(predicate, arguments);
         }
@@ -399,6 +376,7 @@ namespace Realms
             where T : RealmObjectBase
         {
             Argument.NotNull(arguments, nameof(arguments));
+
             var realmList = Argument.EnsureType<RealmList<T>>(list, $"{nameof(list)} must be a Realm List property.", nameof(list));
             return realmList.GetFilteredResults(predicate, arguments);
         }
@@ -435,6 +413,7 @@ namespace Realms
             where T : RealmObjectBase
         {
             Argument.NotNull(arguments, nameof(arguments));
+
             var realmSet = Argument.EnsureType<RealmSet<T>>(set, $"{nameof(set)} must be a Realm Set property.", nameof(set));
             return realmSet.GetFilteredResults(predicate, arguments);
         }
