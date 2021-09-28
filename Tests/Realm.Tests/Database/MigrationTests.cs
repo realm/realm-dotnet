@@ -148,7 +148,7 @@ namespace Realms.Tests.Database
                 });
             }
 
-            var newConfig = new RealmConfiguration
+            var newConfig = new RealmConfiguration(path)
             {
                 IsDynamic = true,
                 ShouldDeleteIfMigrationNeeded = true,
