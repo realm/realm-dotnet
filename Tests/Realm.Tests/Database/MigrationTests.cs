@@ -178,13 +178,13 @@ namespace Realms.Tests.Database
         {
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
-            var oldPropertyValues = new List<string>();
-
             var configuration = new RealmConfiguration(path)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
+                    migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
+
                     var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
@@ -194,20 +194,38 @@ namespace Realms.Tests.Database
                         var newPerson = newPeople.ElementAt(i);
 
                         var oldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
-                        oldPropertyValues.Add(oldValue);
-                        Assert.That(newPerson.OptionalAddress, Is.Not.EqualTo(oldValue));
+                        var newValue = newPerson.OptionalAddress;
+                        Assert.That(newValue, Is.EqualTo(newValue));
                     }
-
-                    migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
                 }
             };
 
             using var realm = GetRealm(configuration);
-            var newPeople = realm.All<Person>();
+        }
 
-            // We cannod do this check in the migration block because we cannot access the renamed property after RenameProperty is called.
-            var newPropertyValues = newPeople.ToArray().Select(p => p.OptionalAddress);
-            Assert.That(newPropertyValues, Is.EquivalentTo(oldPropertyValues));
+        [Test]
+        public void MigrationException()
+        {
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
+
+            var oldPropertyValues = new List<string>();
+
+            var configuration = new RealmConfiguration(path)
+            {
+                SchemaVersion = 100,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    var newPeople = migration.NewRealm.All<Person>();
+                    var newPerson = newPeople.First();
+                    var newValue = newPerson.OptionalAddress;
+
+                    migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
+
+                    newValue = newPerson.OptionalAddress;
+                }
+            };
+
+            using var realm = GetRealm(configuration);
         }
 
         [Test]
@@ -278,13 +296,7 @@ namespace Realms.Tests.Database
             Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.Latitude' to 'Longitude' because the source property still exists."));
         }
 
-        [TestCase(null, "TriggersSchema", "OptionalAddress")]
-        [TestCase("", "TriggersSchema", "OptionalAddress")]
-        [TestCase("Person", null, "OptionalAddress")]
-        [TestCase("Person", "", "OptionalAddress")]
-        [TestCase("Person", "TriggersSchema", null)]
-        [TestCase("Person", "TriggersSchema", "")]
-        public void MigrationRenamePropertyInvalidArguments(string typeName, string oldName, string newName)
+        public void MigrationRenamePropertyInvalidArguments()
         {
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
@@ -293,7 +305,13 @@ namespace Realms.Tests.Database
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty(typeName, oldName, newName));
+                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty(null, "TriggersSchema", "OptionalAddress"));
+                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", null, "OptionalAddress"));
+                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", "TriggersSchema", null));
+
+                    Assert.Throws<ArgumentException>(() => migration.RenameProperty(string.Empty, "TriggersSchema", "OptionalAddress"));
+                    Assert.Throws<ArgumentException>(() => migration.RenameProperty("Person", string.Empty, "OptionalAddress"));
+                    Assert.Throws<ArgumentException>(() => migration.RenameProperty("Person", "TriggersSchema", string.Empty));
                 }
             };
 
@@ -306,7 +324,7 @@ namespace Realms.Tests.Database
             var oldRealmConfig = new RealmConfiguration()
             {
                 SchemaVersion = 0,
-                ObjectClasses = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
+                Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
             };
 
             using (var oldRealm = GetRealm(oldRealmConfig))
@@ -316,7 +334,7 @@ namespace Realms.Tests.Database
             var newRealmConfig = new RealmConfiguration()
             {
                 SchemaVersion = 1,
-                ObjectClasses = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
+                Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
                     migration.RemoveType(nameof(Person));
@@ -333,7 +351,7 @@ namespace Realms.Tests.Database
             var oldRealmConfig = new RealmConfiguration()
             {
                 SchemaVersion = 0,
-                ObjectClasses = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
+                Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
             };
 
             using (var oldRealm = GetRealm(oldRealmConfig))
@@ -348,7 +366,7 @@ namespace Realms.Tests.Database
             var newRealmConfig = new RealmConfiguration()
             {
                 SchemaVersion = 1,
-                ObjectClasses = new[] { typeof(Dog), typeof(Owner) },
+                Schema = new[] { typeof(Dog), typeof(Owner) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
                     migrationCallbackCalled = true;
@@ -373,7 +391,7 @@ namespace Realms.Tests.Database
                 Assert.That(migrationCallbackCalled, Is.True);
 
                 // This just means that "Person" is not in the schema that we pass in the config, but we're not sure it has been removed.
-                Assert.That(newRealm.Schema.Find("Person"), Is.Null);
+                Assert.That(newRealm.Schema.TryFindObjectSchema("Person", out _), Is.False);
             }
 
             var newRealmDynamicConfig = new RealmConfiguration()
@@ -385,18 +403,16 @@ namespace Realms.Tests.Database
             using (var newRealmDynamic = GetRealm(newRealmDynamicConfig))
             {
                 // This means that "Person" is not in the schema anymore, as we retrieve it directly from core.
-                Assert.That(newRealmDynamic.Schema.Find("Person"), Is.Null);
+                Assert.That(newRealmDynamic.Schema.TryFindObjectSchema("Person", out _), Is.False);
             }
         }
 
-        [TestCase("")]
-        [TestCase(null)]
-        public void MigrationRemoveTypeInvalidArguments(string typeName)
+        public void MigrationRemoveTypeInvalidArguments()
         {
             var oldRealmConfig = new RealmConfiguration()
             {
                 SchemaVersion = 0,
-                ObjectClasses = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
+                Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
             };
 
             using (var oldRealm = GetRealm(oldRealmConfig))
@@ -406,10 +422,11 @@ namespace Realms.Tests.Database
             var newRealmConfig = new RealmConfiguration()
             {
                 SchemaVersion = 1,
-                ObjectClasses = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
+                Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    Assert.Throws<ArgumentNullException>(() => migration.RemoveType(typeName));
+                    Assert.Throws<ArgumentNullException>(() => migration.RemoveType(null));
+                    Assert.Throws<ArgumentException>(() => migration.RemoveType(string.Empty));
                 }
             };
 
