@@ -118,7 +118,7 @@ namespace Realms.Tests.Database
                 }
             };
 
-            var ex = Assert.Throws<AggregateException>(() => GetRealm(configuration).Dispose());
+            var ex = Assert.Throws<AggregateException>(() => GetRealm(configuration));
             Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
         }
 
@@ -195,7 +195,7 @@ namespace Realms.Tests.Database
 
                         var oldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
                         var newValue = newPerson.OptionalAddress;
-                        Assert.That(newValue, Is.EqualTo(newValue));
+                        Assert.That(newValue, Is.EqualTo(oldValue));
                     }
                 }
             };
@@ -204,32 +204,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void MigrationException()
-        {
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-
-            var oldPropertyValues = new List<string>();
-
-            var configuration = new RealmConfiguration(path)
-            {
-                SchemaVersion = 100,
-                MigrationCallback = (migration, oldSchemaVersion) =>
-                {
-                    var newPeople = migration.NewRealm.All<Person>();
-                    var newPerson = newPeople.First();
-                    var newValue = newPerson.OptionalAddress;
-
-                    migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
-
-                    newValue = newPerson.OptionalAddress;
-                }
-            };
-
-            using var realm = GetRealm(configuration);
-        }
-
-        [Test]
-        public void MigrationRenamPropertyErrors()
+        public void MigrationRenamePropertyErrors()
         {
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
@@ -296,6 +271,7 @@ namespace Realms.Tests.Database
             Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.Latitude' to 'Longitude' because the source property still exists."));
         }
 
+        [Test]
         public void MigrationRenamePropertyInvalidArguments()
         {
             var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
@@ -400,13 +376,13 @@ namespace Realms.Tests.Database
                 IsDynamic = true,
             };
 
-            using (var newRealmDynamic = GetRealm(newRealmDynamicConfig))
-            {
-                // This means that "Person" is not in the schema anymore, as we retrieve it directly from core.
-                Assert.That(newRealmDynamic.Schema.TryFindObjectSchema("Person", out _), Is.False);
-            }
+            using var newRealmDynamic = GetRealm(newRealmDynamicConfig);
+
+            // This means that "Person" is not in the schema anymore, as we retrieve it directly from core.
+            Assert.That(newRealmDynamic.Schema.TryFindObjectSchema("Person", out _), Is.False);
         }
 
+        [Test]
         public void MigrationRemoveTypeInvalidArguments()
         {
             var oldRealmConfig = new RealmConfiguration()
