@@ -317,6 +317,19 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ListAsRealmQueryable_NotRealmSet_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            Assert.That(
+                () => joe.ListOfDogs.AsRealmQueryable(),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("list must be a Realm List property"));
+        }
+
+        [Test]
         public void ListFilter_ReturnsCorrectElementAtResult()
         {
             var joe = new Owner
@@ -458,6 +471,49 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ListFilter_NotRealmSet_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            Assert.That(
+                () => joe.ListOfDogs.Filter(string.Empty),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("list must be a Realm List property"));
+        }
+
+        [Test]
+        public void ListFilter_InvalidPredicate_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.ListOfDogs.Filter(string.Empty),
+                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+        }
+
+        [Test]
+        public void ListFilter_NoArguments_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.ListOfDogs.Filter("Name = $0"),
+                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+        }
+
+        [Test]
         public void Set_WhenIndexIsNegative_ShouldThrow()
         {
             var container = new ContainerObject();
@@ -578,6 +634,19 @@ namespace Realms.Tests.Database
                     Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
                 }
             }
+        }
+
+        [Test]
+        public void SetAsRealmQueryable_NotRealmSet_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            Assert.That(
+                () => joe.SetOfDogs.AsRealmQueryable(),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("set must be a Realm Set property"));
         }
 
         [Test]
@@ -719,6 +788,49 @@ namespace Realms.Tests.Database
             Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
             Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
             Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void SetFilter_NotRealmSet_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            Assert.That(
+                () => joe.SetOfDogs.Filter(string.Empty),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("set must be a Realm Set property"));
+        }
+
+        [Test]
+        public void SetFilter_InvalidPredicate_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.SetOfDogs.Filter(string.Empty),
+                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+        }
+
+        [Test]
+        public void SetFilter_NoArguments_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.SetOfDogs.Filter("Name = $0"),
+                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
         }
 
         [Test]
