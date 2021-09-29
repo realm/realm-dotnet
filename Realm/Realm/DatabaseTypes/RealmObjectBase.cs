@@ -217,16 +217,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var propertyIndex = _metadata.PropertyIndices[propertyName];
-
-            _objectHandle.SetValue(propertyIndex, val, _realm);
+            _objectHandle.SetValue(propertyName, _metadata, val, _realm);
         }
 
         protected void SetValueUnique(string propertyName, RealmValue val)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetValueUnique(_metadata.PropertyIndices[propertyName], val);
+            _objectHandle.SetValueUnique(propertyName, _metadata, val);
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -237,7 +235,7 @@ namespace Realms
             }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetList<T>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         protected internal ISet<T> GetSetValue<T>(string propertyName)
@@ -248,7 +246,7 @@ namespace Realms
             }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetSet<T>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
@@ -259,7 +257,7 @@ namespace Realms
             }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetDictionary<TValue>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetDictionary<TValue>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -267,7 +265,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
+            var resultsHandle = _objectHandle.GetBacklinks(propertyName, _metadata);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
@@ -628,7 +626,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
-                var resultsHandle = _realmObject._objectHandle.GetBacklinks(_realmObject._metadata.PropertyIndices[propertyName]);
+                var resultsHandle = _realmObject._objectHandle.GetBacklinks(propertyName, _realmObject._metadata);
 
                 var relatedMeta = _realmObject._realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
@@ -652,12 +650,7 @@ namespace Realms
             {
                 Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 
-                if (!relatedMeta.PropertyIndices.TryGetValue(fromPropertyName, out var propertyIndex))
-                {
-                    throw new MissingMemberException($"Property {fromPropertyName} does not exist on RealmObject of type {fromObjectType}", fromPropertyName);
-                }
-
-                var resultsHandle = _realmObject._objectHandle.GetBacklinksForType(relatedMeta.TableKey, propertyIndex);
+                var resultsHandle = _realmObject._objectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
                 if (relatedMeta.Schema.IsEmbedded)
                 {
                     return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
@@ -683,7 +676,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
 
-                var result = _realmObject._objectHandle.GetList<T>(_realmObject._realm, _realmObject._metadata.PropertyIndices[propertyName], property.ObjectType);
+                var result = _realmObject._objectHandle.GetList<T>(_realmObject._realm, propertyName, _realmObject._metadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -705,7 +698,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
 
-                var result = _realmObject._objectHandle.GetSet<T>(_realmObject._realm, _realmObject._metadata.PropertyIndices[propertyName], property.ObjectType);
+                var result = _realmObject._objectHandle.GetSet<T>(_realmObject._realm, propertyName, _realmObject._metadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -727,7 +720,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
 
-                var result = _realmObject._objectHandle.GetDictionary<T>(_realmObject._realm, _realmObject._metadata.PropertyIndices[propertyName], property.ObjectType);
+                var result = _realmObject._objectHandle.GetDictionary<T>(_realmObject._realm, propertyName, _realmObject._metadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }

@@ -34,8 +34,7 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using namespace realm;
 using namespace realm::binding;
 
-class ManagedExceptionDuringMigration : public std::runtime_error
-{
+class ManagedExceptionDuringMigration : public std::runtime_error {
 public:
     ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
     }

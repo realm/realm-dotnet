@@ -113,7 +113,7 @@ namespace Realms.Tests.Database
             // Arrange
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) }
+                Schema = new[] { typeof(IndexedDateTimeOffsetObject) }
             };
 
             // Act and "assert" that no exception is thrown here

@@ -227,20 +227,17 @@ namespace Realms.Tests.Database
         [Test]
         public void DuplicateClassNames_ThrowsException()
         {
-            var config = new RealmConfiguration
+            var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
             {
-                ObjectClasses = new[]
+                Schema = new[]
                 {
                     typeof(Foo.DuplicateClass),
                     typeof(Bar.DuplicateClass)
                 }
-            };
+            });
 
-            var constraint = Throws.TypeOf<NotSupportedException>().And
-                                   .Message.Contains("Foo.DuplicateClass").And
-                                   .Message.Contains("Bar.DuplicateClass");
-
-            Assert.That(() => GetRealm(config), constraint);
+            Assert.That(ex.Message, Does.Contain("Foo.DuplicateClass"));
+            Assert.That(ex.Message, Does.Contain("Bar.DuplicateClass"));
         }
     }
 }

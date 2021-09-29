@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms
@@ -34,6 +35,7 @@ namespace Realms
     public class Migration
     {
         private GCHandle? _handle;
+        private IntPtr _migrationSchema;
 
         internal GCHandle MigrationHandle => _handle ?? throw new ObjectDisposedException(nameof(Migration));
 
@@ -62,10 +64,11 @@ namespace Realms
             _handle = GCHandle.Alloc(this);
         }
 
-        internal bool Execute(Realm oldRealm, Realm newRealm)
+        internal bool Execute(Realm oldRealm, Realm newRealm, IntPtr migrationSchema)
         {
             OldRealm = oldRealm;
             NewRealm = newRealm;
+            _migrationSchema = migrationSchema;
 
             try
             {
@@ -83,9 +86,66 @@ namespace Realms
 
                 NewRealm.Dispose();
                 NewRealm = null;
+
+                _migrationSchema = IntPtr.Zero;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Removes a type during a migration. All the data associated with the type, as well as its schema, will be removed from <see cref="Realm"/>.
+        /// </summary>
+        /// <param name="typeName">The type that needs to be removed. </param>
+        /// <remarks>
+        /// The removed type will still be accessible from <see cref="OldRealm"/> in the migration block.
+        /// The type must not be present in the new schema. <see cref="Realm.RemoveAll{T}"/> can be used on <see cref="NewRealm"/> if one needs to delete the content of the table.
+        /// </remarks>
+        /// <returns><c>true</c> if the type does exist in the old schema, <c>false</c> otherwise.</returns>
+        public bool RemoveType(string typeName)
+        {
+            Argument.NotNullOrEmpty(typeName, nameof(typeName));
+            return NewRealm.SharedRealmHandle.RemoveType(typeName);
+        }
+
+        /// <summary>
+        /// Renames a property during a migration.
+        /// </summary>
+        /// <param name="typeName">The type for which the property rename needs to be performed. </param>
+        /// <param name="oldPropertyName">The previous name of the property. </param>
+        /// <param name="newPropertyName">The new name of the property. </param>
+        /// <example>
+        /// <code>
+        /// // Model in the old schema
+        /// class Dog : RealmObject
+        /// {
+        ///     public string DogName { get; set; }
+        /// }
+        ///
+        /// // Model in the new schema
+        /// class Dog : RealmObject
+        /// {
+        ///     public string Name { get; set; }
+        /// }
+        ///
+        /// //After the migration Dog.Name will contain the same values as Dog.DogName from the old realm, without the need to copy them explicitly
+        /// var config = new RealmConfiguration
+        /// {
+        ///     SchemaVersion = 1,
+        ///     MigrationCallback = (migration, oldSchemaVersion) =>
+        ///     {
+        ///         migration.RenameProperty("Dog", "DogName", "Name");
+        ///     }
+        /// };
+        /// </code>
+        /// </example>
+        public void RenameProperty(string typeName, string oldPropertyName, string newPropertyName)
+        {
+            Argument.NotNullOrEmpty(typeName, nameof(typeName));
+            Argument.NotNullOrEmpty(oldPropertyName, nameof(oldPropertyName));
+            Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
+
+            NewRealm.SharedRealmHandle.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
         }
 
         internal void ReleaseHandle()

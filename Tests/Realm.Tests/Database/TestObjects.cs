@@ -782,6 +782,8 @@ namespace Realms.Tests
 
         [Backlink(nameof(UnqueryableBacklinks.Parent))]
         public IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
+
+        public static string StaticProperty { get; set; }
     }
 
     public class UnqueryableBacklinks : RealmObject

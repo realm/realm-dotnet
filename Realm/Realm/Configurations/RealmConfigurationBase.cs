@@ -70,7 +70,49 @@ namespace Realms
         /// </code>
         /// </example>
         /// <value>The classes that can be persisted in the Realm.</value>
-        public Type[] ObjectClasses { get; set; }
+        [Obsolete("Use Schema = new[] { typeof(...) } instead.")]
+        public Type[] ObjectClasses
+        {
+            get => Schema?.Select(s => s.Type).Where(t => t != null).ToArray();
+            set => Schema = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the schema of the Realm opened with this configuration.
+        /// </summary>
+        /// <remarks>
+        /// Typically left null so by default all <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s will be able to be stored in all Realms.
+        /// <br />
+        /// If specifying the schema explicitly, you can either use the implicit conversion operator from <c>Type[]</c> to <see cref="RealmSchema"/>
+        /// or construct it using the <see cref="RealmSchema.Builder"/> API.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// config.Schema = new Type[]
+        /// {
+        ///     typeof(CommonClass),
+        ///     typeof(RareClass)
+        /// };
+        ///
+        /// // Alternatively
+        /// config.Schema = new RealmSchema.Builder
+        /// {
+        ///     new ObjectSchema.Builder("Person")
+        ///     {
+        ///         Property.Primitive("Name", RealmValueType.String, isPrimaryKey: true),
+        ///         Property.Primitive("Birthday", RealmValueType.Date, isNullable: true),
+        ///         Property.ObjectList("Addresses", objectType: "Address")
+        ///     },
+        ///     new ObjectSchema.Builder("Address")
+        ///     {
+        ///         Property.Primitive("City", RealmValueType.String),
+        ///         Property.Primitive("Street", RealmValueType.String),
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <value>The schema of the types that can be persisted in the Realm.</value>
+        public RealmSchema Schema { get; set; }
 
         /// <summary>
         /// Utility to build a path in which a Realm will be created so can consistently use filenames and relative paths.
@@ -147,9 +189,9 @@ namespace Realms
             return (RealmConfigurationBase)MemberwiseClone();
         }
 
-        internal abstract Realm CreateRealm(RealmSchema schema);
+        internal abstract Realm CreateRealm();
 
-        internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
+        internal abstract Task<Realm> CreateRealmAsync(CancellationToken cancellationToken);
 
         internal Native.Configuration CreateNativeConfiguration()
         {
@@ -178,6 +220,25 @@ namespace Realms
             }
 
             return new Realm(sharedRealmHandle, this, schema);
+        }
+
+        /// <summary>
+        /// Method to use when opening a Realm with this configuration. It takes care of dynamic mode
+        /// as well as explicitly defined user schema.
+        /// </summary>
+        internal RealmSchema GetSchema()
+        {
+            if (Schema != null)
+            {
+                return Schema;
+            }
+
+            if (IsDynamic)
+            {
+                return RealmSchema.Empty;
+            }
+
+            return RealmSchema.Default;
         }
     }
 }

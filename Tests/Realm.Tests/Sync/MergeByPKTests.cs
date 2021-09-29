@@ -82,7 +82,7 @@ namespace Realms.Tests.Sync
         private async Task<Realm> GetSyncedRealm(Type objectType)
         {
             var config = await GetIntegrationConfigAsync($"merge_by_pk_{objectType.Name}");
-            config.ObjectClasses = new[] { objectType };
+            config.Schema = new[] { objectType };
 
             return GetRealm(config);
         }
