@@ -162,9 +162,12 @@ namespace Realms
         public Dynamic DynamicApi { get; }
 
         /// <summary>
-        /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
+        /// Gets a value indicating whether there is an active write transaction associated
+        /// with this Realm.
         /// </summary>
-        /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if the Realm is in transaction; <c>false</c> otherwise.</value>
+        /// <seealso cref="BeginWrite"/>
+        /// <seealso cref="Transaction"/>
         public bool IsInTransaction
         {
             get
