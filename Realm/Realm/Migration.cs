@@ -114,10 +114,6 @@ namespace Realms
         /// <param name="typeName">The type for which the property rename needs to be performed. </param>
         /// <param name="oldPropertyName">The previous name of the property. </param>
         /// <param name="newPropertyName">The new name of the property. </param>
-        /// <remarks>
-        /// It is not possible to access the renamed property in <see cref="NewRealm"/> in the migration block after this method is called.
-        /// If it is necessary to access the renamed property, the method should be called after the property access, or the value retrieved from <see cref="OldRealm"/> can be used.
-        /// </remarks>
         /// <example>
         /// <code>
         /// // Model in the old schema
