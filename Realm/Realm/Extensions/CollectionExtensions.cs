@@ -45,8 +45,7 @@ namespace Realms
         {
             Argument.NotNull(query, nameof(query));
 
-            var realmCollection = Argument.EnsureType<IRealmCollection<T>>(query, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
-            return realmCollection;
+            return Argument.EnsureType<IRealmCollection<T>>(query, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query)); ;
         }
 
         /// <summary>
@@ -78,8 +77,7 @@ namespace Realms
         {
             Argument.NotNull(set, nameof(set));
 
-            var realmCollection = Argument.EnsureType<IRealmCollection<T>>(set, $"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
-            return realmCollection;
+            return Argument.EnsureType<IRealmCollection<T>>(set, $"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set)); ;
         }
 
         /// <summary>
@@ -107,8 +105,7 @@ namespace Realms
         {
             Argument.NotNull(list, nameof(list));
 
-            var realmCollection = Argument.EnsureType<IRealmCollection<T>>(list, $"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
-            return realmCollection;
+            return Argument.EnsureType<IRealmCollection<T>>(list, $"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list)); ;
         }
 
         /// <summary>
