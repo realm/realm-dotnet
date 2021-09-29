@@ -23,6 +23,7 @@ set(SOURCES
 set(HEADERS
     debug.hpp
     error_handling.hpp
+    filter.hpp
     marshalling.hpp
     object_cs.hpp
     realm_error_type.hpp

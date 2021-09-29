@@ -24,11 +24,11 @@
 #include <realm/object-store/results.hpp>
 
 #include "error_handling.hpp"
+#include "filter.hpp"
 #include "marshalling.hpp"
 #include "notifications_cs.hpp"
 #include "wrapper_exceptions.hpp"
 #include "schema_cs.hpp"
-#include <realm/object-store/keypath_helpers.hpp>
 #include "realm_export_decls.hpp"
 
 using namespace realm;
@@ -126,32 +126,7 @@ REALM_EXPORT DescriptorOrdering* results_get_descriptor_ordering(Results& result
 
 REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
-        Utf16StringAccessor query_string(query_buf, query_len);
-        auto const& realm = results.get_realm();
-
-        query_parser::KeyPathMapping mapping;
-        realm::populate_keypath_mapping(mapping, *realm);
-
-        std::vector<Mixed> mixed_args;
-        mixed_args.reserve(args_count);
-        for (size_t i = 0; i < args_count; ++i) {
-            if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
-                mixed_args.push_back(from_capi(arguments[i]));
-            }
-            else {
-                mixed_args.push_back(from_capi(arguments[i].link.object, true));
-            }
-        }
-
-        Query parsed_query = results.get_table()->query(query_string, mixed_args , mapping);
-        DescriptorOrdering new_order = results.get_descriptor_ordering();
-        if (auto parsed_ordering = parsed_query.get_ordering()) {
-            new_order.append(*parsed_ordering);
-        }
-
-        return new Results(realm, results.get_query().and_query(std::move(parsed_query)), std::move(new_order));
-    });
+    return get_filtered_results(results.get_realm(), results.get_table(), results.get_query(), query_buf, query_len, arguments, args_count, results.get_descriptor_ordering(), ex);
 }
 
 REALM_EXPORT bool results_get_is_valid(const Results& results, NativeException::Marshallable& ex)
