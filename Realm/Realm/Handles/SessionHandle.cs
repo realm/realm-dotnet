@@ -244,7 +244,7 @@ namespace Realms.Sync
             }
             catch
             {
-                 // do nothing if either the pointer is IntPtr.Zero or Target has been freed or never initialized
+                 // do not ever crash the user's application
             }
         }
 
