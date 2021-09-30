@@ -126,7 +126,9 @@ REALM_EXPORT DescriptorOrdering* results_get_descriptor_ordering(Results& result
 
 REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
-    return get_filtered_results(results.get_realm(), results.get_table(), results.get_query(), query_buf, query_len, arguments, args_count, results.get_descriptor_ordering(), ex);
+    return handle_errors(ex, [&]() {
+        return get_filtered_results(results.get_realm(), results.get_table(), results.get_query(), query_buf, query_len, arguments, args_count, results.get_descriptor_ordering());
+    });
 }
 
 REALM_EXPORT bool results_get_is_valid(const Results& results, NativeException::Marshallable& ex)

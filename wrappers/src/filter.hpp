@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#pragma once
+
 #include <realm/object-store/keypath_helpers.hpp>
 #include <realm/table_ref.hpp>
 #include <realm/query.hpp>
@@ -24,31 +26,28 @@
 
 inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableRef table, 
                                         Query query, uint16_t* query_buf, size_t query_len,
-                                        realm_value_t* arguments, size_t args_count, DescriptorOrdering new_order, 
-                                        NativeException::Marshallable& ex)
+                                        realm_value_t* arguments, size_t args_count, DescriptorOrdering new_order)
 {
-    return handle_errors(ex, [&]() {
-        Utf16StringAccessor query_string(query_buf, query_len);
+    Utf16StringAccessor query_string(query_buf, query_len);
 
-        query_parser::KeyPathMapping mapping;
-        realm::populate_keypath_mapping(mapping, *realm);
+    query_parser::KeyPathMapping mapping;
+    realm::populate_keypath_mapping(mapping, *realm);
 
-        std::vector<Mixed> mixed_args;
-        mixed_args.reserve(args_count);
-        for (size_t i = 0; i < args_count; ++i) {
-            if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
-                mixed_args.push_back(from_capi(arguments[i]));
-            }
-            else {
-                mixed_args.push_back(from_capi(arguments[i].link.object, true));
-            }
+    std::vector<Mixed> mixed_args;
+    mixed_args.reserve(args_count);
+    for (size_t i = 0; i < args_count; ++i) {
+        if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
+            mixed_args.push_back(from_capi(arguments[i]));
         }
-
-        Query parsed_query = table->query(query_string, mixed_args, mapping);
-        if (auto parsed_ordering = parsed_query.get_ordering()) {
-            new_order.append(*parsed_ordering);
+        else {
+            mixed_args.push_back(from_capi(arguments[i].link.object, true));
         }
+    }
 
-        return new Results(realm, query.and_query(std::move(parsed_query)), std::move(new_order));
-    });
+    Query parsed_query = table->query(query_string, mixed_args, mapping);
+    if (auto parsed_ordering = parsed_query.get_ordering()) {
+        new_order.append(*parsed_ordering);
+    }
+
+    return new Results(realm, query.and_query(std::move(parsed_query)), std::move(new_order));
 }

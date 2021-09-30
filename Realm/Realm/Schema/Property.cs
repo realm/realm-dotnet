@@ -33,7 +33,7 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Type = {Type}")]
     public struct Property
     {
-        internal readonly static HashSet<PropertyType> IndexableTypes = new HashSet<PropertyType>
+        internal static readonly HashSet<PropertyType> IndexableTypes = new HashSet<PropertyType>
         {
             PropertyType.String,
             PropertyType.Int,
@@ -43,7 +43,7 @@ namespace Realms.Schema
             PropertyType.Date,
         };
 
-        internal readonly static HashSet<PropertyType> PrimaryKeyTypes = new HashSet<PropertyType>
+        internal static readonly HashSet<PropertyType> PrimaryKeyTypes = new HashSet<PropertyType>
         {
             PropertyType.String,
             PropertyType.Int,
