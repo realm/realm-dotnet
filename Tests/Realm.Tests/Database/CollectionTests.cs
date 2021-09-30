@@ -317,15 +317,12 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ListAsRealmQueryable_NotRealmSet_Throws()
+        public void ListAsRealmQueryable_WhenNotRealmList_Throws()
         {
-            var joe = new Owner
-            {
-                Name = "Joe"
-            };
+            var list = new List<Dog>();
 
             Assert.That(
-                () => joe.ListOfDogs.AsRealmQueryable(),
+                () => list.AsRealmQueryable(),
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("list must be a Realm List property"));
         }
 
@@ -471,15 +468,12 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ListFilter_NotRealmSet_Throws()
+        public void ListFilter_WhenNotRealmList_Throws()
         {
-            var joe = new Owner
-            {
-                Name = "Joe"
-            };
+            var list = new List<Dog>();
 
             Assert.That(
-                () => joe.ListOfDogs.Filter(string.Empty),
+                () => list.Filter(string.Empty),
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("list must be a Realm List property"));
         }
 
@@ -637,15 +631,12 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void SetAsRealmQueryable_NotRealmSet_Throws()
+        public void SetAsRealmQueryable_WhenNotRealmSet_Throws()
         {
-            var joe = new Owner
-            {
-                Name = "Joe"
-            };
+            var set = new HashSet<Dog>();
 
             Assert.That(
-                () => joe.SetOfDogs.AsRealmQueryable(),
+                () => set.AsRealmQueryable(),
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("set must be a Realm Set property"));
         }
 
@@ -791,15 +782,12 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void SetFilter_NotRealmSet_Throws()
+        public void SetFilter_WhenNotRealmSet_Throws()
         {
-            var joe = new Owner
-            {
-                Name = "Joe"
-            };
+            var set = new HashSet<Dog>();
 
             Assert.That(
-                () => joe.SetOfDogs.Filter(string.Empty),
+                () => set.Filter(string.Empty),
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("set must be a Realm Set property"));
         }
 
