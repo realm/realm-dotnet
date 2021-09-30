@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug that would crash the user application in some edge cases while executing the `SyncConfiguration.OnProgress` callback. (Issue [#2632](https://github.com/realm/realm-dotnet/issues/2632))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
