@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.6.0 (2021-09-30)
 
 ### Enhancements
 * Added two extension methods on `ISet` to get an `IQueryable` collection wrapping the set:
@@ -71,9 +71,6 @@
   var stringPropValue = person.DynamicApi.Get<string>("NewStringProp");
   ```
 * Fixed an issue that would result in SIGABORT on macOS/Linux when opening a Realm in dynamic mode (i.e. read the schema from disk) and the schema contains an object with no properties. (Issue [#1978](https://github.com/realm/realm-dotnet/issues/1978))
-
-### Fixed
-* None
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
