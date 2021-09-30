@@ -237,8 +237,15 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
-            var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
-            token.Notify(transferredBytes, transferableBytes);
+            try
+            {
+                var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
+                token.Notify(transferredBytes, transferableBytes);
+            }
+            catch
+            {
+                 // do nothing if either the pointer is IntPtr.Zero or Target has been freed or never initialized
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
