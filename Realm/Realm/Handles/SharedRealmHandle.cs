@@ -53,9 +53,11 @@ namespace Realms
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
 
+            // migrationSchema is a special schema that is used only in the context of a migration block.
+            // It is a pointer because we need to be able to modify this schema in some migration methods directly in core.
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
+            internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -180,6 +182,17 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_rename_property", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void rename_property(SharedRealmHandle sharedRealm,
+                [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeNameLength,
+                [MarshalAs(UnmanagedType.LPWStr)] string oldName, IntPtr oldNameLength,
+                [MarshalAs(UnmanagedType.LPWStr)] string newName, IntPtr newNameLength,
+                IntPtr migrationSchema,
+                out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_type", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool remove_type(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeLength, out NativeException ex);
 
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
@@ -464,6 +477,20 @@ namespace Realms
             return true;
         }
 
+        public void RenameProperty(string typeName, string oldName, string newName, IntPtr migrationSchema)
+        {
+            NativeMethods.rename_property(this, typeName, (IntPtr)typeName.Length,
+                oldName, (IntPtr)oldName.Length, newName, (IntPtr)newName.Length, migrationSchema, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public bool RemoveType(string typeName)
+        {
+            var result = NativeMethods.remove_type(this, typeName, (IntPtr)typeName.Length, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
         public ResultsHandle CreateResults(TableKey tableKey)
         {
             var result = NativeMethods.create_results(this, tableKey.Value, out var nativeException);
@@ -521,7 +548,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
-        private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
+        private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
             var migration = (Migration)migrationHandle.Target;
@@ -538,7 +565,7 @@ namespace Realms
             var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
             var newRealm = new Realm(newRealmHandle, migration.Configuration, migration.Schema);
 
-            var result = migration.Execute(oldRealm, newRealm);
+            var result = migration.Execute(oldRealm, newRealm, migrationSchema);
 
             return result;
         }

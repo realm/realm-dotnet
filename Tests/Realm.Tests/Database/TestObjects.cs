@@ -801,7 +801,7 @@ namespace Realms.Tests
 
         public int Age { get; set; }
 
-        [Backlink(nameof(Owner.Dogs))]
+        [Backlink(nameof(Owner.ListOfDogs))]
         public IQueryable<Owner> Owners { get; }
     }
 
@@ -811,7 +811,9 @@ namespace Realms.Tests
 
         public Dog TopDog { get; set; }
 
-        public IList<Dog> Dogs { get; }
+        public IList<Dog> ListOfDogs { get; }
+
+        public ISet<Dog> SetOfDogs { get; }
     }
 
     // A copy of Owner that verifies that different objects referring to the same type (Dog)
@@ -822,7 +824,9 @@ namespace Realms.Tests
 
         public Dog TopDog { get; set; }
 
-        public IList<Dog> Dogs { get; }
+        public IList<Dog> ListOfDogs { get; }
+
+        public ISet<Dog> SetOfDogs { get; }
     }
 
     public class RequiredStringObject : RealmObject

@@ -101,6 +101,12 @@ namespace Realms
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmSet(expression, this);
 
+        internal RealmResults<T> ToResults()
+        {
+            var resultsHandle = _setHandle.ToResults();
+            return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
+
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmSet<T>(realm, (SetHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _setHandle;

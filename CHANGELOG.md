@@ -1,6 +1,28 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.6.0 (2021-09-30)
+
+### Enhancements
+* Added two extension methods on `ISet` to get an `IQueryable` collection wrapping the set:
+  * `set.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `ISet<T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `set.Filter(query, arguments)` will filter the set and return the filtered collection. It is roughly equivalent to `set.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2555](https://github.com/realm/realm-dotnet/issues/2555))
+* Added two new methods on `Migration` (Issue [#2543](https://github.com/realm/realm-dotnet/issues/2543)):
+  * `RemoveType(typeName)` allows to completely remove a type and its schema from a realm during a migration.
+  * `RenameProperty(typeName, oldPropertyName, newPropertyName)` allows to rename a property during a migration.
 * A Realm Schema can now be constructed at runtime as opposed to generated automatically from the model classes. The automatic generation continues to work and should cover the needs of the vast majority of Realm users. Manually constructing the schema may be required when the shape of the objects depends on some information only known at runtime or in very rare cases where it may provide performance benefits by representing a collection of known size as properties on the class. (Issue [#824](https://github.com/realm/realm-dotnet/issues/824))
   * `RealmConfiguration.ObjectClasses` has now been deprecated in favor of `RealmConfiguration.Schema`. `RealmSchema` has an implicit conversion operator from `Type[]` so code that previously looked like `ObjectClasses = new[] { typeof(Foo), typeof(Bar) }` can be trivially updated to `Schema = new[] { typeof(Foo), typeof(Bar) }`.
   * `Property` has been converted to a read-only struct by removing the setters from its properties. Those didn't do anything previously, so we don't expect anyone was using them.
@@ -63,9 +85,6 @@
   var stringPropValue = person.DynamicApi.Get<string>("NewStringProp");
   ```
 * Fixed an issue that would result in SIGABORT on macOS/Linux when opening a Realm in dynamic mode (i.e. read the schema from disk) and the schema contains an object with no properties. (Issue [#1978](https://github.com/realm/realm-dotnet/issues/1978))
-
-### Fixed
-* None
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
