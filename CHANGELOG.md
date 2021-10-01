@@ -92,6 +92,7 @@
 ### Internal
 * Using Core 11.4.1.
 * Moved perf tests to run on a self-hosted runner. (PR [#2638](https://github.com/realm/realm-dotnet/pull/2638))
+* iOS wrappers are now built with the "new build system" introduced by Xcode 10 and used as default by Xcode 12. More info can be found in cmake's [docs](https://cmake.org/cmake/help/git-stage/variable/CMAKE_XCODE_BUILD_SYSTEM.html#variable:CMAKE_XCODE_BUILD_SYSTEM).
 
 ## 10.5.1 (2021-09-22)
 
