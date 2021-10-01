@@ -3,6 +3,7 @@
 SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 REALM_CMAKE_CONFIGURATION=Debug
+EXTRA_CMAKE_ARGS=""
 
 for i in "$@"
 do
