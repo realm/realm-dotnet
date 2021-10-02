@@ -25,7 +25,7 @@ using namespace realm::app;
 
 namespace realm {
 namespace binding {
-    extern GenericNetworkTransport::NetworkTransportFactory s_transport_factory;
+    extern std::shared_ptr<GenericNetworkTransport> s_transport;
 }
 }
 
