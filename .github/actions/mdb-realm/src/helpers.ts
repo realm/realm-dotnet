@@ -114,9 +114,10 @@ export async function createCluster(config: EnvironmentConfig): Promise<void> {
     const payload = {
         name: config.clusterName,
         providerSettings: {
-            instanceSizeName: "M10",
-            providerName: "AWS",
+            instanceSizeName: "M5",
+            providerName: "TENANT",
             regionName: "US_EAST_1",
+            backingProviderName: "AWS",
         },
     };
 

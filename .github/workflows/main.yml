@@ -474,7 +474,7 @@ jobs:
         fail-on-error: false
   cleanup-net-framework:
     runs-on: ubuntu-latest
-    name: Cleanup Atlas Cluster
+    name: Cleanup .NET Framework
     needs:
     - test-net-framework
     if: always()
@@ -564,7 +564,7 @@ jobs:
         fail-on-error: false
   cleanup-uwp-managed:
     runs-on: ubuntu-latest
-    name: Cleanup Atlas Cluster
+    name: Cleanup UWP Managed
     needs:
     - test-uwp-managed
     if: always()
@@ -707,7 +707,7 @@ jobs:
         fail-on-error: false
   cleanup-xamarinmacos:
     runs-on: ubuntu-latest
-    name: Cleanup Atlas Cluster
+    name: Cleanup Xamarin.macOS
     needs:
     - test-xamarinmacos
     if: always()
@@ -792,7 +792,7 @@ jobs:
         fail-on-error: false
   cleanup-xamarinios:
     runs-on: ubuntu-latest
-    name: Cleanup Atlas Cluster
+    name: Cleanup Xamarin.iOS
     needs:
     - test-xamarinios
     if: always()
@@ -962,7 +962,7 @@ jobs:
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
   cleanup-code-coverage:
     runs-on: ubuntu-latest
-    name: Cleanup Atlas Cluster
+    name: Cleanup Code Coverage
     needs:
     - test-code-coverage
     if: always()

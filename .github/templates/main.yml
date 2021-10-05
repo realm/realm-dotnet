@@ -71,7 +71,7 @@ with:
 #@yaml/text-templated-strings
 (@= cleanupJobName @):
   runs-on: ubuntu-latest
-  name: Cleanup Atlas Cluster
+  name: #@ "Cleanup " + name
   needs:
     - #@ testJobName
   if: always()
