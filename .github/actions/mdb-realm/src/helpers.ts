@@ -106,7 +106,7 @@ export function getConfig(): EnvironmentConfig {
         privateApiKey: core.getInput("privateApiKey", { required: true }),
         realmUrl: core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com",
         atlasUrl: core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com",
-        clusterName: `GHA-${getRunId()}-${getSuffix()}`,
+        clusterName: `GHA-${getSuffix()}`,
     };
 }
 
@@ -217,16 +217,16 @@ export async function publishApplication(appPath: string, config: EnvironmentCon
 }
 
 export async function deleteApplications(config: EnvironmentConfig): Promise<void> {
+    const suffix = getSuffix();
     const listResponse = await execCliCmd("apps list");
-    const allApps: string[] = listResponse[0].data;
+    const allApps = (listResponse[0].data as string[]).map(a => a.split(" ")[0]).filter(a => a.includes(suffix));
 
     for (const app of allApps) {
-        const appId = app.split(" ")[0];
-        const describeResponse = await execCliCmd(`apps describe -a ${appId}`);
+        const describeResponse = await execCliCmd(`apps describe -a ${app}`);
         if (describeResponse[0]?.doc.data_sources[0]?.data_source === config.clusterName) {
-            core.info(`Deleting ${appId}`);
-            await execCliCmd(`apps delete -a ${appId}`);
-            core.info(`Deleted ${appId}`);
+            core.info(`Deleting ${app}`);
+            await execCliCmd(`apps delete -a ${app}`);
+            core.info(`Deleted ${app}`);
         }
     }
 }

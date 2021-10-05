@@ -53935,7 +53935,7 @@ function getConfig() {
         privateApiKey: core.getInput("privateApiKey", { required: true }),
         realmUrl: core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com",
         atlasUrl: core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com",
-        clusterName: `GHA-${getRunId()}-${getSuffix()}`,
+        clusterName: `GHA-${getSuffix()}`,
     };
 }
 exports.getConfig = getConfig;
@@ -54031,15 +54031,15 @@ exports.publishApplication = publishApplication;
 function deleteApplications(config) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
+        const suffix = getSuffix();
         const listResponse = yield execCliCmd("apps list");
-        const allApps = listResponse[0].data;
+        const allApps = listResponse[0].data.map(a => a.split(" ")[0]).filter(a => a.includes(suffix));
         for (const app of allApps) {
-            const appId = app.split(" ")[0];
-            const describeResponse = yield execCliCmd(`apps describe -a ${appId}`);
+            const describeResponse = yield execCliCmd(`apps describe -a ${app}`);
             if (((_b = (_a = describeResponse[0]) === null || _a === void 0 ? void 0 : _a.doc.data_sources[0]) === null || _b === void 0 ? void 0 : _b.data_source) === config.clusterName) {
-                core.info(`Deleting ${appId}`);
-                yield execCliCmd(`apps delete -a ${appId}`);
-                core.info(`Deleted ${appId}`);
+                core.info(`Deleting ${app}`);
+                yield execCliCmd(`apps delete -a ${app}`);
+                core.info(`Deleted ${app}`);
             }
         }
     });
