@@ -975,6 +975,7 @@ jobs:
     - test-uwp-managed
     - test-xamarinmacos
     - test-xamarinios
+    - test-code-coverage
     if: always()
     steps:
     - name: Checkout code

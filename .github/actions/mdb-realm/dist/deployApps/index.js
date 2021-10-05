@@ -53958,10 +53958,9 @@ function createCluster(atlasUrl, config) {
         const payload = {
             name: clusterName,
             providerSettings: {
-                instanceSizeName: "M5",
-                providerName: "TENANT",
+                instanceSizeName: "M10",
+                providerName: "AWS",
                 regionName: "US_EAST_1",
-                backingProviderName: "AWS",
             },
         };
         core.info(`Creating Atlas cluster: ${clusterName}`);
@@ -54046,20 +54045,20 @@ function publishApplication(appPath, appSuffix) {
 }
 exports.publishApplication = publishApplication;
 function deleteApplications() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const clusterName = getClusterName();
         const listResponse = yield execCliCmd("apps list");
         const allApps = listResponse[0].data;
-        yield Promise.all(allApps.map((a) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            const appId = a.split(" ")[0];
+        for (const app of allApps) {
+            const appId = app.split(" ")[0];
             const describeResponse = yield execCliCmd(`apps describe -a ${appId}`);
             if (((_b = (_a = describeResponse[0]) === null || _a === void 0 ? void 0 : _a.doc.data_sources[0]) === null || _b === void 0 ? void 0 : _b.data_source) === clusterName) {
                 core.info(`Deleting ${appId}`);
                 yield execCliCmd(`apps delete -a ${appId}`);
                 core.info(`Deleted ${appId}`);
             }
-        })));
+        }
     });
 }
 exports.deleteApplications = deleteApplications;

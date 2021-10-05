@@ -491,6 +491,7 @@ jobs:
       - test-uwp-managed
       - test-xamarinmacos
       - test-xamarinios
+      - test-code-coverage
     if: always()
     steps:
       - #@ template.replace(checkoutCode(False, False))

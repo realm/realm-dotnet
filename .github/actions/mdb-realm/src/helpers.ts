@@ -111,10 +111,9 @@ export async function createCluster(atlasUrl: string, config: EnvironmentConfig)
     const payload = {
         name: clusterName,
         providerSettings: {
-            instanceSizeName: "M5",
-            providerName: "TENANT",
+            instanceSizeName: "M10",
+            providerName: "AWS",
             regionName: "US_EAST_1",
-            backingProviderName: "AWS",
         },
     };
 
@@ -221,17 +220,15 @@ export async function deleteApplications(): Promise<void> {
     const listResponse = await execCliCmd("apps list");
     const allApps: string[] = listResponse[0].data;
 
-    await Promise.all(
-        allApps.map(async a => {
-            const appId = a.split(" ")[0];
-            const describeResponse = await execCliCmd(`apps describe -a ${appId}`);
-            if (describeResponse[0]?.doc.data_sources[0]?.data_source === clusterName) {
-                core.info(`Deleting ${appId}`);
-                await execCliCmd(`apps delete -a ${appId}`);
-                core.info(`Deleted ${appId}`);
-            }
-        }),
-    );
+    for (const app of allApps) {
+        const appId = app.split(" ")[0];
+        const describeResponse = await execCliCmd(`apps describe -a ${appId}`);
+        if (describeResponse[0]?.doc.data_sources[0]?.data_source === clusterName) {
+            core.info(`Deleting ${appId}`);
+            await execCliCmd(`apps delete -a ${appId}`);
+            core.info(`Deleted ${appId}`);
+        }
+    }
 }
 
 function readJson(filePath: string): any {
