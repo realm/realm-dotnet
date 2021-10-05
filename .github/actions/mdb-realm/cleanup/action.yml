@@ -19,4 +19,4 @@ inputs:
     description: The private API key.
 runs:
   using: node12
-  main: dist/cleanup/index.js
+  main: ../dist/cleanup/index.js

@@ -16,4 +16,4 @@ inputs:
     description: The private API key.
 runs:
   using: node12
-  main: dist/createCluster/index.js
+  main: ../dist/createCluster/index.js

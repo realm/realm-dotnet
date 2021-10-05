@@ -28,4 +28,4 @@ outputs:
     description: "A base64-encoded json object keyed on the app name containing the app ids of the deployed apps - e.g. { \"app1\": \"app1-abcde\"}"
 runs:
   using: node12
-  main: dist/deployApps/index.js
+  main: ../dist/deployApps/index.js
