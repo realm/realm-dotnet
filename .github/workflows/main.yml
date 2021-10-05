@@ -8,6 +8,21 @@ name: main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
+  deploy-atlas-cluster:
+    runs-on: ubuntu-latest
+    name: Deploy Atlas Cluster
+    id: deploy-atlas-cluster
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/createCluster
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
@@ -410,7 +425,9 @@ jobs:
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   baas-net-framework:
     runs-on: ubuntu-latest
-    name: Deploy BaaS for .NET Framework
+    name: Deploy MDB Realm for .NET Framework
+    needs:
+    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -419,16 +436,14 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
+    - uses: ./.github/actions/mdb-realm/deployApps
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
         appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cluster-differentiator: .NET Framework
+        differentiator: .NET Framework
   test-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
@@ -474,31 +489,11 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  cleanup-net-framework:
-    runs-on: ubuntu-latest
-    name: Cleanup BaaS for .NET Framework
-    needs:
-    - test-net-framework
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cleanup: true
-        cluster-differentiator: .NET Framework
   baas-uwp-managed:
     runs-on: ubuntu-latest
-    name: Deploy BaaS for UWP Managed
+    name: Deploy MDB Realm for UWP Managed
+    needs:
+    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -507,16 +502,14 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
+    - uses: ./.github/actions/mdb-realm/deployApps
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
         appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cluster-differentiator: UWP Managed
+        differentiator: UWP Managed
   test-uwp-managed:
     runs-on: windows-latest
     name: Test UWP Managed
@@ -570,28 +563,6 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  cleanup-uwp-managed:
-    runs-on: ubuntu-latest
-    name: Cleanup BaaS for UWP Managed
-    needs:
-    - test-uwp-managed
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cleanup: true
-        cluster-differentiator: UWP Managed
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: Test .NET
@@ -657,7 +628,9 @@ jobs:
         fail-on-error: false
   baas-xamarinmacos:
     runs-on: ubuntu-latest
-    name: Deploy BaaS for Xamarin.macOS
+    name: Deploy MDB Realm for Xamarin.macOS
+    needs:
+    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -666,16 +639,14 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
+    - uses: ./.github/actions/mdb-realm/deployApps
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
         appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cluster-differentiator: Xamarin.macOS
+        differentiator: Xamarin.macOS
   test-xamarinmacos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -719,31 +690,11 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  cleanup-xamarinmacos:
-    runs-on: ubuntu-latest
-    name: Cleanup BaaS for Xamarin.macOS
-    needs:
-    - test-xamarinmacos
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cleanup: true
-        cluster-differentiator: Xamarin.macOS
   baas-xamarinios:
     runs-on: ubuntu-latest
-    name: Deploy BaaS for Xamarin.iOS
+    name: Deploy MDB Realm for Xamarin.iOS
+    needs:
+    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -752,16 +703,14 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
+    - uses: ./.github/actions/mdb-realm/deployApps
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
         appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cluster-differentiator: Xamarin.iOS
+        differentiator: Xamarin.iOS
   test-xamarinios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
@@ -810,28 +759,6 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  cleanup-xamarinios:
-    runs-on: ubuntu-latest
-    name: Cleanup BaaS for Xamarin.iOS
-    needs:
-    - test-xamarinios
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cleanup: true
-        cluster-differentiator: Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -865,7 +792,9 @@ jobs:
         fail-on-error: false
   baas-code-coverage:
     runs-on: ubuntu-latest
-    name: Deploy BaaS for Code Coverage
+    name: Deploy MDB Realm for Code Coverage
+    needs:
+    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -874,16 +803,14 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
+    - uses: ./.github/actions/mdb-realm/deployApps
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
         appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cluster-differentiator: Code Coverage
+        differentiator: Code Coverage
   test-code-coverage:
     runs-on: ubuntu-latest
     name: Test Code Coverage
@@ -986,28 +913,6 @@ jobs:
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-  cleanup-code-coverage:
-    runs-on: ubuntu-latest
-    name: Cleanup BaaS for Code Coverage
-    needs:
-    - test-code-coverage
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
-        realmUrl: ${{ secrets.REALM_BASE_URL }}
-        cleanup: true
-        cluster-differentiator: Code Coverage
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
@@ -1063,6 +968,26 @@ jobs:
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-ARM
+  cleanup-atlas-cluster:
+    runs-on: ubuntu-latest
+    name: Cleanup Atlas Cluster
+    needs:
+    - test-net-framework
+    - test-uwp-managed
+    - test-xamarinmacos
+    - test-xamarinios
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/cleanup
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages

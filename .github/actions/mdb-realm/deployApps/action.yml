@@ -1,12 +1,12 @@
-name: release-to-slack
-description: Creates a Slack post containing the release notes and publishes it
+name: deployApps
+description: Deploys MongoDB Realm apps to a previously created cluster
 author: Realm
 inputs:
   atlasUrl:
-    required: true
+    required: false
     description: The Atlas url - e.g. https://cloud-dev.mongodb.com.
   realmUrl:
-    required: true
+    required: false
     description: The MongoDB Realm url - e.g. https://realm-dev.mongodb.com.
   projectId:
     required: true
@@ -20,15 +20,12 @@ inputs:
   appsPath:
     required: true
     description: The path to the apps to import into MongoDB Realm.
-  cluster-differentiator:
+  differentiator:
     required: true
     description: Provide a differentiator for the build - e.g. "{{ matrix.os }}-{{ matrix.node-version }}"  or "integration tests"
-  cleanup:
-    required: false
-    description: A flag to indicate this is a cleanup job - it will tear down any apps and clusters created with the same parameters.
 outputs:
   deployedApps:
     description: "A base64-encoded json object keyed on the app name containing the app ids of the deployed apps - e.g. { \"app1\": \"app1-abcde\"}"
 runs:
   using: node12
-  main: dist/index.js
+  main: dist/deployApps/index.js

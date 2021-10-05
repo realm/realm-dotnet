@@ -1,0 +1,22 @@
+name: cleanup
+description: Deletes a previously created Atlas cluster as well as any apps associated with it
+author: Realm
+inputs:
+  atlasUrl:
+    required: true
+    description: The Atlas url - e.g. https://cloud-dev.mongodb.com.
+  realmUrl:
+    required: true
+    description: The MongoDB Realm url - e.g. https://realm-dev.mongodb.com.
+  projectId:
+    required: true
+    description: The Atlas project Id.
+  apiKey:
+    required: true
+    description: The public API key.
+  privateapiKey:
+    required: true
+    description: The private API key.
+runs:
+  using: node12
+  main: dist/cleanup/index.js

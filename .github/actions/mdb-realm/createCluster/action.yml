@@ -1,0 +1,19 @@
+name: createCluster
+description: Creates an Atlas cluster
+author: Realm
+inputs:
+  atlasUrl:
+    required: false
+    description: The Atlas url - e.g. https://cloud-dev.mongodb.com.
+  projectId:
+    required: true
+    description: The Atlas project Id.
+  apiKey:
+    required: true
+    description: The public API key.
+  privateapiKey:
+    required: true
+    description: The private API key.
+runs:
+  using: node12
+  main: dist/createCluster/index.js
