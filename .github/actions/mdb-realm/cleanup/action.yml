@@ -17,6 +17,9 @@ inputs:
   privateapiKey:
     required: true
     description: The private API key.
+  differentiator:
+    required: true
+    description: Provide a differentiator for the build - e.g. "{{ matrix.os }}-{{ matrix.node-version }}"  or "integration tests"
 runs:
   using: node12
   main: ../dist/cleanup/index.js

@@ -8,7 +8,7 @@
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
-    "package": "tsc && ncc build --source-map -o dist/createCluster src/createCluster.ts && ncc build --source-map -o dist/deployApps src/deployApps.ts && ncc build --source-map -o dist/cleanup src/cleanup.ts",
+    "package": "tsc && ncc build --source-map -o dist/deployApps src/deployApps.ts && ncc build --source-map -o dist/cleanup src/cleanup.ts",
     "test": "mocha -r ts-node/register '__tests__/**/*.ts'",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },

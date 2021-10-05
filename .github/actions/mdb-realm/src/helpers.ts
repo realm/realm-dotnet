@@ -84,7 +84,8 @@ async function execAtlasRequest(
     return JSON.parse(response.data);
 }
 
-export function getSuffix(differentiator: string): string {
+function getSuffix(): string {
+    const differentiator = core.getInput("differentiator", { required: true });
     return createHash("md5")
         .update(`${getRunId()}-${differentiator}`)
         .digest("base64")
@@ -98,18 +99,20 @@ function getRunId(): string {
     return process.env.GITHUB_RUN_ID || "";
 }
 
-function getClusterName(): string {
-    return `GHA-${getRunId()}`;
+export function getConfig(): EnvironmentConfig {
+    return {
+        projectId: core.getInput("projectId", { required: true }),
+        apiKey: core.getInput("apiKey", { required: true }),
+        privateApiKey: core.getInput("privateApiKey", { required: true }),
+        realmUrl: core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com",
+        atlasUrl: core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com",
+        clusterName: `GHA-${getRunId()}-${getSuffix()}`,
+    };
 }
 
-function getAppName(name: string, suffix: string): string {
-    return `${name}-${suffix}`;
-}
-
-export async function createCluster(atlasUrl: string, config: EnvironmentConfig): Promise<void> {
-    const clusterName = getClusterName();
+export async function createCluster(config: EnvironmentConfig): Promise<void> {
     const payload = {
-        name: clusterName,
+        name: config.clusterName,
         providerSettings: {
             instanceSizeName: "M10",
             providerName: "AWS",
@@ -117,29 +120,27 @@ export async function createCluster(atlasUrl: string, config: EnvironmentConfig)
         },
     };
 
-    core.info(`Creating Atlas cluster: ${clusterName}`);
+    core.info(`Creating Atlas cluster: ${config.clusterName}`);
 
-    const response = await execAtlasRequest(atlasUrl, "POST", "clusters", config, payload);
+    const response = await execAtlasRequest(config.atlasUrl, "POST", "clusters", config, payload);
 
     core.info(`Cluster created: ${JSON.stringify(response)}`);
 }
 
-export async function deleteCluster(atlasUrl: string, config: EnvironmentConfig): Promise<void> {
-    const clusterName = getClusterName();
-    core.info(`Deleting Atlas cluster: ${clusterName}`);
+export async function deleteCluster(config: EnvironmentConfig): Promise<void> {
+    core.info(`Deleting Atlas cluster: ${config.clusterName}`);
 
-    await execAtlasRequest(atlasUrl, "DELETE", `clusters/${clusterName}`, config);
+    await execAtlasRequest(config.atlasUrl, "DELETE", `clusters/${config.clusterName}`, config);
 
-    core.info(`Deleted Atlas cluster: ${clusterName}`);
+    core.info(`Deleted Atlas cluster: ${config.clusterName}`);
 }
 
-export async function waitForClusterDeployment(atlasUrl: string, config: EnvironmentConfig): Promise<void> {
-    const clusterName = getClusterName();
+export async function waitForClusterDeployment(config: EnvironmentConfig): Promise<void> {
     const pollDelay = 5;
     let attempt = 0;
     while (attempt++ < 200) {
         try {
-            const response = await execAtlasRequest(atlasUrl, "GET", `clusters/${clusterName}`, config);
+            const response = await execAtlasRequest(config.atlasUrl, "GET", `clusters/${config.clusterName}`, config);
 
             if (response.stateName === "IDLE") {
                 return;
@@ -160,17 +161,16 @@ export async function waitForClusterDeployment(atlasUrl: string, config: Environ
     throw new Error(`Cluster failed to deploy after ${100 * pollDelay} seconds`);
 }
 
-export async function configureRealmCli(atlasUrl: string, realmUrl: string, config: EnvironmentConfig): Promise<void> {
+export async function configureRealmCli(config: EnvironmentConfig): Promise<void> {
     await execCmd("npm i -g mongodb-realm-cli");
 
     await execCliCmd(
-        `login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${atlasUrl} --realm-url ${realmUrl}`,
+        `login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`,
     );
 }
 
-export async function publishApplication(appPath: string, appSuffix: string): Promise<{ id: string }> {
-    const clusterName = getClusterName();
-    const appName = getAppName(path.basename(appPath), appSuffix);
+export async function publishApplication(appPath: string, config: EnvironmentConfig): Promise<{ id: string }> {
+    const appName = `${path.basename(appPath)}-${getSuffix()}`;
     core.info(`Creating app ${appName}`);
 
     const createResponse = await execCliCmd(`apps create --name ${appName}`);
@@ -197,13 +197,13 @@ export async function publishApplication(appPath: string, appSuffix: string): Pr
     const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
     const backingDBConfig = readJson(backingDBConfigPath);
     backingDBConfig.type = "mongodb-atlas";
-    backingDBConfig.config.clusterName = clusterName;
+    backingDBConfig.config.clusterName = config.clusterName;
     backingDBConfig.config.sync.database_name += `-${getRunId()}`;
     delete backingDBConfig.secret_config;
 
     writeJson(backingDBConfigPath, backingDBConfig);
 
-    core.info(`Updated BackingDB config with cluster: ${clusterName}`);
+    core.info(`Updated BackingDB config with cluster: ${config.clusterName}`);
     core.info(`Updated BackingDB database to: ${backingDBConfig.config.sync.database_name}`);
 
     await execCliCmd(`push --local ${appPath} --remote ${appId}`);
@@ -215,15 +215,14 @@ export async function publishApplication(appPath: string, appSuffix: string): Pr
     };
 }
 
-export async function deleteApplications(): Promise<void> {
-    const clusterName = getClusterName();
+export async function deleteApplications(config: EnvironmentConfig): Promise<void> {
     const listResponse = await execCliCmd("apps list");
     const allApps: string[] = listResponse[0].data;
 
     for (const app of allApps) {
         const appId = app.split(" ")[0];
         const describeResponse = await execCliCmd(`apps describe -a ${appId}`);
-        if (describeResponse[0]?.doc.data_sources[0]?.data_source === clusterName) {
+        if (describeResponse[0]?.doc.data_sources[0]?.data_source === config.clusterName) {
             core.info(`Deleting ${appId}`);
             await execCliCmd(`apps delete -a ${appId}`);
             core.info(`Deleted ${appId}`);

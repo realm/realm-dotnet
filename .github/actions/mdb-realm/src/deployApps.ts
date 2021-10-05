@@ -1,28 +1,22 @@
 import * as core from "@actions/core";
 import * as fs from "fs";
-import { configureRealmCli, publishApplication, getSuffix } from "./helpers";
-import { EnvironmentConfig } from "./config";
+import { configureRealmCli, publishApplication, createCluster, waitForClusterDeployment, getConfig } from "./helpers";
 import path from "path";
 
 async function run(): Promise<void> {
     try {
-        const config: EnvironmentConfig = {
-            projectId: core.getInput("projectId", { required: true }),
-            apiKey: core.getInput("apiKey", { required: true }),
-            privateApiKey: core.getInput("privateApiKey", { required: true }),
-        };
+        const config = getConfig();
 
-        const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com";
-        const realmUrl = core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com";
-
-        const appSuffix = getSuffix(core.getInput("differentiator", { required: true }));
         const appsPath = core.getInput("appsPath", { required: true });
 
-        await configureRealmCli(atlasUrl, realmUrl, config);
+        await createCluster(config);
+        await waitForClusterDeployment(config);
+
+        await configureRealmCli(config);
 
         const deployedApps: { [key: string]: string } = {};
         for (const appPath of fs.readdirSync(appsPath)) {
-            const deployInfo = await publishApplication(path.join(appsPath, appPath), appSuffix);
+            const deployInfo = await publishApplication(path.join(appsPath, appPath), config);
             deployedApps[appPath] = deployInfo.id;
         }
 

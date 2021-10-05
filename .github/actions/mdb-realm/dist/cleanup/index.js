@@ -53788,16 +53788,10 @@ const helpers_1 = __webpack_require__(3015);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const config = {
-                projectId: core.getInput("projectId", { required: true }),
-                apiKey: core.getInput("apiKey", { required: true }),
-                privateApiKey: core.getInput("privateApiKey", { required: true }),
-            };
-            const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com";
-            const realmUrl = core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com";
-            yield helpers_1.configureRealmCli(atlasUrl, realmUrl, config);
-            yield helpers_1.deleteApplications();
-            yield helpers_1.deleteCluster(atlasUrl, config);
+            const config = helpers_1.getConfig();
+            yield helpers_1.configureRealmCli(config);
+            yield helpers_1.deleteApplications(config);
+            yield helpers_1.deleteCluster(config);
         }
         catch (error) {
             core.setFailed(`An unexpected error occurred: ${error.message}\n${error.stack}`);
@@ -53844,7 +53838,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.deleteApplications = exports.publishApplication = exports.configureRealmCli = exports.waitForClusterDeployment = exports.deleteCluster = exports.createCluster = exports.getSuffix = void 0;
+exports.deleteApplications = exports.publishApplication = exports.configureRealmCli = exports.waitForClusterDeployment = exports.deleteCluster = exports.createCluster = exports.getConfig = void 0;
 const core = __importStar(__webpack_require__(2186));
 const exec = __importStar(__webpack_require__(1514));
 const fs = __importStar(__webpack_require__(5747));
@@ -53921,7 +53915,8 @@ function execAtlasRequest(atlasUrl, method, route, config, payload) {
         return JSON.parse(response.data);
     });
 }
-function getSuffix(differentiator) {
+function getSuffix() {
+    const differentiator = core.getInput("differentiator", { required: true });
     return crypto_1.createHash("md5")
         .update(`${getRunId()}-${differentiator}`)
         .digest("base64")
@@ -53930,50 +53925,51 @@ function getSuffix(differentiator) {
         .toLowerCase()
         .substring(0, 8);
 }
-exports.getSuffix = getSuffix;
 function getRunId() {
     return process.env.GITHUB_RUN_ID || "";
 }
-function getClusterName() {
-    return `GHA-${getRunId()}`;
+function getConfig() {
+    return {
+        projectId: core.getInput("projectId", { required: true }),
+        apiKey: core.getInput("apiKey", { required: true }),
+        privateApiKey: core.getInput("privateApiKey", { required: true }),
+        realmUrl: core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com",
+        atlasUrl: core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com",
+        clusterName: `GHA-${getRunId()}-${getSuffix()}`,
+    };
 }
-function getAppName(name, suffix) {
-    return `${name}-${suffix}`;
-}
-function createCluster(atlasUrl, config) {
+exports.getConfig = getConfig;
+function createCluster(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
         const payload = {
-            name: clusterName,
+            name: config.clusterName,
             providerSettings: {
                 instanceSizeName: "M10",
                 providerName: "AWS",
                 regionName: "US_EAST_1",
             },
         };
-        core.info(`Creating Atlas cluster: ${clusterName}`);
-        const response = yield execAtlasRequest(atlasUrl, "POST", "clusters", config, payload);
+        core.info(`Creating Atlas cluster: ${config.clusterName}`);
+        const response = yield execAtlasRequest(config.atlasUrl, "POST", "clusters", config, payload);
         core.info(`Cluster created: ${JSON.stringify(response)}`);
     });
 }
 exports.createCluster = createCluster;
-function deleteCluster(atlasUrl, config) {
+function deleteCluster(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
-        core.info(`Deleting Atlas cluster: ${clusterName}`);
-        yield execAtlasRequest(atlasUrl, "DELETE", `clusters/${clusterName}`, config);
-        core.info(`Deleted Atlas cluster: ${clusterName}`);
+        core.info(`Deleting Atlas cluster: ${config.clusterName}`);
+        yield execAtlasRequest(config.atlasUrl, "DELETE", `clusters/${config.clusterName}`, config);
+        core.info(`Deleted Atlas cluster: ${config.clusterName}`);
     });
 }
 exports.deleteCluster = deleteCluster;
-function waitForClusterDeployment(atlasUrl, config) {
+function waitForClusterDeployment(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
         const pollDelay = 5;
         let attempt = 0;
         while (attempt++ < 200) {
             try {
-                const response = yield execAtlasRequest(atlasUrl, "GET", `clusters/${clusterName}`, config);
+                const response = yield execAtlasRequest(config.atlasUrl, "GET", `clusters/${config.clusterName}`, config);
                 if (response.stateName === "IDLE") {
                     return;
                 }
@@ -53988,17 +53984,16 @@ function waitForClusterDeployment(atlasUrl, config) {
     });
 }
 exports.waitForClusterDeployment = waitForClusterDeployment;
-function configureRealmCli(atlasUrl, realmUrl, config) {
+function configureRealmCli(config) {
     return __awaiter(this, void 0, void 0, function* () {
         yield execCmd("npm i -g mongodb-realm-cli");
-        yield execCliCmd(`login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${atlasUrl} --realm-url ${realmUrl}`);
+        yield execCliCmd(`login --api-key ${config.apiKey} --private-api-key ${config.privateApiKey} --atlas-url ${config.atlasUrl} --realm-url ${config.realmUrl}`);
     });
 }
 exports.configureRealmCli = configureRealmCli;
-function publishApplication(appPath, appSuffix) {
+function publishApplication(appPath, config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
-        const appName = getAppName(path.basename(appPath), appSuffix);
+        const appName = `${path.basename(appPath)}-${getSuffix()}`;
         core.info(`Creating app ${appName}`);
         const createResponse = yield execCliCmd(`apps create --name ${appName}`);
         const appId = createResponse.map(r => r.doc).find(d => d && d.client_app_id).client_app_id;
@@ -54018,11 +54013,11 @@ function publishApplication(appPath, appSuffix) {
         const backingDBConfigPath = path.join(appPath, "services", "BackingDB", "config.json");
         const backingDBConfig = readJson(backingDBConfigPath);
         backingDBConfig.type = "mongodb-atlas";
-        backingDBConfig.config.clusterName = clusterName;
+        backingDBConfig.config.clusterName = config.clusterName;
         backingDBConfig.config.sync.database_name += `-${getRunId()}`;
         delete backingDBConfig.secret_config;
         writeJson(backingDBConfigPath, backingDBConfig);
-        core.info(`Updated BackingDB config with cluster: ${clusterName}`);
+        core.info(`Updated BackingDB config with cluster: ${config.clusterName}`);
         core.info(`Updated BackingDB database to: ${backingDBConfig.config.sync.database_name}`);
         yield execCliCmd(`push --local ${appPath} --remote ${appId}`);
         core.info(`Imported ${appName} successfully`);
@@ -54032,16 +54027,15 @@ function publishApplication(appPath, appSuffix) {
     });
 }
 exports.publishApplication = publishApplication;
-function deleteApplications() {
+function deleteApplications(config) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const clusterName = getClusterName();
         const listResponse = yield execCliCmd("apps list");
         const allApps = listResponse[0].data;
         for (const app of allApps) {
             const appId = app.split(" ")[0];
             const describeResponse = yield execCliCmd(`apps describe -a ${appId}`);
-            if (((_b = (_a = describeResponse[0]) === null || _a === void 0 ? void 0 : _a.doc.data_sources[0]) === null || _b === void 0 ? void 0 : _b.data_source) === clusterName) {
+            if (((_b = (_a = describeResponse[0]) === null || _a === void 0 ? void 0 : _a.doc.data_sources[0]) === null || _b === void 0 ? void 0 : _b.data_source) === config.clusterName) {
                 core.info(`Deleting ${appId}`);
                 yield execCliCmd(`apps delete -a ${appId}`);
                 core.info(`Deleted ${appId}`);

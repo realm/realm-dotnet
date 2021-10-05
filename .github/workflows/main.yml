@@ -8,20 +8,6 @@ name: main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
-  deploy-atlas-cluster:
-    runs-on: ubuntu-latest
-    name: Deploy Atlas Cluster
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/createCluster
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
@@ -425,8 +411,6 @@ jobs:
   baas-net-framework:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for .NET Framework
-    needs:
-    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -488,11 +472,27 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  cleanup-net-framework:
+    runs-on: ubuntu-latest
+    name: Cleanup Atlas Cluster
+    needs:
+    - test-net-framework
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/cleanup
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: .NET Framework
   baas-uwp-managed:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for UWP Managed
-    needs:
-    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -562,6 +562,24 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  cleanup-uwp-managed:
+    runs-on: ubuntu-latest
+    name: Cleanup Atlas Cluster
+    needs:
+    - test-uwp-managed
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/cleanup
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: UWP Managed
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: Test .NET
@@ -628,8 +646,6 @@ jobs:
   baas-xamarinmacos:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.macOS
-    needs:
-    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -689,11 +705,27 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  cleanup-xamarinmacos:
+    runs-on: ubuntu-latest
+    name: Cleanup Atlas Cluster
+    needs:
+    - test-xamarinmacos
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/cleanup
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: Xamarin.macOS
   baas-xamarinios:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.iOS
-    needs:
-    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -758,6 +790,24 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  cleanup-xamarinios:
+    runs-on: ubuntu-latest
+    name: Cleanup Atlas Cluster
+    needs:
+    - test-xamarinios
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/cleanup
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -792,8 +842,6 @@ jobs:
   baas-code-coverage:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Code Coverage
-    needs:
-    - deploy-atlas-cluster
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
     steps:
@@ -912,6 +960,24 @@ jobs:
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+  cleanup-code-coverage:
+    runs-on: ubuntu-latest
+    name: Cleanup Atlas Cluster
+    needs:
+    - test-code-coverage
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: ./.github/actions/mdb-realm/cleanup
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: Code Coverage
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
@@ -967,27 +1033,6 @@ jobs:
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-ARM
-  cleanup-atlas-cluster:
-    runs-on: ubuntu-latest
-    name: Cleanup Atlas Cluster
-    needs:
-    - test-net-framework
-    - test-uwp-managed
-    - test-xamarinmacos
-    - test-xamarinios
-    - test-code-coverage
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/cleanup
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
