@@ -53788,7 +53788,7 @@ const helpers_1 = __webpack_require__(3015);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com/";
+            const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com";
             const config = {
                 projectId: core.getInput("projectId", { required: true }),
                 apiKey: core.getInput("apiKey", { required: true }),

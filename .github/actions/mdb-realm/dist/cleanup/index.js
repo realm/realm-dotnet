@@ -53793,8 +53793,8 @@ function run() {
                 apiKey: core.getInput("apiKey", { required: true }),
                 privateApiKey: core.getInput("privateApiKey", { required: true }),
             };
-            const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com/";
-            const realmUrl = core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com/";
+            const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com";
+            const realmUrl = core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com";
             yield helpers_1.configureRealmCli(atlasUrl, realmUrl, config);
             yield helpers_1.deleteApplications();
             yield helpers_1.deleteCluster(atlasUrl, config);

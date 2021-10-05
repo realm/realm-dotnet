@@ -4,7 +4,7 @@ import { EnvironmentConfig } from "./config";
 
 async function run(): Promise<void> {
     try {
-        const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com/";
+        const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com";
         const config: EnvironmentConfig = {
             projectId: core.getInput("projectId", { required: true }),
             apiKey: core.getInput("apiKey", { required: true }),

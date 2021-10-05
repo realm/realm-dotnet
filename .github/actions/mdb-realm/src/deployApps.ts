@@ -12,8 +12,8 @@ async function run(): Promise<void> {
             privateApiKey: core.getInput("privateApiKey", { required: true }),
         };
 
-        const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com/";
-        const realmUrl = core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com/";
+        const atlasUrl = core.getInput("atlasUrl", { required: false }) || "https://cloud-dev.mongodb.com";
+        const realmUrl = core.getInput("realmUrl", { required: false }) || "https://realm-dev.mongodb.com";
 
         const appSuffix = getSuffix(core.getInput("differentiator", { required: true }));
         const appsPath = core.getInput("appsPath", { required: true });
