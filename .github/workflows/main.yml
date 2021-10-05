@@ -11,7 +11,6 @@ jobs:
   deploy-atlas-cluster:
     runs-on: ubuntu-latest
     name: Deploy Atlas Cluster
-    id: deploy-atlas-cluster
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
