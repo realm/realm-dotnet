@@ -116,8 +116,8 @@ REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedS
 {
     return handle_errors(ex, [&] {
         auto notifier_direction = direction == CSharpNotifierType::Upload
-                                  ? SyncSession::NotifierType::upload
-                                  : SyncSession::NotifierType::download;
+                                  ? SyncSession::ProgressDirection::upload
+                                  : SyncSession::ProgressDirection::download;
 
         return session->register_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable) {
             s_progress_callback(managed_state, transferred, transferable);
