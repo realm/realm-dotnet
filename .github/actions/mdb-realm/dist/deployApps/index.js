@@ -54028,11 +54028,9 @@ function publishApplication(appPath, config) {
         const backingDBConfig = readJson(backingDBConfigPath);
         backingDBConfig.type = "mongodb-atlas";
         backingDBConfig.config.clusterName = config.clusterName;
-        backingDBConfig.config.sync.database_name += `-${getRunId()}`;
         delete backingDBConfig.secret_config;
         writeJson(backingDBConfigPath, backingDBConfig);
         core.info(`Updated BackingDB config with cluster: ${config.clusterName}`);
-        core.info(`Updated BackingDB database to: ${backingDBConfig.config.sync.database_name}`);
         yield execCliCmd(`push --local ${appPath} --remote ${appId}`);
         core.info(`Imported ${appName} successfully`);
         return {
