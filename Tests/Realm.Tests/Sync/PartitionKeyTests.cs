@@ -27,13 +27,6 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class PartitionKeyTests : SyncTestBase
     {
-        // This is fairly obnoxious, but we can't have more than one object with
-        // the same PK, even if in different partitions. Otherwise the translator
-        // will delete it midway though our test making results fairly unpredictable.
-        // We still want to test null primary keys, which is why we'll do it during
-        // the first run we get and follow-up tests will just test random non-null keys.
-        private static bool _haveTestedNull;
-
         [Test]
         public void OpenRealm_StringPK_Works()
         {
@@ -106,29 +99,17 @@ namespace Realms.Tests.Sync
             using var realm1 = await GetRealmAsync(config1);
             using var realm2 = await GetRealmAsync(config2);
 
-            // We want to test null/0/"" primary keys at least once when running the tests.
-            var intPK = _haveTestedNull ? TestHelpers.Random.Next(int.MinValue, int.MaxValue) : 0;
-            var nullableIntPK = _haveTestedNull ? TestHelpers.Random.Next(int.MinValue, int.MaxValue) : (long?)null;
-            var oidPK = _haveTestedNull ? ObjectId.GenerateNewId() : ObjectId.Empty;
-            var nullableOidPK = _haveTestedNull ? ObjectId.GenerateNewId() : (ObjectId?)null;
-            var guidPK = _haveTestedNull ? Guid.NewGuid() : Guid.Empty;
-            var nullableGuidPK = _haveTestedNull ? Guid.NewGuid() : (Guid?)null;
-            var stringPK = _haveTestedNull ? Guid.NewGuid().ToString() : string.Empty;
-            var nullableStringPK = _haveTestedNull ? Guid.NewGuid().ToString() : null;
-
-            _haveTestedNull = true;
-
             var fromRealm1 = realm1.Write(() =>
             {
                 return (
-                    realm1.Add(new PrimaryKeyInt64Object { Id = intPK }),
-                    realm1.Add(new PrimaryKeyObjectIdObject { Id = oidPK }),
-                    realm1.Add(new PrimaryKeyGuidObject { Id = guidPK }),
-                    realm1.Add(new RequiredPrimaryKeyStringObject { Id = stringPK }),
-                    realm1.Add(new PrimaryKeyNullableInt64Object { Id = nullableIntPK }),
-                    realm1.Add(new PrimaryKeyNullableObjectIdObject { Id = nullableOidPK }),
-                    realm1.Add(new PrimaryKeyNullableGuidObject { Id = nullableGuidPK }),
-                    realm1.Add(new PrimaryKeyStringObject { Id = nullableStringPK }));
+                    realm1.Add(new PrimaryKeyInt64Object { Id = TestHelpers.Random.Next(int.MinValue, int.MaxValue) }),
+                    realm1.Add(new PrimaryKeyObjectIdObject { Id = ObjectId.GenerateNewId() }),
+                    realm1.Add(new PrimaryKeyGuidObject { Id = Guid.NewGuid() }),
+                    realm1.Add(new RequiredPrimaryKeyStringObject { Id = Guid.NewGuid().ToString() }),
+                    realm1.Add(new PrimaryKeyNullableInt64Object { Id = TestHelpers.Random.Next(int.MinValue, int.MaxValue) }),
+                    realm1.Add(new PrimaryKeyNullableObjectIdObject { Id = ObjectId.GenerateNewId() }),
+                    realm1.Add(new PrimaryKeyNullableGuidObject { Id = Guid.NewGuid() }),
+                    realm1.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() }));
             });
 
             await WaitForUploadAsync(realm1);

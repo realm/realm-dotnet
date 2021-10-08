@@ -37,13 +37,14 @@ namespace Realms.Tests.Sync
                 var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                            .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
 
+                var partition = Guid.NewGuid().ToString();
                 for (var i = 0; i < 5; i++)
                 {
                     var instance = (RealmObject)Activator.CreateInstance(objectType);
 
                     pkProperty.SetValue(instance, pkValue);
 
-                    using var realm = await GetSyncedRealm(objectType);
+                    using var realm = await GetSyncedRealm(partition);
                     try
                     {
                         realm.Write(() => realm.Add(instance));
@@ -56,7 +57,7 @@ namespace Realms.Tests.Sync
                     await WaitForUploadAsync(realm);
                 }
 
-                using (var realm = await GetSyncedRealm(objectType))
+                using (var realm = await GetSyncedRealm(partition))
                 {
                     await WaitForDownloadAsync(realm);
                     var allObjects = ((IQueryable<RealmObject>)realm.DynamicApi.All(objectType.Name)).ToArray();
@@ -79,10 +80,10 @@ namespace Realms.Tests.Sync
             new object[] { typeof(PrimaryKeyStringObject), "key" },
         };
 
-        private async Task<Realm> GetSyncedRealm(Type objectType)
+        private async Task<Realm> GetSyncedRealm(string partition)
         {
-            var config = await GetIntegrationConfigAsync($"merge_by_pk_{objectType.Name}");
-            config.ObjectClasses = new[] { objectType };
+            var config = await GetIntegrationConfigAsync(partition);
+            config.ObjectClasses = new[] { typeof(PrimaryKeyNullableInt64Object), typeof(PrimaryKeyStringObject), typeof(PrimaryKeyInt64Object) };
 
             return GetRealm(config);
         }
