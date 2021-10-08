@@ -419,7 +419,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/deployApps
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
@@ -484,7 +484,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/cleanup
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -501,7 +501,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/deployApps
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
@@ -574,7 +574,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/cleanup
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -653,7 +653,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/deployApps
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
@@ -716,7 +716,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/cleanup
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -733,7 +733,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/deployApps
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
@@ -801,7 +801,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/cleanup
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -849,7 +849,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/deployApps
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
@@ -971,7 +971,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: ./.github/actions/mdb-realm/cleanup
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}

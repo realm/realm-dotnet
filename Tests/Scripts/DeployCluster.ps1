@@ -20,3 +20,21 @@ $data | ConvertTo-Json -Compress | curl --user "${ApiKey}:${PrivateApiKey}" --di
 --include `
 --request POST "https://cloud-dev.mongodb.com/api/atlas/v1.0/groups/$ProjectId/clusters" `
 -d "@-"
+
+$attempt = 0
+while ($attempt++ -lt 200) {
+    Start-Sleep -Seconds 5
+
+    $clusterResponse = curl --user "${ApiKey}:${PrivateApiKey}" --digest `
+    --header 'Content-Type: application/json' `
+    --request GET "https://cloud-dev.mongodb.com/api/atlas/v1.0/groups/$ProjectId/clusters/$ClusterName"
+
+    $state = ($clusterResponse | ConvertFrom-Json).stateName
+
+    if ($state -eq "IDLE") {
+        Write-Output "Cluster created and ready after $($attempt * 5) seconds"
+        break
+    }
+
+    Write-Output "Cluster state is $state after $($attempt * 5) seconds. Waiting 5 seconds for IDLE"
+}

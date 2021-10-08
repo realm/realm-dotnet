@@ -3,7 +3,7 @@ param (
 )
 
 $tempPath = [IO.Path]::Combine($PSScriptRoot, "..", "temp")
-Copy-Item -Path ([IO.Path]::Combine($PSScriptRoot, "..", "TestApps")) -Destination $tempPath -Recurse
+Copy-Item -Path ([IO.Path]::Combine($PSScriptRoot, "..", "TestApps")) -Destination "$tempPath/" -Recurse
 
 $apps = @{}
 Get-ChildItem –Path $tempPath | Foreach-Object {
