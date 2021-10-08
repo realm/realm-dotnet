@@ -139,7 +139,7 @@ namespace Realms.Tests.Sync
             Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.Id)?.IsValid, Is.True);
             Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.Id)?.IsValid, Is.True);
             Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item6.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyNullableObjectIdObject>(fromRealm1.Item6.Id)?.IsValid, Is.True);
             Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.Id)?.IsValid, Is.True);
             Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.Id)?.IsValid, Is.True);
 

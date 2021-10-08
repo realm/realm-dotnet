@@ -122,7 +122,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
-                Assert.That(lastProgress.TransferableBytes, Is.AtLeast(lastProgress.TransferredBytes));
+                Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes).Within(0.2 * lastProgress.TransferableBytes));
             }, 60000);
         }
 
@@ -152,7 +152,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
-                Assert.That(lastProgress.TransferableBytes, Is.AtLeast(lastProgress.TransferredBytes));
+                Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes).Within(0.2 * lastProgress.TransferableBytes));
             }, 60000);
         }
 
