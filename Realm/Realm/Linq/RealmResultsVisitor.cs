@@ -159,7 +159,7 @@ namespace Realms
             while (expression != null)
             {
                 var type = expression.Member.DeclaringType;
-                var typeName = type.GetTypeInfo().GetMappedOrOriginalName();
+                var typeName = type.GetMappedOrOriginalName();
                 if (!_realm.Metadata.TryGetValue(typeName, out var metadata))
                 {
                     throw new NotSupportedException($"The class {type.Name} is not in the limited set of classes for this Realm, so sorting by its properties is not allowed.");

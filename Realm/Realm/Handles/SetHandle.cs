@@ -97,6 +97,15 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_set_equals", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool set_equals(SetHandle handle, CollectionHandleBase other_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_to_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr to_results(SetHandle set, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(SetHandle results,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
         }
 
         public override bool IsValid
@@ -153,6 +162,17 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
+        public ResultsHandle ToResults()
+        {
+            var ptr = NativeMethods.to_results(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            return new ResultsHandle(this, ptr);
+        }
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
+
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
@@ -197,9 +217,6 @@ namespace Realms
         protected override void Unbind() => NativeMethods.destroy(handle);
 
         protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
-
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
-            => throw new NotImplementedException("Sets can't be filtered yet.");
 
         #region Set methods
 

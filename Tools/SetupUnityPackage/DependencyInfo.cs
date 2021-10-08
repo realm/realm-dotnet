@@ -25,9 +25,16 @@ namespace SetupUnityPackage
     {
         private readonly string[] _files;
 
+        public bool ReferenceOnly { get; }
+
         public DependencyInfo(string id, params string[] files) : base(id)
         {
             _files = files;
+        }
+
+        public DependencyInfo(string id, bool referenceOnly, params string[] files) : this(id, files)
+        {
+            ReferenceOnly = referenceOnly;
         }
 
         public override IEnumerable<(string PackagePath, string OnDiskPath)> GetFilesToExtract(string basePath)

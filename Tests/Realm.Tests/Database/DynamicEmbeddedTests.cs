@@ -77,7 +77,7 @@ namespace Realms.Tests.Database
             {
                 var config = new RealmConfiguration(Guid.NewGuid().ToString())
                 {
-                    ObjectClasses = new[] { typeof(DynamicTask), typeof(DynamicSubTask), typeof(CompletionReport), typeof(DynamicSubSubTask) },
+                    Schema = new[] { typeof(DynamicTask), typeof(DynamicSubTask), typeof(CompletionReport), typeof(DynamicSubSubTask) },
                     IsDynamic = isDynamic
                 };
 

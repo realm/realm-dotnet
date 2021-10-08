@@ -4,13 +4,109 @@
 * None
 
 ### Fixed
-* Fixed an issue that would result in `Unable to load DLL 'realm-wrappers'` when deploying a WPF .NET Framework application with ClickOnce. This was due to the incorrect BuildAction type being applied to the native libraries that Realm depends on. (Issue [#1877](https://github.com/realm/realm-dotnet/issues/1877))
+* None
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
 * Using Core x.y.z.
+* iOS wrappers are now built with the "new build system" introduced by Xcode 10 and used as default by Xcode 12. More info can be found in cmake's [docs](https://cmake.org/cmake/help/git-stage/variable/CMAKE_XCODE_BUILD_SYSTEM.html#variable:CMAKE_XCODE_BUILD_SYSTEM).
+
+## 10.6.0 (2021-09-30)
+
+### Enhancements
+* Added two extension methods on `ISet` to get an `IQueryable` collection wrapping the set:
+  * `set.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `ISet<T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `set.Filter(query, arguments)` will filter the set and return the filtered collection. It is roughly equivalent to `set.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2555](https://github.com/realm/realm-dotnet/issues/2555))
+* Added two new methods on `Migration` (Issue [#2543](https://github.com/realm/realm-dotnet/issues/2543)):
+  * `RemoveType(typeName)` allows to completely remove a type and its schema from a realm during a migration.
+  * `RenameProperty(typeName, oldPropertyName, newPropertyName)` allows to rename a property during a migration.
+* A Realm Schema can now be constructed at runtime as opposed to generated automatically from the model classes. The automatic generation continues to work and should cover the needs of the vast majority of Realm users. Manually constructing the schema may be required when the shape of the objects depends on some information only known at runtime or in very rare cases where it may provide performance benefits by representing a collection of known size as properties on the class. (Issue [#824](https://github.com/realm/realm-dotnet/issues/824))
+  * `RealmConfiguration.ObjectClasses` has now been deprecated in favor of `RealmConfiguration.Schema`. `RealmSchema` has an implicit conversion operator from `Type[]` so code that previously looked like `ObjectClasses = new[] { typeof(Foo), typeof(Bar) }` can be trivially updated to `Schema = new[] { typeof(Foo), typeof(Bar) }`.
+  * `Property` has been converted to a read-only struct by removing the setters from its properties. Those didn't do anything previously, so we don't expect anyone was using them.
+  * Added several factory methods on `Property` to simplify declaration of Realm properties by being explicit about the range of valid options - e.g. `Property.FromType<int>("IntProperty")` or `Property.Object("MyPersonProp", "Person")`. The constructor of `Property` is now public to support advanced scenarios, but we recommend using the factory methods.
+  * Made `ObjectSchema.Builder` public and streamlined its API. It allows you to construct a mutable representation of the schema of a single object and add/remove properties to it. You can either get an empty builder or you can see it with the information from an existing model class (i.e. inheriting from `RealmObject` or `EmbeddedObject`).
+  * Made `RealmSchema.Builder` public and streamlined its API. It allows you to construct a mutable representation of the schema of an entire Realm and add/remove object schemas to it.
+  * A simple example for how to use the new API would look like:
+  ```csharp
+  public class Person : RealmObject
+  {
+    public string Name { get; set; }
+    public Address Address { get; set; }
+  }
+
+  // Declare schema from existing model classes
+  var config = new RealmConfiguration
+  {
+    Schema = new[] { typeof(Person), typeof(Address) }
+  };
+
+  // Manually construct a schema - we don't need to call .Build() on the builders
+  // because we have implicit conversion operators defined that will call it for us.
+  // Explicitly calling .Build() is also perfectly fine, if a little more verbose.
+  var config = new RealmConfiguration
+  {
+    Schema = new RealmSchema.Builder
+    {
+      new ObjectSchema.Builder("MyClass", isEmbedded: false)
+      {
+        Property.FromType<int>("Id", isPrimaryKey: true),
+        Property.PrimitiveDictionary("Tags", RealmValueType.String)
+      },
+      new ObjectSchema.Builder("EmbeddedClass", isEmbedded: true)
+      {
+        Property.Primitive("DateProp", RealmValueType.Date, isNullable: true)
+      }
+    }
+  };
+
+  // Enhance an existing model with new properties that will be accessible via
+  // the dynamic API.
+  var personSchema = new ObjectSchema.Builder(typeof(Person))
+  {
+    Property.FromType<string>("NewStringProp")
+  };
+
+  var config = new RealmConfiguration
+  {
+    Schema = new RealmSchema.Builder
+    {
+      personSchema,
+      new ObjectSchema.Builder(typeof(Address))
+    }
+  };
+
+  // Regular Person properties can be accessed as usual while runtime defined ones
+  // need to go through the dynamic API.
+  var person = realm.All<Person>().First();
+  var name = person.Name;
+  var stringPropValue = person.DynamicApi.Get<string>("NewStringProp");
+  ```
+* Fixed an issue that would result in SIGABORT on macOS/Linux when opening a Realm in dynamic mode (i.e. read the schema from disk) and the schema contains an object with no properties. (Issue [#1978](https://github.com/realm/realm-dotnet/issues/1978))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.4.1.
+* Moved perf tests to run on a self-hosted runner. (PR [#2638](https://github.com/realm/realm-dotnet/pull/2638))
+
+## 10.5.1 (2021-09-22)
+
+### Fixed
+* Fixed a bug that would cause a `NullReferenceException` to be reported during compilation of a class containing a getter-only `RealmObject` property. (Issue [#2576](https://github.com/realm/realm-dotnet/issues/2576))
+* Fixed an issue that would result in `Unable to load DLL 'realm-wrappers'` when deploying a WPF .NET Framework application with ClickOnce. This was due to the incorrect BuildAction type being applied to the native libraries that Realm depends on. (Issue [#1877](https://github.com/realm/realm-dotnet/issues/1877))
+* \[Unity] Fixed an issue that would fail Unity builds with `Multiple precompiled assemblies with the same name Mono.Cecil.dll` if importing the Realm package into a project that already references `Mono.Cecil`. (Issue [#2630](https://github.com/realm/realm-dotnet/issues/2630))
+* Fixed a bug that would sometimes result in assemblies not found at runtime in a very specific edge scenario. More details about such a scenario can be found in its [PR](https://github.com/realm/realm-dotnet/pull/2639)'s description. (Issue [#1568](https://github.com/realm/realm-dotnet/issues/1568))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.4.1.
 
 ## 10.5.0 (2021-09-09)
 

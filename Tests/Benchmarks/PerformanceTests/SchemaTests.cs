@@ -42,7 +42,7 @@ namespace PerformanceTests
         [Benchmark(Description = "Time to convert C# classes containing all possible property types to Realm Schema")]
         public RealmSchema CreateSchema()
         {
-            return RealmSchema.CreateSchemaForClasses(_schemaClasses);
+            return new RealmSchema.Builder(_schemaClasses).Build();
         }
 
         [Benchmark(Description = "Time to open a Realm with a schema containing all possible property types")]
@@ -50,7 +50,7 @@ namespace PerformanceTests
         {
             var config = new RealmConfiguration(Path.Combine(_basePath, Guid.NewGuid().ToString()))
             {
-                ObjectClasses = _schemaClasses
+                Schema = _schemaClasses
             };
 
             using var realm = Realm.GetInstance(config);

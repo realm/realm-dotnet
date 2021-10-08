@@ -224,7 +224,7 @@ namespace Realms.Tests.Sync
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {
             var config = GetFakeConfig();
-            config.ObjectClasses = new[] { typeof(IntPrimaryKeyWithValueObject) };
+            config.Schema = new[] { typeof(IntPrimaryKeyWithValueObject) };
 
             // Create the realm and add some objects
             using (var realm = GetRealm(config))
@@ -241,7 +241,7 @@ namespace Realms.Tests.Sync
             using var dynamicRealm = GetRealm(config);
             Assert.That(dynamicRealm.Schema.Count == 1);
 
-            var objectSchema = dynamicRealm.Schema.Find(nameof(IntPrimaryKeyWithValueObject));
+            Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(IntPrimaryKeyWithValueObject), out var objectSchema), Is.True);
             Assert.That(objectSchema, Is.Not.Null);
 
             Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
@@ -255,7 +255,7 @@ namespace Realms.Tests.Sync
         public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
         {
             var config = GetFakeConfig();
-            config.ObjectClasses = null;
+            config.Schema = null;
             config.IsDynamic = true;
 
             using var realm = GetRealm(config);
@@ -323,7 +323,7 @@ namespace Realms.Tests.Sync
         public void EmbeddedObject_WhenAdditiveExplicit_ShouldThrow()
         {
             var conf = GetFakeConfig();
-            conf.ObjectClasses = new[] { typeof(EmbeddedLevel3) };
+            conf.Schema = new[] { typeof(EmbeddedLevel3) };
 
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }

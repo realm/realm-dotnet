@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Realms
 {
@@ -48,7 +47,7 @@ namespace Realms
                 return typeof(IEnumerable<>).MakeGenericType(seqType.GetElementType());
             }
 
-            if (seqType.GetTypeInfo().IsGenericType)
+            if (seqType.IsGenericType)
             {
                 var result = seqType.GetGenericArguments()
                     .Select(arg => typeof(IEnumerable<>).MakeGenericType(arg))
@@ -68,9 +67,9 @@ namespace Realms
                 return ienum;
             }
 
-            if (seqType.GetTypeInfo().BaseType != null && seqType.GetTypeInfo().BaseType != typeof(object))
+            if (seqType.BaseType != null && seqType.BaseType != typeof(object))
             {
-                return FindIEnumerable(seqType.GetTypeInfo().BaseType);
+                return FindIEnumerable(seqType.BaseType);
             }
 
             return null;

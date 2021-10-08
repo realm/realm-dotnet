@@ -41,7 +41,7 @@ internal static class TypeReferenceExtensions
         SequencePoint GetPropSequencePoint()
         {
             return @this.Properties
-                .Select(p => p.GetMethod?.DebugInformation.SequencePoints.FirstOrDefault() ?? p.SetMethod?.DebugInformation.SequencePoints.FirstOrDefault())
+                .Select(p => p.GetSequencePoint())
                 .FirstOrDefault(sp => sp != null);
         }
     }

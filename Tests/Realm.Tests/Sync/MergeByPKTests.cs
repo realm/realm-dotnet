@@ -83,7 +83,7 @@ namespace Realms.Tests.Sync
         private async Task<Realm> GetSyncedRealm(string partition)
         {
             var config = await GetIntegrationConfigAsync(partition);
-            config.ObjectClasses = new[] { typeof(PrimaryKeyNullableInt64Object), typeof(PrimaryKeyStringObject), typeof(PrimaryKeyInt64Object) };
+            config.Schema = new[] { typeof(PrimaryKeyNullableInt64Object), typeof(PrimaryKeyStringObject), typeof(PrimaryKeyInt64Object) };
 
             return GetRealm(config);
         }

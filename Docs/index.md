@@ -24,7 +24,7 @@ Documentation
 -------------
 The documentation can be found at [https://docs.mongodb.com/realm/sdk/dotnet/](https://docs.mongodb.com/realm/sdk/dotnet/).
 
-The API reference is located at [https://docs.mongodb.com/realm-sdks/dotnet/latest/](https://docs.mongodb.com/realm-sdks/dotnet/latest/).
+The API reference is located at [https://docs.mongodb.com/realm-sdks/dotnet/latest/reference/Realms.html](https://docs.mongodb.com/realm-sdks/dotnet/latest/reference/Realms.html).
 
 Source
 ------

@@ -53,12 +53,12 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new Owner();
-                obj.Dogs.Add(new Dog { Name = "1" });
-                obj.Dogs.Add(new Dog { Name = "2" });
+                obj.ListOfDogs.Add(new Dog { Name = "1" });
+                obj.ListOfDogs.Add(new Dog { Name = "2" });
 
                 _realm.Write(() => _realm.Add(obj));
 
-                var listReference = ThreadSafeReference.Create(obj.Dogs);
+                var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
 
                 await Task.Run(() =>
                 {
@@ -287,12 +287,12 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new Owner();
-                obj.Dogs.Add(new Dog { Name = "1" });
-                obj.Dogs.Add(new Dog { Name = "2" });
+                obj.ListOfDogs.Add(new Dog { Name = "1" });
+                obj.ListOfDogs.Add(new Dog { Name = "2" });
 
                 _realm.Write(() => _realm.Add(obj));
 
-                var listReference = ThreadSafeReference.Create(obj.Dogs);
+                var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
 
                 _realm.Write(() => _realm.Remove(obj));
 

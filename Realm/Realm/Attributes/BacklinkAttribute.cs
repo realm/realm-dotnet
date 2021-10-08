@@ -48,7 +48,7 @@ namespace Realms
     /// </code>
     /// </example>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class BacklinkAttribute : Attribute
+    public sealed class BacklinkAttribute : Attribute
     {
         internal string Property { get; }
 

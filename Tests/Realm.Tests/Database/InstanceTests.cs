@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -190,7 +191,7 @@ namespace Realms.Tests.Database
         public void RealmWithOneClassWritesDesiredClass()
         {
             // Arrange
-            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass) };
+            RealmConfiguration.DefaultConfiguration.Schema = new[] { typeof(LoneClass) };
 
             // Act
             using var lonelyRealm = GetRealm();
@@ -210,7 +211,7 @@ namespace Realms.Tests.Database
         public void RealmWithOneClassThrowsIfUseOther()
         {
             // Arrange
-            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass) };
+            RealmConfiguration.DefaultConfiguration.Schema = new[] { typeof(LoneClass) };
 
             // Act and assert
             using var lonelyRealm = GetRealm();
@@ -225,12 +226,14 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObjectClassesOnlyAllowRealmObjects()
         {
-            // Arrange
-            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass), typeof(object) };
-
-            // Act and assert
             // Can't have classes in the list which are not RealmObjects
-            Assert.That(() => GetRealm(), Throws.TypeOf<ArgumentException>());
+            var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
+            {
+                Schema = new[] { typeof(LoneClass), typeof(object) }
+            });
+
+            Assert.That(ex.Message, Does.Contain("System.Object"));
+            Assert.That(ex.Message, Does.Contain("must descend directly from RealmObject or EmbeddedObject"));
         }
 
         [TestCase(true)]
@@ -633,7 +636,7 @@ namespace Realms.Tests.Database
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(EmbeddedLevel1), typeof(EmbeddedLevel2), typeof(EmbeddedLevel3) }
+                Schema = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(EmbeddedLevel1), typeof(EmbeddedLevel2), typeof(EmbeddedLevel3) }
             };
 
             // Create the realm and add some objects
@@ -660,7 +663,7 @@ namespace Realms.Tests.Database
             using var dynamicRealm = GetRealm(config);
             Assert.That(dynamicRealm.Schema.Count, Is.EqualTo(6));
 
-            var allTypesSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+            Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
             Assert.That(allTypesSchema.IsEmbedded, Is.False);
 
@@ -677,7 +680,7 @@ namespace Realms.Tests.Database
                 Assert.That(dynamicAto.RequiredStringProperty, Is.EqualTo("This is required!"));
             }
 
-            var embeddedAllTypesSchema = dynamicRealm.Schema.Find(nameof(EmbeddedAllTypesObject));
+            Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
             Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
 
@@ -693,6 +696,22 @@ namespace Realms.Tests.Database
                 dynamic dynamicEmbeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
                 Assert.That(dynamicEmbeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
             }
+        }
+
+        [Test]
+        public void GetInstance_WhenIsDynamic_AndOSSchemaHasEmptyTable_DoesntThrow()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                IsDynamic = true
+            };
+
+            TestHelpers.CopyBundledFileToDocuments("v6db.realm", config.DatabasePath);
+
+            Assert.DoesNotThrow(() =>
+            {
+                using var realm = GetRealm(config);
+            });
         }
 
         [Test]
@@ -741,7 +760,7 @@ namespace Realms.Tests.Database
                 {
                     Name = "George",
                     TopDog = dog,
-                    Dogs = { dog }
+                    ListOfDogs = { dog }
                 });
             });
 
@@ -754,8 +773,8 @@ namespace Realms.Tests.Database
             var owner = query.Single();
             Assert.That(owner.IsFrozen);
             Assert.That(owner.TopDog.IsFrozen);
-            Assert.That(owner.Dogs.AsRealmCollection().IsFrozen);
-            Assert.That(owner.Dogs[0].IsFrozen);
+            Assert.That(owner.ListOfDogs.AsRealmCollection().IsFrozen);
+            Assert.That(owner.ListOfDogs[0].IsFrozen);
         }
 
         [Test]
@@ -774,7 +793,7 @@ namespace Realms.Tests.Database
                 {
                     Name = "George",
                     TopDog = dog,
-                    Dogs = { dog }
+                    ListOfDogs = { dog }
                 });
             });
 
@@ -834,7 +853,7 @@ namespace Realms.Tests.Database
                     {
                         Name = "George",
                         TopDog = dog,
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
                 });
 
@@ -916,6 +935,252 @@ namespace Realms.Tests.Database
                     return new object[] { state };
                 });
             });
+        }
+
+        [Test]
+        public void GetInstance_WithManualSchema_CanReadAndWrite()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new RealmSchema.Builder
+                {
+                    new ObjectSchema.Builder("MyType")
+                    {
+                        Property.Primitive("IntValue", RealmValueType.Int),
+                        Property.PrimitiveList("ListValue", RealmValueType.Date),
+                        Property.PrimitiveSet("SetValue", RealmValueType.Guid),
+                        Property.PrimitiveDictionary("DictionaryValue", RealmValueType.Double),
+                        Property.Object("ObjectValue", "OtherObject"),
+                        Property.ObjectList("ObjectListValue", "OtherObject"),
+                        Property.ObjectSet("ObjectSetValue", "OtherObject"),
+                        Property.ObjectDictionary("ObjectDictionaryValue", "OtherObject"),
+                    },
+                    new ObjectSchema.Builder("OtherObject")
+                    {
+                        Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true),
+                        Property.Backlinks("MyTypes", "MyType", "ObjectValue")
+                    }
+                }
+            };
+
+            using var realm = GetRealm(config);
+
+            realm.Write(() =>
+            {
+                var other = (RealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
+                var myType1 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                myType1.DynamicApi.Set("IntValue", 123);
+                myType1.DynamicApi.GetList<DateTimeOffset>("ListValue").Add(DateTimeOffset.UtcNow);
+                myType1.DynamicApi.GetSet<Guid>("SetValue").Add(Guid.NewGuid());
+                myType1.DynamicApi.GetDictionary<double>("DictionaryValue").Add("key", 123.456);
+                myType1.DynamicApi.Set("ObjectValue", other);
+                myType1.DynamicApi.GetList<RealmObject>("ObjectListValue").Add(other);
+                myType1.DynamicApi.GetSet<RealmObject>("ObjectSetValue").Add(other);
+                myType1.DynamicApi.GetDictionary<RealmObject>("ObjectDictionaryValue").Add("key", other);
+
+                var myType2 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                myType2.DynamicApi.Set("IntValue", 456);
+                myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("foo", 123.456);
+                myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("bar", 987.654);
+                myType2.DynamicApi.Set("ObjectValue", other);
+
+                Assert.Throws<MissingMemberException>(() => other.DynamicApi.Set("hoho", 123));
+            });
+
+            var myTypes = (IQueryable<RealmObject>)realm.DynamicApi.All("MyType");
+            var otherObjects = (IQueryable<RealmObject>)realm.DynamicApi.All("OtherObject");
+
+            Assert.That(myTypes.Count(), Is.EqualTo(2));
+            Assert.That(otherObjects.Count(), Is.EqualTo(1));
+
+            var foundById = (RealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
+            Assert.Throws<MissingMemberException>(() => foundById.DynamicApi.Get<int>("hoho"));
+            var backlinks = foundById.DynamicApi.GetBacklinks("MyTypes");
+
+            Assert.That(backlinks.Count(), Is.EqualTo(2));
+            Assert.That(backlinks.ToArray().Select(o => o.DynamicApi.Get<int>("IntValue")), Is.EquivalentTo(new[] { 123, 456 }));
+        }
+
+        [Test]
+        public void GetInstance_WithMixOfManualAndTypedSchema_CanReadAndWrite()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new RealmSchema.Builder
+                {
+                    new ObjectSchema.Builder(typeof(Person))
+                    {
+                        Property.FromType<string>("SalesforceId"),
+                        Property.FromType<IDictionary<string, string>>("Tags"),
+                        Property.FromType<EmbeddedIntPropertyObject>("EmbeddedInt")
+                    },
+                    new ObjectSchema.Builder(typeof(EmbeddedIntPropertyObject))
+                    {
+                        Property.FromType<DateTimeOffset>("LastModified")
+                    }
+                }
+            };
+
+            using var realm = GetRealm(config);
+
+            realm.Write(() =>
+            {
+                var person = realm.Add(new Person
+                {
+                    FirstName = "John",
+                    LastName = "Smith"
+                });
+
+                person.DynamicApi.Set("SalesforceId", "sf-123");
+                var tags = person.DynamicApi.GetDictionary<string>("Tags");
+                tags["tag1"] = "abc";
+                tags["tag2"] = "cde";
+
+                var embeddedInt = new EmbeddedIntPropertyObject
+                {
+                    Int = 999
+                };
+
+                person.DynamicApi.Set("EmbeddedInt", embeddedInt);
+                embeddedInt.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
+            });
+
+            var person = realm.All<Person>().Single();
+
+            var sfId = person.DynamicApi.Get<string>("SalesforceId");
+            Assert.That(sfId, Is.EqualTo("sf-123"));
+
+            var embedded = person.DynamicApi.Get<EmbeddedIntPropertyObject>("EmbeddedInt");
+            Assert.That(embedded, Is.Not.Null);
+            Assert.That(embedded.Int, Is.EqualTo(999));
+            var oldLastModified = embedded.DynamicApi.Get<DateTimeOffset>("LastModified");
+            Assert.That(oldLastModified, Is.LessThanOrEqualTo(DateTimeOffset.UtcNow));
+
+            realm.Write(() =>
+            {
+                embedded.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
+                embedded.Int = 111;
+            });
+
+            Assert.That(embedded.Int, Is.EqualTo(111));
+            Assert.That(embedded.DynamicApi.Get<DateTimeOffset>("LastModified"), Is.GreaterThan(oldLastModified));
+        }
+
+        [Test]
+        public void GetInstance_WithTypedSchemaWithMissingProperties_ThrowsException()
+        {
+            var personSchema = new ObjectSchema.Builder(typeof(Person));
+            personSchema.Remove(nameof(Person.FirstName));
+
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { personSchema.Build() }
+            };
+
+            using var realm = GetRealm(config);
+
+            var person = realm.Write(() =>
+            {
+                return realm.Add(new Person
+                {
+                    LastName = "Smith"
+                });
+            });
+
+            var exGet = Assert.Throws<MissingMemberException>(() => _ = person.FirstName);
+            Assert.That(exGet.Message, Does.Contain(nameof(Person)));
+            Assert.That(exGet.Message, Does.Contain(nameof(Person.FirstName)));
+
+            realm.Write(() =>
+            {
+                var exSet = Assert.Throws<MissingMemberException>(() => person.FirstName = "John");
+                Assert.That(exSet.Message, Does.Contain(nameof(Person)));
+                Assert.That(exSet.Message, Does.Contain(nameof(Person.FirstName)));
+            });
+        }
+
+        [Test]
+        [Obsolete("Tests obsoleted functionality")]
+        public void GetInstance_WithObjectClasses_SetsCorrectSchema()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                ObjectClasses = new[] { typeof(AllTypesObject) }
+            };
+
+            Assert.That(config.ObjectClasses, Is.Not.Null);
+            Assert.That(config.Schema, Is.Not.Null);
+
+            Assert.That(config.Schema.Count, Is.EqualTo(1));
+            Assert.That(config.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var atoSchema), Is.True);
+            Assert.That(atoSchema.Type, Is.EqualTo(typeof(AllTypesObject)));
+
+            using var realm = GetRealm(config);
+
+            var allAtos = realm.All<AllTypesObject>();
+            Assert.That(allAtos.Count(), Is.EqualTo(0));
+
+            var ex = Assert.Throws<ArgumentException>(() => realm.All<Person>());
+            Assert.That(ex.Message, Does.Contain($"The class {nameof(Person)} is not in the limited set of classes for this realm"));
+        }
+
+        [Test]
+        [Obsolete("Tests obsoleted functionality")]
+        public void GetInstance_WithSchema_ReturnsCorrectObjectClasses()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { typeof(AllTypesObject) }
+            };
+
+            Assert.That(config.ObjectClasses, Is.Not.Null);
+            Assert.That(config.Schema, Is.Not.Null);
+
+            Assert.That(config.ObjectClasses.Count, Is.EqualTo(1));
+            Assert.That(config.ObjectClasses.Single(), Is.EqualTo(typeof(AllTypesObject)));
+
+            using var realm = GetRealm(config);
+
+            var allAtos = realm.All<AllTypesObject>();
+            Assert.That(allAtos.Count(), Is.EqualTo(0));
+
+            var ex = Assert.Throws<ArgumentException>(() => realm.All<Person>());
+            Assert.That(ex.Message, Does.Contain($"The class {nameof(Person)} is not in the limited set of classes for this realm"));
+        }
+
+        [Test]
+        [Obsolete("Tests obsoleted functionality")]
+        public void GetInstance_WithSchema_MixingManualAndTyped_ReturnsCorrectObjectClasses()
+        {
+            var builder = new RealmSchema.Builder(new[] { typeof(AllTypesObject) });
+            builder.Add(new ObjectSchema.Builder("Foo")
+            {
+                Property.FromType<string>("Bar")
+            });
+
+            builder.Add(typeof(Person));
+
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = builder.Build()
+            };
+
+            Assert.That(config.ObjectClasses, Is.Not.Null);
+            Assert.That(config.Schema, Is.Not.Null);
+
+            Assert.That(config.ObjectClasses.Count, Is.EqualTo(2));
+            Assert.That(config.ObjectClasses, Is.EquivalentTo(new[] { typeof(AllTypesObject), typeof(Person) }));
+
+            using var realm = GetRealm(config);
+
+            var allAtos = realm.All<AllTypesObject>();
+            Assert.That(allAtos.Count(), Is.EqualTo(0));
+
+            var ex = Assert.Throws<ArgumentException>(() => realm.All<IntPropertyObject>());
+            Assert.That(ex.Message, Does.Contain($"The class {nameof(IntPropertyObject)} is not in the limited set of classes for this realm"));
+
+            var allFoos = (IQueryable<RealmObject>)realm.DynamicApi.All("Foo");
+            Assert.That(allFoos.Count(), Is.EqualTo(0));
         }
 
         private const int DummyDataSize = 200;

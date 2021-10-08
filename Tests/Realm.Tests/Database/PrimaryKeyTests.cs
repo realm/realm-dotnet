@@ -500,7 +500,7 @@ namespace Realms.Tests.Database
         public void PrimaryKeyFailsIfClassNotInRealm()
         {
             var conf = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration).ConfigWithPath(Guid.NewGuid().ToString());
-            conf.ObjectClasses = new[] { typeof(Person) };
+            conf.Schema = new[] { typeof(Person) };
 
             using var skinny = GetRealm(conf);
             Assert.That(() => skinny.Find<PrimaryKeyInt64Object>(42), Throws.TypeOf<KeyNotFoundException>());

@@ -78,7 +78,9 @@ namespace Realms
         /// </exception>
         public static Realm GetInstance(RealmConfigurationBase config = null)
         {
-            return GetInstance(config ?? RealmConfiguration.DefaultConfiguration, null);
+            config ??= RealmConfiguration.DefaultConfiguration;
+
+            return config.CreateRealm();
         }
 
         /// <summary>
@@ -103,40 +105,7 @@ namespace Realms
                 config = RealmConfiguration.DefaultConfiguration;
             }
 
-            RealmSchema schema = GetSchema(config);
-
-            return config.CreateRealmAsync(schema, cancellationToken);
-        }
-
-        internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
-        {
-            Argument.NotNull(config, nameof(config));
-
-            if (schema == null)
-            {
-                schema = GetSchema(config);
-            }
-
-            return config.CreateRealm(schema);
-        }
-
-        internal static RealmSchema GetSchema(RealmConfigurationBase config)
-        {
-            RealmSchema schema;
-            if (config.ObjectClasses != null)
-            {
-                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
-            }
-            else if (config.IsDynamic)
-            {
-                schema = RealmSchema.Empty;
-            }
-            else
-            {
-                schema = RealmSchema.Default;
-            }
-
-            return schema;
+            return config.CreateRealmAsync(cancellationToken);
         }
 
         /// <summary>
@@ -193,9 +162,12 @@ namespace Realms
         public Dynamic DynamicApi { get; }
 
         /// <summary>
-        /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
+        /// Gets a value indicating whether there is an active write transaction associated
+        /// with this Realm.
         /// </summary>
-        /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if the Realm is in transaction; <c>false</c> otherwise.</value>
+        /// <seealso cref="BeginWrite"/>
+        /// <seealso cref="Transaction"/>
         public bool IsInTransaction
         {
             get
@@ -556,7 +528,7 @@ namespace Realms
         internal void ManageEmbedded(EmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
             obj.SetOwner(this, handle, metadata);
@@ -573,7 +545,7 @@ namespace Realms
                 return;
             }
 
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(objectType));
 
             ObjectHandle objectHandle;
@@ -1025,7 +997,7 @@ namespace Realms
 
             var type = typeof(T);
             Argument.Ensure(
-                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                Metadata.TryGetValue(type.GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type == type,
                 $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
@@ -1039,7 +1011,7 @@ namespace Realms
 
             var type = typeof(T);
             Argument.Ensure(
-                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                Metadata.TryGetValue(type.GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type == type,
                 $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
@@ -1104,7 +1076,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
+            var metadata = Metadata[typeof(T).GetMappedOrOriginalName()];
             if (SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
@@ -1576,7 +1548,7 @@ namespace Realms
                 Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
-                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(parent.ObjectMetadata.PropertyIndices[propertyName]);
+                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(propertyName, parent.ObjectMetadata);
 
                 obj.SetOwner(_realm, handle, metadata);
                 obj.OnManaged();

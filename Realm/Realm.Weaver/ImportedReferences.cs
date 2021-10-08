@@ -207,7 +207,7 @@ namespace RealmWeaver
             };
 
             // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
-            var PropertyChanged_Fody = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "PropertyChanged");
+            var PropertyChanged_Fody = Module.FindReference("PropertyChanged");
             if (PropertyChanged_Fody != null)
             {
                 InitializePropertyChanged_Fody(PropertyChanged_Fody);
@@ -407,7 +407,19 @@ namespace RealmWeaver
 
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)
         {
-            var assembly = Module.AssemblyReferences.SingleOrDefault(a => a.Name == assemblyName);
+            var assembly = Module.FindReference(assemblyName);
+
+            // Since Remotion.Linq has all the needed dlls references, try to find the right version there first
+            if (assembly == null)
+            {
+                assembly = Module.ResolveReference("Realm")?.ResolveReference("Remotion.Linq")?.FindReference(assemblyName);
+                if (assembly != null)
+                {
+                    Module.AssemblyReferences.Add(assembly);
+                }
+            }
+
+            // if Remotion.Linq failed to be loaded then we fall back to search versions in System.CoreLib
             if (assembly == null)
             {
                 var corlib = (AssemblyNameReference)Module.TypeSystem.CoreLibrary;
@@ -573,7 +585,7 @@ namespace RealmWeaver
             references.InitializeFrameworkMethods();
 
             // Weaver may be run on an assembly which is not **yet** using Realm, if someone just adds nuget and builds.
-            var realmAssembly = module.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm");
+            var realmAssembly = module.FindReference("Realm");
             if (realmAssembly != null)
             {
                 references.InitializeRealm(realmAssembly);
