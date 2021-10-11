@@ -82,7 +82,7 @@ namespace Realms.Tests.Sync
 
         private async Task RunPartitionKeyTestsCore(SyncConfiguration config1, SyncConfiguration config2)
         {
-            var objectClasses = new Type[]
+            var schema = new Type[]
             {
                 typeof(PrimaryKeyInt64Object),
                 typeof(PrimaryKeyObjectIdObject),
@@ -94,61 +94,55 @@ namespace Realms.Tests.Sync
                 typeof(PrimaryKeyStringObject),
             };
 
-            config1.Schema = objectClasses;
-            config2.Schema = objectClasses;
+            config1.Schema = schema;
+            config2.Schema = schema;
 
             using var realm1 = await GetRealmAsync(config1);
             using var realm2 = await GetRealmAsync(config2);
 
-            var fromRealm1 = realm1.Write(() =>
+            async Task AssertChangePropagation(Realm first, Realm second)
             {
-                return (
-                    realm1.Add(new PrimaryKeyInt64Object { Id = TestHelpers.Random.Next(int.MinValue, int.MaxValue) }),
-                    realm1.Add(new PrimaryKeyObjectIdObject { Id = ObjectId.GenerateNewId() }),
-                    realm1.Add(new PrimaryKeyGuidObject { Id = Guid.NewGuid() }),
-                    realm1.Add(new RequiredPrimaryKeyStringObject { Id = Guid.NewGuid().ToString() }),
-                    realm1.Add(new PrimaryKeyNullableInt64Object { Id = TestHelpers.Random.Next(int.MinValue, int.MaxValue) }),
-                    realm1.Add(new PrimaryKeyNullableObjectIdObject { Id = ObjectId.GenerateNewId() }),
-                    realm1.Add(new PrimaryKeyNullableGuidObject { Id = Guid.NewGuid() }),
-                    realm1.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() }));
-            });
+                var ids = new
+                {
+                    Long = (long)TestHelpers.Random.Next(int.MinValue, int.MaxValue),
+                    ObjectId = ObjectId.GenerateNewId(),
+                    Guid = Guid.NewGuid(),
+                    String = Guid.NewGuid().ToString(),
+                };
 
-            await WaitForUploadAsync(realm1);
-            await WaitForDownloadAsync(realm2);
+                first.Write(() =>
+                {
+                    first.Add(new PrimaryKeyInt64Object { Id = ids.Long });
+                    first.Add(new PrimaryKeyObjectIdObject { Id = ids.ObjectId });
+                    first.Add(new PrimaryKeyGuidObject { Id = ids.Guid });
+                    first.Add(new RequiredPrimaryKeyStringObject { Id = ids.String });
+                    first.Add(new PrimaryKeyNullableInt64Object { Id = ids.Long });
+                    first.Add(new PrimaryKeyNullableObjectIdObject { Id = ids.ObjectId });
+                    first.Add(new PrimaryKeyNullableGuidObject { Id = ids.Guid });
+                    first.Add(new PrimaryKeyStringObject { Id = ids.String });
+                });
 
-            Assert.That(realm2.Find<PrimaryKeyInt64Object>(fromRealm1.Item1.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item1.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyInt64Object>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<PrimaryKeyObjectIdObject>(fromRealm1.Item2.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item2.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyObjectIdObject>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item3.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyGuidObject>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item4.Id} in realm2. Objects in Realm: {realm2.All<RequiredPrimaryKeyStringObject>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item5.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyNullableInt64Object>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<PrimaryKeyNullableObjectIdObject>(fromRealm1.Item6.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item6.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyNullableObjectIdObject>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item7.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyNullableGuidObject>().ToArray().Select(o => o.Id).Join()}");
-            Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item8.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyStringObject>().ToArray().Select(o => o.Id).Join()}");
+                await WaitForUploadAsync(first);
+                await WaitForDownloadAsync(second);
 
-            var fromRealm2 = realm2.Write(() =>
+                AssertFind<PrimaryKeyInt64Object>(second, ids.Long);
+                AssertFind<PrimaryKeyObjectIdObject>(second, ids.ObjectId);
+                AssertFind<PrimaryKeyGuidObject>(second, ids.Guid);
+                AssertFind<RequiredPrimaryKeyStringObject>(second, ids.String);
+                AssertFind<PrimaryKeyNullableInt64Object>(second, ids.Long);
+                AssertFind<PrimaryKeyNullableObjectIdObject>(second, ids.ObjectId);
+                AssertFind<PrimaryKeyNullableGuidObject>(second, ids.Guid);
+                AssertFind<PrimaryKeyStringObject>(second, ids.String);
+            }
+
+            void AssertFind<T>(Realm realm, RealmValue id)
+                where T : RealmObject
             {
-                return (
-                    realm2.Add(new PrimaryKeyInt64Object { Id = TestHelpers.Random.Next(int.MinValue, int.MaxValue) }),
-                    realm2.Add(new PrimaryKeyObjectIdObject { Id = ObjectId.GenerateNewId() }),
-                    realm2.Add(new PrimaryKeyGuidObject { Id = Guid.NewGuid() }),
-                    realm2.Add(new RequiredPrimaryKeyStringObject { Id = Guid.NewGuid().ToString() }),
-                    realm2.Add(new PrimaryKeyNullableInt64Object { Id = TestHelpers.Random.Next(int.MinValue, int.MaxValue) }),
-                    realm2.Add(new PrimaryKeyNullableObjectIdObject { Id = ObjectId.GenerateNewId() }),
-                    realm2.Add(new PrimaryKeyNullableGuidObject { Id = Guid.NewGuid() }),
-                    realm2.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() }));
-            });
+                Assert.That(realm.FindCore<T>(id)?.IsValid, Is.True, $"Failed to find {nameof(T)} with id {id}. Objects in Realm: {realm.All<T>().ToArray().Select(o => o.DynamicApi.Get<RealmValue>("_id").ToString()).Join()}");
+            }
 
-            await WaitForUploadAsync(realm2);
-            await WaitForDownloadAsync(realm1);
-
-            Assert.That(realm1.Find<PrimaryKeyInt64Object>(fromRealm2.Item1.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyObjectIdObject>(fromRealm2.Item2.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyGuidObject>(fromRealm2.Item3.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<RequiredPrimaryKeyStringObject>(fromRealm2.Item4.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableInt64Object>(fromRealm2.Item5.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableObjectIdObject>(fromRealm2.Item6.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableGuidObject>(fromRealm2.Item7.Id)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyStringObject>(fromRealm2.Item8.Id)?.IsValid, Is.True);
+            await AssertChangePropagation(realm1, realm2);
+            await AssertChangePropagation(realm2, realm1);
         }
     }
 }
