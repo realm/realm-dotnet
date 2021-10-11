@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
@@ -115,14 +116,14 @@ namespace Realms.Tests.Sync
             await WaitForUploadAsync(realm1);
             await WaitForDownloadAsync(realm2);
 
-            Assert.That(realm2.Find<PrimaryKeyInt64Object>(fromRealm1.Item1.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyObjectIdObject>(fromRealm1.Item2.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableObjectIdObject>(fromRealm1.Item6.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.Id)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.Id)?.IsValid, Is.True);
+            Assert.That(realm2.Find<PrimaryKeyInt64Object>(fromRealm1.Item1.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item1.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyInt64Object>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<PrimaryKeyObjectIdObject>(fromRealm1.Item2.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item2.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyObjectIdObject>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item3.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyGuidObject>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item4.Id} in realm2. Objects in Realm: {realm2.All<RequiredPrimaryKeyStringObject>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item5.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyNullableInt64Object>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<PrimaryKeyNullableObjectIdObject>(fromRealm1.Item6.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item6.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyNullableObjectIdObject>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item7.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyNullableGuidObject>().ToArray().Select(o => o.Id).Join()}");
+            Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.Id)?.IsValid, Is.True, $"Failed to find {fromRealm1.Item8.Id} in realm2. Objects in Realm: {realm2.All<PrimaryKeyStringObject>().ToArray().Select(o => o.Id).Join()}");
 
             var fromRealm2 = realm2.Write(() =>
             {

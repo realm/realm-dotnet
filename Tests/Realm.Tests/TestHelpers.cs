@@ -392,6 +392,8 @@ namespace Realms.Tests
             return observable.Subscribe(observer);
         }
 
+        public static string Join<T>(this IEnumerable<T> collection, string separator = ", ") => string.Join(separator, collection);
+
         private class FunctionObserver<T> : IObserver<T>
         {
             private readonly Action<T> _onNext;
