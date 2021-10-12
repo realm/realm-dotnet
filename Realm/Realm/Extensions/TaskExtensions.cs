@@ -36,7 +36,7 @@ internal static class TaskExtensions
                 return task.Result;
             }
 
-            throw new TimeoutException("The operation has timed out.");
+            throw new TimeoutException($"The operation has timed out after {millisecondTimeout} ms.");
         });
     }
 
