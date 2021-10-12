@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
@@ -110,8 +111,19 @@ namespace Realms.Tests.Sync
             var username = SyncTestHelpers.GetVerifiedUsername();
             await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
 
-            var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
-            return await app.LogInAsync(credentials);
+            for (var i = 0; i < 5; i++)
+            {
+                try
+                {
+                    var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
+                    return await app.LogInAsync(credentials);
+                }
+                catch (AppException ex) when (ex.Message.Contains("confirmation required"))
+                {
+                }
+            }
+
+            throw new Exception("Could not login user after 5 attempts.");
         }
 
         protected User GetFakeUser(App app = null, string id = null, string refreshToken = null, string accessToken = null)
