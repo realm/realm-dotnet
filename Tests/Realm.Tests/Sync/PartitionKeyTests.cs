@@ -34,11 +34,11 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = Guid.NewGuid().ToString();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
+                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
 
                 await RunPartitionKeyTestsCore(config1, config2);
-            }, timeout: 60000);
+            }, timeout: 120_000);
         }
 
         [Test]

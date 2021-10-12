@@ -59,10 +59,12 @@ namespace Realms.Tests.Sync
 
                 using (var realm = await GetSyncedRealm(partition))
                 {
-                    await WaitForDownloadAsync(realm);
-                    var allObjects = ((IQueryable<RealmObject>)realm.DynamicApi.All(objectType.Name)).ToArray();
+                    var expectedPK = Operator.Convert<RealmValue>(pkValue);
+                    await TestHelpers.WaitForConditionAsync(() => realm.DynamicApi.FindCore(objectType.Name, expectedPK) != null);
 
-                    var objectCount = allObjects.Count(o => o.DynamicApi.Get<RealmValue>("_id") == Operator.Convert<RealmValue>(pkValue));
+                    var objectCount = ((IQueryable<RealmObject>)realm.DynamicApi.All(objectType.Name))
+                        .ToArray()
+                        .Count(o => o.DynamicApi.Get<RealmValue>("_id") == expectedPK);
 
                     Assert.That(objectCount, Is.EqualTo(1));
                 }
