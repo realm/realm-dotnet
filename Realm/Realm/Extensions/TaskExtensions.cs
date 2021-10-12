@@ -51,7 +51,7 @@ internal static class TaskExtensions
         var completed = await Task.WhenAny(tasks);
         if (completed != task && completed != errorTask)
         {
-            throw new TimeoutException("The operation has timed out.");
+            throw new TimeoutException($"The operation has timed out after {millisecondTimeout} ms.");
         }
 
         await completed;

@@ -94,7 +94,11 @@ namespace Realms.Tests.Sync
 
                 await WaitForUploadAsync(realm);
 
-                var log = logBuilder.ToString();
+                string log;
+                lock (logBuilder)
+                {
+                    log = logBuilder.ToString();
+                }
 
                 Assert.That(log, Does.Contain($"[{logLevel}]"));
                 Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
