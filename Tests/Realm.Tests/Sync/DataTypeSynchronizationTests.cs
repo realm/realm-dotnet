@@ -305,10 +305,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                await WaitForUploadAsync(realm1);
-                await WaitForDownloadAsync(realm2);
-
-                var obj2 = realm2.Find<SyncCollectionsObject>(obj1.Id);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 var list1 = getter(obj1);
                 var list2 = getter(obj2);
@@ -373,7 +370,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectSync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 var set1 = getter(obj1);
                 var set2 = getter(obj2);
@@ -438,7 +435,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectSync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);
@@ -519,7 +516,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncAllTypesObject());
                 });
 
-                var obj2 = await WaitForObjectSync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 realm1.Write(() =>
                 {
@@ -662,22 +659,6 @@ namespace Realms.Tests.Sync
             });
 
             await tcs.Task.Timeout(timeout);
-        }
-
-        private static async Task<SyncAllTypesObject> WaitForObjectSync(SyncAllTypesObject obj1, Realm realm2)
-        {
-            await WaitForUploadAsync(obj1.Realm);
-            await WaitForDownloadAsync(realm2);
-
-            return await TestHelpers.WaitForConditionAsync(() => realm2.Find<SyncAllTypesObject>(obj1.Id), o => o != null);
-        }
-
-        private static async Task<SyncCollectionsObject> WaitForObjectSync(SyncCollectionsObject obj1, Realm realm2)
-        {
-            await WaitForUploadAsync(obj1.Realm);
-            await WaitForDownloadAsync(realm2);
-
-            return await TestHelpers.WaitForConditionAsync(() => realm2.Find<SyncCollectionsObject>(obj1.Id), o => o != null);
         }
     }
 }

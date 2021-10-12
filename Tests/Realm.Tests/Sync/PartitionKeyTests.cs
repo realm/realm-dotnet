@@ -100,6 +100,9 @@ namespace Realms.Tests.Sync
             using var realm1 = await GetRealmAsync(config1);
             using var realm2 = await GetRealmAsync(config2);
 
+            await AssertChangePropagation(realm1, realm2).Timeout(15000);
+            await AssertChangePropagation(realm2, realm1).Timeout(15000);
+
             async Task AssertChangePropagation(Realm first, Realm second)
             {
                 var ids = new
@@ -110,9 +113,10 @@ namespace Realms.Tests.Sync
                     String = Guid.NewGuid().ToString(),
                 };
 
+                var intObjectToAdd = new PrimaryKeyInt64Object { Id = ids.Long };
                 first.Write(() =>
                 {
-                    first.Add(new PrimaryKeyInt64Object { Id = ids.Long });
+                    first.Add(intObjectToAdd);
                     first.Add(new PrimaryKeyObjectIdObject { Id = ids.ObjectId });
                     first.Add(new PrimaryKeyGuidObject { Id = ids.Guid });
                     first.Add(new RequiredPrimaryKeyStringObject { Id = ids.String });
@@ -122,12 +126,7 @@ namespace Realms.Tests.Sync
                     first.Add(new PrimaryKeyStringObject { Id = ids.String });
                 });
 
-                await WaitForUploadAsync(first);
-                await WaitForDownloadAsync(second);
-
-                // Seems like waiting for upload/download is not sufficient - so let's try to wait a bit longer and see
-                // if the object makes it in the Realm.
-                await TestHelpers.WaitForConditionAsync(() => second.Find<PrimaryKeyInt64Object>(ids.Long) != null);
+                await WaitForObjectAsync(intObjectToAdd, second);
 
                 AssertFind<PrimaryKeyInt64Object>(second, ids.Long);
                 AssertFind<PrimaryKeyObjectIdObject>(second, ids.ObjectId);
@@ -144,9 +143,6 @@ namespace Realms.Tests.Sync
             {
                 Assert.That(realm.FindCore<T>(id)?.IsValid, Is.True, $"Failed to find {typeof(T).Name} with id {id}. Objects in Realm: {realm.All<T>().ToArray().Select(o => o.DynamicApi.Get<RealmValue>("_id").ToString()).Join()}");
             }
-
-            await AssertChangePropagation(realm1, realm2);
-            await AssertChangePropagation(realm2, realm1);
         }
     }
 }

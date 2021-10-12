@@ -92,6 +92,17 @@ namespace Realms.Tests.Sync
             session.CloseHandle();
         }
 
+        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
+            where T : RealmObject
+        {
+            await WaitForUploadAsync(obj.Realm);
+            await WaitForDownloadAsync(realm2);
+
+            var id = obj.DynamicApi.Get<RealmValue>("_id");
+
+            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
+        }
+
         protected async Task<User> GetUserAsync(App app = null)
         {
             app ??= DefaultApp;
