@@ -125,6 +125,10 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(first);
                 await WaitForDownloadAsync(second);
 
+                // Seems like waiting for upload/download is not sufficient - so let's try to wait a bit longer and see
+                // if the object makes it in the Realm.
+                await TestHelpers.WaitForConditionAsync(() => second.Find<PrimaryKeyInt64Object>(ids.Long) != null);
+
                 AssertFind<PrimaryKeyInt64Object>(second, ids.Long);
                 AssertFind<PrimaryKeyObjectIdObject>(second, ids.ObjectId);
                 AssertFind<PrimaryKeyGuidObject>(second, ids.Guid);
@@ -138,7 +142,7 @@ namespace Realms.Tests.Sync
             void AssertFind<T>(Realm realm, RealmValue id)
                 where T : RealmObject
             {
-                Assert.That(realm.FindCore<T>(id)?.IsValid, Is.True, $"Failed to find {nameof(T)} with id {id}. Objects in Realm: {realm.All<T>().ToArray().Select(o => o.DynamicApi.Get<RealmValue>("_id").ToString()).Join()}");
+                Assert.That(realm.FindCore<T>(id)?.IsValid, Is.True, $"Failed to find {typeof(T).Name} with id {id}. Objects in Realm: {realm.All<T>().ToArray().Select(o => o.DynamicApi.Get<RealmValue>("_id").ToString()).Join()}");
             }
 
             await AssertChangePropagation(realm1, realm2);
