@@ -238,7 +238,7 @@ namespace Realms.Sync
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
             var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
-            token?.Notify(transferredBytes, transferableBytes);
+            token.Notify(transferredBytes, transferableBytes);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
