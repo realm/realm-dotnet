@@ -1071,7 +1071,7 @@ namespace Realms
             where T : RealmObject => FindCore<T>(primaryKey);
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        private T FindCore<T>(RealmValue primaryKey)
+        internal T FindCore<T>(RealmValue primaryKey)
             where T : RealmObject
         {
             ThrowIfDisposed();

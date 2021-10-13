@@ -36,6 +36,17 @@ To facilitate local development setups, the following files are ignored, but it 
 
 After adding them, restart VS (if running) to have it pick up the changes.
 
+## Sync Tests
+
+Running sync tests can be done either against a local Docker image of the sync server or against cloud-dev (our staging environment). Scripts to
+run against cloud are located in the Scripts folder. Currently we have:
+
+* DeployCluster.ps1 - deploys an Atlas cluster with a specified name.
+* RemoveCluster.ps1 - deletes a deployed Atlas cluster
+* CliLogin.ps1 - logs in against cloud-dev and persists user authentication. You must execute this before calling Deploy/RemoveApps.
+* DeployApps.ps1 - imports the apps located in TestApps and links them to the specified cluster.
+* RemoveApps.ps1 - removes all MongoDB Realm apps for the specified project.
+
 ## Unity
 
 The Unity tests are somewhat special, not only because they don't use MSBuild and Visual Studio to build and run, but because they need to be run

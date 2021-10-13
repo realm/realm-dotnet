@@ -144,32 +144,30 @@ namespace Realms.Tests.Sync
 
         #region Decimal
 
-        // TODO: use more precise numbers once https://jira.mongodb.org/browse/REALMC-8475 is done.
         [Test]
-        public void List_Decimal() => TestListCore(o => o.DecimalList, 123.7777777777777m, 999.99999999999m);
+        public void List_Decimal() => TestListCore(o => o.DecimalList, 123.7777772342322347777777m, 999.99222222999999999m);
 
         [Test]
-        public void Set_Decimal() => TestSetCore(o => o.DecimalSet, 123.7777777777777m, 999.99999999999m);
+        public void Set_Decimal() => TestSetCore(o => o.DecimalSet, 123.7777774444447777777m, 999.000099999999999m);
 
         [Test]
-        public void Dict_Decimal() => TestDictionaryCore(o => o.DecimalDict, 987654321.7777777m, 999.99999999999m);
+        public void Dict_Decimal() => TestDictionaryCore(o => o.DecimalDict, 987654321.7777777m, 999.99999999999999999999m);
 
         [Test]
-        public void Property_Decimal() => TestPropertyCore(o => o.DecimalProperty, (o, rv) => o.DecimalProperty = rv, 987654321.7777777m, 999.99999999999m);
+        public void Property_Decimal() => TestPropertyCore(o => o.DecimalProperty, (o, rv) => o.DecimalProperty = rv, 987654321.7777777999999999999999999m, 999.99999999999m);
 
         #endregion
 
         #region Decimal128
 
-        // TODO: use more precise numbers once https://jira.mongodb.org/browse/REALMC-8475 is done.
         [Test]
-        public void List_Decimal128() => TestListCore(o => o.Decimal128List, 123.7777777777777m, 999.99999999999m);
+        public void List_Decimal128() => TestListCore(o => o.Decimal128List, 123.7777771111111117777777m, 999.99999333333333999999m);
 
         [Test]
-        public void Set_Decimal128() => TestSetCore(o => o.Decimal128Set, 123.7777777777777m, 999.99999999999m);
+        public void Set_Decimal128() => TestSetCore(o => o.Decimal128Set, 123.777444447777777777m, 999.99999999999m);
 
         [Test]
-        public void Dict_Decimal128() => TestDictionaryCore(o => o.Decimal128Dict, 1.123456789m, 987654321.7777m);
+        public void Dict_Decimal128() => TestDictionaryCore(o => o.Decimal128Dict, 1.123456789m, 987654321.77777777777777777777m);
 
         [Test]
         public void Property_Decimal128() => TestPropertyCore(o => o.Decimal128Property, (o, rv) => o.Decimal128Property = rv, 1.123456789m, 987654321.7777m);
@@ -307,10 +305,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                await WaitForUploadAsync(realm1);
-                await WaitForDownloadAsync(realm2);
-
-                var obj2 = realm2.Find<SyncCollectionsObject>(obj1.Id);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 var list1 = getter(obj1);
                 var list2 = getter(obj2);
@@ -323,7 +318,7 @@ namespace Realms.Tests.Sync
 
                 await WaitForCollectionChangeAsync(list2.AsRealmCollection());
 
-                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride));
+                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride), "Add from list1 should arrive at list2");
 
                 realm2.Write(() =>
                 {
@@ -332,7 +327,7 @@ namespace Realms.Tests.Sync
 
                 await WaitForCollectionChangeAsync(list1.AsRealmCollection());
 
-                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride));
+                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride), "Add from list2 should arrive at list1");
 
                 // Assert Remove works
                 realm2.Write(() =>
@@ -342,7 +337,7 @@ namespace Realms.Tests.Sync
 
                 await WaitForCollectionChangeAsync(list1.AsRealmCollection());
 
-                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride));
+                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride), "Remove from list2 should arrive at list1");
 
                 // Assert Clear works
                 realm1.Write(() =>
@@ -375,7 +370,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectSync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 var set1 = getter(obj1);
                 var set2 = getter(obj2);
@@ -440,7 +435,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectSync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);
@@ -521,7 +516,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncAllTypesObject());
                 });
 
-                var obj2 = await WaitForObjectSync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2);
 
                 realm1.Write(() =>
                 {
@@ -560,7 +555,10 @@ namespace Realms.Tests.Sync
 
             var robj = original.AsRealmObject();
             var clone = (RealmObjectBase)Activator.CreateInstance(robj.GetType());
-            foreach (var prop in robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(o => o.CanWrite && o.CanRead))
+            var properties = robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.CanWrite && p.CanRead && !p.HasCustomAttribute<PrimaryKeyAttribute>());
+
+            foreach (var prop in properties)
             {
                 prop.SetValue(clone, prop.GetValue(robj));
             }
@@ -649,6 +647,11 @@ namespace Realms.Tests.Sync
             var tcs = new TaskCompletionSource<object>();
             using var token = collection.SubscribeForNotifications((collection, changes, error) =>
             {
+                if (error != null)
+                {
+                    tcs.TrySetException(error);
+                }
+
                 if (changes != null)
                 {
                     tcs.TrySetResult(null);
@@ -656,22 +659,6 @@ namespace Realms.Tests.Sync
             });
 
             await tcs.Task.Timeout(timeout);
-        }
-
-        private static async Task<SyncAllTypesObject> WaitForObjectSync(SyncAllTypesObject obj1, Realm realm2)
-        {
-            await WaitForUploadAsync(obj1.Realm);
-            await WaitForDownloadAsync(realm2);
-
-            return await TestHelpers.WaitForConditionAsync(() => realm2.Find<SyncAllTypesObject>(obj1.Id), o => o != null);
-        }
-
-        private static async Task<SyncCollectionsObject> WaitForObjectSync(SyncCollectionsObject obj1, Realm realm2)
-        {
-            await WaitForUploadAsync(obj1.Realm);
-            await WaitForDownloadAsync(realm2);
-
-            return await TestHelpers.WaitForConditionAsync(() => realm2.Find<SyncCollectionsObject>(obj1.Id), o => o != null);
         }
     }
 }

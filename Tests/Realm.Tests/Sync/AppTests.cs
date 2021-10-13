@@ -58,6 +58,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.Id, Is.Not.Null);
             });
         }
 
@@ -92,7 +94,11 @@ namespace Realms.Tests.Sync
 
                 await WaitForUploadAsync(realm);
 
-                var log = logBuilder.ToString();
+                string log;
+                lock (logBuilder)
+                {
+                    log = logBuilder.ToString();
+                }
 
                 Assert.That(log, Does.Contain($"[{logLevel}]"));
                 Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));

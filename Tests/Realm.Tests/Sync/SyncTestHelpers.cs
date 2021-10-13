@@ -21,9 +21,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using Newtonsoft.Json;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -110,6 +112,8 @@ namespace Realms.Tests.Sync
         {
             var result = new List<string>();
 
+            string baasApps = null;
+
             for (var i = 0; i < args.Length; i++)
             {
                 switch (args[i])
@@ -117,18 +121,21 @@ namespace Realms.Tests.Sync
                     case "--baasurl":
                         _baseUri = new Uri(args[++i]);
                         break;
+                    case "--baasapps":
+                        baasApps = args[++i];
+                        break;
                     default:
                         result.Add(args[i]);
                         break;
                 }
             }
 
-            ExtractBaasApps();
+            ExtractBaasApps(baasApps);
 
             return result.ToArray();
         }
 
-        private static void ExtractBaasApps()
+        private static void ExtractBaasApps(string appsJson = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {
@@ -137,9 +144,22 @@ namespace Realms.Tests.Sync
 
             AsyncContext.Run(async () =>
             {
-                using var client = new BaasClient(_baseUri);
+                (string, string)[] apps;
 
-                var apps = await client.GetApps();
+                appsJson = GetAppsJson(appsJson);
+
+                if (string.IsNullOrEmpty(appsJson))
+                {
+                    using var client = new BaasClient(_baseUri);
+
+                    apps = await client.GetApps();
+                }
+                else
+                {
+                    apps = JsonConvert.DeserializeObject<Dictionary<string, string>>(appsJson)
+                                      .Select(kvp => (kvp.Key, kvp.Value))
+                                      .ToArray();
+                }
 
                 foreach (var (appName, appId) in apps)
                 {
@@ -179,7 +199,7 @@ namespace Realms.Tests.Sync
 
         private static AppConfigType GetConfigTypeForId(string appName)
         {
-            if (appName == "dotnet-integration-tests")
+            if (appName == "integration-tests")
             {
                 return AppConfigType.Default;
             }
@@ -189,7 +209,7 @@ namespace Realms.Tests.Sync
                 return AppConfigType.IntPartitionKey;
             }
 
-            if (appName == "objectid-partition-key")
+            if (appName == "objectid-part-key")
             {
                 return AppConfigType.ObjectIdPartitionKey;
             }
@@ -200,6 +220,34 @@ namespace Realms.Tests.Sync
             }
 
             return (AppConfigType)(-1);
+        }
+
+        private static string GetAppsJson(string cliArgument)
+        {
+            var json = cliArgument;
+            if (string.IsNullOrEmpty(json))
+            {
+                // Try to get the apps config from an environment variable if possible
+                json = Environment.GetEnvironmentVariable("APPS_CONFIG");
+            }
+
+            if (string.IsNullOrEmpty(json))
+            {
+                return null;
+            }
+
+            // Try to decode the argument from base64 as it may be encoded
+            try
+            {
+                var decodedBytes = Convert.FromBase64String(json);
+                return Encoding.UTF8.GetString(decodedBytes);
+            }
+            catch
+            {
+            }
+
+            // Assume it's a json encoded string and just return it.
+            return json;
         }
 
         private class BaasClient : IDisposable

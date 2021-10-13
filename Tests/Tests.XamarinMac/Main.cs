@@ -18,6 +18,7 @@
 
 using System.Linq;
 using AppKit;
+using Realms.Tests.Sync;
 
 namespace Realms.Tests.XamarinMac
 {
@@ -31,6 +32,7 @@ namespace Realms.Tests.XamarinMac
 
         public static void Main(string[] args)
         {
+            args = SyncTestHelpers.ExtractBaasSettings(args);
             Headless = args.Contains(HeadlessArg);
             NUnitArgs = args.Where(a => a != HeadlessArg).ToArray();
             NSApplication.Init();

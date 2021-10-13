@@ -215,7 +215,13 @@ namespace Realms.Logging
                 }
             }
 
-            public string GetLog() => _builder.ToString();
+            public string GetLog()
+            {
+                lock (_builder)
+                {
+                    return _builder.ToString();
+                }
+            }
 
             public void Clear() => _builder.Clear();
         }

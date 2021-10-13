@@ -1,7 +1,7 @@
 {
-    "app_id": "dotnet-integration-tests-nluph",
+    "app_id": "integration-tests-nluph",
     "config_version": 20180301,
-    "name": "dotnet-integration-tests",
+    "name": "integration-tests",
     "location": "US-VA",
     "deployment_model": "GLOBAL",
     "security": {},

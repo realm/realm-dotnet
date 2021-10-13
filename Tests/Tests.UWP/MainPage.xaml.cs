@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Runner.Services;
+using Realms.Tests.Sync;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.Xaml.Navigation;
@@ -37,42 +38,51 @@ namespace Realms.Tests.UWP
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            StreamWriter outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
-            _nunit = new NUnit.Runner.App(outputWriter);
-            _nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
-
-            _nunit.Options = new TestOptions
+            var outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
+            try
             {
-                LogToOutput = true
-            };
+                _nunit = new NUnit.Runner.App(outputWriter);
+                _nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
 
-            if (e.Parameter != null && e.Parameter is string launchParams)
-            {
-                var args = TestHelpersUWP.SplitArguments(launchParams);
-                if (args.Any(a =>  a == "--headless"))
+                _nunit.Options = new TestOptions
                 {
-                    _nunit.Options.AutoRun = true;
-                    _nunit.Options.CreateXmlResultFile = true;
-                    var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
-                    if (resultPath == null)
+                    LogToOutput = true
+                };
+
+                if (e.Parameter != null && e.Parameter is string launchParams)
+                {
+                    var args = SyncTestHelpers.ExtractBaasSettings(TestHelpersUWP.SplitArguments(launchParams));
+                    if (args.Any(a => a == "--headless"))
                     {
-                        throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
+                        _nunit.Options.AutoRun = true;
+                        _nunit.Options.CreateXmlResultFile = true;
+                        var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
+                        if (resultPath == null)
+                        {
+                            throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
+                        }
+
+                        _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
+                        _nunit.Options.OnCompletedCallback = async () =>
+                        {
+                            await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
+                            outputWriter.WriteLine("Test finished, reporting results");
+                            outputWriter.Dispose();
+                            CoreApplication.Exit();
+                        };
                     }
-
-                    _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
-                    _nunit.Options.OnCompletedCallback = async () =>
-                    {
-                        await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
-                        outputWriter.Dispose();
-                        Console.WriteLine("Test finished, reporting results");
-                        CoreApplication.Exit();
-                    };
                 }
+
+                LoadApplication(_nunit);
+
+                base.OnNavigatedTo(e);
             }
-
-            LoadApplication(_nunit);
-
-            base.OnNavigatedTo(e);
+            catch (Exception ex)
+            {
+                outputWriter.WriteLine($"An error occurred in OnNavigatedTo: {ex}");
+                outputWriter.Flush();
+                Environment.FailFast("An error occurred in OnNavigatedTo", ex);
+            }
         }
     }
 }
