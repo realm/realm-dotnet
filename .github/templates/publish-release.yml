@@ -21,8 +21,8 @@
   - name: Publish Github Release
     uses: #@ actionGithubRelease
     with:
-      artifacts: ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
-      bodyFile: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+      artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+      bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
       name: ${{ steps.get-version.outputs.version }}
       commit: #@ mainBranch
       tag: ${{ steps.get-version.outputs.version }}
@@ -83,6 +83,7 @@
       * Using Core x.y.z.
       " | cat - CHANGELOG.md >> temp
       mv temp CHANGELOG.md
+    shell: bash
   - name: Create vNext PR
     id: vnext-pr
     uses: #@ actionCreatePR
@@ -92,6 +93,7 @@
       body: Update Changelog for vNext
       delete-branch: true
       base: #@ mainBranch
+      commit-message: Prepare for vNext
   - #@ template.replace(mergePR("${{ steps.vnext-pr.outputs.pull-request-number }}"))
 #@ end
 ---
@@ -111,15 +113,6 @@ jobs:
         workflow: main.yml
         commit: ${{ github.sha }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Extract release notes
-      id: extract-release-notes
-      run: |
-        $changelogContent = Get-Content -Raw -Path "./CHANGELOG.md"
-        $output_file = "./RELEASE_NOTES.md"
-        $regex = "(?sm)^(## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))(.+?)(\n## \d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})? \(\d{4}-\d{2}-\d{2}\))"
-        $changelogContent -match $regex
-        Set-Content -Path $output_file -Value $Matches[2]
-        echo "::set-output name=release-notes-path::$output_file"
     - name: Read version
       id: get-version
       run: |
@@ -137,7 +130,7 @@ jobs:
     - name: 'Post to #realm-releases'
       uses: #@ actionReleaseToSlack
       with:
-        changelog: ${{ steps.extract-release-notes.outputs.release-notes-path }}
+        changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
         version: ${{ steps.get-version.outputs.version }}

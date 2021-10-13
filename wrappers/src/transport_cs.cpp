@@ -47,7 +47,7 @@ using ResponseFunction = std::function<void(const Response)>;
 
 namespace realm {
 namespace binding {
-GenericNetworkTransport::NetworkTransportFactory s_transport_factory;
+std::shared_ptr<GenericNetworkTransport> s_transport;
 std::function<ExecuteRequestT> s_execute_request;
 }
 }
@@ -85,9 +85,7 @@ extern "C" {
     REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
         s_execute_request = wrap_managed_callback(execute);
-        s_transport_factory = []() -> std::unique_ptr<HttpClientTransport> {
-            return std::make_unique<HttpClientTransport>();
-        };
+        s_transport = std::make_shared<HttpClientTransport>();
 
         realm::binding::s_can_call_managed = true;
     }

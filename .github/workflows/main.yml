@@ -30,11 +30,11 @@ jobs:
     - name: Build wrappers
       run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts
+    - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-macos
-        path: wrappers/build/**
+        path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-wrappers-ios:
     runs-on: macos-latest
@@ -58,11 +58,11 @@ jobs:
     - name: Build wrappers
       run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts
+    - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-ios
-        path: wrappers/build/**
+        path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-wrappers-linux:
     runs-on: ubuntu-latest
@@ -101,11 +101,11 @@ jobs:
         options: -v ${{ github.workspace }}:/work
         run: /work/wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts
+    - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-linux
-        path: wrappers/build/**
+        path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-wrappers-android:
     runs-on: ubuntu-20.04
@@ -136,11 +136,11 @@ jobs:
     - name: Build wrappers
       run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts
+    - name: Store artifacts for wrappers-android-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-android-${{ matrix.arch }}
-        path: wrappers/build/**
+        path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-wrappers-windows:
     runs-on: windows-latest
@@ -189,11 +189,11 @@ jobs:
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts
+    - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-${{ matrix.arch }}
-        path: wrappers/build/**
+        path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-wrappers-windows-uwp:
     runs-on: windows-latest
@@ -236,11 +236,11 @@ jobs:
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts
+    - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-uwp-${{ matrix.arch }}
-        path: wrappers/build/**
+        path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   build-packages:
     runs-on: windows-latest
@@ -375,20 +375,20 @@ jobs:
       run: |
         C:\docfx\docfx Docs/docfx.json
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
-    - name: Store docs artifacts
-      if: ${{ contains(github.head_ref, 'release') }}
+    - name: Store artifacts for Docs.zip
       uses: actions/upload-artifact@v2
       with:
         name: Docs.zip
         path: ${{ github.workspace }}/Realm/packages/Docs.zip
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Store artifacts for Realm.Fody
+      if: ${{ contains(github.head_ref, 'release') }}
+    - name: Store artifacts for Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}
       uses: actions/upload-artifact@v2
       with:
         name: Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Store artifacts for Realm
+    - name: Store artifacts for Realm.${{ steps.find-nupkg-version.outputs.package_version }}
       uses: actions/upload-artifact@v2
       with:
         name: Realm.${{ steps.find-nupkg-version.outputs.package_version }}
@@ -396,11 +396,17 @@ jobs:
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
-    - name: Store Unity artifacts
+    - name: Store artifacts for io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
       uses: actions/upload-artifact@v2
       with:
         name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
         path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+    - name: Store artifacts for ExtractedChangelog
+      uses: actions/upload-artifact@v2
+      with:
+        name: ExtractedChangelog
+        path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-net-framework:
     runs-on: windows-latest
@@ -433,12 +439,16 @@ jobs:
     - name: Run the tests
       run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.Windows.xml
-        comment_mode: "off"
-        check_name: Results .NET Framework
+        name: Results .NET Framework
+        path: TestResults.Windows.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-uwp:
     runs-on: windows-latest
     name: Test UWP managed
@@ -479,33 +489,38 @@ jobs:
       shell: powershell
     - name: Run the tests
       run: |
-        echo "test_results=$env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "test_results=$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
         Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
         Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
         do
         {
             Start-Sleep -s 3
-            $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+            $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
             $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
         } while ($uwp_test_app -and !$file_available)
 
-        $file_available = Test-Path -Path $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestResults.UWP.xml
+        $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
         if (!$file_available)
         {
           exit 1
         }
         else
         {
+          # print test results in GH Action's console
           Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
         }
       shell: powershell
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: ${{ env.test_results }}
-        comment_mode: "off"
-        check_name: Results UWP
+        name: Results UWP
+        path: ${{ env.test_results }}
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-netcore:
     name: Test .NET
     needs: build-packages
@@ -517,7 +532,6 @@ jobs:
         - macos-latest
         - windows-latest
         - ubuntu-latest
-        - win81
         targetFramework:
         - netcoreapp3.1
         - net5.0
@@ -548,7 +562,7 @@ jobs:
     - uses: actions/setup-dotnet@v1
       if: matrix.targetFramework == 'net6.0'
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 6.0.100-preview.7.21379.14
         include-prerelease: true
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
@@ -558,12 +572,16 @@ jobs:
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.xml
-        comment_mode: "off"
-        check_name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-xamarin-macos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
@@ -593,12 +611,16 @@ jobs:
     - name: Run the tests
       run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.macOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.macOS
+        name: Results Xamarin.macOS
+        path: TestResults.macOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-xamarin-ios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
@@ -633,12 +655,16 @@ jobs:
         iphoneToSimulate: iPhone-8
         arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.iOS.xml
-        comment_mode: "off"
-        check_name: Results Xamarin.iOS
+        name: Results Xamarin.iOS
+        path: TestResults.iOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -660,12 +686,16 @@ jobs:
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v1
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        files: TestResults.Weaver.xml
-        comment_mode: "off"
-        check_name: Results Weaver
+        name: Results Weaver
+        path: TestResults.Weaver.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
   code-coverage:
     runs-on: ubuntu-latest
     name: Code Coverage
@@ -822,9 +852,11 @@ jobs:
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
-    runs-on: ubuntu-latest
+    runs-on: performance-tests
     if: ${{ github.event_name == 'push' }}
     steps:
+    - name: Cleanup Workspace
+      run: rm -rf ${{ github.workspace }}/*
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -864,7 +896,7 @@ jobs:
         file: ${{ github.workspace }}/BenchmarkDotNet.Artifacts/results/${{ steps.find-results-file.outputs.benchmark-results }}
         dashboard-path: dashboard.charts
         nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
-    - name: Upload Charts Dashboard File
+    - name: Store artifacts for dashboard.charts
       uses: actions/upload-artifact@v2
       with:
         name: dashboard.charts

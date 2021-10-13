@@ -273,4 +273,18 @@ namespace AssemblyToProcess
 
         public IQueryable<Person> BacklinkNotAppliedProperty { get; set; }
     }
+
+    public class AccessorTestObject : RealmObject
+    {
+        // One normal property to avoid triggering "object has no properties" error
+        public int IntProperty { get; set; }
+
+        public AccessorTestObject GetterLessObject { set { } }
+
+        public AccessorTestObject SetterLessObject { get; }
+
+        public string GetterLessString { set { } }
+
+        public string SetterLessString { get; }
+    }
 }

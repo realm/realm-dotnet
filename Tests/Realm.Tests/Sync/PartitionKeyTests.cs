@@ -93,8 +93,8 @@ namespace Realms.Tests.Sync
                 typeof(PrimaryKeyStringObject),
             };
 
-            config1.ObjectClasses = objectClasses;
-            config2.ObjectClasses = objectClasses;
+            config1.Schema = objectClasses;
+            config2.Schema = objectClasses;
 
             using var realm1 = await GetRealmAsync(config1);
             using var realm2 = await GetRealmAsync(config2);

@@ -33,6 +33,7 @@
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <NoWarn>MSB4011</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">
@@ -133,5 +134,14 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
+    <None Include="..\App.config" Link="App.config" />
+    <None Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\v6db.realm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

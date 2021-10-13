@@ -45,12 +45,7 @@ namespace Realms
         {
             Argument.NotNull(query, nameof(query));
 
-            if (query is IRealmCollection<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
+            return Argument.EnsureType<IRealmCollection<T>>(query, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
         }
 
         /// <summary>
@@ -82,12 +77,7 @@ namespace Realms
         {
             Argument.NotNull(set, nameof(set));
 
-            if (set is IRealmCollection<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
+            return Argument.EnsureType<IRealmCollection<T>>(set, $"{nameof(set)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(set));
         }
 
         /// <summary>
@@ -115,12 +105,7 @@ namespace Realms
         {
             Argument.NotNull(list, nameof(list));
 
-            if (list is IRealmCollection<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
+            return Argument.EnsureType<IRealmCollection<T>>(list, $"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
         }
 
         /// <summary>
@@ -153,12 +138,46 @@ namespace Realms
         public static IQueryable<T> AsRealmQueryable<T>(this IList<T> list)
             where T : RealmObjectBase
         {
-            if (list is RealmList<T> realmList)
-            {
-                return realmList.ToResults();
-            }
+            Argument.NotNull(list, nameof(list));
 
-            throw new ArgumentException($"{nameof(list)} must be managed by Realm.", nameof(list));
+            var realmList = Argument.EnsureType<RealmList<T>>(list, $"{nameof(list)} must be a Realm List property.", nameof(list));
+            return realmList.ToResults();
+        }
+
+        /// <summary>
+        /// Converts a Realm-backed <see cref="ISet{T}"/> to a Realm-backed <see cref="IQueryable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects contained in the set.</typeparam>
+        /// <param name="set">The set of objects as obtained from a to-many relationship property.</param>
+        /// <returns>A queryable collection that represents the objects contained in the set.</returns>
+        /// <remarks>
+        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it actually creates
+        /// an underlying Realm query to represent the set. This means that all LINQ methods will be executed
+        /// by the database and also that you can subscribe for notifications even after applying LINQ filters
+        /// or ordering.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dogs = owner.Dogs;
+        /// var query = dogs.AsRealmQueryable()
+        ///                 .Where(d => d.Age > 3)
+        ///                 .OrderBy(d => d.Name);
+        ///
+        /// var token = query.SubscribeForNotifications((sender, changes, error) =>
+        /// {
+        ///     // You'll be notified only when dogs older than 3 have been added/removed/updated
+        ///     // and the sender collection will be ordered by Name
+        /// });
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentException">Thrown if the list is not managed by Realm.</exception>
+        public static IQueryable<T> AsRealmQueryable<T>(this ISet<T> set)
+            where T : RealmObjectBase
+        {
+            Argument.NotNull(set, nameof(set));
+
+            var realmSet = Argument.EnsureType<RealmSet<T>>(set, $"{nameof(set)} must be a Realm Set property.", nameof(set));
+            return realmSet.ToResults();
         }
 
         /// <summary>
@@ -244,12 +263,8 @@ namespace Realms
         {
             Argument.NotNull(dictionary, nameof(dictionary));
 
-            if (dictionary is RealmDictionary<T> collection)
-            {
-                return collection;
-            }
-
-            throw new ArgumentException($"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            return realmDictionary;
         }
 
         /// <summary>
@@ -283,12 +298,8 @@ namespace Realms
         {
             Argument.NotNull(dictionary, nameof(dictionary));
 
-            if (dictionary is RealmDictionary<T> collection)
-            {
-                return collection.SubscribeForKeyNotifications(callback);
-            }
-
-            throw new ArgumentException($"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of IRealmCollection<KeyValuePair<string, {typeof(T).Name}>>.", nameof(dictionary));
+            return realmDictionary.SubscribeForKeyNotifications(callback);
         }
 
         /// <summary>
@@ -301,12 +312,12 @@ namespace Realms
         /// A Queryable collection, obtained by calling <see cref="Realm.All{T}"/>.
         /// </param>
         /// <param name="predicate">The predicate that will be applied.</param>
-        /// <param name="arguments">Values used for substitution in the predicate. Note that all primitive types are accepted as they are implicitly converted to RealmValue.</param>
+        /// <param name="arguments">
+        /// Values used for substitution in the predicate.
+        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
+        /// </param>
         /// <returns>A queryable observable collection of objects that match the predicate.</returns>
         /// <remarks>
-        /// This method can be used in combination with LINQ filtering, but it is strongly recommended
-        /// to avoid combining it if a <c>SORT</c> clause appears in the predicate.
-        /// <para/>
         /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
         /// after applying the predicate.
         /// </remarks>
@@ -324,7 +335,9 @@ namespace Realms
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
         {
+            Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
+
             var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return realmResults.GetFilteredResults(predicate, arguments);
         }
@@ -337,20 +350,19 @@ namespace Realms
         /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
         /// <param name="list">A Realm List.</param>
         /// <param name="predicate">The predicate that will be applied.</param>
-        /// <param name="arguments">Values used for substitution in the predicate. Note that all primitive types are accepted as they are implicitly converted to RealmValue.</param>
+        /// <param name="arguments">
+        /// Values used for substitution in the predicate.
+        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
+        /// </param>
         /// <returns>A queryable observable collection of objects that match the predicate.</returns>
         /// <remarks>
-        /// This method can be used in combination with LINQ filtering, but it is strongly recommended
-        /// to avoid combining it if a <c>SORT</c> clause appears in the predicate.
-        /// <para/>
         /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
         /// after applying the predicate.
         /// </remarks>
         /// <example>
         /// <code>
-        /// var results1 = realm.All&lt;Foo&gt;("Bar.IntValue > 0");
-        /// var results2 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC)");
-        /// var results3 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC) DISTINCT(Bar.IntValue)");
+        /// var joe = realm.All&lt;Person&gt;().Single(p =&gt; p.Name == "Joe");
+        /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
         /// </code>
         /// </example>
         /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
@@ -360,9 +372,48 @@ namespace Realms
         public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params RealmValue[] arguments)
             where T : RealmObjectBase
         {
+            Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
+
             var realmList = Argument.EnsureType<RealmList<T>>(list, $"{nameof(list)} must be a Realm List property.", nameof(list));
             return realmList.GetFilteredResults(predicate, arguments);
+        }
+
+        /// <summary>
+        /// Apply an NSPredicate-based filter over a collection. It can be used to create
+        /// more complex queries, that are currently unsupported by the LINQ provider and
+        /// supports SORT and DISTINCT clauses in addition to filtering.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
+        /// <param name="set">A Realm Set.</param>
+        /// <param name="predicate">The predicate that will be applied.</param>
+        /// <param name="arguments">
+        /// Values used for substitution in the predicate.
+        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
+        /// </param>
+        /// <returns>A queryable observable collection of objects that match the predicate.</returns>
+        /// <remarks>
+        /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
+        /// after applying the predicate.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var joe = realm.All&lt;Person&gt;().Single(p =&gt; p.Name == "Joe");
+        /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
+        /// </code>
+        /// </example>
+        /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
+        /// Examples of the NSPredicate syntax
+        /// </seealso>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params RealmValue[] arguments)
+            where T : RealmObjectBase
+        {
+            Argument.NotNull(predicate, nameof(predicate));
+            Argument.NotNull(arguments, nameof(arguments));
+
+            var realmSet = Argument.EnsureType<RealmSet<T>>(set, $"{nameof(set)} must be a Realm Set property.", nameof(set));
+            return realmSet.GetFilteredResults(predicate, arguments);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

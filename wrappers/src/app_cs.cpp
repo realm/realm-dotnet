@@ -99,23 +99,6 @@ namespace realm {
         private:
             void* managed_logger;
         };
-
-        class SyncLoggerFactory : public realm::SyncLoggerFactory {
-        public:
-            SyncLoggerFactory(void* managed_logger)
-                : managed_logger(managed_logger)
-            {
-            }
-
-            std::unique_ptr<util::Logger> make_logger(util::Logger::Level level)
-            {
-                auto logger = std::make_unique<SyncLogger>(managed_logger);
-                logger->set_level_threshold(level);
-                return std::unique_ptr<util::Logger>(logger.release());
-            }
-        private:
-            void* managed_logger;
-        };
     }
 }
 
@@ -150,7 +133,7 @@ extern "C" {
             config.platform = s_platform;
             config.platform_version = s_platform_version;
             config.sdk_version = s_sdk_version;
-            config.transport_generator = realm::binding::s_transport_factory;
+            config.transport = realm::binding::s_transport;
 
             if (app_config.base_url != nullptr) {
                 config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
@@ -188,8 +171,13 @@ extern "C" {
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
-            if (app_config.managed_logger) {
-                sync_client_config.logger_factory = new realm::binding::SyncLoggerFactory(app_config.managed_logger);
+            void* managed_logger = app_config.managed_logger;
+            if (managed_logger) {
+                sync_client_config.logger_factory = [managed_logger](util::Logger::Level level) {
+                    auto logger = std::make_unique<SyncLogger>(managed_logger);
+                    logger->set_level_threshold(level);
+                    return std::unique_ptr<util::Logger>(logger.release());
+                };
             }
 
             return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));

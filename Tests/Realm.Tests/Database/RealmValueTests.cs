@@ -713,7 +713,7 @@ namespace Realms.Tests.Database
             _realm.Dispose();
 
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
-            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+            config.Schema = new[] { typeof(RealmValueObject) };
 
             using var singleSchemaRealm = GetRealm(config);
 
@@ -739,7 +739,7 @@ namespace Realms.Tests.Database
             _realm.Dispose();
 
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
-            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+            config.Schema = new[] { typeof(RealmValueObject) };
 
             using var singleSchemaRealm = GetRealm(config);
 
@@ -765,7 +765,7 @@ namespace Realms.Tests.Database
             _realm.Dispose();
 
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
-            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+            config.Schema = new[] { typeof(RealmValueObject) };
 
             using var singleSchemaRealm = GetRealm(config);
 
@@ -791,7 +791,7 @@ namespace Realms.Tests.Database
             _realm.Dispose();
 
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
-            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+            config.Schema = new[] { typeof(RealmValueObject) };
 
             using var singleSchemaRealm = GetRealm(config);
 
@@ -817,7 +817,7 @@ namespace Realms.Tests.Database
             _realm.Dispose();
 
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
-            config.ObjectClasses = new[] { typeof(RealmValueObject) };
+            config.Schema = new[] { typeof(RealmValueObject) };
 
             using var singleSchemaRealm = GetRealm(config);
 

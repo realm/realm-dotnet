@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Realms</RootNamespace>
@@ -118,4 +119,46 @@
   </ItemGroup>
   <Import Project="..\AssemblyInfo.props " />
   <Import Project="..\Realm.Fody\InSolutionWeaver.props" />
+
+  <UsingTask TaskName="ExtractChangelog" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+
+    <ParameterGroup>
+        <FilePath ParameterType="System.String" Required="true" />
+        <ExtractedText ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+try
+{
+    var textToParse = File.ReadAllText(FilePath);
+    var regex = new Regex("(?sm)^(## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-[a-zA-Z]*\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))(.+?)(?=\n## \\d{1,2}\\.\\d{1,2}\\.\\d{1,2}(?:-[a-zA-Z]*\\.\\d{1,2})? \\(\\d{4}-\\d{2}-\\d{2}\\))");
+    var matches = regex.Matches(textToParse);
+    ExtractedText = matches[0].Groups[0].Value;
+}
+catch (Exception ex)
+{
+    Log.LogError($"The changelog could not be extracted because of the following exception:\n{ex.ToString()}\nAborting the build.");
+    Success = false;
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="ExtractChangelogToPack" BeforeTargets="GenerateNuspec" Condition="'$(CI)' == 'true'">
+    <Message Text="Extracting release note" />
+    <ExtractChangelog FilePath="$(ProjectDir)\..\..\CHANGELOG.md">
+      <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
+    </ExtractChangelog>
+  </Target>
+
+  <Target Name="WriteChangelogToFile" AfterTargets="ExtractChangelogToPack">
+    <WriteLinesToFile File="ExtractedChangelog.md" Lines="$(PackageReleaseNotes)" Overwrite="true" />
+  </Target>
+
 </Project>

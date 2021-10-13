@@ -46,7 +46,7 @@ using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using OnBindingContextDestructedT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
-using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -180,7 +180,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.schema_version = configuration.schema_version;
 
         if (configuration.managed_migration_handle) {
-            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
+            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema& migrationSchema) {
+
                 std::vector<SchemaObject> schema_objects;
                 std::vector<SchemaProperty> schema_properties;
 
@@ -195,7 +196,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                     schema_properties.data()
                 };
 
-                if (!s_on_migration(&oldRealm, &newRealm, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
+                if (!s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
                     throw ManagedExceptionDuringMigration();
                 }
             };
@@ -243,9 +244,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
 
         auto realm = Realm::get_shared_realm(config);
-        if (!configuration.read_only)
-            realm->refresh();
-
+        realm->refresh();
         return new SharedRealm(realm);
     });
 }
@@ -398,7 +397,9 @@ REALM_EXPORT void* shared_realm_resolve_reference(SharedRealm& realm, ThreadSafe
 REALM_EXPORT SharedRealm* shared_realm_resolve_realm_reference(ThreadSafeReference& reference, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new SharedRealm(Realm::get_shared_realm(std::move(reference)));
+        auto realm = Realm::get_shared_realm(std::move(reference));
+        realm->refresh();
+        return new SharedRealm(realm);
     });
 }
 
@@ -544,6 +545,43 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
 
         const TableRef table = get_table(realm, table_key);
         return new Results(realm, table);
+    });
+}
+
+REALM_EXPORT void shared_realm_rename_property(const SharedRealm& realm, uint16_t* type_name_buf, size_t type_name_len,
+    uint16_t* old_name_buf, size_t old_Name_len, uint16_t* new_name_buf, size_t new_name_len, Schema* migration_schema, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
+        Utf16StringAccessor old_name_str(old_name_buf, old_Name_len);
+        Utf16StringAccessor new_name_str(new_name_buf, new_name_len);
+
+        ObjectStore::rename_property(realm->read_group(), *migration_schema, type_name_str, old_name_str, new_name_str);
+    });
+}
+
+REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* type_name_buf, size_t type_name_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor type_name_str(type_name_buf, type_name_len);
+
+        auto table = ObjectStore::table_for_object_type(realm->read_group(), type_name_str);
+        // If the table does not exist then we return false
+        if (!table)
+        {
+            return false;
+        }
+
+        const auto obj_schema = realm->schema().find(type_name_str);
+        // If the table exists, but it's in the current schema, then we throw an exception
+        // User can always exclude it from schema in config, or remove it completely
+        if (obj_schema != realm->schema().end())
+        {
+            throw std::runtime_error(util::format("Attempted to remove type '%1', that is present in the current schema", type_name_str.to_string()));
+        }
+
+        realm->read_group().remove_table(table->get_key());
+        return true;
     });
 }
 

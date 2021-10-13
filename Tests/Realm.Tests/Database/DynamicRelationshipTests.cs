@@ -68,7 +68,7 @@ namespace Realms.Tests.Database
             {
                 var config = new RealmConfiguration(Guid.NewGuid().ToString())
                 {
-                    ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
+                    Schema = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
                     IsDynamic = isDynamic
                 };
 

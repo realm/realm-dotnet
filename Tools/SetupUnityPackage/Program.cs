@@ -90,11 +90,8 @@ namespace SetupUnityPackage
             var testsProjectFolder = Path.Combine(Helpers.SolutionFolder, "Tests", "Realm.Tests");
             RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -p:RealmDllPath={realmDllPath} -c Release --include-symbols", Helpers.SolutionFolder);
 
-            var (_, dependencies) = await CopyMainPackages(Helpers.PackagesFolder, opts);
-
             var testsSearchDirectory = Path.Combine(testsProjectFolder, "bin", "Release", "netstandard2.0");
-
-            await CopyDependencies(opts, dependencies, testsSearchDirectory);
+            await CopyPackages(Helpers.PackagesFolder, opts, testsSearchDirectory);
 
             var manifestPath = Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Packages", "manifest.json");
             UpdateManifestJson(manifestPath, "io.realm.unity", opts.RealmPackage);
@@ -104,9 +101,7 @@ namespace SetupUnityPackage
 
         private static async Task Run(RealmOptions opts)
         {
-            var (unityPackageVersion, dependencies) = await CopyMainPackages(opts.PackagesPath, opts);
-
-            await CopyDependencies(opts, dependencies);
+            var unityPackageVersion = await CopyPackages(opts.PackagesPath, opts);
 
             CopyDocumentation(opts.PackageBasePath);
 
@@ -119,9 +114,8 @@ namespace SetupUnityPackage
             }
         }
 
-        private static async Task<(string Version, Queue<PackageDependency> Dependencies)> CopyMainPackages(string packagesPath, OptionsBase opts)
+        private static async Task<string> CopyPackages(string packagesPath, OptionsBase opts, params string[] searchDirectories)
         {
-            var dependencies = new Queue<PackageDependency>();
             string unityPackageVersion = null;
 
             foreach (var info in opts.Files)
@@ -131,36 +125,45 @@ namespace SetupUnityPackage
 
                 unityPackageVersion ??= version;
 
-                if (info.IncludeDependencies)
+                Console.WriteLine($"Included {extractedFiles} files from {info.Id}@{version}");
+
+                if (info.Dependencies == null)
                 {
-                    dependencies.EnqueueRange(deps);
+                    continue;
                 }
 
-                Console.WriteLine($"Included {extractedFiles} files from {info.Id}@{version}");
+                var dependencies = new Queue<PackageDependency>();
+                dependencies.EnqueueRange(deps);
+
+                Console.WriteLine($"Package {info.Id}@{version} has {dependencies.Count} dependencies. Including them in project...");
+
+                await CopyDependencies(opts, info, dependencies, searchDirectories);
             }
 
-            return (unityPackageVersion, dependencies);
+            return unityPackageVersion;
         }
 
-        private static async Task CopyDependencies(OptionsBase opts, Queue<PackageDependency> dependencies, params string[] searchDirectories)
+        private static async Task CopyDependencies(OptionsBase opts, PackageInfo info, Queue<PackageDependency> dependencies, params string[] searchDirectories)
         {
             Console.WriteLine("Including dependencies");
 
             var tempPath = CreateTempDirectory("dependencies");
+            var referencePath = CreateTempDirectory("references");
 
             while (dependencies.TryDequeue(out var package))
             {
                 var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
-                var info = opts.Dependencies.SingleOrDefault(i => i.Id == package.Id);
+                var depInfo = info.Dependencies.SingleOrDefault(i => i.Id == package.Id);
                 if (opts.IgnoredDependencies.Contains(package.Id))
                 {
                     Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it is ignored.");
                 }
-                else if (info != null)
+                else if (depInfo != null)
                 {
                     Console.WriteLine($"Including {package.Id}@{packageVersion}");
                     var path = await DownloadPackage(package.Id, packageVersion);
-                    var (_, newDeps, extractedFiles) = await CopyBinaries(path, info.Id, info.GetFilesToExtract(tempPath));
+
+                    var (_, newDeps, extractedFiles) = await CopyBinaries(path, depInfo.Id, depInfo.GetFilesToExtract(depInfo.ReferenceOnly ? referencePath : tempPath));
 
                     dependencies.EnqueueRange(newDeps);
 
@@ -173,23 +176,24 @@ namespace SetupUnityPackage
                 }
             }
 
+            var mainPackagePath = Path.Combine(opts.PackageBasePath, info.MainPackagePath);
             if (opts.NoRepack)
             {
-                var targetFolder = Path.Combine(opts.PackageBasePath, Path.GetDirectoryName(opts.MainPackagePath), "Dependencies");
+                var targetFolder = Path.Combine(Path.GetDirectoryName(mainPackagePath), "Dependencies");
 
                 Helpers.CopyFiles(tempPath, targetFolder);
             }
             else
             {
-                var assembliesToRepack = new List<string> { Path.Combine(opts.PackageBasePath, opts.MainPackagePath) };
+                var assembliesToRepack = new List<string> { mainPackagePath };
                 assembliesToRepack.AddRange(Directory.EnumerateFiles(tempPath));
 
                 var repack = new ILRepack(new RepackOptions
                 {
                     InputAssemblies = assembliesToRepack.ToArray(),
                     Internalize = true,
-                    OutputFile = assembliesToRepack[0],
-                    SearchDirectories = searchDirectories,
+                    OutputFile = mainPackagePath,
+                    SearchDirectories = searchDirectories.Concat(new[] { referencePath }),
                     XmlDocumentation = false,
                     ExcludeInternalizeMatches = { new Regex("MongoDB\\.Bson") }
                 });
@@ -198,6 +202,7 @@ namespace SetupUnityPackage
             }
 
             Directory.Delete(tempPath, recursive: true);
+            Directory.Delete(referencePath, recursive: true);
         }
 
         private static async Task<string> DownloadPackage(string packageId, string version)

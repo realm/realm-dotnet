@@ -222,7 +222,7 @@ namespace RealmWeaver
         }
 
         [TestCaseSource(nameof(RandomValues))]
-        public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
+        public void GetValueManagedShouldGetQueryDatabase(string typeName, object _)
         {
             // Arrange
             var propertyName = typeName + "Property";
@@ -480,6 +480,7 @@ namespace RealmWeaver
                 "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "AccessorTestObject.SetterLessObject does not have a setter but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
             };
 
             var expectedErrors = new[]
