@@ -41,12 +41,14 @@ namespace Realms.Sync
         public Credentials.AuthProvider Provider { get; private set; }
 
         /// <inheritdoc/>
+        [Preserve]
         public override bool Equals(object obj) => (obj is UserIdentity id) && id.Id == Id && id.Provider == Provider;
 
         /// <summary>
         /// Gets the hash code.
         /// </summary>
         /// <returns>The hash code.</returns>
+        [Preserve]
         public override int GetHashCode()
         {
             unchecked
@@ -62,6 +64,7 @@ namespace Realms.Sync
         /// Returns a string representation of the value.
         /// </summary>
         /// <returns>A string representation of the value.</returns>
+        [Preserve]
         public override string ToString() => $"UserIdentity: {Id} ({Provider})";
     }
 }

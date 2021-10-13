@@ -82,6 +82,8 @@ namespace Realms.Tests.Database
                     }
                 });
 
+                await Task.Delay(100);
+
                 await Task.Run(() =>
                 {
                     using var otherRealm = GetRealm(_config);

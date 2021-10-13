@@ -12,6 +12,8 @@
 #@ actionSetupNode = "actions/setup-node@v2"
 #@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1"
 #@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@v3"
+#@ actionDeployBaaS = "realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff"
+#@ actionCleanupBaaS = "realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff"
 
 #@ actionDockerLayerCaching = "satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97" #! 0.0.11
 #@ actionDockerBuild = "docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b" #! 2.7.0

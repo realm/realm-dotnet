@@ -408,10 +408,33 @@ jobs:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-  run-tests-net-framework:
+  baas-net-framework:
+    runs-on: ubuntu-latest
+    name: Deploy MDB Realm for .NET Framework
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        differentiator: .NET Framework
+  test-net-framework:
     runs-on: windows-latest
     name: Test .NET Framework
-    needs: build-packages
+    needs:
+    - build-packages
+    - baas-net-framework
+    env:
+      APPS_CONFIG: ${{ needs.baas-net-framework.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -437,7 +460,7 @@ jobs:
     - name: Build Tests/Realm.Tests
       run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:TargetFramework=net461
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -449,10 +472,51 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  run-tests-uwp:
+  cleanup-net-framework:
+    runs-on: ubuntu-latest
+    name: Cleanup .NET Framework
+    needs:
+    - test-net-framework
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: .NET Framework
+  baas-uwp-managed:
+    runs-on: ubuntu-latest
+    name: Deploy MDB Realm for UWP Managed
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        differentiator: UWP Managed
+  test-uwp-managed:
     runs-on: windows-latest
-    name: Test UWP managed
-    needs: build-packages
+    name: Test UWP Managed
+    needs:
+    - build-packages
+    - baas-uwp-managed
+    env:
+      APPS_CONFIG: ${{ needs.baas-uwp-managed.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -484,47 +548,43 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
-    - name: Install the UWP test app
-      run: Tests/Tests.UWP/AppPackages/Tests.UWP_1.0.0.0_Test/Install.ps1 -Force
-      shell: powershell
     - name: Run the tests
-      run: |
-        echo "test_results=$env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
-        Start-Process shell:AppsFolder\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)!App -ArgumentList "--headless --labels=After --result=TestResults.UWP.xml"
-        Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
-        do
-        {
-            Start-Sleep -s 3
-            $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
-            $uwp_test_app = (Get-Process Tests.UWP -ErrorAction SilentlyContinue) -ne $null
-        } while ($uwp_test_app -and !$file_available)
-
-        $file_available = Test-Path -Path $env:LOCALAPPDATA\Packages\$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)\LocalState\TestResults.UWP.xml
-        if (!$file_available)
-        {
-          exit 1
-        }
-        else
-        {
-          # print test results in GH Action's console
-          Get-Content $env:LOCALAPPDATA/Packages/$(get-appxpackage -name realm.uwp.tests | select -expandproperty PackageFamilyName)/LocalState/TestRunOutput.txt
-        }
+      run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }} -BaasApps '${{ env.APPS_CONFIG }}'
       shell: powershell
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        name: Results UWP
-        path: ${{ env.test_results }}
+        name: Results UWP Managed
+        path: ${{ env.TEST_RESULTS }}
         reporter: java-junit
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  cleanup-uwp-managed:
+    runs-on: ubuntu-latest
+    name: Cleanup UWP Managed
+    needs:
+    - test-uwp-managed
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: UWP Managed
   run-tests-netcore:
+    runs-on: ${{ matrix.os}}
     name: Test .NET
-    needs: build-packages
-    runs-on: ${{ matrix.os }}
+    needs:
+    - build-packages
     strategy:
       fail-fast: false
       matrix:
@@ -582,10 +642,33 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  run-tests-xamarin-macos:
+  baas-xamarinmacos:
+    runs-on: ubuntu-latest
+    name: Deploy MDB Realm for Xamarin.macOS
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        differentiator: Xamarin.macOS
+  test-xamarinmacos:
     runs-on: macos-latest
     name: Test Xamarin.macOS
-    needs: build-packages
+    needs:
+    - build-packages
+    - baas-xamarinmacos
+    env:
+      APPS_CONFIG: ${{ needs.baas-xamarinmacos.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -609,7 +692,7 @@ jobs:
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:TargetFrameworkVersion=v2.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --result=${{ github.workspace }}/TestResults.macOS.xml
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -621,10 +704,51 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  run-tests-xamarin-ios:
+  cleanup-xamarinmacos:
+    runs-on: ubuntu-latest
+    name: Cleanup Xamarin.macOS
+    needs:
+    - test-xamarinmacos
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: Xamarin.macOS
+  baas-xamarinios:
+    runs-on: ubuntu-latest
+    name: Deploy MDB Realm for Xamarin.iOS
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        differentiator: Xamarin.iOS
+  test-xamarinios:
     runs-on: macos-latest
     name: Test Xamarin.iOS
-    needs: build-packages
+    needs:
+    - build-packages
+    - baas-xamarinios
+    env:
+      APPS_CONFIG: ${{ needs.baas-xamarinios.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -653,7 +777,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml
+        arguments: --headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps ${{ env.APPS_CONFIG }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -665,6 +789,24 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  cleanup-xamarinios:
+    runs-on: ubuntu-latest
+    name: Cleanup Xamarin.iOS
+    needs:
+    - test-xamarinios
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: Xamarin.iOS
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -696,10 +838,33 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
-  code-coverage:
+  baas-code-coverage:
     runs-on: ubuntu-latest
-    name: Code Coverage
-    needs: build-packages
+    name: Deploy MDB Realm for Code Coverage
+    outputs:
+      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        appsPath: ${{ github.workspace }}/Tests/TestApps
+        differentiator: Code Coverage
+  test-code-coverage:
+    runs-on: ubuntu-latest
+    name: Test Code Coverage
+    needs:
+    - build-packages
+    - baas-code-coverage
+    env:
+      APPS_CONFIG: ${{ needs.baas-code-coverage.outputs.deployedApps }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -784,7 +949,7 @@ jobs:
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--labels=After --baasurl ${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Publish Coverage
       id: publish-coveralls
       uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
@@ -794,11 +959,29 @@ jobs:
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+  cleanup-code-coverage:
+    runs-on: ubuntu-latest
+    name: Cleanup Code Coverage
+    needs:
+    - test-code-coverage
+    if: always()
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+      with:
+        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        differentiator: Code Coverage
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup
     needs:
-    - code-coverage
+    - test-code-coverage
     if: always()
     steps:
     - name: Delete artifacts for macos

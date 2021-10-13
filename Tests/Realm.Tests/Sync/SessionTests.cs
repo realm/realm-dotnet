@@ -87,7 +87,7 @@ namespace Realms.Tests.Sync
             const int ObjectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetIntegrationConfigAsync("progress");
+                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
                 using var realm = GetRealm(config);
 
                 var completionTCS = new TaskCompletionSource<ulong>();
