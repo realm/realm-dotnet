@@ -244,9 +244,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
 
         auto realm = Realm::get_shared_realm(config);
-        if (!configuration.read_only)
-            realm->refresh();
-
+        realm->refresh();
         return new SharedRealm(realm);
     });
 }
@@ -399,7 +397,9 @@ REALM_EXPORT void* shared_realm_resolve_reference(SharedRealm& realm, ThreadSafe
 REALM_EXPORT SharedRealm* shared_realm_resolve_realm_reference(ThreadSafeReference& reference, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new SharedRealm(Realm::get_shared_realm(std::move(reference)));
+        auto realm = Realm::get_shared_realm(std::move(reference));
+        realm->refresh();
+        return new SharedRealm(realm);
     });
 }
 
