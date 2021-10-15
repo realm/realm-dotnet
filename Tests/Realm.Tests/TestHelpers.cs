@@ -420,7 +420,7 @@ namespace Realms.Tests
                 }
             }
 
-            return new string(paramChars).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            return new string(paramChars).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public static bool IsHeadlessRun(string[] args) => args.Contains("--headless");

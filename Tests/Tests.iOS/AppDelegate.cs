@@ -49,7 +49,7 @@ namespace Realms.Tests.iOS
 
             arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
 
-            if (TestHelpers.IsHeadlessRun(arguments)
+            if (TestHelpers.IsHeadlessRun(arguments))
             {
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
