@@ -237,8 +237,8 @@ steps:
       echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
   - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net5.0", { "AdditionalFrameworks": "net5.0" }))
   - name: Run the tests
-  - name: Publish Coverage
     run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--result=TestResults.Linux.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+  - name: Publish Coverage
     id: publish-coveralls
     uses: #@ actionCoveralls
     with:
