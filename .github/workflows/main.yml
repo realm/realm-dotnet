@@ -472,7 +472,7 @@ jobs:
           adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
           adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
           adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-          adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
+          adb pull /storage/emulated/0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
           adb shell rm /sdcard/Realmtests/TestResults.Android.xml
     - name: Output logcat
       if: always()
