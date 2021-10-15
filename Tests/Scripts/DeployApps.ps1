@@ -46,6 +46,6 @@ Get-ChildItem –Path $tempPath | Foreach-Object {
 $bytes = [System.Text.Encoding]::Utf8.GetBytes(($apps | ConvertTo-Json))
 $encoded = [Convert]::ToBase64String($bytes)
 
-Write-Output "Command line string: --baasurl https://realm-dev.mongodb.com --baasapps $encoded"
+Write-Output "Command line string: --baasurl=https://realm-dev.mongodb.com --baasapps=$encoded"
 
 Remove-Item -Path $tempPath -Force -Recurse

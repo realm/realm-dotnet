@@ -394,6 +394,41 @@ namespace Realms.Tests
 
         public static string Join<T>(this IEnumerable<T> collection, string separator = ", ") => string.Join(separator, collection);
 
+        public static string[] SplitArguments(string commandLine)
+        {
+            var paramChars = commandLine.ToCharArray();
+
+            var inSingleQuote = false;
+            var inDoubleQuote = false;
+            for (var index = 0; index < paramChars.Length; index++)
+            {
+                if (paramChars[index] == '"' && !inSingleQuote)
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                    paramChars[index] = '\n';
+                }
+
+                if (paramChars[index] == '\'' && !inDoubleQuote)
+                {
+                    inSingleQuote = !inSingleQuote;
+                    paramChars[index] = '\n';
+                }
+
+                if (!inSingleQuote && !inDoubleQuote && paramChars[index] == ' ')
+                {
+                    paramChars[index] = '\n';
+                }
+            }
+
+            return new string(paramChars).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public static bool IsHeadlessRun(string[] args) => args.Contains("--headless");
+
+        public static string GetResultsPath(string[] args)
+            => args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty) ??
+                throw new Exception("You must provide path to store test results with --result path/to/results.xml");
+
         private class FunctionObserver<T> : IObserver<T>
         {
             private readonly Action<T> _onNext;

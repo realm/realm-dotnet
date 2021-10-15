@@ -45,10 +45,17 @@ namespace Realms.Tests.Android
         {
             var resultPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "TestResults.Android.xml");
             Console.WriteLine($"Test Result file: {resultPath}");
+
+            var args = "--headless true --resultPath {resultPath}";
+            var additionalArgsPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "testargs.txt");
+            if (File.Exists(additionalArgsPath))
+            {
+                args = $"{args} {File.ReadAllText(additionalArgsPath)}";
+            }
+
             var intent = new Intent(Context, typeof(MainActivity));
-            intent.PutExtra("headless", true);
+            intent.PutExtra("args", args);
             intent.SetFlags(ActivityFlags.NewTask);
-            intent.PutExtra("resultPath", resultPath);
             var activity = (MainActivity)StartActivitySync(intent);
             activity.OnFinished = result =>
             {

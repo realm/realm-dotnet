@@ -39,34 +39,5 @@ namespace Realms.Tests.UWP
             var transformedXmlResults = processor.TransformToDocument(xmlResults);
             await transformedXmlResults.SaveToFileAsync(resultsSf);
         }
-
-        public static string[] SplitArguments(string commandLine)
-        {
-            var paramChars = commandLine.ToCharArray();
-
-            var inSingleQuote = false;
-            var inDoubleQuote = false;
-            for (var index = 0; index < paramChars.Length; index++)
-            {
-                if (paramChars[index] == '"' && !inSingleQuote)
-                {
-                    inDoubleQuote = !inDoubleQuote;
-                    paramChars[index] = '\n';
-                }
-
-                if (paramChars[index] == '\'' && !inDoubleQuote)
-                {
-                    inSingleQuote = !inSingleQuote;
-                    paramChars[index] = '\n';
-                }
-
-                if (!inSingleQuote && !inDoubleQuote && paramChars[index] == ' ')
-                {
-                    paramChars[index] = '\n';
-                }
-            }
-
-            return new string(paramChars).Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        }
     }
 }

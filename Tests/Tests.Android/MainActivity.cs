@@ -18,11 +18,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.OS;
 using NUnit.Runner;
 using NUnit.Runner.Services;
+using Realms.Tests.Sync;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
@@ -48,11 +50,13 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            if (Intent.GetBooleanExtra("headless", false))
+            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent.GetStringArrayExtra("args") ?? Array.Empty<string>());
+
+            if (TestHelpers.IsHeadlessRun(arguments))
             {
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
-                options.ResultFilePath = Intent.GetStringExtra("resultPath");
+                options.ResultFilePath = TestHelpers.GetResultsPath(arguments);
                 options.OnCompletedCallback = () =>
                 {
                     TestHelpers.TransformTestResults(options.ResultFilePath);
