@@ -46,7 +46,7 @@ namespace Realms.Tests.Android
             var resultPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "TestResults.Android.xml");
             Console.WriteLine($"Test Result file: {resultPath}");
 
-            var args = "--headless true --resultPath {resultPath}";
+            var args = $"--headless --resultPath {resultPath}";
             var additionalArgsPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "testargs.txt");
             if (File.Exists(additionalArgsPath))
             {

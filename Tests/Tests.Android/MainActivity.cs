@@ -50,7 +50,8 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent.GetStringArrayExtra("args") ?? Array.Empty<string>());
+            var arguments = TestHelpers.SplitArguments(Intent.GetStringExtra("args") ?? string.Empty);
+            arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {
