@@ -462,11 +462,11 @@ jobs:
         disable-animations: true
         script: |
           adb devices
-          adb install ./Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+          adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
           adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
           adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
           adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-          adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml TestResults.Android.xml
+          adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
           adb shell rm /sdcard/Realmtests/TestResults.Android.xml
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
