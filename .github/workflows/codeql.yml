@@ -14,6 +14,7 @@ jobs:
   analyze-cpp:
     name: Analyze C++
     runs-on: windows-latest
+    if: ${{ false }}
     permissions:
       actions: read
       contents: read
@@ -48,6 +49,7 @@ jobs:
       uses: github/codeql-action/analyze@v1
   analyze-csharp:
     name: Analyze C#
+    if: ${{ false }}
     runs-on: windows-latest
     permissions:
       actions: read

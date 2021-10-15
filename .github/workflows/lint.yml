@@ -3,6 +3,7 @@ name: lint
   pull_request:
 jobs:
   verify-todos:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     name: Verify TODOs
     steps:
