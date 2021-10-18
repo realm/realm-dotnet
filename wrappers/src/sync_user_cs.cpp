@@ -26,6 +26,8 @@
 #include <realm/object-store/sync/app.hpp>
 #include "app_cs.hpp"
 
+#include <external/json/json.hpp>
+
 using namespace realm;
 using namespace realm::binding;
 using namespace app;
@@ -228,7 +230,7 @@ extern "C" {
     REALM_EXPORT SharedApp* realm_syncuser_get_app(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            // If the user is detached from the sync manager, we'll hit an assert, so this early check avoids that. 
+            // If the user is detached from the sync manager, we'll hit an assert, so this early check avoids that.
             if (user->state() != SyncUser::State::Removed)
             {
                 if (auto shared_app = user->sync_manager()->app().lock()) {
