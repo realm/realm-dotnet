@@ -457,7 +457,7 @@ jobs:
       - uses: #@ actionSetupDotnet
         if: matrix.targetFramework == 'net6.0'
         with:
-          dotnet-version: '6.0.100-rc.2'
+          dotnet-version: '6.0.x'
           include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
