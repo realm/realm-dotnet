@@ -592,6 +592,7 @@ jobs:
         - macos-latest
         - windows-latest
         - ubuntu-latest
+        - win81
         targetFramework:
         - netcoreapp3.1
         - net5.0
@@ -622,7 +623,7 @@ jobs:
     - uses: actions/setup-dotnet@v1
       if: matrix.targetFramework == 'net6.0'
       with:
-        dotnet-version: 6.0.100-preview.7.21379.14
+        dotnet-version: 6.0.x
         include-prerelease: true
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
