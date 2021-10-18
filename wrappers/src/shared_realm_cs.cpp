@@ -305,6 +305,12 @@ REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor object_type(object_type_buf, object_type_len);
+
+        auto object_schema = realm->schema().find(object_type);
+        if (object_schema != realm->schema().end()) {
+            return object_schema->table_key.value;
+        }
+
         auto table_ref = ObjectStore::table_for_object_type(realm->read_group(), object_type);
         if (!table_ref) {
             throw InvalidSchemaException(util::format("Table with name '%1' doesn't exist in the Realm schema.", object_type.to_string()));
@@ -517,6 +523,10 @@ REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm,
     return handle_errors(ex, [&]() -> Object* {
         realm->verify_thread();
 
+        if (table_key == TableKey()) {
+            return nullptr;
+        }
+
         const TableRef table = get_table(realm, table_key);
         const ObjectSchema& object_schema = *realm->schema().find(table_key); 
         if (object_schema.primary_key.empty()) {
@@ -547,6 +557,12 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
 {
     return handle_errors(ex, [&]() {
         realm->verify_thread();
+
+        if (table_key == TableKey()) {
+            Results results = {};
+            results.set_update_policy(realm::Results::UpdatePolicy::Never);
+            return new Results(std::move(results));
+        }
 
         const TableRef table = get_table(realm, table_key);
         return new Results(realm, table);
