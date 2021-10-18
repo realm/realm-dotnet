@@ -7,6 +7,7 @@ name: main
   pull_request: null
 env:
   REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
@@ -856,24 +857,24 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Tests/Tests.Android
       run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:AndroidSupportedAbis=x86_64 -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    # - name: AVD cache
-    #   uses: actions/cache@v2
-    #   id: avd-cache
-    #   with:
-    #     path: |
-    #       ~/.android/avd/*
-    #       ~/.android/adb*
-    #     key: android-avd
-    # - name: Create AVD for caching
-    #   if: steps.avd-cache.outputs.cache-hit != 'true'
-    #   uses: reactivecircus/android-emulator-runner@v2
-    #   with:
-    #     api-level: 29
-    #     arch: x86_64
-    #     force-avd-creation: false
-    #     emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-    #     disable-animations: false
-    #     script: echo "Generated AVD snapshot for caching."
+    - name: AVD cache
+      uses: actions/cache@v2
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: android-avd
+    - name: Create AVD for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        arch: x86_64
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: false
+        script: echo "Generated AVD snapshot for caching."
     - name: Run the tests
       uses: reactivecircus/android-emulator-runner@v2
       with:

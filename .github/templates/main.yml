@@ -390,6 +390,7 @@ name: main
   pull_request:
 env:
   REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
