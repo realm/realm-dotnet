@@ -943,7 +943,7 @@ namespace Realms.Tests.Database
             var id = Guid.NewGuid().ToString();
             var config = new RealmConfiguration(id)
             {
-                ObjectClasses = new[] { typeof(AllTypesObject) }
+                Schema = new[] { typeof(AllTypesObject) }
             };
 
             using (var realm = GetRealm(config))
@@ -956,7 +956,7 @@ namespace Realms.Tests.Database
 
             var readonlyConfig = new RealmConfiguration(id)
             {
-                ObjectClasses = new[] { typeof(AllTypesObject), typeof(IntPrimaryKeyWithValueObject) },
+                Schema = new[] { typeof(AllTypesObject), typeof(IntPrimaryKeyWithValueObject) },
                 IsReadOnly = true
             };
 
