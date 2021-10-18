@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug that would result in a `RealmException` being thrown when opening a readonly Realm with schema that is a superset of the schema on disk. Now the code will just work and treat any classes not present in the on-disk schema to be treated as empty collections - e.g. `realm.All<ThisIsNotInOnDiskSchema>().Count == 0`. (Issue [#2619](https://github.com/realm/realm-dotnet/issues/2619))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
