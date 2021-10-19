@@ -76,7 +76,7 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: ccache
+    - name: Setup ccache
       uses: hendrikmuhs/ccache-action@v1
       with:
         key: linux

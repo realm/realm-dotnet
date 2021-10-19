@@ -31,7 +31,7 @@ ENV PATH /opt/cmake/bin:/opt/rh/rh-git218/root/usr/bin:/opt/rh/devtoolset-9/root
 ENV LD_LIBRARY_PATH /opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:/opt/rh/devtoolset-9/root/usr/lib64/dyninst:/opt/rh/devtoolset-9/root/usr/lib/dyninst:/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib
 
 RUN mkdir -p /opt/cmake \
- && curl https://cmake.org/files/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh -o /cmake.sh \
+ && curl https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-x86_64.sh -o /cmake.sh \
  && sh /cmake.sh --prefix=/opt/cmake --skip-license \
  && rm /cmake.sh
 
