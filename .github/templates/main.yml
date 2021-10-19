@@ -139,7 +139,7 @@ steps:
 #@ def netFrameworkTestSteps():
   - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
   - name: Run the tests
-    run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}"
+    run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }}"
   - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
 #@ end
 
@@ -161,7 +161,7 @@ steps:
 #@ def xamarinMacTestSteps():
   - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
   - name: Run the tests
-    run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl ${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml"
+    run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl=${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml"
   - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
 #@ end
 
@@ -173,8 +173,57 @@ steps:
       appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
       bundleId: 'io.realm.dotnettests'
       iphoneToSimulate: 'iPhone-8'
-      arguments: "--headless --resultpath ${{ github.workspace }}/TestResults.iOS.xml --baasurl ${{ secrets.REALM_BASE_URL }} --baasapps ${{ env.APPS_CONFIG }}"
+      arguments: "--headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.REALM_BASE_URL }} --baasapps=${{ env.APPS_CONFIG }}"
   - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
+#@ end
+
+#@ def xamarinAndroidTestSteps():
+  - #@ msbuild("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="x86_64", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - name: AVD cache
+    uses: actions/cache@v2
+    id: avd-cache
+    with:
+      path: |
+        ~/.android/avd/*
+        ~/.android/adb*
+      key: android-avd
+  - name: Create AVD for caching
+    if: steps.avd-cache.outputs.cache-hit != 'true'
+    uses: reactivecircus/android-emulator-runner@v2
+    with:
+      api-level: 29
+      arch: x86_64
+      force-avd-creation: false
+      emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+      disable-animations: false
+      script: echo "Generated AVD snapshot for caching."
+  - name: Run the tests
+    uses: reactivecircus/android-emulator-runner@v2
+    with:
+      api-level: 29
+      arch: x86_64
+      force-avd-creation: false
+      emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+      disable-animations: true
+      script: |
+        adb devices
+        adb logcat -c
+        adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
+
+        adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+        adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
+        adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
+
+        echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baasapps=${{ env.APPS_CONFIG }}" > ${{ github.workspace }}/testargs.txt
+        adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
+
+        adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
+        adb pull /storage/emulated/0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
+        adb shell rm /sdcard/Realmtests/TestResults.Android.xml
+  - name: Output logcat
+    if: always()
+    run: cat logcat.txt
+  - #@ publishTestsResults("TestResults.Android.xml", "Xamarin.Android")
 #@ end
 
 #@ def codeCoverageTestSteps():
@@ -188,7 +237,7 @@ steps:
       echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
   - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net5.0", { "AdditionalFrameworks": "net5.0" }))
   - name: Run the tests
-    run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--result=TestResults.Linux.xml --labels=After --baasurl ${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+    run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--result=TestResults.Linux.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
   - name: Publish Coverage
     id: publish-coveralls
     uses: #@ actionCoveralls
@@ -341,6 +390,7 @@ name: main
   pull_request:
 env:
   REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
 jobs:
   build-wrappers-macos:
     runs-on: macos-latest
@@ -463,6 +513,7 @@ jobs:
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
   _: #@ template.replace(testJob("Xamarin.iOS", "macos-latest", xamariniOSTestSteps()))
+  _: #@ template.replace(testJob("Xamarin.Android", "macos-latest", xamarinAndroidTestSteps()))
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver

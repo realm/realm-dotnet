@@ -37,8 +37,8 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnitLite" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnitLite" Version="3.13.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

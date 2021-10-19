@@ -116,17 +116,17 @@ namespace Realms.Tests.Sync
 
             for (var i = 0; i < args.Length; i++)
             {
-                switch (args[i])
+                if (args[i].StartsWith("--baasurl="))
                 {
-                    case "--baasurl":
-                        _baseUri = new Uri(args[++i]);
-                        break;
-                    case "--baasapps":
-                        baasApps = args[++i];
-                        break;
-                    default:
-                        result.Add(args[i]);
-                        break;
+                    _baseUri = new Uri(args[i].Replace("--baasurl=", string.Empty));
+                }
+                else if (args[i].StartsWith("--baasapps="))
+                {
+                    baasApps = args[i].Replace("--baasapps=", string.Empty);
+                }
+                else
+                {
+                    result.Add(args[i]);
                 }
             }
 

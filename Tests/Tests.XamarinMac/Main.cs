@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Linq;
 using AppKit;
 using Realms.Tests.Sync;
 
@@ -24,17 +23,11 @@ namespace Realms.Tests.XamarinMac
 {
     internal static class MainClass
     {
-        private const string HeadlessArg = "--headless";
-
-        public static string[] NUnitArgs { get; private set; }
-
-        public static bool Headless { get; private set; }
+        public static string[] Args { get; private set; }
 
         public static void Main(string[] args)
         {
-            args = SyncTestHelpers.ExtractBaasSettings(args);
-            Headless = args.Contains(HeadlessArg);
-            NUnitArgs = args.Where(a => a != HeadlessArg).ToArray();
+            Args = SyncTestHelpers.ExtractBaasSettings(args);
             NSApplication.Init();
             NSApplication.Main(args);
         }

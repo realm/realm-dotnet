@@ -14,6 +14,7 @@
 * iOS wrappers are now built with the "new build system" introduced by Xcode 10 and used as default by Xcode 12. More info can be found in cmake's [docs](https://cmake.org/cmake/help/git-stage/variable/CMAKE_XCODE_BUILD_SYSTEM.html#variable:CMAKE_XCODE_BUILD_SYSTEM).
 * We now refresh the resulting Realm instance when opening a synchronized Realm with `GetInstanceAsync`. (Issue [#2256](https://github.com/realm/realm-dotnet/issues/2256))
 * Added Sync tests for all platforms running on cloud-dev. (Issue [#2049](https://github.com/realm/realm-dotnet/issues/2049))
+* Added Android tests running on the emulator. (Issue [#2680](https://github.com/realm/realm-dotnet/pull/2680))
 
 ## 10.6.0 (2021-09-30)
 

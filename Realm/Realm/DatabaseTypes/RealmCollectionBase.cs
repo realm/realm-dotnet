@@ -478,11 +478,11 @@ namespace Realms
             internal Enumerator(RealmCollectionBase<T> parent)
             {
                 _index = -1;
-                _enumerating = parent.Handle.Value.CanSnapshot ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
-                // parent collection after iterating it.
-                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot;
+                // parent collection after iterating it. Only collections of objects support snapshotting.
+                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 
             public T Current => _enumerating[_index];
