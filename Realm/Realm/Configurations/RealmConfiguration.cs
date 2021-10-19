@@ -99,7 +99,7 @@ namespace Realms
         /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
         /// <value>The default configuration.</value>
-        public static RealmConfigurationBase DefaultConfiguration { get; set; } = new RealmConfiguration();
+        public static Lazy<RealmConfigurationBase> DefaultConfiguration { get; set; } = new Lazy<RealmConfigurationBase>(() => { return new RealmConfiguration(); });
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.

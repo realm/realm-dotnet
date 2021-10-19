@@ -139,15 +139,18 @@ namespace Realms
             {
                 var result = getter();
 
-                if (result != null && !Directory.Exists(result))
+                if (result != null)
                 {
-                    Directory.CreateDirectory(result);
-                }
+                    if (!Directory.Exists(result))
+                    {
+                        Directory.CreateDirectory(result);
+                    }
 
-                if (result != null && IsDirectoryWritable(result))
-                {
-                    folder = result;
-                    return true;
+                    if (IsDirectoryWritable(result))
+                    {
+                        folder = result;
+                        return true;
+                    }
                 }
             }
             catch
