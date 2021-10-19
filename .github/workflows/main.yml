@@ -85,11 +85,7 @@ jobs:
     - name: Setup Docker cache
       uses: satackey/action-docker-layer-caching@46d2c640b1d8ef50d185452ad6fb324e6bd1d052
     - name: Build CentOS image
-      uses: docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b
-      with:
-        tags: wrappers-centos:gcc-9
-        file: ./wrappers/centos.Dockerfile
-        push: false
+      run: docker build . --file wrappers/centos.Dockerfile --tag wrappers-centos:gcc-9
     - name: Build wrappers
       uses: addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609
       with:
