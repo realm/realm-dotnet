@@ -1,28 +1,43 @@
 FROM centos:7
 
-# Install EPEL & devtoolset
+ARG CMAKE_VERSION=3.21.3
+
+# Add the Oracle Linux Software Collections repository
+RUN echo $' \n\
+ [ol7_software_collections] \n\
+ name=Software Collection packages for Oracle Linux 7 (\$basearch) \n\
+ baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/SoftwareCollections/\$basearch/ \n\
+ gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol7 \n\
+ gpgcheck=1 \n\
+ enabled=1 \n\
+ ' > /etc/yum.repos.d/OracleLinux-Software-Collections.repo
+
+# Add the EPEL repository
 RUN yum install -y \
         epel-release \
-        centos-release-scl-rh \
  && yum-config-manager --enable rhel-server-rhscl-7-rpms
 
 RUN yum install -y \
         chrpath \
-        devtoolset-9 \
+        devtoolset-10 \
         jq \
         libconfig-devel \
         openssh-clients \
         rh-git218 \
         zlib-devel \
+        ccache \
  && yum clean all
 
 ENV PATH /opt/cmake/bin:/opt/rh/rh-git218/root/usr/bin:/opt/rh/devtoolset-9/root/usr/bin:$PATH
 ENV LD_LIBRARY_PATH /opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:/opt/rh/devtoolset-9/root/usr/lib64/dyninst:/opt/rh/devtoolset-9/root/usr/lib/dyninst:/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib
 
 RUN mkdir -p /opt/cmake \
- && curl https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o /cmake.sh \
+ && curl https://cmake.org/files/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh -o /cmake.sh \
  && sh /cmake.sh --prefix=/opt/cmake --skip-license \
  && rm /cmake.sh
+
+RUN ccache --set-config=cache_dir=/work/.ccache \
+ && ccache --set-config=compression=true
 
 RUN mkdir -p /etc/ssh && \
     echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config && \
