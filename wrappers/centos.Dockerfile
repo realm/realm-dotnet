@@ -14,6 +14,7 @@ RUN yum install -y \
         openssh-clients \
         rh-git218 \
         zlib-devel \
+        ccache \
  && yum clean all
 
 ENV PATH /opt/cmake/bin:/opt/rh/rh-git218/root/usr/bin:/opt/rh/devtoolset-9/root/usr/bin:$PATH
