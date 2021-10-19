@@ -4,16 +4,17 @@ ARG CMAKE_VERSION=3.21.3
 
 # Add the Oracle Linux Software Collections repository
 RUN echo $' \n\
- [ol7_software_collections] \n\
- name=Software Collection packages for Oracle Linux 7 (\$basearch) \n\
- baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/SoftwareCollections/\$basearch/ \n\
- gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol7 \n\
- gpgcheck=1 \n\
- enabled=1 \n\
- ' > /etc/yum.repos.d/OracleLinux-Software-Collections.repo
+[ol7_software_collections] \n\
+name=Software Collection packages for Oracle Linux 7 (\$basearch) \n\
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/SoftwareCollections/\$basearch/ \n\
+gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol7 \n\
+gpgcheck=1 \n\
+enabled=1 \n\
+' > /etc/yum.repos.d/OracleLinux-Software-Collections.repo
 
 # Add the EPEL repository
-RUN yum install -y epel-release
+RUN yum -y install \
+      epel-release
 
 RUN yum install -y \
         chrpath \
