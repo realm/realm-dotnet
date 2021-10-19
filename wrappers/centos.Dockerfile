@@ -13,9 +13,7 @@ RUN echo $' \n\
  ' > /etc/yum.repos.d/OracleLinux-Software-Collections.repo
 
 # Add the EPEL repository
-RUN yum install -y \
-        epel-release \
- && yum-config-manager --enable rhel-server-rhscl-7-rpms
+RUN yum install -y epel-release
 
 RUN yum install -y \
         chrpath \
