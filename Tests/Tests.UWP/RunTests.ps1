@@ -22,11 +22,11 @@ $RunOutputPath = "$env:LOCALAPPDATA\Packages\$PackagePath\LocalState\TestRunOutp
 
 $AppArgs = "--headless --labels=After --result=TestResults.UWP.xml"
 if ($BaasUrl) {
-    $AppArgs = "$AppArgs --baasurl $BaasUrl"
+    $AppArgs = "$AppArgs --baasurl=$BaasUrl"
 }
 
 if ($BaasApps) {
-    $AppArgs = "$AppArgs --baasapps '$BaasApps'"
+    $AppArgs = "$AppArgs --baasapps=$BaasApps"
 }
 
 Write-Output "Launching shell:AppsFolder\$PackagePath!App with arguments: $AppArgs"

@@ -83,6 +83,10 @@ REALM_EXPORT size_t query_count(Query& query, NativeException::Marshallable& ex)
 REALM_EXPORT void query_not(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         query.Not();
     });
 }
@@ -90,6 +94,10 @@ REALM_EXPORT void query_not(Query& query, NativeException::Marshallable& ex)
 REALM_EXPORT void query_group_begin(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         query.group();
     });
 }
@@ -97,6 +105,10 @@ REALM_EXPORT void query_group_begin(Query& query, NativeException::Marshallable&
 REALM_EXPORT void query_group_end(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         query.end_group();
     });
 }
@@ -104,6 +116,10 @@ REALM_EXPORT void query_group_end(Query& query, NativeException::Marshallable& e
 REALM_EXPORT void query_or(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         query.Or();
     });
 }
@@ -111,6 +127,10 @@ REALM_EXPORT void query_or(Query& query, NativeException::Marshallable& ex)
 REALM_EXPORT void query_string_contains(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         REALM_ASSERT(primitive.is_null() || primitive.type == realm_value_type::RLM_TYPE_STRING);
         query.contains(get_key_for_prop(query, realm, property_index), from_capi(primitive.string), case_sensitive);
     });
@@ -119,6 +139,10 @@ REALM_EXPORT void query_string_contains(Query& query, SharedRealm& realm, size_t
 REALM_EXPORT void query_string_starts_with(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         REALM_ASSERT(primitive.is_null() || primitive.type == realm_value_type::RLM_TYPE_STRING);
         query.begins_with(get_key_for_prop(query, realm, property_index), from_capi(primitive.string), case_sensitive);
     });
@@ -127,6 +151,10 @@ REALM_EXPORT void query_string_starts_with(Query& query, SharedRealm& realm, siz
 REALM_EXPORT void query_string_ends_with(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         REALM_ASSERT(primitive.is_null() || primitive.type == realm_value_type::RLM_TYPE_STRING);
         query.ends_with(get_key_for_prop(query, realm, property_index), from_capi(primitive.string), case_sensitive);
     });
@@ -135,6 +163,10 @@ REALM_EXPORT void query_string_ends_with(Query& query, SharedRealm& realm, size_
 REALM_EXPORT void query_string_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         REALM_ASSERT(primitive.is_null() || primitive.type == realm_value_type::RLM_TYPE_STRING);
         query.equal(get_key_for_prop(query, realm, property_index), from_capi(primitive.string), case_sensitive);
     });
@@ -143,6 +175,10 @@ REALM_EXPORT void query_string_equal(Query& query, SharedRealm& realm, size_t pr
 REALM_EXPORT void query_string_not_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         REALM_ASSERT(primitive.is_null() || primitive.type == realm_value_type::RLM_TYPE_STRING);
         query.not_equal(get_key_for_prop(query, realm, property_index), from_capi(primitive.string), case_sensitive);
     });
@@ -151,6 +187,10 @@ REALM_EXPORT void query_string_not_equal(Query& query, SharedRealm& realm, size_
 REALM_EXPORT void query_string_like(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         REALM_ASSERT(primitive.is_null() || primitive.type == realm_value_type::RLM_TYPE_STRING);
         query.like(get_key_for_prop(query, realm, property_index), from_capi(primitive.string), case_sensitive);
     });
@@ -159,6 +199,10 @@ REALM_EXPORT void query_string_like(Query& query, SharedRealm& realm, size_t pro
 REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         switch (primitive.type) {
         case realm_value_type::RLM_TYPE_NULL:
@@ -203,6 +247,10 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
 REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         switch (primitive.type) {
         case realm_value_type::RLM_TYPE_NULL:
@@ -247,6 +295,10 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
 REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         switch (primitive.type) {
         case realm_value_type::RLM_TYPE_NULL:
@@ -278,6 +330,10 @@ REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t 
 REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         switch (primitive.type) {
         case realm_value_type::RLM_TYPE_NULL:
@@ -309,6 +365,10 @@ REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, s
 REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         switch (primitive.type) {
         case realm_value_type::RLM_TYPE_NULL:
@@ -340,6 +400,10 @@ REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size
 REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         switch (primitive.type) {
         case realm_value_type::RLM_TYPE_NULL:
@@ -371,6 +435,10 @@ REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm
 REALM_EXPORT void query_null_equal(Query& query, SharedRealm& realm, size_t property_index, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         if (query.get_table()->get_column_type(col_key) == type_Link) {
             query.and_query(query.get_table()->column<Link>(col_key).is_null());
@@ -384,6 +452,10 @@ REALM_EXPORT void query_null_equal(Query& query, SharedRealm& realm, size_t prop
 REALM_EXPORT void query_null_not_equal(Query& query, SharedRealm& realm, size_t property_index, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         if (query.get_table()->get_column_type(col_key) == type_Link) {
             query.and_query(query.get_table()->column<Link>(col_key).is_not_null());
@@ -404,6 +476,10 @@ REALM_EXPORT Results* query_create_results(Query& query, SharedRealm& realm, Des
 REALM_EXPORT void query_realm_value_type_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_type realm_value_type, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         query.and_query(query.get_table()->column<Mixed>(col_key).type_of_value() == TypeOfValue(attribute_from(realm_value_type)));
     });
@@ -412,6 +488,10 @@ REALM_EXPORT void query_realm_value_type_equal(Query& query, SharedRealm& realm,
 REALM_EXPORT void query_realm_value_type_not_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_type realm_value_type, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
         auto col_key = get_key_for_prop(query, realm, property_index);
         query.and_query(query.get_table()->column<Mixed>(col_key).type_of_value() != TypeOfValue(attribute_from(realm_value_type)));  //Need to check if correct
     });

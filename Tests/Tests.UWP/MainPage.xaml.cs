@@ -51,17 +51,13 @@ namespace Realms.Tests.UWP
 
                 if (e.Parameter != null && e.Parameter is string launchParams)
                 {
-                    var args = SyncTestHelpers.ExtractBaasSettings(TestHelpersUWP.SplitArguments(launchParams));
-                    if (args.Any(a => a == "--headless"))
+                    var args = SyncTestHelpers.ExtractBaasSettings(TestHelpers.SplitArguments(launchParams));
+                    if (TestHelpers.IsHeadlessRun(args))
                     {
                         _nunit.Options.AutoRun = true;
                         _nunit.Options.CreateXmlResultFile = true;
-                        var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
-                        if (resultPath == null)
-                        {
-                            throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
-                        }
 
+                        var resultPath = TestHelpers.GetResultsPath(args);
                         _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
                         _nunit.Options.OnCompletedCallback = async () =>
                         {

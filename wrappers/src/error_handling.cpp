@@ -71,6 +71,9 @@ namespace realm {
         catch (const SchemaValidationException& e) {
             return { RealmErrorType::RealmSchemaValidation, e.what() };
         }
+        catch (const InvalidSchemaException& e) {
+            return { RealmErrorType::RealmSchemaValidation, e.what() };
+        }
         catch (const MismatchedConfigException& e) {
             return { RealmErrorType::RealmMismatchedConfig, e.what() };
         }

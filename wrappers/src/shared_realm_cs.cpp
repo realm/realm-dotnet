@@ -22,6 +22,7 @@
 #include "realm_export_decls.hpp"
 #include "shared_realm_cs.hpp"
 #include "notifications_cs.hpp"
+#include "filter.hpp"
 
 #include <realm.hpp>
 #include <realm/object-store/object_store.hpp>
@@ -123,6 +124,15 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     return config;
 }
+
+inline SharedRealm* new_realm(SharedRealm realm)
+{
+    if (!realm->refresh()) {
+        realm->read_group();
+    }
+
+    return new SharedRealm(realm);
+}
 }
 
 extern "C" {
@@ -210,11 +220,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         config.cache = configuration.enable_cache;
 
-        auto realm = Realm::get_shared_realm(config);
-        if (!configuration.read_only)
-            realm->refresh();
-
-        return new SharedRealm{realm};
+        return new_realm(Realm::get_shared_realm(std::move(config)));
     });
 }
 
@@ -242,10 +248,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 {
     return handle_errors(ex, [&]() {
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
-
-        auto realm = Realm::get_shared_realm(config);
-        realm->refresh();
-        return new SharedRealm(realm);
+        return new_realm(Realm::get_shared_realm(std::move(config)));
     });
 }
 
@@ -305,7 +308,18 @@ REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor object_type(object_type_buf, object_type_len);
-        return ObjectStore::table_for_object_type(realm->read_group(), object_type)->get_key().value;
+
+        auto object_schema = realm->schema().find(object_type);
+        if (object_schema != realm->schema().end()) {
+            return object_schema->table_key.value;
+        }
+
+        auto table_ref = ObjectStore::table_for_object_type(realm->read_group(), object_type);
+        if (!table_ref) {
+            throw InvalidSchemaException(util::format("Table with name '%1' doesn't exist in the Realm schema.", object_type.to_string()));
+        }
+
+        return table_ref->get_key().value;
     });
 }
 
@@ -398,8 +412,7 @@ REALM_EXPORT SharedRealm* shared_realm_resolve_realm_reference(ThreadSafeReferen
 {
     return handle_errors(ex, [&]() {
         auto realm = Realm::get_shared_realm(std::move(reference));
-        realm->refresh();
-        return new SharedRealm(realm);
+        return new_realm(std::move(realm));
     });
 }
 
@@ -503,7 +516,7 @@ REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeEx
 {
     return handle_errors(ex, [&]() {
         auto frozen_realm = realm->freeze();
-        return new SharedRealm{ frozen_realm };
+        return new_realm(std::move(frozen_realm));
     });
 }
 
@@ -511,6 +524,10 @@ REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm,
 {
     return handle_errors(ex, [&]() -> Object* {
         realm->verify_thread();
+
+        if (table_key == TableKey()) {
+            return nullptr;
+        }
 
         const TableRef table = get_table(realm, table_key);
         const ObjectSchema& object_schema = *realm->schema().find(table_key); 
@@ -542,6 +559,10 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
 {
     return handle_errors(ex, [&]() {
         realm->verify_thread();
+
+        if (table_key == TableKey()) {
+            return get_empty_results();
+        }
 
         const TableRef table = get_table(realm, table_key);
         return new Results(realm, table);

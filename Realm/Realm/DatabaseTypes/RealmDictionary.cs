@@ -85,7 +85,7 @@ namespace Realms
             get
             {
                 var resultsHandle = _dictionaryHandle.GetKeys();
-                return new RealmResults<string>(Realm, resultsHandle, Metadata);
+                return new RealmResults<string>(Realm, resultsHandle, metadata: null);
             }
         }
 
