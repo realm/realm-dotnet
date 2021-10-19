@@ -78,7 +78,7 @@ namespace Realms
         /// </exception>
         public static Realm GetInstance(RealmConfigurationBase config = null)
         {
-            config ??= RealmConfiguration.DefaultConfiguration.Value;
+            config ??= RealmConfiguration.DefaultConfiguration;
 
             return config.CreateRealm();
         }
@@ -102,7 +102,7 @@ namespace Realms
         {
             if (config == null)
             {
-                config = RealmConfiguration.DefaultConfiguration.Value;
+                config = RealmConfiguration.DefaultConfiguration;
             }
 
             return config.CreateRealmAsync(cancellationToken);

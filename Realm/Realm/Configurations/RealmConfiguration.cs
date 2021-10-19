@@ -95,11 +95,30 @@ namespace Realms
         /// </value>
         public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
 
+        private static RealmConfigurationBase _defaultConfiguration;
+
         /// <summary>
         /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
         /// <value>The default configuration.</value>
-        public static Lazy<RealmConfigurationBase> DefaultConfiguration { get; set; } = new Lazy<RealmConfigurationBase>(() => { return new RealmConfiguration(); });
+        public static RealmConfigurationBase DefaultConfiguration
+        {
+            get
+            {
+                if (_defaultConfiguration == null)
+                {
+                    _defaultConfiguration = new RealmConfiguration();
+                }
+
+                return _defaultConfiguration;
+            }
+
+            set
+            {
+                Argument.NotNull(value, nameof(value));
+                _defaultConfiguration = value;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.
