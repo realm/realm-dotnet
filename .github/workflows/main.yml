@@ -84,7 +84,6 @@ jobs:
       run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
     - name: Setup Docker cache
       uses: satackey/action-docker-layer-caching@46d2c640b1d8ef50d185452ad6fb324e6bd1d052
-      continue-on-error: true
     - name: Build CentOS image
       uses: docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b
       with:
@@ -1215,3 +1214,4 @@ jobs:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
         retention-days: 30
+
