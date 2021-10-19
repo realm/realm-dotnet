@@ -938,6 +938,41 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void GetInstance_WhenReadonly_TreatsAdditionalTablesAsEmpty()
+        {
+            var id = Guid.NewGuid().ToString();
+            var config = new RealmConfiguration(id)
+            {
+                Schema = new[] { typeof(AllTypesObject) }
+            };
+
+            using (var realm = GetRealm(config))
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(new AllTypesObject { RequiredStringProperty = "abc" });
+                });
+            }
+
+            var readonlyConfig = new RealmConfiguration(id)
+            {
+                Schema = new[] { typeof(AllTypesObject), typeof(IntPrimaryKeyWithValueObject) },
+                IsReadOnly = true
+            };
+
+            using var readonlyRealm = GetRealm(readonlyConfig);
+            var readonlyAtos = readonlyRealm.All<AllTypesObject>();
+            Assert.That(readonlyAtos.Count(), Is.EqualTo(1));
+            Assert.That(readonlyAtos.Single().RequiredStringProperty, Is.EqualTo("abc"));
+
+            var readonlyIntObjs = readonlyRealm.All<IntPrimaryKeyWithValueObject>();
+            Assert.That(readonlyIntObjs.Count(), Is.EqualTo(0));
+            Assert.That(readonlyIntObjs.Where(o => o.StringValue == "abc").Count(), Is.EqualTo(0));
+            Assert.That(readonlyIntObjs.Filter("StringValue = 'abc'").Count(), Is.EqualTo(0));
+            Assert.That(readonlyRealm.Find<IntPrimaryKeyWithValueObject>(123), Is.Null);
+        }
+
+        [Test]
         public void GetInstance_WithManualSchema_CanReadAndWrite()
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
