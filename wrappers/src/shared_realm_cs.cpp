@@ -561,7 +561,7 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
         realm->verify_thread();
 
         if (table_key == TableKey()) {
-            get_empty_results();
+            return get_empty_results();
         }
 
         const TableRef table = get_table(realm, table_key);
