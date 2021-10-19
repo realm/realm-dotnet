@@ -22,6 +22,7 @@
 #include "realm_export_decls.hpp"
 #include "shared_realm_cs.hpp"
 #include "notifications_cs.hpp"
+#include "filter.hpp"
 
 #include <realm.hpp>
 #include <realm/object-store/object_store.hpp>
@@ -123,6 +124,15 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     return config;
 }
+
+inline SharedRealm* new_realm(SharedRealm realm)
+{
+    if (!realm->refresh()) {
+        realm->read_group();
+    }
+
+    return new SharedRealm(realm);
+}
 }
 
 extern "C" {
@@ -210,11 +220,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         config.cache = configuration.enable_cache;
 
-        auto realm = Realm::get_shared_realm(config);
-        if (!configuration.read_only)
-            realm->refresh();
-
-        return new SharedRealm{realm};
+        return new_realm(Realm::get_shared_realm(std::move(config)));
     });
 }
 
@@ -242,10 +248,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 {
     return handle_errors(ex, [&]() {
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
-
-        auto realm = Realm::get_shared_realm(config);
-        realm->refresh();
-        return new SharedRealm(realm);
+        return new_realm(Realm::get_shared_realm(std::move(config)));
     });
 }
 
@@ -409,8 +412,7 @@ REALM_EXPORT SharedRealm* shared_realm_resolve_realm_reference(ThreadSafeReferen
 {
     return handle_errors(ex, [&]() {
         auto realm = Realm::get_shared_realm(std::move(reference));
-        realm->refresh();
-        return new SharedRealm(realm);
+        return new_realm(std::move(realm));
     });
 }
 
@@ -514,7 +516,7 @@ REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeEx
 {
     return handle_errors(ex, [&]() {
         auto frozen_realm = realm->freeze();
-        return new SharedRealm{ frozen_realm };
+        return new_realm(std::move(frozen_realm));
     });
 }
 
@@ -559,9 +561,7 @@ REALM_EXPORT Results* shared_realm_create_results(SharedRealm& realm, TableKey t
         realm->verify_thread();
 
         if (table_key == TableKey()) {
-            Results results = {};
-            results.set_update_policy(realm::Results::UpdatePolicy::Never);
-            return new Results(std::move(results));
+            get_empty_results();
         }
 
         const TableRef table = get_table(realm, table_key);

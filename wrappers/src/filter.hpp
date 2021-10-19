@@ -24,14 +24,19 @@
 
 #include "marshalling.hpp"
 
+inline Results* get_empty_results()
+{
+    Results results = {};
+    results.set_update_policy(realm::Results::UpdatePolicy::Never);
+    return new Results(std::move(results));
+}
+
 inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableRef table, 
                                         Query query, uint16_t* query_buf, size_t query_len,
                                         realm_value_t* arguments, size_t args_count, DescriptorOrdering new_order)
 {
     if (!table) {
-        Results results = {};
-        results.set_update_policy(realm::Results::UpdatePolicy::Never);
-        return new Results(std::move(results));
+        return get_empty_results();
     }
 
     Utf16StringAccessor query_string(query_buf, query_len);
