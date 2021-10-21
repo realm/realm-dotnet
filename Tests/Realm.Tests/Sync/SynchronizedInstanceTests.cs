@@ -329,8 +329,8 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void WriteCopy_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
+        public void WriteCopy_CanSynchronizeData([Values(true, false)] bool originalEncrypted,
+                                                 [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -363,132 +363,42 @@ namespace Realms.Tests.Sync
                 using var copiedRealm = GetRealm(copyConfig);
 
                 Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
-            });
-        }
 
-        [Test]
-        public void WriteCopy_DoesReceiveNewData([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partition = Guid.NewGuid().ToString();
-
-                var originalConfig = await GetIntegrationConfigAsync(partition);
-                if (originalEncrypted)
+                var fromCopy = copiedRealm.Write(() =>
                 {
-                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
-                }
+                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from copy"
+                    });
+                });
 
-                var copyConfig = await GetIntegrationConfigAsync(partition);
-                Assert.That(originalConfig.Partition, Is.EqualTo(copyConfig.Partition));
-                if (copyEncrypted)
-                {
-                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
-                }
-
-                File.Delete(copyConfig.DatabasePath);
-
-                using var originalRealm = GetRealm(originalConfig);
-
-                AddDummyData(originalRealm, true);
-
-                await WaitForUploadAsync(originalRealm);
+                await WaitForUploadAsync(copiedRealm);
                 await WaitForDownloadAsync(originalRealm);
 
-                originalRealm.WriteCopy(copyConfig);
+                var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
+                Assert.That(itemInOriginal, Is.Not.Null);
+                Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
 
-                AddDummyData(originalRealm, true);
-                await WaitForUploadAsync(originalRealm);
-
-                TaskCompletionSource<Exception> tcs = new TaskCompletionSource<Exception>();
-                Session.Error += (sender, args) =>
+                var fromOriginal = originalRealm.Write(() =>
                 {
-                    tcs.TrySetResult(args.Exception);
-                };
-
-                using var copiedRealm = GetRealm(copyConfig);
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count() / 2);
-
-                // TODO: This wait is only used while the bug in Core exists that fails the download. As soon as it is fixed we can re-work this to not wait.
-                await Task.Delay(1000);
-                var session = copiedRealm.GetSession();
-                var result = await Task.WhenAny(tcs.Task, session.WaitForDownloadAsync());
-                session.CloseHandle();
-
-                if (result == tcs.Task)
-                {
-                    Assert.Fail($"Session exception has occured while waiting for download: {tcs.Task.Result}");
-                }
-
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count());
-            });
-        }
-
-        [Test]
-        public void WriteCopy_CanUploadData([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partition = Guid.NewGuid().ToString();
-
-                var originalConfig = await GetIntegrationConfigAsync(partition);
-                if (originalEncrypted)
-                {
-                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
-                }
-
-                var copyConfig = await GetIntegrationConfigAsync(partition);
-                Assert.That(originalConfig.Partition, Is.EqualTo(copyConfig.Partition));
-                if (copyEncrypted)
-                {
-                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
-                }
-
-                File.Delete(copyConfig.DatabasePath);
-
-                using var originalRealm = GetRealm(originalConfig);
-
-                AddDummyData(originalRealm, true);
+                    return originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from original"
+                    });
+                });
 
                 await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
+                await WaitForDownloadAsync(copiedRealm);
 
-                originalRealm.WriteCopy(copyConfig);
-
-                TaskCompletionSource<Exception> tcs = new TaskCompletionSource<Exception>();
-                Session.Error += (sender, args) =>
-                {
-                    tcs.TrySetResult(args.Exception);
-                };
-
-                using var copiedRealm = GetRealm(copyConfig);
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count());
-
-                AddDummyData(copiedRealm, true);
-
-                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count() > originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count());
-
-                // TODO: This wait is only used while the bug in Core exists that fails the download. As soon as it is fixed we can re-work this to not wait.
-                await Task.Delay(1000);
-                var session = copiedRealm.GetSession();
-                var result = await Task.WhenAny(tcs.Task, session.WaitForUploadAsync());
-                session.CloseHandle();
-
-                if (result == tcs.Task)
-                {
-                    Assert.Fail($"Session exception has occured while waiting for download: {tcs.Task.Result}");
-                }
-
-                await WaitForDownloadAsync(originalRealm);
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count());
+                var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
+                Assert.That(itemInCopy, Is.Not.Null);
+                Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
             });
         }
 
         [Test]
         public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
+                                                        [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -518,7 +428,7 @@ namespace Realms.Tests.Sync
 
         [Test]
         public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
+                                                   [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
