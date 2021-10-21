@@ -329,8 +329,8 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void WriteCopy_DoesNotRedownloadData([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
+        public void WriteCopy_CanSynchronizeData([Values(true, false)] bool originalEncrypted,
+                                                 [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -363,12 +363,42 @@ namespace Realms.Tests.Sync
                 using var copiedRealm = GetRealm(copyConfig);
 
                 Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+
+                var fromCopy = copiedRealm.Write(() =>
+                {
+                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from copy"
+                    });
+                });
+
+                await WaitForUploadAsync(copiedRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
+                Assert.That(itemInOriginal, Is.Not.Null);
+                Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
+
+                var fromOriginal = originalRealm.Write(() =>
+                {
+                    return originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from original"
+                    });
+                });
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(copiedRealm);
+
+                var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
+                Assert.That(itemInCopy, Is.Not.Null);
+                Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
             });
         }
 
         [Test]
         public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
+                                                        [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -398,7 +428,7 @@ namespace Realms.Tests.Sync
 
         [Test]
         public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
-                                                                 [Values(true, false)] bool copyEncrypted)
+                                                   [Values(true, false)] bool copyEncrypted)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
