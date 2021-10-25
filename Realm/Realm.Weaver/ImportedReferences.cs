@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace RealmWeaver
 {
@@ -134,8 +135,6 @@ namespace RealmWeaver
 
         public MethodReference WovenPropertyAttribute_Constructor { get; private set; }
 
-        public TypeReference PropertyChanged_DoNotNotifyAttribute { get; private set; }
-
         public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
 
         public MethodReference RealmSchema_AddDefaultTypes { get; private set; }
@@ -207,10 +206,37 @@ namespace RealmWeaver
             };
 
             // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
+            // It is possible that a project references PropertyChanged.Fody but it doesn't show up in the Module references
+            // because it is not being used in code. There's not much we can do about it in this case as there's no obvious
+            // way to determine whether PropertyChanged is in use or not. That's why we construct our own PropertyChanged.DoNotNotify
+            // attribute and apply it to Realm-processed properties.
             var PropertyChanged_Fody = Module.FindReference("PropertyChanged");
             if (PropertyChanged_Fody != null)
             {
-                InitializePropertyChanged_Fody(PropertyChanged_Fody);
+                var PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", Module, PropertyChanged_Fody);
+                PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
+            }
+            else
+            {
+                var System_Attribute = new TypeReference("System", "Attribute", Module, Module.TypeSystem.CoreLibrary);
+
+                var doNotNotifyTypeDef = new TypeDefinition("PropertyChanged", "DoNotNotifyAttribute",
+                                    TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed,
+                                    System_Attribute);
+
+                const MethodAttributes CtorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+                var doNotNotifyCtor = new MethodDefinition(".ctor", CtorAttributes, Module.TypeSystem.Void);
+                {
+                    var il = doNotNotifyCtor.Body.GetILProcessor();
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Call, new MethodReference(".ctor", Module.TypeSystem.Void, System_Attribute) { HasThis = true });
+                    il.Emit(OpCodes.Ret);
+                }
+
+                doNotNotifyTypeDef.Methods.Add(doNotNotifyCtor);
+                Module.Types.Add(doNotNotifyTypeDef);
+
+                PropertyChanged_DoNotNotifyAttribute_Constructor = doNotNotifyCtor;
             }
         }
 
@@ -397,12 +423,6 @@ namespace RealmWeaver
                 CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(Types.Boolean));
                 CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(Types.Boolean));
             }
-        }
-
-        private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
-        {
-            PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", Module, propertyChangedAssembly);
-            PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
         }
 
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)

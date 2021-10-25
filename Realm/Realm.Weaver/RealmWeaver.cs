@@ -155,6 +155,9 @@ namespace RealmWeaver
 
         public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
+            //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
+            //// System.Diagnostics.Debugger.Launch();
+
             _moduleDefinition = module;
             _logger = logger;
             _references = ImportedReferences.Create(_moduleDefinition, framework);
@@ -162,9 +165,6 @@ namespace RealmWeaver
 
         public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
         {
-            //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            //// System.Diagnostics.Debugger.Launch();
-
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
             if (_references.WovenAssemblyAttribute == null)
@@ -718,13 +718,9 @@ Analytics payload
             prop.SetMethod.Body.Variables.Clear();
 
             // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in.
-            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
-            // the property such that PropertyChanged.Fody won't touch it.
-            if (_references.PropertyChanged_DoNotNotifyAttribute_Constructor != null)
-            {
-                prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
-            }
+            // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
+            // PropertyChanged.Fody will respect.
+            prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
 
             var managedSetStart = il.Create(OpCodes.Ldarg_0);
             il.Append(il.Create(OpCodes.Ldarg_0));
