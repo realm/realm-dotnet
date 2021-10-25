@@ -130,6 +130,8 @@ namespace RealmWeaver
             "MapToAttribute",
         };
 
+        private readonly Lazy<MethodReference> _propertyChanged_DoNotNotify_Ctor;
+
         private readonly ImportedReferences _references;
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
@@ -161,6 +163,7 @@ namespace RealmWeaver
             _moduleDefinition = module;
             _logger = logger;
             _references = ImportedReferences.Create(_moduleDefinition, framework);
+            _propertyChanged_DoNotNotify_Ctor = new Lazy<MethodReference>(GetOrAddPropertyChanged_DoNotNotify);
         }
 
         public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
@@ -720,7 +723,7 @@ Analytics payload
             // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
             // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
             // PropertyChanged.Fody will respect.
-            prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
+            prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
 
             var managedSetStart = il.Create(OpCodes.Ldarg_0);
             il.Append(il.Create(OpCodes.Ldarg_0));
@@ -1095,6 +1098,41 @@ Analytics payload
                        .Any(i => i.OpCode == OpCodes.Newobj &&
                                  i.Operand is MethodReference mRef &&
                                  mRef.ConstructsType(type));
+        }
+
+        private MethodReference GetOrAddPropertyChanged_DoNotNotify()
+        {
+            // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
+            // It is possible that a project references PropertyChanged.Fody but it doesn't show up in the Module references
+            // because it is not being used in code. There's not much we can do about it in this case as there's no obvious
+            // way to determine whether PropertyChanged is in use or not. That's why we construct our own PropertyChanged.DoNotNotify
+            // attribute and apply it to Realm-processed properties.
+            var PropertyChanged_Fody = _moduleDefinition.FindReference("PropertyChanged");
+            if (PropertyChanged_Fody != null)
+            {
+                var PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", _moduleDefinition, PropertyChanged_Fody);
+                return new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
+            }
+
+            var System_Attribute = new TypeReference("System", "Attribute", _moduleDefinition, _moduleDefinition.TypeSystem.CoreLibrary);
+
+            var doNotNotifyTypeDef = new TypeDefinition("PropertyChanged", "DoNotNotifyAttribute",
+                                TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed,
+                                System_Attribute);
+
+            const MethodAttributes CtorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+            var doNotNotifyCtor = new MethodDefinition(".ctor", CtorAttributes, _moduleDefinition.TypeSystem.Void);
+            {
+                var il = doNotNotifyCtor.Body.GetILProcessor();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, System_Attribute) { HasThis = true });
+                il.Emit(OpCodes.Ret);
+            }
+
+            doNotNotifyTypeDef.Methods.Add(doNotNotifyCtor);
+            _moduleDefinition.Types.Add(doNotNotifyTypeDef);
+
+            return doNotNotifyCtor;
         }
     }
 }
