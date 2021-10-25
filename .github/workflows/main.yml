@@ -12,6 +12,7 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -40,6 +41,7 @@ jobs:
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -68,6 +70,7 @@ jobs:
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -118,6 +121,7 @@ jobs:
         - arm64-v8a
         - x86
         - x86_64
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -151,6 +155,7 @@ jobs:
         arch:
         - Win32
         - x64
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -205,6 +210,7 @@ jobs:
         - Win32
         - x64
         - ARM
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -255,6 +261,7 @@ jobs:
     - build-wrappers-windows-uwp
     outputs:
       package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
+    timeout-minutes: 45
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -414,6 +421,7 @@ jobs:
     name: Deploy MDB Realm for .NET Framework
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -436,6 +444,7 @@ jobs:
     - baas-net-framework
     env:
       APPS_CONFIG: ${{ needs.baas-net-framework.outputs.deployedApps }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -479,6 +488,7 @@ jobs:
     needs:
     - test-net-framework
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -496,6 +506,7 @@ jobs:
     name: Deploy MDB Realm for UWP Managed
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -518,6 +529,7 @@ jobs:
     - baas-uwp-managed
     env:
       APPS_CONFIG: ${{ needs.baas-uwp-managed.outputs.deployedApps }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -569,6 +581,7 @@ jobs:
     needs:
     - test-uwp-managed
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -598,6 +611,7 @@ jobs:
         - netcoreapp3.1
         - net5.0
         - net6.0
+    timeout-minutes: 45
     steps:
     - name: Cleanup Workspace
       run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
@@ -649,6 +663,7 @@ jobs:
     name: Deploy MDB Realm for Xamarin.macOS
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -671,6 +686,7 @@ jobs:
     - baas-xamarinmacos
     env:
       APPS_CONFIG: ${{ needs.baas-xamarinmacos.outputs.deployedApps }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -712,6 +728,7 @@ jobs:
     needs:
     - test-xamarinmacos
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -729,6 +746,7 @@ jobs:
     name: Deploy MDB Realm for Xamarin.iOS
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -751,6 +769,7 @@ jobs:
     - baas-xamarinios
     env:
       APPS_CONFIG: ${{ needs.baas-xamarinios.outputs.deployedApps }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -797,6 +816,7 @@ jobs:
     needs:
     - test-xamarinios
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -814,6 +834,7 @@ jobs:
     name: Deploy MDB Realm for Xamarin.Android
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -836,6 +857,7 @@ jobs:
     - baas-xamarinandroid
     env:
       APPS_CONFIG: ${{ needs.baas-xamarinandroid.outputs.deployedApps }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -920,6 +942,7 @@ jobs:
     needs:
     - test-xamarinandroid
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -935,6 +958,7 @@ jobs:
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -968,6 +992,7 @@ jobs:
     name: Deploy MDB Realm for Code Coverage
     outputs:
       deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+    timeout-minutes: 20
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -990,6 +1015,7 @@ jobs:
     - baas-code-coverage
     env:
       APPS_CONFIG: ${{ needs.baas-code-coverage.outputs.deployedApps }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -1101,6 +1127,7 @@ jobs:
     needs:
     - test-code-coverage
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -1119,6 +1146,7 @@ jobs:
     needs:
     - test-code-coverage
     if: always()
+    timeout-minutes: 10
     steps:
     - name: Delete artifacts for macos
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
@@ -1173,6 +1201,7 @@ jobs:
     needs: build-packages
     runs-on: performance-tests
     if: ${{ github.event_name == 'push' }}
+    timeout-minutes: 45
     steps:
     - name: Cleanup Workspace
       run: rm -rf ${{ github.workspace }}/*
