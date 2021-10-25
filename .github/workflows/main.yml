@@ -858,80 +858,20 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Tests/Tests.Android
       run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:AndroidSupportedAbis=x86_64 -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: AVD cache
-      uses: actions/cache@v2
-      id: avd-cache
+    - name: Store artifacts for AndroidTests.apk
+      uses: actions/upload-artifact@v2
       with:
-        path: |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key: android-avd
-    - name: Create AVD for caching
-      if: steps.avd-cache.outputs.cache-hit != 'true'
-      uses: reactivecircus/android-emulator-runner@v2
+        name: io.realm.xamarintests-Signed.apk
+        path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+        retention-days: 30
+    - name: Create args file
+      run: echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baasapps=${{ env.APPS_CONFIG }}" > ${{ github.workspace }}/testargs.txt
+    - name: Store artifacts for testargs.txt
+      uses: actions/upload-artifact@v2
       with:
-        api-level: 29
-        arch: x86_64
-        force-avd-creation: false
-        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        disable-animations: false
-        script: echo "Generated AVD snapshot for caching."
-    - name: Run the tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        arch: x86_64
-        force-avd-creation: false
-        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        disable-animations: true
-        script: |
-          adb devices
-          adb logcat -c
-          adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
-
-          adb uninstall io.realm.xamarintests
-          adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
-          adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
-          adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
-
-          echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baasapps=${{ env.APPS_CONFIG }}" > ${{ github.workspace }}/testargs.txt
-          adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
-
-          adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-          adb pull /storage/emulated/0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
-          adb shell rm /sdcard/Realmtests/TestResults.Android.xml
-    - name: Output logcat
-      if: always()
-      run: cat logcat.txt
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results Xamarin.Android
-        path: TestResults.Android.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
-  cleanup-xamarinandroid:
-    runs-on: ubuntu-latest
-    name: Cleanup Xamarin.Android
-    needs:
-    - test-xamarinandroid
-    if: always()
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
-      with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: Xamarin.Android
+        name: testargs.txt
+        path: ${{ github.workspace }}/testargs.txt
+        retention-days: 30
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
