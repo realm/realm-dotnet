@@ -134,10 +134,6 @@ namespace RealmWeaver
 
         public MethodReference WovenPropertyAttribute_Constructor { get; private set; }
 
-        public TypeReference PropertyChanged_DoNotNotifyAttribute { get; private set; }
-
-        public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
-
         public MethodReference RealmSchema_AddDefaultTypes { get; private set; }
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
@@ -205,13 +201,6 @@ namespace RealmWeaver
                 HasThis = false,
                 Parameters = { new ParameterDefinition(runtimeTypeHandle) }
             };
-
-            // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
-            var PropertyChanged_Fody = Module.FindReference("PropertyChanged");
-            if (PropertyChanged_Fody != null)
-            {
-                InitializePropertyChanged_Fody(PropertyChanged_Fody);
-            }
         }
 
         private void InitializeFrameworkMethods()
@@ -397,12 +386,6 @@ namespace RealmWeaver
                 CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(Types.Boolean));
                 CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(Types.Boolean));
             }
-        }
-
-        private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
-        {
-            PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", Module, propertyChangedAssembly);
-            PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
         }
 
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)

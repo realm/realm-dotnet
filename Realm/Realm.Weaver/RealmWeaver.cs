@@ -130,6 +130,8 @@ namespace RealmWeaver
             "MapToAttribute",
         };
 
+        private readonly Lazy<MethodReference> _propertyChanged_DoNotNotify_Ctor;
+
         private readonly ImportedReferences _references;
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
@@ -155,16 +157,17 @@ namespace RealmWeaver
 
         public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
+            //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
+            //// System.Diagnostics.Debugger.Launch();
+
             _moduleDefinition = module;
             _logger = logger;
             _references = ImportedReferences.Create(_moduleDefinition, framework);
+            _propertyChanged_DoNotNotify_Ctor = new Lazy<MethodReference>(GetOrAddPropertyChanged_DoNotNotify);
         }
 
         public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
         {
-            //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            //// System.Diagnostics.Debugger.Launch();
-
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
             if (_references.WovenAssemblyAttribute == null)
@@ -718,13 +721,9 @@ Analytics payload
             prop.SetMethod.Body.Variables.Clear();
 
             // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in.
-            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
-            // the property such that PropertyChanged.Fody won't touch it.
-            if (_references.PropertyChanged_DoNotNotifyAttribute_Constructor != null)
-            {
-                prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
-            }
+            // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
+            // PropertyChanged.Fody will respect.
+            prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
 
             var managedSetStart = il.Create(OpCodes.Ldarg_0);
             il.Append(il.Create(OpCodes.Ldarg_0));
@@ -1099,6 +1098,41 @@ Analytics payload
                        .Any(i => i.OpCode == OpCodes.Newobj &&
                                  i.Operand is MethodReference mRef &&
                                  mRef.ConstructsType(type));
+        }
+
+        private MethodReference GetOrAddPropertyChanged_DoNotNotify()
+        {
+            // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
+            // It is possible that a project references PropertyChanged.Fody but it doesn't show up in the Module references
+            // because it is not being used in code. There's not much we can do about it in this case as there's no obvious
+            // way to determine whether PropertyChanged is in use or not. That's why we construct our own PropertyChanged.DoNotNotify
+            // attribute and apply it to Realm-processed properties.
+            var propertyChanged_Fody = _moduleDefinition.FindReference("PropertyChanged");
+            if (propertyChanged_Fody != null)
+            {
+                var propertyChanged_DoNotNotify = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", _moduleDefinition, propertyChanged_Fody);
+                return new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, propertyChanged_DoNotNotify) { HasThis = true };
+            }
+
+            var system_Attribute = new TypeReference("System", "Attribute", _moduleDefinition, _moduleDefinition.TypeSystem.CoreLibrary);
+
+            var userAssembly_DoNotNotify = new TypeDefinition("PropertyChanged", "DoNotNotifyAttribute",
+                                TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed,
+                                system_Attribute);
+
+            const MethodAttributes CtorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+            var userAssembly_DoNotNotify_Ctor = new MethodDefinition(".ctor", CtorAttributes, _moduleDefinition.TypeSystem.Void);
+            {
+                var il = userAssembly_DoNotNotify_Ctor.Body.GetILProcessor();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, system_Attribute) { HasThis = true });
+                il.Emit(OpCodes.Ret);
+            }
+
+            userAssembly_DoNotNotify.Methods.Add(userAssembly_DoNotNotify_Ctor);
+            _moduleDefinition.Types.Add(userAssembly_DoNotNotify);
+
+            return userAssembly_DoNotNotify_Ctor;
         }
     }
 }
