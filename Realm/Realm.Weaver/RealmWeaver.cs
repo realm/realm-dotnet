@@ -1107,32 +1107,32 @@ Analytics payload
             // because it is not being used in code. There's not much we can do about it in this case as there's no obvious
             // way to determine whether PropertyChanged is in use or not. That's why we construct our own PropertyChanged.DoNotNotify
             // attribute and apply it to Realm-processed properties.
-            var PropertyChanged_Fody = _moduleDefinition.FindReference("PropertyChanged");
-            if (PropertyChanged_Fody != null)
+            var propertyChanged_Fody = _moduleDefinition.FindReference("PropertyChanged");
+            if (propertyChanged_Fody != null)
             {
-                var PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", _moduleDefinition, PropertyChanged_Fody);
-                return new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
+                var propertyChanged_DoNotNotify = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", _moduleDefinition, propertyChanged_Fody);
+                return new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, propertyChanged_DoNotNotify) { HasThis = true };
             }
 
-            var System_Attribute = new TypeReference("System", "Attribute", _moduleDefinition, _moduleDefinition.TypeSystem.CoreLibrary);
+            var system_Attribute = new TypeReference("System", "Attribute", _moduleDefinition, _moduleDefinition.TypeSystem.CoreLibrary);
 
-            var doNotNotifyTypeDef = new TypeDefinition("PropertyChanged", "DoNotNotifyAttribute",
+            var userAssembly_DoNotNotify = new TypeDefinition("PropertyChanged", "DoNotNotifyAttribute",
                                 TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed,
-                                System_Attribute);
+                                system_Attribute);
 
             const MethodAttributes CtorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
-            var doNotNotifyCtor = new MethodDefinition(".ctor", CtorAttributes, _moduleDefinition.TypeSystem.Void);
+            var userAssembly_DoNotNotify_Ctor = new MethodDefinition(".ctor", CtorAttributes, _moduleDefinition.TypeSystem.Void);
             {
-                var il = doNotNotifyCtor.Body.GetILProcessor();
+                var il = userAssembly_DoNotNotify_Ctor.Body.GetILProcessor();
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Call, new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, System_Attribute) { HasThis = true });
+                il.Emit(OpCodes.Call, new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, system_Attribute) { HasThis = true });
                 il.Emit(OpCodes.Ret);
             }
 
-            doNotNotifyTypeDef.Methods.Add(doNotNotifyCtor);
-            _moduleDefinition.Types.Add(doNotNotifyTypeDef);
+            userAssembly_DoNotNotify.Methods.Add(userAssembly_DoNotNotify_Ctor);
+            _moduleDefinition.Types.Add(userAssembly_DoNotNotify);
 
-            return doNotNotifyCtor;
+            return userAssembly_DoNotNotify_Ctor;
         }
     }
 }
