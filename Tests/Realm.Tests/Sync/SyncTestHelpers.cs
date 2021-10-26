@@ -25,7 +25,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using Newtonsoft.Json;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -156,9 +155,10 @@ namespace Realms.Tests.Sync
                 }
                 else
                 {
-                    apps = JsonConvert.DeserializeObject<Dictionary<string, string>>(appsJson)
-                                      .Select(kvp => (kvp.Key, kvp.Value))
-                                      .ToArray();
+                    apps = BsonDocument.Parse(appsJson)
+                                       .ToDictionary()
+                                       .Select(s => (s.Key, s.Value.ToString()))
+                                       .ToArray();
                 }
 
                 foreach (var (appName, appId) in apps)
