@@ -98,10 +98,26 @@ namespace Realms.Tests.Sync
 
             var realm = GetRealm();
 
-            Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
-            var syncConfig = (SyncConfiguration)realm.Config;
+            Assert.That(realm.Config, Is.TypeOf<PartitionSyncConfiguration>());
+            var syncConfig = (PartitionSyncConfiguration)realm.Config;
             Assert.That(syncConfig.User.Id, Is.EqualTo(config.User.Id));
             Assert.That(syncConfig.Partition, Is.EqualTo(config.Partition));
+        }
+
+        [Test]
+        [Obsolete("Tests obsolete functionality")]
+        public void ObsoleteSyncConfiguration_ProxiesToNewOne()
+        {
+            var user = GetFakeUser();
+            var config = new SyncConfiguration("foo", user);
+
+            Assert.That(config is PartitionSyncConfiguration);
+            Assert.That(config.Partition, Is.TypeOf<object>());
+
+            var partitionConfig = (PartitionSyncConfiguration)config;
+            Assert.That(partitionConfig.Partition, Is.TypeOf<RealmValue>());
+            Assert.That(partitionConfig.Partition.AsString(), Is.EqualTo("foo"));
+            Assert.That(partitionConfig.User, Is.EqualTo(user));
         }
     }
 }

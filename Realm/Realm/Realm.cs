@@ -84,7 +84,7 @@ namespace Realms
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration is <see cref="SyncConfiguration"/>, the realm will be downloaded and fully
+        /// If the configuration is <see cref="SyncConfigurationBase"/>, the realm will be downloaded and fully
         /// synchronized with the server prior to the completion of the returned Task object.
         /// Otherwise this method will perform any migrations on a background thread before returning an
         /// opened instance to the calling thread.
@@ -119,7 +119,7 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase config = null)
         {
             using var realm = GetInstance(config);
-            if (config is SyncConfiguration)
+            if (config is SyncConfigurationBase)
             {
                 // For synchronized Realms, shutdown the session, otherwise Compact will fail.
                 var session = realm.SyncSession;
@@ -1343,9 +1343,9 @@ namespace Realms
         {
             Argument.NotNull(config, nameof(config));
 
-            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig._partition != copiedConfig._partition)
+            if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
             {
-                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig._partition}, passed partition: {copiedConfig._partition}");
+                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
             }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);

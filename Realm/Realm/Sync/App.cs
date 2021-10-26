@@ -36,7 +36,7 @@ namespace Realms.Sync
     /// Register uses and perform various user-related operations through authentication providers (e.g. <see cref="User.ApiKeys"/>, <see cref="EmailPasswordAuth"/>).
     /// </description></item>
     /// <item><description>
-    /// Synchronize data between the local device and a remote Realm App with Synchronized Realms (using <see cref="SyncConfiguration"/>).
+    /// Synchronize data between the local device and a remote Realm App with Synchronized Realms (using <see cref="SyncConfigurationBase"/>).
     /// </description></item>
     /// <item><description>
     /// Invoke Realm App functions with Functions (using <see cref="User.Functions"/>).
@@ -64,7 +64,7 @@ namespace Realms.Sync
     /// // Login with existing user
     /// var user = app.LoginAsync(Credentials.EmailPassword("foo@bar.com", "password");
     /// </code>
-    /// With an authorized user you can synchronize data between the local device and the remote Realm App by opening a Realm with a <see cref="SyncConfiguration"/> as indicated below:
+    /// With an authorized user you can synchronize data between the local device and the remote Realm App by opening a Realm with a <see cref="SyncConfigurationBase"/> as indicated below:
     /// <code>
     /// var syncConfig = new SyncConfiguration("some-partition-value", user);
     /// using var realm = await Realm.GetInstanceAsync(syncConfig);
