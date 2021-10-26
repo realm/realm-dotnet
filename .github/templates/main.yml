@@ -509,7 +509,7 @@ jobs:
         with:
           name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
           path: ${{ github.workspace }}/Realm/packages/
-      - name: Build Unity
+      - name: Build Unity Tests
         run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
       - #@ uploadArtifacts("Tests.Unity", "${{ github.workspace }}/Tests/Tests.Unity/**", 1)
 
