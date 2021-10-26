@@ -416,6 +416,34 @@ jobs:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  prepare-unity-tests:
+    runs-on: ubuntu-latest
+    name: Prepare Unity Tests
+    needs:
+    - build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+      uses: actions/download-artifact@v2
+      with:
+        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build Unity
+      run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
+    - name: Store artifacts for Tests.Unity
+      uses: actions/upload-artifact@v2
+      with:
+        name: Tests.Unity
+        path: ${{ github.workspace }}/${{ github.workspace }}/Tests/Tests.Unity/**
+        retention-days: 1
   baas-net-framework:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for .NET Framework
