@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
@@ -99,6 +100,9 @@ namespace Realms.Helpers
             _ = new BsonArraySerializer();
 
             _ = new ObjectSerializer();
+
+            _ = new EnumerableInterfaceImplementerSerializer<IEnumerable<object>, object>();
+            _ = new ExpandoObjectSerializer();
         }
 
         public static string ToNativeJson(this object value)

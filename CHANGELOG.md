@@ -7,6 +7,7 @@
 * Fixed a bug that would result in a `RealmException` being thrown when opening a readonly Realm with schema that is a superset of the schema on disk. Now the code will just work and treat any classes not present in the on-disk schema to be treated as empty collections - e.g. `realm.All<ThisIsNotInOnDiskSchema>().Count == 0`. (Issue [#2619](https://github.com/realm/realm-dotnet/issues/2619))
 * Fixed a bug that would create a "Documents" folder in the binary app folder when the ransomware protection in Windows is turned on. (Issue [#2685](https://github.com/realm/realm-dotnet/pull/2685))
 * Fixed an issue that would cause incorrect property implementation to be generated if `PropertyChanged.Fody` runs after the Realm weaver. (Issue [#1873](https://github.com/realm/realm-dotnet/issues/1873))
+* [Unity] Preserved additional constructors necessary to serialize and deserialize Custom User Data. (PR [#2519](https://github.com/realm/realm-dotnet/pull/2519))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
