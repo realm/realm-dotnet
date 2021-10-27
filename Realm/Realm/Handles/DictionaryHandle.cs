@@ -60,10 +60,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_thread_safe_reference(DictionaryHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool get_is_frozen(DictionaryHandle handle, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(DictionaryHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
@@ -162,16 +158,6 @@ namespace Realms
         protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
         {
             throw new NotImplementedException("Dictionaries can't be filtered yet.");
-        }
-
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)

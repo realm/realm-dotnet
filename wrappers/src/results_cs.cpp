@@ -166,13 +166,6 @@ REALM_EXPORT size_t results_find_value(Results& results, realm_value_t value, Na
     });
 }
 
-REALM_EXPORT bool results_get_is_frozen(Results& results, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return results.is_frozen();
-    });
-}
-
 REALM_EXPORT Results* results_freeze(Results& results, const SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

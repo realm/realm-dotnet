@@ -135,7 +135,7 @@ namespace Realms
         /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         [IgnoreDataMember]
-        public bool IsFrozen => _objectHandle?.IsFrozen == true;
+        public bool IsFrozen => _realm?.IsFrozen == true;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.

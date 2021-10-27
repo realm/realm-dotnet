@@ -78,10 +78,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_snapshot", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool get_is_frozen(ListHandle list, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ListHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
@@ -100,16 +96,6 @@ namespace Realms
             get
             {
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
-        }
-
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }

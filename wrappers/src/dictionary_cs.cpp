@@ -215,13 +215,6 @@ REALM_EXPORT ThreadSafeReference* realm_dictionary_get_thread_safe_reference(con
     });
 }
 
-REALM_EXPORT bool realm_dictionary_get_is_frozen(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return dictionary.is_frozen();
-    });
-}
-
 REALM_EXPORT object_store::Dictionary* realm_dictionary_freeze(const object_store::Dictionary& dictionary, const SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

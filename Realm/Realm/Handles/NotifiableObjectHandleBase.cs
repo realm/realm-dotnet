@@ -54,8 +54,6 @@ namespace Realms
 
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
 
-        public abstract bool IsFrozen { get; }
-
         [MonoPInvokeCallback(typeof(NotificationCallback))]
         public static void NotifyObjectChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
         {
