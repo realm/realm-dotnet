@@ -121,7 +121,7 @@ namespace Realms
         public bool IsValid => Handle.Value.IsValid;
 
         [IgnoreDataMember]
-        public bool IsFrozen => Handle.Value.IsFrozen;
+        public bool IsFrozen => Realm?.IsFrozen == true;
 
         [IgnoreDataMember]
         public Realm Realm { get; }

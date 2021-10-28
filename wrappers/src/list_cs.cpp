@@ -260,13 +260,6 @@ REALM_EXPORT Results* list_snapshot(const List& list, NativeException::Marshalla
     });
 }
 
-REALM_EXPORT bool list_get_is_frozen(const List& list, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return list.is_frozen();
-    });
-}
-
 REALM_EXPORT List* list_freeze(const List& list, const SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

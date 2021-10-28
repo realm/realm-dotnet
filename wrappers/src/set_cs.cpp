@@ -182,13 +182,6 @@ REALM_EXPORT Results* realm_set_snapshot(const object_store::Set& set, NativeExc
     });
 }
 
-REALM_EXPORT bool realm_set_get_is_frozen(const object_store::Set& set, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return set.is_frozen();
-    });
-}
-
 REALM_EXPORT object_store::Set* realm_set_freeze(const object_store::Set& set, const SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
