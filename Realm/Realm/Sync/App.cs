@@ -66,7 +66,7 @@ namespace Realms.Sync
     /// </code>
     /// With an authorized user you can synchronize data between the local device and the remote Realm App by opening a Realm with a <see cref="SyncConfigurationBase"/> as indicated below:
     /// <code>
-    /// var syncConfig = new SyncConfiguration("some-partition-value", user);
+    /// var syncConfig = new PartitionSyncConfiguration("some-partition-value", user);
     /// using var realm = await Realm.GetInstanceAsync(syncConfig);
     ///
     /// realm.Write(() =>

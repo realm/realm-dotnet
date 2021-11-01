@@ -112,7 +112,7 @@ namespace Realms.Tests.Sync
             var config = new SyncConfiguration("foo", user);
 
             Assert.That(config is PartitionSyncConfiguration);
-            Assert.That(config.Partition, Is.TypeOf<object>());
+            Assert.That(config.Partition, Is.TypeOf<string>());
 
             var partitionConfig = (PartitionSyncConfiguration)config;
             Assert.That(partitionConfig.Partition, Is.TypeOf<RealmValue>());
