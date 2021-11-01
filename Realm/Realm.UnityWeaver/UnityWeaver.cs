@@ -311,15 +311,29 @@ namespace RealmWeaver
         /// </summary>
         private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator)
         {
-            var simulatorPath = "Packages/io.realm.unity/Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework";
-            var simulatorFrameworkImporter = (PluginImporter)PluginImporter.GetAtPath(simulatorPath);
-            simulatorFrameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enableForSimulator);
-            simulatorFrameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enableForSimulator.ToString().ToLower());
+            const string ErrorMessage = "Failed to find the native Realm framework at '{0}'. " +
+                "Please double check that you have imported Realm correctly and that the file exists. " +
+                "Typically, it should be located at Packages/io.realm.unity/Runtime/iOS";
+            const string SimulatorPath = "ios-arm64_i386_x86_64-simulator";
+            const string DevicePath = "ios-arm64_armv7";
 
-            var devicePath = "Packages/io.realm.unity/Runtime/iOS/realm-wrappers.xcframework/ios-arm64_armv7/realm-wrappers.framework";
-            var deviceFrameworkImporter = (PluginImporter)PluginImporter.GetAtPath(devicePath);
-            deviceFrameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enableForDevice);
-            deviceFrameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enableForDevice.ToString().ToLower());
+            var importers = PluginImporter.GetAllImporters();
+
+            UpdateiOSFramework(SimulatorPath, enableForSimulator);
+            UpdateiOSFramework(DevicePath, enableForDevice);
+
+            void UpdateiOSFramework(string path, bool enabled)
+            {
+                path = $"realm-wrappers.xcframework/{path}/realm-wrappers.framework";
+                var frameworkImporter = importers.SingleOrDefault(i => i.assetPath.Contains(path));
+                if (frameworkImporter == null)
+                {
+                    throw new Exception(string.Format(ErrorMessage, path));
+                }
+
+                frameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enabled);
+                frameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enabled.ToString().ToLower());
+            }
         }
 
         private static Assembly[] GetAssemblies()
