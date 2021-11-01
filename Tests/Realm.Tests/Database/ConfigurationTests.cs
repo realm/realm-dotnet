@@ -18,6 +18,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -238,6 +240,23 @@ namespace Realms.Tests.Database
 
             Assert.That(ex.Message, Does.Contain("Foo.DuplicateClass"));
             Assert.That(ex.Message, Does.Contain("Bar.DuplicateClass"));
+        }
+
+        [Test]
+        public void Configuration_WhenCreatedFromMultipleThreads_DoesntThrow()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
+                {
+                    return new RealmConfiguration
+                    {
+                        Schema = new[] { typeof(Person), typeof(AllTypesObject), typeof(ListsObject), typeof(CollectionsObject) }
+                    };
+                }));
+
+                await Task.WhenAll(tasks);
+            });
         }
     }
 }

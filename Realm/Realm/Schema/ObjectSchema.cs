@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -34,7 +35,7 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
-        private static readonly IDictionary<Type, ObjectSchema> _cache = new Dictionary<Type, ObjectSchema>();
+        private static readonly ConcurrentDictionary<Type, ObjectSchema> _cache = new ConcurrentDictionary<Type, ObjectSchema>();
 
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
@@ -123,14 +124,8 @@ namespace Realms.Schema
         internal static ObjectSchema FromType(Type type)
         {
             Argument.NotNull(type, nameof(type));
-            if (_cache.TryGetValue(type, out var result))
-            {
-                return result;
-            }
 
-            result = new Builder(type).Build();
-            _cache[type] = result;
-            return result;
+            return _cache.GetOrAdd(type, t => new Builder(t).Build());
         }
 
         /// <summary>
