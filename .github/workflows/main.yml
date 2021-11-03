@@ -421,7 +421,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: ${{ github.event_name != 'push' }}
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
