@@ -20,6 +20,7 @@
 * We now refresh the resulting Realm instance when opening a synchronized Realm with `GetInstanceAsync`. (Issue [#2256](https://github.com/realm/realm-dotnet/issues/2256))
 * Added Sync tests for all platforms running on cloud-dev. (Issue [#2049](https://github.com/realm/realm-dotnet/issues/2049))
 * Added Android tests running on the emulator. (Issue [#2680](https://github.com/realm/realm-dotnet/pull/2680))
+* Started publishing prerelease packages to S3 using Sleet ([feed url](https://s3.amazonaws.com/realm.nugetpackages/index.json)). (Issue [#2708](https://github.com/realm/realm-dotnet/issues/2708))
 
 ## 10.6.0 (2021-09-30)
 
