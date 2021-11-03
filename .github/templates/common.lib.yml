@@ -1,3 +1,5 @@
+#@ load("@ytt:template", "template")
+
 #@ configuration = "Release"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 #@ actionCheckout = "actions/checkout@v2"
@@ -56,4 +58,42 @@
       Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
     shell: powershell
     if: #@ ifCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
+#@ end
+
+#@ def downloadAllArtifacts():
+  - name: Download all artifacts
+    uses: #@ actionDownloadAllArtifacts
+    with:
+      workflow: main.yml
+      commit: ${{ github.sha }}
+      path: ${{ github.workspace }}/Realm/packages/
+#@ end
+
+#@ def readVersionFromPackage():
+  - name: Read version
+    id: get-version
+    run: |
+      $nupkgName = ls "Realm/packages" | Select -expandproperty Name | Select-String Realm.Fody
+      $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
+      $version = $Matches[0]
+      echo "::set-output name=version::$version"
+#@ end
+
+#@ def configureS3Credentials(accessKey, secretKey, region = "us-east-1"):
+  - name: Configure AWS Credentials
+    uses: #@ actionAWSConfigureCredentials
+    with:
+      aws-access-key-id: #@ "${{ secrets." + accessKey + " }}"
+      aws-secret-access-key: #@ "${{ secrets." + secretKey + " }}"
+      aws-region: #@ region
+#@ end
+
+#@ def uploadPackagesToSleet(versionExpression = "steps.get-version.outputs.version"):
+  - name: Install sleet
+    run: dotnet tool install -g sleet
+  - #@ template.replace(configureS3Credentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY"))
+#@ for pkg in [ "Realm.Fody", "Realm" ]:
+  - name: #@ "NuGet Publish " + pkg + ".${{ " + versionExpression + " }}"
+    run: #@ "sleet push ${{ github.workspace }}/Realm/packages/" + pkg + ".${{ " + versionExpression + " }}/" + pkg + ".${{ " + versionExpression + " }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
+#@ end
 #@ end

@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet")
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
@@ -138,7 +138,7 @@ steps:
 #@ end
 
 #@ def buildUnityPackage():
-#@ finalPkgName = "io.realm.unity-" + "${{ steps.find-nupkg-version.outputs.package_version }}.tgz"
+#@ finalPkgName = "io.realm.unity-" + "${{ steps.get-version.outputs.version }}.tgz"
   - name: #@ "Build Unity"
     run: #@ "dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack"
   - #@ uploadArtifacts(finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
@@ -286,7 +286,7 @@ steps:
 
 #@ def uploadPackageArtifacts():
 #@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
-#@  finalPkgName = pkgName + ".${{ steps.find-nupkg-version.outputs.package_version }}"
+#@  finalPkgName = pkgName + ".${{ steps.get-version.outputs.version }}"
   - #@ uploadArtifacts(finalPkgName, "Realm/packages/" + finalPkgName + ".*nupkg")
 #@ end
 #@ end
@@ -362,16 +362,6 @@ with:
   list-tests: failed
   path-replace-backslashes: true
   fail-on-error: false
-#@ end
-
-#@ def findPackageVersion():
-name: Find nupkg version
-id: find-nupkg-version
-run: |
-  cd Realm/packages
-  pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-  echo "::set-output name=package_version::$pkgVersion"
-shell: bash
 #@ end
 
 #@ def msbuild(projectPath, **properties):
@@ -467,7 +457,7 @@ jobs:
       - build-wrappers-linux
       - build-wrappers-windows-uwp
     outputs:
-      package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
+      package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: #@ wrappersTimeout
     steps:
       - name: Add msbuild to PATH
@@ -492,11 +482,21 @@ jobs:
           echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(buildPackages())
-      - #@ findPackageVersion()
+      - #@ template.replace(readVersionFromPackage())
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(buildUnityPackage())
       - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+  publish-packages-to-sleet:
+    runs-on: ubuntu-latest
+    name: Publish package to S3
+    needs:
+    - build-packages
+    if: ${{ github.event_name != 'push' }}
+    steps:
+    - #@ template.replace(checkoutCode(False, False))
+    - #@ template.replace(fetchPackageArtifacts())
+    - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version"))
   _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
   _: #@ template.replace(testJob("UWP Managed", "windows-latest", uwpTestSteps()))
   run-tests-netcore:
