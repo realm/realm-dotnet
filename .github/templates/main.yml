@@ -496,7 +496,7 @@ jobs:
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
-    - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version"))
+    - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
   _: #@ template.replace(testJob("UWP Managed", "windows-latest", uwpTestSteps()))
   run-tests-netcore:
