@@ -1,5 +1,5 @@
 name: Publish Prerelease
-true: workflow_dispatch
+"on": workflow_dispatch
 jobs:
   main:
     runs-on: ubuntu-latest
