@@ -102,7 +102,7 @@ var peters = realm.All<Person>().Filter("Name == 'Peter'");
 
 ## Using unpersistable data types
 
-Realm has a wide variety of supported data types - most primitive types in the BCL, as  well as advanced collections, such as sets and dictionaries. But sometimes, you'll come across a data type that Realm can't store yet - the most obvious example being enums. In such cases, you can build on top of the previous technique to expose enum properties in your models and have them be persisted as one of the supported data types:
+Realm has a wide variety of supported data types - most primitive types in the Base Class Library (BCL), as  well as advanced collections, such as sets and dictionaries. But sometimes, you'll come across a data type that Realm can't store yet - the most obvious example being enums. In such cases, you can build on top of the previous technique to expose enum properties in your models and have them be persisted as one of the supported data types:
 
 ```csharp
 enum TransactionState
@@ -158,7 +158,7 @@ class Powerup : RealmObject
 
     public Vector3 Position
     {
-        get => _Position?.ToVector3() ?? Vector3.Zero;
+        get => _Position?.ToVector3() ?? Vector3.zero;
         set => _Position = new Vector3Model(value);
     }
 
