@@ -73,10 +73,10 @@
   - name: Read version
     id: get-version
     run: |
-      $nupkgName = ls "Realm/packages" | Select -expandproperty Name | Select-String Realm.Fody
-      $nupkgName -match "(?sm)\d{1,2}\.\d{1,2}\.\d{1,2}(?:-[a-zA-Z]*\.\d{1,2})?"
-      $version = $Matches[0]
-      echo "::set-output name=version::$version"
+      cd Realm/packages
+      pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+      echo "::set-output name=version::$pkgVersion"
+    shell: bash
 #@ end
 
 #@ def configureS3Credentials(accessKey, secretKey, region = "us-east-1"):
