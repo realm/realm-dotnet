@@ -50,5 +50,9 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The subscription query.</value>
         public string Query { get; }
+
+        internal Subscription()
+        {
+        }
     }
 }
