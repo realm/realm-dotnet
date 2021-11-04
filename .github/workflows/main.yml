@@ -679,7 +679,7 @@ jobs:
         appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.macOS
   test-xamarinmacos:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     name: Test Xamarin.macOS
     needs:
     - build-packages
