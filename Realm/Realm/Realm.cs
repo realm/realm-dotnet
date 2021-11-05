@@ -121,7 +121,7 @@ namespace Realms
             using var realm = GetInstance(config);
             if (config is SyncConfiguration)
             {
-                // For synchronized Realms, shutdown the session.
+                // For synchronized Realms, shutdown the session, otherwise Compact will fail.
                 var session = realm.SyncSession;
                 session.CloseHandle(waitForShutdown: true);
             }
@@ -365,7 +365,7 @@ namespace Realms
                     _state.RemoveRealm(this);
                 }
 
-                if (_sessionRef.TryGetTarget(out var session))
+                if (_sessionRef != null && _sessionRef.TryGetTarget(out var session))
                 {
                     session.CloseHandle();
                 }
