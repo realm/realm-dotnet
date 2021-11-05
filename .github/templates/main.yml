@@ -167,14 +167,14 @@ steps:
 #@ end
 
 #@ def xamarinMacTestSteps():
-  - #@ msbuild("Tests/Tests.XamarinMac", TargetFrameworkVersion="v2.0", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - #@ msbuild("Tests/Tests.XamarinMac", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
   - name: Run the tests
     run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl=${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml"
   - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
 #@ end
 
 #@ def xamariniOSTestSteps():
-  - #@ msbuild("Tests/Tests.iOS", TargetFrameworkVersion="v1.0", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - #@ msbuild("Tests/Tests.iOS", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
   - name: Run the tests
     uses: #@ actionRuniOSSimulator
     with:
