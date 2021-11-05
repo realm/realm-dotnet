@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added the `Realm.SyncSession` property which will return the sync session for this Realm if the Realm is a synchronized one or `null` for local Realms. This is replacing the `GetSession(this Realm)` extension method which is now deprecated. (PR [#2711](https://github.com/realm/realm-dotnet/pull/2711))
 
 ### Fixed
 * Fixed a bug that would result in a `RealmException` being thrown when opening a readonly Realm with schema that is a superset of the schema on disk. Now the code will just work and treat any classes not present in the on-disk schema to be treated as empty collections - e.g. `realm.All<ThisIsNotInOnDiskSchema>().Count == 0`. (Issue [#2619](https://github.com/realm/realm-dotnet/issues/2619))

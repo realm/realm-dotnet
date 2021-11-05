@@ -38,7 +38,6 @@ using namespace realm::binding;
 using namespace app;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
-using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
@@ -259,13 +258,6 @@ extern "C" {
                 // ignore errors
                 s_void_callback(tcs_ptr, MarshaledAppError());
             });
-        });
-    }
-
-    REALM_EXPORT SharedSyncSession* shared_app_sync_get_session_from_path(SharedApp& app, SharedRealm& realm, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&] {
-            return new SharedSyncSession(app->sync_manager()->get_existing_active_session(realm->config().path));
         });
     }
 

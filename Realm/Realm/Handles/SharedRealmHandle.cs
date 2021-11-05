@@ -27,6 +27,7 @@ using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
+using Realms.Sync;
 using static Realms.RealmConfiguration;
 
 namespace Realms
@@ -193,6 +194,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_type", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool remove_type(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeLength, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_sync_session", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_session(SharedRealmHandle realm, out NativeException ex);
 
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
@@ -496,6 +500,13 @@ namespace Realms
             var result = NativeMethods.create_results(this, tableKey.Value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(this, result);
+        }
+
+        public SessionHandle GetSession()
+        {
+            var ptr = NativeMethods.get_session(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new SessionHandle(ptr);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]

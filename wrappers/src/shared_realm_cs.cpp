@@ -38,6 +38,7 @@
 #include <sstream>
 
 using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
+using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 using namespace realm;
 using namespace realm::binding;
@@ -603,6 +604,13 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
 
         realm->read_group().remove_table(table->get_key());
         return true;
+    });
+}
+
+REALM_EXPORT SharedSyncSession* shared_app_sync_get_session_from_path(SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return new SharedSyncSession(realm->sync_session());
     });
 }
 

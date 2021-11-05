@@ -63,9 +63,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_sync_get_session_from_path", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_session(AppHandle app, SharedRealmHandle realm, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_sync_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(AppHandle app, SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string partition, IntPtr partition_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
 
@@ -230,13 +227,6 @@ namespace Realms.Sync
                 isNull = false;
                 return NativeMethods.get_path_for_realm(this, user.Handle, partition, (IntPtr)partition.Length, buffer, bufferLength, out ex);
             });
-        }
-
-        public SessionHandle GetSessionForRealm(SharedRealmHandle realm)
-        {
-            var ptr = NativeMethods.get_session(this, realm, out var ex);
-            ex.ThrowIfNecessary();
-            return new SessionHandle(ptr);
         }
 
         public bool ImmediatelyRunFileActions(string path)

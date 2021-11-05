@@ -73,7 +73,8 @@ REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSess
 {
     return handle_errors(ex, [&] {
         switch (session->state()) {
-        case SyncSession::PublicState::Inactive:
+        case SyncSession::State::Inactive:
+        case SyncSession::State::Dying:
             return CSharpSessionState::Inactive;
         default:
             return CSharpSessionState::Active;
