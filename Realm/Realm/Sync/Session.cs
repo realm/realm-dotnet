@@ -34,6 +34,8 @@ namespace Realms.Sync
         /// </summary>
         public static event EventHandler<ErrorEventArgs> Error;
 
+        internal bool IsClosed => _handle.IsClosed;
+
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
@@ -171,7 +173,7 @@ namespace Realms.Sync
         internal void CloseHandle(bool waitForShutdown = false)
         {
             GC.SuppressFinalize(this);
-            if (!_handle.IsClosed)
+            if (!IsClosed)
             {
                 if (waitForShutdown)
                 {

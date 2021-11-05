@@ -121,6 +121,7 @@ namespace Realms
             using var realm = GetInstance(config);
             if (config is SyncConfiguration)
             {
+                // For synchronized Realms, shutdown the session.
                 var session = realm.SyncSession;
                 session.CloseHandle(waitForShutdown: true);
             }
@@ -211,7 +212,7 @@ namespace Realms
             {
                 if (Config is SyncConfiguration)
                 {
-                    if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session))
+                    if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
                     {
                         var sessionHandle = SharedRealmHandle.GetSession();
                         session = new Session(sessionHandle);
