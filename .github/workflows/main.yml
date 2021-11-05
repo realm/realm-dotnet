@@ -260,7 +260,7 @@ jobs:
     - build-wrappers-linux
     - build-wrappers-windows-uwp
     outputs:
-      package_version: ${{ steps.find-nupkg-version.outputs.package_version }}
+      package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: 45
     steps:
     - name: Add msbuild to PATH
@@ -358,12 +358,12 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Find nupkg version
-      id: find-nupkg-version
+    - name: Read version
+      id: get-version
       run: |
         cd Realm/packages
         pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-        echo "::set-output name=package_version::$pkgVersion"
+        echo "::set-output name=version::$pkgVersion"
       shell: bash
     - name: Check Docfx cache
       id: check-docfx-cache
@@ -390,25 +390,25 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/Docs.zip
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
       if: ${{ contains(github.head_ref, 'release') }}
-    - name: Store artifacts for Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}
+    - name: Store artifacts for Realm.Fody.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.find-nupkg-version.outputs.package_version }}.*nupkg
+        name: Realm.Fody.${{ steps.get-version.outputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Store artifacts for Realm.${{ steps.find-nupkg-version.outputs.package_version }}
+    - name: Store artifacts for Realm.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v2
       with:
-        name: Realm.${{ steps.find-nupkg-version.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.find-nupkg-version.outputs.package_version }}.*nupkg
+        name: Realm.${{ steps.get-version.outputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
-    - name: Store artifacts for io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+    - name: Store artifacts for io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
       uses: actions/upload-artifact@v2
       with:
-        name: io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
-        path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.find-nupkg-version.outputs.package_version }}.tgz
+        name: io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+        path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Store artifacts for ExtractedChangelog
       uses: actions/upload-artifact@v2
@@ -416,6 +416,40 @@ jobs:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  publish-packages-to-sleet:
+    runs-on: ubuntu-latest
+    name: Publish package to S3
+    needs:
+    - build-packages
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Install sleet
+      run: dotnet tool install -g sleet
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.NUGET_S3_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.NUGET_S3_SECRET_KEY }}
+        aws-region: us-east-1
+    - name: NuGet Publish Realm.Fody.${{ needs.build-packages.outputs.package_version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   baas-net-framework:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for .NET Framework
