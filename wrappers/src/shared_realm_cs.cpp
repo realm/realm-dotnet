@@ -607,7 +607,7 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
     });
 }
 
-REALM_EXPORT SharedSyncSession* shared_app_sync_get_session_from_path(SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         return new SharedSyncSession(realm->sync_session());
