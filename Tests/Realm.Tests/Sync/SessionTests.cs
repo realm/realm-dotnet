@@ -28,7 +28,7 @@ namespace Realms.Tests.Sync
     public class SessionTests : SyncTestBase
     {
         [Test]
-        public void Realm_GetSession_WhenSyncedRealm()
+        public void Realm_SyncSession_WhenSyncedRealm()
         {
             var config = GetFakeConfig();
 
@@ -39,10 +39,18 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        [Obsolete("tests obsolete functionality")]
         public void Realm_GetSession_WhenLocalRealm_ShouldThrow()
         {
             using var realm = GetRealm();
-            Assert.Throws<ArgumentException>(() => GetSession(realm));
+            Assert.Throws<ArgumentException>(() => realm.GetSession());
+        }
+
+        [Test]
+        public void Realm_SyncSession_WhenLocalRealm_ShouldReturnNull()
+        {
+            using var realm = GetRealm();
+            Assert.That(realm.SyncSession, Is.Null);
         }
 
         [Test]
@@ -232,7 +240,7 @@ namespace Realms.Tests.Sync
             var first = GetSession(realm);
             var second = GetSession(realm);
 
-            Assert.That(ReferenceEquals(first, second), Is.False);
+            Assert.That(ReferenceEquals(first, second));
             Assert.That(first.Equals(second));
             Assert.That(second.Equals(first));
         }
