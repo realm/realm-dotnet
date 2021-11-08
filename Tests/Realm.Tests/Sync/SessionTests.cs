@@ -40,6 +40,19 @@ namespace Realms.Tests.Sync
 
         [Test]
         [Obsolete("tests obsolete functionality")]
+        public void Realm_GetSession_WhenSyncedRealm()
+        {
+            var config = GetFakeConfig();
+
+            using var realm = GetRealm(config);
+            var session = realm.GetSession();
+            CleanupOnTearDown(session);
+
+            Assert.That(session.User, Is.EqualTo(config.User));
+        }
+
+        [Test]
+        [Obsolete("tests obsolete functionality")]
         public void Realm_GetSession_WhenLocalRealm_ShouldThrow()
         {
             using var realm = GetRealm();
