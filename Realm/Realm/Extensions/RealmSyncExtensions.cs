@@ -35,13 +35,13 @@ namespace Realms.Sync
         /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="realm"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="realm"/> was not created with a <see cref="SyncConfiguration"/> object.</exception>
+        [Obsolete("Use Realm.SyncSession instead.")]
         public static Session GetSession(this Realm realm)
         {
             Argument.NotNull(realm, nameof(realm));
-            var syncConfig = Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+            Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
-            var session = syncConfig.User.App.Handle.GetSessionForRealm(realm.SharedRealmHandle);
-            return new Session(session);
+            return realm.SyncSession;
         }
     }
 }

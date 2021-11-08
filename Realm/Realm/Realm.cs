@@ -47,9 +47,6 @@ namespace Realms
     {
         #region static
 
-        // TODO: this will go away once https://github.com/realm/realm-dotnet/pull/2251 is merged, but due to a Mono bug, this needs to be a function rather than a lambda
-        private static IDictionary<TKey, TValue> DictionaryConstructor<TKey, TValue>() => new Dictionary<TKey, TValue>();
-
         /// <summary>
         /// Factory for obtaining a <see cref="Realm"/> instance for this thread.
         /// </summary>
@@ -124,7 +121,8 @@ namespace Realms
             using var realm = GetInstance(config);
             if (config is SyncConfiguration)
             {
-                var session = realm.GetSession();
+                // For synchronized Realms, shutdown the session, otherwise Compact will fail.
+                var session = realm.SyncSession;
                 session.CloseHandle(waitForShutdown: true);
             }
 
@@ -150,6 +148,7 @@ namespace Realms
         #endregion static
 
         private State _state;
+        private WeakReference<Session> _sessionRef;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
@@ -198,6 +197,42 @@ namespace Realms
         /// </summary>
         /// <value>The Realm's configuration.</value>
         public RealmConfigurationBase Config { get; }
+
+        /// <summary>
+        /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm
+        /// server if the Realm instance was created with a <see cref="SyncConfiguration"/>; <c>null</c>
+        /// otherwise.
+        /// </value>
+        public Session SyncSession
+        {
+            get
+            {
+                if (Config is SyncConfiguration)
+                {
+                    if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
+                    {
+                        var sessionHandle = SharedRealmHandle.GetSession();
+                        session = new Session(sessionHandle);
+
+                        if (_sessionRef == null)
+                        {
+                            _sessionRef = new WeakReference<Session>(session);
+                        }
+                        else
+                        {
+                            _sessionRef.SetTarget(session);
+                        }
+                    }
+
+                    return session;
+                }
+
+                return null;
+            }
+        }
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
         {
@@ -328,6 +363,11 @@ namespace Realms
                 if (SharedRealmHandle.OwnsNativeRealm)
                 {
                     _state.RemoveRealm(this);
+                }
+
+                if (_sessionRef != null && _sessionRef.TryGetTarget(out var session))
+                {
+                    session.CloseHandle();
                 }
 
                 _state = null;

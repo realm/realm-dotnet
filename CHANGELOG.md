@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added the `Realm.SyncSession` property which will return the sync session for this Realm if the Realm is a synchronized one or `null` for local Realms. This is replacing the `GetSession(this Realm)` extension method which is now deprecated. (PR [#2711](https://github.com/realm/realm-dotnet/pull/2711))
 
 ### Fixed
 * Fixed a bug that would result in a `RealmException` being thrown when opening a readonly Realm with schema that is a superset of the schema on disk. Now the code will just work and treat any classes not present in the on-disk schema to be treated as empty collections - e.g. `realm.All<ThisIsNotInOnDiskSchema>().Count == 0`. (Issue [#2619](https://github.com/realm/realm-dotnet/issues/2619))
@@ -10,12 +10,20 @@
 * [Unity] Preserved additional constructors necessary to serialize and deserialize Custom User Data. (PR [#2519](https://github.com/realm/realm-dotnet/pull/2519))
 * Fixed an issue that would result in `InvalidOperationException` when concurrently creating a `RealmConfiguration` with an explicitly set `Schema` property. (Issue [#2701](https://github.com/realm/realm-dotnet/issues/2701))
 * [Unity] Fixed an issue that would result in `NullReferenceException` when building for iOS when the Realm package hasn't been installed via the Unity Package Manager. (Issue [#2698](https://github.com/realm/realm-dotnet/issues/2698))
+* Fixed a bug that could cause properties of frozen objects to return incorrect value/throw an exception if the provided Realm schema didn't match the schema on disk. (Issue [#2670](https://github.com/realm/realm-dotnet/issues/2670))
+* Fixed a rare assertion failure or deadlock when a sync session is racing to close at the same time that external reference to the Realm is being released. (Core upgrade)
+* Fixed an assertion failure when opening a sync Realm with a user who had been removed. Instead an exception will be thrown. (Core upgrade)
+* Fixed a rare segfault which could trigger if a user was being logged out while the access token refresh response comes in. (Core upgrade)
+* Fixed a bug where progress notifiers continue to be called after the download of a synced realm is complete. (Core upgrade)
+* Allow for EPERM to be returned from fallocate(). This improves support for running on Linux environments with interesting filesystems, like AWS Lambda. Thanks to [@ztane](https://github.com/ztane) for reporting and suggesting a fix. (Core upgrade)
+* Fixed a user being left in the logged in state when the user's refresh token expires. (Core upgrade)
+* SyncManager had some inconsistent locking which could result in data races and/or deadlocks, mostly in ways that would never be hit outside of tests doing very strange things. (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.6.0.
 * iOS wrappers are now built with the "new build system" introduced by Xcode 10 and used as default by Xcode 12. More info can be found in cmake's [docs](https://cmake.org/cmake/help/git-stage/variable/CMAKE_XCODE_BUILD_SYSTEM.html#variable:CMAKE_XCODE_BUILD_SYSTEM).
 * We now refresh the resulting Realm instance when opening a synchronized Realm with `GetInstanceAsync`. (Issue [#2256](https://github.com/realm/realm-dotnet/issues/2256))
 * Added Sync tests for all platforms running on cloud-dev. (Issue [#2049](https://github.com/realm/realm-dotnet/issues/2049))

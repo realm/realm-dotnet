@@ -74,21 +74,21 @@ namespace Realms.Tests.Sync
 
         protected Session GetSession(Realm realm)
         {
-            var result = realm.GetSession();
+            var result = realm.SyncSession;
             CleanupOnTearDown(result);
             return result;
         }
 
         protected static async Task WaitForUploadAsync(Realm realm)
         {
-            var session = realm.GetSession();
+            var session = realm.SyncSession;
             await session.WaitForUploadAsync();
             session.CloseHandle();
         }
 
         protected static async Task WaitForDownloadAsync(Realm realm)
         {
-            var session = realm.GetSession();
+            var session = realm.SyncSession;
             await session.WaitForDownloadAsync();
             session.CloseHandle();
         }
