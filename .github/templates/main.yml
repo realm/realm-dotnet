@@ -13,17 +13,15 @@
 #@ wrappersTimeout = 45
 
 #@ def getWrapperBuildCommand(cmd):
-#@ configurationParam =  " --configuration=" + configuration
-#@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
+#@ defaultParams =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=" + configuration
 #@ if cmd.startswith("powershell"):
-#@   configurationParam = " -Configuration " + configuration
-#@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
+#@   defaultParams = " -EnableLTO -Configuration " + configuration
 #@ end
-#@ return cmd + configurationParam + ltoParam
+#@ return cmd + defaultParams
 #@ end
 
 #@ def checkCache(outputVar):
-#@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+#@ key = outputVar + "-" + configuration + "-${{hashFiles('./wrappers/**')}}"
 name: Check cache
 id: check-cache
 uses: #@ actionCache

@@ -28,9 +28,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      run: ./wrappers/build-macos.sh -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
@@ -57,9 +57,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      run: ./wrappers/build-ios.sh -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
@@ -86,7 +86,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
     - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97
       continue-on-error: true
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -103,7 +103,7 @@ jobs:
         image: wrappers-centos:latest
         shell: bash
         options: -v ${{ github.workspace }}:/work
-        run: /work/wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+        run: /work/wrappers/build.sh -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
@@ -137,9 +137,9 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}
+      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-android-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -171,7 +171,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
       uses: actions/cache@v2
@@ -193,7 +193,7 @@ jobs:
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+      run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -EnableLTO -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -226,7 +226,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
       uses: actions/cache@v2
@@ -241,7 +241,7 @@ jobs:
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}
+      run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -EnableLTO -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
