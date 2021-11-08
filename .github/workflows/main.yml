@@ -30,7 +30,7 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-macos.sh -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
+      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
@@ -59,7 +59,7 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-ios.sh -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
+      run: ./wrappers/build-ios.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
@@ -103,7 +103,7 @@ jobs:
         image: wrappers-centos:latest
         shell: bash
         options: -v ${{ github.workspace }}:/work
-        run: /work/wrappers/build.sh -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
+        run: /work/wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
@@ -139,7 +139,7 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-android-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON' --configuration=Release
+      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-android-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -193,7 +193,7 @@ jobs:
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -EnableLTO -Configuration Release
+      run: powershell ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -241,7 +241,7 @@ jobs:
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -EnableLTO -Configuration Release
+      run: powershell ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
