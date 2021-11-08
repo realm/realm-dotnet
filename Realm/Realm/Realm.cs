@@ -203,14 +203,14 @@ namespace Realms
         /// </summary>
         /// <value>
         /// The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm
-        /// server if the Realm instance was created with a <see cref="SyncConfiguration"/>; <c>null</c>
+        /// server if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
         /// otherwise.
         /// </value>
         public Session SyncSession
         {
             get
             {
-                if (Config is SyncConfiguration)
+                if (Config is SyncConfigurationBase)
                 {
                     if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
                     {
@@ -228,6 +228,27 @@ namespace Realms
                     }
 
                     return session;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
+        /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
+        /// this will always be <c>null</c>.
+        /// </value>
+        public SubscriptionSet Subscriptions
+        {
+            get
+            {
+                if (Config is FlexibleSyncConfiguration)
+                {
+                    throw new NotImplementedException();
                 }
 
                 return null;

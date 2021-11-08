@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2018 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,11 +36,18 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the base ctor.")]
         public FlexibleSyncConfiguration(User user, string optionalPath = null)
             : base(user)
         {
             DatabasePath = GetPathToRealm(optionalPath ?? user.App.Handle.GetRealmPath(User, "default"));
+        }
+
+        internal override Native.SyncConfiguration CreateNativeSyncConfiguration()
+        {
+            var config = base.CreateNativeSyncConfiguration();
+            config.Partition = string.Empty;
+            return config;
         }
     }
 }

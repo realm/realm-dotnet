@@ -43,23 +43,5 @@ namespace Realms.Sync
 
             return realm.SyncSession;
         }
-
-        /// <summary>
-        /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
-        /// </summary>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="FlexibleSyncConfiguration"/> object.</param>
-        /// <returns>
-        /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
-        /// synchronize with the local <see cref="Realm"/>.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="realm"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="realm"/> was not created with a <see cref="FlexibleSyncConfiguration"/> object.</exception>
-        public static SubscriptionSet GetSubscriptions(this Realm realm)
-        {
-            Argument.NotNull(realm, nameof(realm));
-            var flxConfig = Argument.EnsureType<FlexibleSyncConfiguration>(realm.Config, "Cannot get subscriptions for a Realm without a FlexibleSyncConfiguration", nameof(realm));
-
-            throw new NotImplementedException();
-        }
     }
 }

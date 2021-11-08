@@ -31,7 +31,7 @@ namespace Realms.Sync
         /// <see cref="Query"/>.
         /// </summary>
         /// <value>The subscription name.</value>
-        public string Name { get; }
+        public string Name { get; internal init; }
 
         /// <summary>
         /// Gets the type of objects this subscription refers to.
@@ -42,14 +42,14 @@ namespace Realms.Sync
         /// rather than the name of the C# class.
         /// </remarks>
         /// <value>The object type for the subscription.</value>
-        public string ObjectType { get; }
+        public string ObjectType { get; internal init; }
 
         /// <summary>
         /// Gets the query that describes the subscription. Objects matched by the query
         /// will be sent to the device by the server.
         /// </summary>
         /// <value>The subscription query.</value>
-        public string Query { get; }
+        public string Query { get; internal init; }
 
         internal Subscription()
         {

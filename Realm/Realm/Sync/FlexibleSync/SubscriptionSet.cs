@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -43,19 +44,21 @@ namespace Realms.Sync
     /// Realm is an expensive operation serverside, even if there's very little data that needs
     /// downloading.
     /// </remarks>
-    public class SubscriptionSet : IReadOnlyCollection<Subscription>
+    public class SubscriptionSet : IReadOnlyList<Subscription>
     {
+        private readonly SubscriptionSetHandle _handle;
+
         /// <summary>
         /// Gets the number of elements in the collection.
         /// </summary>
         /// <value>The number of elements in the collection.</value>
-        public int Count => throw new NotImplementedException();
+        public int Count => _handle.GetCount();
 
         /// <summary>
         /// Gets the state of the subscription set.
         /// </summary>
         /// <value>The subscription set's state.</value>
-        public SubscriptionSetState State => throw new NotImplementedException();
+        public SubscriptionSetState State => _handle.GetState();
 
         /// <summary>
         /// Gets the error associated with this subscription set, if any. This will
@@ -67,8 +70,27 @@ namespace Realms.Sync
         /// </value>
         public Exception Error => throw new NotImplementedException();
 
-        internal SubscriptionSet()
+        /// <summary>
+        /// Gets the <see cref="Subscription"/> at the specified index in the set.
+        /// </summary>
+        /// <param name="index">The zero-based index of the element to get.</param>
+        /// <returns>The <see cref="Subscription"/> at the specified index in the set.</returns>
+        public Subscription this[int index]
         {
+            get
+            {
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                return _handle.GetAtIndex(index);
+            }
+        }
+
+        internal SubscriptionSet(SubscriptionSetHandle handle)
+        {
+            _handle = handle;
         }
 
         /// <summary>
@@ -80,10 +102,7 @@ namespace Realms.Sync
         /// <paramref name="name"/> if the subscription set contains a subscription with the provided name;
         /// <c>null</c> otherwise.
         /// </returns>
-        public Subscription Find(string name)
-        {
-            throw new NotImplementedException();
-        }
+        public Subscription Find(string name) => _handle.Find(name);
 
         /// <summary>
         /// Finds a subscription by query.
@@ -98,7 +117,8 @@ namespace Realms.Sync
         public Subscription Find<T>(IQueryable<T> query)
             where T : RealmObject
         {
-            throw new NotImplementedException();
+            var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
+            return _handle.Find(results.ResultsHandle);
         }
 
         /// <summary>
@@ -186,7 +206,9 @@ namespace Realms.Sync
         /// <returns>The subscription that represents the specified query.</returns>
         public Subscription Add(string className, SubscriptionOptions options, string predicate, params RealmValue[] arguments)
         {
-            throw new NotImplementedException();
+            Argument.NotNullOrEmpty(className, nameof(className));
+
+            return _handle.Add(className, predicate, arguments, options ?? new());
         }
 
         /// <summary>
@@ -205,7 +227,8 @@ namespace Realms.Sync
         public Subscription Add<T>(IQueryable<T> query, SubscriptionOptions options = null)
             where T : RealmObject
         {
-            throw new NotImplementedException();
+            var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
+            return _handle.Add(results.ResultsHandle, options ?? new());
         }
 
         /// <summary>
@@ -263,17 +286,15 @@ namespace Realms.Sync
         /// <returns>The number of subscriptions that existed for this type and were removed.</returns>
         public int RemoveAll(string className)
         {
-            throw new NotImplementedException();
+            Argument.NotNullOrEmpty(className, nameof(className));
+            return _handle.Remove(className);
         }
 
         /// <summary>
         /// Removes all subscriptions from this subscription set.
         /// </summary>
         /// <returns>The number of subscriptions that existed in the set and were removed.</returns>
-        public int RemoveAll()
-        {
-            throw new NotImplementedException();
-        }
+        public int RemoveAll() => _handle.RemoveAll();
 
         /// <summary>
         /// Waits for the server to acknowledge the subscription set and return the matching objects.
@@ -297,15 +318,52 @@ namespace Realms.Sync
         }
 
         /// <inheritdoc/>
-        public IEnumerator<Subscription> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerator<Subscription> GetEnumerator() => new Enumerator(this);
 
         /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private class Enumerator : IEnumerator<Subscription>
         {
-            throw new NotImplementedException();
+            private SubscriptionSet _enumerating;
+            private int _index;
+
+            internal Enumerator(SubscriptionSet parent)
+            {
+                _index = -1;
+                _enumerating = parent;
+            }
+
+            public Subscription Current => _enumerating[_index];
+
+            object IEnumerator.Current => Current;
+
+            public bool MoveNext()
+            {
+                var index = _index + 1;
+                if (index >= _enumerating.Count)
+                {
+                    return false;
+                }
+
+                _index = index;
+                return true;
+            }
+
+            public void Reset()
+            {
+                _index = -1; // by definition BEFORE first item
+            }
+
+            public void Dispose()
+            {
+                if (_enumerating == null)
+                {
+                    throw new ObjectDisposedException(nameof(Enumerator));
+                }
+
+                _enumerating = null;
+            }
         }
     }
 }

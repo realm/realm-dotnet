@@ -106,9 +106,9 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
 
-    std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
+    std::string partition(Utf16StringAccessor(sync_configuration.partition, sync_configuration.partition_len));
 
-    config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
+    config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, partition);
     config.sync_config->error_handler = handle_session_error;
     config.sync_config->client_resync_mode = ClientResyncMode::Manual;
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
