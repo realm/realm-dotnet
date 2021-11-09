@@ -113,6 +113,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void DynamicApi_Filter()
+        {
+            RunTestInAllModes((realm, isDynamic) =>
+            {
+                realm.Write(() =>
+                {
+                    dynamic ato = realm.DynamicApi.CreateObject("AllTypesObject", null);
+                    ato.CharProperty = 'F';
+                });
+
+                Assert.That((char)realm.DynamicApi.All("AllTypesObject").Filter("CharProperty == \'F\'").First().CharProperty, Is.EqualTo('F'));
+            });
+        }
+
+        [Test]
         public void DynamicApi_WhenObjectIsUnmanaged_Throws()
         {
             var ato = new AllTypesObject();
