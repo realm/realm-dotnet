@@ -20,7 +20,7 @@ jobs:
       id: get-version
       run: |
         cd Realm/packages
-        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" | sed -n 's/\.\/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
         echo "::set-output name=version::$pkgVersion"
       shell: bash
     - name: Install sleet
