@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.7.0 (2021-11-09)
 
 ### Enhancements
 * Added the `Realm.SyncSession` property which will return the sync session for this Realm if the Realm is a synchronized one or `null` for local Realms. This is replacing the `GetSession(this Realm)` extension method which is now deprecated. (PR [#2711](https://github.com/realm/realm-dotnet/pull/2711))
