@@ -4,7 +4,9 @@
 * None
 
 ### Fixed
-* None
+* A sync user's Realm was not deleted when the user was removed if the Realm path was too long such that it triggered the fallback hashed name (this is OS dependant but is 300 characters on linux). (Core upgrade)
+* Don't keep trying to refresh the access token if the client's clock is more than 30 minutes ahead. (Core upgrade)
+* Don't sleep the sync thread artificially if an auth request fails. This could be observed as a UI hang on applications when sync tries to connect after being offline for more than 30 minutes. (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
