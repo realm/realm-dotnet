@@ -300,9 +300,9 @@ namespace Realms.Sync
 
         #region Api Keys
 
-        public async Task<UserApiKey> CreateApiKeyAsync(AppHandle app, string name)
+        public async Task<ApiKey> CreateApiKeyAsync(AppHandle app, string name)
         {
-            var tcs = new TaskCompletionSource<UserApiKey[]>();
+            var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -322,9 +322,9 @@ namespace Realms.Sync
             }
         }
 
-        public async Task<UserApiKey?> FetchApiKeyAsync(AppHandle app, ObjectId id)
+        public async Task<ApiKey> FetchApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<UserApiKey[]>();
+            var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -337,7 +337,7 @@ namespace Realms.Sync
 
                 Debug.Assert(result == null || result.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
 
-                return result == null || result.Length == 0 ? (UserApiKey?)null : result.Single();
+                return result == null || result.Length == 0 ? null : result.Single();
             }
             finally
             {
@@ -345,9 +345,9 @@ namespace Realms.Sync
             }
         }
 
-        public async Task<UserApiKey[]> FetchAllApiKeysAsync(AppHandle app)
+        public async Task<ApiKey[]> FetchAllApiKeysAsync(AppHandle app)
         {
-            var tcs = new TaskCompletionSource<UserApiKey[]>();
+            var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try

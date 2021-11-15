@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -323,12 +322,11 @@ namespace Realms.Sync
             /// that the <see cref="ApiKey"/> has been created on the server and its <see cref="ApiKey.Value"/> can
             /// be used to create <see cref="Credentials.ApiKey(string)"/>.
             /// </returns>
-            public async Task<ApiKey> CreateAsync(string name)
+            public Task<ApiKey> CreateAsync(string name)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
-                var apiKey = await _user.Handle.CreateApiKeyAsync(_user.App.Handle, name);
-                return new ApiKey(apiKey);
+                return _user.Handle.CreateApiKeyAsync(_user.App.Handle, name);
             }
 
             /// <summary>
@@ -338,11 +336,7 @@ namespace Realms.Sync
             /// <returns>
             /// An awaitable <see cref="Task{T}"/> representing the asynchronous lookup operation.
             /// </returns>
-            public async Task<ApiKey> FetchAsync(ObjectId id)
-            {
-                var apiKey = await Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
-                return apiKey.HasValue ? new ApiKey(apiKey.Value) : null;
-            }
+            public Task<ApiKey> FetchAsync(ObjectId id) => Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
 
             /// <summary>
             /// Fetches all API keys associated with the user.
@@ -353,8 +347,7 @@ namespace Realms.Sync
             /// </returns>
             public async Task<IEnumerable<ApiKey>> FetchAllAsync()
             {
-                var apiKeys = await _user.Handle.FetchAllApiKeysAsync(_user.App.Handle);
-                return apiKeys.Select(k => new ApiKey(k)).ToArray();
+                return await _user.Handle.FetchAllApiKeysAsync(_user.App.Handle);
             }
 
             /// <summary>
@@ -362,10 +355,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="id">The id of the key to delete.</param>
             /// <returns>An awaitable <see cref="Task"/> representing the asynchronous delete operation.</returns>
-            public Task DeleteAsync(ObjectId id)
-            {
-                return Handle404(_user.Handle.DeleteApiKeyAsync(_user.App.Handle, id));
-            }
+            public Task DeleteAsync(ObjectId id) => Handle404(_user.Handle.DeleteApiKeyAsync(_user.App.Handle, id));
 
             /// <summary>
             /// Disables an API key by id.
@@ -373,10 +363,7 @@ namespace Realms.Sync
             /// <param name="id">The id of the key to disable.</param>
             /// <returns>An awaitable <see cref="Task"/> representing the asynchronous disable operation.</returns>
             /// <seealso cref="EnableAsync(ObjectId)"/>
-            public Task DisableAsync(ObjectId id)
-            {
-                return Handle404(_user.Handle.DisableApiKeyAsync(_user.App.Handle, id), id);
-            }
+            public Task DisableAsync(ObjectId id) => Handle404(_user.Handle.DisableApiKeyAsync(_user.App.Handle, id), id);
 
             /// <summary>
             /// Enables an API key by id.
@@ -384,10 +371,7 @@ namespace Realms.Sync
             /// <param name="id">The id of the key to enable.</param>
             /// <returns>An awaitable <see cref="Task"/> representing the asynchrounous enable operation.</returns>
             /// <seealso cref="DisableAsync(ObjectId)"/>
-            public Task EnableAsync(ObjectId id)
-            {
-                return Handle404(_user.Handle.EnableApiKeyAsync(_user.App.Handle, id), id);
-            }
+            public Task EnableAsync(ObjectId id) => Handle404(_user.Handle.EnableApiKeyAsync(_user.App.Handle, id), id);
 
             private static async Task<T> Handle404<T>(Task<T> task)
             {
