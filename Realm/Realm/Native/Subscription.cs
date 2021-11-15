@@ -25,8 +25,6 @@ namespace Realms.Sync.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct Subscription
     {
-        internal static readonly int Size = Marshal.SizeOf<Subscription>();
-
         private PrimitiveValue name;
 
         private PrimitiveValue object_type;

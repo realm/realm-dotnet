@@ -18,6 +18,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms.Sync
@@ -27,11 +29,15 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void StateWaitCallback(IntPtr task_completion_source, SubscriptionSetState new_state, PrimitiveValue message);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void GetSubscriptionCallback(Native.Subscription subscription, IntPtr managed_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_callbacks(
-                GetSubscriptionCallback get_subscription_callback);
+                GetSubscriptionCallback get_subscription_callback,
+                StateWaitCallback state_wait_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_count(SubscriptionSetHandle handle, out NativeException ex);
@@ -61,6 +67,10 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
                 [MarshalAs(UnmanagedType.I1)] bool update_existing, IntPtr callback, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool remove(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove_by_type", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr remove_by_type(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr type_len, out NativeException ex);
 
@@ -69,6 +79,22 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_wait_for_state", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void wait_for_state(SubscriptionSetHandle handle, IntPtr task_completion_source, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_begin_write", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr begin_write(SubscriptionSetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_commit_write", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr commit_write(SubscriptionSetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_cancel_write", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr cancel_write(SubscriptionSetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_get_error", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_error_message(SubscriptionSetHandle handle, IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
+
         }
 
         private delegate void GetSubscriptionBase(IntPtr callback, out NativeException ex);
@@ -76,15 +102,20 @@ namespace Realms.Sync
         public static void Initialize()
         {
             NativeMethods.GetSubscriptionCallback getSubscription = OnGetSubscription;
+            NativeMethods.StateWaitCallback waitState = HandleStateWaitCallback;
 
             GCHandle.Alloc(getSubscription);
+            GCHandle.Alloc(waitState);
 
-            NativeMethods.install_callbacks(getSubscription);
+            NativeMethods.install_callbacks(getSubscription, waitState);
         }
 
+        public readonly bool IsReadonly;
+
         [Preserve]
-        public SubscriptionSetHandle(IntPtr handle) : base(null, handle)
+        public SubscriptionSetHandle(IntPtr handle, bool isReadonly = true) : base(null, handle)
         {
+            IsReadonly = isReadonly;
         }
 
         public int GetCount()
@@ -99,6 +130,33 @@ namespace Realms.Sync
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
+        }
+
+        public string GetErrorMessage()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_error_message(this, buffer, length, out isNull, out ex));
+        }
+
+        public SubscriptionSetHandle BeginWrite()
+        {
+            var result = NativeMethods.begin_write(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new SubscriptionSetHandle(result, isReadonly: false);
+        }
+
+        public SubscriptionSetHandle CommitWrite()
+        {
+            var result = NativeMethods.commit_write(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new SubscriptionSetHandle(result);
+        }
+
+        public SubscriptionSetHandle CancelWrite()
+        {
+            var result = NativeMethods.cancel_write(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new SubscriptionSetHandle(result);
         }
 
         public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
@@ -126,7 +184,14 @@ namespace Realms.Sync
         public Subscription Add(ResultsHandle results, SubscriptionOptions options)
             => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
 
-        public int Remove(string type)
+        public bool Remove(string name)
+        {
+            var result = NativeMethods.remove(this, name, name.IntPtrLength(), out var ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
+
+        public int RemoveAll(string type)
         {
             var result = NativeMethods.remove_by_type(this, type, type.IntPtrLength(), out var ex);
             ex.ThrowIfNecessary();
@@ -138,6 +203,24 @@ namespace Realms.Sync
             var result = NativeMethods.remove_all(this, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
+        }
+
+        public async Task<SubscriptionSetState> WaitForStateChangeAsync()
+        {
+            var tcs = new TaskCompletionSource<SubscriptionSetState>();
+            var tcsHandle = GCHandle.Alloc(tcs);
+
+            try
+            {
+                NativeMethods.wait_for_state(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                return await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         private static Subscription GetSubscriptionCore(GetSubscriptionBase getter)
@@ -169,6 +252,25 @@ namespace Realms.Sync
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
             var callback = (Action<Native.Subscription>)handle.Target;
             callback(subscription);
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.StateWaitCallback))]
+        private static void HandleStateWaitCallback(IntPtr taskCompletionSource, SubscriptionSetState state, PrimitiveValue message)
+        {
+            var handle = GCHandle.FromIntPtr(taskCompletionSource);
+            var tcs = (TaskCompletionSource<SubscriptionSetState>)handle.Target;
+
+            if (message.Type == RealmValueType.Null)
+            {
+                tcs.TrySetResult(state);
+            }
+            else
+            {
+                // TODO: new exception type
+                var inner = new RealmException(message.AsString());
+                const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
+                tcs.TrySetException(new RealmException(OuterMessage, inner));
+            }
         }
     }
 }

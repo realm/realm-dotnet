@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -46,7 +47,7 @@ namespace Realms.Sync
     /// </remarks>
     public class SubscriptionSet : IReadOnlyList<Subscription>
     {
-        private readonly SubscriptionSetHandle _handle;
+        private SubscriptionSetHandle _handle;
 
         /// <summary>
         /// Gets the number of elements in the collection.
@@ -68,7 +69,15 @@ namespace Realms.Sync
         /// The <see cref="Exception"/> that provides more details for why the subscription set
         /// was rejected by the server.
         /// </value>
-        public Exception Error => throw new NotImplementedException();
+        public Exception Error
+        {
+            get
+            {
+                // TODO: new exception type
+                var errorMessage = _handle.GetErrorMessage();
+                return errorMessage == null ? null : new RealmException(errorMessage);
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="Subscription"/> at the specified index in the set.
@@ -137,7 +146,21 @@ namespace Realms.Sync
         /// </param>
         public void Update(Action action)
         {
-            throw new NotImplementedException();
+            EnsureReadonly();
+            Argument.NotNull(action, nameof(action));
+
+            _handle = _handle.BeginWrite();
+
+            try
+            {
+                action();
+                _handle = _handle.CommitWrite();
+            }
+            catch
+            {
+                _handle = _handle.CancelWrite();
+                throw;
+            }
         }
 
         /// <summary>
@@ -165,8 +188,18 @@ namespace Realms.Sync
         /// An awaitable Task that will be resolved when the subscription set has been updated and the
         /// changes have been persisted locally.
         /// </returns>
-        public Task UpdateAsync(Action action)
+        public async Task UpdateAsync(Action action)
         {
+            EnsureReadonly();
+            Argument.NotNull(action, nameof(action));
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
+            {
+                Update(action);
+                return;
+            }
+
             throw new NotImplementedException();
         }
 
@@ -206,6 +239,7 @@ namespace Realms.Sync
         /// <returns>The subscription that represents the specified query.</returns>
         public Subscription Add(string className, SubscriptionOptions options, string predicate, params RealmValue[] arguments)
         {
+            EnsureWritable();
             Argument.NotNullOrEmpty(className, nameof(className));
 
             return _handle.Add(className, predicate, arguments, options ?? new());
@@ -227,6 +261,8 @@ namespace Realms.Sync
         public Subscription Add<T>(IQueryable<T> query, SubscriptionOptions options = null)
             where T : RealmObject
         {
+            EnsureWritable();
+
             var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return _handle.Add(results.ResultsHandle, options ?? new());
         }
@@ -240,8 +276,10 @@ namespace Realms.Sync
         /// </returns>
         public bool Remove(string name)
         {
-            var existing = Find(name);
-            return existing != null && Remove(existing);
+            EnsureWritable();
+
+            Argument.NotNullOrEmpty(name, nameof(name));
+            return _handle.Remove(name);
         }
 
         /// <summary>
@@ -255,6 +293,8 @@ namespace Realms.Sync
         public bool Remove<T>(IQueryable<T> query)
             where T : RealmObject
         {
+            EnsureWritable();
+
             var existing = Find(query);
             return existing != null && Remove(existing);
         }
@@ -268,7 +308,12 @@ namespace Realms.Sync
         /// </returns>
         public bool Remove(Subscription subscription)
         {
-            throw new NotImplementedException();
+            EnsureWritable();
+
+            Argument.NotNull(subscription, nameof(subscription));
+            Argument.Ensure(!string.IsNullOrEmpty(subscription.Name), "The name of the subscription must not be null/empty.", nameof(subscription));
+
+            return Remove(subscription.Name);
         }
 
         /// <summary>
@@ -286,15 +331,22 @@ namespace Realms.Sync
         /// <returns>The number of subscriptions that existed for this type and were removed.</returns>
         public int RemoveAll(string className)
         {
+            EnsureWritable();
+
             Argument.NotNullOrEmpty(className, nameof(className));
-            return _handle.Remove(className);
+            return _handle.RemoveAll(className);
         }
 
         /// <summary>
         /// Removes all subscriptions from this subscription set.
         /// </summary>
         /// <returns>The number of subscriptions that existed in the set and were removed.</returns>
-        public int RemoveAll() => _handle.RemoveAll();
+        public int RemoveAll()
+        {
+            EnsureWritable();
+
+            return _handle.RemoveAll();
+        }
 
         /// <summary>
         /// Waits for the server to acknowledge the subscription set and return the matching objects.
@@ -312,16 +364,29 @@ namespace Realms.Sync
         /// An awaitable task, whose successful completion indicates that the server has processed the
         /// subscription change and has sent all the data that matches the new subscriptions.
         /// </returns>
-        public Task WaitForSynchronizationAsync()
-        {
-            throw new NotImplementedException();
-        }
+        public Task WaitForSynchronizationAsync() => _handle.WaitForStateChangeAsync();
 
         /// <inheritdoc/>
         public IEnumerator<Subscription> GetEnumerator() => new Enumerator(this);
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void EnsureWritable()
+        {
+            if (_handle.IsReadonly)
+            {
+                throw new NotSupportedException("You can't mutate the subscription set outside of a Update or UpdateAsync callback.");
+            }
+        }
+
+        private void EnsureReadonly()
+        {
+            if (!_handle.IsReadonly)
+            {
+                throw new NotSupportedException("You can't Update/UpdateAsync on a subscription set that is already being updated.");
+            }
+        }
 
         private class Enumerator : IEnumerator<Subscription>
         {
