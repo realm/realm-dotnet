@@ -154,11 +154,11 @@ namespace Realms.Sync
             try
             {
                 action();
-                _handle = _handle.CommitWrite();
+                _handle.CommitWrite();
             }
             catch
             {
-                _handle = _handle.CancelWrite();
+                _handle.CancelWrite();
                 throw;
             }
         }

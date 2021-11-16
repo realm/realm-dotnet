@@ -32,7 +32,7 @@ namespace Realms.Sync
             public delegate void StateWaitCallback(IntPtr task_completion_source, SubscriptionSetState new_state, PrimitiveValue message);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void GetSubscriptionCallback(Native.Subscription subscription, IntPtr managed_callback);
+            public delegate void GetSubscriptionCallback(IntPtr managed_callback, Native.Subscription subscription);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_callbacks(
@@ -45,16 +45,16 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern SubscriptionSetState get_state(SubscriptionSetHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_get_at_index", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_at_index", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_at_index(SubscriptionSetHandle handle, IntPtr index, IntPtr callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_find_by_name", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_find_by_name", CallingConvention = CallingConvention.Cdecl)]
             public static extern void find_by_name(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len, IntPtr callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_find_by_query", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_find_by_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern void find_by_query(SubscriptionSetHandle handle, ResultsHandle results, IntPtr callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_add", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(SubscriptionSetHandle handle,
                 [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr type_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string query, IntPtr query_len,
@@ -62,7 +62,7 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
                 [MarshalAs(UnmanagedType.I1)] bool update_existing, IntPtr callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_add_results", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_add_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(SubscriptionSetHandle handle, ResultsHandle results,
                 [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
                 [MarshalAs(UnmanagedType.I1)] bool update_existing, IntPtr callback, out NativeException ex);
@@ -80,21 +80,20 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_wait_for_state", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_wait_for_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern void wait_for_state(SubscriptionSetHandle handle, IntPtr task_completion_source, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_begin_write", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_begin_write", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr begin_write(SubscriptionSetHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_commit_write", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr commit_write(SubscriptionSetHandle handle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_commit_write", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void commit_write(SubscriptionSetHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_cancel_write", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr cancel_write(SubscriptionSetHandle handle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_cancel_write", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void cancel_write(SubscriptionSetHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_subscriptionset_get_error", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_error", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_error_message(SubscriptionSetHandle handle, IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
-
         }
 
         private delegate void GetSubscriptionBase(IntPtr callback, out NativeException ex);
@@ -145,18 +144,16 @@ namespace Realms.Sync
             return new SubscriptionSetHandle(result, isReadonly: false);
         }
 
-        public SubscriptionSetHandle CommitWrite()
+        public void CommitWrite()
         {
-            var result = NativeMethods.commit_write(this, out var ex);
+            NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(result);
         }
 
-        public SubscriptionSetHandle CancelWrite()
+        public void CancelWrite()
         {
-            var result = NativeMethods.cancel_write(this, out var ex);
+            NativeMethods.cancel_write(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(result);
         }
 
         public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
@@ -247,7 +244,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetSubscriptionCallback))]
-        private static void OnGetSubscription(Native.Subscription subscription, IntPtr managedCallbackPtr)
+        private static void OnGetSubscription(IntPtr managedCallbackPtr, Native.Subscription subscription)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
             var callback = (Action<Native.Subscription>)handle.Target;

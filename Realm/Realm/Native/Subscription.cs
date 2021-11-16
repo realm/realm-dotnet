@@ -31,10 +31,10 @@ namespace Realms.Sync.Native
 
         private PrimitiveValue query;
 
-        [MarshalAs(UnmanagedType.U1)]
-        public bool disabled;
+        [MarshalAs(UnmanagedType.I1)]
+        private bool has_value;
 
-        public ManagedSubscription ManagedSubscription => new()
+        public ManagedSubscription ManagedSubscription => has_value ? null : new()
         {
             Name = name.AsString(),
             ObjectType = object_type.AsString(),

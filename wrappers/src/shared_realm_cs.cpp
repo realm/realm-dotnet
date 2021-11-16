@@ -32,6 +32,7 @@
 #include <realm/object-store/sync/async_open_task.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include <realm/sync/subscriptions.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -42,6 +43,7 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 using namespace realm;
 using namespace realm::binding;
+using namespace realm::sync;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
@@ -611,6 +613,13 @@ REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm
 {
     return handle_errors(ex, [&] {
         return new SharedSyncSession(realm->sync_session());
+    });
+}
+
+REALM_EXPORT SubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return new SubscriptionSet(realm->get_latest_subscription_set());
     });
 }
 
