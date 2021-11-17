@@ -392,13 +392,14 @@ namespace Realms.Sync
         private static void HandleApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, IntPtr api_keys_len, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            var tcs = (TaskCompletionSource<UserApiKey[]>)tcsHandle.Target;
+            var tcs = (TaskCompletionSource<ApiKey[]>)tcsHandle.Target;
             if (error.is_null)
             {
-                var result = new UserApiKey[api_keys_len.ToInt32()];
+                var result = new ApiKey[api_keys_len.ToInt32()];
                 for (var i = 0; i < api_keys_len.ToInt32(); i++)
                 {
-                    result[i] = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
+                    var nativeKey = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
+                    result[i] = new ApiKey(nativeKey);
                 }
 
                 tcs.TrySetResult(result);
