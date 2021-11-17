@@ -54,14 +54,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_find_by_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern void find_by_query(SubscriptionSetHandle handle, ResultsHandle results, IntPtr callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_add", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add(SubscriptionSetHandle handle,
-                [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr type_len,
-                [MarshalAs(UnmanagedType.LPWStr)] string query, IntPtr query_len,
-                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
-                [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
-                [MarshalAs(UnmanagedType.I1)] bool update_existing, IntPtr callback, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_add_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(SubscriptionSetHandle handle, ResultsHandle results,
                 [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
@@ -88,9 +80,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_commit_write", CallingConvention = CallingConvention.Cdecl)]
             public static extern void commit_write(SubscriptionSetHandle handle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_cancel_write", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void cancel_write(SubscriptionSetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_error", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_error_message(SubscriptionSetHandle handle, IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
@@ -150,33 +139,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public void CancelWrite()
-        {
-            NativeMethods.cancel_write(this, out var ex);
-            ex.ThrowIfNecessary();
-        }
-
         public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
 
         public Subscription Find(string name) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
 
         public Subscription Find(ResultsHandle results) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_query(this, results, callback, out ex));
-
-        public Subscription Add(string type, string query, RealmValue[] arguments, SubscriptionOptions options)
-        {
-            return GetSubscriptionCore((IntPtr callback, out NativeException ex) =>
-            {
-                var (primitiveValues, handles) = arguments.ToPrimitiveValues();
-                NativeMethods.add(this,
-                                type, type.IntPtrLength(),
-                                query, query.IntPtrLength(),
-                                primitiveValues, (IntPtr)arguments.Length,
-                                options.Name, options.Name.IntPtrLength(),
-                                options.UpdateExisting, callback, out ex);
-
-                handles.Dispose();
-            });
-        }
 
         public Subscription Add(ResultsHandle results, SubscriptionOptions options)
             => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));

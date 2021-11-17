@@ -99,7 +99,7 @@ REALM_EXPORT void realm_subscriptionset_get_at_index(SubscriptionSet& subs, size
         if (index >= count)
             throw IndexOutOfRangeException("Get from SubscriptionSet", index, count);
 
-        return subs.get_at_index(index);
+        return subs.at(index);
     });
 }
 
@@ -128,19 +128,6 @@ REALM_EXPORT void realm_subscriptionset_find_by_query(SubscriptionSet& subs, Res
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_add(SubscriptionSet& subs,
-    uint16_t* type_buf, size_t type_len, 
-    uint16_t* query_buf, size_t query_len,
-    realm_value_t* arguments, size_t args_count,
-    uint16_t* name_buf, size_t name_len, 
-    bool update_existing, void* callback, NativeException::Marshallable& ex)
-{
-    get_subscription(callback, ex, [&]() -> util::Optional<Subscription> {
-        // TODO: implement me
-        return util::none;
-    });
-}
-
 REALM_EXPORT void realm_subscriptionset_add_results(SubscriptionSet& subs,
     Results& results,
     uint16_t* name_buf, size_t name_len,
@@ -157,8 +144,7 @@ REALM_EXPORT void realm_subscriptionset_add_results(SubscriptionSet& subs,
                 return *subs.insert_or_assign(name.to_string(), results.get_query()).first;
             }
             else {
-                // TODO: proper error
-                throw std::runtime_error("bla bla");
+                throw DuplicateSubscriptionException(name.to_string(), std::string(it->query_string()), query_str);
             }
         }
         else {
@@ -218,14 +204,6 @@ REALM_EXPORT SubscriptionSet* realm_subscriptionset_begin_write(SubscriptionSet&
 {
     return handle_errors(ex, [&] {
         return new SubscriptionSet(subs.make_mutable_copy());
-    });
-}
-
-REALM_EXPORT void realm_subscriptionset_cancel_write(SubscriptionSet& subs, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&] {
-        // TODO this should be cancel
-        subs.commit();
     });
 }
 

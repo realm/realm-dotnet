@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Exceptions;
+using Realms.Exceptions.Sync;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -73,9 +73,8 @@ namespace Realms.Sync
         {
             get
             {
-                // TODO: new exception type
                 var errorMessage = _handle.GetErrorMessage();
-                return errorMessage == null ? null : new RealmException(errorMessage);
+                return errorMessage == null ? null : new SubscriptionException(errorMessage);
             }
         }
 
@@ -149,6 +148,7 @@ namespace Realms.Sync
             EnsureReadonly();
             Argument.NotNull(action, nameof(action));
 
+            var handleToDispose = _handle;
             _handle = _handle.BeginWrite();
 
             try
@@ -158,8 +158,14 @@ namespace Realms.Sync
             }
             catch
             {
-                _handle.CancelWrite();
+                // If an error occurs - revert to the old subscription set handle and
+                // dispose the new one. This will rollback the transaction.
+                (_handle, handleToDispose) = (handleToDispose, _handle);
                 throw;
+            }
+            finally
+            {
+                handleToDispose.Dispose();
             }
         }
 
@@ -201,48 +207,6 @@ namespace Realms.Sync
             }
 
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Adds a query to the set of active subscriptions. The query will be joined via an OR statement
-        /// with any existing queries for the same <paramref name="className"/>.
-        /// </summary>
-        /// <param name="className">The name of the type on which the query operates.</param>
-        /// <param name="predicate">The predicate that will be applied.</param>
-        /// <param name="arguments">
-        /// Values used for substitution in the predicate.
-        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
-        /// </param>
-        /// <remarks>
-        /// Adding a query that already exists is a no-op and the existing subscription will be returned.
-        /// </remarks>
-        /// <returns>The subscription that represents the specified query.</returns>
-        public Subscription Add(string className, string predicate, params RealmValue[] arguments)
-            => Add(className, options: null, predicate, arguments);
-
-        /// <summary>
-        /// Adds a query to the set of active subscriptions. The query will be joined via an OR statement
-        /// with any existing queries for the same <paramref name="className"/>.
-        /// </summary>
-        /// <param name="className">The name of the type on which the query operates.</param>
-        /// <param name="options">
-        /// The subscription options controlling the name and/or the type of insert that will be performed.
-        /// </param>
-        /// <param name="predicate">The predicate that will be applied.</param>
-        /// <param name="arguments">
-        /// Values used for substitution in the predicate.
-        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
-        /// </param>
-        /// <remarks>
-        /// Adding a query that already exists is a no-op and the existing subscription will be returned.
-        /// </remarks>
-        /// <returns>The subscription that represents the specified query.</returns>
-        public Subscription Add(string className, SubscriptionOptions options, string predicate, params RealmValue[] arguments)
-        {
-            EnsureWritable();
-            Argument.NotNullOrEmpty(className, nameof(className));
-
-            return _handle.Add(className, predicate, arguments, options ?? new());
         }
 
         /// <summary>
