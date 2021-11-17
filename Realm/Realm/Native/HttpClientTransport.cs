@@ -135,7 +135,7 @@ namespace Realms.Native
 
                     using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
-                    var response = await _httpClient.SendAsync(message, cts.Token);
+                    var response = await _httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
                     var headers = new List<StringStringPair>(response.Headers.Count());
                     foreach (var header in response.Headers)
                     {
@@ -158,7 +158,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         http_status_code = (int)response.StatusCode,
-                        Body = await response.Content.ReadAsStringAsync(),
+                        Body = await response.Content.ReadAsStringAsync().ConfigureAwait(false),
                     };
 
                     respond(nativeResponse, headers.ToArray(), headers.Count, callback);

@@ -12,18 +12,22 @@
 #@ baasTimeout = 20
 #@ wrappersTimeout = 45
 
-#@ def getWrapperBuildCommand(cmd):
-#@ configurationParam =  " --configuration=" + configuration
-#@ ltoParam =  " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}"
-#@ if cmd.startswith("powershell"):
-#@   configurationParam = " -Configuration " + configuration
-#@   ltoParam =  "${{ github.event_name != 'pull_request' && ' -EnableLTO' || '' }}"
+#@ def getWrapperBuildCommand(cmd, enableLto = True):
+#@ defaultParams =  " --configuration=" + configuration
+#@ if enableLto:
+#@   defaultParams = defaultParams + " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'"
 #@ end
-#@ return cmd + configurationParam + ltoParam
+#@ if cmd.startswith("powershell"):
+#@   defaultParams = " -Configuration " + configuration
+#@   if enableLto:
+#@     defaultParams = defaultParams + " -EnableLTO"
+#@   end
+#@ end
+#@ return cmd + defaultParams
 #@ end
 
 #@ def checkCache(outputVar):
-#@ key = outputVar + "-" + configuration + "-${{ github.event_name != 'pull_request' && 'ON' || 'OFF' }}-${{hashFiles('./wrappers/**')}}"
+#@ key = outputVar + "-" + configuration + "-${{hashFiles('./wrappers/**')}}"
 name: Check cache
 id: check-cache
 uses: #@ actionCache
@@ -101,7 +105,7 @@ with:
   retention-days: #@ retentionDays
 #@ end
 
-#@ def buildWrappers(cmd, outputVar, intermediateSteps = []):
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True):
 timeout-minutes: #@ wrappersTimeout
 steps:
   - #@ template.replace(checkoutCode("recursive"))
@@ -110,7 +114,7 @@ steps:
   - #@ template.replace(step)
   #@ end
   - name: Build wrappers
-    run: #@ getWrapperBuildCommand(cmd)
+    run: #@ getWrapperBuildCommand(cmd, enableLto)
     if: #@ wrappersCacheCondition
   - #@ uploadArtifacts(outputVar, "wrappers/build/**", 1)
 #@ end
@@ -431,7 +435,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ androidABIs
-    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}"))
+    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", [], False))
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows

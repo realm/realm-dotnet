@@ -1,6 +1,22 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* A sync user's Realm was not deleted when the user was removed if the Realm path was too long such that it triggered the fallback hashed name (this is OS dependant but is 300 characters on linux). (Core upgrade)
+* Don't keep trying to refresh the access token if the client's clock is more than 30 minutes ahead. (Core upgrade)
+* Don't sleep the sync thread artificially if an auth request fails. This could be observed as a UI hang on applications when sync tries to connect after being offline for more than 30 minutes. (Core upgrade)
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.6.1.
+
+## 10.7.0 (2021-11-09)
+
+### Enhancements
 * Added the `Realm.SyncSession` property which will return the sync session for this Realm if the Realm is a synchronized one or `null` for local Realms. This is replacing the `GetSession(this Realm)` extension method which is now deprecated. (PR [#2711](https://github.com/realm/realm-dotnet/pull/2711))
 
 ### Fixed
@@ -29,6 +45,7 @@
 * Added Sync tests for all platforms running on cloud-dev. (Issue [#2049](https://github.com/realm/realm-dotnet/issues/2049))
 * Added Android tests running on the emulator. (Issue [#2680](https://github.com/realm/realm-dotnet/pull/2680))
 * Started publishing prerelease packages to S3 using Sleet ([feed url](https://s3.amazonaws.com/realm.nugetpackages/index.json)). (Issue [#2708](https://github.com/realm/realm-dotnet/issues/2708))
+* Enable LTO for all builds. (PR [#2714](https://github.com/realm/realm-dotnet/pull/2714))
 
 ## 10.6.0 (2021-09-30)
 
