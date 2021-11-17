@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Realms.Sync;
@@ -47,10 +48,13 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_Subscriptions_WhenFLX_ReturnsSubscriptions()
         {
-            var config = GetFakeFLXConfig();
-            var realm = GetRealm(config);
+            var realm = GetFakeFLXRealm();
+
             Assert.That(realm.Subscriptions, Is.Not.Null);
             Assert.That(realm.Subscriptions.Version, Is.Zero);
+            Assert.That(realm.Subscriptions.Count, Is.Zero);
+            Assert.That(realm.Subscriptions.Error, Is.Null);
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
         }
 
         [Test]
@@ -58,8 +62,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var config = GetFakeFLXConfig();
-                var realm = GetRealm(config);
+                var realm = GetFakeFLXRealm();
 
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
@@ -79,8 +82,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_Subscriptions_WhenSameVersion_ReturnsExistingReference()
         {
-            var config = GetFakeFLXConfig();
-            var realm = GetRealm(config);
+            var realm = GetFakeFLXRealm();
 
             var subs1 = realm.Subscriptions;
             var subs2 = realm.Subscriptions;
@@ -94,8 +96,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var config = GetFakeFLXConfig();
-                var realm = GetRealm(config);
+                var realm = GetFakeFLXRealm();
 
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
@@ -118,6 +119,124 @@ namespace Realms.Tests.Sync
 
                 Assert.That(ReferenceEquals(subsAgain, subsFromList));
             });
+        }
+
+        [Test]
+        public void SubscriptionSet_Add_WithoutUpdate_Throws()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query = realm.All<SyncAllTypesObject>();
+
+            Assert.Throws<InvalidOperationException>(() => realm.Subscriptions.Add(query));
+        }
+
+        [Test]
+        public void SubscriptionSet_Update_WhenEmpty_Succeeds()
+        {
+            var realm = GetFakeFLXRealm();
+
+            realm.Subscriptions.Update(() =>
+            {
+                // An empty update
+            });
+
+            Assert.That(realm.Subscriptions.Version, Is.EqualTo(1));
+            Assert.That(realm.Subscriptions.Count, Is.Zero);
+            Assert.That(realm.Subscriptions.Error, Is.Null);
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+        }
+
+        [Test]
+        public void SubscriptionSet_Add_AddsSubscription()
+        {
+            var realm = GetFakeFLXRealm();
+            var query = realm.All<SyncAllTypesObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                var sub = realm.Subscriptions.Add(query);
+
+                AssertSubscriptionDetails(sub, nameof(SyncAllTypesObject), "TRUEPREDICATE");
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            });
+
+            Assert.That(realm.Subscriptions.Version, Is.EqualTo(1));
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            Assert.That(realm.Subscriptions.Error, Is.Null);
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+            AssertSubscriptionDetails(realm.Subscriptions[0], nameof(SyncAllTypesObject), "TRUEPREDICATE");
+        }
+
+        [Test]
+        public void SubscriptionSet_Add_ComplexQuery_AddsSubscription()
+        {
+            var realm = GetFakeFLXRealm();
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty.StartsWith("foo") && (o.BooleanProperty || o.FloatProperty > 3.2f));
+            var expectedQueryString = "StringProperty BEGINSWITH \"foo\" and (BooleanProperty == true or FloatProperty > 3.2)";
+
+            realm.Subscriptions.Update(() =>
+            {
+                var sub = realm.Subscriptions.Add(query);
+
+                AssertSubscriptionDetails(sub, nameof(SyncAllTypesObject), expectedQueryString);
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            Assert.That(realm.Subscriptions.Error, Is.Null);
+
+            AssertSubscriptionDetails(realm.Subscriptions[0], nameof(SyncAllTypesObject), expectedQueryString);
+        }
+
+        [Test]
+        public void SubscriptionSet_AddTwice_Deduplicates()
+        {
+            var realm = GetFakeFLXRealm();
+            var query = realm.All<SyncAllTypesObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                var sub1 = realm.Subscriptions.Add(query);
+                var sub2 = realm.Subscriptions.Add(query);
+
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            Assert.That(realm.Subscriptions.Error, Is.Null);
+        }
+
+        [Test]
+        public void SubscriptionSet_AddSameQuery_DifferentClasses_AddsBoth()
+        {
+            var realm = GetFakeFLXRealm();
+            var query1 = realm.All<SyncAllTypesObject>();
+            var query2 = realm.All<SyncCollectionsObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                var sub1 = realm.Subscriptions.Add(query1);
+                var sub2 = realm.Subscriptions.Add(query2);
+
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
+
+                AssertSubscriptionDetails(sub1, nameof(SyncAllTypesObject), "TRUEPREDICATE");
+                AssertSubscriptionDetails(sub2, nameof(SyncCollectionsObject), "TRUEPREDICATE");
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
+            Assert.That(realm.Subscriptions.Error, Is.Null);
+        }
+
+        private Realm GetFakeFLXRealm() => GetRealm(GetFakeFLXConfig());
+
+        private static void AssertSubscriptionDetails(Subscription sub, string type, string query, string name = null)
+        {
+            Assert.That(sub.Name, Is.EqualTo(name ?? query).IgnoreCase);
+            Assert.That(sub.Query, Is.EqualTo(query).IgnoreCase);
+            Assert.That(sub.ObjectType, Is.EqualTo(type));
         }
     }
 }

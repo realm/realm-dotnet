@@ -85,10 +85,30 @@ REALM_EXPORT size_t realm_subscriptionset_get_count(SubscriptionSet& subs, Nativ
     });
 }
 
-REALM_EXPORT SubscriptionSet::State realm_subscriptionset_get_state(SubscriptionSet& subs, NativeException::Marshallable& ex)
+enum class CSharpState : uint8_t {
+    Pending = 0,
+    Complete,
+    Error,
+    Superceded
+};
+
+REALM_EXPORT CSharpState realm_subscriptionset_get_state(SubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return subs.state();
+        switch (subs.state()) {
+        case SubscriptionSet::State::Uncommitted:
+        case SubscriptionSet::State::Pending:
+        case SubscriptionSet::State::Bootstrapping:
+            return CSharpState::Pending;
+        case SubscriptionSet::State::Complete:
+            return CSharpState::Complete;
+        case SubscriptionSet::State::Error:
+            return CSharpState::Error;
+        case SubscriptionSet::State::Superceded:
+            return CSharpState::Superceded;
+        default:
+            REALM_UNREACHABLE();
+        }
     });
 }
 
@@ -222,9 +242,14 @@ REALM_EXPORT void realm_subscriptionset_commit_write(SubscriptionSet& subs, Nati
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_get_error(SubscriptionSet& subs, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_get_error(SubscriptionSet& subs, uint16_t* buffer, size_t buffer_length, bool& is_null, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
+        is_null = subs.error_str().is_null();
+        if (is_null) {
+            return (size_t)0;
+        }
+
         return stringdata_to_csharpstringbuffer(subs.error_str(), buffer, buffer_length);
     });
 }

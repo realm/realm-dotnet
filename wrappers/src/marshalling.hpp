@@ -124,11 +124,16 @@ static inline realm_value_t to_capi_value(const std::string& str)
     return val;
 }
 
-static inline realm_value_t to_capi_value(const std::string_view& str)
+static inline realm_value_t to_capi_value(const StringData str)
 {
     realm_value_t val{};
-    val.string = to_capi(str);
-    val.type = realm_value_type::RLM_TYPE_STRING;
+    if (str.is_null()) {
+        val.type = realm_value_type::RLM_TYPE_NULL;
+    }
+    else {
+        val.string = to_capi(str);
+        val.type = realm_value_type::RLM_TYPE_STRING;
+    }
     return val;
 }
 

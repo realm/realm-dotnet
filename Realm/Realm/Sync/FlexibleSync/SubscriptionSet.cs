@@ -371,7 +371,7 @@ namespace Realms.Sync
         {
             if (Handle.IsReadonly)
             {
-                throw new NotSupportedException("You can't mutate the subscription set outside of a Update or UpdateAsync callback.");
+                throw new InvalidOperationException("You can't mutate the subscription set outside of a Update or UpdateAsync callback.");
             }
         }
 
@@ -379,7 +379,7 @@ namespace Realms.Sync
         {
             if (!Handle.IsReadonly)
             {
-                throw new NotSupportedException("You can't Update/UpdateAsync on a subscription set that is already being updated.");
+                throw new InvalidOperationException("You can't Update/UpdateAsync on a subscription set that is already being updated.");
             }
         }
 

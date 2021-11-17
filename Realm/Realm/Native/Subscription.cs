@@ -34,11 +34,24 @@ namespace Realms.Sync.Native
         [MarshalAs(UnmanagedType.I1)]
         private bool has_value;
 
-        public ManagedSubscription ManagedSubscription => has_value ? null : new()
+        public ManagedSubscription ManagedSubscription
         {
-            Name = name.AsString(),
-            ObjectType = object_type.AsString(),
-            Query = query.AsString()
-        };
+            get
+            {
+                if (!has_value)
+                {
+                    return null;
+                }
+
+                var queryString = query.AsString();
+
+                return new()
+                {
+                    Name = name.AsString() ?? queryString,
+                    Query = queryString,
+                    ObjectType = object_type.AsString()
+                };
+            }
+        }
     }
 }

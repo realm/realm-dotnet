@@ -263,7 +263,7 @@ namespace Realms
                     if (existingRef != null && existingRef.TryGetTarget(out var existingSet))
                     {
                         var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
-                        if (currentVersion == existingSet.Version)
+                        if (existingSet.Version >= currentVersion)
                         {
                             return existingSet;
                         }
