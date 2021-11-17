@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
+using Realms.Sync;
 
 namespace Realms.Tests.Sync
 {
@@ -47,6 +51,73 @@ namespace Realms.Tests.Sync
             var realm = GetRealm(config);
             Assert.That(realm.Subscriptions, Is.Not.Null);
             Assert.That(realm.Subscriptions.Version, Is.Zero);
+        }
+
+        [Test]
+        public void SubscriptionSet_GetsGarbageCollected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var config = GetFakeFLXConfig();
+                var realm = GetRealm(config);
+
+                await TestHelpers.EnsureObjectsAreCollected(() =>
+                {
+                    var subs = realm.Subscriptions;
+                    return new object[] { subs };
+                });
+
+                // This tests things via reflection because we don't want to expose private members, even internally.
+                var subsRefs = typeof(Realm).GetField("_subscriptionRefs", BindingFlags.NonPublic | BindingFlags.Instance);
+                var subs = (List<WeakReference<SubscriptionSet>>)subsRefs.GetValue(realm);
+
+                Assert.That(subs.Count, Is.EqualTo(1));
+                Assert.That(subs[0].TryGetTarget(out _), Is.False);
+            });
+        }
+
+        [Test]
+        public void Realm_Subscriptions_WhenSameVersion_ReturnsExistingReference()
+        {
+            var config = GetFakeFLXConfig();
+            var realm = GetRealm(config);
+
+            var subs1 = realm.Subscriptions;
+            var subs2 = realm.Subscriptions;
+
+            Assert.That(subs1, Is.EqualTo(subs2));
+            Assert.That(ReferenceEquals(subs1, subs2));
+        }
+
+        [Test]
+        public void Realm_Subscriptions_WhenVersionIsGCed_CreatesANewOne()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var config = GetFakeFLXConfig();
+                var realm = GetRealm(config);
+
+                await TestHelpers.EnsureObjectsAreCollected(() =>
+                {
+                    var subs = realm.Subscriptions;
+                    return new object[] { subs };
+                });
+
+                // This tests things via reflection because we don't want to expose private members, even internally.
+                var subsRefs = typeof(Realm).GetField("_subscriptionRefs", BindingFlags.NonPublic | BindingFlags.Instance);
+                var subs = (List<WeakReference<SubscriptionSet>>)subsRefs.GetValue(realm);
+
+                Assert.That(subs.Count, Is.EqualTo(1));
+                Assert.That(subs[0].TryGetTarget(out _), Is.False);
+
+                // The old one was gc-ed, so we should get a new one here
+                var subsAgain = realm.Subscriptions;
+
+                Assert.That(subs.Count, Is.EqualTo(2));
+                Assert.That(subs[1].TryGetTarget(out var subsFromList), Is.True);
+
+                Assert.That(ReferenceEquals(subsAgain, subsFromList));
+            });
         }
     }
 }
