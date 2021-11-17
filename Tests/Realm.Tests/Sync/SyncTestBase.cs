@@ -175,7 +175,8 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        private static PartitionSyncConfiguration UpdateConfig(PartitionSyncConfiguration config)
+        private static T UpdateConfig<T>(T config)
+            where T : SyncConfigurationBase
         {
             config.Schema = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
@@ -187,6 +188,12 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
+        }
+
+        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        {
+            var user = GetFakeUser(app, userId);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
     }
 }

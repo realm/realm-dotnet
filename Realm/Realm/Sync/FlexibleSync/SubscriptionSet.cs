@@ -49,17 +49,39 @@ namespace Realms.Sync
     {
         private SubscriptionSetHandle _handle;
 
+        private bool IsClosed => _handle.IsClosed;
+
+        /// <summary>
+        /// Gets the native handle for this set. This wraps _handle and adds checking for closed handles.
+        /// It should be used in all places where we're accessing a handle as we don't have control over
+        /// when the parent Realm will get disposed.
+        /// </summary>
+        private SubscriptionSetHandle Handle
+        {
+            get
+            {
+                if (IsClosed)
+                {
+                    throw new ObjectDisposedException(nameof(SubscriptionSet), "This SubscriptionSet has been invalidated because its parent Realm has been closed.");
+                }
+
+                return _handle;
+            }
+        }
+
         /// <summary>
         /// Gets the number of elements in the collection.
         /// </summary>
         /// <value>The number of elements in the collection.</value>
-        public int Count => _handle.GetCount();
+        public int Count => Handle.GetCount();
 
         /// <summary>
         /// Gets the state of the subscription set.
         /// </summary>
         /// <value>The subscription set's state.</value>
-        public SubscriptionSetState State => _handle.GetState();
+        public SubscriptionSetState State => Handle.GetState();
+
+        internal long Version => Handle.GetVersion();
 
         /// <summary>
         /// Gets the error associated with this subscription set, if any. This will
@@ -73,7 +95,7 @@ namespace Realms.Sync
         {
             get
             {
-                var errorMessage = _handle.GetErrorMessage();
+                var errorMessage = Handle.GetErrorMessage();
                 return errorMessage == null ? null : new SubscriptionException(errorMessage);
             }
         }
@@ -92,7 +114,7 @@ namespace Realms.Sync
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                return _handle.GetAtIndex(index);
+                return Handle.GetAtIndex(index);
             }
         }
 
@@ -110,7 +132,7 @@ namespace Realms.Sync
         /// <paramref name="name"/> if the subscription set contains a subscription with the provided name;
         /// <c>null</c> otherwise.
         /// </returns>
-        public Subscription Find(string name) => _handle.Find(name);
+        public Subscription Find(string name) => Handle.Find(name);
 
         /// <summary>
         /// Finds a subscription by query.
@@ -126,7 +148,7 @@ namespace Realms.Sync
             where T : RealmObject
         {
             var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
-            return _handle.Find(results.ResultsHandle);
+            return Handle.Find(results.ResultsHandle);
         }
 
         /// <summary>
@@ -148,8 +170,8 @@ namespace Realms.Sync
             EnsureReadonly();
             Argument.NotNull(action, nameof(action));
 
-            var handleToDispose = _handle;
-            _handle = _handle.BeginWrite();
+            var handleToDispose = Handle;
+            _handle = Handle.BeginWrite();
 
             try
             {
@@ -228,7 +250,7 @@ namespace Realms.Sync
             EnsureWritable();
 
             var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
-            return _handle.Add(results.ResultsHandle, options ?? new());
+            return Handle.Add(results.ResultsHandle, options ?? new());
         }
 
         /// <summary>
@@ -243,7 +265,7 @@ namespace Realms.Sync
             EnsureWritable();
 
             Argument.NotNullOrEmpty(name, nameof(name));
-            return _handle.Remove(name);
+            return Handle.Remove(name);
         }
 
         /// <summary>
@@ -298,7 +320,7 @@ namespace Realms.Sync
             EnsureWritable();
 
             Argument.NotNullOrEmpty(className, nameof(className));
-            return _handle.RemoveAll(className);
+            return Handle.RemoveAll(className);
         }
 
         /// <summary>
@@ -309,7 +331,7 @@ namespace Realms.Sync
         {
             EnsureWritable();
 
-            return _handle.RemoveAll();
+            return Handle.RemoveAll();
         }
 
         /// <summary>
@@ -328,7 +350,7 @@ namespace Realms.Sync
         /// An awaitable task, whose successful completion indicates that the server has processed the
         /// subscription change and has sent all the data that matches the new subscriptions.
         /// </returns>
-        public Task WaitForSynchronizationAsync() => _handle.WaitForStateChangeAsync();
+        public Task WaitForSynchronizationAsync() => Handle.WaitForStateChangeAsync();
 
         /// <inheritdoc/>
         public IEnumerator<Subscription> GetEnumerator() => new Enumerator(this);
@@ -336,9 +358,18 @@ namespace Realms.Sync
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        internal void CloseHandle()
+        {
+            GC.SuppressFinalize(this);
+            if (!IsClosed)
+            {
+                Handle.Close();
+            }
+        }
+
         private void EnsureWritable()
         {
-            if (_handle.IsReadonly)
+            if (Handle.IsReadonly)
             {
                 throw new NotSupportedException("You can't mutate the subscription set outside of a Update or UpdateAsync callback.");
             }
@@ -346,7 +377,7 @@ namespace Realms.Sync
 
         private void EnsureReadonly()
         {
-            if (!_handle.IsReadonly)
+            if (!Handle.IsReadonly)
             {
                 throw new NotSupportedException("You can't Update/UpdateAsync on a subscription set that is already being updated.");
             }

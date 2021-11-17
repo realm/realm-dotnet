@@ -198,6 +198,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_sync_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session(SharedRealmHandle realm, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_subscriptions", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_subscriptions(SharedRealmHandle realm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_subscriptions_version", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int64 get_subscriptions_version(SharedRealmHandle realm, out NativeException ex);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -507,6 +513,20 @@ namespace Realms
             var ptr = NativeMethods.get_session(this, out var ex);
             ex.ThrowIfNecessary();
             return new SessionHandle(ptr);
+        }
+
+        public SubscriptionSetHandle GetSubscriptions()
+        {
+            var ptr = NativeMethods.get_subscriptions(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new SubscriptionSetHandle(ptr);
+        }
+
+        public long GetSubscriptionsVersion()
+        {
+            var result = NativeMethods.get_subscriptions_version(this, out var ex);
+            ex.ThrowIfNecessary();
+            return result;
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]

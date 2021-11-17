@@ -92,6 +92,14 @@ REALM_EXPORT SubscriptionSet::State realm_subscriptionset_get_state(Subscription
     });
 }
 
+REALM_EXPORT int64_t realm_subscriptionset_get_version(SubscriptionSet& subs, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return subs.version();
+    });
+}
+
+
 REALM_EXPORT void realm_subscriptionset_get_at_index(SubscriptionSet& subs, size_t index, void* callback, NativeException::Marshallable& ex)
 {
     get_subscription(callback, ex, [&] {

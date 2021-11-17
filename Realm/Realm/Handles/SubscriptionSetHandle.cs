@@ -20,12 +20,16 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Exceptions.Sync;
 using Realms.Native;
 
 namespace Realms.Sync
 {
     internal class SubscriptionSetHandle : RealmHandle
     {
+#pragma warning disable IDE0049 // Use built-in type alias
+#pragma warning disable SA1121 // Use built-in type alias
+
         private static class NativeMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -41,6 +45,9 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_count(SubscriptionSetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_version", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int64 get_version(SubscriptionSetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern SubscriptionSetState get_state(SubscriptionSetHandle handle, out NativeException ex);
@@ -85,6 +92,9 @@ namespace Realms.Sync
             public static extern IntPtr get_error_message(SubscriptionSetHandle handle, IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
         }
 
+#pragma warning restore IDE0049 // Use built-in type alias
+#pragma warning restore SA1121 // Use built-in type alias
+
         private delegate void GetSubscriptionBase(IntPtr callback, out NativeException ex);
 
         public static void Initialize()
@@ -118,6 +128,13 @@ namespace Realms.Sync
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
+        }
+
+        public long GetVersion()
+        {
+            var result = NativeMethods.get_version(this, out var ex);
+            ex.ThrowIfNecessary();
+            return result;
         }
 
         public string GetErrorMessage()
@@ -230,8 +247,7 @@ namespace Realms.Sync
             }
             else
             {
-                // TODO: new exception type
-                var inner = new RealmException(message.AsString());
+                var inner = new SubscriptionException(message.AsString());
                 const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
                 tcs.TrySetException(new RealmException(OuterMessage, inner));
             }

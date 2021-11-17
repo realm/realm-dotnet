@@ -623,4 +623,11 @@ REALM_EXPORT SubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm,
     });
 }
 
+REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return realm->get_latest_subscription_set().version();
+    });
+}
+
 }
