@@ -200,7 +200,7 @@ REALM_EXPORT bool realm_subscriptionset_remove(SubscriptionSet& subs, uint16_t* 
     });
 }
 
-REALM_EXPORT bool realm_subscriptionset_remove_by_query(SubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_by_query(SubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         size_t removed = 0;
@@ -209,7 +209,7 @@ REALM_EXPORT bool realm_subscriptionset_remove_by_query(SubscriptionSet& subs, R
         const auto class_name = results.get_object_type();
         
         for (auto it = subs.begin(); it != subs.end();) {
-            if (it->object_class_name() == class_name && it->query_string() == query_desc && (remove_named || !it->name().empty())) {
+            if (it->object_class_name() == class_name && it->query_string() == query_desc && (remove_named || it->name().empty())) {
                 it = subs.erase(it);
                 removed++;
             }
