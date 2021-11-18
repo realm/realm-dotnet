@@ -698,6 +698,26 @@ namespace Realms.Tests.Sync
             Assert.Throws<InvalidOperationException>(() => realm.Subscriptions.RemoveAll(removeNamed: removeNamed));
         }
 
+        [Test]
+        public void SubscriptionSet_WhenParentRealmIsClosed_GetsClosed()
+        {
+            var realm = GetFakeFLXRealm();
+            var subs = realm.Subscriptions;
+
+            realm.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _ = subs.Count);
+        }
+
+        [Test]
+        public void Realm_Subscriptions_WhenDisposed_Throws()
+        {
+            var realm = GetFakeFLXRealm();
+            realm.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _ = realm.Subscriptions);
+        }
+
         private Realm GetFakeFLXRealm() => GetRealm(GetFakeFLXConfig());
 
         private static void AssertSubscriptionDetails(Subscription sub, string type, string query = "TRUEPREDICATE", string name = null, bool expectUpdateOnly = false)

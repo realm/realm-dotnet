@@ -216,6 +216,8 @@ namespace Realms
         {
             get
             {
+                ThrowIfDisposed();
+
                 if (Config is SyncConfigurationBase)
                 {
                     if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
@@ -252,6 +254,8 @@ namespace Realms
         {
             get
             {
+                ThrowIfDisposed();
+
                 if (Config is FlexibleSyncConfiguration)
                 {
                     // We're trying to look up the last set in the _subscriptionRefs list. If it
