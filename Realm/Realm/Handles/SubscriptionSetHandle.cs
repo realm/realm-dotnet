@@ -70,11 +70,14 @@ namespace Realms.Sync
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool remove(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove_by_query", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr remove(SubscriptionSetHandle handle, ResultsHandle results, [MarshalAs(UnmanagedType.I1)] bool remove_named, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove_by_type", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr remove_by_type(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr type_len, out NativeException ex);
+            public static extern IntPtr remove_by_type(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr type_len, [MarshalAs(UnmanagedType.I1)] bool remove_named, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove_all", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr remove_all(SubscriptionSetHandle handle, out NativeException ex);
+            public static extern IntPtr remove_all(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.I1)] bool remove_named, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
@@ -108,7 +111,7 @@ namespace Realms.Sync
             NativeMethods.install_callbacks(getSubscription, waitState);
         }
 
-        public readonly bool IsReadonly;
+        public bool IsReadonly { get; private set; }
 
         [Preserve]
         public SubscriptionSetHandle(IntPtr handle, bool isReadonly = true) : base(null, handle)
@@ -154,6 +157,8 @@ namespace Realms.Sync
         {
             NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
+
+            IsReadonly = true;
         }
 
         public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
@@ -172,16 +177,23 @@ namespace Realms.Sync
             return result;
         }
 
-        public int RemoveAll(string type)
+        public int Remove(ResultsHandle results, bool removeNamed)
         {
-            var result = NativeMethods.remove_by_type(this, type, type.IntPtrLength(), out var ex);
+            var result = NativeMethods.remove(this, results, removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
         }
 
-        public int RemoveAll()
+        public int RemoveAll(string type, bool removeNamed)
         {
-            var result = NativeMethods.remove_all(this, out var ex);
+            var result = NativeMethods.remove_by_type(this, type, type.IntPtrLength(), removeNamed, out var ex);
+            ex.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public int RemoveAll(bool removeNamed)
+        {
+            var result = NativeMethods.remove_all(this, removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
         }

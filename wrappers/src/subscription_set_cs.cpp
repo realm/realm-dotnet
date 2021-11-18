@@ -38,6 +38,10 @@ struct CSharpSubscription {
 
     realm_value_t query = realm_value_t{};
 
+    realm_value_t created_at = realm_value_t{};
+
+    realm_value_t updated_at = realm_value_t{};
+
     bool has_value = false;
 };
 
@@ -58,6 +62,8 @@ namespace binding {
                     to_capi_value(sub.value().name()),
                     to_capi_value(sub.value().object_class_name()),
                     to_capi_value(sub.value().query_string()),
+                    to_capi_value(sub.value().created_at()),
+                    to_capi_value(sub.value().updated_at()),
                     true
                 };
                 s_get_subscription_callback(callback, csharp_sub);
@@ -194,16 +200,21 @@ REALM_EXPORT bool realm_subscriptionset_remove(SubscriptionSet& subs, uint16_t* 
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SubscriptionSet& subs, uint16_t* type_buf, size_t type_len, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_subscriptionset_remove_by_query(SubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         size_t removed = 0;
-        Utf16StringAccessor type(type_buf, type_len);
 
-        for (auto it = subs.begin(); it != subs.end(); it++) {
-            if (it->object_class_name() == type) {
+        const auto query_desc = results.get_query().get_description();
+        const auto class_name = results.get_object_type();
+        
+        for (auto it = subs.begin(); it != subs.end();) {
+            if (it->object_class_name() == class_name && it->query_string() == query_desc && (remove_named || !it->name().empty())) {
                 it = subs.erase(it);
                 removed++;
+            }
+            else {
+                it++;
             }
         }
 
@@ -211,15 +222,47 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SubscriptionSet& subs, 
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_all(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SubscriptionSet& subs, uint16_t* type_buf, size_t type_len, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        auto size = subs.size();
-        for (auto it = subs.begin(); it != subs.end(); it++) {
-            it = subs.erase(it);
+        size_t removed = 0;
+        Utf16StringAccessor type(type_buf, type_len);
+
+        for (auto it = subs.begin(); it != subs.end();) {
+            if (it->object_class_name() == type) {
+                it = subs.erase(it);
+                removed++;
+            }
+            else {
+                it++;
+            }
         }
 
-        return size;
+        return removed;
+    });
+}
+
+REALM_EXPORT size_t realm_subscriptionset_remove_all(SubscriptionSet& subs, bool remove_named, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        if (remove_named) {
+            auto size = subs.size();
+            subs.clear();
+            return size;
+        }
+
+        size_t removed = 0;
+        for (auto it = subs.begin(); it != subs.end();) {
+            if (it->name().empty()) {
+                it = subs.erase(it);
+                removed++;
+            }
+            else {
+                it++;
+            }
+        }
+
+        return removed;
     });
 }
 

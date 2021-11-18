@@ -273,16 +273,17 @@ namespace Realms.Sync
         /// </summary>
         /// <typeparam name="T">The type of objects in the query results.</typeparam>
         /// <param name="query">The query whose matching subscription should be removed.</param>
+        /// <param name="removeNamed">A flag indicating whether to also remove named subscriptions. Default is false.</param>
         /// <returns>
         /// <c>true</c> if the subscription existed in this subscription set and was removed; <c>false</c> otherwise.
         /// </returns>
-        public bool Remove<T>(IQueryable<T> query)
+        public int Remove<T>(IQueryable<T> query, bool removeNamed = false)
             where T : RealmObject
         {
             EnsureWritable();
 
-            var existing = Find(query);
-            return existing != null && Remove(existing);
+            var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
+            return Handle.Remove(results.ResultsHandle, removeNamed);
         }
 
         /// <summary>
@@ -297,41 +298,43 @@ namespace Realms.Sync
             EnsureWritable();
 
             Argument.NotNull(subscription, nameof(subscription));
-            Argument.Ensure(!string.IsNullOrEmpty(subscription.Name), "The name of the subscription must not be null/empty.", nameof(subscription));
 
-            return Remove(subscription.Name);
+            throw new NotImplementedException("Needs subscription id");
         }
 
         /// <summary>
         /// Removes all subscriptions for a specified type.
         /// </summary>
         /// <typeparam name="T">The type of objects whose subscriptions should be removed.</typeparam>
+        /// <param name="removeNamed">A flag indicating whether to also remove named subscriptions. Default is false.</param>
         /// <returns>The number of subscriptions that existed for this type and were removed.</returns>
-        public int RemoveAll<T>()
-            where T : RealmObject => RemoveAll(typeof(T).GetMappedOrOriginalName());
+        public int RemoveAll<T>(bool removeNamed = false)
+            where T : RealmObject => RemoveAll(typeof(T).GetMappedOrOriginalName(), removeNamed);
 
         /// <summary>
         /// Removes all subscriptions for the provided <paramref name="className"/>.
         /// </summary>
         /// <param name="className">The name of the type whose subscriptions are to be removed.</param>
+        /// <param name="removeNamed">A flag indicating whether to also remove named subscriptions. Default is false.</param>
         /// <returns>The number of subscriptions that existed for this type and were removed.</returns>
-        public int RemoveAll(string className)
+        public int RemoveAll(string className, bool removeNamed = false)
         {
             EnsureWritable();
 
             Argument.NotNullOrEmpty(className, nameof(className));
-            return Handle.RemoveAll(className);
+            return Handle.RemoveAll(className, removeNamed);
         }
 
         /// <summary>
         /// Removes all subscriptions from this subscription set.
         /// </summary>
+        /// <param name="removeNamed">A flag indicating whether to also remove named subscriptions. Default is false.</param>
         /// <returns>The number of subscriptions that existed in the set and were removed.</returns>
-        public int RemoveAll()
+        public int RemoveAll(bool removeNamed = false)
         {
             EnsureWritable();
 
-            return Handle.RemoveAll();
+            return Handle.RemoveAll(removeNamed);
         }
 
         /// <summary>

@@ -165,6 +165,14 @@ static inline realm_timestamp_t to_capi(Timestamp ts)
     return realm_timestamp_t{ ts.get_seconds(), ts.get_nanoseconds() };
 }
 
+static inline realm_value_t to_capi_value(Timestamp ts)
+{
+    realm_value_t val{};
+    val.timestamp = to_capi(ts);
+    val.type = realm_value_type::RLM_TYPE_TIMESTAMP;
+    return val;
+}
+
 static inline Timestamp from_capi(realm_timestamp_t ts)
 {
     return Timestamp{ ts.seconds, ts.nanoseconds };

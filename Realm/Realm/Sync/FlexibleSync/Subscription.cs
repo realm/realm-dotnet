@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Sync
 {
     /// <summary>
@@ -50,6 +52,18 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The subscription query.</value>
         public string Query { get; internal init; }
+
+        /// <summary>
+        /// Gets a value indicating when this subscription was created.
+        /// </summary>
+        /// <value>The creation date/time of the subscription.</value>
+        public DateTimeOffset CreatedAt { get; internal init; }
+
+        /// <summary>
+        /// Gets a value indicating when this subscription was last updated.
+        /// </summary>
+        /// <value>The date/time of the last update to the subscription.</value>
+        public DateTimeOffset UpdatedAt { get; internal init; }
 
         internal Subscription()
         {

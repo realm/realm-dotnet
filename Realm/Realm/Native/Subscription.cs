@@ -31,6 +31,10 @@ namespace Realms.Sync.Native
 
         private PrimitiveValue query;
 
+        private PrimitiveValue created_at;
+
+        private PrimitiveValue updated_at;
+
         [MarshalAs(UnmanagedType.I1)]
         private bool has_value;
 
@@ -43,13 +47,13 @@ namespace Realms.Sync.Native
                     return null;
                 }
 
-                var queryString = query.AsString();
-
                 return new()
                 {
-                    Name = name.AsString() ?? queryString,
-                    Query = queryString,
-                    ObjectType = object_type.AsString()
+                    Name = name.AsString(),
+                    Query = query.AsString(),
+                    ObjectType = object_type.AsString(),
+                    CreatedAt = created_at.AsDate(),
+                    UpdatedAt = updated_at.AsDate()
                 };
             }
         }
