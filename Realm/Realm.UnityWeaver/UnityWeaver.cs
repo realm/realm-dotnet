@@ -143,6 +143,11 @@ namespace RealmWeaver
 
             try
             {
+                while (EditorApplication.isCompiling || EditorApplication.isUpdating)
+                {
+                    await Task.Delay(100);
+                }
+
                 EditorApplication.LockReloadAssemblies();
                 var weavingTasks = GetAssemblies()
                     .Select(assembly => Task.Run(() =>

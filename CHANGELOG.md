@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* \[Unity\] Fixes a race condition with the Unity Weaver where the first time a project is opened, it would try to weave an assembly at the same time Unity recompiles it, resulting in `Failed to weave assembly. (...) Sharing violation on path (...)` error. (Issue [#2720](https://github.com/realm/realm-dotnet/issues/2720))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
