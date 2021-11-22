@@ -86,3 +86,5 @@ not eligible to receive the product under U.S. law.**
 **_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm) to share your thoughts!_**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
+
+<img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-dotnet#README.md">
