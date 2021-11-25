@@ -637,7 +637,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-        - macOS-10.15
+        - macos-latest
         - windows-latest
         - ubuntu-latest
         - win81
@@ -713,7 +713,7 @@ jobs:
         appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.macOS
   test-xamarinmacos:
-    runs-on: macOS-10.15
+    runs-on: macos-latest
     name: Test Xamarin.macOS
     needs:
     - build-packages
@@ -796,7 +796,7 @@ jobs:
         appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.iOS
   test-xamarinios:
-    runs-on: macOS-10.15
+    runs-on: macos-latest
     name: Test Xamarin.iOS
     needs:
     - build-packages
@@ -884,7 +884,7 @@ jobs:
         appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.Android
   test-xamarinandroid:
-    runs-on: macOS-10.15
+    runs-on: macos-latest
     name: Test Xamarin.Android
     needs:
     - build-packages
