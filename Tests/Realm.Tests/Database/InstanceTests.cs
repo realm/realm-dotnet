@@ -42,16 +42,27 @@ namespace Realms.Tests.Database
         [Test]
         public void ReadOnlyInstance_ThrowsOnRefresh()
         {
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Guid.NewGuid().ToString());
-            var realm = GetRealm(path);
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
             realm.Dispose();
-            var config = new RealmConfiguration(path)
-            {
-                IsReadOnly = true
-            };
+
+            config.IsReadOnly = true;
 
             realm = GetRealm(config);
             Assert.Throws<RealmException>(() => realm.Refresh(), "Can't refresh a read-only Realm.");
+        }
+
+        [Test]
+        public void GetTwice_ReadOnlyInstance_DoesNotThrow()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            realm.Dispose();
+
+            config.IsReadOnly = true;
+
+            _ = GetRealm(config);
+            Assert.DoesNotThrow(() => GetRealm(config));
         }
 
         [Test]
