@@ -511,7 +511,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest, win81 ]
+        os: [ macOS-10.15, windows-latest, ubuntu-latest, win81 ]
         targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
     timeout-minutes: #@ testTimeout
     steps:
@@ -527,9 +527,9 @@ jobs:
           include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
-  _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
-  _: #@ template.replace(testJob("Xamarin.iOS", "macos-latest", xamariniOSTestSteps()))
-  _: #@ template.replace(testJob("Xamarin.Android", "macos-latest", xamarinAndroidTestSteps()))
+  _: #@ template.replace(testJob("Xamarin.macOS", "macOS-10.15", xamarinMacTestSteps()))
+  _: #@ template.replace(testJob("Xamarin.iOS", "macOS-10.15", xamariniOSTestSteps()))
+  _: #@ template.replace(testJob("Xamarin.Android", "macOS-10.15", xamarinAndroidTestSteps()))
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
