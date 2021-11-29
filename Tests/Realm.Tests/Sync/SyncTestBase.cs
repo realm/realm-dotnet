@@ -175,6 +175,19 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
+        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App app = null, string optionalPath = null)
+        {
+            app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+            var user = await GetUserAsync(app);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null)
+        {
+            var config = await GetFLXIntegrationConfigAsync(app);
+            return await GetRealmAsync(config);
+        }
+
         private static T UpdateConfig<T>(T config)
             where T : SyncConfigurationBase
         {

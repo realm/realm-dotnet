@@ -18,9 +18,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Realms.Logging;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -145,6 +147,28 @@ namespace Realms.Tests.Sync
             Assert.That(realm.Subscriptions.Count, Is.Zero);
             Assert.That(realm.Subscriptions.Error, Is.Null);
             Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+        }
+
+        [Test]
+        public void SubscriptionSet_Update_UpdatesItself()
+        {
+            var realm = GetFakeFLXRealm();
+            var query = realm.All<SyncAllTypesObject>();
+
+            var subs = realm.Subscriptions;
+            subs.Update(() =>
+            {
+                subs.Add(query);
+            });
+
+            Assert.That(subs.Version, Is.EqualTo(1));
+            Assert.That(subs.Count, Is.EqualTo(1));
+            Assert.That(subs.Error, Is.Null);
+            Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Pending));
+            AssertSubscriptionDetails(subs[0], nameof(SyncAllTypesObject));
+
+            var foundSub = subs.Find(query);
+            Assert.That(foundSub, Is.Not.Null);
         }
 
         [Test]
@@ -716,6 +740,33 @@ namespace Realms.Tests.Sync
             realm.Dispose();
 
             Assert.Throws<ObjectDisposedException>(() => _ = realm.Subscriptions);
+        }
+
+        [Test]
+        public void Integration_SubscriptionSet_Add()
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.Default = Logger.Function(m => Debug.WriteLine(m));
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+                var query = realm.All<SyncAllTypesObject>();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(query);
+                });
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
         }
 
         private Realm GetFakeFLXRealm() => GetRealm(GetFakeFLXConfig());

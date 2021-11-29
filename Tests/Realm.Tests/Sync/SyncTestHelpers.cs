@@ -40,6 +40,7 @@ namespace Realms.Tests.Sync
         IntPartitionKey,
         ObjectIdPartitionKey,
         UUIDPartitionKey,
+        FlexibleSync,
     }
 
     public static class SyncTestHelpers
@@ -217,6 +218,11 @@ namespace Realms.Tests.Sync
             if (appName == "uuid-partition-key")
             {
                 return AppConfigType.UUIDPartitionKey;
+            }
+
+            if (appName == "flexible-sync")
+            {
+                return AppConfigType.FlexibleSync;
             }
 
             return (AppConfigType)(-1);
