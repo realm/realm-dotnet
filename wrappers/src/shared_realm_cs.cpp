@@ -519,7 +519,7 @@ REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeEx
 {
     return handle_errors(ex, [&]() {
         auto frozen_realm = realm->freeze();
-        return new_realm(std::move(frozen_realm));
+        return new SharedRealm{ frozen_realm };
     });
 }
 
