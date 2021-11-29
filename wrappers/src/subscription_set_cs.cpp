@@ -32,6 +32,8 @@ using namespace realm::binding;
 using namespace realm::sync;
 
 struct CSharpSubscription {
+    realm_value_t id = realm_value_t{};
+
     realm_value_t name = realm_value_t{};
 
     realm_value_t object_type = realm_value_t{};
@@ -59,6 +61,7 @@ namespace binding {
             auto sub = lambda();
             if (sub) {
                 auto csharp_sub = CSharpSubscription{
+                    to_capi_value(sub.value().id()),
                     to_capi_value(sub.value().name()),
                     to_capi_value(sub.value().object_class_name()),
                     to_capi_value(sub.value().query_string()),
@@ -196,6 +199,21 @@ REALM_EXPORT bool realm_subscriptionset_remove(SubscriptionSet& subs, uint16_t* 
             return true;
         }
         
+        return false;
+    });
+}
+
+REALM_EXPORT bool realm_subscriptionset_remove_by_id(SubscriptionSet& subs, realm_value_t id, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        auto subId = from_capi(id.object_id);
+        for (auto it = subs.begin(); it != subs.end(); it++) {
+            if (it->id() == subId) {
+                subs.erase(it);
+                return true;
+            }
+        }
+
         return false;
     });
 }

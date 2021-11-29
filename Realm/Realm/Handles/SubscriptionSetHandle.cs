@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
 using Realms.Native;
@@ -69,6 +70,10 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool remove(SubscriptionSetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove_by_id", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool remove(SubscriptionSetHandle handle, PrimitiveValue id, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove_by_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr remove(SubscriptionSetHandle handle, ResultsHandle results, [MarshalAs(UnmanagedType.I1)] bool remove_named, out NativeException ex);
@@ -173,6 +178,14 @@ namespace Realms.Sync
         public bool Remove(string name)
         {
             var result = NativeMethods.remove(this, name, name.IntPtrLength(), out var ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
+
+        public bool Remove(ObjectId id)
+        {
+            var subId = PrimitiveValue.ObjectId(id);
+            var result = NativeMethods.remove(this, subId, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }

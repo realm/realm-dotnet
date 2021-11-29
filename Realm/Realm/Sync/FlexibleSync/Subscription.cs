@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using MongoDB.Bson;
 
 namespace Realms.Sync
 {
@@ -27,12 +28,13 @@ namespace Realms.Sync
     /// </summary>
     public class Subscription
     {
+        internal ObjectId Id { get; init; }
+
         /// <summary>
         /// Gets the name of the subscription if one was provided at creation time.
-        /// If no name was provided, then this will return the same value as
-        /// <see cref="Query"/>.
+        /// If no name was provided, then this will return <c>null</c>.
         /// </summary>
-        /// <value>The subscription name.</value>
+        /// <value>The subscription's name.</value>
         public string Name { get; internal init; }
 
         /// <summary>

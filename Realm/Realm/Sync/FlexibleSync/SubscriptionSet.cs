@@ -1,20 +1,20 @@
-﻿// ////////////////////////////////////////////////////////////////////////////
-// //
-// // Copyright 2021 Realm Inc.
-// //
-// // Licensed under the Apache License, Version 2.0 (the "License")
-// // you may not use this file except in compliance with the License.
-// // You may obtain a copy of the License at
-// //
-// // http://www.apache.org/licenses/LICENSE-2.0
-// //
-// // Unless required by applicable law or agreed to in writing, software
-// // distributed under the License is distributed on an "AS IS" BASIS,
-// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// // See the License for the specific language governing permissions and
-// // limitations under the License.
-// //
-// ////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License")
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 using System;
 using System.Collections;
@@ -157,7 +157,7 @@ namespace Realms.Sync
         /// <remarks>
         /// Calling <see cref="Update"/> or <see cref="UpdateAsync"/> is a prerequisite for
         /// mutating the subscription set - e.g. by calling <see cref="Add{T}(IQueryable{T}, SubscriptionOptions)"/>,
-        /// <see cref="Remove(Subscription)"/>, or <see cref="RemoveAll()"/>.
+        /// <see cref="Remove(Subscription)"/>, or <see cref="RemoveAll(bool)"/>.
         /// <br/>
         /// Calling this may update the content of this <see cref="SubscriptionSet"/> - e.g. if another
         /// <see cref="Update"/> was called on a background thread or if the <see cref="State"/> changed.
@@ -197,7 +197,7 @@ namespace Realms.Sync
         /// <remarks>
         /// Calling <see cref="Update"/> or <see cref="UpdateAsync"/> is a prerequisite for
         /// mutating the subscription set - e.g. by calling <see cref="Add{T}(IQueryable{T}, SubscriptionOptions)"/>,
-        /// <see cref="Remove{T}(IQueryable{T})"/>, or <see cref="RemoveAll()"/>.
+        /// <see cref="Remove(Subscription)"/>, or <see cref="RemoveAll(bool)"/>.
         /// <br/>
         /// Calling this may update the content of this <see cref="SubscriptionSet"/> - e.g. if another
         /// <see cref="Update"/> was called on a background thread or if the <see cref="State"/> changed.
@@ -216,7 +216,7 @@ namespace Realms.Sync
         /// An awaitable Task that will be resolved when the subscription set has been updated and the
         /// changes have been persisted locally.
         /// </returns>
-        public async Task UpdateAsync(Action action)
+        internal Task UpdateAsync(Action action)
         {
             EnsureReadonly();
             Argument.NotNull(action, nameof(action));
@@ -225,7 +225,7 @@ namespace Realms.Sync
             if (!AsyncHelper.HasValidContext)
             {
                 Update(action);
-                return;
+                return Task.CompletedTask;
             }
 
             throw new NotImplementedException();
@@ -299,7 +299,7 @@ namespace Realms.Sync
 
             Argument.NotNull(subscription, nameof(subscription));
 
-            throw new NotImplementedException("Needs subscription id");
+            return Handle.Remove(subscription.Id);
         }
 
         /// <summary>

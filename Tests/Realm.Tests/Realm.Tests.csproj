@@ -26,7 +26,7 @@
   <PropertyGroup>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <LangVersion Condition="$(TargetFramework.Contains('net6.0'))">10.0</LangVersion>
     <GenerateProgramFile>false</GenerateProgramFile>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>

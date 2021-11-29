@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Sync;
@@ -556,6 +557,59 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void SubscriptionSet_Remove_Subscription()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query1 = realm.All<SyncAllTypesObject>();
+            var query2 = realm.All<SyncCollectionsObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query2, new SubscriptionOptions { Name = "b" });
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
+            var sub = realm.Subscriptions[0];
+            var nonExistent = new Subscription
+            {
+                Id = ObjectId.GenerateNewId()
+            };
+
+            realm.Subscriptions.Update(() =>
+            {
+                Assert.That(realm.Subscriptions.Remove(sub), Is.True);
+                Assert.That(realm.Subscriptions.Remove(sub), Is.False);
+                Assert.That(realm.Subscriptions.Remove(nonExistent), Is.False);
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            Assert.That(realm.Subscriptions[0].Id != sub.Id);
+
+            realm.Subscriptions.Update(() =>
+            {
+                var sub2 = realm.Subscriptions[0];
+                Assert.That(realm.Subscriptions.Remove(sub), Is.False);
+                Assert.That(realm.Subscriptions.Remove(sub2), Is.True);
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SubscriptionSet_Remove_Subscription_OutsideUpdate_Throws()
+        {
+            var realm = GetFakeFLXRealm();
+            var sub = new Subscription
+            {
+                Id = ObjectId.GenerateNewId()
+            };
+
+            Assert.Throws<InvalidOperationException>(() => realm.Subscriptions.Remove(sub));
+        }
+
+        [Test]
         public void SubscriptionSet_Remove_ByQuery_RemoveNamed()
         {
             var realm = GetFakeFLXRealm();
@@ -773,6 +827,7 @@ namespace Realms.Tests.Sync
 
         private static void AssertSubscriptionDetails(Subscription sub, string type, string query = "TRUEPREDICATE", string name = null, bool expectUpdateOnly = false)
         {
+            Assert.That(sub.Id, Is.Not.EqualTo(ObjectId.Empty));
             Assert.That(sub.Name, Is.EqualTo(name).IgnoreCase);
             Assert.That(sub.Query, Is.EqualTo(query).IgnoreCase);
             Assert.That(sub.ObjectType, Is.EqualTo(type));

@@ -201,6 +201,14 @@ static inline realm_object_id_t to_capi(ObjectId oid)
     return result;
 }
 
+static inline realm_value_t to_capi_value(ObjectId oid)
+{
+    realm_value_t val{};
+    val.object_id = to_capi(oid);
+    val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
+    return val;
+}
+
 static inline ObjectId from_capi(realm_object_id_t oid)
 {
     std::array<uint8_t, 12> bytes;

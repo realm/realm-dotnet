@@ -25,6 +25,8 @@ namespace Realms.Sync.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct Subscription
     {
+        private PrimitiveValue id;
+
         private PrimitiveValue name;
 
         private PrimitiveValue object_type;
@@ -49,6 +51,7 @@ namespace Realms.Sync.Native
 
                 return new()
                 {
+                    Id = id.AsObjectId(),
                     Name = name.AsString(),
                     Query = query.AsString(),
                     ObjectType = object_type.AsString(),
