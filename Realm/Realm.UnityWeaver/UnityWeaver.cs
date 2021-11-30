@@ -144,26 +144,28 @@ namespace RealmWeaver
             try
             {
                 EditorApplication.LockReloadAssemblies();
-                var weavingTasks = GetAssemblies()
-                    .Select(assembly => Task.Run(() =>
+                var assembliesToWeave = GetAssemblies();
+                var weaveResults = new List<string>();
+                await Task.Run(() =>
+                {
+                    foreach (var assembly in assembliesToWeave)
                     {
                         if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
                         {
-                            return null;
+                            continue;
                         }
 
                         string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
                         if (sourceFilePath == null)
                         {
-                            return null;
+                            continue;
                         }
 
-                        return sourceFilePath;
-                    }));
+                        weaveResults.Add(sourceFilePath);
+                    }
+                });
 
-                var weaveResults = await Task.WhenAll(weavingTasks);
-
-                foreach (var result in weaveResults.Where(r => r != null))
+                foreach (var result in weaveResults)
                 {
                     AssetDatabase.ImportAsset(result, ImportAssetOptions.ForceUpdate);
                     assembliesWoven++;
