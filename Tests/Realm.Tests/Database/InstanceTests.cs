@@ -935,6 +935,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Realm_Freeze_ReadOnly()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            realm.Dispose();
+
+            config.IsReadOnly = true;
+
+            realm = GetRealm(config);
+            Realm frozenRealm = null;
+            Assert.DoesNotThrow(() => frozenRealm = realm.Freeze());
+            frozenRealm.Dispose();
+        }
+
+        [Test]
         public void Realm_HittingMaxNumberOfVersions_Throws()
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString())

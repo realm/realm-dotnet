@@ -130,8 +130,12 @@ inline SharedRealm* new_realm(SharedRealm realm)
 {
     if (!realm->config().immutable()) {
         if (!realm->refresh()) {
+            // this should only be needed for immutable frozen realms
             realm->read_group();
         }
+    }
+    else {
+        realm->read_group();
     }
 
     return new SharedRealm(realm);
@@ -519,7 +523,7 @@ REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeEx
 {
     return handle_errors(ex, [&]() {
         auto frozen_realm = realm->freeze();
-        return new_realm(std::move(realm));
+        return new_realm(std::move(frozen_realm));
     });
 }
 
