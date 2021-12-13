@@ -158,7 +158,7 @@ namespace Realms
 
             while (expression != null)
             {
-                var type = expression.Member.DeclaringType;
+                var type = expression.Expression.Type;
                 var typeName = type.GetMappedOrOriginalName();
                 if (!_realm.Metadata.TryGetValue(typeName, out var metadata))
                 {
