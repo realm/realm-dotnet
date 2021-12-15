@@ -221,6 +221,33 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SearchComparingStringIQueryable()
+        {
+            var searchString = "et";
+            var containsCaptured = _realm.All<Person>().Where(p => p.FirstName.Contains(searchString));
+            foreach (var p in containsCaptured)
+            {
+                Assert.AreEqual(p.FullName, "Peter Jameson");
+            }
+
+            // case sensitive
+            var searchStringSensitive = "Smi";
+            var containsOrdinalCaptured = _realm.All<Person>().Where(p => p.FirstName.Contains(searchStringSensitive, StringComparison.Ordinal));
+            foreach (var p in containsOrdinalCaptured)
+            {
+                Assert.AreEqual(p.FullName, "John Smith");
+            }
+
+            // ignore case
+            var searchStringInsensitive = "smi";
+            var containsIgnorecaseCaptured = _realm.All<Person>().Where(p => p.FirstName.Contains(searchStringInsensitive, StringComparison.OrdinalIgnoreCase));
+            foreach (var p in containsIgnorecaseCaptured)
+            {
+                Assert.AreEqual(p.FullName, "John Smith");
+            }
+        }
+
+        [Test]
         public void SearchComparingDateTimeOffset()
         {
             var d1960 = new DateTimeOffset(1960, 1, 1, 0, 0, 0, TimeSpan.Zero);
