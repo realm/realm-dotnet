@@ -205,6 +205,7 @@ namespace Realms.Sync
         {
             try
             {
+                // TODO what's missing here is to add a way to grab all the callbacks from the SyncConfiguration
                 using var handle = new SessionHandle(sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
@@ -213,6 +214,8 @@ namespace Realms.Sync
 
                 if (isClientReset)
                 {
+                    // TODO here I believe I should call the ManualResetFallback if I see that I'm in DiscardLocalChanges mode and receive realm::sync::ClientError::auto_client_reset_failure
+                    // I am also pretty sure that I should call the ManualRecovery.OnClientReset if in manual mode, given line 371 to 372 in core.sync_session.cpp
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, userInfo);
                 }
@@ -226,6 +229,7 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
+                // TODO this also needs to go as I'd like to call SyncConfiguration.SyncErrorHandler.OnError()
                 Session.RaiseError(session, exception);
             }
             catch (Exception ex)

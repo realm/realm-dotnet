@@ -29,6 +29,7 @@ namespace Realms.Sync
     /// </summary>
     public class Session
     {
+        // TODO I don't think that we should keep this at all. Because it's gonna be hard to enforce this being used for all but Client Reset exceptions
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>

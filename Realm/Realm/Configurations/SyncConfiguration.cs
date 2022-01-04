@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Helpers;
+using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
 {
@@ -50,6 +51,17 @@ namespace Realms.Sync
         /// </summary>
         /// <value>A callback that will be periodically invoked as the Realm is downloaded.</value>
         public Action<SyncProgress> OnProgress { get; set; }
+
+        /// <summary>
+        /// Gets or sets a subclass of <see cref="ClientResetHandlerBase"> to specify actions to be taken for the selected Client Reset strategy: <see cref="ManualRecovery"> or <see cref="DiscardLocalResetHandler"/>.
+        /// If nothing is set, the strategy defaults to <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after synchronization.
+        /// </summary>
+        public ClientResetHandlerBase ClientResetHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets a callback to handle errors that happen on a session.
+        /// </summary>
+        public SyncErrorHandler SyncErrorHandler { get; set; }
 
         /// <summary>
         /// Gets the partition identifying the Realm this configuration is describing.
