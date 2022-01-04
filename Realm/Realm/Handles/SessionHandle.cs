@@ -214,7 +214,7 @@ namespace Realms.Sync
 
                 if (isClientReset)
                 {
-                    // TODO here I believe I should call the ManualResetFallback if I see that I'm in DiscardLocalChanges mode and receive realm::sync::ClientError::auto_client_reset_failure
+                    // TODO here I believe I should call the DiscardLocalResetHandler.ManualResetFallback if I see that I'm in DiscardLocalChanges mode and receive realm::sync::ClientError::auto_client_reset_failure
                     // I am also pretty sure that I should call the ManualRecovery.OnClientReset if in manual mode, given line 371 to 372 in core.sync_session.cpp
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, userInfo);
