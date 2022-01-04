@@ -46,7 +46,7 @@ namespace Realms.Sync
         internal override Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
             var config = base.CreateNativeSyncConfiguration();
-            config.Partition = string.Empty;
+            config.is_flexible_sync = true;
             return config;
         }
     }

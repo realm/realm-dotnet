@@ -198,8 +198,8 @@ namespace Realms.Tests.Sync
         public void SubscriptionSet_Add_ComplexQuery_AddsSubscription()
         {
             var realm = GetFakeFLXRealm();
-            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty.StartsWith("foo") && (o.BooleanProperty || o.FloatProperty > 3.2f));
-            var expectedQueryString = "StringProperty BEGINSWITH \"foo\" and (BooleanProperty == true or FloatProperty > 3.2)";
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty.StartsWith("foo") && (o.BooleanProperty || o.DoubleProperty > 3.2));
+            var expectedQueryString = "StringProperty BEGINSWITH \"foo\" and (BooleanProperty == true or DoubleProperty > 3.2)";
 
             realm.Subscriptions.Update(() =>
             {
@@ -799,16 +799,37 @@ namespace Realms.Tests.Sync
         [Test]
         public void Integration_SubscriptionSet_Add()
         {
-            Logger.LogLevel = LogLevel.Debug;
+            Logger.LogLevel = LogLevel.Trace;
             Logger.Default = Logger.Function(m => Debug.WriteLine(m));
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                var writerRealm = await GetFLXIntegrationRealmAsync();
+                writerRealm.Subscriptions.Update(() =>
+                {
+                    writerRealm.Subscriptions.Add(writerRealm.All<SyncAllTypesObject>());
+                });
+
+                writerRealm.Write(() =>
+                {
+                    writerRealm.Add(new SyncAllTypesObject
+                    {
+                        DoubleProperty = 1.5
+                    });
+
+                    writerRealm.Add(new SyncAllTypesObject
+                    {
+                        DoubleProperty = 2.5
+                    });
+                });
+
+                await WaitForUploadAsync(writerRealm);
+
                 var realm = await GetFLXIntegrationRealmAsync();
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
 
-                var query = realm.All<SyncAllTypesObject>();
+                var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2);
 
                 realm.Subscriptions.Update(() =>
                 {
@@ -819,7 +840,11 @@ namespace Realms.Tests.Sync
 
                 await realm.Subscriptions.WaitForSynchronizationAsync();
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                Assert.That(query.Count(), Is.EqualTo(1));
+                Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
+
+                // TODO: reenable this
+                // Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
             });
         }
 

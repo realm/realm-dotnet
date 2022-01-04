@@ -47,7 +47,14 @@ struct CSharpSubscription {
     bool has_value = false;
 };
 
-using StateWaitCallbackT = void(void* task_completion_source, SubscriptionSet::State state, realm_value_t message);
+enum class CSharpState : uint8_t {
+    Pending = 0,
+    Complete,
+    Error,
+    Superceded
+};
+
+using StateWaitCallbackT = void(void* task_completion_source, CSharpState state, realm_value_t message);
 using SubscriptionCallbackT = void(void* managed_callback, CSharpSubscription sub);
 
 namespace realm {
@@ -76,6 +83,23 @@ namespace binding {
             }
         });
     }
+
+    inline CSharpState core_to_csharp_state(SubscriptionSet::State state) {
+        switch (state) {
+        case SubscriptionSet::State::Uncommitted:
+        case SubscriptionSet::State::Pending:
+        case SubscriptionSet::State::Bootstrapping:
+            return CSharpState::Pending;
+        case SubscriptionSet::State::Complete:
+            return CSharpState::Complete;
+        case SubscriptionSet::State::Error:
+            return CSharpState::Error;
+        case SubscriptionSet::State::Superceded:
+            return CSharpState::Superceded;
+        default:
+            REALM_UNREACHABLE();
+        }
+    }
 }
 }
 extern "C" {
@@ -94,30 +118,12 @@ REALM_EXPORT size_t realm_subscriptionset_get_count(SubscriptionSet& subs, Nativ
     });
 }
 
-enum class CSharpState : uint8_t {
-    Pending = 0,
-    Complete,
-    Error,
-    Superceded
-};
+
 
 REALM_EXPORT CSharpState realm_subscriptionset_get_state(SubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        switch (subs.state()) {
-        case SubscriptionSet::State::Uncommitted:
-        case SubscriptionSet::State::Pending:
-        case SubscriptionSet::State::Bootstrapping:
-            return CSharpState::Pending;
-        case SubscriptionSet::State::Complete:
-            return CSharpState::Complete;
-        case SubscriptionSet::State::Error:
-            return CSharpState::Error;
-        case SubscriptionSet::State::Superceded:
-            return CSharpState::Superceded;
-        default:
-            REALM_UNREACHABLE();
-        }
+        return core_to_csharp_state(subs.state());
     });
 }
 
@@ -321,10 +327,10 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(const SubscriptionSet* su
         subs->get_state_change_notification(SubscriptionSet::State::Complete)
             .get_async([task_completion_source](StatusWith<SubscriptionSet::State> status) mutable noexcept {
                 if (status.is_ok()) {
-                    s_state_wait_callback(task_completion_source, status.get_value(), realm_value_t{});
+                    s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
                 }
                 else {
-                    s_state_wait_callback(task_completion_source, SubscriptionSet::State::Error, to_capi_value(status.get_status().reason()));
+                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
                 }
             });
     });
