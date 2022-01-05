@@ -202,14 +202,14 @@ namespace Realms
                 if (node.Method.Name == nameof(Queryable.Count))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    var foundCount = _coreQueryHandle.Count();
+                    var foundCount = _coreQueryHandle.Count(_sortDescriptor);
                     return Expression.Constant(foundCount);
                 }
 
                 if (node.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    return Expression.Constant(_coreQueryHandle.Count() > 0);
+                    return Expression.Constant(_coreQueryHandle.Count(_sortDescriptor) > 0);
                 }
 
                 if (node.Method.Name.StartsWith(nameof(Queryable.First), StringComparison.OrdinalIgnoreCase))

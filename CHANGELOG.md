@@ -6,6 +6,7 @@
 ### Fixed
 * Fixed a race condition that could result in `Sharing violation on path ...` error when opening a Unity project on macOS. (Issue [#2720](https://github.com/realm/realm-dotnet/issues/2720), fix by [@tomkrikorian](https://github.com/tomkrikorian))
 * Fixed an error being thrown when `Realm.GetInstance` is called multiple times on a readonly Realm. (Issue [#2731](https://github.com/realm/realm-dotnet/pull/2731))
+* Fixed a bug that would result in the `LIMIT` clause being ignored when `Count()` is invoked on a `IQueryable` - e.g. expressions like `realm.All<Foo>().Filter("Bar > 5 LIMIT(1)).Count()` would ignore the limit in the string-based predicate and return the count of all matches. (Issue [#2755](https://github.com/realm/realm-dotnet/issues/2755))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
