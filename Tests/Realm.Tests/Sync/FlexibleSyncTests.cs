@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
@@ -198,8 +199,8 @@ namespace Realms.Tests.Sync
         public void SubscriptionSet_Add_ComplexQuery_AddsSubscription()
         {
             var realm = GetFakeFLXRealm();
-            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty.StartsWith("foo") && (o.BooleanProperty || o.DoubleProperty > 3.2));
-            var expectedQueryString = "StringProperty BEGINSWITH \"foo\" and (BooleanProperty == true or DoubleProperty > 3.2)";
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty.StartsWith("foo") && (o.BooleanProperty || o.DoubleProperty > 0.5));
+            var expectedQueryString = "StringProperty BEGINSWITH \"foo\" and (BooleanProperty == true or DoubleProperty > 0.5)";
 
             realm.Subscriptions.Update(() =>
             {
@@ -797,13 +798,15 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Integration_SubscriptionSet_Add()
+        public void Integration_SubscriptionSet_AddRemove()
         {
             Logger.LogLevel = LogLevel.Trace;
             Logger.Default = Logger.Function(m => Debug.WriteLine(m));
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                var testGuid = Guid.NewGuid();
+
                 var writerRealm = await GetFLXIntegrationRealmAsync();
                 writerRealm.Subscriptions.Update(() =>
                 {
@@ -814,12 +817,14 @@ namespace Realms.Tests.Sync
                 {
                     writerRealm.Add(new SyncAllTypesObject
                     {
-                        DoubleProperty = 1.5
+                        DoubleProperty = 1.5,
+                        GuidProperty = testGuid,
                     });
 
                     writerRealm.Add(new SyncAllTypesObject
                     {
-                        DoubleProperty = 2.5
+                        DoubleProperty = 2.5,
+                        GuidProperty = testGuid,
                     });
                 });
 
@@ -829,22 +834,28 @@ namespace Realms.Tests.Sync
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
 
-                var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2);
+                var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
 
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Add(query);
-                });
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
-
-                await realm.Subscriptions.WaitForSynchronizationAsync();
+                await UpdateAndWaitForSubscription(query);
 
                 Assert.That(query.Count(), Is.EqualTo(1));
                 Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
 
-                // TODO: reenable this
-                // Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                var query2 = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty < 2 && o.GuidProperty == testGuid);
+                await UpdateAndWaitForSubscription(query2);
+
+                Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(2));
+
+                await UpdateAndWaitForSubscription(query, shouldAdd: false);
+
+                Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(1));
+                Assert.That(query.Count(), Is.EqualTo(0));
+                Assert.That(query2.Count(), Is.EqualTo(1));
+
+                // TODO: reenable these
+                //await UpdateAndWaitForSubscription(query2, shouldAdd: false);
+
+                //Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(0));
             });
         }
 
@@ -866,6 +877,30 @@ namespace Realms.Tests.Sync
             {
                 Assert.That(sub.CreatedAt, Is.EqualTo(sub.UpdatedAt));
             }
+        }
+
+        private static async Task UpdateAndWaitForSubscription<T>(IQueryable<T> query, bool shouldAdd = true)
+            where T : RealmObject
+        {
+            var realm = ((RealmResults<T>)query).Realm;
+
+            realm.Subscriptions.Update(() =>
+            {
+                if (shouldAdd)
+                {
+                    realm.Subscriptions.Add(query);
+                }
+                else
+                {
+                    realm.Subscriptions.Remove(query);
+                }
+            });
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
         }
     }
 }

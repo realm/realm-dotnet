@@ -94,7 +94,7 @@ namespace Realms.Sync
             public static extern IntPtr begin_write(SubscriptionSetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_commit_write", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void commit_write(SubscriptionSetHandle handle, out NativeException ex);
+            public static extern IntPtr commit_write(SubscriptionSetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_get_error", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_error_message(SubscriptionSetHandle handle, IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
@@ -116,7 +116,7 @@ namespace Realms.Sync
             NativeMethods.install_callbacks(getSubscription, waitState);
         }
 
-        public bool IsReadonly { get; private set; }
+        public bool IsReadonly { get; }
 
         [Preserve]
         public SubscriptionSetHandle(IntPtr handle, bool isReadonly = true) : base(null, handle)
@@ -158,12 +158,12 @@ namespace Realms.Sync
             return new SubscriptionSetHandle(result, isReadonly: false);
         }
 
-        public void CommitWrite()
+        public SubscriptionSetHandle CommitWrite()
         {
-            NativeMethods.commit_write(this, out var ex);
+            var result = NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
 
-            IsReadonly = true;
+            return new SubscriptionSetHandle(result, isReadonly: true);
         }
 
         public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));

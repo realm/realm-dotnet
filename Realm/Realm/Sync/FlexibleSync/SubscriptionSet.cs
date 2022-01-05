@@ -170,24 +170,42 @@ namespace Realms.Sync
             EnsureReadonly();
             Argument.NotNull(action, nameof(action));
 
-            var handleToDispose = Handle;
-            _handle = Handle.BeginWrite();
+            var oldHandle = Handle;
+            var toDispose = new List<IDisposable>()
+            {
+                // If the write succeeds, we want to dispose the old handle.
+                oldHandle
+            };
+
+            var writeableHandle = Handle.BeginWrite();
+            toDispose.Add(writeableHandle);
+
+            // We need to set the writable handle as the current subscription set handle
+            // to allow performing operations that modify it.
+            _handle = writeableHandle;
 
             try
             {
                 action();
-                _handle.CommitWrite();
+
+                // Committing the write will generate a new readonly subscription set handle that
+                // we need to set to _handle.
+                _handle = _handle.CommitWrite();
             }
             catch
             {
-                // If an error occurs - revert to the old subscription set handle and
-                // dispose the new one. This will rollback the transaction.
-                (_handle, handleToDispose) = (handleToDispose, _handle);
+                // If an error occurs - revert to the old subscription set handle. Disposing the writeableHandle
+                // will rollback the transaction, so we don't need to worry about it.
+                toDispose.Remove(oldHandle);
+                _handle = oldHandle;
                 throw;
             }
             finally
             {
-                handleToDispose.Dispose();
+                foreach (var handle in toDispose)
+                {
+                    handle.Dispose();
+                }
             }
         }
 

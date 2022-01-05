@@ -171,7 +171,7 @@ REALM_EXPORT void realm_subscriptionset_find_by_query(SubscriptionSet& subs, Res
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_add_results(SubscriptionSet& subs,
+REALM_EXPORT void realm_subscriptionset_add_results(MutableSubscriptionSet& subs,
     Results& results,
     uint16_t* name_buf, size_t name_len,
     bool update_existing, void* callback, NativeException::Marshallable& ex)
@@ -196,7 +196,7 @@ REALM_EXPORT void realm_subscriptionset_add_results(SubscriptionSet& subs,
     });
 }
 
-REALM_EXPORT bool realm_subscriptionset_remove(SubscriptionSet& subs, uint16_t* name_buf, size_t name_len, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_subscriptionset_remove(MutableSubscriptionSet& subs, uint16_t* name_buf, size_t name_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         Utf16StringAccessor name(name_buf, name_len);
@@ -209,7 +209,7 @@ REALM_EXPORT bool realm_subscriptionset_remove(SubscriptionSet& subs, uint16_t* 
     });
 }
 
-REALM_EXPORT bool realm_subscriptionset_remove_by_id(SubscriptionSet& subs, realm_value_t id, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_subscriptionset_remove_by_id(MutableSubscriptionSet& subs, realm_value_t id, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         auto subId = from_capi(id.object_id);
@@ -224,7 +224,7 @@ REALM_EXPORT bool realm_subscriptionset_remove_by_id(SubscriptionSet& subs, real
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_by_query(SubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_by_query(MutableSubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         size_t removed = 0;
@@ -246,7 +246,7 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_query(SubscriptionSet& subs,
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SubscriptionSet& subs, uint16_t* type_buf, size_t type_len, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_by_type(MutableSubscriptionSet& subs, uint16_t* type_buf, size_t type_len, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         size_t removed = 0;
@@ -266,7 +266,7 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SubscriptionSet& subs, 
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_all(SubscriptionSet& subs, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_all(MutableSubscriptionSet& subs, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         if (remove_named) {
@@ -295,17 +295,17 @@ REALM_EXPORT void realm_subscriptionset_destroy(SubscriptionSet* subs)
     delete subs;
 }
 
-REALM_EXPORT SubscriptionSet* realm_subscriptionset_begin_write(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT MutableSubscriptionSet* realm_subscriptionset_begin_write(SubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return new SubscriptionSet(subs.make_mutable_copy());
+        return new MutableSubscriptionSet(subs.make_mutable_copy());
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_commit_write(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT SubscriptionSet* realm_subscriptionset_commit_write(MutableSubscriptionSet& subs, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&] {
-        subs.commit();
+    return handle_errors(ex, [&] {
+        return new SubscriptionSet(std::move(subs).commit());
     });
 }
 
@@ -321,12 +321,13 @@ REALM_EXPORT size_t realm_subscriptionset_get_error(SubscriptionSet& subs, uint1
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_wait_for_state(const SubscriptionSet* subs, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_subscriptionset_wait_for_state(SubscriptionSet* subs, void* task_completion_source, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
         subs->get_state_change_notification(SubscriptionSet::State::Complete)
-            .get_async([task_completion_source](StatusWith<SubscriptionSet::State> status) mutable noexcept {
+            .get_async([task_completion_source, subs](StatusWith<SubscriptionSet::State> status) mutable noexcept {
                 if (status.is_ok()) {
+                    subs->refresh();
                     s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
                 }
                 else {
