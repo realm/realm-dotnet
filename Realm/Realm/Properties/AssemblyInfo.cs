@@ -24,3 +24,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Tests.Unity")]
 [assembly: InternalsVisibleTo("Realm.UnityUtils")]
 [assembly: InternalsVisibleTo("PerformanceTests")]
+[assembly: InternalsVisibleTo("E2ETests")]
