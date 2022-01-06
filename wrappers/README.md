@@ -25,7 +25,7 @@ If you cloned your `realm-dotnet` repository, you can use a git command to get t
 
 If you downloaded a zip of the source, you need to go back to github to identify which version of Objectstore is required. There is no git information in the zip file which specifies this.
 
-1. Look in the github repo [wrappers/src](https://github.com/realm/realm-dotnet/tree/master/wrappers/src) and you will see the link to the submodule, eg: `object-store @ fb2ed6a`.
+1. Look in the github repo [wrappers](https://github.com/realm/realm-dotnet/tree/master/wrappers) and you will see the link to the submodule, eg: `realm-core @ 802aa43`.
 1. Click the link to take you to the tree in ObjectStore
 1. Download a zip using the GitHub download button in that tree, eg `realm-object-store-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
 1. Unpack its contents into `wrappers/src/object-store`
