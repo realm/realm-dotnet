@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Realms.Helpers;
+using Remotion.Linq.Parsing.ExpressionVisitors;
+using Remotion.Linq.Parsing.ExpressionVisitors.TreeEvaluation;
 
 namespace Realms
 {
@@ -71,9 +73,15 @@ namespace Realms
             }
 
             // do all the LINQ expression evaluation to build a query
+            var expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(Expression, new EvaluatableExpressionFilter());
+
             var qv = ((RealmResultsProvider)Provider).MakeVisitor();
-            qv.Visit(Expression);
+            qv.Visit(expression);
             return qv.MakeResultsForQuery();
+        }
+
+        private class EvaluatableExpressionFilter : EvaluatableExpressionFilterBase
+        {
         }
 
         protected override T GetValueAtIndex(int index) => ResultsHandle.GetValueAtIndex(index, Realm).As<T>();

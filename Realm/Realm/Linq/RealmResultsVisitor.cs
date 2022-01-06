@@ -315,11 +315,7 @@ namespace Realms
                 }
                 else if (IsStringContainsWithComparison(node.Method, out var index))
                 {
-                    // if the signature has only 2 elements, node.Arguments[0] is the value to translate
-                    if (index == 1)
-                    {
-                        member = node.Arguments[0] as MemberExpression;
-                    }
+                    member = node.Arguments[0] as MemberExpression;
 
                     stringArgumentIndex = index;
                     queryMethod = (q, r, p, v) => q.StringContains(r, p, v, GetComparisonCaseSensitive(node));
