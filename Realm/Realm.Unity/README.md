@@ -11,9 +11,7 @@ Realm is an embedded mobile database that runs directly on phones, tablets, or d
 
 ## Getting Started
 
-**TODO**: update the link to point to unity install steps
-
-Please see the detailed instructions in our [Install Guide](https://docs.mongodb.com/realm/dotnet/install/) to add Realm to your Unity project.
+Please see the detailed instructions in our [Install Guide](https://docs.mongodb.com/realm/sdk/dotnet/unity/#install) to add Realm to your Unity project.
 
 ## Documentation
 

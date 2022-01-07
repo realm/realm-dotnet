@@ -40,6 +40,32 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ReadOnlyInstance_ThrowsOnRefresh()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            realm.Dispose();
+
+            config.IsReadOnly = true;
+
+            realm = GetRealm(config);
+            Assert.Throws<RealmException>(() => realm.Refresh(), "Can't refresh a read-only Realm.");
+        }
+
+        [Test]
+        public void GetTwice_ReadOnlyInstance_DoesNotThrow()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            realm.Dispose();
+
+            config.IsReadOnly = true;
+
+            _ = GetRealm(config);
+            Assert.DoesNotThrow(() => GetRealm(config));
+        }
+
+        [Test]
         public void InstanceIsClosedByDispose()
         {
             Realm temp;
@@ -906,6 +932,21 @@ namespace Realms.Tests.Database
 
             Assert.That(ReferenceEquals(realm, anotherFrozenRealm), Is.False);
             Assert.That(ReferenceEquals(frozenRealm, anotherFrozenRealm), Is.False);
+        }
+
+        [Test]
+        public void Realm_Freeze_ReadOnly()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            realm.Dispose();
+
+            config.IsReadOnly = true;
+
+            realm = GetRealm(config);
+            Realm frozenRealm = null;
+            Assert.DoesNotThrow(() => frozenRealm = realm.Freeze());
+            frozenRealm.Dispose();
         }
 
         [Test]

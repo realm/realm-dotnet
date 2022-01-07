@@ -134,7 +134,11 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
 inline SharedRealm* new_realm(SharedRealm realm)
 {
-    if (!realm->refresh()) {
+    // If a Realm is immutable, it can't be refreshed
+    // If we can't refresh the Realm, make sure we begin a read transaction
+    // as a lot of functionality expects an active read transaction and
+    // ObjectStore doesn't always start one automatically.
+    if (realm->config().immutable() || !realm->refresh()) {
         realm->read_group();
     }
 
