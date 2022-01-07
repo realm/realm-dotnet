@@ -1203,6 +1203,35 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void Integration_SubscriptionSet_WaitForSynchronization_CanBeCalledMultipleTimes()
+        {
+            Logger.LogLevel = LogLevel.Trace;
+            Logger.Default = Logger.Function(m => Debug.WriteLine(m));
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+
+                // TODO: reenable Call WaitForSynchronizationAsync again
+                //await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                //Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
+        }
+
         private async Task<Realm> AddSomeData(Guid testGuid)
         {
             var writerRealm = await GetFLXIntegrationRealmAsync();
