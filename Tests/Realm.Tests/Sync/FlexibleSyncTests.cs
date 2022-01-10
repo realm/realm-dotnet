@@ -1369,6 +1369,52 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void Integration_UpdatingSubscription_SupercedesPreviousOnes()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                var testGuid = Guid.NewGuid();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                var version = realm.Subscriptions.Version;
+
+                // Capture subs here as we expect the collection to be superceded by the background update
+                var subs = realm.Subscriptions;
+
+                await Task.Run(() =>
+                {
+                    using var bgRealm = GetRealm(realm.Config);
+
+                    Assert.That(bgRealm.Subscriptions.Version, Is.EqualTo(version));
+
+                    bgRealm.Subscriptions.Update(() =>
+                    {
+                        bgRealm.Subscriptions.Add(bgRealm.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
+                    });
+
+                    Assert.That(bgRealm.Subscriptions.Version, Is.EqualTo(version + 1));
+                });
+
+                Assert.That(subs.Version, Is.EqualTo(version));
+                Assert.That(realm.Subscriptions.Version, Is.EqualTo(version + 1));
+                Assert.That(ReferenceEquals(subs, realm.Subscriptions), Is.False);
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+                await subs.WaitForSynchronizationAsync();
+
+                Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Superceded));
+                Assert.That(subs.Version, Is.EqualTo(version));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
+        }
+
         private async Task<Realm> AddSomeData(Guid testGuid)
         {
             var writerRealm = await GetFLXIntegrationRealmAsync();

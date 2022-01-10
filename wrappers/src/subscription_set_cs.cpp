@@ -326,12 +326,19 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(SubscriptionSet* subs, vo
     handle_errors(ex, [&] {
         subs->get_state_change_notification(SubscriptionSet::State::Complete)
             .get_async([task_completion_source, subs](StatusWith<SubscriptionSet::State> status) mutable noexcept {
-                subs->refresh();
-                if (status.is_ok()) {
-                    s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
+                try {
+                    subs->refresh();
+                    if (status.is_ok()) {
+                        s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
+                    }
+                    else {
+                        s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
+                    }
                 }
-                else {
-                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
+                catch (...) {
+                    auto inner_ex = convert_exception();
+                    auto error_message = util::format("%1: %2", inner_ex.message, inner_ex.detail);
+                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(error_message));
                 }
             });
     });
