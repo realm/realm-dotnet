@@ -213,7 +213,7 @@ namespace Realms.Sync
                 if (isClientReset)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    exception = new ClientResetException(session.User.App, messageString, userInfo);
+                    exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)
                 {

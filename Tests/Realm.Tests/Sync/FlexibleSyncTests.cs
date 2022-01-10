@@ -26,6 +26,7 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
@@ -829,9 +830,9 @@ namespace Realms.Tests.Sync
                 Assert.That(query2.Count(), Is.EqualTo(1));
 
                 // TODO: reenable
-                //await UpdateAndWaitForSubscription(query2, shouldAdd: false);
+                await UpdateAndWaitForSubscription(query2, shouldAdd: false);
 
-                //Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(0));
+                Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(0));
             });
         }
 
@@ -1206,9 +1207,6 @@ namespace Realms.Tests.Sync
         [Test]
         public void Integration_SubscriptionSet_WaitForSynchronization_CanBeCalledMultipleTimes()
         {
-            Logger.LogLevel = LogLevel.Trace;
-            Logger.Default = Logger.Function(m => Debug.WriteLine(m));
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var testGuid = Guid.NewGuid();
@@ -1220,15 +1218,85 @@ namespace Realms.Tests.Sync
                 });
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
-
                 await realm.Subscriptions.WaitForSynchronizationAsync();
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
 
-                // TODO: reenable Call WaitForSynchronizationAsync again
-                //await realm.Subscriptions.WaitForSynchronizationAsync();
+                // Call WaitForSynchronizationAsync again
+                await realm.Subscriptions.WaitForSynchronizationAsync();
 
-                //Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
+        }
+
+        [Test]
+        public void Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
+                {
+                    Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
+                });
+
+                realm.Write(() =>
+                {
+                    realm.Add(new SyncAllTypesObject());
+                });
+
+                var sessionError = await sessionErrorTask;
+                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+            });
+        }
+
+        [Test]
+        public void Integration_UpdateObjectNotMatchingSubscriptions_ShouldError()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
+                {
+                    Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
+                });
+
+                var ato = realm.Write(() =>
+                {
+                    return realm.Add(new SyncAllTypesObject
+                    {
+                        GuidProperty = testGuid,
+                    });
+                });
+
+                await WaitForUploadAsync(realm);
+
+                realm.Write(() =>
+                {
+                    ato.GuidProperty = Guid.NewGuid();
+                });
+
+                realm.Write(() =>
+                {
+                    ato.Int32Property = 15;
+                });
+
+                var sessionError = await sessionErrorTask;
+                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
             });
         }
 

@@ -172,6 +172,16 @@ namespace Realms.Tests.Sync
         public static Task<T> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message, Action<Session> sessionAssertions)
             where T : Exception
         {
+            var task = WaitForSessionError<T>(sessionAssertions);
+
+            session.SimulateError(code, message);
+
+            return task;
+        }
+
+        public static Task<T> WaitForSessionError<T>(Action<Session> sessionAssertions)
+            where T : Exception
+        {
             var tcs = new TaskCompletionSource<T>();
             EventHandler<ErrorEventArgs> handler = null;
             handler = new EventHandler<ErrorEventArgs>((sender, e) =>
@@ -192,8 +202,6 @@ namespace Realms.Tests.Sync
             });
 
             Session.Error += handler;
-
-            session.SimulateError(code, message);
 
             return tcs.Task;
         }

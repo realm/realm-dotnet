@@ -326,8 +326,8 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(SubscriptionSet* subs, vo
     handle_errors(ex, [&] {
         subs->get_state_change_notification(SubscriptionSet::State::Complete)
             .get_async([task_completion_source, subs](StatusWith<SubscriptionSet::State> status) mutable noexcept {
+                subs->refresh();
                 if (status.is_ok()) {
-                    subs->refresh();
                     s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
                 }
                 else {
