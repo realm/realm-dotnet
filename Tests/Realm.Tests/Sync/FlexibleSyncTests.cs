@@ -829,7 +829,6 @@ namespace Realms.Tests.Sync
                 Assert.That(query.Count(), Is.EqualTo(0));
                 Assert.That(query2.Count(), Is.EqualTo(1));
 
-                // TODO: reenable
                 await UpdateAndWaitForSubscription(query2, shouldAdd: false);
 
                 Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(0));
@@ -987,7 +986,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(atos.ElementAt(1).ObjectProperty.Int, Is.EqualTo(-1));
 
-                SyncAllTypesObject getAtoWithLink(int value) => new SyncAllTypesObject
+                SyncAllTypesObject getAtoWithLink(int value) => new()
                 {
                     Int64Property = value,
                     GuidProperty = testGuid,
@@ -1045,7 +1044,7 @@ namespace Realms.Tests.Sync
                 Assert.That(atos.Single().Int64Property, Is.EqualTo(2));
                 Assert.That(atos.Single().EmbeddedObjectProperty.Int, Is.EqualTo(2));
 
-                SyncAllTypesObject getAtoWithEmbedded(int value) => new SyncAllTypesObject
+                SyncAllTypesObject getAtoWithEmbedded(int value) => new()
                 {
                     Int64Property = value,
                     GuidProperty = testGuid,
@@ -1372,7 +1371,7 @@ namespace Realms.Tests.Sync
             Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
         }
 
-        private static IntPropertyObject GetIntPropertyObject(int value, Guid guid) => new IntPropertyObject
+        private static IntPropertyObject GetIntPropertyObject(int value, Guid guid) => new()
         {
             Int = value,
             GuidProperty = guid
