@@ -24,6 +24,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Exceptions.Sync;
 using Realms.Logging;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -1296,6 +1297,75 @@ namespace Realms.Tests.Sync
 
                 var sessionError = await sessionErrorTask;
                 Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+            });
+        }
+
+        [Test]
+        public void Integration_SubscriptionOnUnqueryableField_ShouldError()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
+                });
+
+                try
+                {
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                    Assert.Fail("Expected an error to be thrown.");
+                }
+                catch (SubscriptionException ex)
+                {
+                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                }
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error));
+                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+            });
+        }
+
+        [Test]
+        public void Integration_AfterAnError_CanRecover()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
+                });
+
+                try
+                {
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                    Assert.Fail("Expected an error to be thrown.");
+                }
+                catch (SubscriptionException ex)
+                {
+                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                }
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error));
+                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+
+                var testGuid = Guid.NewGuid();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.RemoveAll(removeNamed: true);
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                Assert.That(realm.Subscriptions.Error, Is.Null);
             });
         }
 

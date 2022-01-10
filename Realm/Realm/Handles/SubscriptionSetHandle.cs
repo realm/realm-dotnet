@@ -272,9 +272,7 @@ namespace Realms.Sync
             }
             else
             {
-                var inner = new SubscriptionException(message.AsString());
-                const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
-                tcs.TrySetException(new RealmException(OuterMessage, inner));
+                tcs.TrySetException(new SubscriptionException(message.AsString()));
             }
         }
     }
