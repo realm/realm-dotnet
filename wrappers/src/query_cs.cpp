@@ -73,10 +73,10 @@ REALM_EXPORT void query_destroy(Query* query)
     delete query;
 }
 
-REALM_EXPORT size_t query_count(Query& query, NativeException::Marshallable& ex)
+REALM_EXPORT size_t query_count(Query& query, DescriptorOrdering& descriptor, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return query.count();
+        return query.count(descriptor);
     });
 }
 
