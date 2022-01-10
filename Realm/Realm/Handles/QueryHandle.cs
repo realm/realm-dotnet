@@ -101,7 +101,7 @@ namespace Realms
             public static extern void destroy(IntPtr queryHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_count", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr count(QueryHandle QueryHandle, out NativeException ex);
+            public static extern IntPtr count(QueryHandle QueryHandle, SortDescriptorHandle sortDescriptor, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor, out NativeException ex);
@@ -292,9 +292,9 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public int Count()
+        public int Count(SortDescriptorHandle sortDescriptor)
         {
-            var result = NativeMethods.count(this, out var nativeException);
+            var result = NativeMethods.count(this, sortDescriptor, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }

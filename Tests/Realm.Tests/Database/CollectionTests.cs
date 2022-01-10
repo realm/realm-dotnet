@@ -1359,6 +1359,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Results_GetFiltered_Limit()
+        {
+            PopulateAObjects();
+            var objects = _realm.All<A>().Filter("TRUEPREDICATE SORT(Value ASC) Limit(1)");
+
+            Assert.That(objects.Count(), Is.EqualTo(1));
+            Assert.That(objects.AsRealmCollection().Count, Is.EqualTo(1));
+            Assert.That(objects.Single().Value, Is.False);
+        }
+
+        [Test]
         public void Results_GetFiltered_WhenPredicateIsInvalid_Throws()
         {
             Assert.That(
