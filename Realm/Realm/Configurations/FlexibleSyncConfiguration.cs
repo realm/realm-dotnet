@@ -21,10 +21,12 @@ using System.Diagnostics.CodeAnalysis;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="FlexibleSyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
+    /// A <see cref="FlexibleSyncConfiguration"/> is used to setup a <see cref="Realm"/> whose data can be synchronized
+    /// between devices using MongoDB Realm. Unlike <see cref="PartitionSyncConfiguration"/>, a Realm opened with
+    /// <see cref="FlexibleSyncConfiguration"/> will be initially empty until one or more subscriptions are added
+    /// via <see cref="Realm.Subscriptions"/>.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
-    // TODO: update docs
+    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/fundamentals/realm-sync/">Sync Docs</seealso>
     public class FlexibleSyncConfiguration : SyncConfigurationBase
     {
         /// <summary>

@@ -47,12 +47,11 @@ namespace Realms.Sync
         Error,
 
         /// <summary>
-        /// The subscription set has been superceded by an updated one. This typically means
+        /// The subscription set has been superseded by an updated one. This typically means
         /// that someone has called <see cref="SubscriptionSet.Update"/> on a different instance
         /// of the <see cref="SubscriptionSet"/>. You should not use a superseded subscription set
         /// and instead obtain a new instance by calling <see cref="Realm.Subscriptions"/>.
         /// </summary>
-        Superceded,
+        Superseded,
     }
-
 }

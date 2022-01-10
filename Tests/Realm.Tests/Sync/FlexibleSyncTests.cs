@@ -1370,7 +1370,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Integration_UpdatingSubscription_SupercedesPreviousOnes()
+        public void Integration_UpdatingSubscription_SupersedesPreviousOnes()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1385,7 +1385,7 @@ namespace Realms.Tests.Sync
 
                 var version = realm.Subscriptions.Version;
 
-                // Capture subs here as we expect the collection to be superceded by the background update
+                // Capture subs here as we expect the collection to be superseded by the background update
                 var subs = realm.Subscriptions;
 
                 await Task.Run(() =>
@@ -1409,7 +1409,7 @@ namespace Realms.Tests.Sync
                 await realm.Subscriptions.WaitForSynchronizationAsync();
                 await subs.WaitForSynchronizationAsync();
 
-                Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Superceded));
+                Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Superseded));
                 Assert.That(subs.Version, Is.EqualTo(version));
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
             });

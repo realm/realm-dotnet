@@ -31,8 +31,8 @@ namespace Realms.Sync
     /// A collection representing the set of active subscriptions for a <see cref="Realm"/>
     /// instance. This is used in combination with <see cref="FlexibleSyncConfiguration"/> to
     /// declare the set of queries you want to synchronize with the server. You can access and
-    /// read the subscription set freely, but mutating it must happen in a <see cref="Update"/>
-    /// or <see cref="UpdateAsync"/> block.
+    /// read the subscription set freely, but mutating it must happen in an <see cref="Update"/>
+    /// block.
     /// </summary>
     /// <remarks>
     /// Any changes to the subscription set will be persisted locally and be available the next
@@ -152,15 +152,18 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Synchronously updates the subscription set.
+        /// Update the subscription set and send the request to the server in the background.
         /// </summary>
         /// <remarks>
-        /// Calling <see cref="Update"/> or <see cref="UpdateAsync"/> is a prerequisite for
+        /// Calling <see cref="Update"/> is a prerequisite for
         /// mutating the subscription set - e.g. by calling <see cref="Add{T}(IQueryable{T}, SubscriptionOptions)"/>,
         /// <see cref="Remove(Subscription)"/>, or <see cref="RemoveAll(bool)"/>.
         /// <br/>
         /// Calling this may update the content of this <see cref="SubscriptionSet"/> - e.g. if another
         /// <see cref="Update"/> was called on a background thread or if the <see cref="State"/> changed.
+        /// <br/>
+        /// If you want to wait for the server to acknowledge and send back the data that matches the updated
+        /// subscriptions, use <see cref="WaitForSynchronizationAsync"/>.
         /// </remarks>
         /// <param name="action">
         /// Action to execute, adding or removing subscriptions to this set.
@@ -190,7 +193,7 @@ namespace Realms.Sync
 
                 // Committing the write will generate a new readonly subscription set handle that
                 // we need to set to _handle.
-                _handle = _handle.CommitWrite();
+                _handle = Handle.CommitWrite();
             }
             catch
             {
@@ -207,46 +210,6 @@ namespace Realms.Sync
                     handle.Dispose();
                 }
             }
-        }
-
-        /// <summary>
-        /// Asynchronously updates the subscription set.
-        /// </summary>
-        /// <remarks>
-        /// Calling <see cref="Update"/> or <see cref="UpdateAsync"/> is a prerequisite for
-        /// mutating the subscription set - e.g. by calling <see cref="Add{T}(IQueryable{T}, SubscriptionOptions)"/>,
-        /// <see cref="Remove(Subscription)"/>, or <see cref="RemoveAll(bool)"/>.
-        /// <br/>
-        /// Calling this may update the content of this <see cref="SubscriptionSet"/> - e.g. if another
-        /// <see cref="Update"/> was called on a background thread or if the <see cref="State"/> changed.
-        /// <br/>
-        /// This does not wait for the server to acknowledge and return the data that is being requested
-        /// with the update. If you want to wait for the server updates, call <see cref="WaitForSynchronizationAsync"/>.
-        /// <br/>
-        /// The <paramref name="action"/> will be executed on the original thread that triggered the update
-        /// if that thread has a <see cref="SynchronizationContext"/> attached. Otherwise, this entire method will
-        /// block be executed synchronously (equivalent to calling <see cref="Update"/>).
-        /// </remarks>
-        /// <param name="action">
-        /// Action to execute, adding or removing subscriptions to this set.
-        /// </param>
-        /// <returns>
-        /// An awaitable Task that will be resolved when the subscription set has been updated and the
-        /// changes have been persisted locally.
-        /// </returns>
-        internal Task UpdateAsync(Action action)
-        {
-            EnsureReadonly();
-            Argument.NotNull(action, nameof(action));
-
-            // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
-            {
-                Update(action);
-                return Task.CompletedTask;
-            }
-
-            throw new NotImplementedException();
         }
 
         /// <summary>

@@ -51,7 +51,7 @@ enum class CSharpState : uint8_t {
     Pending = 0,
     Complete,
     Error,
-    Superceded
+    Superseded
 };
 
 using StateWaitCallbackT = void(void* task_completion_source, CSharpState state, realm_value_t message);
@@ -95,7 +95,7 @@ namespace binding {
         case SubscriptionSet::State::Error:
             return CSharpState::Error;
         case SubscriptionSet::State::Superceded:
-            return CSharpState::Superceded;
+            return CSharpState::Superseded;
         default:
             REALM_UNREACHABLE();
         }
