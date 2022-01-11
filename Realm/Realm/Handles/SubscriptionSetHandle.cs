@@ -87,6 +87,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_destroy_mutable", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy_mutable(IntPtr handle);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_wait_for_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern void wait_for_state(SubscriptionSetHandle handle, IntPtr task_completion_source, out NativeException ex);
 
@@ -249,7 +252,14 @@ namespace Realms.Sync
 
         protected override void Unbind()
         {
-            NativeMethods.destroy(handle);
+            if (IsReadonly)
+            {
+                NativeMethods.destroy(handle);
+            }
+            else
+            {
+                NativeMethods.destroy_mutable(handle);
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetSubscriptionCallback))]

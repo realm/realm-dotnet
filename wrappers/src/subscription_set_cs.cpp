@@ -295,6 +295,11 @@ REALM_EXPORT void realm_subscriptionset_destroy(SubscriptionSet* subs)
     delete subs;
 }
 
+REALM_EXPORT void realm_subscriptionset_destroy_mutable(MutableSubscriptionSet* subs)
+{
+    delete subs;
+}
+
 REALM_EXPORT MutableSubscriptionSet* realm_subscriptionset_begin_write(SubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
