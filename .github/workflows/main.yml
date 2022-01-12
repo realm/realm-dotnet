@@ -282,7 +282,7 @@ jobs:
         {
           if (-Not "${{ github.head_ref }}".Contains("release"))
           {
-            $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+            $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
           }
         }
         else
