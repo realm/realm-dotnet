@@ -3,22 +3,7 @@
     "name": "BackingDB",
     "type": "mongodb",
     "config": {
-        "flexible_sync": {
-            "state": "enabled",
-            "database_name": "flexible_sync_data",
-            "queryable_fields_names": ["DoubleProperty", "GuidProperty", "Int64Property", "Int"],
-            "permissions": {
-                "rules": {},
-                "defaultRoles": [
-                    {
-                        "name": "all",
-                        "applyWhen": {},
-                        "read": true,
-                        "write": true
-                    }
-                ]
-            }
-        }
+        
     },
     "secret_config": {
         "uri": "BackingDB_uri"
