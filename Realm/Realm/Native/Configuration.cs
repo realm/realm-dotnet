@@ -37,6 +37,19 @@ namespace Realms.Native
             }
         }
 
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string fallback_path;
+        private IntPtr fallback_path_len;
+
+        internal string FallbackPipePath
+        {
+            set
+            {
+                fallback_path = value;
+                fallback_path_len = (IntPtr)value.Length;
+            }
+        }
+
         [MarshalAs(UnmanagedType.U1)]
         internal bool read_only;
         [MarshalAs(UnmanagedType.U1)]
