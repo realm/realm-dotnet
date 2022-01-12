@@ -209,7 +209,7 @@ namespace Realms
             return new Native.Configuration
             {
                 Path = DatabasePath,
-                FallbackPipePath = FallbackPipePath ?? string.Empty,
+                FallbackPipePath = FallbackPipePath,
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,
                 max_number_of_active_versions = MaxNumberOfActiveVersions

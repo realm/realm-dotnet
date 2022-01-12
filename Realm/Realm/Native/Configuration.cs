@@ -46,7 +46,7 @@ namespace Realms.Native
             set
             {
                 fallback_path = value;
-                fallback_path_len = (IntPtr)value.Length;
+                fallback_path_len = value.IntPtrLength();
             }
         }
 
