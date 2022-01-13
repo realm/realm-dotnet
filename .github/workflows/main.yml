@@ -459,7 +459,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for .NET Framework
     outputs:
-      atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -543,7 +543,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for UWP Managed
     outputs:
-      atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -699,7 +699,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.macOS
     outputs:
-      atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -781,7 +781,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.iOS
     outputs:
-      atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -868,7 +868,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.Android
     outputs:
-      atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -1025,7 +1025,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Code Coverage
     outputs:
-      atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code

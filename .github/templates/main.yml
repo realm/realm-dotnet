@@ -45,7 +45,7 @@ with:
   runs-on: ubuntu-latest
   name: #@ "Deploy MDB Realm for " + name
   outputs:
-    atlasConfig: ${{ steps.deploy-mdb-apps.outputs.atlasConfig }}
+    clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
   timeout-minutes: #@ baasTimeout
   steps:
     - #@ template.replace(checkoutCode(False, False))
