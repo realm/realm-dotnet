@@ -469,14 +469,14 @@ jobs:
       - #@ template.replace(checkoutCode())
       - name: Set version suffix
         id: set-version-suffix
-        #! Build suffix is PR-1234.5 for PR builds or alpha.123 for branch builds.
+        #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
         run: |
           $suffix = ""
           if ($env:GITHUB_EVENT_NAME -eq "pull_request")
           {
             if (-Not "${{ github.head_ref }}".Contains("release"))
             {
-              $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+              $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
             }
           }
           else

@@ -120,6 +120,10 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
 
+    if (configuration.fallback_path) {
+        config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
+    }
+
     // by definition the key is only allowed to be 64 bytes long, enforced by C# code
     if (encryption_key) {
         auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
@@ -177,12 +181,15 @@ REALM_EXPORT void shared_realm_install_callbacks(
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Utf16StringAccessor pathStr(configuration.path, configuration.path_len);
 
         Realm::Config config;
-        config.path = pathStr.to_string();
+        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
         config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+
+        if (configuration.fallback_path) {
+            config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
+        }
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
         if (encryption_key )

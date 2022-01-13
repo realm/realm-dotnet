@@ -46,6 +46,17 @@ namespace Realms
         public string DatabasePath { get; protected set; }
 
         /// <summary>
+        /// Gets or sets the path where the named pipes used by Realm can be placed.
+        /// </summary>
+        /// <remarks>
+        /// In the vast majority of cases this value should be left null.
+        /// It needs to be set if the Realm is opened on a filesystem where a named pipe cannot be created, such as external storage on Android that uses FAT32.
+        /// In this case the path should point to a location on a filesystem where the pipes can be created.
+        /// </remarks>
+        /// <value>The path where named pipes can be created.</value>
+        public string FallbackPipePath { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the Realm will be open in dynamic mode. If opened in dynamic mode,
         /// the schema will be read from the file on disk.
         /// </summary>
@@ -198,6 +209,7 @@ namespace Realms
             return new Native.Configuration
             {
                 Path = DatabasePath,
+                FallbackPipePath = FallbackPipePath,
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,
                 max_number_of_active_versions = MaxNumberOfActiveVersions
