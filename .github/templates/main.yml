@@ -165,7 +165,7 @@ steps:
     shell: powershell
   - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
   - name: Run the tests
-    run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }} -BaasCluster '${{ env.CLUSTER_NAME }}' -BaasApiKey ${{ secrets.ATLAS_PUBLIC_API_KEY }} -BaasPrivateApiKey ${{ secrets.ATLAS_PRIVATE_API_KEY }} -BaasProjectId ${{ secrets.ATLAS_PROJECT_ID }}
+    run: #@ "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '" + baasTestArgs + "'"
     shell: powershell
   - #@ publishTestsResults("${{ env.TEST_RESULTS }}", "UWP Managed")
 #@ end
@@ -222,7 +222,6 @@ steps:
         adb logcat -c
         adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
 
-        adb uninstall io.realm.xamarintests
         adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
         adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
         adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE

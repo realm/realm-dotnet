@@ -48,7 +48,7 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = DummyAppId,
         };
 
-        private static readonly Uri _baseUri;
+        private static Uri _baseUri;
 
         static SyncTestHelpers()
         {
@@ -124,6 +124,11 @@ namespace Realms.Tests.Sync
                 {
                     result.Add(args[i]);
                 }
+            }
+
+            if (baseUrl != null)
+            {
+                _baseUri = new Uri(baseUrl);
             }
 
             CreateBaasApps(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
