@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.8.0 (2022-01-13)
 
 ### Enhancements
 * Added the `RealmConfigurationBase.FallbackPipePath` property. In the majority of cases this property can be left null, but it should be used when a realm is opened on a filesystem where named pipes cannot be created, such as external storage on Android that uses FAT32. In this case the path needs to point to a location on another filesystem where named pipes can be created. (PR [#2766](https://github.com/realm/realm-dotnet/pull/2766))
