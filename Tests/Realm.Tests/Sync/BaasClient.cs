@@ -101,7 +101,93 @@ namespace Realms.Tests.Sync
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
         }
 
-        public async Task<BaasApp> CreateApp(string name, string partitionKeyType)
+        public async Task<BaasApp> CreateApp(string name, string partitionKeyType, bool setupCollections = false)
+        {
+            var (app, mongoServiceId) = await CreateAppCore(name, new BsonDocument
+            {
+                {
+                    "sync", new BsonDocument
+                    {
+                        { "state", "enabled" },
+                        { "database_name", $"{partitionKeyType}_partition_key_data" },
+                        {
+                            "partition", new BsonDocument
+                            {
+                                { "key", "realm_id" },
+                                { "type", partitionKeyType },
+                                {
+                                    "permissions", new BsonDocument
+                                    {
+                                        { "read", true },
+                                        { "write", true },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
+            {
+                development_mode_enabled = true,
+            });
+
+            if (setupCollections)
+            {
+                await CreateSchema(app, mongoServiceId, Schemas.Sales(partitionKeyType));
+                await CreateSchema(app, mongoServiceId, Schemas.Users(partitionKeyType));
+                await CreateSchema(app, mongoServiceId, Schemas.Foos(partitionKeyType));
+
+                await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/custom_user_data", new
+                {
+                    mongo_service_id = mongoServiceId,
+                    enabled = true,
+                    database_name = "my-db",
+                    collection_name = "users",
+                    user_id_field = "user_id"
+                });
+            }
+
+            return app;
+        }
+
+        public async Task<BaasApp> CreateFlxApp(string name)
+        {
+            var (app, _) = await CreateAppCore(name, new BsonDocument
+            {
+                {
+                    "flexible_sync", new BsonDocument
+                    {
+                        { "state", "enabled" },
+                        { "database_name", "flexible_sync_data" },
+                        { "queryable_fields_names", new BsonArray { nameof(SyncAllTypesObject.Int64Property), nameof(SyncAllTypesObject.GuidProperty), nameof(SyncAllTypesObject.DoubleProperty), nameof(IntPropertyObject.Int) } },
+                        {
+                            "permissions", new BsonDocument
+                            {
+                                { "rules", new BsonDocument() },
+                                {
+                                    "defaultRoles", new BsonArray
+                                    {
+                                        new BsonDocument
+                                        {
+                                            { "name", "all" },
+                                            { "applyWhen", new BsonDocument() },
+                                            { "read", true },
+                                            { "write", true },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            return app;
+        }
+
+        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, BsonDocument mongoConfig)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
             var appId = doc["_id"].AsString;
@@ -127,48 +213,25 @@ namespace Realms.Tests.Sync
                 runResetFunction = true,
             });
 
-            var sync = new
+            var serviceName = "mongodb";
+            if (_clusterName == null)
             {
-                state = "enabled",
-                database_name = $"{partitionKeyType}_partition_key_data",
-                partition = new
-                {
-                    key = "realm_id",
-                    type = partitionKeyType,
-                    permissions = new
-                    {
-                        read = true,
-                        write = true,
-                    }
-                }
-            };
+                mongoConfig["uri"] = "mongodb://localhost:26000";
+            }
+            else
+            {
+                mongoConfig["clusterName"] = _clusterName;
+                serviceName = "mongodb-atlas";
+            }
 
-            var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
-            var serviceConfig = _clusterName == null
-                ? (object)new { sync, uri = "mongodb://localhost:26000" }
-                : (object)new { sync, clusterName = _clusterName };
-
-            var mongoServiceId = await CreateService(app, "BackingDB", serviceName, serviceConfig);
+            var mongoServiceId = await CreateService(app, "BackingDB", serviceName, mongoConfig);
 
             await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
             {
                 development_mode_enabled = true,
             });
 
-            await CreateSchema(app, mongoServiceId, Schemas.Sales(partitionKeyType));
-            await CreateSchema(app, mongoServiceId, Schemas.Users(partitionKeyType));
-            await CreateSchema(app, mongoServiceId, Schemas.Foos(partitionKeyType));
-
-            await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/custom_user_data", new
-            {
-                mongo_service_id = mongoServiceId,
-                enabled = true,
-                database_name = "my-db",
-                collection_name = "users",
-                user_id_field = "user_id"
-            });
-
-            return app;
+            return (app, mongoServiceId);
         }
 
         public async Task EnableProvider(BaasApp app, string type, object config = null, AuthMetadataField[] metadataFields = null)
@@ -218,19 +281,27 @@ namespace Realms.Tests.Sync
                 .Where(doc => doc["name"].AsString.EndsWith(_appSuffix))
                 .Select(doc =>
                 {
-                    var appName = doc["name"].AsString.Replace(_appSuffix, string.Empty);
+                    var name = doc["name"].AsString;
+
+                    if (!name.EndsWith(_appSuffix))
+                    {
+                        return null;
+                    }
+
+                    var appName = name.Substring(0, name.Length - _appSuffix.Length);
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
+                .Where(a => a != null)
                 .ToArray();
         }
 
-        public async Task<string> CreateService(BaasApp app, string name, string type, object config)
+        public async Task<string> CreateService(BaasApp app, string name, string type, BsonDocument config)
         {
-            var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services", new
+            var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services", new BsonDocument
             {
-                name,
-                type,
-                config,
+                { "name", name },
+                { "type", type },
+                { "config", config },
             });
 
             return response["_id"].AsString;
@@ -243,7 +314,7 @@ namespace Realms.Tests.Sync
 
         private static HttpContent GetJsonContent(object obj)
         {
-            var json = obj.ToJson();
+            var json = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
             var content = new StringContent(json);
 
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");

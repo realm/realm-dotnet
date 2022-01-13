@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -172,7 +173,7 @@ namespace Realms.Tests.Sync
                 }
                 else
                 {
-                    var defaultApp = await client.CreateApp(AppConfigType.Default, "string");
+                    var defaultApp = await client.CreateApp(AppConfigType.Default, "string", setupCollections: true);
 
                     var authFuncId = await client.CreateFunction(defaultApp, "authFunc", @"exports = (loginPayload) => {
                       return loginPayload[""realmCustomAuthFuncUserId""];
@@ -229,10 +230,10 @@ namespace Realms.Tests.Sync
                         new BaasClient.AuthMetadataField("maxAge", "max_age"),
                     });
 
-                    await client.CreateService(defaultApp, "gcm", "gcm", new
+                    await client.CreateService(defaultApp, "gcm", "gcm", new BsonDocument
                     {
-                        senderId = "gcm",
-                        apiKey = "gcm"
+                        { "senderId", "gcm" },
+                        { "apiKey", "gcm" },
                     });
 
                     var intApp = await client.CreateApp(AppConfigType.IntPartitionKey, "long");
@@ -243,6 +244,9 @@ namespace Realms.Tests.Sync
 
                     var objectIdApp = await client.CreateApp(AppConfigType.ObjectIdPartitionKey, "objectId");
                     _appIds[AppConfigType.ObjectIdPartitionKey] = objectIdApp.ClientAppId;
+
+                    var flexibleSyncApp = await client.CreateFlxApp(AppConfigType.FlexibleSync);
+                    _appIds[AppConfigType.FlexibleSync] = flexibleSyncApp.ClientAppId;
                 }
             });
         }
