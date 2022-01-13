@@ -53,5 +53,4 @@ namespace Realms.Sync
         /// </remarks>
         public bool UpdateExisting { get; set; } = true;
     }
-
 }
