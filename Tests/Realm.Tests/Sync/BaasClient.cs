@@ -74,10 +74,13 @@ namespace Realms.Tests.Sync
                 password = "password"
             });
 
+            var groupDoc = await result.GetAsync<BsonDocument>("auth/profile");
+            result._groupId = groupDoc["roles"].AsBsonArray[0].AsBsonDocument["group_id"].AsString;
+
             return result;
         }
 
-        public static async Task<BaasClient> Atlas(Uri baseUri, string clusterName, string apiKey, string privateApiKey)
+        public static async Task<BaasClient> Atlas(Uri baseUri, string clusterName, string apiKey, string privateApiKey, string groupId)
         {
             var result = new BaasClient(baseUri, clusterName);
             await result.Authenticate("mongodb-cloud", new
@@ -85,6 +88,8 @@ namespace Realms.Tests.Sync
                 username = apiKey,
                 apiKey = privateApiKey
             });
+
+            result._groupId = groupId;
 
             return result;
         }
@@ -94,9 +99,6 @@ namespace Realms.Tests.Sync
             var authDoc = await PostAsync<BsonDocument>($"auth/providers/{provider}/login", credentials);
 
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
-
-            var groupDoc = await GetAsync<BsonDocument>("auth/profile");
-            _groupId = groupDoc["roles"].AsBsonArray[0].AsBsonDocument["group_id"].AsString;
         }
 
         public async Task<BaasApp> CreateApp(string name, string partitionKeyType)

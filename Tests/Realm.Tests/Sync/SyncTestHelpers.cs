@@ -19,9 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -48,7 +46,7 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = DummyAppId,
         };
 
-        private static Uri _baseUri;
+        private static readonly Uri _baseUri;
 
         static SyncTestHelpers()
         {
@@ -111,37 +109,39 @@ namespace Realms.Tests.Sync
             string baasCluster = null;
             string baasApiKey = null;
             string baasPrivateApiKey = null;
+            string groupId = null;
+            string baseUrl = null;
 
             for (var i = 0; i < args.Length; i++)
             {
-                if (args[i].StartsWith("--baasurl="))
-                {
-                    _baseUri = new Uri(args[i].Replace("--baasurl=", string.Empty));
-                }
-                else if (args[i].StartsWith("--baascluster="))
-                {
-                    baasCluster = args[i].Replace("--baascluster=", string.Empty);
-                }
-                else if (args[i].StartsWith("--baasapikey="))
-                {
-                    baasApiKey = args[i].Replace("--baasapikey=", string.Empty);
-                }
-                else if (args[i].StartsWith("--baasprivateapikey="))
-                {
-                    baasPrivateApiKey = args[i].Replace("--baasprivateapikey=", string.Empty);
-                }
-                else
+                if (!ExtractArg(i, "baasurl", ref baseUrl) &&
+                    !ExtractArg(i, "baascluster", ref baasCluster) &&
+                    !ExtractArg(i, "baasapikey", ref baasApiKey) &&
+                    !ExtractArg(i, "baasprivateapikey", ref baasPrivateApiKey) &&
+                    !ExtractArg(i, "baasprojectid", ref groupId))
                 {
                     result.Add(args[i]);
                 }
             }
 
-            CreateBaasApps(baasCluster, baasApiKey, baasPrivateApiKey);
+            CreateBaasApps(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
             return result.ToArray();
+
+            bool ExtractArg(int index, string name, ref string value)
+            {
+                var arg = args[index];
+                if (arg.StartsWith($"--{name}="))
+                {
+                    value = arg.Replace($"--{name}=", string.Empty);
+                    return true;
+                }
+
+                return false;
+            }
         }
 
-        private static void CreateBaasApps(string cluster = null, string apiKey = null, string privateApiKey = null)
+        private static void CreateBaasApps(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {
@@ -153,7 +153,7 @@ namespace Realms.Tests.Sync
                 BaasClient client;
                 if (cluster != null)
                 {
-                    client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey);
+                    client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey, groupId);
                 }
                 else
                 {
@@ -273,35 +273,6 @@ namespace Realms.Tests.Sync
             session.SimulateError(code, message);
 
             return tcs.Task;
-        }
-
-        private static (string ClusterName, string ApiKey, string PrivateApiKey)? GetAtlasConfig(string cliArgument)
-        {
-            var json = cliArgument;
-            if (string.IsNullOrEmpty(json))
-            {
-                // Try to get the apps config from an environment variable if possible
-                json = Environment.GetEnvironmentVariable("ATLAS_CONFIG");
-            }
-
-            if (string.IsNullOrEmpty(json))
-            {
-                return null;
-            }
-
-            // Try to decode the argument from base64 as it may be encoded
-            try
-            {
-                var decodedBytes = Convert.FromBase64String(json);
-                json = Encoding.UTF8.GetString(decodedBytes);
-            }
-            catch
-            {
-            }
-
-            var doc = BsonDocument.Parse(json);
-
-            return (doc["clusterName"].AsString, doc["apiKey"].AsString, doc["privateApiKey"].AsString);
         }
     }
 }
