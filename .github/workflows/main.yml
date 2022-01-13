@@ -945,7 +945,6 @@ jobs:
           adb logcat -c
           adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
 
-          adb uninstall io.realm.xamarintests
           adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
           adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
           adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
