@@ -19,9 +19,7 @@
 #ifndef SYNC_SESSION_CS_HPP
 #define SYNC_SESSION_CS_HPP
 
-#include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-
 #include <realm/sync/config.hpp>
 
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
