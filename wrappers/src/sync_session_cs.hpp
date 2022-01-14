@@ -19,16 +19,22 @@
 #ifndef SYNC_SESSION_CS_HPP
 #define SYNC_SESSION_CS_HPP
 
+#include "marshalling.hpp"
 #include "realm_export_decls.hpp"
+
 #include <realm/sync/config.hpp>
 
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+using NotifyBeforeClientResetCallbackT = void(SharedRealm& before_frozen, void* managed_client_reset_handler_handle);
+using NotifyAfterClientResetCallbackT = void(SharedRealm& before_frozen, SharedRealm& after, void* managed_client_reset_handler_handle);
 
 namespace realm {
 namespace binding {
+    // TODO andrea: ask if these `extern`s are really needed? https://docs.microsoft.com/en-us/cpp/cpp/program-and-linkage-cpp?view=msvc-170
+    // and https://docs.microsoft.com/en-us/cpp/cpp/extern-cpp?view=msvc-170
     extern std::function<ProgressCallbackT> s_progress_callback;
-
-    void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
+    extern std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
+    extern std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
 }
 }
 

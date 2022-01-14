@@ -8,13 +8,13 @@ namespace Realms.Sync.ErrorHandling
         /// <summary>
         /// Callback triggered when there is a Client Reset error.
         /// </summary>
-        /// <param name="realm">
-        /// The <see cref="Realm"/> under synchronization where the error happened on.
+        /// <param name="session">
+        /// The <see cref="Session"/> where the error happened on.
         /// </param>
         /// <param name="clientResetException">
         /// The specific <see cref="ClientResetException"/>.
         /// </param>
-        public delegate void ClientResetCallback(Realm realm, ClientResetException clientResetException);
+        public delegate void ClientResetCallback(Session session, ClientResetException clientResetException);
     }
 
 }

@@ -53,7 +53,7 @@ namespace Realms.Sync
         public Action<SyncProgress> OnProgress { get; set; }
 
         /// <summary>
-        /// Gets or sets a subclass of <see cref="ClientResetHandlerBase"> to specify actions to be taken for the selected Client Reset strategy: <see cref="ManualRecovery"> or <see cref="DiscardLocalResetHandler"/>.
+        /// Gets or sets a subclass of <see cref="ClientResetHandlerBase"> to specify actions to be taken for the selected Client Reset strategy: <see cref="ManualRecoveryHandler"> or <see cref="DiscardLocalResetHandler"/>.
         /// If nothing is set, the strategy defaults to <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after synchronization.
         /// </summary>
         public ClientResetHandlerBase ClientResetHandler { get; set; }
@@ -157,6 +157,20 @@ namespace Realms.Sync
             var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
+
+            GCHandle? clientResetHandlerHandle = null;
+            if (ClientResetHandler != null)
+            {
+                clientResetHandlerHandle = GCHandle.Alloc(ClientResetHandler);
+                syncConfiguration.managed_client_reset_handler_handle = GCHandle.ToIntPtr(clientResetHandlerHandle.Value);
+            }
+
+            GCHandle? clientSyncErrorDelegateHandle = null;
+            if (SyncErrorHandler != null)
+            {
+                clientSyncErrorDelegateHandle = GCHandle.Alloc(SyncErrorHandler);
+                syncConfiguration.managed_sync_error_delegate = GCHandle.ToIntPtr(clientSyncErrorDelegateHandle.Value);
+            }
 
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             return GetRealm(srHandle, schema);

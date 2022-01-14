@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
+using Realms.Schema;
+using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 
@@ -32,7 +34,7 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset);
+            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset, IntPtr managedSyncConfigurationHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
@@ -40,8 +42,14 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managedSyncConfigurationHandle);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managedSyncConfigurationHandle);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
+            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, NotifyBeforeClientReset notify_before, NotifyAfterClientReset notify_after);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user(SessionHandle session);
@@ -95,12 +103,16 @@ namespace Realms.Sync
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
             NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
+            NativeMethods.NotifyBeforeClientReset before = NotifyBeforeClientReset;
+            NativeMethods.NotifyAfterClientReset after = NotifyAfterClientReset;
 
             GCHandle.Alloc(error);
             GCHandle.Alloc(progress);
             GCHandle.Alloc(wait);
+            GCHandle.Alloc(before);
+            GCHandle.Alloc(after);
 
-            NativeMethods.install_syncsession_callbacks(error, progress, wait);
+            NativeMethods.install_syncsession_callbacks(error, progress, wait, before, after);
         }
 
         public bool TryGetUser(out SyncUserHandle userHandle)
@@ -201,23 +213,36 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset)
+        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset, IntPtr managedSyncConfigurationHandle)
         {
             try
             {
-                // TODO what's missing here is to add a way to grab all the callbacks from the SyncConfiguration
                 using var handle = new SessionHandle(sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
-
                 SessionException exception;
+                var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
+                var syncConfiguration = (SyncConfiguration)syncConfigHandle.Target;
 
                 if (isClientReset)
                 {
-                    // TODO here I believe I should call the DiscardLocalResetHandler.ManualResetFallback if I see that I'm in DiscardLocalChanges mode and receive realm::sync::ClientError::auto_client_reset_failure
-                    // I am also pretty sure that I should call the ManualRecovery.OnClientReset if in manual mode, given line 371 to 372 in core.sync_session.cpp
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, userInfo);
+
+                    // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
+                    // additionally the goal is, yes, coexistance but not mix of the 2 error handling solutions. Because of this we may need to warn users
+                    // that they are mixing the 2 solutions and it should not be done.
+                    if (syncConfiguration.ClientResetHandler != null)
+                    {
+                        if (syncConfiguration.ClientResetHandler is DiscardLocalResetHandler discardLocalResetHandler)
+                        {
+                            discardLocalResetHandler.ManualResetFallback?.Invoke(session, (ClientResetException)exception);
+                        }
+                        else if (syncConfiguration.ClientResetHandler is ManualRecoveryHandler manualRecoveryHandler)
+                        {
+                            manualRecoveryHandler.OnClientReset?.Invoke(session, (ClientResetException)exception);
+                        }
+                    }
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)
                 {
@@ -229,13 +254,60 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                // TODO this also needs to go as I'd like to call SyncConfiguration.SyncErrorHandler.OnError()
+                // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
+                // additionally the goal is, yes, coexistance but not mix of 2 the error handling solutions. Because of this we may need to warn users
+                // that they are mixing the 2 solutions and it should not be done.
+                if (syncConfiguration.ClientResetHandler != null)
+                {
+                    syncConfiguration.SyncErrorHandler?.OnError?.Invoke(session, exception);
+                }
+
+                // TODO andrea: this will need to go when Session.Error is fully deprecated
                 Session.RaiseError(session, exception);
             }
             catch (Exception ex)
             {
                 Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
             }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
+        private static void NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
+        {
+            var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
+            var syncConfiguration = (SyncConfiguration)syncConfigHandle.Target;
+
+            // no clientResetHandler means don't do anything for this callback
+            if (syncConfiguration.ClientResetHandler == null)
+            {
+                return;
+            }
+
+            // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered with if not in discardLocal mode
+            var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
+            var schema = syncConfiguration.GetSchema();
+            var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
+            discardLocalResetHandler.OnBeforeReset?.Invoke(realmBefore);
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
+        private static void NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
+        {
+            var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
+            var syncConfiguration = (SyncConfiguration)syncConfigHandle.Target;
+
+            // no clientResetHandler means don't do anything for this callback
+            if (syncConfiguration.ClientResetHandler == null)
+            {
+                return;
+            }
+
+            // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered with if not in discardLocal mode
+            var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
+            var schema = syncConfiguration.GetSchema();
+            var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
+            var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfiguration, schema);
+            discardLocalResetHandler.OnAfterReset?.Invoke(realmBefore, realmAfter);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]

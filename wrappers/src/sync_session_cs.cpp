@@ -30,27 +30,16 @@ using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-
-using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset);
-using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_configuration_handle);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
 
 namespace realm {
 namespace binding {
-    std::function<ErrorCallbackT> s_session_error_callback;
+    extern std::function<ErrorCallbackT> s_session_error_callback;
     std::function<ProgressCallbackT> s_progress_callback;
     std::function<WaitCallbackT> s_wait_callback;
-
-    void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
-    {
-        std::vector<std::pair<char*, char*>> user_info_pairs;
-
-        for (const auto& p : error.user_info) {
-            user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
-        }
-
-        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested());
-    }
+    std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
+    std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
 }
 }
 extern "C" {
@@ -99,11 +88,13 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback)
+REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, NotifyBeforeClientResetCallbackT notify_before, NotifyAfterClientResetCallbackT notify_after)
 {
     s_session_error_callback = wrap_managed_callback(session_error_callback);
     s_progress_callback = wrap_managed_callback(progress_callback);
     s_wait_callback = wrap_managed_callback(wait_callback);
+    s_notify_before_callback = wrap_managed_callback(notify_before);
+    s_notify_after_callback = wrap_managed_callback(notify_after);
 
     realm::binding::s_can_call_managed = true;
 }

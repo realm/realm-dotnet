@@ -21,7 +21,19 @@
 
 #include "marshalling.hpp"
 #include "error_handling.hpp"
+
+// TODO andrea: this is a bad dependency to have because it easily creates circular dependencies wherever marshalling is needed and shared_realm_cs to
 #include "shared_realm_cs.hpp"
+
+
+using SharedSyncSession = std::shared_ptr<SyncSession>;
+using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_configuration_handle);
+
+namespace realm {
+namespace binding {
+    std::function<ErrorCallbackT> s_session_error_callback;
+}
+}
 
 using namespace realm;
 

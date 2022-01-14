@@ -71,6 +71,8 @@ struct SyncConfiguration
     SyncSessionStopPolicy session_stop_policy;
 
     SchemaMode schema_mode;
+
+    void* managed_sync_configuration_handle;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

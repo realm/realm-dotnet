@@ -50,6 +50,9 @@ using OnBindingContextDestructedT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
+using SharedSyncSession = std::shared_ptr<SyncSession>;
+using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_configuration_handle);
+
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
     std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
@@ -62,6 +65,7 @@ namespace binding {
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
+    extern std::function<ErrorCallbackT> s_session_error_callback;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -109,9 +113,35 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
 
     config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
-    config.sync_config->error_handler = handle_session_error;
+    config.sync_config->error_handler = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedSyncSession session, SyncError error) {
+        std::vector<std::pair<char*, char*>> user_info_pairs;
+
+        for (const auto& p : error.user_info) {
+            user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
+        }
+
+        s_session_error_callback(new SharedSyncSession(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), managed_sync_configuration_handle);
+    };
+
     config.sync_config->client_resync_mode = ClientResyncMode::Manual;
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
+
+    config.sync_config->notify_before_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen) {
+        // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
+        s_notify_before_callback(before_frozen, managed_sync_configuration_handle);
+        //if () {
+        //    // TODO andrea: throw exception
+        //}
+    };
+
+    config.sync_config->notify_after_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen, SharedRealm after) {
+        // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
+        s_notify_after_callback(before_frozen, after, managed_sync_configuration_handle);
+        //if () {
+        //    // TODO andrea: throw exception
+        //}
+    };
+
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
 
     // by definition the key is only allowed to be 64 bytes long, enforced by C# code

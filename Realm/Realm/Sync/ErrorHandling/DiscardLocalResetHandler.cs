@@ -7,21 +7,21 @@ namespace Realms.Sync.ErrorHandling
         /// <summary>
         /// Callback that indicates a Client Reset is about to happen.
         /// </summary>
-        /// <param name="before">
-        /// Read-only backup <see cref="Realm"/> in its state before the reset.
+        /// <param name="beforeFrozen">
+        /// The frozen <see cref="Realm"/> before the reset.
         /// </param>
-        /// <param name="after">
-        /// <see cref="Realm"/> state to become after the reset.
-        /// </param>
-        public delegate void BeforeResetCallback(Realm before, Realm after);
+        public delegate void BeforeResetCallback(Realm beforeFrozen);
 
         /// <summary>
-        /// Callback that indicates a Client Reset just happened.
+        /// Callback that indicates a Client Reset is about to happen.
         /// </summary>
-        /// <param name="realm">
-        /// The <see cref="Realm"/> after the reset.
+        /// <param name="beforeFrozen">
+        /// The frozen <see cref="Realm"/> as it was before the reset.
         /// </param>
-        public delegate void AfterResetCallback(Realm realm);
+        /// <param name="after">
+        /// The <see cref="Realm"/> after the client reset.
+        /// </param>
+        public delegate void AfterResetCallback(Realm beforeFrozen, Realm after);
 
         /// <summary>
         /// Gets or sets the callback that indicates a Client Reset is about to happen.

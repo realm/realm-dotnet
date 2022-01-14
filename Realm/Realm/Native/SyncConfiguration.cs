@@ -51,5 +51,9 @@ namespace Realms.Sync.Native
         internal SessionStopPolicy session_stop_policy;
 
         internal SchemaMode schema_mode;
+
+        internal IntPtr managed_client_reset_handler_handle;
+
+        internal IntPtr managed_sync_error_delegate;
     }
 }
