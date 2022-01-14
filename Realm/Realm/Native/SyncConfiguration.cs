@@ -52,8 +52,6 @@ namespace Realms.Sync.Native
 
         internal SchemaMode schema_mode;
 
-        internal IntPtr managed_client_reset_handler_handle;
-
-        internal IntPtr managed_sync_error_delegate;
+        internal IntPtr managed_sync_configuration_handle;
     }
 }

@@ -123,7 +123,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         s_session_error_callback(new SharedSyncSession(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), managed_sync_configuration_handle);
     };
 
-    config.sync_config->client_resync_mode = ClientResyncMode::Manual;
+    config.sync_config->client_resync_mode = ClientResyncMode::DiscardLocal;
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
 
     config.sync_config->notify_before_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen) {

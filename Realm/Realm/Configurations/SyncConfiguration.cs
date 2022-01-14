@@ -158,20 +158,6 @@ namespace Realms.Sync
             var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
 
-            GCHandle? clientResetHandlerHandle = null;
-            if (ClientResetHandler != null)
-            {
-                clientResetHandlerHandle = GCHandle.Alloc(ClientResetHandler);
-                syncConfiguration.managed_client_reset_handler_handle = GCHandle.ToIntPtr(clientResetHandlerHandle.Value);
-            }
-
-            GCHandle? clientSyncErrorDelegateHandle = null;
-            if (SyncErrorHandler != null)
-            {
-                clientSyncErrorDelegateHandle = GCHandle.Alloc(SyncErrorHandler);
-                syncConfiguration.managed_sync_error_delegate = GCHandle.ToIntPtr(clientSyncErrorDelegateHandle.Value);
-            }
-
             var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             return GetRealm(srHandle, schema);
         }
@@ -229,12 +215,14 @@ namespace Realms.Sync
 
         internal Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
+            GCHandle? syncConfHandle = GCHandle.Alloc(this);
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                managed_sync_configuration_handle = GCHandle.ToIntPtr(syncConfHandle.Value),
             };
         }
     }
