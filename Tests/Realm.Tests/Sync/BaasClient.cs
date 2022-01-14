@@ -103,6 +103,8 @@ namespace Realms.Tests.Sync
 
         public async Task<BaasApp> CreateApp(string name, string partitionKeyType, bool setupCollections = false)
         {
+            TestHelpers.Output.WriteLine($"Creating PBS app {name}...");
+
             var (app, mongoServiceId) = await CreateAppCore(name, new BsonDocument
             {
                 {
@@ -154,6 +156,8 @@ namespace Realms.Tests.Sync
 
         public async Task<BaasApp> CreateFlxApp(string name)
         {
+            TestHelpers.Output.WriteLine($"Creating FLX app {name}...");
+
             var (app, _) = await CreateAppCore(name, new BsonDocument
             {
                 {
@@ -236,6 +240,8 @@ namespace Realms.Tests.Sync
 
         public async Task EnableProvider(BaasApp app, string type, object config = null, AuthMetadataField[] metadataFields = null)
         {
+            TestHelpers.Output.WriteLine($"Enabling provider {type} for {app.Name}...");
+
             var url = $"groups/{_groupId}/apps/{app}/auth_providers";
 
             // Api key is slightly special, thus this annoying custom handling.
@@ -262,6 +268,8 @@ namespace Realms.Tests.Sync
 
         public async Task<string> CreateFunction(BaasApp app, string name, string source)
         {
+            TestHelpers.Output.WriteLine($"Creating function {name} for {app.Name}...");
+
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/functions", new
             {
                 name = name,
@@ -297,6 +305,8 @@ namespace Realms.Tests.Sync
 
         public async Task<string> CreateService(BaasApp app, string name, string type, BsonDocument config)
         {
+            TestHelpers.Output.WriteLine($"Creating service {name} for {app.Name}...");
+
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services", new BsonDocument
             {
                 { "name", name },
@@ -324,6 +334,8 @@ namespace Realms.Tests.Sync
 
         private async Task<string> CreateSchema(BaasApp app, string mongoServiceId, object schema)
         {
+            TestHelpers.Output.WriteLine($"Creating schema for {app.Name}...");
+
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", schema);
 
             return response["_id"].AsString;

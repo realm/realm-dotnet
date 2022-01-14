@@ -76,7 +76,10 @@ namespace Realms.Tests.Sync
                 Assert.Ignore("MongoDB Realm is not setup.");
             }
 
-            CreateBaasApps();
+            AsyncContext.Run(async () =>
+            {
+                await CreateBaasAppsAsync();
+            });
 
             if (ensureNoSessionErrors)
             {
@@ -104,7 +107,7 @@ namespace Realms.Tests.Sync
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
-        public static string[] ExtractBaasSettings(string[] args)
+        public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
             var result = new List<string>();
 
@@ -131,7 +134,7 @@ namespace Realms.Tests.Sync
                 _baseUri = new Uri(baseUrl);
             }
 
-            CreateBaasApps(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
+            await CreateBaasAppsAsync(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
             return result.ToArray();
 
@@ -148,26 +151,36 @@ namespace Realms.Tests.Sync
             }
         }
 
-        private static void CreateBaasApps(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
+        public static string[] ExtractBaasSettings(string[] args)
+        {
+            return AsyncContext.Run(async () =>
+            {
+                return await ExtractBaasSettingsAsync(args);
+            });
+        }
+
+        private static async Task CreateBaasAppsAsync(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {
                 return;
             }
 
-            AsyncContext.Run(async () =>
+            BaasClient client;
+            if (cluster != null)
             {
-                BaasClient client;
-                if (cluster != null)
-                {
-                    client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey, groupId);
-                }
-                else
-                {
-                    client = await BaasClient.Docker(_baseUri);
-                }
+                client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey, groupId);
+            }
+            else
+            {
+                client = await BaasClient.Docker(_baseUri);
+            }
 
+            using (client)
+            {
                 var apps = await client.GetApps();
+
+                TestHelpers.Output.WriteLine($"Found {apps.Length} apps.");
 
                 if (apps.Any())
                 {
@@ -253,7 +266,7 @@ namespace Realms.Tests.Sync
                     var flexibleSyncApp = await client.CreateFlxApp(AppConfigType.FlexibleSync);
                     _appIds[AppConfigType.FlexibleSync] = flexibleSyncApp.ClientAppId;
                 }
-            });
+            }
         }
 
         public static Task<T> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message, Action<Session> sessionAssertions)
