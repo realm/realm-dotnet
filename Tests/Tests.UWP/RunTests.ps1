@@ -1,7 +1,6 @@
 param(
     [string]$PackageLocation = "$PSScriptRoot/AppPackages/Tests.UWP_1.0.0.0_Test",
-    [string]$BaasUrl = "",
-    [string]$BaasApps = ""
+    [string]$ExtraAppArgs = ""
 )
 
 if (-not (Test-Path -Path $PackageLocation)) {
@@ -20,14 +19,7 @@ $PackagePath = get-appxpackage -name realm.uwp.tests | Select-Object -expandprop
 $ResultsPath = "$env:LOCALAPPDATA\Packages\$PackagePath\LocalState\TestResults.UWP.xml"
 $RunOutputPath = "$env:LOCALAPPDATA\Packages\$PackagePath\LocalState\TestRunOutput.txt"
 
-$AppArgs = "--headless --labels=After --result=TestResults.UWP.xml"
-if ($BaasUrl) {
-    $AppArgs = "$AppArgs --baasurl=$BaasUrl"
-}
-
-if ($BaasApps) {
-    $AppArgs = "$AppArgs --baasapps=$BaasApps"
-}
+$AppArgs = "--headless --labels=After --result=TestResults.UWP.xml $ExtraAppArgs"
 
 Write-Output "Launching shell:AppsFolder\$PackagePath!App with arguments: $AppArgs"
 

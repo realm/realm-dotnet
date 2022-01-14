@@ -45,6 +45,9 @@ struct Configuration
     uint16_t* path;
     size_t path_len;
     
+    uint16_t* fallback_path;
+    size_t fallback_path_len;
+
     bool read_only;
     
     bool in_memory;

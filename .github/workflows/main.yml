@@ -282,7 +282,7 @@ jobs:
         {
           if (-Not "${{ github.head_ref }}".Contains("release"))
           {
-            $suffix = "PR-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+            $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
           }
         }
         else
@@ -438,6 +438,11 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Configure .NET 6
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        include-prerelease: true
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
@@ -454,7 +459,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for .NET Framework
     outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -462,13 +467,12 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: .NET Framework
   test-net-framework:
     runs-on: windows-latest
@@ -477,7 +481,7 @@ jobs:
     - build-packages
     - baas-net-framework
     env:
-      APPS_CONFIG: ${{ needs.baas-net-framework.outputs.deployedApps }}
+      CLUSTER_NAME: ${{ needs.baas-net-framework.outputs.clusterName }}
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -504,7 +508,7 @@ jobs:
     - name: Build Tests/Realm.Tests
       run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:TargetFramework=net461
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }}
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -529,7 +533,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -539,7 +543,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for UWP Managed
     outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -547,13 +551,12 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: UWP Managed
   test-uwp-managed:
     runs-on: windows-latest
@@ -562,7 +565,7 @@ jobs:
     - build-packages
     - baas-uwp-managed
     env:
-      APPS_CONFIG: ${{ needs.baas-uwp-managed.outputs.deployedApps }}
+      CLUSTER_NAME: ${{ needs.baas-uwp-managed.outputs.clusterName }}
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -596,7 +599,7 @@ jobs:
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -BaasUrl ${{ secrets.REALM_BASE_URL }} -BaasApps '${{ env.APPS_CONFIG }}'
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}'
       shell: powershell
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
@@ -622,7 +625,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -696,7 +699,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.macOS
     outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -704,13 +707,12 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.macOS
   test-xamarinmacos:
     runs-on: macos-latest
@@ -719,7 +721,7 @@ jobs:
     - build-packages
     - baas-xamarinmacos
     env:
-      APPS_CONFIG: ${{ needs.baas-xamarinmacos.outputs.deployedApps }}
+      CLUSTER_NAME: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -744,7 +746,7 @@ jobs:
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --labels=All --baasurl=${{ secrets.REALM_BASE_URL }} --result=${{ github.workspace }}/TestResults.macOS.xml
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -769,7 +771,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -779,7 +781,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.iOS
     outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -787,13 +789,12 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.iOS
   test-xamarinios:
     runs-on: macos-latest
@@ -802,7 +803,7 @@ jobs:
     - build-packages
     - baas-xamarinios
     env:
-      APPS_CONFIG: ${{ needs.baas-xamarinios.outputs.deployedApps }}
+      CLUSTER_NAME: ${{ needs.baas-xamarinios.outputs.clusterName }}
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -832,7 +833,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.REALM_BASE_URL }} --baasapps=${{ env.APPS_CONFIG }}
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -857,7 +858,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -867,7 +868,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.Android
     outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -875,13 +876,12 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Xamarin.Android
   test-xamarinandroid:
     runs-on: macos-latest
@@ -890,7 +890,7 @@ jobs:
     - build-packages
     - baas-xamarinandroid
     env:
-      APPS_CONFIG: ${{ needs.baas-xamarinandroid.outputs.deployedApps }}
+      CLUSTER_NAME: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -945,12 +945,11 @@ jobs:
           adb logcat -c
           adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
 
-          adb uninstall io.realm.xamarintests
           adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
           adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
           adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
 
-          echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baasapps=${{ env.APPS_CONFIG }}" > ${{ github.workspace }}/testargs.txt
+          echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}" > ${{ github.workspace }}/testargs.txt
           adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
 
           adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
@@ -983,7 +982,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
@@ -1025,7 +1024,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Code Coverage
     outputs:
-      deployedApps: ${{ steps.deploy-mdb-apps.outputs.deployedApps }}
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -1033,13 +1032,12 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-        appsPath: ${{ github.workspace }}/Tests/TestApps
         differentiator: Code Coverage
   test-code-coverage:
     runs-on: ubuntu-latest
@@ -1048,7 +1046,7 @@ jobs:
     - build-packages
     - baas-code-coverage
     env:
-      APPS_CONFIG: ${{ needs.baas-code-coverage.outputs.deployedApps }}
+      CLUSTER_NAME: ${{ needs.baas-code-coverage.outputs.clusterName }}
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -1134,7 +1132,7 @@ jobs:
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a "--result=TestResults.Linux.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }}" -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Publish Coverage
       id: publish-coveralls
       uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
@@ -1168,7 +1166,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fe278fedebba5508c052e970fffa099de1285dff
+    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
