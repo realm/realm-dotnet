@@ -16,6 +16,7 @@ jobs:
         workflow: main.yml
         commit: ${{ github.sha }}
         path: ${{ github.workspace }}/Realm/packages/
+        workflow_conclusion: completed
     - name: Read version
       id: get-version
       run: |
