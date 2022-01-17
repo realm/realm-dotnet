@@ -60,13 +60,14 @@
     if: #@ ifCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
 #@ end
 
-#@ def downloadAllArtifacts():
+#@ def downloadAllArtifacts(conclusion = "completed"):
   - name: Download all artifacts
     uses: #@ actionDownloadAllArtifacts
     with:
       workflow: main.yml
       commit: ${{ github.sha }}
       path: ${{ github.workspace }}/Realm/packages/
+      workflow_conclusion: #@ conclusion
 #@ end
 
 #@ def readVersionFromPackage():
