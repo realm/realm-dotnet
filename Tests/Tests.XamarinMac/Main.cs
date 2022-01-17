@@ -27,8 +27,8 @@ namespace Realms.Tests.XamarinMac
 
         public static void Main(string[] args)
         {
-            Args = SyncTestHelpers.ExtractBaasSettings(args);
             NSApplication.Init();
+            Args = SyncTestHelpers.ExtractBaasSettings(args);
             NSApplication.Main(args);
         }
     }

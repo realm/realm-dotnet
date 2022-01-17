@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.8.0 (2022-01-17)
 
 ### Enhancements
 * Added the `RealmConfigurationBase.FallbackPipePath` property. In the majority of cases this property can be left null, but it should be used when a realm is opened on a filesystem where named pipes cannot be created, such as external storage on Android that uses FAT32. In this case the path needs to point to a location on another filesystem where named pipes can be created. (PR [#2766](https://github.com/realm/realm-dotnet/pull/2766))
@@ -14,7 +14,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.6.1.
 * Updated naming of prerelease packages to use lowercase "pr" - e.g. `10.7.1-pr-2695.1703` instead of `10.7.1-PR-2695.1703`. (PR [#2765](https://github.com/realm/realm-dotnet/pull/2765))
 * Migrated from using the cli to import/export applications to configuring them via the admin API. (PR [#2768](https://github.com/realm/realm-dotnet/pull/2768))
 
