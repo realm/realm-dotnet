@@ -18,14 +18,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
-using Realms.Logging;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -494,6 +492,22 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void SubscriptionSet_FindByName_ReturnsNullWhenMissing()
+        {
+            var realm = GetFakeFLXRealm();
+
+            Assert.That(realm.Subscriptions.Find("nonexistent"), Is.Null);
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>(), new SubscriptionOptions { Name = "a" });
+            });
+
+            Assert.That(realm.Subscriptions.Find("a"), Is.Not.Null);
+            Assert.That(realm.Subscriptions.Find("A"), Is.Null);
+        }
+
+        [Test]
         public void SubscriptionSet_FindByQuery_Finds()
         {
             var realm = GetFakeFLXRealm();
@@ -514,6 +528,26 @@ namespace Realms.Tests.Sync
             AssertSubscriptionDetails(sub2, nameof(SyncCollectionsObject));
 
             Assert.That(sub1.CreatedAt, Is.LessThan(sub2.CreatedAt));
+        }
+
+        [Test]
+        public void SubscriptionSet_FindByQuery_ReturnsNullWhenMissing()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var existingQuery = realm.All<SyncAllTypesObject>();
+            var nonExistingQuery = realm.All<SyncCollectionsObject>();
+
+            Assert.That(realm.Subscriptions.Find(existingQuery), Is.Null);
+            Assert.That(realm.Subscriptions.Find(nonExistingQuery), Is.Null);
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(existingQuery);
+            });
+
+            Assert.That(realm.Subscriptions.Find(existingQuery), Is.Not.Null);
+            Assert.That(realm.Subscriptions.Find(nonExistingQuery), Is.Null);
         }
 
         [Test]
@@ -711,6 +745,64 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void SubscriptionSet_RemoveByType_RemoveNamed()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query1 = realm.All<SyncAllTypesObject>();
+            var query2 = realm.All<SyncCollectionsObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query1);
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "b" });
+
+                realm.Subscriptions.Add(query2);
+                realm.Subscriptions.Add(query2, new SubscriptionOptions { Name = "c" });
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(5));
+
+            realm.Subscriptions.Update(() =>
+            {
+                var removed = realm.Subscriptions.RemoveAll(nameof(SyncAllTypesObject), removeNamed: true);
+                Assert.That(removed, Is.EqualTo(3));
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void SubscriptionSet_RemoveByType_RemoveNamed_False()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query1 = realm.All<SyncAllTypesObject>();
+            var query2 = realm.All<SyncCollectionsObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query1);
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "b" });
+
+                realm.Subscriptions.Add(query2);
+                realm.Subscriptions.Add(query2, new SubscriptionOptions { Name = "c" });
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(5));
+
+            realm.Subscriptions.Update(() =>
+            {
+                var removed = realm.Subscriptions.RemoveAll(nameof(SyncAllTypesObject), removeNamed: false);
+                Assert.That(removed, Is.EqualTo(1));
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(4));
+        }
+
+        [Test]
         public void SubscriptionSet_RemoveAll_RemoveNamed()
         {
             var realm = GetFakeFLXRealm();
@@ -788,6 +880,50 @@ namespace Realms.Tests.Sync
             realm.Dispose();
 
             Assert.Throws<ObjectDisposedException>(() => _ = subs.Count);
+        }
+
+        [Test]
+        public void SubscriptionSet_Update_WhenActionThrows_RollsbackTransaction()
+        {
+            var realm = GetFakeFLXRealm();
+            var query = realm.All<SyncAllTypesObject>();
+
+            var subs = realm.Subscriptions;
+            subs.Update(() =>
+            {
+                subs.Add(query);
+            });
+
+            Assert.That(subs.Count, Is.EqualTo(1));
+
+            var ex = Assert.Throws<Exception>(() => subs.Update(() =>
+            {
+                subs.Add(realm.All<SyncCollectionsObject>());
+                Assert.That(subs.Count, Is.EqualTo(2));
+
+                // Now we do something that throws an error.
+                throw new Exception("Oh no!");
+            }));
+
+            Assert.That(ex.Message, Is.EqualTo("Oh no!"));
+            Assert.That(subs.Count, Is.EqualTo(1));
+
+            Assert.That(subs.Find(query), Is.Not.Null);
+        }
+
+        [Test]
+        public void SubscriptionSet_Update_WhenTransactionIsInProgress_Throws()
+        {
+            var realm = GetFakeFLXRealm();
+            var query = realm.All<SyncAllTypesObject>();
+
+            var subs = realm.Subscriptions;
+            var ex = Assert.Throws<InvalidOperationException>(() => subs.Update(() =>
+            {
+                subs.Update(() => { });
+            }));
+
+            Assert.That(ex.Message, Does.Contain("already being updated"));
         }
 
         [Test]

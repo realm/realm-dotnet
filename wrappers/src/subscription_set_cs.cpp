@@ -253,7 +253,7 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_type(MutableSubscriptionSet&
         Utf16StringAccessor type(type_buf, type_len);
 
         for (auto it = subs.begin(); it != subs.end();) {
-            if (it->object_class_name() == type) {
+            if (it->object_class_name() == type && (remove_named || it->name().empty())) {
                 it = subs.erase(it);
                 removed++;
             }

@@ -28,14 +28,14 @@ namespace Realms.Sync
     /// </summary>
     public class Subscription
     {
-        internal ObjectId Id { get; init; }
+        internal ObjectId Id { get; set; }
 
         /// <summary>
         /// Gets the name of the subscription if one was provided at creation time.
         /// If no name was provided, then this will return <c>null</c>.
         /// </summary>
         /// <value>The subscription's name.</value>
-        public string Name { get; internal init; }
+        public string Name { get; internal set; }
 
         /// <summary>
         /// Gets the type of objects this subscription refers to.
@@ -46,26 +46,26 @@ namespace Realms.Sync
         /// rather than the name of the C# class.
         /// </remarks>
         /// <value>The object type for the subscription.</value>
-        public string ObjectType { get; internal init; }
+        public string ObjectType { get; internal set; }
 
         /// <summary>
         /// Gets the query that describes the subscription. Objects matched by the query
         /// will be sent to the device by the server.
         /// </summary>
         /// <value>The subscription query.</value>
-        public string Query { get; internal init; }
+        public string Query { get; internal set; }
 
         /// <summary>
         /// Gets a value indicating when this subscription was created.
         /// </summary>
         /// <value>The creation date/time of the subscription.</value>
-        public DateTimeOffset CreatedAt { get; internal init; }
+        public DateTimeOffset CreatedAt { get; internal set; }
 
         /// <summary>
         /// Gets a value indicating when this subscription was last updated.
         /// </summary>
         /// <value>The date/time of the last update to the subscription.</value>
-        public DateTimeOffset UpdatedAt { get; internal init; }
+        public DateTimeOffset UpdatedAt { get; internal set; }
 
         internal Subscription()
         {
