@@ -10,7 +10,7 @@
 #@ testTimeout = 45
 #@ cleanupTimeout = 10
 #@ baasTimeout = 20
-#@ wrappersTimeout = 45
+#@ wrappersTimeout = 90
 #@ baasTestArgs = " --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}"
 
 #@ def getWrapperBuildCommand(cmd, enableLto = True):

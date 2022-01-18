@@ -12,7 +12,7 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -70,7 +70,7 @@ jobs:
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -121,7 +121,7 @@ jobs:
         - arm64-v8a
         - x86
         - x86_64
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -155,7 +155,7 @@ jobs:
         arch:
         - Win32
         - x64
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -210,7 +210,7 @@ jobs:
         - Win32
         - x64
         - ARM
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -261,7 +261,7 @@ jobs:
     - build-wrappers-windows-uwp
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
