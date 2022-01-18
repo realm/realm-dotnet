@@ -10,7 +10,8 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.8.0.
+* Release tests are executed against realm-qa instead of realm-dev. (PR [#2771](https://github.com/realm/realm-dotnet/pull/2771))
 
 ## 10.8.0 (2022-01-17)
 
@@ -28,7 +29,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.6.1.
+* Using Core 11.8.0.
 * Updated naming of prerelease packages to use lowercase "pr" - e.g. `10.7.1-pr-2695.1703` instead of `10.7.1-PR-2695.1703`. (PR [#2765](https://github.com/realm/realm-dotnet/pull/2765))
 * Migrated from using the cli to import/export applications to configuring them via the admin API. (PR [#2768](https://github.com/realm/realm-dotnet/pull/2768))
 
