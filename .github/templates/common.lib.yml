@@ -60,7 +60,7 @@
     if: #@ ifCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
 #@ end
 
-#@ def downloadAllArtifacts(conclusion = "success"):
+#@ def downloadAllArtifacts(conclusion = "completed"):
   - name: Download all artifacts
     uses: #@ actionDownloadAllArtifacts
     with:
