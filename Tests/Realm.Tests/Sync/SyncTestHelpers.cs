@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -166,6 +165,19 @@ namespace Realms.Tests.Sync
                 return;
             }
 
+#if !UNITY
+            try
+            {
+                cluster ??= System.Configuration.ConfigurationManager.AppSettings["Cluster"];
+                apiKey ??= System.Configuration.ConfigurationManager.AppSettings["ApiKey"];
+                privateApiKey ??= System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
+                groupId ??= System.Configuration.ConfigurationManager.AppSettings["GroupId"];
+            }
+            catch
+            {
+            }
+#endif
+
             BaasClient client;
             if (cluster != null)
             {
@@ -248,10 +260,10 @@ namespace Realms.Tests.Sync
                         new BaasClient.AuthMetadataField("maxAge", "max_age"),
                     });
 
-                    await client.CreateService(defaultApp, "gcm", "gcm", new BsonDocument
+                    await client.CreateService(defaultApp, "gcm", "gcm", new
                     {
-                        { "senderId", "gcm" },
-                        { "apiKey", "gcm" },
+                        senderId = "gcm",
+                        apiKey = "gcm",
                     });
 
                     var intApp = await client.CreateApp(AppConfigType.IntPartitionKey, "long");
