@@ -2,6 +2,14 @@
 #@ load("@ytt:overlay", "overlay")
 #@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet")
 
+#@ isRelease = "contains(github.head_ref, 'release')"
+
+#@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
+#@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
+#@ secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
+#@ secret_AtlasPrivateKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}"
+#@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
+
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
@@ -11,7 +19,7 @@
 #@ cleanupTimeout = 10
 #@ baasTimeout = 20
 #@ wrappersTimeout = 45
-#@ baasTestArgs = " --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}"
+#@ baasTestArgs = " --baasurl=" + secret_BaseUrl + " --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId
 
 #@ def getWrapperBuildCommand(cmd, enableLto = True):
 #@ defaultParams =  " --configuration=" + configuration
@@ -53,9 +61,11 @@ with:
     - uses: #@ actionDeployBaaS
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: #@ secret_AtlasProjectId
+        realmUrl: #@ secret_BaseUrl
+        atlasUrl: #@ secret_AtlasBaseUrl
+        apiKey: #@ secret_AtlasPublicKey
+        privateApiKey: #@ secret_AtlasPrivateKey
         differentiator: #@ name
 #@yaml/text-templated-strings
 (@= testJobName @):
@@ -90,9 +100,11 @@ with:
     - #@ template.replace(checkoutCode(False, False))
     - uses: #@ actionCleanupBaaS
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: #@ secret_AtlasProjectId
+        realmUrl: #@ secret_BaseUrl
+        atlasUrl: #@ secret_AtlasBaseUrl
+        apiKey: #@ secret_AtlasPublicKey
+        privateApiKey: #@ secret_AtlasPrivateKey
         differentiator: #@ name
 #@ end
 
@@ -217,6 +229,7 @@ steps:
       force-avd-creation: false
       emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
       disable-animations: true
+      #@yaml/text-templated-strings
       script: |
         adb devices
         adb logcat -c
@@ -226,7 +239,7 @@ steps:
         adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
         adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
 
-        echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}" > ${{ github.workspace }}/testargs.txt
+        echo "--baasurl=(@= secret_BaseUrl @) --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=(@= secret_AtlasPublicKey @) --baasprivateapikey=(@= secret_AtlasPrivateKey @) --baasprojectid=(@= secret_AtlasProjectId @)" > ${{ github.workspace }}/testargs.txt
         adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
 
         adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
@@ -263,7 +276,6 @@ steps:
 #@ end
 
 #@ def buildDocs():
-#@ isRelease = "contains(github.head_ref, 'release')"
 #@ docsCondition = "${{ " + isRelease + " }}"
   - name: Check Docfx cache
     id: check-docfx-cache

@@ -470,9 +470,11 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: .NET Framework
   test-net-framework:
     runs-on: windows-latest
@@ -508,7 +510,7 @@ jobs:
     - name: Build Tests/Realm.Tests
       run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:TargetFramework=net461
     - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}
+      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -535,9 +537,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: .NET Framework
   baas-uwp-managed:
     runs-on: ubuntu-latest
@@ -554,9 +558,11 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: UWP Managed
   test-uwp-managed:
     runs-on: windows-latest
@@ -599,7 +605,7 @@ jobs:
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}'
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}'
       shell: powershell
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
@@ -627,9 +633,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: UWP Managed
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
@@ -710,9 +718,11 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Xamarin.macOS
   test-xamarinmacos:
     runs-on: macos-latest
@@ -746,7 +756,7 @@ jobs:
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -773,9 +783,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Xamarin.macOS
   baas-xamarinios:
     runs-on: ubuntu-latest
@@ -792,9 +804,11 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Xamarin.iOS
   test-xamarinios:
     runs-on: macos-latest
@@ -833,7 +847,7 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -860,9 +874,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Xamarin.iOS
   baas-xamarinandroid:
     runs-on: ubuntu-latest
@@ -879,9 +895,11 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Xamarin.Android
   test-xamarinandroid:
     runs-on: macos-latest
@@ -949,7 +967,7 @@ jobs:
           adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
           adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
 
-          echo "--baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}" > ${{ github.workspace }}/testargs.txt
+          echo "--baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}" > ${{ github.workspace }}/testargs.txt
           adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
 
           adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
@@ -984,9 +1002,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Xamarin.Android
   run-tests-weaver:
     runs-on: windows-latest
@@ -1035,9 +1055,11 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
       id: deploy-mdb-apps
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Code Coverage
   test-code-coverage:
     runs-on: ubuntu-latest
@@ -1132,7 +1154,7 @@ jobs:
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run the tests
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ secrets.ATLAS_PROJECT_ID }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Publish Coverage
       id: publish-coveralls
       uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
@@ -1168,9 +1190,11 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
       with:
-        projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-        apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
+        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: Code Coverage
   run-cleanup:
     runs-on: ubuntu-latest
