@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -803,6 +804,64 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void SubscriptionSet_RemoveByType_Generic_RemoveNamed()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query1 = realm.All<SyncAllTypesObject>();
+            var query2 = realm.All<SyncCollectionsObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query1);
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "b" });
+
+                realm.Subscriptions.Add(query2);
+                realm.Subscriptions.Add(query2, new SubscriptionOptions { Name = "c" });
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(5));
+
+            realm.Subscriptions.Update(() =>
+            {
+                var removed = realm.Subscriptions.RemoveAll<SyncAllTypesObject>(removeNamed: true);
+                Assert.That(removed, Is.EqualTo(3));
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void SubscriptionSet_RemoveByType_Generic_RemoveNamed_False()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query1 = realm.All<SyncAllTypesObject>();
+            var query2 = realm.All<SyncCollectionsObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query1);
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query1, new SubscriptionOptions { Name = "b" });
+
+                realm.Subscriptions.Add(query2);
+                realm.Subscriptions.Add(query2, new SubscriptionOptions { Name = "c" });
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(5));
+
+            realm.Subscriptions.Update(() =>
+            {
+                var removed = realm.Subscriptions.RemoveAll<SyncAllTypesObject>(removeNamed: false);
+                Assert.That(removed, Is.EqualTo(1));
+            });
+
+            Assert.That(realm.Subscriptions.Count, Is.EqualTo(4));
+        }
+
+        [Test]
         public void SubscriptionSet_RemoveAll_RemoveNamed()
         {
             var realm = GetFakeFLXRealm();
@@ -933,6 +992,73 @@ namespace Realms.Tests.Sync
             realm.Dispose();
 
             Assert.Throws<ObjectDisposedException>(() => _ = realm.Subscriptions);
+        }
+
+        [Test]
+        public void SubscriptionSet_Enumerator()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query = realm.All<SyncAllTypesObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query);
+                realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "b" });
+            });
+
+            var index = 0;
+
+            IEnumerable enumerableSubs = realm.Subscriptions;
+            foreach (Subscription sub in enumerableSubs)
+            {
+                Assert.That(sub, Is.Not.Null);
+                Assert.That(sub.Id, Is.EqualTo(realm.Subscriptions[index++].Id));
+            }
+        }
+
+        [Test]
+        public void SubscriptionSet_Enumerator_DoubleDispose_Throws()
+        {
+            var realm = GetFakeFLXRealm();
+            var enumerator = realm.Subscriptions.GetEnumerator();
+
+            enumerator.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => enumerator.Dispose());
+        }
+
+        [Test]
+        public void SubscriptionSet_Enumerator_Reset()
+        {
+            var realm = GetFakeFLXRealm();
+
+            var query = realm.All<SyncAllTypesObject>();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(query);
+                realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "a" });
+                realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "b" });
+            });
+
+            using var enumerator = realm.Subscriptions.GetEnumerator();
+
+            var index = 0;
+            while (enumerator.MoveNext())
+            {
+                Assert.That(enumerator.Current.Id, Is.EqualTo(realm.Subscriptions[index++].Id));
+            }
+
+            // Ensure we can reset the enumerator and iterate over it again.
+            enumerator.Reset();
+
+            index = 0;
+            while (enumerator.MoveNext())
+            {
+                Assert.That(enumerator.Current.Id, Is.EqualTo(realm.Subscriptions[index++].Id));
+            }
         }
 
         [Test]
