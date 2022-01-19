@@ -320,7 +320,7 @@ namespace Realms.Tests.Sync
             // takes a few seconds to provision a user for BaaS, meaning enabling sync
             // will fail if we attempt to do it with the same request. It's nondeterministic
             // how long it'll take, so we must retry for a while.
-            var retries = 30;
+            var attempt = 0;
             while (true)
             {
                 try
@@ -330,8 +330,10 @@ namespace Realms.Tests.Sync
                 }
                 catch
                 {
-                    if (retries-- > 0)
+                    if (attempt++ < 120)
                     {
+                        TestHelpers.Output.WriteLine($"Failed to update service after {attempt * 5} seconds. Will keep retrying...");
+
                         await Task.Delay(5000);
                     }
                     else
