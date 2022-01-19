@@ -20,7 +20,10 @@ using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
+using Realms.Sync.Testing;
 using Realms.Sync.Exceptions;
+using Realms.Sync.ErrorHandling;
+using System.Linq;
 
 namespace Realms.Tests.Sync
 {
@@ -98,6 +101,122 @@ namespace Realms.Tests.Sync
                 Assert.That(error.Message, Is.EqualTo(message));
                 Assert.That(error.ErrorCode, Is.EqualTo(code));
             });
+        }
+
+        [Test]
+        public void Session_ClientReset_DiscardLocal()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                int beforeCheck = 0;
+                int afterCheck = 0;
+                var config = GetFakeConfig();
+                config.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    OnBeforeReset = (beforeFrozen) =>
+                    {
+                        Assert.AreEqual(beforeCheck, 0);
+                        Assert.AreEqual(afterCheck, 0);
+
+                        Assert.That(beforeFrozen, Is.Not.Null);
+                        beforeCheck = 1;
+                    },
+                    OnAfterReset = (beforeFrozen, after) =>
+                    {
+                        Assert.That(beforeFrozen, Is.Not.Null);
+                        Assert.That(after, Is.Not.Null);
+
+                        Assert.AreEqual(beforeCheck, 1);
+                        Assert.AreEqual(afterCheck, 0);
+
+                        beforeCheck = 2;
+                        afterCheck = 1;
+                    }
+                };
+                config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
+
+                using var realm = GetRealm(config);
+                var session = GetSession(realm);
+
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyCharObject { Id = 'c' });
+                });
+
+                await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
+                {
+                    Assert.AreEqual(afterCheck, 1);
+                    Assert.AreEqual(beforeCheck, 2);
+                });
+            }, timeout: 120_000);
+        }
+
+        // TODO andrea: for this to be testable I need to add an errorcode to our SDK to imply client_base::ClientError::auto_client_reset_failure
+        [Test]
+        public void Session_ClientReset_DiscardLocal_ManualResetFallback()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var manualResetFallbackHandled = false;
+                var config = GetFakeConfig();
+                config.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    // don't care about OnBefore and OnAfter rest
+                    ManualResetFallback = (session, exception) =>
+                    {
+                        manualResetFallbackHandled = true;
+                    }
+                };
+                config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
+
+                using var realm = GetRealm(config);
+                var session = GetSession(realm);
+
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyCharObject { Id = 'c' });
+                });
+
+                await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
+                {
+                    Assert.IsTrue(manualResetFallbackHandled);
+                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().Count(), 1);
+                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().First().Id, 'c');
+                });
+            }, timeout: 120_000);
+        }
+
+        [Test]
+        public void Session_ClientReset_ManualRecoveryHandler_OnError()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var manualOnClientResetCalled = false;
+                var config = GetFakeConfig();
+                config.ClientResetHandler = new ManualRecoveryHandler
+                {
+                    OnClientReset = (session, exception) =>
+                    {
+                        manualOnClientResetCalled = true;
+                    }
+                };
+                config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
+
+                using var realm = GetRealm(config);
+                var session = GetSession(realm);
+
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyCharObject { Id = 'c' });
+                });
+
+                await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
+                {
+                    Assert.IsTrue(manualOnClientResetCalled);
+                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().Count(), 1);
+                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().First().Id, 'c');
+                });
+            }, timeout: 120_000);
         }
 
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
