@@ -18,7 +18,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using NUnit.Runner.Services;
 using Realms.Tests.Sync;
 using Windows.ApplicationModel.Core;
@@ -36,9 +35,13 @@ namespace Realms.Tests.UWP
             InitializeComponent();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            base.OnNavigatedTo(e);
+
             var outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
+            TestHelpers.Output = outputWriter;
+
             try
             {
                 _nunit = new NUnit.Runner.App(outputWriter);
@@ -51,7 +54,7 @@ namespace Realms.Tests.UWP
 
                 if (e.Parameter != null && e.Parameter is string launchParams)
                 {
-                    var args = SyncTestHelpers.ExtractBaasSettings(TestHelpers.SplitArguments(launchParams));
+                    var args = await SyncTestHelpers.ExtractBaasSettingsAsync(TestHelpers.SplitArguments(launchParams));
                     if (TestHelpers.IsHeadlessRun(args))
                     {
                         _nunit.Options.AutoRun = true;
@@ -70,8 +73,6 @@ namespace Realms.Tests.UWP
                 }
 
                 LoadApplication(_nunit);
-
-                base.OnNavigatedTo(e);
             }
             catch (Exception ex)
             {

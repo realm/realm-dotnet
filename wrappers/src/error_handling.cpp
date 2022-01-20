@@ -129,6 +129,9 @@ namespace realm {
         catch (const KeyAlreadyExistsException& e) {
             return { RealmErrorType::KeyAlreadyExists, e.what() };
         }
+        catch (const DuplicateSubscriptionException& e) {
+            return { RealmErrorType::DuplicateSubscription, e.what() };
+        }
         catch (const AppError& e) {
             if (e.is_client_error()) {
                 return { RealmErrorType::AppClientError, e.message };

@@ -51,5 +51,8 @@ namespace Realms.Sync.Native
         internal SessionStopPolicy session_stop_policy;
 
         internal SchemaMode schema_mode;
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_flexible_sync;
     }
 }

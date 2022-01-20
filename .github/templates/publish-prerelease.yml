@@ -10,6 +10,6 @@ jobs:
     name: Publish package to S3
     steps:
     - #@ template.replace(checkoutCode(False, False))
-    - #@ template.replace(downloadAllArtifacts())
+    - #@ template.replace(downloadAllArtifacts("completed"))
     - #@ template.replace(readVersionFromPackage())
     - #@ template.replace(uploadPackagesToSleet())

@@ -236,7 +236,15 @@ namespace Realms.Native
             return new Guid(bytes);
         }
 
-        public string AsString() => Encoding.UTF8.GetString(string_value.data, (int)string_value.size);
+        public string AsString()
+        {
+            if (Type == RealmValueType.Null)
+            {
+                return null;
+            }
+
+            return Encoding.UTF8.GetString(string_value.data, (int)string_value.size);
+        }
 
         public byte[] AsBinary()
         {

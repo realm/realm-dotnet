@@ -142,40 +142,54 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.UUIDPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        private static SyncConfiguration UpdateConfig(SyncConfiguration config)
+        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App app = null, string optionalPath = null)
+        {
+            app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+            var user = await GetUserAsync(app);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null)
+        {
+            var config = await GetFLXIntegrationConfigAsync(app);
+            return await GetRealmAsync(config);
+        }
+
+        private static T UpdateConfig<T>(T config)
+            where T : SyncConfigurationBase
         {
             config.Schema = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
@@ -183,10 +197,16 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
-            return UpdateConfig(new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
+        }
+
+        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        {
+            var user = GetFakeUser(app, userId);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
     }
 }

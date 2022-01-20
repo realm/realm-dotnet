@@ -103,6 +103,14 @@ public:
     KeyAlreadyExistsException(std::string key) : std::runtime_error(util::format("An item with the key '%1' has already been added.", key)) {}
 };
 
+class DuplicateSubscriptionException : public std::runtime_error {
+public:
+    DuplicateSubscriptionException(std::string name, std::string old_query, std::string new_query)
+        : std::runtime_error(util::format(
+            "A subscription with the name '%1' already exists but has a different query. If you meant to update it, set UpdateExisting = true in the subscription options. Existing query: '%2'; new query: '%3'",
+            name, old_query, new_query)) {}
+};
+
 REALM_EXPORT NativeException convert_exception(std::exception_ptr err = nullptr);
 
 template <class T>

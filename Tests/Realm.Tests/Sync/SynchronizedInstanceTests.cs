@@ -576,7 +576,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        private async Task PopulateData(SyncConfiguration config, int numberOfObjects = NumberOfObjects)
+        private async Task PopulateData(PartitionSyncConfiguration config, int numberOfObjects = NumberOfObjects)
         {
             using var realm = GetRealm(config);
 

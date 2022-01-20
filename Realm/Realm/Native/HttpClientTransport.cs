@@ -106,7 +106,7 @@ namespace Realms.Native
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
-        internal static void Install()
+        internal static void Initialize()
         {
             execute_request execute = ExecuteRequest;
 

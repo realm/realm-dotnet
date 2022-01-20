@@ -7,7 +7,10 @@
     xmlns:forms="using:Xamarin.Forms.Platform.UWP"
     mc:Ignorable="d">
 
-	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-	</Grid>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ProgressRing IsActive="True" Foreground="Black" Visibility="Visible" Width="100" Height="100" />
+        <TextBlock Text="Loading test application. If this is slow, it's likely due to BaaS app imports"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, 200, 0, 0"
+                   Foreground="Black" FontSize="30"/>
+    </Grid>
 </forms:WindowsPage>
