@@ -218,9 +218,17 @@ namespace Realms.Tests.Sync
                 .Where(doc => doc["name"].AsString.EndsWith(_appSuffix))
                 .Select(doc =>
                 {
-                    var appName = doc["name"].AsString.Replace(_appSuffix, string.Empty);
+                    var name = doc["name"].AsString;
+
+                    if (!name.EndsWith(_appSuffix))
+                    {
+                        return null;
+                    }
+
+                    var appName = name.Substring(0, name.Length - _appSuffix.Length);
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
+                .Where(a => a != null)
                 .ToArray();
         }
 
