@@ -105,3 +105,8 @@
     run: #@ "sleet push ${{ github.workspace }}/Realm/packages/" + pkgPath + pkg + ".nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
 #@ end
 #@ end
+
+#@ def cleanupWorkspace():
+  - name: Cleanup Workspace
+    run: rm -rf "${{ github.workspace }}/*"
+#@ end

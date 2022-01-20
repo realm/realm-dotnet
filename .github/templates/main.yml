@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
@@ -120,6 +120,7 @@ with:
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactFolder = "build"):
 timeout-minutes: #@ wrappersTimeout
 steps:
+  - #@ template.replace(cleanupWorkspace())
   - #@ template.replace(checkoutCode("recursive", False))
   - #@ checkCache(outputVar)
   #@ for step in intermediateSteps:
@@ -607,8 +608,7 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     timeout-minutes: #@ testTimeout
     steps:
-      - name: Cleanup Workspace
-        run: rm -rf ${{ github.workspace }}/*
+      - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
