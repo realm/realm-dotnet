@@ -28,7 +28,7 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-ios-device-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: powershell ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-device
       uses: actions/upload-artifact@v2
@@ -55,7 +55,7 @@ jobs:
         path: ./wrappers/build/**
         key: wrappers-ios-simulator-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: powershell ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-simulator
       uses: actions/upload-artifact@v2
