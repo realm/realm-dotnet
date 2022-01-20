@@ -120,7 +120,6 @@ with:
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**"):
 timeout-minutes: #@ wrappersTimeout
 steps:
-  - #@ template.replace(cleanupWorkspace())
   - #@ template.replace(checkoutCode("recursive", False))
   - #@ checkCache(outputVar, artifactsPath)
   #@ for step in intermediateSteps:
