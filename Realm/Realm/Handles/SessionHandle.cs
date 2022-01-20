@@ -81,7 +81,7 @@ namespace Realms.Sync
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.U1)] bool is_fatal);
+            public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string category_buf, IntPtr category_len, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.U1)] bool is_fatal);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_stop", CallingConvention = CallingConvention.Cdecl)]
             public static extern void stop(SessionHandle session, out NativeException ex);
@@ -181,9 +181,9 @@ namespace Realms.Sync
             return NativeMethods.get_raw_pointer(this);
         }
 
-        public void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal)
+        public void ReportErrorForTesting(int errorCode, string errorCategory, string errorMessage, bool isFatal)
         {
-            NativeMethods.report_error_for_testing(this, errorCode, errorMessage, (IntPtr)errorMessage.Length, isFatal);
+            NativeMethods.report_error_for_testing(this, errorCode, errorCategory, (IntPtr) errorCategory.Length, errorMessage, (IntPtr)errorMessage.Length, isFatal);
         }
 
         public void Stop()

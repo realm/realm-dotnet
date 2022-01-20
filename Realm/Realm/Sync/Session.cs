@@ -186,6 +186,6 @@ namespace Realms.Sync
             }
         }
 
-        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
+        internal void ReportErrorForTesting(int errorCode, string errorCategory, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorCategory, errorMessage, isFatal);
     }
 }

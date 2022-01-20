@@ -25,6 +25,7 @@
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include "sync_session_cs.hpp"
+#include <realm/sync/client_base.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -140,10 +141,19 @@ REALM_EXPORT void realm_syncsession_wait(const SharedSyncSession& session, void*
     });
 }
 
-REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, const uint16_t* message_buf, size_t message_len, bool is_fatal)
+REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, const uint16_t* category_buf, size_t category_len, const uint16_t* message_buf, size_t message_len, bool is_fatal)
 {
     Utf16StringAccessor message(message_buf, message_len);
-    std::error_code error_code(err, realm::sync::protocol_error_category());
+    std::error_code error_code;
+
+    Utf16StringAccessor category(category_buf, category_len);
+    if (category == "ClientCategory") {
+        error_code = std::error_code(err, realm::sync::client_error_category());
+    }
+    else {
+        error_code = std::error_code(err, realm::sync::protocol_error_category());
+    }
+
     SyncSession::OnlyForTesting::handle_error(*session, SyncError{error_code, std::move(message), is_fatal});
 }
 

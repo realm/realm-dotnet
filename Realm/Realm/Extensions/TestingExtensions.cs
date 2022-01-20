@@ -43,7 +43,13 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)errorCode, message, isFatal);
+            var errorCategory = string.Empty;
+            if (errorCode.ToString().Contains("_Cl"))
+            {
+                errorCategory = "ClientCategory";
+            }
+
+            session.ReportErrorForTesting((int)errorCode, errorCategory, message, isFatal);
         }
     }
 }

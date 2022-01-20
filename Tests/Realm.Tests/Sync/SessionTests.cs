@@ -110,6 +110,7 @@ namespace Realms.Tests.Sync
             {
                 int beforeCheck = 0;
                 int afterCheck = 0;
+                var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
@@ -118,35 +119,29 @@ namespace Realms.Tests.Sync
                         Assert.AreEqual(beforeCheck, 0);
                         Assert.AreEqual(afterCheck, 0);
 
-                        //Assert.That(beforeFrozen, Is.Not.Null);
                         beforeCheck = 1;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        //Assert.That(beforeFrozen, Is.Not.Null);
-                        //Assert.That(after, Is.Not.Null);
-
                         Assert.AreEqual(beforeCheck, 1);
                         Assert.AreEqual(afterCheck, 0);
 
                         beforeCheck = 2;
                         afterCheck = 1;
+
+                        tcs.TrySetResult(true);
                     }
                 };
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                //realm.Write(() =>
-                //{
-                //    realm.Add(new PrimaryKeyCharObject { Id = 'c' });
-                //});
+                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
 
-                await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
-                {
-                    Assert.AreEqual(afterCheck, 1);
-                    Assert.AreEqual(beforeCheck, 2);
-                });
+                await tcs.Task;
+
+                Assert.AreEqual(beforeCheck, 2);
+                Assert.AreEqual(afterCheck, 1);
             });
         }
 
@@ -163,6 +158,7 @@ namespace Realms.Tests.Sync
                     // don't care about OnBefore and OnAfter rest
                     ManualResetFallback = (session, exception) =>
                     {
+                        Assert.IsFalse(manualResetFallbackHandled);
                         manualResetFallbackHandled = true;
                     }
                 };
@@ -170,7 +166,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
+                await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session, ErrorCode.AutoClientResetFailed_Cl, "simulated client reset failure", (session) =>
                 {
                     Assert.IsTrue(manualResetFallbackHandled);
                 });
@@ -340,7 +336,7 @@ namespace Realms.Tests.Sync
             Assert.Throws<ObjectDisposedException>(() => _ = session.Equals(session));
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForDownloadAsync());
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForUploadAsync());
-            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, "test", false));
+            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, string.Empty, "test", false));
 
             // Calling CloseHandle multiple times should be fine
             session.CloseHandle();
