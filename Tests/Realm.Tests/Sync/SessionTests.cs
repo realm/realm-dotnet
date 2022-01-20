@@ -133,9 +133,8 @@ namespace Realms.Tests.Sync
                         afterCheck = 1;
                     }
                 };
-                //config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
 
-                using var realm = GetRealm(config);
+                using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
                 //realm.Write(() =>
@@ -169,7 +168,7 @@ namespace Realms.Tests.Sync
                 };
                 config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
 
-                using var realm = GetRealm(config);
+                using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
                 realm.Write(() =>
@@ -202,7 +201,7 @@ namespace Realms.Tests.Sync
                 };
                 config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
 
-                using var realm = GetRealm(config);
+                using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
                 realm.Write(() =>
