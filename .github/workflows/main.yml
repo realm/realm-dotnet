@@ -10,7 +10,7 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   build-wrappers-ios-device:
-    runs-on: macos-intel
+    runs-on: macos-latest
     name: Wrappers iOS Device
     timeout-minutes: 90
     steps:
@@ -34,10 +34,10 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-ios-device
-        path: ${{ github.workspace }}/wrappers/cmake/**
+        path: ${{ github.workspace }}/wrappers/cmake/**/realm-wrappers.framework
         retention-days: 1
   build-wrappers-ios-simulator:
-    runs-on: macos-intel
+    runs-on: macos-latest
     name: Wrappers iOS Simulator
     timeout-minutes: 90
     steps:
@@ -61,10 +61,10 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-ios-simulator
-        path: ${{ github.workspace }}/wrappers/cmake/**
+        path: ${{ github.workspace }}/wrappers/cmake/**/realm-wrappers.framework
         retention-days: 1
   build-wrappers-ios:
-    runs-on: macos-intel
+    runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
     - build-wrappers-ios-device
