@@ -14,8 +14,6 @@ jobs:
     name: Wrappers iOS Device
     timeout-minutes: 90
     steps:
-    - name: Cleanup Workspace
-      run: rm -rf "${{ github.workspace }}/*"
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -41,8 +39,6 @@ jobs:
     name: Wrappers iOS Simulator
     timeout-minutes: 90
     steps:
-    - name: Cleanup Workspace
-      run: rm -rf "${{ github.workspace }}/*"
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -55,8 +51,8 @@ jobs:
         path: ./wrappers/cmake/**/realm-wrappers.framework
         key: wrappers-ios-simulator-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      run: pwsh ./wrappers/build-ios.ps1 Simulator -SkipXCFramework -Configuration Release -EnableLTO
+      #if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-simulator
       uses: actions/upload-artifact@v2
       with:

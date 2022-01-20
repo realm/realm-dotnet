@@ -418,7 +418,7 @@ jobs:
   build-wrappers-ios-simulator:
     runs-on: macos-latest
     name: Wrappers iOS Simulator
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework", "wrappers-ios-simulator", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 Simulator -SkipXCFramework", "wrappers-ios-simulator", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
