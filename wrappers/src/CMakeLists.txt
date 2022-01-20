@@ -15,6 +15,7 @@ set(SOURCES
     app_cs.cpp
     async_open_task_cs.cpp
     mongo_collection_cs.cpp
+    subscription_set_cs.cpp
     sync_session_cs.cpp
     sync_user_cs.cpp
     transport_cs.cpp

@@ -32,6 +32,7 @@
 #include <realm/object-store/sync/async_open_task.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include <realm/sync/subscriptions.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -42,6 +43,7 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 using namespace realm;
 using namespace realm::binding;
+using namespace realm::sync;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
@@ -106,9 +108,13 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
 
-    std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
-
-    config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
+    if (sync_configuration.is_flexible_sync) {
+        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm::SyncConfig::FLXSyncEnabled{});
+    }
+    else {
+        std::string partition(Utf16StringAccessor(sync_configuration.partition, sync_configuration.partition_len));
+        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, partition);
+    }
     config.sync_config->error_handler = handle_session_error;
     config.sync_config->client_resync_mode = ClientResyncMode::Manual;
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
@@ -622,6 +628,20 @@ REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm
 {
     return handle_errors(ex, [&] {
         return new SharedSyncSession(realm->sync_session());
+    });
+}
+
+REALM_EXPORT SubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return new SubscriptionSet(realm->get_latest_subscription_set());
+    });
+}
+
+REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return realm->get_latest_subscription_set().version();
     });
 }
 

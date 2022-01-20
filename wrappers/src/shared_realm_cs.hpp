@@ -68,12 +68,14 @@ struct SyncConfiguration
 {
     SharedSyncUser* user;
 
-    uint16_t* url;
-    size_t url_len;
+    uint16_t* partition;
+    size_t partition_len;
 
     SyncSessionStopPolicy session_stop_policy;
 
     SchemaMode schema_mode;
+
+    bool is_flexible_sync;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

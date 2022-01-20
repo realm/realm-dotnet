@@ -105,6 +105,8 @@ namespace realm {
         AppUnknownError = 59,
 
         SessionError = 60,
+
+        DuplicateSubscription = 61,
     };
 
 }   // namespace realm

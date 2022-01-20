@@ -53,11 +53,12 @@ namespace Realms
                     AddWindowsWrappersToPath("Windows", isUnityTarget: true);
                 }
 
-                SynchronizationContextScheduler.Install();
+                SynchronizationContextScheduler.Initialize();
                 SharedRealmHandle.Initialize();
-                SessionHandle.InstallCallbacks();
-                HttpClientTransport.Install();
+                SessionHandle.Initialize();
+                HttpClientTransport.Initialize();
                 AppHandle.Initialize();
+                SubscriptionSetHandle.Initialize();
             }
         }
 

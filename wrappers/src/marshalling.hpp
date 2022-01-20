@@ -124,6 +124,19 @@ static inline realm_value_t to_capi_value(const std::string& str)
     return val;
 }
 
+static inline realm_value_t to_capi_value(const StringData str)
+{
+    realm_value_t val{};
+    if (str.is_null()) {
+        val.type = realm_value_type::RLM_TYPE_NULL;
+    }
+    else {
+        val.string = to_capi(str);
+        val.type = realm_value_type::RLM_TYPE_STRING;
+    }
+    return val;
+}
+
 static inline std::string capi_to_std(realm_string_t str)
 {
     if (str.data) {
@@ -152,6 +165,14 @@ static inline realm_timestamp_t to_capi(Timestamp ts)
     return realm_timestamp_t{ ts.get_seconds(), ts.get_nanoseconds() };
 }
 
+static inline realm_value_t to_capi_value(Timestamp ts)
+{
+    realm_value_t val{};
+    val.timestamp = to_capi(ts);
+    val.type = realm_value_type::RLM_TYPE_TIMESTAMP;
+    return val;
+}
+
 static inline Timestamp from_capi(realm_timestamp_t ts)
 {
     return Timestamp{ ts.seconds, ts.nanoseconds };
@@ -178,6 +199,14 @@ static inline realm_object_id_t to_capi(ObjectId oid)
     }
 
     return result;
+}
+
+static inline realm_value_t to_capi_value(ObjectId oid)
+{
+    realm_value_t val{};
+    val.object_id = to_capi(oid);
+    val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
+    return val;
 }
 
 static inline ObjectId from_capi(realm_object_id_t oid)

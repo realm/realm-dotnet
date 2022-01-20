@@ -17,12 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
-using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
@@ -37,6 +38,8 @@ namespace Realms.Tests
     public static class TestHelpers
     {
         public static readonly Random Random = new Random();
+
+        public static TextWriter Output { get; set; } = Console.Out;
 
         public static byte[] GetBytes(int size, byte? value = null)
         {

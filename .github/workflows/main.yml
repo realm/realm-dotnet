@@ -12,7 +12,7 @@ jobs:
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -90,7 +90,7 @@ jobs:
     needs:
     - build-wrappers-ios-device
     - build-wrappers-ios-simulator
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -130,7 +130,7 @@ jobs:
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -181,7 +181,7 @@ jobs:
         - arm64-v8a
         - x86
         - x86_64
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -211,7 +211,7 @@ jobs:
         arch:
         - Win32
         - x64
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -262,7 +262,7 @@ jobs:
         - Win32
         - x64
         - ARM
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -309,7 +309,7 @@ jobs:
     - build-wrappers-windows-uwp
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -515,7 +515,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -583,7 +583,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -603,7 +603,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -679,7 +679,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -763,7 +763,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -829,7 +829,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -849,7 +849,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -920,7 +920,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -940,7 +940,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -1048,7 +1048,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -1100,7 +1100,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -1236,7 +1236,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982
+    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}

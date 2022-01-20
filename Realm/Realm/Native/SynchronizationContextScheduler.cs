@@ -130,7 +130,7 @@ namespace Realms
             return false;
         }
 
-        internal static void Install()
+        internal static void Initialize()
         {
             get_context get = GetCurrentSynchronizationContext;
             post_on_context post = PostOnSynchronizationContext;
