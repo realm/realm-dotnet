@@ -34,9 +34,14 @@ jobs:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-  build-wrappers-ios-device:
+  build-wrappers-ios-frameworks:
     runs-on: macos-latest
-    name: Wrappers iOS Device
+    name: Wrappers iOS frameworks
+    strategy:
+      matrix:
+        arch:
+        - Simulator
+        - Device
     timeout-minutes: 90
     steps:
     - name: Checkout code
@@ -49,47 +54,21 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ./wrappers/cmake/**/realm-wrappers.framework
-        key: wrappers-ios-device-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts for wrappers-ios-device
+    - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
-        name: wrappers-ios-device
-        path: ${{ github.workspace }}/wrappers/cmake/**/realm-wrappers.framework
-        retention-days: 1
-  build-wrappers-ios-simulator:
-    runs-on: macos-latest
-    name: Wrappers iOS Simulator
-    timeout-minutes: 90
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Check cache
-      id: check-cache
-      uses: actions/cache@v2
-      with:
-        path: ./wrappers/cmake/**/realm-wrappers.framework
-        key: wrappers-ios-simulator-Release-${{hashFiles('./wrappers/**')}}
-    - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 Simulator -SkipXCFramework -Configuration Release -EnableLTO
-      if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts for wrappers-ios-simulator
-      uses: actions/upload-artifact@v2
-      with:
-        name: wrappers-ios-simulator
+        name: wrappers-ios-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/cmake/**/realm-wrappers.framework
         retention-days: 1
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
-    - build-wrappers-ios-device
-    - build-wrappers-ios-simulator
+    - build-wrappers-ios-frameworks
     timeout-minutes: 90
     steps:
     - name: Checkout code
@@ -103,16 +82,18 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
-    - name: Fetch device framework
+    - name: Fetch Framework for Simulator
       uses: actions/download-artifact@v2
       with:
-        name: wrappers-ios-device
+        name: wrappers-ios-Simulator
         path: wrappers/cmake
-    - name: Fetch simulator framework
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Fetch Framework for Device
       uses: actions/download-artifact@v2
       with:
-        name: wrappers-ios-simulator
+        name: wrappers-ios-Device
         path: wrappers/cmake
+      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Create xcframework
       run: |
         $build_directory = "${{ github.workspace }}/wrappers/cmake/iOS"

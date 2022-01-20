@@ -13,6 +13,7 @@
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
+#@ iOSArchs = [ 'Simulator', 'Device' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 #@ testTimeout = 45
@@ -341,6 +342,17 @@ steps:
 #@ end
 #@ end
 
+#@ def fetchiOSFrameworks():
+#@ for platform in iOSArchs:
+  - name: #@ "Fetch Framework for " + platform
+    uses: #@ actionDownloadArtifact
+    with:
+      name: #@ "wrappers-ios-" + platform
+      path: wrappers/cmake
+    if: #@ wrappersCacheCondition
+#@ end
+#@ end
+
 #@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand):
 #@ properties = {
 #@   "AdditionalFrameworks": framework,
@@ -410,34 +422,24 @@ jobs:
     runs-on: macos-latest
     name: Wrappers macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-  build-wrappers-ios-device:
+
+  build-wrappers-ios-frameworks:
     runs-on: macos-latest
-    name: Wrappers iOS Device
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework", "wrappers-ios-device", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework"))
-  build-wrappers-ios-simulator:
-    runs-on: macos-latest
-    name: Wrappers iOS Simulator
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 Simulator -SkipXCFramework", "wrappers-ios-simulator", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework"))
+    name: Wrappers iOS frameworks
+    strategy:
+      matrix:
+        arch: #@ iOSArchs
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
-      - build-wrappers-ios-device
-      - build-wrappers-ios-simulator
+      - build-wrappers-ios-frameworks
     timeout-minutes: #@ wrappersTimeout
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
       - #@ checkCache("wrappers-ios")
-      - name: Fetch device framework
-        uses: #@ actionDownloadArtifact
-        with:
-          name: wrappers-ios-device
-          path: wrappers/cmake
-      - name: Fetch simulator framework
-        uses: #@ actionDownloadArtifact
-        with:
-          name: wrappers-ios-simulator
-          path: wrappers/cmake
+      - #@ template.replace(fetchiOSFrameworks())
       - name: Create xcframework
         #@yaml/text-templated-strings
         run: |
