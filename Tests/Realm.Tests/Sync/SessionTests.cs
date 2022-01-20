@@ -166,21 +166,13 @@ namespace Realms.Tests.Sync
                         manualResetFallbackHandled = true;
                     }
                 };
-                config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                realm.Write(() =>
-                {
-                    realm.Add(new PrimaryKeyCharObject { Id = 'c' });
-                });
-
                 await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
                 {
                     Assert.IsTrue(manualResetFallbackHandled);
-                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().Count(), 1);
-                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().First().Id, 'c');
                 });
             });
         }
@@ -199,21 +191,13 @@ namespace Realms.Tests.Sync
                         manualOnClientResetCalled = true;
                     }
                 };
-                config.Schema = new Type[] { typeof(PrimaryKeyCharObject) };
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                realm.Write(() =>
-                {
-                    realm.Add(new PrimaryKeyCharObject { Id = 'c' });
-                });
-
                 await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session, ErrorCode.DivergingHistories, "simulated client reset", (session) =>
                 {
                     Assert.IsTrue(manualOnClientResetCalled);
-                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().Count(), 1);
-                    Assert.AreEqual(realm.All<PrimaryKeyCharObject>().First().Id, 'c');
                 });
             });
         }

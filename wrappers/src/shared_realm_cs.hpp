@@ -75,6 +75,7 @@ struct SyncConfiguration
 
     SchemaMode schema_mode;
 
+    ClientResyncMode client_resync_mode;
     void* managed_sync_configuration_handle;
 };
 

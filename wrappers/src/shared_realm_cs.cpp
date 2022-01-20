@@ -123,25 +123,27 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         s_session_error_callback(new SharedSyncSession(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), managed_sync_configuration_handle);
     };
 
-    config.sync_config->client_resync_mode = ClientResyncMode::DiscardLocal;
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
+    config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
 
-    config.sync_config->notify_before_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen) {
-        // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
-        s_notify_before_callback(before_frozen, managed_sync_configuration_handle);
-        //if () {
-        //    // TODO andrea: throw exception
-        //}
-    };
+    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal) {
 
-    config.sync_config->notify_after_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen, SharedRealm after) {
-        // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
-        s_notify_after_callback(before_frozen, after, managed_sync_configuration_handle);
-        //if () {
-        //    // TODO andrea: throw exception
-        //}
-    };
+        config.sync_config->notify_before_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen) {
+            // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
+            s_notify_before_callback(before_frozen, managed_sync_configuration_handle);
+            //if () {
+            //    // TODO andrea: throw exception
+            //}
+        };
 
+        config.sync_config->notify_after_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen, SharedRealm after) {
+            // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
+            s_notify_after_callback(before_frozen, after, managed_sync_configuration_handle);
+            //if () {
+            //    // TODO andrea: throw exception
+            //}
+        };
+    }
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
 
     if (configuration.fallback_path) {

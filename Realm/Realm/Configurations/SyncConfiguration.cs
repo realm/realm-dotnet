@@ -222,6 +222,7 @@ namespace Realms.Sync
                 Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                client_resync_mode = ClientResetHandler is DiscardLocalResetHandler ? ClientResyncMode.DiscardLocal : ClientResyncMode.Manual,
                 managed_sync_configuration_handle = GCHandle.ToIntPtr(syncConfHandle.Value),
             };
         }
