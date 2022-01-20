@@ -94,8 +94,8 @@ jobs:
         path: wrappers/cmake
     - name: Create xcframework
       run: |
-        $build_directory = "{{ github.workspace }}/wrappers/cmake/iOS"
-        $install_prefix = "{{ github.workspace }}/wrappers/build"
+        $build_directory = "${{ github.workspace }}/wrappers/cmake/iOS"
+        $install_prefix = "${{ github.workspace }}/wrappers/build"
         $xcframework_path = "$install_prefix/iOS/Release/realm-wrappers.xcframework"
         xcodebuild -create-xcframework -framework $build_directory/src/Release-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/Release-iphoneos/realm-wrappers.framework -output "$xcframework_path"
       shell: powershell
