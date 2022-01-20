@@ -1072,7 +1072,7 @@ namespace Realms.Tests.Sync
 
                 var realm = await GetFLXIntegrationRealmAsync();
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
 
                 var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
 
@@ -1109,7 +1109,7 @@ namespace Realms.Tests.Sync
 
                 var realm = await GetFLXIntegrationRealmAsync();
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
 
                 var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
 
@@ -1138,7 +1138,7 @@ namespace Realms.Tests.Sync
 
                 var realm = await GetFLXIntegrationRealmAsync();
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
 
                 var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
 
