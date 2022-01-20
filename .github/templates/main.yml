@@ -35,13 +35,13 @@
 #@ return cmd + defaultParams
 #@ end
 
-#@ def checkCache(outputVar):
+#@ def checkCache(outputVar, path = "wrappers/build/**"):
 #@ key = outputVar + "-" + configuration + "-${{hashFiles('./wrappers/**')}}"
 name: Check cache
 id: check-cache
 uses: #@ actionCache
 with:
-  path: ./wrappers/build/**
+  path: #@ "./" + path
   key: #@ key
 #@ end
 
@@ -122,7 +122,7 @@ timeout-minutes: #@ wrappersTimeout
 steps:
   - #@ template.replace(cleanupWorkspace())
   - #@ template.replace(checkoutCode("recursive", False))
-  - #@ checkCache(outputVar)
+  - #@ checkCache(outputVar, artifactsPath)
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
   #@ end

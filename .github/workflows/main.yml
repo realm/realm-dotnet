@@ -25,11 +25,11 @@ jobs:
       id: check-cache
       uses: actions/cache@v2
       with:
-        path: ./wrappers/build/**
+        path: ./wrappers/cmake/**/realm-wrappers.framework
         key: wrappers-ios-device-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       run: pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-device
       uses: actions/upload-artifact@v2
       with:
@@ -52,11 +52,11 @@ jobs:
       id: check-cache
       uses: actions/cache@v2
       with:
-        path: ./wrappers/build/**
+        path: ./wrappers/cmake/**/realm-wrappers.framework
         key: wrappers-ios-simulator-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
       run: pwsh ./wrappers/build-ios.ps1 Device -SkipXCFramework -Configuration Release -EnableLTO
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-simulator
       uses: actions/upload-artifact@v2
       with:
@@ -99,7 +99,7 @@ jobs:
         $xcframework_path = "$install_prefix/iOS/Release/realm-wrappers.xcframework"
         xcodebuild -create-xcframework -framework $build_directory/src/Release-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/Release-iphoneos/realm-wrappers.framework -output "$xcframework_path"
       shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true'
+      # if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
       with:
