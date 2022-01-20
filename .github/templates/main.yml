@@ -117,10 +117,10 @@ with:
   retention-days: #@ retentionDays
 #@ end
 
-#@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True):
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactFolder = "build"):
 timeout-minutes: #@ wrappersTimeout
 steps:
-  - #@ template.replace(checkoutCode("recursive"))
+  - #@ template.replace(checkoutCode("recursive", False))
   - #@ checkCache(outputVar)
   #@ for step in intermediateSteps:
   - #@ template.replace(step)
@@ -128,7 +128,7 @@ steps:
   - name: Build wrappers
     run: #@ getWrapperBuildCommand(cmd, enableLto)
     if: #@ wrappersCacheCondition
-  - #@ uploadArtifacts(outputVar, "wrappers/build/**", 1)
+  - #@ uploadArtifacts(outputVar, "wrappers/" + artifactFolder + "/**", 1)
 #@ end
 
 #@ def setupWin81SDK():
@@ -410,10 +410,44 @@ jobs:
     runs-on: macos-latest
     name: Wrappers macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
+  build-wrappers-ios-device:
+    runs-on: macos-latest
+    name: Wrappers iOS Device
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build-ios.ps1 Device -SkipXCFramework", "wrappers-ios-device", artifactFolder = "cmake"))
+  build-wrappers-ios-simulator:
+    runs-on: macos-latest
+    name: Wrappers iOS Simulator
+    _: #@ template.replace(buildWrappers("powershell ./wrappers/build-ios.ps1 Device -SkipXCFramework", "wrappers-ios-simulator", artifactFolder = "cmake"))
   build-wrappers-ios:
     runs-on: macos-latest
-    name: Wrappers iOS
-    _: #@ template.replace(buildWrappers("./wrappers/build-ios.sh", "wrappers-ios"))
+    name: Wrappers iOS XCframework
+    needs:
+      - build-wrappers-ios-device
+      - build-wrappers-ios-simulator
+    timeout-minutes: #@ wrappersTimeout
+    steps:
+      - #@ template.replace(checkoutCode("recursive", False))
+      - #@ checkCache("wrappers-ios")
+      - name: Fetch device framework
+        uses: #@ actionDownloadArtifact
+        with:
+          name: wrappers-ios-device
+          path: wrappers/cmake
+      - name: Fetch simulator framework
+        uses: #@ actionDownloadArtifact
+        with:
+          name: wrappers-ios-simulator
+          path: wrappers/cmake
+      - name: Create xcframework
+        #@yaml/text-templated-strings
+        run: |
+          $build_directory = "{{ github.workspace }}/wrappers/cmake/iOS"
+          $install_prefix = "{{ github.workspace }}/wrappers/build"
+          $xcframework_path = "$install_prefix/iOS/(@= configuration @)/realm-wrappers.xcframework"
+          xcodebuild -create-xcframework -framework $build_directory/src/(@= configuration @)-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/(@= configuration @)-iphoneos/realm-wrappers.framework -output "$xcframework_path"
+        shell: powershell
+        if: #@ wrappersCacheCondition
+      - #@ uploadArtifacts("wrappers-ios", "wrappers/build/**", 1)
   build-wrappers-linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
