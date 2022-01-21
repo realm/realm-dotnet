@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.9.0 (2022-01-21)
 
 ### Enhancements
 * Added support for a new mode of synchronization with MongoDB Realm, called ["Flexible Sync"](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/). When using Flexible Sync, the client decides which queries it's interested in and asks the server for all objects matching these queries. The matching objects will be stored in a local Realm, just like before and can be queried and accessed while offline. This feature is in beta, so feedback - both positive and negative - is greatly appreciated and, as usual, we don't recommend using it for production workloads yet.
@@ -32,9 +32,6 @@
   * Subscriptions can be named (which makes it easier to unsubscribe) or unnamed. Adding multiple unnamed subscriptions with the same query is a no-op.
   * Modifying the set of active subscriptions is an expensive operation server-side, even if the resulting diff is not large. This is why we recommend batching subscription updates as much as possible to avoid overloading the server instance. A good practice is to declare the user subscriptions upfront - usually the first time the Realm is opened, and only update them when absolutely necessary.
   * Find more information about the API and current limitations in the [docs](https://docs.mongodb.com/realm/sdk/dotnet/fundamentals/realm-sync/).
-
-### Fixed
-* None
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
