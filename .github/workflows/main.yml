@@ -387,7 +387,7 @@ jobs:
         name: wrappers-android-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-cache.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.wrappers-android-arm64-v8a != 'true' || needs.check-cache.wrappers-android-x86 != 'true' || needs.check-cache.wrappers-android-x86_64 != 'true'
+    if: needs.check-wrappers-cache.wrappers-android-armeabi-v7a != 'true' || needs.check-wrappers-cache.wrappers-android-arm64-v8a != 'true' || needs.check-wrappers-cache.wrappers-android-x86 != 'true' || needs.check-wrappers-cache.wrappers-android-x86_64 != 'true'
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows
@@ -440,7 +440,7 @@ jobs:
         name: wrappers-windows-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-cache.wrappers-windows-Win32 != 'true' || needs.check-cache.wrappers-windows-x64 != 'true'
+    if: needs.check-wrappers-cache.wrappers-windows-Win32 != 'true' || needs.check-wrappers-cache.wrappers-windows-x64 != 'true'
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
@@ -487,7 +487,7 @@ jobs:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-cache.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.wrappers-windows-uwp-ARM != 'true'
+    if: needs.check-wrappers-cache.wrappers-windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.wrappers-windows-uwp-x64 != 'true' || needs.check-wrappers-cache.wrappers-windows-uwp-ARM != 'true'
   build-packages:
     runs-on: windows-latest
     name: Package
