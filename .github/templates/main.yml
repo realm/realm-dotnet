@@ -36,10 +36,10 @@
 #@ return cmd + defaultParams
 #@ end
 
-#@ def checkCache(outputVar, path = "wrappers/build/**"):
+#@ def checkCache(outputVar, path = "wrappers/build/**", id = "check-cache"):
 #@ key = outputVar + "-" + configuration + "-${{hashFiles('./wrappers/**')}}"
 name: Check cache
-id: check-cache
+id: #@ id
 uses: #@ actionCache
 with:
   path: #@ "./" + path
@@ -118,8 +118,14 @@ with:
   retention-days: #@ retentionDays
 #@ end
 
-#@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**"):
+#@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**", cacheVariable = ""):
+#@ if cacheVariable == "":
+#@   cacheVariable = outputVar
+#@ end
 timeout-minutes: #@ wrappersTimeout
+needs:
+  - check-wrappers-cache
+if: #@ "${{ needs.check-wrappers-cache.outputs." + cacheVariable + " != 'true' }}"
 steps:
   - #@ template.replace(checkoutCode("recursive", False))
   - #@ checkCache(outputVar, artifactsPath)
@@ -418,23 +424,39 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
+  check-wrappers-cache:
+    runs-on: ubuntu-latest
+    name: Check wrapper cache
+    outputs:
+      #@ for platform in getWrapperBinaryNames():
+      #@yaml/text-templated-strings
+      (@= "wrappers-" + platform @): #@ "${{ steps.check-cache-" + platform + ".outputs.cache-hit }}"
+      #@ end
+    steps:
+      #@ for platform in getWrapperBinaryNames():
+        - run: rm -rf ${{ github.workspace }}/wrappers/build
+        - #@ checkCache("wrappers-" + platform, id = "check-cache-" + platform)
+        - _: #@ template.replace(uploadArtifacts("wrappers-" + platform, "wrappers/build/**", 1))
+          if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
+      #@ end
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-
   build-wrappers-ios-frameworks:
     runs-on: macos-latest
     name: Wrappers iOS frameworks
     strategy:
       matrix:
         arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
+      - check-wrappers-cache
       - build-wrappers-ios-frameworks
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-ios != 'true' }}
     timeout-minutes: #@ wrappersTimeout
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
@@ -601,6 +623,12 @@ jobs:
         uses: #@ actionDeleteArtifact
         with:
           name: #@ "wrappers-" + platform
+#@ end
+#@ for platform in iOSArchs:
+      - name: #@ "Delete artifacts for iOS " + platform
+        uses: #@ actionDeleteArtifact
+        with:
+          name: #@ "wrappers-ios-" + platform
 #@ end
   benchmark-linux:
     name: Benchmark Linux

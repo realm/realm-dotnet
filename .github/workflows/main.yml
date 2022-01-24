@@ -9,10 +9,198 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
+  check-wrappers-cache:
+    runs-on: ubuntu-latest
+    name: Check wrapper cache
+    outputs:
+      wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
+      wrappers-ios: ${{ steps.check-cache-ios.outputs.cache-hit }}
+      wrappers-linux: ${{ steps.check-cache-linux.outputs.cache-hit }}
+      wrappers-android-armeabi-v7a: ${{ steps.check-cache-android-armeabi-v7a.outputs.cache-hit }}
+      wrappers-android-arm64-v8a: ${{ steps.check-cache-android-arm64-v8a.outputs.cache-hit }}
+      wrappers-android-x86: ${{ steps.check-cache-android-x86.outputs.cache-hit }}
+      wrappers-android-x86_64: ${{ steps.check-cache-android-x86_64.outputs.cache-hit }}
+      wrappers-windows-Win32: ${{ steps.check-cache-windows-Win32.outputs.cache-hit }}
+      wrappers-windows-x64: ${{ steps.check-cache-windows-x64.outputs.cache-hit }}
+      wrappers-windows-uwp-Win32: ${{ steps.check-cache-windows-uwp-Win32.outputs.cache-hit }}
+      wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
+      wrappers-windows-uwp-ARM: ${{ steps.check-cache-windows-uwp-ARM.outputs.cache-hit }}
+    steps:
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-macos
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-macos
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-macos
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-macos.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-ios
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-ios
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-ios
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-ios.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-linux
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-linux
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-linux
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-linux.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-android-armeabi-v7a
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-armeabi-v7a-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-android-armeabi-v7a
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-android-armeabi-v7a
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-android-arm64-v8a
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-arm64-v8a-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-android-arm64-v8a
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-android-arm64-v8a
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-android-x86
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-x86-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-android-x86
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-android-x86
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-android-x86.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-android-x86_64
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-android-x86_64-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-android-x86_64
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-android-x86_64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-windows-Win32
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-Win32-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-windows-Win32
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-Win32
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-windows-x64
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-x64-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-windows-x64
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-x64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-windows-x64.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-windows-uwp-Win32
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-windows-uwp-Win32
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-uwp-Win32
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-windows-uwp-x64
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-windows-uwp-x64
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-uwp-x64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
+    - run: rm -rf ${{ github.workspace }}/wrappers/build
+    - name: Check cache
+      id: check-cache-windows-uwp-ARM
+      uses: actions/cache@v2
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
+    - name: Store artifacts for wrappers-windows-uwp-ARM
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-uwp-ARM
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
     timeout-minutes: 90
+    needs:
+    - check-wrappers-cache
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-macos != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -43,6 +231,9 @@ jobs:
         - Simulator
         - Device
     timeout-minutes: 90
+    needs:
+    - check-wrappers-cache
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-ios != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -68,7 +259,9 @@ jobs:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
+    - check-wrappers-cache
     - build-wrappers-ios-frameworks
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-ios != 'true' }}
     timeout-minutes: 90
     steps:
     - name: Checkout code
@@ -163,6 +356,9 @@ jobs:
         - x86
         - x86_64
     timeout-minutes: 90
+    needs:
+    - check-wrappers-cache
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-android-${{ matrix.arch }} != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -193,6 +389,9 @@ jobs:
         - Win32
         - x64
     timeout-minutes: 90
+    needs:
+    - check-wrappers-cache
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-windows-${{ matrix.arch }} != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -244,6 +443,9 @@ jobs:
         - x64
         - ARM
     timeout-minutes: 90
+    needs:
+    - check-wrappers-cache
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-windows-uwp-${{ matrix.arch }} != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -1281,6 +1483,14 @@ jobs:
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-ARM
+    - name: Delete artifacts for iOS Simulator
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
+      with:
+        name: wrappers-ios-Simulator
+    - name: Delete artifacts for iOS Device
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
+      with:
+        name: wrappers-ios-Device
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
