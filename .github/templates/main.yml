@@ -36,9 +36,9 @@
 #@ return cmd + defaultParams
 #@ end
 
-#@ def checkCache(outputVar, path = "wrappers/build/**", id = "check-cache"):
+#@ def checkCache(outputVar, path = "wrappers/build/**", id = "check-cache", name = "Check cache"):
 #@ key = outputVar + "-" + configuration + "-${{hashFiles('./wrappers/**')}}"
-name: Check cache
+name: #@ name
 id: #@ id
 uses: #@ actionCache
 with:
@@ -428,16 +428,20 @@ jobs:
     runs-on: ubuntu-latest
     name: Check wrapper cache
     outputs:
-      #@ for platform in getWrapperBinaryNames():
+      #@ for platform in [ 'macos', 'ios', 'linux' ]:
       #@yaml/text-templated-strings
       (@= "wrappers-" + platform @): #@ "${{ steps.check-cache-" + platform + ".outputs.cache-hit }}"
       #@ end
+      wrappers-android: #@ "${{ " + " && ".join([ "steps.check-cache-android-" + x + " == 'true'" for x in androidABIs ]) + " }}"
+      wrappers-windows: #@ "${{ " + " && ".join([ "steps.check-cache-windows-" + x + " == 'true'" for x in windowsArchs ]) + " }}"
+      wrappers-uwp: #@ "${{ " + " && ".join([ "steps.check-cache-windows-uwp-" + x + " == 'true'" for x in windowsUWPArchs ]) + " }}"
     steps:
+        - #@ template.replace(checkoutCode("recursive", False))
       #@ for platform in getWrapperBinaryNames():
-        - run: rm -rf ${{ github.workspace }}/wrappers/build
-        - #@ checkCache("wrappers-" + platform, id = "check-cache-" + platform)
+        - #@ checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform)
         - _: #@ template.replace(uploadArtifacts("wrappers-" + platform, "wrappers/build/**", 1))
           if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
+        - run: git clean -fdx
       #@ end
   build-wrappers-macos:
     runs-on: macos-latest
@@ -504,21 +508,21 @@ jobs:
     strategy:
       matrix:
         arch: #@ androidABIs
-    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", [], False))
+    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", enableLto = False, cacheVariable = "wrappers-android"))
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ]))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ], cacheVariable = "wrappers-windows"))
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ]))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ], cacheVariable = "wrappers-uwp"))
   build-packages:
     runs-on: windows-latest
     name: Package
