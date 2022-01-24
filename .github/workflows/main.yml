@@ -16,9 +16,15 @@ jobs:
       wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
       wrappers-ios: ${{ steps.check-cache-ios.outputs.cache-hit }}
       wrappers-linux: ${{ steps.check-cache-linux.outputs.cache-hit }}
-      wrappers-android: ${{ steps.check-cache-android-armeabi-v7a == 'true' && steps.check-cache-android-arm64-v8a == 'true' && steps.check-cache-android-x86 == 'true' && steps.check-cache-android-x86_64 == 'true' }}
-      wrappers-windows: ${{ steps.check-cache-windows-Win32 == 'true' && steps.check-cache-windows-x64 == 'true' }}
-      wrappers-uwp: ${{ steps.check-cache-windows-uwp-Win32 == 'true' && steps.check-cache-windows-uwp-x64 == 'true' && steps.check-cache-windows-uwp-ARM == 'true' }}
+      wrappers-android-armeabi-v7a: ${{ steps.check-cache-android-armeabi-v7a.outputs.cache-hit }}
+      wrappers-android-arm64-v8a: ${{ steps.check-cache-android-arm64-v8a.outputs.cache-hit }}
+      wrappers-android-x86: ${{ steps.check-cache-android-x86.outputs.cache-hit }}
+      wrappers-android-x86_64: ${{ steps.check-cache-android-x86_64.outputs.cache-hit }}
+      wrappers-windows-Win32: ${{ steps.check-cache-windows-Win32.outputs.cache-hit }}
+      wrappers-windows-x64: ${{ steps.check-cache-windows-x64.outputs.cache-hit }}
+      wrappers-windows-uwp-Win32: ${{ steps.check-cache-windows-uwp-Win32.outputs.cache-hit }}
+      wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
+      wrappers-windows-uwp-ARM: ${{ steps.check-cache-windows-uwp-ARM.outputs.cache-hit }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -304,6 +310,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Wrappers Linux
     timeout-minutes: 90
+    needs:
+    - check-wrappers-cache
+    if: ${{ needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -357,7 +366,6 @@ jobs:
     timeout-minutes: 90
     needs:
     - check-wrappers-cache
-    if: ${{ needs.check-wrappers-cache.outputs.wrappers-android != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -379,6 +387,7 @@ jobs:
         name: wrappers-android-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+    if: ${{ needs.check-cache.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.wrappers-android-arm64-v8a != 'true' || needs.check-cache.wrappers-android-x86 != 'true' || needs.check-cache.wrappers-android-x86_64 != 'true' }}
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows
@@ -390,7 +399,6 @@ jobs:
     timeout-minutes: 90
     needs:
     - check-wrappers-cache
-    if: ${{ needs.check-wrappers-cache.outputs.wrappers-windows != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -432,6 +440,7 @@ jobs:
         name: wrappers-windows-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+    if: ${{ needs.check-cache.wrappers-windows-Win32 != 'true' || needs.check-cache.wrappers-windows-x64 != 'true' }}
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
@@ -444,7 +453,6 @@ jobs:
     timeout-minutes: 90
     needs:
     - check-wrappers-cache
-    if: ${{ needs.check-wrappers-cache.outputs.wrappers-uwp != 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -479,6 +487,7 @@ jobs:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+    if: ${{ needs.check-cache.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.wrappers-windows-uwp-ARM != 'true' }}
   build-packages:
     runs-on: windows-latest
     name: Package
@@ -489,6 +498,14 @@ jobs:
     - build-wrappers-android
     - build-wrappers-linux
     - build-wrappers-windows-uwp
+    if: |
+      always() &&
+      (needs.build-wrappers-windows.result == 'success' || needs.build-wrappers-windows.result == 'skipped') &&
+      (needs.build-wrappers-macos.result == 'success' || needs.build-wrappers-macos.result == 'skipped') &&
+      (needs.build-wrappers-ios.result == 'success' || needs.build-wrappers-ios.result == 'skipped') &&
+      (needs.build-wrappers-android.result == 'success' || needs.build-wrappers-android.result == 'skipped') &&
+      (needs.build-wrappers-linux.result == 'success' || needs.build-wrappers-linux.result == 'skipped') &&
+      (needs.build-wrappers-windows-uwp.result == 'success' || needs.build-wrappers-windows-uwp.result == 'skipped') &&
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: 90
