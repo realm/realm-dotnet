@@ -12,6 +12,8 @@ jobs:
   check-wrappers-cache:
     runs-on: ubuntu-latest
     name: Check wrapper cache
+    env:
+      CACHE_SKIP_SAVE: true
     outputs:
       wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
       wrappers-ios: ${{ steps.check-cache-ios.outputs.cache-hit }}
@@ -33,7 +35,7 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache for macos
       id: check-cache-macos
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
@@ -47,7 +49,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for ios
       id: check-cache-ios
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
@@ -61,7 +63,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for linux
       id: check-cache-linux
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
@@ -75,7 +77,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for android-armeabi-v7a
       id: check-cache-android-armeabi-v7a
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-armeabi-v7a-Release-${{hashFiles('./wrappers/**')}}
@@ -89,7 +91,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for android-arm64-v8a
       id: check-cache-android-arm64-v8a
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-arm64-v8a-Release-${{hashFiles('./wrappers/**')}}
@@ -103,7 +105,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for android-x86
       id: check-cache-android-x86
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-x86-Release-${{hashFiles('./wrappers/**')}}
@@ -117,7 +119,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for android-x86_64
       id: check-cache-android-x86_64
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-x86_64-Release-${{hashFiles('./wrappers/**')}}
@@ -131,7 +133,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for windows-Win32
       id: check-cache-windows-Win32
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-Win32-Release-${{hashFiles('./wrappers/**')}}
@@ -145,7 +147,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for windows-x64
       id: check-cache-windows-x64
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-x64-Release-${{hashFiles('./wrappers/**')}}
@@ -159,7 +161,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for windows-uwp-Win32
       id: check-cache-windows-uwp-Win32
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
@@ -173,7 +175,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for windows-uwp-x64
       id: check-cache-windows-uwp-x64
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
@@ -187,7 +189,7 @@ jobs:
     - run: git clean -fdx
     - name: Check cache for windows-uwp-ARM
       id: check-cache-windows-uwp-ARM
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
@@ -214,7 +216,7 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
@@ -247,7 +249,7 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/cmake/**/realm-wrappers.framework
         key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
@@ -276,7 +278,7 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
@@ -325,7 +327,7 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
@@ -374,7 +376,7 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
@@ -407,13 +409,13 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: C:\src
         key: vcpkg
@@ -461,13 +463,13 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Check Vcpkg cache
       id: check-vcpkg-cache
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: C:\src
         key: vcpkg
@@ -611,7 +613,7 @@ jobs:
     - name: Check Docfx cache
       id: check-docfx-cache
       if: ${{ contains(github.head_ref, 'release') }}
-      uses: actions/cache@v2
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: C:\docfx
         key: docfx
