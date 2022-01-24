@@ -541,12 +541,8 @@ jobs:
       - build-wrappers-windows-uwp
     if: |
       always() &&
-      (needs.build-wrappers-windows.result == 'success' || needs.build-wrappers-windows.result == 'skipped') &&
-      (needs.build-wrappers-macos.result == 'success' || needs.build-wrappers-macos.result == 'skipped') &&
-      (needs.build-wrappers-ios.result == 'success' || needs.build-wrappers-ios.result == 'skipped') &&
-      (needs.build-wrappers-android.result == 'success' || needs.build-wrappers-android.result == 'skipped') &&
-      (needs.build-wrappers-linux.result == 'success' || needs.build-wrappers-linux.result == 'skipped') &&
-      (needs.build-wrappers-windows-uwp.result == 'success' || needs.build-wrappers-windows-uwp.result == 'skipped') &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: #@ wrappersTimeout
