@@ -171,6 +171,15 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool has_changed(SharedRealmHandle sharedRealm);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_latest_version", CallingConvention = CallingConvention.Cdecl)]
+            public static extern UInt64 get_latest_version(SharedRealmHandle sharedRealm);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_current_version", CallingConvention = CallingConvention.Cdecl)]
+            public static extern UInt64 get_current_version(SharedRealmHandle sharedRealm);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_notify", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void notify(SharedRealmHandle realm);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_frozen(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -203,6 +212,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_subscriptions_version", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 get_subscriptions_version(SharedRealmHandle realm, out NativeException ex);
+
 
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
@@ -461,6 +471,21 @@ namespace Realms
         public bool HasChanged()
         {
             return NativeMethods.has_changed(this);
+        }
+
+        public Native.Version GetLatestVersion()
+        {
+            return new Native.Version(NativeMethods.get_latest_version(this));
+        }
+
+        public Native.Version GetCurrentVersion()
+        {
+            return new Native.Version(NativeMethods.get_current_version(this));
+        }
+
+        public void Notify()
+        {
+            NativeMethods.notify(this);
         }
 
         public SharedRealmHandle Freeze()

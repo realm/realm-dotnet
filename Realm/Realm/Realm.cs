@@ -1058,28 +1058,27 @@ namespace Realms
         /// <returns>
         /// Whether the <see cref="Realm"/> had any updates. Note that this may return true even if no data has actually changed.
         /// </returns>
-        public Task<bool> RefreshAsync()
+        public async Task<bool> RefreshAsync()
         {
-            if (!SharedRealmHandle.HasChanged())
+            var currentVersion = SharedRealmHandle.GetCurrentVersion();
+            var latestVersion = SharedRealmHandle.GetLatestVersion();
+
+            if (currentVersion >= latestVersion)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
             if (!AsyncHelper.HasValidContext)
             {
-                return Task.FromResult(Refresh());
+                return Refresh();
             }
 
-            var tcs = new TaskCompletionSource<bool>();
-
-            RealmChanged += Handler;
-            return tcs.Task;
-
-            void Handler(object sender, EventArgs e)
+            await Task.Run(() =>
             {
-                ((Realm)sender).RealmChanged -= Handler;
-                tcs.TrySetResult(true);
-            }
+                SharedRealmHandle.Notify();
+            });
+
+            return true;
         }
 
         /// <summary>

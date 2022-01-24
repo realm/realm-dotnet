@@ -94,6 +94,25 @@ public:
         auto transaction = Realm::Internal::get_transaction_ref(*realm);
         return Realm::Internal::get_db(*realm)->has_changed(transaction);
     }
+
+    static DB::version_type get_latest_version(const SharedRealm& realm)
+    {
+        auto transaction = Realm::Internal::get_transaction_ref(*realm);
+        return transaction->get_version_of_latest_snapshot();
+    }
+
+    static DB::version_type get_current_version(const SharedRealm& realm)
+    {
+        auto transaction = Realm::Internal::get_transaction_ref(*realm);
+        return transaction->get_version();
+    }
+
+    static void notify_realm(const SharedRealm& realm)
+    {
+        auto& cord = Realm::Internal::get_coordinator(*realm);
+        cord.on_change();
+    }
+
 };
 
 Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
@@ -521,6 +540,21 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
 REALM_EXPORT bool shared_realm_has_changed(const SharedRealm& realm)
 {
     return TestHelper::has_changed(realm);
+}
+
+REALM_EXPORT uint64_t shared_realm_get_latest_version(const SharedRealm& realm)
+{
+    return TestHelper::get_latest_version(realm);
+}
+
+REALM_EXPORT uint64_t shared_realm_get_current_version(const SharedRealm& realm)
+{
+    return TestHelper::get_current_version(realm);
+}
+
+REALM_EXPORT void shared_realm_notify(SharedRealm& shared_realm)
+{
+    TestHelper::notify_realm(shared_realm);
 }
 
 REALM_EXPORT bool shared_realm_get_is_frozen(const SharedRealm& realm, NativeException::Marshallable& ex)
