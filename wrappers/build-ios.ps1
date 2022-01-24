@@ -32,7 +32,7 @@ if (-Not $Incremental) {
         -DCMAKE_XCODE_ATTRIBUTE_DYLIB_INSTALL_NAME_BASE='@rpath' `
         -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY `
         -DCMAKE_TOOLCHAIN_FILE="$PSScriptRoot/realm-core/tools/cmake/ios.toolchain.cmake" `
-        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=$EnableLTO
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="$EnableLTO"
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
     }
