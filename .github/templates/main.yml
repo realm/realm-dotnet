@@ -125,7 +125,7 @@ with:
 timeout-minutes: #@ wrappersTimeout
 needs:
   - check-wrappers-cache
-if: #@ "${{ needs.check-wrappers-cache.outputs." + cacheVariable + " != 'true' }}"
+if: #@ "needs.check-wrappers-cache.outputs." + cacheVariable + " != 'true'"
 steps:
   - #@ template.replace(checkoutCode("recursive", False))
   - #@ checkCache(outputVar, artifactsPath)
@@ -292,7 +292,7 @@ steps:
       path: 'C:\docfx'
       key: docfx
   - name: Download docfx
-    if: #@ "${{ steps.check-docfx-cache.outputs.cache-hit != 'true' && " + isRelease + " }}"
+    if: #@ "steps.check-docfx-cache.outputs.cache-hit != 'true' && " + isRelease
     run: |
       Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
       Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
@@ -457,7 +457,7 @@ jobs:
     needs:
       - check-wrappers-cache
       - build-wrappers-ios-frameworks
-    if: ${{ needs.check-wrappers-cache.outputs.wrappers-ios != 'true' }}
+    if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
     timeout-minutes: #@ wrappersTimeout
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
@@ -479,7 +479,7 @@ jobs:
     timeout-minutes: #@ wrappersTimeout
     needs:
       - check-wrappers-cache
-    if: ${{ needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
+    if: needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux")
@@ -510,7 +510,7 @@ jobs:
         arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", enableLto = False, cacheVariable = "wrappers-android"))
     #@yaml/map-key-override
-    if: #@ "${{ " + " || ".join([ "needs.check-cache.wrappers-android-" + x + " != 'true'" for x in androidABIs ]) + " }}"
+    if: #@ " || ".join([ "needs.check-cache.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows
@@ -519,7 +519,7 @@ jobs:
         arch: #@ windowsArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ], cacheVariable = "wrappers-windows"))
     #@yaml/map-key-override
-    if: #@ "${{ " + " || ".join([ "needs.check-cache.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ]) + " }}"
+    if: #@ " || ".join([ "needs.check-cache.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
@@ -528,7 +528,7 @@ jobs:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ], cacheVariable = "wrappers-uwp"))
     #@yaml/map-key-override
-    if: #@ "${{ " + " || ".join([ "needs.check-cache.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ]) + " }}"
+    if: #@ " || ".join([ "needs.check-cache.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])
   build-packages:
     runs-on: windows-latest
     name: Package
