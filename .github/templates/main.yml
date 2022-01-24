@@ -510,7 +510,7 @@ jobs:
         arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", enableLto = False, cacheVariable = "wrappers-android"))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
+    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
   build-wrappers-windows:
     runs-on: windows-latest
     name: Wrappers Windows
@@ -519,7 +519,7 @@ jobs:
         arch: #@ windowsArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ], cacheVariable = "wrappers-windows"))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
+    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
@@ -528,7 +528,7 @@ jobs:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ], cacheVariable = "wrappers-uwp"))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])
+    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])
   build-packages:
     runs-on: windows-latest
     name: Package
