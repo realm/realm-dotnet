@@ -96,8 +96,18 @@ namespace binding {
             return m_managed_state_handle;
         }
 
+        // assume that the UUID values in this realm are stored using the Microsoft GUID-compatible (big-endian) representation
+        bool m_guid_compatibility;
+
         // TODO: this should go away once https://github.com/realm/realm-core/issues/4584 is resolved
         Schema m_realm_schema;
+
+        static CSharpBindingContext& get(const SharedRealm& realm)
+        {
+            auto* context = realm->m_binding_context.get();
+            REALM_ASSERT(dynamic_cast<CSharpBindingContext*>(context) != nullptr);
+            return *reinterpret_cast<CSharpBindingContext*>(context);
+        }
 
     private:
         void* m_managed_state_handle;

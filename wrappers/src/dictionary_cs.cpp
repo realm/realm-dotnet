@@ -40,6 +40,7 @@ REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, rea
             throw KeyAlreadyExistsException(dict_key);
         }
 
+        apply_legacy_guid_representation_if_necessary(dictionary.get_realm(), value);
         dictionary.insert(dict_key, from_capi(value));
     });
 }
@@ -60,6 +61,7 @@ REALM_EXPORT Object* realm_dictionary_add_embedded(object_store::Dictionary& dic
 REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        apply_legacy_guid_representation_if_necessary(dictionary.get_realm(), value);
         dictionary.insert(from_capi(key.string), from_capi(value));
     });
 }
@@ -78,6 +80,7 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
         if (mixed_value)
         {
             *value = to_capi(dictionary, mixed_value.value());
+            apply_legacy_guid_representation_if_necessary(dictionary.get_realm(), *value);
             return true;
         }
 
@@ -95,6 +98,7 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
         auto pair = dictionary.get_pair(ndx);
         *key = to_capi(Mixed(pair.first));
         *value = to_capi(dictionary, pair.second);
+        apply_legacy_guid_representation_if_necessary(dictionary.get_realm(), *value);
     });
 }
 
@@ -118,6 +122,7 @@ REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictio
         auto dict_key = from_capi(key.string);
         auto dict_value = dictionary.try_get_any(dict_key);
 
+        apply_legacy_guid_representation_if_necessary(dictionary.get_realm(), value);
         if (dict_value && are_equal(value, dict_value.value()))
         {
             dictionary.erase(dict_key);

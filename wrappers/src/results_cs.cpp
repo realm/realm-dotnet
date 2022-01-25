@@ -74,6 +74,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
             }
             else {
                 *value = to_capi(std::move(val));
+                apply_legacy_guid_representation_if_necessary(results.get_realm(), *value);
             }
         }
     });
@@ -162,6 +163,7 @@ REALM_EXPORT size_t results_find_value(Results& results, realm_value_t value, Na
             return results.index_of(value.link.object->obj());
         }
 
+        apply_legacy_guid_representation_if_necessary(results.get_realm(), value);
         return results.index_of(from_capi(value));
     });
 }

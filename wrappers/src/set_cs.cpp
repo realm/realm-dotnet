@@ -60,6 +60,7 @@ REALM_EXPORT bool realm_set_add_value(object_store::Set& set, realm_value_t valu
             return set.insert(value.link.object->obj()).second;
         }
 
+        apply_legacy_guid_representation_if_necessary(set.get_realm(), value);
         return set.insert_any(from_capi(value)).second;
     });
 }
@@ -81,6 +82,7 @@ REALM_EXPORT void realm_set_get_value(object_store::Set& set, size_t ndx, realm_
             }
             else {
                 *value = to_capi(std::move(val));
+                apply_legacy_guid_representation_if_necessary(set.get_realm(), *value);
             }
         }
     });
@@ -100,6 +102,7 @@ REALM_EXPORT bool realm_set_remove_value(object_store::Set& set, realm_value_t v
             return set.remove(value.link.object->obj()).second;
         }
 
+        apply_legacy_guid_representation_if_necessary(set.get_realm(), value);
         return set.remove_any(from_capi(value)).second;
     });
 }
@@ -129,6 +132,7 @@ REALM_EXPORT bool realm_set_contains_value(object_store::Set& set, realm_value_t
             return set.find(value.link.object->obj()) != realm::not_found;
         }
 
+        apply_legacy_guid_representation_if_necessary(set.get_realm(), value);
         return set.find_any(from_capi(value)) != realm::not_found;
     });
 }
