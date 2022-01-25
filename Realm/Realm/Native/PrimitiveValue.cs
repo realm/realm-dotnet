@@ -153,7 +153,7 @@ namespace Realms.Native
                 Type = RealmValueType.Guid,
             };
 
-            var guidBytes = value.ToByteArray();
+            var guidBytes = GuidConverter.ToBytes(value, GuidRepresentation.Standard);
             for (var i = 0; i < 16; i++)
             {
                 result.guid_bytes[i] = guidBytes[i];
@@ -230,10 +230,10 @@ namespace Realms.Native
             var bytes = new byte[16];
             for (var i = 0; i < 16; i++)
             {
-                bytes[i] = object_id_bytes[i];
+                bytes[i] = guid_bytes[i];
             }
 
-            return new Guid(bytes);
+            return GuidConverter.FromBytes(bytes, GuidRepresentation.Standard);
         }
 
         public string AsString()
