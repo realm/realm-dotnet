@@ -12,6 +12,48 @@
 ### Internal
 * Using Core x.y.z.
 
+## 10.9.0 (2022-01-21)
+
+### Enhancements
+* Added support for a new mode of synchronization with MongoDB Realm, called ["Flexible Sync"](https://docs.mongodb.com/realm/sync/data-access-patterns/flexible-sync/). When using Flexible Sync, the client decides which queries it's interested in and asks the server for all objects matching these queries. The matching objects will be stored in a local Realm, just like before and can be queried and accessed while offline. This feature is in beta, so feedback - both positive and negative - is greatly appreciated and, as usual, we don't recommend using it for production workloads yet.
+  * Added a new configuration type, called `FlexibleSyncConfiguration`. Use this type to get a `Realm` instance that uses the new synchronization mode with the server.
+  * Deprecated the `SyncConfiguration` class in favor of `PartitionSyncConfiguration`. The two classes are equivalent and the new type is introduced to better contrast with `FlexibleSyncConfiguration`. The two types are equivalent and allow you to open a `Realm` instance that is using the old "Partition Sync" mode.
+  * Added a new type, called `SubscriptionSet`. It is a collection, holding the various active query subscriptions that have been created for this Realm. This collection can be accessed via the `Realm.Subscriptions` property. It will be `null` for local and partition sync Realms and non-null for flexible sync Realms.
+
+  A minimal example would look like this:
+  ```csharp
+  var config = new FlexibleSyncConfiguration(user);
+  var realm = Realm.GetInstance(config);
+
+  // Add a new subscription
+  realm.Subscriptions.Update(() =>
+  {
+    var year2022 = new DateTimeOffset(2022, 1, 1);
+    var saleOrders = realm.All<SaleOrder>().Where(o => o.Created > year2022);
+    realm.Subscriptions.Add(saleOrders);
+  });
+
+  // Wait for the server to acknowledge the subscription and return all objects
+  // matching the query
+  await realm.Subscriptions.WaitForSynchronizationAsync();
+
+  // Now we have all orders that existed on the server at the time of
+  // subscribing. From now on, the server will send us updates as new
+  // orders get created.
+  var orderCount = realm.All<SaleOrder>().Count();
+  ```
+  * Multiple subscriptions can be created for queries on the same class, in which case they'll be combined with a logical `OR`. For example, if you create a subscription for all orders created in 2022 and another for all orders created by the current user, your local Realm will contain the union of the two result sets.
+  * Subscriptions can be named (which makes it easier to unsubscribe) or unnamed. Adding multiple unnamed subscriptions with the same query is a no-op.
+  * Modifying the set of active subscriptions is an expensive operation server-side, even if the resulting diff is not large. This is why we recommend batching subscription updates as much as possible to avoid overloading the server instance. A good practice is to declare the user subscriptions upfront - usually the first time the Realm is opened, and only update them when absolutely necessary.
+  * Find more information about the API and current limitations in the [docs](https://docs.mongodb.com/realm/sdk/dotnet/fundamentals/realm-sync/).
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.8.0.
+* Release tests are executed against realm-qa instead of realm-dev. (PR [#2771](https://github.com/realm/realm-dotnet/pull/2771))
+
 ## 10.8.0 (2022-01-17)
 
 ### Enhancements
@@ -28,7 +70,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.6.1.
+* Using Core 11.8.0.
 * Updated naming of prerelease packages to use lowercase "pr" - e.g. `10.7.1-pr-2695.1703` instead of `10.7.1-PR-2695.1703`. (PR [#2765](https://github.com/realm/realm-dotnet/pull/2765))
 * Migrated from using the cli to import/export applications to configuring them via the admin API. (PR [#2768](https://github.com/realm/realm-dotnet/pull/2768))
 

@@ -84,7 +84,7 @@ namespace Realms
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration is <see cref="SyncConfiguration"/>, the realm will be downloaded and fully
+        /// If the configuration is <see cref="SyncConfigurationBase"/>, the realm will be downloaded and fully
         /// synchronized with the server prior to the completion of the returned Task object.
         /// Otherwise this method will perform any migrations on a background thread before returning an
         /// opened instance to the calling thread.
@@ -119,7 +119,7 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase config = null)
         {
             using var realm = GetInstance(config);
-            if (config is SyncConfiguration)
+            if (config is SyncConfigurationBase)
             {
                 // For synchronized Realms, shutdown the session, otherwise Compact will fail.
                 var session = realm.SyncSession;
@@ -146,6 +146,12 @@ namespace Realms
         }
 
         #endregion static
+
+        // This holds a weak list of all subscriptions we've obtained from this Realm. It's important
+        // to keep track of them to be able to close them when the Realm is disposed, otherwise it's
+        // up to GC to collect them, meaning the Realm will remain open for an arbitrary amount of
+        // time. It's a list because subscriptions may have different versions.
+        private readonly List<WeakReference<SubscriptionSet>> _subscriptionRefs = new();
 
         private State _state;
         private WeakReference<Session> _sessionRef;
@@ -203,14 +209,16 @@ namespace Realms
         /// </summary>
         /// <value>
         /// The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm
-        /// server if the Realm instance was created with a <see cref="SyncConfiguration"/>; <c>null</c>
+        /// server if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
         /// otherwise.
         /// </value>
         public Session SyncSession
         {
             get
             {
-                if (Config is SyncConfiguration)
+                ThrowIfDisposed();
+
+                if (Config is SyncConfigurationBase)
                 {
                     if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
                     {
@@ -228,6 +236,47 @@ namespace Realms
                     }
 
                     return session;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
+        /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
+        /// this will always be <c>null</c>.
+        /// </value>
+        public SubscriptionSet Subscriptions
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                if (Config is FlexibleSyncConfiguration)
+                {
+                    // We're trying to look up the last set in the _subscriptionRefs list. If it
+                    // is alive and its version matches the current subscription version, we return it.
+                    // Otherwise, we create a new set and add it to the list. We know subscription versions
+                    // will never be decremented, which is why we can confidently use only the last element
+                    // in the list rather than check every single one.
+                    var existingRef = _subscriptionRefs.LastOrDefault();
+                    if (existingRef != null && existingRef.TryGetTarget(out var existingSet))
+                    {
+                        var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
+                        if (existingSet.Version >= currentVersion)
+                        {
+                            return existingSet;
+                        }
+                    }
+
+                    var handle = SharedRealmHandle.GetSubscriptions();
+                    var set = new SubscriptionSet(handle);
+                    _subscriptionRefs.Add(new WeakReference<SubscriptionSet>(set));
+                    return set;
                 }
 
                 return null;
@@ -368,6 +417,14 @@ namespace Realms
                 if (_sessionRef != null && _sessionRef.TryGetTarget(out var session))
                 {
                     session.CloseHandle();
+                }
+
+                foreach (var subRef in _subscriptionRefs)
+                {
+                    if (subRef.TryGetTarget(out var set))
+                    {
+                        set.CloseHandle();
+                    }
                 }
 
                 _state = null;
@@ -1343,9 +1400,9 @@ namespace Realms
         {
             Argument.NotNull(config, nameof(config));
 
-            if (Config is SyncConfiguration originalConfig && config is SyncConfiguration copiedConfig && originalConfig._partition != copiedConfig._partition)
+            if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
             {
-                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig._partition}, passed partition: {copiedConfig._partition}");
+                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
             }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);

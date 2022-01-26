@@ -370,6 +370,8 @@ namespace Realms.Tests
         [PrimaryKey]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
+        public Guid GuidProperty { get; set; }
+
         public IList<char> CharList { get; }
 
         public IList<byte> ByteList { get; }
@@ -516,6 +518,10 @@ namespace Realms.Tests
         public byte[] ByteArrayProperty { get; set; }
 
         public RealmValue RealmValueProperty { get; set; }
+
+        public IntPropertyObject ObjectProperty { get; set; }
+
+        public EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
     }
 
     public class DictionariesObject : RealmObject
@@ -847,6 +853,8 @@ namespace Realms.Tests
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
         public int Int { get; set; }
+
+        public Guid GuidProperty { get; set; }
 
         [Backlink(nameof(SyncCollectionsObject.ObjectList))]
         public IQueryable<SyncCollectionsObject> ContainingCollections { get; }

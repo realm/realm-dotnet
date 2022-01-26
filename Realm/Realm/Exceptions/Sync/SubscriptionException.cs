@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -17,26 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Sync;
 
-namespace Realms.Sync.Exceptions
+namespace Realms.Exceptions.Sync
 {
-    internal static class ErrorCodeHelper
+    /// <summary>
+    /// An exception that describes an issue with a Flexible Sync <see cref="Subscription"/>.
+    /// </summary>
+    public class SubscriptionException : Exception
     {
-        public static ErrorCode? GetErrorCode(int? statusCode)
+        internal SubscriptionException(string message) : base(message)
         {
-            switch (statusCode)
-            {
-                case null:
-                case 0:
-                    return null;
-                default:
-                    if (!Enum.IsDefined(typeof(ErrorCode), statusCode.Value))
-                    {
-                        return ErrorCode.Unknown;
-                    }
-
-                    return (ErrorCode)statusCode.Value;
-            }
         }
     }
 }

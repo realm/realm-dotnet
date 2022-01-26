@@ -101,7 +101,85 @@ namespace Realms.Tests.Sync
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
         }
 
-        public async Task<BaasApp> CreateApp(string name, string partitionKeyType)
+        public async Task<BaasApp> CreateApp(string name, string partitionKeyType, bool setupCollections = false)
+        {
+            TestHelpers.Output.WriteLine($"Creating PBS app {name}...");
+
+            var (app, mongoServiceId) = await CreateAppCore(name, new
+            {
+                sync = new
+                {
+                    state = "enabled",
+                    database_name = $"{partitionKeyType}_partition_key_data",
+                    partition = new
+                    {
+                        key = "realm_id",
+                        type = partitionKeyType,
+                        permissions = new
+                        {
+                            read = true,
+                            write = true,
+                        }
+                    }
+                }
+            });
+
+            await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
+            {
+                development_mode_enabled = true,
+            });
+
+            if (setupCollections)
+            {
+                await CreateSchema(app, mongoServiceId, Schemas.Sales(partitionKeyType));
+                await CreateSchema(app, mongoServiceId, Schemas.Users(partitionKeyType));
+                await CreateSchema(app, mongoServiceId, Schemas.Foos(partitionKeyType));
+
+                await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/custom_user_data", new
+                {
+                    mongo_service_id = mongoServiceId,
+                    enabled = true,
+                    database_name = "my-db",
+                    collection_name = "users",
+                    user_id_field = "user_id"
+                });
+            }
+
+            return app;
+        }
+
+        public async Task<BaasApp> CreateFlxApp(string name)
+        {
+            TestHelpers.Output.WriteLine($"Creating FLX app {name}...");
+
+            var (app, _) = await CreateAppCore(name, new
+            {
+                flexible_sync = new
+                {
+                    state = "enabled",
+                    database_name = "flexible_sync_data",
+                    queryable_fields_names = new[] { nameof(SyncAllTypesObject.Int64Property), nameof(SyncAllTypesObject.GuidProperty), nameof(SyncAllTypesObject.DoubleProperty), nameof(IntPropertyObject.Int) },
+                    permissions = new
+                    {
+                        rules = new { },
+                        defaultRoles = new[]
+                        {
+                            new
+                            {
+                                name = "all",
+                                applyWhen = new { },
+                                read = true,
+                                write = true,
+                            }
+                        }
+                    }
+                }
+            });
+
+            return app;
+        }
+
+        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
             var appId = doc["_id"].AsString;
@@ -127,52 +205,20 @@ namespace Realms.Tests.Sync
                 runResetFunction = true,
             });
 
-            var sync = new
-            {
-                state = "enabled",
-                database_name = $"{partitionKeyType}_partition_key_data",
-                partition = new
-                {
-                    key = "realm_id",
-                    type = partitionKeyType,
-                    permissions = new
-                    {
-                        read = true,
-                        write = true,
-                    }
-                }
-            };
-
-            var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
-            var serviceConfig = _clusterName == null
-                ? (object)new { sync, uri = "mongodb://localhost:26000" }
-                : (object)new { sync, clusterName = _clusterName };
-
-            var mongoServiceId = await CreateService(app, "BackingDB", serviceName, serviceConfig);
+            var mongoServiceId = await CreateMongodbService(app, syncConfig);
 
             await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
             {
                 development_mode_enabled = true,
             });
 
-            await CreateSchema(app, mongoServiceId, Schemas.Sales(partitionKeyType));
-            await CreateSchema(app, mongoServiceId, Schemas.Users(partitionKeyType));
-            await CreateSchema(app, mongoServiceId, Schemas.Foos(partitionKeyType));
-
-            await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/custom_user_data", new
-            {
-                mongo_service_id = mongoServiceId,
-                enabled = true,
-                database_name = "my-db",
-                collection_name = "users",
-                user_id_field = "user_id"
-            });
-
-            return app;
+            return (app, mongoServiceId);
         }
 
         public async Task EnableProvider(BaasApp app, string type, object config = null, AuthMetadataField[] metadataFields = null)
         {
+            TestHelpers.Output.WriteLine($"Enabling provider {type} for {app.Name}...");
+
             var url = $"groups/{_groupId}/apps/{app}/auth_providers";
 
             // Api key is slightly special, thus this annoying custom handling.
@@ -199,6 +245,8 @@ namespace Realms.Tests.Sync
 
         public async Task<string> CreateFunction(BaasApp app, string name, string source)
         {
+            TestHelpers.Output.WriteLine($"Creating function {name} for {app.Name}...");
+
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/functions", new
             {
                 name = name,
@@ -234,11 +282,13 @@ namespace Realms.Tests.Sync
 
         public async Task<string> CreateService(BaasApp app, string name, string type, object config)
         {
+            TestHelpers.Output.WriteLine($"Creating service {name} for {app.Name}...");
+
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services", new
             {
                 name,
                 type,
-                config,
+                config
             });
 
             return response["_id"].AsString;
@@ -251,7 +301,7 @@ namespace Realms.Tests.Sync
 
         private static HttpContent GetJsonContent(object obj)
         {
-            var json = obj.ToJson();
+            var json = obj is BsonDocument doc ? doc.ToJson() : obj.ToJson();
             var content = new StringContent(json);
 
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -259,8 +309,47 @@ namespace Realms.Tests.Sync
             return content;
         }
 
+        private async Task<string> CreateMongodbService(BaasApp app, object syncConfig)
+        {
+            var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
+            object mongoConfig = _clusterName == null ? new { uri = "mongodb://localhost:26000" } : new { clusterName = _clusterName };
+
+            var mongoServiceId = await CreateService(app, "BackingDB", serviceName, mongoConfig);
+
+            // The cluster linking must be separated from enabling sync because Atlas
+            // takes a few seconds to provision a user for BaaS, meaning enabling sync
+            // will fail if we attempt to do it with the same request. It's nondeterministic
+            // how long it'll take, so we must retry for a while.
+            var attempt = 0;
+            while (true)
+            {
+                try
+                {
+                    await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", syncConfig);
+                    break;
+                }
+                catch
+                {
+                    if (attempt++ < 120)
+                    {
+                        TestHelpers.Output.WriteLine($"Failed to update service after {attempt * 5} seconds. Will keep retrying...");
+
+                        await Task.Delay(5000);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            return mongoServiceId;
+        }
+
         private async Task<string> CreateSchema(BaasApp app, string mongoServiceId, object schema)
         {
+            TestHelpers.Output.WriteLine($"Creating schema for {app.Name}...");
+
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", schema);
 
             return response["_id"].AsString;

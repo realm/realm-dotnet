@@ -3,7 +3,7 @@
 #@ configuration = "Release"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 #@ actionCheckout = "actions/checkout@v2"
-#@ actionCache = "actions/cache@v2"
+#@ actionCache = "nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8"
 #@ actionUploadArtifact = "actions/upload-artifact@v2"
 #@ actionDownloadArtifact = "actions/download-artifact@v2"
 #@ actionSetupMSBuild = "microsoft/setup-msbuild@v1.0.2"
@@ -14,8 +14,8 @@
 #@ actionSetupNode = "actions/setup-node@v2"
 #@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1"
 #@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@v3"
-#@ actionDeployBaaS = "realm/ci-actions/mdb-realm/deployApps@dc200700b8d999a039cddbd7cf6ea365c9792982"
-#@ actionCleanupBaaS = "realm/ci-actions/mdb-realm/cleanup@dc200700b8d999a039cddbd7cf6ea365c9792982"
+#@ actionDeployBaaS = "realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56"
+#@ actionCleanupBaaS = "realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56"
 
 #@ actionDockerLayerCaching = "satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97" #! 0.0.11
 #@ actionDockerBuild = "docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b" #! 2.7.0
@@ -104,4 +104,9 @@
   - name: #@ "NuGet Publish " + pkg
     run: #@ "sleet push ${{ github.workspace }}/Realm/packages/" + pkgPath + pkg + ".nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
 #@ end
+#@ end
+
+#@ def cleanupWorkspace():
+  - name: Cleanup Workspace
+    run: rm -rf "${{ github.workspace }}/*"
 #@ end

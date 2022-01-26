@@ -107,6 +107,11 @@ namespace Realms.Helpers
 
         public static string ToNativeJson(this object value)
         {
+            if (value is RealmValue rv)
+            {
+                return rv.AsAny().ToNativeJson();
+            }
+
             if (value is object[] arr)
             {
                 var elements = arr.Select(ToNativeJson);

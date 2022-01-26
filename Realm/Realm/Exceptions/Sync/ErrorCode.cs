@@ -139,6 +139,33 @@ namespace Realms.Sync.Exceptions
         InvalidSchemaChange = 225,
 
         /// <summary>
+        /// The client attempted to create a subscription for a query is invalid/malformed.
+        /// </summary>
+        BadQuery = 226,
+
+        /// <summary>
+        /// The client attempted to create an object that already exists outside their view.
+        /// </summary>
+        ObjectAlreadyExists = 227,
+
+        /// <summary>
+        /// The server permissions for this file have changed since the last time it was used.
+        /// </summary>
+        ServerPermissionsChanged = 228,
+
+        /// <summary>
+        /// The client tried to synchronize before initial sync has completed. Please wait for
+        /// the server process to complete and try again.
+        /// </summary>
+        InitialSyncNotCompleted = 229,
+
+        /// <summary>
+        /// Client attempted a write that is disallowed by permissions, or modifies an object
+        /// outside the current query - requires client reset.
+        /// </summary>
+        WriteNotAllowed = 230,
+
+        /// <summary>
         /// Your request parameters did not validate.
         /// </summary>
         InvalidParameters = 601,

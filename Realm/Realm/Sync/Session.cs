@@ -24,7 +24,7 @@ namespace Realms.Sync
 {
     /// <summary>
     /// An object encapsulating a synchronization session. Sessions represent the communication between the client (and a local Realm file on disk),
-    /// and the server (and a remote Realm at a given partition served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
+    /// and the server (and a remote Realm served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
     /// out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
     /// </summary>
     public class Session
@@ -44,9 +44,9 @@ namespace Realms.Sync
         public SessionState State => Handle.GetState();
 
         /// <summary>
-        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to MongoDB Realm.
+        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to MongoDB Realm.
         /// </summary>
-        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
+        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfigurationBase"/>.</value>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User User => Handle.TryGetUser(out var userHandle) ? new User(userHandle) : null;
 

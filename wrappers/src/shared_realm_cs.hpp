@@ -68,12 +68,14 @@ struct SyncConfiguration
 {
     SharedSyncUser* user;
 
-    uint16_t* url;
-    size_t url_len;
+    uint16_t* partition;
+    size_t partition_len;
 
     SyncSessionStopPolicy session_stop_policy;
 
     SchemaMode schema_mode;
+
+    bool is_flexible_sync;
 
     ClientResyncMode client_resync_mode;
     void* managed_sync_configuration_handle;

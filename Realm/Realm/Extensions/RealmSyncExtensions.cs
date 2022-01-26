@@ -31,15 +31,15 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="Session"/> for the realm file behind this <see cref="Realm"/>.
         /// </summary>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfigurationBase"/> object.</param>
         /// <returns>The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm server.</returns>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="realm"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <paramref name="realm"/> was not created with a <see cref="SyncConfiguration"/> object.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="realm"/> was not created with a <see cref="SyncConfigurationBase"/> object.</exception>
         [Obsolete("Use Realm.SyncSession instead.")]
         public static Session GetSession(this Realm realm)
         {
             Argument.NotNull(realm, nameof(realm));
-            Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+            Argument.EnsureType<SyncConfigurationBase>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             return realm.SyncSession;
         }

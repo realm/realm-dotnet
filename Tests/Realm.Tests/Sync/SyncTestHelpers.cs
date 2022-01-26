@@ -34,6 +34,7 @@ namespace Realms.Tests.Sync
         public const string IntPartitionKey = "int-partition-key";
         public const string ObjectIdPartitionKey = "objectid-partition-key";
         public const string UUIDPartitionKey = "uuid-part-key";
+        public const string FlexibleSync = "flexible-sync";
     }
 
     public static partial class SyncTestHelpers
@@ -74,7 +75,10 @@ namespace Realms.Tests.Sync
                 Assert.Ignore("MongoDB Realm is not setup.");
             }
 
-            CreateBaasApps();
+            AsyncContext.Run(async () =>
+            {
+                await CreateBaasAppsAsync();
+            });
 
             if (ensureNoSessionErrors)
             {
@@ -102,7 +106,7 @@ namespace Realms.Tests.Sync
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
-        public static string[] ExtractBaasSettings(string[] args)
+        public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
             var result = new List<string>();
 
@@ -129,7 +133,7 @@ namespace Realms.Tests.Sync
                 _baseUri = new Uri(baseUrl);
             }
 
-            CreateBaasApps(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
+            await CreateBaasAppsAsync(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
             return result.ToArray();
 
@@ -146,26 +150,49 @@ namespace Realms.Tests.Sync
             }
         }
 
-        private static void CreateBaasApps(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
+        public static string[] ExtractBaasSettings(string[] args)
+        {
+            return AsyncContext.Run(async () =>
+            {
+                return await ExtractBaasSettingsAsync(args);
+            });
+        }
+
+        private static async Task CreateBaasAppsAsync(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {
                 return;
             }
 
-            AsyncContext.Run(async () =>
+#if !UNITY
+            try
             {
-                BaasClient client;
-                if (cluster != null)
-                {
-                    client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey, groupId);
-                }
-                else
-                {
-                    client = await BaasClient.Docker(_baseUri);
-                }
+                cluster ??= System.Configuration.ConfigurationManager.AppSettings["Cluster"];
+                apiKey ??= System.Configuration.ConfigurationManager.AppSettings["ApiKey"];
+                privateApiKey ??= System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
+                groupId ??= System.Configuration.ConfigurationManager.AppSettings["GroupId"];
+            }
+            catch
+            {
+            }
+#endif
 
+            BaasClient client;
+            if (cluster != null)
+            {
+                client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey, groupId);
+            }
+            else
+            {
+                client = await BaasClient.Docker(_baseUri);
+            }
+
+            using (client)
+            {
                 var apps = await client.GetApps();
+
+                TestHelpers.Output.WriteLine($"Found {apps.Length} apps.");
 
                 if (apps.Any())
                 {
@@ -176,7 +203,7 @@ namespace Realms.Tests.Sync
                 }
                 else
                 {
-                    var defaultApp = await client.CreateApp(AppConfigType.Default, "string");
+                    var defaultApp = await client.CreateApp(AppConfigType.Default, "string", setupCollections: true);
 
                     var authFuncId = await client.CreateFunction(defaultApp, "authFunc", @"exports = (loginPayload) => {
                       return loginPayload[""realmCustomAuthFuncUserId""];
@@ -236,7 +263,7 @@ namespace Realms.Tests.Sync
                     await client.CreateService(defaultApp, "gcm", "gcm", new
                     {
                         senderId = "gcm",
-                        apiKey = "gcm"
+                        apiKey = "gcm",
                     });
 
                     var intApp = await client.CreateApp(AppConfigType.IntPartitionKey, "long");
@@ -247,11 +274,24 @@ namespace Realms.Tests.Sync
 
                     var objectIdApp = await client.CreateApp(AppConfigType.ObjectIdPartitionKey, "objectId");
                     _appIds[AppConfigType.ObjectIdPartitionKey] = objectIdApp.ClientAppId;
+
+                    var flexibleSyncApp = await client.CreateFlxApp(AppConfigType.FlexibleSync);
+                    _appIds[AppConfigType.FlexibleSync] = flexibleSyncApp.ClientAppId;
                 }
-            });
+            }
         }
 
         public static Task<T> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message, Action<Session> sessionAssertions)
+            where T : Exception
+        {
+            var task = WaitForSessionError<T>(sessionAssertions);
+
+            session.SimulateError(code, message);
+
+            return task;
+        }
+
+        public static Task<T> WaitForSessionError<T>(Action<Session> sessionAssertions)
             where T : Exception
         {
             var tcs = new TaskCompletionSource<T>();
@@ -274,8 +314,6 @@ namespace Realms.Tests.Sync
             });
 
             Session.Error += handler;
-
-            session.SimulateError(code, message);
 
             return tcs.Task;
         }

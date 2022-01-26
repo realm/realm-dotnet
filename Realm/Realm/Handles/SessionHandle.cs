@@ -77,7 +77,6 @@ namespace Realms.Sync
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
@@ -98,7 +97,7 @@ namespace Realms.Sync
         {
         }
 
-        public static void InstallCallbacks()
+        public static void Initialize()
         {
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
@@ -227,7 +226,7 @@ namespace Realms.Sync
                 if (isClientReset)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    exception = new ClientResetException(session.User.App, messageString, userInfo);
+                    exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
                     // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
                     // additionally the goal is, yes, coexistance but not mix of the 2 error handling solutions. Because of this we may need to warn users

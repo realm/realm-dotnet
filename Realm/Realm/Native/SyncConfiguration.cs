@@ -52,6 +52,9 @@ namespace Realms.Sync.Native
 
         internal SchemaMode schema_mode;
 
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_flexible_sync;
+
         internal ClientResyncMode client_resync_mode;
         internal IntPtr managed_sync_configuration_handle;
     }
