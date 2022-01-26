@@ -221,7 +221,7 @@ namespace Realms.Sync
                 var messageString = message.AsString();
                 SessionException exception;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                var syncConfiguration = (SyncConfiguration)syncConfigHandle.Target;
+                var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
 
                 if (isClientReset)
                 {
@@ -274,7 +274,7 @@ namespace Realms.Sync
         private static void NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-            var syncConfiguration = (SyncConfiguration)syncConfigHandle.Target;
+            var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
 
             // no clientResetHandler means don't do anything for this callback
             if (syncConfiguration.ClientResetHandler == null)
@@ -293,7 +293,7 @@ namespace Realms.Sync
         private static void NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-            var syncConfiguration = (SyncConfiguration)syncConfigHandle.Target;
+            var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
 
             // no clientResetHandler means don't do anything for this callback
             if (syncConfiguration.ClientResetHandler == null)

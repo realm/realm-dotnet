@@ -32,7 +32,7 @@ namespace Realms.Sync
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
-        [Obsolete("Use SyncConfiguration.SyncErrorHandler or SyncConfiguration.ClientResetHandler instead.")]
+        [Obsolete("Use SyncConfigurationBase.SyncErrorHandler or SyncConfigurationBase.ClientResetHandler instead.")]
         public static event EventHandler<ErrorEventArgs> Error;
 
         internal bool IsClosed => _handle.IsClosed;

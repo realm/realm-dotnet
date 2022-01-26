@@ -21,6 +21,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
+using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
 {
@@ -39,6 +40,17 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
+
+        /// <summary>
+        /// Gets or sets a subclass of <see cref="ClientResetHandlerBase"> to specify actions to be taken for the selected Client Reset strategy: <see cref="ManualRecoveryHandler"> or <see cref="DiscardLocalResetHandler"/>.
+        /// If nothing is set, the strategy defaults to <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after synchronization.
+        /// </summary>
+        public ClientResetHandlerBase ClientResetHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets a callback to handle errors that happen on a session.
+        /// </summary>
+        public SyncErrorHandler SyncErrorHandler { get; set; }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
@@ -103,11 +115,14 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
+            GCHandle? syncConfHandle = GCHandle.Alloc(this);
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                client_resync_mode = ClientResetHandler is DiscardLocalResetHandler ? ClientResyncMode.DiscardLocal : ClientResyncMode.Manual,
+                managed_sync_configuration_handle = GCHandle.ToIntPtr(syncConfHandle.Value),
             };
         }
     }
