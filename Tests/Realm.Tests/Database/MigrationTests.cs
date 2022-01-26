@@ -274,9 +274,7 @@ namespace Realms.Tests.Database
         [Test]
         public void MigrationRenamePropertyInvalidArguments()
         {
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-
-            var configuration = new RealmConfiguration(path)
+            var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -291,13 +289,15 @@ namespace Realms.Tests.Database
                 }
             };
 
+            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
+
             using var realm = GetRealm(configuration);
         }
 
         [Test]
         public void MigrationRemoveTypeInSchema()
         {
-            var oldRealmConfig = new RealmConfiguration()
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 0,
                 Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
@@ -307,7 +307,7 @@ namespace Realms.Tests.Database
             {
             }
 
-            var newRealmConfig = new RealmConfiguration()
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
@@ -324,7 +324,7 @@ namespace Realms.Tests.Database
         [Test]
         public void MigrationRemoveTypeNotInSchema()
         {
-            var oldRealmConfig = new RealmConfiguration()
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 0,
                 Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
@@ -339,7 +339,7 @@ namespace Realms.Tests.Database
             }
 
             var migrationCallbackCalled = false;
-            var newRealmConfig = new RealmConfiguration()
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(Dog), typeof(Owner) },
@@ -370,7 +370,7 @@ namespace Realms.Tests.Database
                 Assert.That(newRealm.Schema.TryFindObjectSchema("Person", out _), Is.False);
             }
 
-            var newRealmDynamicConfig = new RealmConfiguration()
+            var newRealmDynamicConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
                 IsDynamic = true,
@@ -385,7 +385,7 @@ namespace Realms.Tests.Database
         [Test]
         public void MigrationRemoveTypeInvalidArguments()
         {
-            var oldRealmConfig = new RealmConfiguration()
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 0,
                 Schema = new[] { typeof(Dog), typeof(Owner), typeof(Person) },
@@ -395,7 +395,7 @@ namespace Realms.Tests.Database
             {
             }
 
-            var newRealmConfig = new RealmConfiguration()
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
             {
                 SchemaVersion = 1,
                 Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
