@@ -3,7 +3,7 @@
 #@ configuration = "Release"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 #@ actionCheckout = "actions/checkout@v2"
-#@ actionCache = "actions/cache@v2"
+#@ actionCache = "nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8"
 #@ actionUploadArtifact = "actions/upload-artifact@v2"
 #@ actionDownloadArtifact = "actions/download-artifact@v2"
 #@ actionSetupMSBuild = "microsoft/setup-msbuild@v1.0.2"
@@ -104,4 +104,9 @@
   - name: #@ "NuGet Publish " + pkg
     run: #@ "sleet push ${{ github.workspace }}/Realm/packages/" + pkgPath + pkg + ".nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource"
 #@ end
+#@ end
+
+#@ def cleanupWorkspace():
+  - name: Cleanup Workspace
+    run: rm -rf "${{ github.workspace }}/*"
 #@ end
