@@ -241,6 +241,9 @@ namespace Realms.Sync
                         {
                             manualRecoveryHandler.OnClientReset?.Invoke(session, (ClientResetException)exception);
                         }
+
+                        // TODO andrea: this won't be require anymore when Session.Error will be fully deprecated
+                        return;
                     }
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)
@@ -254,15 +257,15 @@ namespace Realms.Sync
                 }
 
                 // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
-                // additionally the goal is, yes, coexistance but not mix of 2 the error handling solutions. Because of this we may need to warn users
-                // that they are mixing the 2 solutions and it should not be done.
-                if (syncConfiguration.ClientResetHandler != null)
+                if (syncConfiguration.SyncErrorHandler != null)
                 {
-                    syncConfiguration.SyncErrorHandler?.OnError?.Invoke(session, exception);
+                    syncConfiguration.SyncErrorHandler.OnError?.Invoke(session, exception);
                 }
-
-                // TODO andrea: this will need to go when Session.Error is fully deprecated
-                Session.RaiseError(session, exception);
+                else
+                {
+                    // TODO andrea: this will need to go when Session.Error is fully deprecated
+                    Session.RaiseError(session, exception);
+                }
             }
             catch (Exception ex)
             {
