@@ -60,11 +60,9 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-
             var triggersSchemaFieldValue = string.Empty;
 
-            var configuration = new RealmConfiguration(path)
+            var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -94,6 +92,8 @@ namespace Realms.Tests.Database
                 }
             };
 
+            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
+
             var realm = GetRealm(configuration);
             var person = realm.All<Person>().Single();
             Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
@@ -105,11 +105,9 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-
             var dummyException = new Exception();
 
-            var configuration = new RealmConfiguration(path)
+            var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -117,6 +115,8 @@ namespace Realms.Tests.Database
                     throw dummyException;
                 }
             };
+
+            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
 
             var ex = Assert.Throws<AggregateException>(() => GetRealm(configuration));
             Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
@@ -176,9 +176,7 @@ namespace Realms.Tests.Database
         [Test]
         public void MigrationRenameProperty()
         {
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-
-            var configuration = new RealmConfiguration(path)
+            var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -200,17 +198,17 @@ namespace Realms.Tests.Database
                 }
             };
 
+            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
+
             using var realm = GetRealm(configuration);
         }
 
         [Test]
         public void MigrationRenamePropertyErrors()
         {
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
-
             var oldPropertyValues = new List<string>();
 
-            var configuration = new RealmConfiguration(path)
+            var configuration = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -218,6 +216,8 @@ namespace Realms.Tests.Database
                     migration.RenameProperty(nameof(Person), "TriggersSchema", "PropertyNotInNewSchema");
                 }
             };
+
+            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
 
             var ex = Assert.Throws<RealmException>(() => GetRealm(configuration));
             Assert.That(ex.Message, Does.Contain("Renamed property 'Person.PropertyNotInNewSchema' does not exist"));
