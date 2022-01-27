@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
             var ex = Assert.Throws<RealmException>(() => GetRealm(configuration));
             Assert.That(ex.Message, Does.Contain("Renamed property 'Person.PropertyNotInNewSchema' does not exist"));
 
-            configuration = new RealmConfiguration(path)
+            configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
             var ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
             Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.PropertyNotInOldSchema' because it does not exist"));
 
-            configuration = new RealmConfiguration(path)
+            configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -246,7 +246,7 @@ namespace Realms.Tests.Database
             ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
             Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename properties for type 'NonExistingType' because it does not exist"));
 
-            configuration = new RealmConfiguration(path)
+            configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -258,7 +258,7 @@ namespace Realms.Tests.Database
             ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
             Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.TriggersSchema' to 'Birthday' because it would change from type 'string' to 'date'."));
 
-            configuration = new RealmConfiguration(path)
+            configuration = new RealmConfiguration(configuration.DatabasePath)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
