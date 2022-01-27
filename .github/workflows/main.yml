@@ -529,7 +529,7 @@ jobs:
     - build-wrappers-android
     - build-wrappers-linux
     - build-wrappers-windows-uwp
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: 90
@@ -692,7 +692,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && ${{ github.event_name != 'pull_request' }}
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -753,7 +753,7 @@ jobs:
     needs:
     - build-packages
     - baas-net-framework
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     env:
       CLUSTER_NAME: ${{ needs.baas-net-framework.outputs.clusterName }}
     timeout-minutes: 45
@@ -842,7 +842,7 @@ jobs:
     needs:
     - build-packages
     - baas-uwp-managed
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     env:
       CLUSTER_NAME: ${{ needs.baas-uwp-managed.outputs.clusterName }}
     timeout-minutes: 45
@@ -917,7 +917,7 @@ jobs:
     name: Test .NET
     needs:
     - build-packages
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
       matrix:
@@ -1004,7 +1004,7 @@ jobs:
     needs:
     - build-packages
     - baas-xamarinmacos
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     env:
       CLUSTER_NAME: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
     timeout-minutes: 45
@@ -1091,7 +1091,7 @@ jobs:
     needs:
     - build-packages
     - baas-xamarinios
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     env:
       CLUSTER_NAME: ${{ needs.baas-xamarinios.outputs.clusterName }}
     timeout-minutes: 45
@@ -1183,7 +1183,7 @@ jobs:
     needs:
     - build-packages
     - baas-xamarinandroid
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     env:
       CLUSTER_NAME: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
     timeout-minutes: 45
@@ -1344,7 +1344,7 @@ jobs:
     needs:
     - build-packages
     - baas-code-coverage
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     env:
       CLUSTER_NAME: ${{ needs.baas-code-coverage.outputs.clusterName }}
     timeout-minutes: 45
@@ -1542,7 +1542,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && ${{ github.event_name != 'pull_request' }}
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
     timeout-minutes: 45
     steps:
     - name: Cleanup Workspace

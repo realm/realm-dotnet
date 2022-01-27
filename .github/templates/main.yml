@@ -4,7 +4,7 @@
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
-#@ ignoreSkippedJobsCondition = "always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+#@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
 
 #@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
 #@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
@@ -589,7 +589,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && ${{ github.event_name != 'pull_request' }}"
+    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
@@ -659,7 +659,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: #@ ignoreSkippedJobsCondition + " && ${{ github.event_name != 'pull_request' }}"
+    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
     timeout-minutes: #@ testTimeout
     steps:
       - #@ template.replace(cleanupWorkspace())
