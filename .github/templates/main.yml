@@ -445,7 +445,7 @@ jobs:
     steps:
         - #@ template.replace(checkoutCode("recursive", False))
       #@ for platform in getWrapperBinaryNames():
-        #@ condition = "matrix.os == " + ("windows" if platform.find("windows") > -1 else "ubuntu")
+        #@ condition = "matrix.os == " + ("'windows'" if platform.find("windows") > -1 else "'ubuntu'")
         - _: #@ template.replace(checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform))
           if: #@ condition
         - _: #@ template.replace(uploadArtifacts("wrappers-" + platform, "wrappers/build/**", 1))
