@@ -581,7 +581,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: ${{ github.event_name != 'pull_request' }}
+    if: #@ ignoreSkippedJobsCondition + " && ${{ github.event_name != 'pull_request' }}"
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
@@ -651,7 +651,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: ${{ github.event_name == 'push' }}
+    if: #@ ignoreSkippedJobsCondition + " && ${{ github.event_name != 'pull_request' }}"
     timeout-minutes: #@ testTimeout
     steps:
       - #@ template.replace(cleanupWorkspace())
@@ -672,4 +672,3 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-

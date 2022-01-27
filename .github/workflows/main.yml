@@ -28,6 +28,10 @@ jobs:
       wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
       wrappers-windows-uwp-ARM: ${{ steps.check-cache-windows-uwp-ARM.outputs.cache-hit }}
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -209,6 +213,10 @@ jobs:
     - check-wrappers-cache
     if: needs.check-wrappers-cache.outputs.wrappers-macos != 'true'
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -242,6 +250,10 @@ jobs:
     - check-wrappers-cache
     if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -271,6 +283,10 @@ jobs:
     if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
     timeout-minutes: 90
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -316,6 +332,10 @@ jobs:
     - check-wrappers-cache
     if: needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -369,6 +389,10 @@ jobs:
     needs:
     - check-wrappers-cache
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -402,6 +426,10 @@ jobs:
     needs:
     - check-wrappers-cache
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -456,6 +484,10 @@ jobs:
     needs:
     - check-wrappers-cache
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -507,6 +539,10 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -663,8 +699,12 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: ${{ github.event_name != 'pull_request' }}
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && ${{ github.event_name != 'pull_request' }}
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -704,6 +744,10 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -729,6 +773,10 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-net-framework.outputs.clusterName }}
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -773,6 +821,10 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -793,6 +845,10 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -818,6 +874,10 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-uwp-managed.outputs.clusterName }}
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -870,6 +930,10 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -906,6 +970,10 @@ jobs:
     - name: Cleanup Workspace
       run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
       if: matrix.os == 'win81'
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -955,6 +1023,10 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -980,6 +1052,10 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1022,6 +1098,10 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1042,6 +1122,10 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1067,6 +1151,10 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-xamarinios.outputs.clusterName }}
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1114,6 +1202,10 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1134,6 +1226,10 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1159,6 +1255,10 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1243,6 +1343,10 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1261,6 +1365,10 @@ jobs:
     name: Test Weaver
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1295,6 +1403,10 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1320,6 +1432,10 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-code-coverage.outputs.clusterName }}
     timeout-minutes: 45
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1432,6 +1548,10 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1513,11 +1633,15 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: ${{ github.event_name == 'push' }}
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 45
     steps:
     - name: Cleanup Workspace
       run: rm -rf "${{ github.workspace }}/*"
+    - name: Set git to use LF
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
