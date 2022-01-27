@@ -428,7 +428,12 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   check-wrappers-cache:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+        - ubuntu
+        - windows
+    runs-on: ${{ matrix.os }}-latest
     name: Check wrapper cache
     env:
       CACHE_SKIP_SAVE: true
@@ -440,10 +445,13 @@ jobs:
     steps:
         - #@ template.replace(checkoutCode("recursive", False))
       #@ for platform in getWrapperBinaryNames():
-        - #@ checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform)
+        #@ condition = "matrix.os == " + ("windows" if platform.find("windows") > -1 else "ubuntu")
+        - _: #@ template.replace(checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform))
+          if: #@ condition
         - _: #@ template.replace(uploadArtifacts("wrappers-" + platform, "wrappers/build/**", 1))
-          if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
+          if: #@ condition + " && steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
         - run: git clean -fdx
+          if: #@ condition
       #@ end
   build-wrappers-macos:
     runs-on: macos-latest

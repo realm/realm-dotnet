@@ -10,7 +10,12 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   check-wrappers-cache:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+        - ubuntu
+        - windows
+    runs-on: ${{ matrix.os }}-latest
     name: Check wrapper cache
     env:
       CACHE_SKIP_SAVE: true
@@ -28,10 +33,6 @@ jobs:
       wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
       wrappers-windows-uwp-ARM: ${{ steps.check-cache-windows-uwp-ARM.outputs.cache-hit }}
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -43,168 +44,192 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-macos.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-macos.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for ios
       id: check-cache-ios
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-ios
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-ios.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-ios.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for linux
       id: check-cache-linux
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-linux.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-linux.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for android-armeabi-v7a
       id: check-cache-android-armeabi-v7a
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-armeabi-v7a-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-android-armeabi-v7a
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-android-armeabi-v7a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for android-arm64-v8a
       id: check-cache-android-arm64-v8a
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-arm64-v8a-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-android-arm64-v8a
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-android-arm64-v8a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for android-x86
       id: check-cache-android-x86
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-x86-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-android-x86
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-android-x86
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-android-x86.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-android-x86.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for android-x86_64
       id: check-cache-android-x86_64
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-x86_64-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == ubuntu
     - name: Store artifacts for wrappers-android-x86_64
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-android-x86_64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
+      if: matrix.os == ubuntu && steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == ubuntu
     - name: Check cache for windows-Win32
       id: check-cache-windows-Win32
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-Win32-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == windows
     - name: Store artifacts for wrappers-windows-Win32
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
+      if: matrix.os == windows && steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == windows
     - name: Check cache for windows-x64
       id: check-cache-windows-x64
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-x64-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == windows
     - name: Store artifacts for wrappers-windows-x64
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-windows-x64.outputs.cache-hit == 'true'
+      if: matrix.os == windows && steps.check-cache-windows-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == windows
     - name: Check cache for windows-uwp-Win32
       id: check-cache-windows-uwp-Win32
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == windows
     - name: Store artifacts for wrappers-windows-uwp-Win32
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-uwp-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
+      if: matrix.os == windows && steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == windows
     - name: Check cache for windows-uwp-x64
       id: check-cache-windows-uwp-x64
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == windows
     - name: Store artifacts for wrappers-windows-uwp-x64
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-uwp-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
+      if: matrix.os == windows && steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == windows
     - name: Check cache for windows-uwp-ARM
       id: check-cache-windows-uwp-ARM
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == windows
     - name: Store artifacts for wrappers-windows-uwp-ARM
       uses: actions/upload-artifact@v2
       with:
         name: wrappers-windows-uwp-ARM
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-      if: steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
+      if: matrix.os == windows && steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
     - run: git clean -fdx
+      if: matrix.os == windows
   build-wrappers-macos:
     runs-on: macos-latest
     name: Wrappers macOS
@@ -213,10 +238,6 @@ jobs:
     - check-wrappers-cache
     if: needs.check-wrappers-cache.outputs.wrappers-macos != 'true'
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -250,10 +271,6 @@ jobs:
     - check-wrappers-cache
     if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -283,10 +300,6 @@ jobs:
     if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
     timeout-minutes: 90
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -332,10 +345,6 @@ jobs:
     - check-wrappers-cache
     if: needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -389,10 +398,6 @@ jobs:
     needs:
     - check-wrappers-cache
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -426,10 +431,6 @@ jobs:
     needs:
     - check-wrappers-cache
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -484,10 +485,6 @@ jobs:
     needs:
     - check-wrappers-cache
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -539,10 +536,6 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -701,10 +694,6 @@ jobs:
     - build-packages
     if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && ${{ github.event_name != 'pull_request' }}
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -744,10 +733,6 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -773,10 +758,6 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-net-framework.outputs.clusterName }}
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -821,10 +802,6 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -845,10 +822,6 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -874,10 +847,6 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-uwp-managed.outputs.clusterName }}
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -930,10 +899,6 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -970,10 +935,6 @@ jobs:
     - name: Cleanup Workspace
       run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
       if: matrix.os == 'win81'
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1023,10 +984,6 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1052,10 +1009,6 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1098,10 +1051,6 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1122,10 +1071,6 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1151,10 +1096,6 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-xamarinios.outputs.clusterName }}
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1202,10 +1143,6 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1226,10 +1163,6 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1255,10 +1188,6 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1343,10 +1272,6 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1365,10 +1290,6 @@ jobs:
     name: Test Weaver
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1403,10 +1324,6 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1432,10 +1349,6 @@ jobs:
       CLUSTER_NAME: ${{ needs.baas-code-coverage.outputs.clusterName }}
     timeout-minutes: 45
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1548,10 +1461,6 @@ jobs:
     if: always()
     timeout-minutes: 10
     steps:
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -1638,10 +1547,6 @@ jobs:
     steps:
     - name: Cleanup Workspace
       run: rm -rf "${{ github.workspace }}/*"
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout code
       uses: actions/checkout@v2
       with:

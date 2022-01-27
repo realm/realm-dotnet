@@ -31,10 +31,6 @@
 #@ mainBranch = "master"
 
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
-  - name: Set git to use LF
-    run: |
-      git config --global core.autocrlf false
-      git config --global core.eol lf
   - name: Checkout code
     uses: #@ actionCheckout
     with:
