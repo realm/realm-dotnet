@@ -360,7 +360,7 @@ namespace Realms.Tests
 
         public static void TransformTestResults(string resultPath)
         {
-            var transformFile = CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+            var transformFile = CopyBundledFileToDocuments("nunit3-junit.xslt", $"{Guid.NewGuid()}.xslt");
             TransformHelpers.TransformTestResults(resultPath, transformFile);
         }
 
