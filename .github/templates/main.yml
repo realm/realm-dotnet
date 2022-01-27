@@ -4,6 +4,8 @@
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
+#@ ignoreSkippedJobsCondition = "always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+
 #@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
 #@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
 #@ secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
@@ -75,6 +77,7 @@ with:
   needs:
   - build-packages
   - #@ baasJobName
+  if: #@ ignoreSkippedJobsCondition
   env:
     CLUSTER_NAME: #@ "${{ needs.baas-" + name.replace(".", "").replace(" ", "-").lower() + ".outputs.clusterName }}"
   timeout-minutes: #@ testTimeout
@@ -541,10 +544,7 @@ jobs:
       - build-wrappers-android
       - build-wrappers-linux
       - build-wrappers-windows-uwp
-    if: |
-      always() &&
-      !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
+    if: #@ ignoreSkippedJobsCondition
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: #@ wrappersTimeout
@@ -593,6 +593,7 @@ jobs:
     name: "Test .NET"
     needs:
     - build-packages
+    if: #@ ignoreSkippedJobsCondition
     strategy:
       fail-fast: false
       matrix:
