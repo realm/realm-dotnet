@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -48,6 +49,19 @@ namespace Realms
 
         private class Scheduler
         {
+            private static readonly Lazy<FieldInfo> XunitInnerContext = new Lazy<FieldInfo>(() =>
+            {
+                try
+                {
+                    var type = Type.GetType("Xunit.Sdk.AsyncTestSyncContext, xunit.execution.dotnet");
+                    return type.GetField("innerContext", BindingFlags.NonPublic | BindingFlags.Instance);
+                }
+                catch
+                {
+                    return null;
+                }
+            });
+
             private readonly int _threadId;
 
             private volatile bool _isReleased;
@@ -69,7 +83,30 @@ namespace Realms
                 }, function_ptr);
             }
 
-            internal bool IsOnContext(Scheduler other) => _context == (other?._context ?? SynchronizationContext.Current) || _threadId == (other?._threadId ?? Environment.CurrentManagedThreadId);
+            internal bool IsOnContext(Scheduler other) => AreContextsEqual(_context, other?._context ?? SynchronizationContext.Current) || _threadId == (other?._threadId ?? Environment.CurrentManagedThreadId);
+
+            private static bool AreContextsEqual(SynchronizationContext first, SynchronizationContext second)
+            {
+                if (first == second)
+                {
+                    return true;
+                }
+
+                return TryGetInnerContext(first) == TryGetInnerContext(second);
+            }
+
+            private static SynchronizationContext TryGetInnerContext(SynchronizationContext outer)
+            {
+                if (outer != null &&
+                    XunitInnerContext.Value != null &&
+                    outer.GetType() == XunitInnerContext.Value.DeclaringType &&
+                    XunitInnerContext.Value.GetValue(outer) is SynchronizationContext inner)
+                {
+                    return inner;
+                }
+
+                return outer;
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void Invalidate()
