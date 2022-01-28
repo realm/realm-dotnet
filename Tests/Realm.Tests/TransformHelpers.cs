@@ -54,7 +54,7 @@ namespace Realms.Tests
             }
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
-            using var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            using var destination = new FileStream(destPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
             stream.CopyTo(destination);
         }
     }

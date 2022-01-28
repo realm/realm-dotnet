@@ -30,7 +30,7 @@
       <xsl:if test="@runstate = 'Skipped' or @runstate = 'Ignored'">
         <skipped/>
       </xsl:if>
-      
+
       <xsl:apply-templates/>
     </testcase>
   </xsl:template>
@@ -58,7 +58,7 @@
   <xsl:template match="test-case/reason">
     <skipped message="{./message}"/>
   </xsl:template>
-  
+
   <xsl:template match="test-case/assertions">
   </xsl:template>
 
@@ -66,4 +66,3 @@
 
   <xsl:template match="properties"/>
 </xsl:stylesheet>
-

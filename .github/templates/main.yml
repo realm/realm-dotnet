@@ -4,6 +4,8 @@
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
+#@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+
 #@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
 #@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
 #@ secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
@@ -75,6 +77,7 @@ with:
   needs:
   - build-packages
   - #@ baasJobName
+  if: #@ ignoreSkippedJobsCondition
   env:
     CLUSTER_NAME: #@ "${{ needs.baas-" + name.replace(".", "").replace(" ", "-").lower() + ".outputs.clusterName }}"
   timeout-minutes: #@ testTimeout
@@ -425,7 +428,12 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   check-wrappers-cache:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+        - ubuntu
+        - windows
+    runs-on: ${{ matrix.os }}-latest
     name: Check wrapper cache
     env:
       CACHE_SKIP_SAVE: true
@@ -437,10 +445,13 @@ jobs:
     steps:
         - #@ template.replace(checkoutCode("recursive", False))
       #@ for platform in getWrapperBinaryNames():
-        - #@ checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform)
+        #@ condition = "matrix.os == " + ("'windows'" if platform.find("windows") > -1 else "'ubuntu'")
+        - _: #@ template.replace(checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform))
+          if: #@ condition
         - _: #@ template.replace(uploadArtifacts("wrappers-" + platform, "wrappers/build/**", 1))
-          if: #@ "steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
+          if: #@ condition + " && steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
         - run: git clean -fdx
+          if: #@ condition
       #@ end
   build-wrappers-macos:
     runs-on: macos-latest
@@ -541,10 +552,7 @@ jobs:
       - build-wrappers-android
       - build-wrappers-linux
       - build-wrappers-windows-uwp
-    if: |
-      always() &&
-      !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
+    if: #@ ignoreSkippedJobsCondition
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: #@ wrappersTimeout
@@ -581,7 +589,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: ${{ github.event_name != 'pull_request' }}
+    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
@@ -593,6 +601,7 @@ jobs:
     name: "Test .NET"
     needs:
     - build-packages
+    if: #@ ignoreSkippedJobsCondition
     strategy:
       fail-fast: false
       matrix:
@@ -609,12 +618,27 @@ jobs:
         if: matrix.targetFramework == 'net6.0'
         with:
           dotnet-version: '6.0.x'
-          include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
   _: #@ template.replace(testJob("Xamarin.iOS", "macos-latest", xamariniOSTestSteps()))
   _: #@ template.replace(testJob("Xamarin.Android", "macos-latest", xamarinAndroidTestSteps()))
+  run-tests-xunit:
+    runs-on: windows-latest
+    name: Test xUnit Compatibility
+    timeout-minutes: #@ testTimeout
+    needs:
+    - build-packages
+    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - uses: #@ actionSetupDotnet
+        with:
+          dotnet-version: '6.0.x'
+      - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
+      - name: Run Tests
+        run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
@@ -650,7 +674,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: ${{ github.event_name == 'push' }}
+    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
     timeout-minutes: #@ testTimeout
     steps:
       - #@ template.replace(cleanupWorkspace())
@@ -671,4 +695,3 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-
