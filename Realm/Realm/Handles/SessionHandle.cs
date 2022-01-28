@@ -229,8 +229,6 @@ namespace Realms.Sync
                     exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
                     // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
-                    // additionally the goal is, yes, coexistance but not mix of the 2 error handling solutions. Because of this we may need to warn users
-                    // that they are mixing the 2 solutions and it should not be done.
                     if (syncConfiguration.ClientResetHandler != null)
                     {
                         if (syncConfiguration.ClientResetHandler is DiscardLocalResetHandler discardLocalResetHandler)
@@ -279,7 +277,6 @@ namespace Realms.Sync
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
             var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
 
-            // no clientResetHandler means don't do anything for this callback
             if (syncConfiguration.ClientResetHandler == null)
             {
                 return true;

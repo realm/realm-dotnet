@@ -264,7 +264,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var sessionErrorHandled = false;
+                var sessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
                 config.SyncErrorHandler = new SyncErrorHandler
@@ -273,8 +273,8 @@ namespace Realms.Tests.Sync
                     {
                         Assert.IsInstanceOf<Session>(sender);
                         Assert.IsInstanceOf<SessionException>(e);
-                        Assert.IsFalse(sessionErrorHandled);
-                        sessionErrorHandled = true;
+                        Assert.IsFalse(sessionErrorTriggered);
+                        sessionErrorTriggered = true;
                         tcs.TrySetResult(true);
                     }
                 };
@@ -286,7 +286,7 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsTrue(sessionErrorHandled);
+                Assert.IsTrue(sessionErrorTriggered);
             });
         }
 
@@ -349,7 +349,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var obsoleteSessionErrorTriggered = false;
-                var sessionErrorHandled = false;
+                var sessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
                 config.SyncErrorHandler = new SyncErrorHandler
@@ -358,8 +358,8 @@ namespace Realms.Tests.Sync
                     {
                         Assert.IsInstanceOf<Session>(sender);
                         Assert.IsInstanceOf<SessionException>(e);
-                        Assert.IsFalse(sessionErrorHandled);
-                        sessionErrorHandled = true;
+                        Assert.IsFalse(sessionErrorTriggered);
+                        sessionErrorTriggered = true;
                         tcs.TrySetResult(true);
                     }
                 };
@@ -379,7 +379,7 @@ namespace Realms.Tests.Sync
                 await tcs.Task;
 
                 Assert.IsFalse(obsoleteSessionErrorTriggered);
-                Assert.IsTrue(sessionErrorHandled);
+                Assert.IsTrue(sessionErrorTriggered);
             });
         }
 
