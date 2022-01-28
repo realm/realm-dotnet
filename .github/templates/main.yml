@@ -618,12 +618,27 @@ jobs:
         if: matrix.targetFramework == 'net6.0'
         with:
           dotnet-version: '6.0.x'
-          include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
   _: #@ template.replace(testJob("Xamarin.iOS", "macos-latest", xamariniOSTestSteps()))
   _: #@ template.replace(testJob("Xamarin.Android", "macos-latest", xamarinAndroidTestSteps()))
+  run-tests-xunit:
+    runs-on: windows-latest
+    name: Test xUnit Compatibility
+    timeout-minutes: #@ testTimeout
+    needs:
+    - build-packages
+    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - uses: #@ actionSetupDotnet
+        with:
+          dotnet-version: '6.0.x'
+      - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
+      - name: Run Tests
+        run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   run-tests-weaver:
     runs-on: windows-latest
     name: Test Weaver
