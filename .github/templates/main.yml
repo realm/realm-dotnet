@@ -632,6 +632,7 @@ jobs:
     if: #@ ignoreSkippedJobsCondition
     steps:
       - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
       - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '6.0.x'
