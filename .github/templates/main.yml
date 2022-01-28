@@ -618,7 +618,6 @@ jobs:
         if: matrix.targetFramework == 'net6.0'
         with:
           dotnet-version: '6.0.x'
-          include-prerelease: true
       - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
   _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
@@ -633,6 +632,9 @@ jobs:
     if: #@ ignoreSkippedJobsCondition
     steps:
       - #@ template.replace(checkoutCode())
+      - uses: #@ actionSetupDotnet
+        with:
+          dotnet-version: '6.0.x'
       - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
