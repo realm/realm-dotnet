@@ -42,7 +42,7 @@ public:
 
 class ManagedExceptionDuringClientReset : public std::runtime_error {
 public:
-    ManagedExceptionDuringClientReset() : std::runtime_error("Uncaught .NET exception during client reset") {
+    ManagedExceptionDuringClientReset() : std::runtime_error("Managed exception happened during client reset") {
     }
 };
 
@@ -84,7 +84,7 @@ struct SyncConfiguration
     bool is_flexible_sync;
 
     ClientResyncMode client_resync_mode;
-    void* managed_sync_configuration_handle;
+    void* managed_sync_configuration_base_handle;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

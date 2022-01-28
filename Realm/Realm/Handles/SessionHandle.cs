@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
-using Realms.Schema;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
@@ -34,7 +33,7 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset, IntPtr managedSyncConfigurationHandle);
+            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset, IntPtr managedSyncConfigurationBaseHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
@@ -212,7 +211,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset, IntPtr managedSyncConfigurationHandle)
+        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset, IntPtr managedSyncConfigurationBaseHandle)
         {
             try
             {
@@ -220,8 +219,8 @@ namespace Realms.Sync
                 var session = new Session(handle);
                 var messageString = message.AsString();
                 SessionException exception;
-                var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
+                var syncConfigBaseHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
+                var syncConfigurationBase = (SyncConfigurationBase)syncConfigBaseHandle.Target;
 
                 if (isClientReset)
                 {
@@ -229,13 +228,13 @@ namespace Realms.Sync
                     exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
                     // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
-                    if (syncConfiguration.ClientResetHandler != null)
+                    if (syncConfigurationBase.ClientResetHandler != null)
                     {
-                        if (syncConfiguration.ClientResetHandler is DiscardLocalResetHandler discardLocalResetHandler)
+                        if (syncConfigurationBase.ClientResetHandler is DiscardLocalResetHandler discardLocalResetHandler)
                         {
                             discardLocalResetHandler.ManualResetFallback?.Invoke(session, (ClientResetException)exception);
                         }
-                        else if (syncConfiguration.ClientResetHandler is ManualRecoveryHandler manualRecoveryHandler)
+                        else if (syncConfigurationBase.ClientResetHandler is ManualRecoveryHandler manualRecoveryHandler)
                         {
                             manualRecoveryHandler.OnClientReset?.Invoke(session, (ClientResetException)exception);
                         }
@@ -255,9 +254,9 @@ namespace Realms.Sync
                 }
 
                 // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
-                if (syncConfiguration.SyncErrorHandler != null)
+                if (syncConfigurationBase.SyncErrorHandler != null)
                 {
-                    syncConfiguration.SyncErrorHandler.OnError?.Invoke(session, exception);
+                    syncConfigurationBase.SyncErrorHandler.OnError?.Invoke(session, exception);
                 }
                 else
                 {

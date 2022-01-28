@@ -16,16 +16,13 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Realms.Sync
 {
         internal enum ClientResyncMode : byte
         {
             // Fire a client reset error
             Manual = 0,
+
             // Discard local changes, without disrupting accessors or closing the Realm
             DiscardLocal = 1
         }
