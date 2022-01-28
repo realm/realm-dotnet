@@ -626,7 +626,7 @@ jobs:
   run-tests-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
-    timeout-minutes: #@ testTimeout
+    timeout-minutes: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
     needs:
     - build-packages
     if: #@ ignoreSkippedJobsCondition

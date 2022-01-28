@@ -1287,7 +1287,7 @@ jobs:
   run-tests-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
-    timeout-minutes: 45
+    timeout-minutes: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')

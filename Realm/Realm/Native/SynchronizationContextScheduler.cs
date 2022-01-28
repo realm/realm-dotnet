@@ -95,6 +95,18 @@ namespace Realms
                 return TryGetInnerContext(first) == TryGetInnerContext(second);
             }
 
+            // xUnit has a peculiar behavior with regard to synchronization contexts. The test runs with AsyncTestSyncContext
+            // which points to a MaxConcurrencySyncContext via its innerContext field. When `Post` is invoked on the `AsyncTestSyncContext`,
+            // it will dispatch that to the innerContext, which means that inside the `Post` callback, `SynchronizationContext.Current` will
+            // return `MaxConcurrencySyncContext` instead of `AsyncTestSyncContext`, meaning IsOnContext returns false inside the callback.
+            // This roughly translates into:
+            // capturedContext.Post(() =>
+            // {
+            //     // Failing here because current is capturedContext.innerContext
+            //     Assert.That(capturedContext == SynchronizationContext.Current);
+            // });
+            // See: https://github.com/xunit/xunit/blob/c27a91f8cbcee37cb45699a3a81287bca225e876/src/xunit.v3.core/Sdk/MaxConcurrencySyncContext.cs
+            // See: https://github.com/xunit/xunit/blob/c27a91f8cbcee37cb45699a3a81287bca225e876/src/xunit.v3.core/Sdk/AsyncTestSyncContext.cs
             private static SynchronizationContext TryGetInnerContext(SynchronizationContext outer)
             {
                 if (outer != null &&
