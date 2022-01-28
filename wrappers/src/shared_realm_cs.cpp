@@ -138,18 +138,16 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
         config.sync_config->notify_before_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen) {
             // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
-            s_notify_before_callback(before_frozen, managed_sync_configuration_handle);
-            //if () {
-            //    // TODO andrea: throw exception
-            //}
+            if (!s_notify_before_callback(before_frozen, managed_sync_configuration_handle)) {
+                throw ManagedExceptionDuringClientReset();
+            }
         };
 
         config.sync_config->notify_after_client_reset = [managed_sync_configuration_handle = sync_configuration.managed_sync_configuration_handle](SharedRealm before_frozen, SharedRealm after) {
             // TODO andrea: I guess this increases the shared counter, is it right? and if so, is it a problem?
-            s_notify_after_callback(before_frozen, after, managed_sync_configuration_handle);
-            //if () {
-            //    // TODO andrea: throw exception
-            //}
+            if (s_notify_after_callback(before_frozen, after, managed_sync_configuration_handle)) {
+                throw ManagedExceptionDuringClientReset();
+            }
         };
     }
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);

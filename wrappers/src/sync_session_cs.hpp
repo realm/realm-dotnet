@@ -23,8 +23,8 @@
 #include <realm/sync/config.hpp>
 
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
-using NotifyBeforeClientResetCallbackT = void(SharedRealm& before_frozen, void* managed_client_reset_handler_handle);
-using NotifyAfterClientResetCallbackT = void(SharedRealm& before_frozen, SharedRealm& after, void* managed_client_reset_handler_handle);
+using NotifyBeforeClientResetCallbackT = bool(SharedRealm& before_frozen, void* managed_client_reset_handler_handle);
+using NotifyAfterClientResetCallbackT = bool(SharedRealm& before_frozen, SharedRealm& after, void* managed_client_reset_handler_handle);
 
 namespace realm {
 namespace binding {

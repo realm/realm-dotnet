@@ -221,6 +221,45 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Session_ClientReset_ManualRecoveryHandler_When_Exception()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                var manualFallbackTriggered = false;
+                var afterResetTriggered = false;
+                var config = await GetIntegrationConfigAsync();
+                config.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    OnBeforeReset = (beforeFrozen) =>
+                    {
+                        throw new Exception("Exception thrown in OnBeforeReset");
+                    },
+                    OnAfterReset = (beforeFrozen, after) =>
+                    {
+                        afterResetTriggered = true;
+                        tcs.TrySetResult(true);
+                    },
+                    ManualResetFallback = (session, err) =>
+                    {
+                        manualFallbackTriggered = true;
+                        tcs.TrySetResult(true);
+                    }
+                };
+
+                using var realm = await GetRealmAsync(config);
+                var session = GetSession(realm);
+
+                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+
+                await tcs.Task;
+
+                Assert.IsTrue(manualFallbackTriggered);
+                Assert.IsFalse(afterResetTriggered);
+            });
+        }
+
+        [Test]
         public void Session_SyncError_Handler()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

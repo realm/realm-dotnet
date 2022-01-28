@@ -40,6 +40,12 @@ public:
     }
 };
 
+class ManagedExceptionDuringClientReset : public std::runtime_error {
+public:
+    ManagedExceptionDuringClientReset() : std::runtime_error("Uncaught .NET exception during client reset") {
+    }
+};
+
 struct Configuration
 {
     uint16_t* path;

@@ -43,10 +43,10 @@ namespace Realms.Sync
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managedSyncConfigurationHandle);
+            public delegate bool NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managedSyncConfigurationHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managedSyncConfigurationHandle);
+            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managedSyncConfigurationHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, NotifyBeforeClientReset notify_before, NotifyAfterClientReset notify_after);
@@ -274,7 +274,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
-        private static void NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
+        private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
             var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
@@ -282,18 +282,29 @@ namespace Realms.Sync
             // no clientResetHandler means don't do anything for this callback
             if (syncConfiguration.ClientResetHandler == null)
             {
-                return;
+                return true;
             }
 
-            // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered with if not in discardLocal mode
+            // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered this if not in discardLocal mode
             var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
             var schema = syncConfiguration.GetSchema();
             var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
-            discardLocalResetHandler.OnBeforeReset?.Invoke(realmBefore);
+
+            try
+            {
+                discardLocalResetHandler.OnBeforeReset?.Invoke(realmBefore);
+            }
+            catch (Exception ex)
+            {
+                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while executing SyncConfigurationBase.OnBeforeReset during a client reset: {ex}");
+                return false;
+            }
+
+            return true;
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
-        private static void NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
+        private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
             var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
@@ -301,7 +312,7 @@ namespace Realms.Sync
             // no clientResetHandler means don't do anything for this callback
             if (syncConfiguration.ClientResetHandler == null)
             {
-                return;
+                return true;
             }
 
             // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered with if not in discardLocal mode
@@ -309,7 +320,18 @@ namespace Realms.Sync
             var schema = syncConfiguration.GetSchema();
             var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
             var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfiguration, schema);
-            discardLocalResetHandler.OnAfterReset?.Invoke(realmBefore, realmAfter);
+
+            try
+            {
+                discardLocalResetHandler.OnAfterReset?.Invoke(realmBefore, realmAfter);
+            }
+            catch (Exception ex)
+            {
+                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while executing SyncConfigurationBase.OnBeforeReset during a client reset: {ex}");
+                return false;
+            }
+
+            return true;
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
