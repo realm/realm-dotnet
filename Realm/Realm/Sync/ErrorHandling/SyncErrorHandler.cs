@@ -20,14 +20,27 @@ using Realms.Sync.Exceptions;
 
 namespace Realms.Sync.ErrorHandling
 {
+    /// <summary>
+    /// Handler triggered whenever a sync error happens on a synchronized Realm.
+    /// To be noted that a client reset is not a sync error and in order to handle that subclasses of <see cref="ClientResetHandlerBase"/> are available.
+    /// </summary>
+    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public class SyncErrorHandler
     {
         /// <summary>
-        /// Triggered when an error occurs in a session.
-        /// Until full deprecation, this callback still calls into <see cref="Session.Error"/> for backward compatibility.
+        /// Callback triggered when an error occurs in a session.
         /// </summary>
+        /// <param name="session">
+        /// The <see cref="Session"/> where the error happened on.
+        /// </param>
+        /// <param name="error">
+        /// The specific <see cref="SessionException"/> occurred on this <see cref="Session"/>.
+        /// </param>
         public delegate void SessionErrorCallback(Session session, SessionException error);
 
+        /// <summary>
+        /// Gets or sets the user callback to handle all the <see cref="SessionException"/>s that could happen on a synchronized Realm.
+        /// </summary>
         public SessionErrorCallback OnError { get; set; }
     }
 }

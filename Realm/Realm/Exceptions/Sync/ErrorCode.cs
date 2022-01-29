@@ -18,7 +18,6 @@
 
 namespace Realms.Sync.Exceptions
 {
-
     // ATTENTION: given that managed does not differentiate errors by category like core does,
     // a special signature is given to indicate what category each error belongs to in core.
     // Such signature is, for now, only understood by TestingExtensions::SimulateError.
@@ -40,8 +39,8 @@ namespace Realms.Sync.Exceptions
         Unknown = -1,
 
         /// <summary>
-        /// A fatal error was encountered which prevents completion of a client reset
-        /// <summary>
+        /// A fatal error was encountered which prevents the completion of a client reset.
+        /// </summary>
         AutoClientResetFailed_Cl = 132,
 
         /// <summary>

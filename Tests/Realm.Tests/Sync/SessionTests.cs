@@ -20,10 +20,9 @@ using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
-using Realms.Sync.Testing;
-using Realms.Sync.Exceptions;
 using Realms.Sync.ErrorHandling;
-using System.Linq;
+using Realms.Sync.Exceptions;
+using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
@@ -155,7 +154,6 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
-
                     OnBeforeReset = (beforeFrozen) =>
                     {
                         onBeforeTriggered = true;
