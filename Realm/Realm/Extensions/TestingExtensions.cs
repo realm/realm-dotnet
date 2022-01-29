@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
 
@@ -44,7 +45,7 @@ namespace Realms.Sync.Testing
             Argument.NotNull(message, nameof(message));
 
             var errorCategory = string.Empty;
-            if (errorCode.ToString().Contains("_Cl"))
+            if (errorCode.ToString().EndsWith("_Cl", StringComparison.Ordinal))
             {
                 errorCategory = "ClientCategory";
             }

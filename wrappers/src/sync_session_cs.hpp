@@ -28,8 +28,6 @@ using NotifyAfterClientResetCallbackT = bool(SharedRealm& before_frozen, SharedR
 
 namespace realm {
 namespace binding {
-    // TODO andrea: ask if these `extern`s are really needed? https://docs.microsoft.com/en-us/cpp/cpp/program-and-linkage-cpp?view=msvc-170
-    // and https://docs.microsoft.com/en-us/cpp/cpp/extern-cpp?view=msvc-170
     extern std::function<ProgressCallbackT> s_progress_callback;
     extern std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
     extern std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;

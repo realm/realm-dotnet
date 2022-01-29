@@ -21,8 +21,6 @@
 
 #include "marshalling.hpp"
 #include "error_handling.hpp"
-
-// TODO andrea: this is a bad dependency to have because it easily creates circular dependencies wherever marshalling is needed and shared_realm_cs to
 #include "shared_realm_cs.hpp"
 
 

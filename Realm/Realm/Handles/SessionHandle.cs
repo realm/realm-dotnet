@@ -227,7 +227,7 @@ namespace Realms.Sync
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
+                    // after deprecation: this check only exists because we're still supporting Session.Error. After deprecation remove this check
                     if (syncConfigurationBase.ClientResetHandler != null)
                     {
                         if (syncConfigurationBase.ClientResetHandler is DiscardLocalResetHandler discardLocalResetHandler)
@@ -239,7 +239,7 @@ namespace Realms.Sync
                             manualRecoveryHandler.OnClientReset?.Invoke(session, (ClientResetException)exception);
                         }
 
-                        // TODO andrea: this won't be require anymore when Session.Error will be fully deprecated
+                        // after deprecation: this won't be require anymore when Session.Error will be fully deprecated
                         return;
                     }
                 }
@@ -253,14 +253,14 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                // TODO andrea: this check only exists because we're still supporting Session.Error. After deprecation remove this check
+                // after deprecation: this check only exists because we're still supporting Session.Error. After deprecation remove this check
                 if (syncConfigurationBase.SyncErrorHandler != null)
                 {
                     syncConfigurationBase.SyncErrorHandler.OnError?.Invoke(session, exception);
                 }
                 else
                 {
-                    // TODO andrea: this will need to go when Session.Error is fully deprecated
+                    // after deprecation: this will need to go when Session.Error is fully deprecated
                     Session.RaiseError(session, exception);
                 }
             }
@@ -282,7 +282,6 @@ namespace Realms.Sync
                 return true;
             }
 
-            // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered this if not in discardLocal mode
             var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
             var schema = syncConfiguration.GetSchema();
             var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
@@ -313,7 +312,6 @@ namespace Realms.Sync
                 return true;
             }
 
-            // TODO andrea: should there be a warning if the type is wrong and we ended up here? Theoretically core shouldn't have triggered with if not in discardLocal mode
             var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
             var schema = syncConfiguration.GetSchema();
             var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);

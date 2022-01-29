@@ -294,7 +294,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // TODO andrea: temporary test for co-existence of Session.Error and error handling in SyncConfigurationBase
+        // after deprecation: temporary test for co-existence of Session.Error and error handling in SyncConfigurationBase
         [Test]
         public void Session_ClientReset_Handlers_Coexistence()
         {
@@ -342,7 +342,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // TODO andrea: temporary test for co-existence of Session.Error and error handling in SyncConfigurationBase
+        // after deprecation: temporary test for co-existence of Session.Error and error handling in SyncConfigurationBase
         [Test]
         public void Session_Error_Handlers_Coexistence()
         {

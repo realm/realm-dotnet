@@ -157,7 +157,7 @@ namespace Realms.Sync
             _handle = handle;
         }
 
-        /// TODO andrea: this needs to go when <see cref="Error"/> is fully deprecated
+        /// after deprecation: this needs to go when <see cref="Error"/> is fully deprecated
         internal static void RaiseError(Session session, Exception error)
         {
             var args = new ErrorEventArgs(error);
