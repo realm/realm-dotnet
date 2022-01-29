@@ -181,7 +181,7 @@ namespace Realms.Sync
 
         public void ReportErrorForTesting(int errorCode, string errorCategory, string errorMessage, bool isFatal)
         {
-            NativeMethods.report_error_for_testing(this, errorCode, errorCategory, (IntPtr) errorCategory.Length, errorMessage, (IntPtr)errorMessage.Length, isFatal);
+            NativeMethods.report_error_for_testing(this, errorCode, errorCategory, (IntPtr)errorCategory.Length, errorMessage, (IntPtr)errorMessage.Length, isFatal);
         }
 
         public void Stop()
@@ -271,6 +271,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No need to dispose the realm as it's not owned by the managed side")]
         private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
@@ -300,6 +301,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No need to dispose the realm as it's not owned by the managed side")]
         private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
