@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added support for a new client reset strategy, called ["Discarding local"](add the right docs link here). Such new stragegy greatly simplifies the whole handling of a client reset on a synchronized Realm.
 
 ### Fixed
 * Fixed an issue with xUnit tests that would cause `System.Runtime.InteropServices.SEHException` to be thrown whenever Realm was accessed in a non-async test. (Issue [#1865](https://github.com/realm/realm-dotnet/issues/1865))
