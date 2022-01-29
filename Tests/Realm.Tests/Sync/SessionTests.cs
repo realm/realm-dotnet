@@ -108,8 +108,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                int beforeCheck = 0;
-                int afterCheck = 0;
+                var onBeforeTriggered = false;
+                var onAfterTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
 
@@ -117,19 +117,15 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.AreEqual(beforeCheck, 0);
-                        Assert.AreEqual(afterCheck, 0);
-
-                        beforeCheck = 1;
+                        Assert.IsFalse(onBeforeTriggered);
+                        Assert.IsFalse(onAfterTriggered);
+                        onBeforeTriggered = true;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        Assert.AreEqual(beforeCheck, 1);
-                        Assert.AreEqual(afterCheck, 0);
-
-                        beforeCheck = 2;
-                        afterCheck = 1;
-
+                        Assert.IsTrue(onBeforeTriggered);
+                        Assert.IsFalse(onAfterTriggered);
+                        onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     }
                 };
@@ -141,8 +137,8 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.AreEqual(beforeCheck, 2);
-                Assert.AreEqual(afterCheck, 1);
+                Assert.IsTrue(onBeforeTriggered);
+                Assert.IsTrue(onAfterTriggered);
             });
         }
 
@@ -151,27 +147,28 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                int beforeCheck = 0;
-                int afterCheck = 0;
+                var onBeforeTriggered = false;
+                var onAfterTriggered = false;
                 var manualResetFallbackHandled = false;
                 var config = await GetIntegrationConfigAsync();
                 var tcs = new TaskCompletionSource<bool>();
 
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
+
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        beforeCheck = 1;
+                        onBeforeTriggered = true;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        beforeCheck = 2;
-                        afterCheck = 1;
-
+                        onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     },
                     ManualResetFallback = (session, exception) =>
                     {
+                        Assert.IsFalse(onBeforeTriggered);
+                        Assert.IsFalse(onAfterTriggered);
                         Assert.IsFalse(manualResetFallbackHandled);
                         manualResetFallbackHandled = true;
                         tcs.TrySetResult(true);
@@ -184,8 +181,8 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.AreEqual(beforeCheck, 0);
-                Assert.AreEqual(afterCheck, 0);
+                Assert.IsFalse(onBeforeTriggered);
+                Assert.IsFalse(onAfterTriggered);
                 Assert.IsTrue(manualResetFallbackHandled);
             });
         }
@@ -195,7 +192,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var manualOnClientResetCalled = false;
+                var manualOnClientResetTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new ManualRecoveryHandler
@@ -204,7 +201,7 @@ namespace Realms.Tests.Sync
                     {
                         Assert.IsInstanceOf<Session>(sender);
                         Assert.IsInstanceOf<SessionException>(e);
-                        manualOnClientResetCalled = true;
+                        manualOnClientResetTriggered = true;
                         tcs.TrySetResult(true);
                     }
                 };
@@ -216,7 +213,7 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsTrue(manualOnClientResetCalled);
+                Assert.IsTrue(manualOnClientResetTriggered);
             });
         }
 
@@ -226,22 +223,30 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var tcs = new TaskCompletionSource<bool>();
+                var onBeforeTriggered = false;
                 var manualFallbackTriggered = false;
-                var afterResetTriggered = false;
+                var onAfterResetTriggered = false;
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
+                        Assert.IsFalse(onBeforeTriggered);
+                        Assert.IsFalse(onAfterResetTriggered);
+                        Assert.IsFalse(manualFallbackTriggered);
+                        onBeforeTriggered = true;
                         throw new Exception("Exception thrown in OnBeforeReset");
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        afterResetTriggered = true;
+                        onAfterResetTriggered = true;
                         tcs.TrySetResult(true);
                     },
                     ManualResetFallback = (session, err) =>
                     {
+                        Assert.IsTrue(onBeforeTriggered);
+                        Assert.IsFalse(onAfterResetTriggered);
+                        Assert.IsFalse(manualFallbackTriggered);
                         manualFallbackTriggered = true;
                         tcs.TrySetResult(true);
                     }
@@ -255,7 +260,8 @@ namespace Realms.Tests.Sync
                 await tcs.Task;
 
                 Assert.IsTrue(manualFallbackTriggered);
-                Assert.IsFalse(afterResetTriggered);
+                Assert.IsTrue(onBeforeTriggered);
+                Assert.IsFalse(onAfterResetTriggered);
             });
         }
 
@@ -296,8 +302,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                int beforeCheck = 0;
-                int afterCheck = 0;
+                var onBeforeTriggered = false;
+                var onAfterTriggered = false;
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
@@ -305,19 +311,15 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.AreEqual(beforeCheck, 0);
-                        Assert.AreEqual(afterCheck, 0);
-
-                        beforeCheck = 1;
+                        Assert.IsFalse(onBeforeTriggered);
+                        Assert.IsFalse(onAfterTriggered);
+                        onBeforeTriggered = true;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        Assert.AreEqual(beforeCheck, 1);
-                        Assert.AreEqual(afterCheck, 0);
-
-                        beforeCheck = 2;
-                        afterCheck = 1;
-
+                        Assert.IsTrue(onBeforeTriggered);
+                        Assert.IsFalse(onAfterTriggered);
+                        onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     }
                 };
@@ -336,8 +338,8 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.AreEqual(beforeCheck, 2);
-                Assert.AreEqual(afterCheck, 1);
+                Assert.IsTrue(onBeforeTriggered);
+                Assert.IsTrue(onAfterTriggered);
                 Assert.IsFalse(obsoleteSessionErrorTriggered);
             });
         }
