@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -407,6 +406,126 @@ namespace Realms.Tests.Database
             };
 
             using var realm = GetRealm(newRealmConfig);
+        }
+
+        [Test]
+        public void Migration_ChangePrimaryKey_Dynamic()
+        {
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString());
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 123,
+                        StringValue = "123"
+                    });
+                });
+            }
+
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
+            {
+                SchemaVersion = 1,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    var value = (RealmObjectBase)migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123);
+                    value.DynamicApi.Set("_id", 456);
+                }
+            };
+
+            using var realm = GetRealm(newRealmConfig);
+
+            var obj123 = realm.Find<IntPrimaryKeyWithValueObject>(123);
+            var obj456 = realm.Find<IntPrimaryKeyWithValueObject>(456);
+
+            Assert.That(obj123, Is.Null);
+            Assert.That(obj456, Is.Not.Null);
+            Assert.That(obj456.StringValue, Is.EqualTo("123"));
+        }
+
+        [Test]
+        public void Migration_ChangePrimaryKey_Static()
+        {
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString());
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 123,
+                        StringValue = "123"
+                    });
+                });
+            }
+
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
+            {
+                SchemaVersion = 1,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(123);
+                    value.Id = 456;
+                }
+            };
+
+            using var realm = GetRealm(newRealmConfig);
+
+            var obj123 = realm.Find<IntPrimaryKeyWithValueObject>(123);
+            var obj456 = realm.Find<IntPrimaryKeyWithValueObject>(456);
+
+            Assert.That(obj123, Is.Null);
+            Assert.That(obj456, Is.Not.Null);
+            Assert.That(obj456.StringValue, Is.EqualTo("123"));
+        }
+
+        [Test]
+        public void Migration_ChangePrimaryKey_WithDuplicates_Throws()
+        {
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString());
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 1,
+                        StringValue = "1"
+                    });
+                    oldRealm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 2,
+                        StringValue = "2"
+                    });
+                });
+            }
+
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
+            {
+                SchemaVersion = 1,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    new Action(() =>
+                    {
+                        var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(1);
+                        value.Id = 2;
+                    })();
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
+                }
+            };
+
+            var ex = Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() => GetRealm(newRealmConfig));
+            Assert.That(ex.Message, Does.Contain($"{nameof(IntPrimaryKeyWithValueObject)}._id"));
+
+            // Ensure we haven't messed up the data
+            using var oldRealmAgain = GetRealm(oldRealmConfig);
+
+            var obj1 = oldRealmAgain.Find<IntPrimaryKeyWithValueObject>(1);
+            var obj2 = oldRealmAgain.Find<IntPrimaryKeyWithValueObject>(2);
+
+            Assert.That(obj1.StringValue, Is.EqualTo("1"));
+            Assert.That(obj2.StringValue, Is.EqualTo("2"));
         }
     }
 }
