@@ -24,8 +24,8 @@ namespace Realms.Sync.Exceptions
     // It's important to keep consistency.
     // * _Cl -> for client_base::ClientError
     //
-    // TODO: "Because of legacy the error codes that don't have any signature are assumed to be part of protocol::ProtocolError.
-    // This may be wrong and for consistency all ErrorCode should have the right signature"
+    // Because of legacy the error codes that don't have any signature are assumed to be part of protocol::ProtocolError.
+    // This may be wrong and for consistency all ErrorCode should have the right signature
 
     /// <summary>
     /// Error code enumeration, indicating the type of the session error.
