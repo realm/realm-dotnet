@@ -901,6 +901,16 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void FrozenRealms_ReuseParentSchemaAndMetadata()
+        {
+            using var realm = GetRealm();
+            using var frozenRealm = realm.Freeze();
+
+            Assert.That(realm.Schema, Is.SameAs(frozenRealm.Schema));
+            Assert.That(realm.Metadata, Is.SameAs(frozenRealm.Metadata));
+        }
+
+        [Test]
         public void FrozenRealms_GetGarbageCollected()
         {
             TestHelpers.RunAsyncTest(async () =>
