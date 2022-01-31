@@ -33,7 +33,7 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset, IntPtr managedSyncConfigurationBaseHandle);
+            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset, IntPtr managed_syn_configuration_base_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
@@ -42,10 +42,10 @@ namespace Realms.Sync
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managedSyncConfigurationHandle);
+            public delegate bool NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managed_syn_configuration_base_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managedSyncConfigurationHandle);
+            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_syn_configuration_base_handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, NotifyBeforeClientReset notify_before, NotifyAfterClientReset notify_after);
@@ -227,7 +227,6 @@ namespace Realms.Sync
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    // after deprecation: this check only exists because we're still supporting Session.Error. After deprecation remove this check
                     if (syncConfigurationBase.ClientResetHandler != null)
                     {
                         if (syncConfigurationBase.ClientResetHandler is DiscardLocalResetHandler discardLocalResetHandler)
@@ -253,7 +252,6 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                // after deprecation: this check only exists because we're still supporting Session.Error. After deprecation remove this check
                 if (syncConfigurationBase.SyncErrorHandler != null)
                 {
                     syncConfigurationBase.SyncErrorHandler.OnError?.Invoke(session, exception);
@@ -271,7 +269,6 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No need to dispose the realm as it's not owned by the managed side")]
         private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
@@ -295,12 +292,16 @@ namespace Realms.Sync
                 Logger.Default.Log(LogLevel.Warn, $"An error has occurred while executing SyncConfigurationBase.OnBeforeReset during a client reset: {ex}");
                 return false;
             }
+            finally
+            {
+                realmBefore.Dispose();
+            }
 
+            realmBefore.Dispose();
             return true;
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "No need to dispose the realm as it's not owned by the managed side")]
         private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
         {
             var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
@@ -326,7 +327,14 @@ namespace Realms.Sync
                 Logger.Default.Log(LogLevel.Warn, $"An error has occurred while executing SyncConfigurationBase.OnBeforeReset during a client reset: {ex}");
                 return false;
             }
+            finally
+            {
+                realmBefore.Dispose();
+                realmAfter.Dispose();
+            }
 
+            realmBefore.Dispose();
+            realmAfter.Dispose();
             return true;
         }
 
