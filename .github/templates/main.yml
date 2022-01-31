@@ -421,7 +421,6 @@ name: main
   push:
     branches:
       - main
-      - master
   pull_request:
 env:
   REALM_DISABLE_ANALYTICS: true

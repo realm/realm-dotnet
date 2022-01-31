@@ -1,4 +1,4 @@
-![Realm](https://github.com/realm/realm-dotnet/raw/master/logo.png)
+![Realm](https://github.com/realm/realm-dotnet/raw/main/logo.png)
 
 Realm is a mobile database that runs directly on phones, tablets or wearables.
 
@@ -29,7 +29,7 @@ The API reference is located at [docs.mongodb.com/realm-sdks/dotnet/latest/](htt
 ## Nightly builds
 
 If you want to test recent bugfixes or features that have not been packaged in an official release yet, you can use the preview releases published after every
-commit to our private NuGet feed. The source URL you need to specify for our feed is `https://s3.amazonaws.com/realm.nugetpackages/index.json`. 
+commit to our private NuGet feed. The source URL you need to specify for our feed is `https://s3.amazonaws.com/realm.nugetpackages/index.json`.
 Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume) for instructions on adding custom sources to the NuGet Package Manager.
 
 ## Building Realm
@@ -56,7 +56,7 @@ Some minimal examples of Realm use can be found in the `examples` folder:
 
 * [QuickJournal](examples/QuickJournal): a simple Xamarin.Forms application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
 
-## Contributing 
+## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 

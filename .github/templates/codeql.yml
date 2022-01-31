@@ -32,9 +32,9 @@
 name: "CodeQL"
 "on":
   push:
-    branches: [ master, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ main ]
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
