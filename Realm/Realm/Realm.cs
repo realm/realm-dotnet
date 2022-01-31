@@ -283,7 +283,7 @@ namespace Realms
             }
         }
 
-        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata metadata = null)
         {
             Config = config;
 
@@ -305,7 +305,7 @@ namespace Realms
             _state.AddRealm(this);
 
             SharedRealmHandle = sharedRealmHandle;
-            Metadata = new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
+            Metadata = metadata ?? new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
             Schema = schema;
             IsFrozen = SharedRealmHandle.IsFrozen;
             DynamicApi = new Dynamic(this);
@@ -455,7 +455,7 @@ namespace Realms
             }
 
             var handle = SharedRealmHandle.Freeze();
-            return new Realm(handle, Config, Schema);
+            return new Realm(handle, Config, Schema, Metadata);
         }
 
         private void ThrowIfDisposed()
