@@ -216,7 +216,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnBeforeReset_()
+        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnBeforeReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -264,7 +264,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnAfterReset_()
+        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnAfterReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
