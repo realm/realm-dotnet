@@ -216,7 +216,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_ManualRecoveryHandler_When_Exception()
+        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnBeforeReset_()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -260,6 +260,56 @@ namespace Realms.Tests.Sync
                 Assert.IsTrue(manualFallbackTriggered);
                 Assert.IsTrue(onBeforeTriggered);
                 Assert.IsFalse(onAfterResetTriggered);
+            });
+        }
+
+        [Test]
+        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnAfterReset_()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                var onBeforeTriggered = false;
+                var manualFallbackTriggered = false;
+                var onAfterResetTriggered = false;
+                var config = await GetIntegrationConfigAsync();
+                config.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    OnBeforeReset = (beforeFrozen) =>
+                    {
+                        Assert.IsFalse(onBeforeTriggered);
+                        Assert.IsFalse(onAfterResetTriggered);
+                        Assert.IsFalse(manualFallbackTriggered);
+                        onBeforeTriggered = true;
+                    },
+                    OnAfterReset = (beforeFrozen, after) =>
+                    {
+                        Assert.IsTrue(onBeforeTriggered);
+                        Assert.IsFalse(onAfterResetTriggered);
+                        Assert.IsFalse(manualFallbackTriggered);
+                        onAfterResetTriggered = true;
+                        throw new Exception("Exception thrown in OnAfterReset");
+                    },
+                    ManualResetFallback = (session, err) =>
+                    {
+                        Assert.IsTrue(onBeforeTriggered);
+                        Assert.IsTrue(onAfterResetTriggered);
+                        Assert.IsFalse(manualFallbackTriggered);
+                        manualFallbackTriggered = true;
+                        tcs.TrySetResult(true);
+                    }
+                };
+
+                using var realm = await GetRealmAsync(config);
+                var session = GetSession(realm);
+
+                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+
+                await tcs.Task;
+
+                Assert.IsTrue(manualFallbackTriggered);
+                Assert.IsTrue(onBeforeTriggered);
+                Assert.IsTrue(onAfterResetTriggered);
             });
         }
 
