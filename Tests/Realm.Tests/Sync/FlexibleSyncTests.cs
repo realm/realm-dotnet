@@ -1062,6 +1062,23 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Integration_WaitForSynchronization_EmptyUpdate()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                });
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
+        }
+
+        [Test]
         public void Integration_SubscriptionSet_AddRemove()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
