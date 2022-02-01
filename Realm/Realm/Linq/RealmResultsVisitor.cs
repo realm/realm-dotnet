@@ -122,7 +122,7 @@ namespace Realms
             }
 
             var propertyChain = TraverseSort(body);
-            _sortDescriptor.AddClause(_realm.SharedRealmHandle, _metadata.TableKey, propertyChain, isAscending, isReplacing);
+            _sortDescriptor.AddClause(_metadata.TableKey, propertyChain, isAscending, isReplacing);
         }
 
         private static bool IsSortClause(string methodName, out bool isAscending, out bool isReplacing)

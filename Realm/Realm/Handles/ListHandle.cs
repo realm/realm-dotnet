@@ -95,6 +95,11 @@ namespace Realms
         {
             get
             {
+                if (IsClosed)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
@@ -103,12 +108,14 @@ namespace Realms
 
         public override bool CanSnapshot => true;
 
-        public ListHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public ListHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
+            EnsureValid();
+
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
             return new RealmValue(result, realm);
@@ -116,6 +123,8 @@ namespace Realms
 
         public void Add(in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.add_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -124,6 +133,8 @@ namespace Realms
 
         public ObjectHandle AddEmbedded()
         {
+            EnsureValid();
+
             var result = NativeMethods.add_embedded(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root, result);
@@ -131,6 +142,8 @@ namespace Realms
 
         public void Set(int targetIndex, in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.set_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
             handles?.Dispose();
@@ -139,6 +152,8 @@ namespace Realms
 
         public ObjectHandle SetEmbedded(int targetIndex)
         {
+            EnsureValid();
+
             var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root, result);
@@ -146,6 +161,8 @@ namespace Realms
 
         public void Insert(int targetIndex, in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.insert_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
             handles?.Dispose();
@@ -154,6 +171,8 @@ namespace Realms
 
         public ObjectHandle InsertEmbedded(int targetIndex)
         {
+            EnsureValid();
+
             var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root, result);
@@ -161,6 +180,8 @@ namespace Realms
 
         public int Find(in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -170,31 +191,41 @@ namespace Realms
 
         public void Erase(IntPtr rowIndex)
         {
+            EnsureValid();
+
             NativeMethods.erase(this, rowIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override void Clear()
         {
+            EnsureValid();
+
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Move(IntPtr sourceIndex, IntPtr targetIndex)
         {
+            EnsureValid();
+
             NativeMethods.move(this, sourceIndex, targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override int Count()
         {
+            EnsureValid();
+
             var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -202,6 +233,8 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -210,20 +243,24 @@ namespace Realms
 
         public ResultsHandle ToResults()
         {
+            EnsureValid();
+
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(this, ptr);
+            return new ResultsHandle(Root, ptr);
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ListHandle(frozenRealmHandle, result);
         }
 
-        protected override void Unbind() => NativeMethods.destroy(handle);
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
             => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);

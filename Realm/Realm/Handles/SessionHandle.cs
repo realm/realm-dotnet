@@ -85,7 +85,7 @@ namespace Realms.Sync
         }
 
         [Preserve]
-        public SessionHandle(IntPtr handle) : base(null, handle)
+        public SessionHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -194,17 +194,14 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset)
         {
             try
             {
-                using var handle = new SessionHandle(sessionHandlePtr);
+                using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
 

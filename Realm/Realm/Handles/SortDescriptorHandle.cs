@@ -40,19 +40,18 @@ namespace Realms
 #pragma warning restore SA1121 // Use built-in type alias
         }
 
-        public SortDescriptorHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public SortDescriptorHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        public void AddClause(SharedRealmHandle realm, TableKey tableKey, IntPtr[] propertyIndexChain, bool ascending, bool replacing)
+        public void AddClause(TableKey tableKey, IntPtr[] propertyIndexChain, bool ascending, bool replacing)
         {
-            NativeMethods.add_clause(this, tableKey.Value, realm, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
+            EnsureValid();
+
+            NativeMethods.add_clause(this, tableKey.Value, Root, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
     }
 }

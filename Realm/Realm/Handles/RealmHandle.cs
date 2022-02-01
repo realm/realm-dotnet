@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 
 // Replaces IntPtr as a handle to a c++ realm class
 // Using criticalHandle makes the binding more robust with regards to out-of-band exceptions and finalization
@@ -86,123 +86,28 @@ namespace Realms
         /// Override Unbind and put in code that actually calls core and unbinds whatever this handle is about.
         /// when this is called, it has already been verified that it is safe to call core - so just put in code that does the job.
         /// </summary>
-        protected abstract void Unbind();
+        public abstract void Unbind();
 
         public override bool IsInvalid => handle == IntPtr.Zero;
 
-        //// I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be,
-        //// but I think that is an internal comment to msft developers
+        /// <summary>
+        /// The Realm instance that owns this handle. Ownership means that this handle will be closed whenever the parent
+        /// Realm is disposed.
+        /// </summary>
+        public readonly SharedRealmHandle Root;
 
-        private readonly object _unbindListLock = new object(); // used to serialize calls to unbind between finalizer threads
-
-        // list of owned handles that should be unbound as soon as possible by a user thread
-        private readonly List<RealmHandle> _unbindList; // set only once, to a list if we are a root.
-
-        // goes to true when we don't expect more calls from user threads on this handle
-        // is set when we dispose a handle
-        // used when unbinding owned classes, by not using the unbind list but just unbinding them at once (as we cannot interleave with user threads
-        // as there are none left than can access the root class (and its owned classes)
-        // it is important that children always have a reference path to their root for this to work
-        private bool _noMoreUserThread;
-
-        // this object is set to the root/owner if it is a child, or null if this object is itself a root/owner
-        // root and handle should be set atomically using RuntimeHelpers.PrepareConstrainedRegions();
-        // or at the very least, handle should only be set *after* root has been successfully set
-        // otherwise the finalizer might free the handle concurrently or not at all
-        public readonly RealmHandle Root; // internal to allow constructors in e.g. TableViewHandle to reference Root of e.g. TableHandle
-
-        // at creation, we must always specify the root if any, or null if the object is itself a root
-        // root in this respect means the object where it and all its children must be accessed serially
-        // for instance a Group from a transaction have the shared group as root, a table from such a group have
-        // the shared group as root, and a subtable from the table also have the shared group as root
-        // in general, you can pass on root when You are not root Yourself, otherwise pass on null
-        // we expect to be in the user thread always in a constructor.
-        // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
-        protected RealmHandle(RealmHandle root, IntPtr handle) : base(IntPtr.Zero, true)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RealmHandle"/> class by providing a
+        /// SharedRealm parent. We should always try to pass in a parent here to ensure that the
+        /// child handle gets closed as soon as the parent gets closed.
+        /// </summary>
+        protected RealmHandle(SharedRealmHandle root, IntPtr handle) : base(IntPtr.Zero, true)
         {
             SetHandle(handle);
 
-            // We can only have a single root
-            root = root?.Root ?? root;
-
             // if we are a root object, we need a list for our children and Root is already null
-            if (root == null)
-            {
-                _unbindList = GetUnbindList();
-            }
-            else
-            {
-                Root = root;
-                root.LockAndUndbindList();
-            }
-        }
-
-        // please only call if unbindlist is not null
-        private void LockAndUndbindList()
-        {
-            if (_unbindList.Count == 0)
-            {
-                return;
-            }
-
-            // outside the lock so we may get a really strange value here.
-            // however. If we get 0 and the real value was something else, we will find out inside the lock in unbindlockedlist
-            // if we get !=0 and the real value was in fact 0, then we will just skip and then catch up next time around.
-            // however, doing things this way will save lots and lots of locks when the list is empty, which it should be if people have
-            // been using the dispose pattern correctly, or at least have been eager at disposing as soon as they can
-            // except of course dot notation users that cannot dispose cause they never get a reference in the first place
-            lock (_unbindListLock)
-            {
-                UnbindLockedList();
-            }
-        }
-
-        // This might work in a future version of C# - when we get Generic constructors with parametres
-        // Generate a TableView object with its root set to eiter parent or to parents root
-        // that is, the link will be directly to the root of the collection of classes
-        // a root object R will have root==null
-        // all other root objects that have this root object as root, wil have root==R
-
-        // Call like this (say we are in a TableView and want a TableView handle attached to ourself):
-        //  TableViewHandle th  = RootedHandle<TableViewHAndle>(this)
-        //  say we are in a Table and want a TableViewHandle as a child
-        //  var th = RootedHandle<TableViewHandle>(this)
-        //  or in a table and want a Query :
-        //  var qr = RootedHandle<QueryHandle>(this)
-        // so in general
-        //  var xx = RootedHandle<Type>(this)  //written in any RealmHandle class
-        //  will create a new RealmHandle descendant of type Type where its root is set to the same
-        //  root that this have (if this.root==null then it is set to this, otherwise it is set to this.root)
-
-        // note that this handle will be constructed with no handle value. It will be invalid by default and thus, it
-        // does not really matter if root is set in an atomic fashion or not - because we are in a stage before the
-        // native handle value is actually set.
-        // if out-of-band exceptions leaves this class constructed before it has gotten a handle to manage, it will
-        // simply finalize itself silently as the finalizer in CriticalHandle will realize the 0 value of the
-        // handle and do nothing
-        // legal:
-        /*
-            T RootedHandle<T>(RealmHandle parent) where T:RealmHandle,new()
-            {
-                return (parent.Root == null) ?
-                    new T {Root=parent} :
-                    new T {Root=parent.Root};
-            }
-        */
-
-        // What i'd like:
-        /*
-            T RootedHandle<T>(RealmHandle parent) where T:RealmHandle, new(RealmHandle)
-            {
-                return (parent.Root == null) ?
-                    new T(parent):
-                    new T(parent.Root);
-            }
-        */
-
-        private static List<RealmHandle> GetUnbindList()
-        {
-            return new List<RealmHandle>();
+            Root = root;
+            root?.AddChild(this);
         }
 
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
@@ -220,21 +125,12 @@ namespace Realms
 
             try
             {
-                // if we are a root object then we can safely assume that no more user threads are going this way:
-                // if we are a root object and in a finalizer thread , then we know that no more user threads will hit us
-                // if we are a root object and being called via dispose, then we know that the Table(or whatever) wrapper will block any further calls
-                // because we are closed(disposed)
-                // in both cases unbind the list using whatever thread we are on, then unbind ourselves
-                if (Root == null)
+                // If we don't have a parent, there's not much to do but immediately unbind.
+                // If the parent is closed, there's no need to ask it to unbind us - we can do
+                // it immediately.
+                if (Root?.IsClosed != false)
                 {
-                    lock (_unbindListLock)
-                    {
-                        _noMoreUserThread = true; // note:resurrecting a root object will not work unless you set this to false again first
-
-                        // this call could interleave with calls from finalizing children in other threads
-                        // but they or we will wait because of the unbindlistlock taken above
-                        RequestUnbind(this);
-                    }
+                    Unbind();
                 }
                 else
                 {
@@ -253,47 +149,16 @@ namespace Realms
             }
         }
 
-        // only call inside a lock on UnbindListLock
-        private void UnbindLockedList()
-        {
-            // put in here in order to save time otherwise spent looping and clearing an empty list
-            if (_unbindList.Count > 0)
-            {
-                foreach (var realmHandle in _unbindList)
-                {
-                    realmHandle.Unbind();
-                }
-
-                _unbindList.Clear();
-            }
-        }
-
         public override string ToString()
         {
             return base.ToString() + handle.ToInt64().ToString("x8", CultureInfo.InvariantCulture);
         }
 
-        /// <summary>
-        /// Called by children to this root, when they would like to
-        /// be unbound, but are (possibly) running in a finalizer thread
-        /// so it is (possibly) not safe to unbind then directly.
-        /// </summary>
-        /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound.</param>
-        private void RequestUnbind(RealmHandle handleToUnbind)
+        protected void EnsureValid()
         {
-            // You can lock a lock several times inside the same thread. The top-level-lock is the one that counts
-            lock (_unbindListLock)
+            if (IsClosed || IsInvalid)
             {
-                // first let's see if we should go to the list or not
-                if (_noMoreUserThread)
-                {
-                    UnbindLockedList();
-                    handleToUnbind.Unbind();
-                }
-                else
-                {
-                    _unbindList.Add(handleToUnbind); // resurrects handleToUnbind - but it is never a root object bc RequestUnbind is always called above with root.
-                }
+                throw new RealmClosedException("This object belongs to a closed realm.");
             }
         }
     }

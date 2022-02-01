@@ -108,6 +108,11 @@ namespace Realms
         {
             get
             {
+                if (IsClosed)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
@@ -116,25 +121,31 @@ namespace Realms
 
         public override bool CanSnapshot => true;
 
-        public SetHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public SetHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
         public override void Clear()
         {
+            EnsureValid();
+
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override int Count()
         {
+            EnsureValid();
+
             var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -142,6 +153,8 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -150,10 +163,12 @@ namespace Realms
 
         public ResultsHandle ToResults()
         {
+            EnsureValid();
+
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(this, ptr);
+            return new ResultsHandle(Root, ptr);
         }
 
         protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
@@ -161,6 +176,8 @@ namespace Realms
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new SetHandle(frozenRealmHandle, result);
@@ -168,6 +185,8 @@ namespace Realms
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
+            EnsureValid();
+
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
             return new RealmValue(result, realm);
@@ -184,6 +203,8 @@ namespace Realms
 
         public bool Contains(in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.contains_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -193,6 +214,8 @@ namespace Realms
 
         public bool Remove(in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.remove_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -200,7 +223,7 @@ namespace Realms
             return result;
         }
 
-        protected override void Unbind() => NativeMethods.destroy(handle);
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
 
@@ -208,30 +231,40 @@ namespace Realms
 
         public void ExceptWith(CollectionHandleBase other)
         {
+            EnsureValid();
+
             NativeMethods.except_with(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntersectWith(CollectionHandleBase other)
         {
+            EnsureValid();
+
             NativeMethods.intersect_with(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void SymmetricExceptWith(CollectionHandleBase other)
         {
+            EnsureValid();
+
             NativeMethods.symmetric_except_with(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void UnionWith(CollectionHandleBase other)
         {
+            EnsureValid();
+
             NativeMethods.union_with(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public bool IsSubsetOf(CollectionHandleBase other, bool proper)
         {
+            EnsureValid();
+
             var result = NativeMethods.is_subset_of(this, other, proper, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -240,6 +273,8 @@ namespace Realms
 
         public bool IsSupersetOf(CollectionHandleBase other, bool proper)
         {
+            EnsureValid();
+
             var result = NativeMethods.is_superset_of(this, other, proper, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -248,6 +283,8 @@ namespace Realms
 
         public bool Overlaps(CollectionHandleBase other)
         {
+            EnsureValid();
+
             var result = NativeMethods.overlaps(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -256,6 +293,8 @@ namespace Realms
 
         public bool SetEquals(CollectionHandleBase other)
         {
+            EnsureValid();
+
             var result = NativeMethods.set_equals(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
 

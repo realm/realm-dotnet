@@ -27,7 +27,7 @@ namespace Realms
 
         public virtual bool CanSnapshot => false;
 
-        protected CollectionHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
+        protected CollectionHandleBase(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -35,19 +35,23 @@ namespace Realms
 
         public ResultsHandle Snapshot()
         {
+            EnsureValid();
+
             var ptr = SnapshotCore(out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root ?? this, ptr);
+            return new ResultsHandle(Root, ptr);
         }
 
         public ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
         {
+            EnsureValid();
+
             var (primitiveValues, handles) = arguments.ToPrimitiveValues();
             var ptr = GetFilteredResultsCore(query, primitiveValues, out var ex);
             handles.Dispose();
 
             ex.ThrowIfNecessary();
-            return new ResultsHandle(this, ptr);
+            return new ResultsHandle(Root, ptr);
         }
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);

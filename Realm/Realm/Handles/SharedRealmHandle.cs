@@ -32,8 +32,24 @@ using static Realms.RealmConfiguration;
 
 namespace Realms
 {
-    internal class SharedRealmHandle : RealmHandle
+    internal class SharedRealmHandle : StandaloneHandle
     {
+        private readonly object _unbindListLock = new(); // used to serialize calls to unbind between finalizer threads
+
+        // list of children - objects, lists, queries that belong to this Realm. When the Realm handle is closed, we should
+        // invalidate all of them as they can no longer be safely used.
+        private readonly List<WeakReference> _weakChildren = new();
+
+        // list of owned handles that should be unbound as soon as possible by a user thread
+        private readonly List<RealmHandle> _unbindList = new();
+
+        // goes to true when we don't expect more calls from user threads on this handle
+        // is set when we dispose a handle
+        // used when unbinding owned classes, by not using the unbind list but just unbinding them at once (as we cannot interleave with user threads
+        // as there are none left than can access the root class (and its owned classes)
+        // it is important that children always have a reference path to their root for this to work
+        private bool _noMoreUserThread;
+
         private static class NativeMethods
         {
 #pragma warning disable IDE0049 // Use built-in type alias
@@ -239,15 +255,118 @@ namespace Realms
         }
 
         [Preserve]
-        public SharedRealmHandle(IntPtr handle) : base(null, handle)
+        public SharedRealmHandle(IntPtr handle) : base(handle)
         {
         }
 
         public virtual bool OwnsNativeRealm => true;
 
+        protected override bool ReleaseHandle()
+        {
+            if (IsInvalid)
+            {
+                return true;
+            }
+
+            try
+            {
+                Unbind();
+
+                lock (_unbindListLock)
+                {
+                    _noMoreUserThread = true;
+
+                    // this call could interleave with calls from finalizing children in other threads
+                    // but they or we will wait because of the unbindlistlock taken above
+                    UnbindLockedList();
+                }
+
+                foreach (var child in _weakChildren.Where(c => c.IsAlive))
+                {
+                    if (child.Target is RealmHandle childHandle && !childHandle.IsClosed)
+                    {
+                        childHandle.Close();
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                // it would be really bad if we got an exception in here. We must not pass it on, but have to return false
+                return false;
+            }
+        }
+
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        /// <summary>
+        /// Called by children to this root, when they would like to
+        /// be unbound, but are (possibly) running in a finalizer thread
+        /// so it is (possibly) not safe to unbind then directly.
+        /// </summary>
+        /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound.</param>
+        public void RequestUnbind(RealmHandle handleToUnbind)
+        {
+            // You can lock a lock several times inside the same thread. The top-level-lock is the one that counts
+            lock (_unbindListLock)
+            {
+                // If the Realm handle has been closed - either in the finalizer or when the Realm has been disposed,
+                // we should just unbind the child handle immediately. This can happen if a child handle is garbage
+                // collected just as the Realm instance gets disposed. ReleaseHandle will get called on the Realm instance
+                // and we may end up here.
+                if (_noMoreUserThread)
+                {
+                    handleToUnbind.Unbind();
+                }
+                else
+                {
+                    // Child handles are typically garbage collected, so we're likely in a finalizer thread. We transfer
+                    // the child handle ownership to the SharedRealmHandle and we'll unbind it either when a new child
+                    // handle gets added to the Realm or when the Realm itself gets disposed.
+                    _unbindList.Add(handleToUnbind);
+                }
+            }
+        }
+
+        public void AddChild(RealmHandle handle)
+        {
+            _weakChildren.RemoveAll(w => !w.IsAlive);
+            _weakChildren.Add(new WeakReference(handle));
+
+            if (_unbindList.Count == 0)
+            {
+                return;
+            }
+
+            // outside the lock so we may get a really strange value here.
+            // however. If we get 0 and the real value was something else, we will find out inside the lock in unbindlockedlist
+            // if we get !=0 and the real value was in fact 0, then we will just skip and then catch up next time around.
+            // however, doing things this way will save lots and lots of locks when the list is empty, which it should be if people have
+            // been using the dispose pattern correctly, or at least have been eager at disposing as soon as they can
+            // except of course dot notation users that cannot dispose cause they never get a reference in the first place
+            lock (_unbindListLock)
+            {
+                UnbindLockedList();
+            }
+        }
+
+        // only call inside a lock on UnbindListLock
+        private void UnbindLockedList()
+        {
+            // put in here in order to save time otherwise spent looping and clearing an empty list
+            if (_unbindList.Count > 0)
+            {
+                foreach (var realmHandle in _unbindList)
+                {
+                    realmHandle.Unbind();
+                }
+
+                _unbindList.Clear();
+            }
         }
 
         public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
@@ -512,14 +631,14 @@ namespace Realms
         {
             var ptr = NativeMethods.get_session(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SessionHandle(ptr);
+            return new SessionHandle(this, ptr);
         }
 
         public SubscriptionSetHandle GetSubscriptions()
         {
             var ptr = NativeMethods.get_subscriptions(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(ptr);
+            return new SubscriptionSetHandle(this, ptr);
         }
 
         public long GetSubscriptionsVersion()

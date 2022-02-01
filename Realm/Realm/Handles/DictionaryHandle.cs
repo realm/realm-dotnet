@@ -111,37 +111,42 @@ namespace Realms
             }
         }
 
-        public DictionaryHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public DictionaryHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         public override void Clear()
         {
+            EnsureValid();
+
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public NotificationTokenHandle AddKeyNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.add_key_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override int Count()
         {
+            EnsureValid();
+
             var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -149,6 +154,8 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -162,6 +169,8 @@ namespace Realms
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new DictionaryHandle(frozenRealmHandle, result);
@@ -169,6 +178,8 @@ namespace Realms
 
         public bool TryGet(string key, Realm realm, out RealmValue value)
         {
+            EnsureValid();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
             var containsValue = NativeMethods.try_get_value(this, primitiveKey, out var result, out var nativeException);
@@ -187,6 +198,8 @@ namespace Realms
 
         public KeyValuePair<string, TValue> GetValueAtIndex<TValue>(int index, Realm realm)
         {
+            EnsureValid();
+
             NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var ex);
             ex.ThrowIfNecessary();
             var value = new RealmValue(primitiveValue, realm);
@@ -195,6 +208,8 @@ namespace Realms
 
         public void Set(string key, in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, valueHandles) = value.ToNative();
 
             RealmValue keyValue = key;
@@ -208,6 +223,8 @@ namespace Realms
 
         public void Add(string key, in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
 
             RealmValue keyValue = key;
@@ -221,6 +238,8 @@ namespace Realms
 
         public ObjectHandle AddEmbedded(string key)
         {
+            EnsureValid();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -233,6 +252,8 @@ namespace Realms
 
         public ObjectHandle SetEmbedded(string key)
         {
+            EnsureValid();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -245,6 +266,8 @@ namespace Realms
 
         public bool ContainsKey(string key)
         {
+            EnsureValid();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -257,6 +280,8 @@ namespace Realms
 
         public bool Remove(string key)
         {
+            EnsureValid();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -269,6 +294,8 @@ namespace Realms
 
         public bool Remove(string key, in RealmValue value)
         {
+            EnsureValid();
+
             var (primitiveValue, valueHandles) = value.ToNative();
 
             RealmValue keyValue = key;
@@ -285,16 +312,20 @@ namespace Realms
 
         public ResultsHandle GetValues()
         {
+            EnsureValid();
+
             var resultsPtr = NativeMethods.get_values(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root ?? this, resultsPtr);
+            return new ResultsHandle(Root, resultsPtr);
         }
 
         public ResultsHandle GetKeys()
         {
+            EnsureValid();
+
             var resultsPtr = NativeMethods.get_keys(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root ?? this, resultsPtr);
+            return new ResultsHandle(Root, resultsPtr);
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]

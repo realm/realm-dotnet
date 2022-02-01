@@ -29,7 +29,7 @@ using Realms.Sync.Native;
 
 namespace Realms.Sync
 {
-    internal partial class AppHandle : RealmHandle
+    internal partial class AppHandle : StandaloneHandle
     {
         private static readonly List<WeakReference> _appHandles = new List<WeakReference>();
 
@@ -188,7 +188,7 @@ namespace Realms.Sync
                 userLogin, taskCallback, bsonCallback, logMessage, apiKeysCallback);
         }
 
-        internal AppHandle(IntPtr handle) : base(null, handle)
+        internal AppHandle(IntPtr handle) : base(handle)
         {
             EmailPassword = new EmailPasswordApi(this);
 
@@ -320,10 +320,7 @@ namespace Realms.Sync
             return new SyncUserHandle(result);
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        protected override void Unbind() => NativeMethods.destroy(handle);
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
         private static void HandleLogMessage(IntPtr managedHandler, PrimitiveValue messageValue, LogLevel level)

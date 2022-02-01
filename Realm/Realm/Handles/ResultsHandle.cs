@@ -78,6 +78,11 @@ namespace Realms
         {
             get
             {
+                if (IsClosed)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
@@ -86,20 +91,15 @@ namespace Realms
 
         public override bool CanSnapshot => true;
 
-        // keep this one even though warned that it is not used. It is in fact used by marshalling
-        // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
-        public ResultsHandle() : this(null, IntPtr.Zero)
-        {
-        }
-
-        [Preserve]
-        public ResultsHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public ResultsHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
+            EnsureValid();
+
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
             return new RealmValue(result, realm);
@@ -107,6 +107,8 @@ namespace Realms
 
         public override int Count()
         {
+            EnsureValid();
+
             var result = NativeMethods.count(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -114,35 +116,45 @@ namespace Realms
 
         public void Clear(SharedRealmHandle realmHandle)
         {
+            EnsureValid();
+
             NativeMethods.clear(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public QueryHandle GetQuery()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new QueryHandle(Root ?? this, result);
+            return new QueryHandle(Root, result);
         }
 
         public SortDescriptorHandle GetSortDescriptor()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_sort_descriptor(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new SortDescriptorHandle(Root ?? this, result);
+            return new SortDescriptorHandle(Root, result);
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -151,6 +163,8 @@ namespace Realms
 
         public int Find(in RealmValue value)
         {
+            EnsureValid();
+
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -160,6 +174,8 @@ namespace Realms
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureValid();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(frozenRealmHandle, result);
@@ -172,6 +188,6 @@ namespace Realms
         protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
             => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
-        protected override void Unbind() => NativeMethods.destroy(handle);
+        public override void Unbind() => NativeMethods.destroy(handle);
     }
 }

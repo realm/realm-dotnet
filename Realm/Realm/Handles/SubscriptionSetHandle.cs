@@ -120,14 +120,15 @@ namespace Realms.Sync
 
         public bool IsReadonly { get; }
 
-        [Preserve]
-        public SubscriptionSetHandle(IntPtr handle, bool isReadonly = true) : base(null, handle)
+        public SubscriptionSetHandle(SharedRealmHandle root, IntPtr handle, bool isReadonly = true) : base(root, handle)
         {
             IsReadonly = isReadonly;
         }
 
         public int GetCount()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_count(this, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -135,6 +136,8 @@ namespace Realms.Sync
 
         public SubscriptionSetState GetState()
         {
+            EnsureValid();
+
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
@@ -142,6 +145,8 @@ namespace Realms.Sync
 
         public long GetVersion()
         {
+            EnsureValid();
+
             var result = NativeMethods.get_version(this, out var ex);
             ex.ThrowIfNecessary();
             return result;
@@ -149,36 +154,63 @@ namespace Realms.Sync
 
         public string GetErrorMessage()
         {
+            EnsureValid();
+
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
                 NativeMethods.get_error_message(this, buffer, length, out isNull, out ex));
         }
 
         public SubscriptionSetHandle BeginWrite()
         {
+            EnsureValid();
+
             var result = NativeMethods.begin_write(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(result, isReadonly: false);
+            return new SubscriptionSetHandle(Root, result, isReadonly: false);
         }
 
         public SubscriptionSetHandle CommitWrite()
         {
+            EnsureValid();
+
             var result = NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new SubscriptionSetHandle(result, isReadonly: true);
+            return new SubscriptionSetHandle(Root, result, isReadonly: true);
         }
 
-        public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
+        public Subscription GetAtIndex(int index)
+        {
+            EnsureValid();
 
-        public Subscription Find(string name) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
+        }
 
-        public Subscription Find(ResultsHandle results) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_query(this, results, callback, out ex));
+        public Subscription Find(string name)
+        {
+            EnsureValid();
+
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
+        }
+
+        public Subscription Find(ResultsHandle results)
+        {
+            EnsureValid();
+
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_query(this, results, callback, out ex));
+        }
 
         public Subscription Add(ResultsHandle results, SubscriptionOptions options)
-            => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
+        {
+            EnsureValid();
+
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
+        }
 
         public bool Remove(string name)
         {
+            EnsureValid();
+
             var result = NativeMethods.remove(this, name, name.IntPtrLength(), out var ex);
             ex.ThrowIfNecessary();
             return result;
@@ -186,6 +218,8 @@ namespace Realms.Sync
 
         public bool Remove(ObjectId id)
         {
+            EnsureValid();
+
             var subId = PrimitiveValue.ObjectId(id);
             var result = NativeMethods.remove(this, subId, out var ex);
             ex.ThrowIfNecessary();
@@ -194,6 +228,8 @@ namespace Realms.Sync
 
         public int Remove(ResultsHandle results, bool removeNamed)
         {
+            EnsureValid();
+
             var result = NativeMethods.remove(this, results, removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -201,6 +237,8 @@ namespace Realms.Sync
 
         public int RemoveAll(string type, bool removeNamed)
         {
+            EnsureValid();
+
             var result = NativeMethods.remove_by_type(this, type, type.IntPtrLength(), removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -208,6 +246,8 @@ namespace Realms.Sync
 
         public int RemoveAll(bool removeNamed)
         {
+            EnsureValid();
+
             var result = NativeMethods.remove_all(this, removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -215,6 +255,8 @@ namespace Realms.Sync
 
         public async Task<SubscriptionSetState> WaitForStateChangeAsync()
         {
+            EnsureValid();
+
             var tcs = new TaskCompletionSource<SubscriptionSetState>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
@@ -249,7 +291,7 @@ namespace Realms.Sync
             return result;
         }
 
-        protected override void Unbind()
+        public override void Unbind()
         {
             if (IsReadonly)
             {
