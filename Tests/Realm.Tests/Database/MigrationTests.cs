@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -407,6 +406,60 @@ namespace Realms.Tests.Database
             };
 
             using var realm = GetRealm(newRealmConfig);
+        }
+
+        [Test]
+        public void Migration_NewRealm_Remove()
+        {
+            // Reported in https://github.com/realm/realm-dotnet/issues/2587
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
+
+            using (var realm = GetRealm())
+            {
+                realm.Write(() =>
+                {
+                    for (var i = 0; i < 10; i++)
+                    {
+                        realm.Add(new IntPropertyObject
+                        {
+                            Int = i
+                        });
+
+                        realm.Add(new RequiredStringObject
+                        {
+                            String = i.ToString()
+                        });
+                    }
+                });
+            }
+
+            var config2 = config.ConfigWithPath(config.DatabasePath);
+            config2.SchemaVersion = 1;
+            config2.MigrationCallback = (migration, oldSchemaVersion) =>
+            {
+                Assert.That(oldSchemaVersion, Is.EqualTo(0));
+
+                var intObjects = migration.NewRealm.All<IntPropertyObject>();
+                var stringObjects = migration.NewRealm.All<RequiredStringObject>();
+
+                // Delete all even values
+                for (var i = 0; i < 10; i += 2)
+                {
+                    var intObject = intObjects.Single(o => o.Int == i);
+                    var stringObject = stringObjects.Single(o => o.String == i.ToString());
+
+                    migration.NewRealm.Remove(intObject);
+                    migration.NewRealm.Remove(stringObject);
+                }
+            };
+
+            // same path, different version, should auto-migrate quietly
+            using var realm2 = GetRealm(config2);
+
+            var expected = new[] { 1, 3, 5, 7, 9 };
+
+            Assert.That(realm2.All<IntPropertyObject>().ToArray().Select(o => o.Int), Is.EqualTo(expected));
+            Assert.That(realm2.All<RequiredStringObject>().ToArray().Select(o => int.Parse(o.String)), Is.EqualTo(expected));
         }
     }
 }
