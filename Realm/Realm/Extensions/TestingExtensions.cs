@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
 using Realms.Exceptions.Sync;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
@@ -49,13 +48,28 @@ namespace Realms.Sync.Testing
         }
 
         /// <summary>
+        /// Simulates a client reset.
+        /// </summary>
+        /// <param name="session">The session where the simulated client reset will occur.</param>
+        /// <param name="message">Error message.</param>
+        /// <remarks>
+        /// You still need to set up a Realm integration testing environment, namely a testing app to connect to.
+        /// </remarks>
+        public static void SimulateClientReset(this Session session, string message)
+        {
+            Argument.NotNull(session, nameof(session));
+            Argument.NotNull(message, nameof(message));
+
+            session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false);
+        }
+
+        /// <summary>
         /// Simulates a client error.
         /// </summary>
         /// <param name="session">The session where the simulated error will occur.</param>
         /// <param name="errorCode">Client error code.</param>
         /// <param name="message">Error message.</param>
         /// <param name="isFatal">If set to <c>true</c> the error will be marked as fatal.</param>
-        // [InternalsVisibleTo("Realm.Tests")]
         internal static void SimulateError(this Session session, ClientError errorCode, string message, bool isFatal = false)
         {
             Argument.NotNull(session, nameof(session));

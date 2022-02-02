@@ -131,9 +131,8 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realm = await GetRealmAsync(config);
-                var session = GetSession(realm);
 
-                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+                GetSession(realm).SimulateClientReset("simulated client reset");
 
                 await tcs.Task;
 
@@ -206,9 +205,8 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realm = await GetRealmAsync(config);
-                var session = GetSession(realm);
 
-                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+                GetSession(realm).SimulateClientReset("simulated client reset");
 
                 await tcs.Task;
 
@@ -252,9 +250,8 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realm = await GetRealmAsync(config);
-                var session = GetSession(realm);
 
-                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+                GetSession(realm).SimulateClientReset("simulated client reset");
 
                 await tcs.Task;
 
@@ -302,9 +299,8 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realm = await GetRealmAsync(config);
-                var session = GetSession(realm);
 
-                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+                GetSession(realm).SimulateClientReset("simulated client reset");
 
                 await tcs.Task;
 
@@ -380,7 +376,7 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 };
 
-                session.SimulateError(ErrorCode.DivergingHistories, "simulated client reset");
+                session.SimulateClientReset("simulated client reset");
 
                 await tcs.Task;
 
