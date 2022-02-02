@@ -37,5 +37,9 @@ namespace Realms.Sync.ErrorHandling
         /// The specific <see cref="ClientResetException"/> that holds useful data to be used when trying to manually recover from a client reset.
         /// </param>
         public delegate void ClientResetCallback(Session session, ClientResetException clientResetException);
+
+        internal ClientResetHandlerBase()
+        {
+        }
     }
 }

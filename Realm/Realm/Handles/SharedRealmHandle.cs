@@ -49,7 +49,7 @@ namespace Realms
             public delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, NativeException ex);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void OnBindingContextDestructedCallback(IntPtr handle);
+            public delegate void DisposeGCHandleCallback(IntPtr handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
@@ -160,7 +160,7 @@ namespace Realms
                 NotifyRealmCallback notify_realm_callback,
                 GetNativeSchemaCallback native_schema_callback,
                 OpenRealmCallback open_callback,
-                OnBindingContextDestructedCallback context_destructed_callback,
+                DisposeGCHandleCallback dispose_gchandle_callback,
                 LogMessageCallback log_message_callback,
                 NotifiableObjectHandleBase.NotificationCallback notify_object,
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
@@ -218,7 +218,7 @@ namespace Realms
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
-            NativeMethods.OnBindingContextDestructedCallback onBindingContextDestructed = OnBindingContextDestructed;
+            NativeMethods.DisposeGCHandleCallback onBindingContextDestructed = DisposeGCHandleCallback;
             NativeMethods.LogMessageCallback logMessage = LogMessage;
             NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
@@ -563,8 +563,8 @@ namespace Realms
             }
         }
 
-        [MonoPInvokeCallback(typeof(NativeMethods.OnBindingContextDestructedCallback))]
-        public static void OnBindingContextDestructed(IntPtr handle)
+        [MonoPInvokeCallback(typeof(NativeMethods.DisposeGCHandleCallback))]
+        public static void DisposeGCHandleCallback(IntPtr handle)
         {
             if (handle != IntPtr.Zero)
             {

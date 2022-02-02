@@ -21,6 +21,17 @@ using System;
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
+    /// Callback triggered when an error occurs in a session.
+    /// </summary>
+    /// <param name="session">
+    /// The <see cref="Session"/> where the error happened on.
+    /// </param>
+    /// <param name="error">
+    /// The specific <see cref="SessionException"/> occurred on this <see cref="Session"/>.
+    /// </param>
+    public delegate void SessionErrorCallback(Session session, SessionException error);
+
+    /// <summary>
     /// An exception type that describes a session-level error condition.
     /// </summary>
     public class SessionException : Exception

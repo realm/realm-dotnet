@@ -19,6 +19,7 @@
 using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Realms.Exceptions.Sync;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
@@ -175,7 +176,7 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
 
-                GetSession(realm).SimulateError(ErrorCode.AutoClientResetFailed_Cl, "simulated client reset failure");
+                GetSession(realm).SimulateError(ClientError.AutoClientResetFailed, "simulated client reset failure");
 
                 await tcs.Task;
 
@@ -321,16 +322,13 @@ namespace Realms.Tests.Sync
                 var sessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
-                config.SyncErrorHandler = new SyncErrorHandler
+                config.OnSessionError = (sender, e) =>
                 {
-                    OnError = (sender, e) =>
-                    {
-                        Assert.IsInstanceOf<Session>(sender);
-                        Assert.IsInstanceOf<SessionException>(e);
-                        Assert.IsFalse(sessionErrorTriggered);
-                        sessionErrorTriggered = true;
-                        tcs.TrySetResult(true);
-                    }
+                    Assert.IsInstanceOf<Session>(sender);
+                    Assert.IsInstanceOf<SessionException>(e);
+                    Assert.IsFalse(sessionErrorTriggered);
+                    sessionErrorTriggered = true;
+                    tcs.TrySetResult(true);
                 };
 
                 using var realm = await GetRealmAsync(config);
@@ -402,16 +400,13 @@ namespace Realms.Tests.Sync
                 var sessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
-                config.SyncErrorHandler = new SyncErrorHandler
+                config.OnSessionError = (sender, e) =>
                 {
-                    OnError = (sender, e) =>
-                    {
-                        Assert.IsInstanceOf<Session>(sender);
-                        Assert.IsInstanceOf<SessionException>(e);
-                        Assert.IsFalse(sessionErrorTriggered);
-                        sessionErrorTriggered = true;
-                        tcs.TrySetResult(true);
-                    }
+                    Assert.IsInstanceOf<Session>(sender);
+                    Assert.IsInstanceOf<SessionException>(e);
+                    Assert.IsFalse(sessionErrorTriggered);
+                    sessionErrorTriggered = true;
+                    tcs.TrySetResult(true);
                 };
 
                 using var realm = await GetRealmAsync(config);
@@ -431,6 +426,21 @@ namespace Realms.Tests.Sync
                 Assert.IsFalse(obsoleteSessionErrorTriggered);
                 Assert.IsTrue(sessionErrorTriggered);
             });
+        }
+
+        [Test]
+        public void Test_SyncConfigRelease()
+        {
+            WeakReference weakConfigRef = null;
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                    weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
+                    using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
+                    var session = GetSession(realm);
+                    // config, open realm, close realm, dispose app, reset for testing
+            });
+            GC.Collect();
+            Assert.IsNull((PartitionSyncConfiguration)weakConfigRef.Target);
         }
 
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
@@ -571,7 +581,7 @@ namespace Realms.Tests.Sync
             Assert.Throws<ObjectDisposedException>(() => _ = session.Equals(session));
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForDownloadAsync());
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForUploadAsync());
-            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, string.Empty, "test", false));
+            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, SessionErrorCategory.SessionError, "test", false));
 
             // Calling CloseHandle multiple times should be fine
             session.CloseHandle();

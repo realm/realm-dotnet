@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
 using Realms.Sync.ErrorHandling;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -48,9 +49,11 @@ namespace Realms.Sync
         public ClientResetHandlerBase ClientResetHandler { get; set; }
 
         /// <summary>
-        /// Gets or sets a callback to handle errors that happen on a session of a syncronized Realm.
+        /// Gets or sets the user callback to handle all the <see cref="SessionException"/>s that could happen on a synchronized Realm.
+        /// To be noted that a client reset is not a sync error and in order to handle that subclasses of <see cref="ClientResetHandlerBase"/> are available.
         /// </summary>
-        public SyncErrorHandler SyncErrorHandler { get; set; }
+        /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
+        public SessionErrorCallback OnSessionError { get; set; }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 

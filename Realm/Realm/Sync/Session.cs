@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Realms.Exceptions.Sync;
 
 namespace Realms.Sync
 {
@@ -186,6 +187,6 @@ namespace Realms.Sync
             }
         }
 
-        internal void ReportErrorForTesting(int errorCode, string errorCategory, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorCategory, errorMessage, isFatal);
+        internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal);
     }
 }

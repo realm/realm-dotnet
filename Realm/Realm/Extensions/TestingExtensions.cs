@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
+using System.Runtime.CompilerServices;
+using Realms.Exceptions.Sync;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
 
@@ -44,13 +45,23 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            var errorCategory = string.Empty;
-            if (errorCode.ToString().EndsWith("_Cl", StringComparison.Ordinal))
-            {
-                errorCategory = "ClientCategory";
-            }
+            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.SessionError, message, isFatal);
+        }
 
-            session.ReportErrorForTesting((int)errorCode, errorCategory, message, isFatal);
+        /// <summary>
+        /// Simulates a client error.
+        /// </summary>
+        /// <param name="session">The session where the simulated error will occur.</param>
+        /// <param name="errorCode">Client error code.</param>
+        /// <param name="message">Error message.</param>
+        /// <param name="isFatal">If set to <c>true</c> the error will be marked as fatal.</param>
+        // [InternalsVisibleTo("Realm.Tests")]
+        internal static void SimulateError(this Session session, ClientError errorCode, string message, bool isFatal = false)
+        {
+            Argument.NotNull(session, nameof(session));
+            Argument.NotNull(message, nameof(message));
+
+            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.ClientError, message, isFatal);
         }
     }
 }

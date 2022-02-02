@@ -26,7 +26,7 @@ namespace Realms.Sync.ErrorHandling
     /// For more information see <see cref="ClientResetHandlerBase"/>.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
-    public class DiscardLocalResetHandler : ClientResetHandlerBase
+    public sealed class DiscardLocalResetHandler : ClientResetHandlerBase
     {
         /// <summary>
         /// Callback that indicates a Client Reset is about to happen.

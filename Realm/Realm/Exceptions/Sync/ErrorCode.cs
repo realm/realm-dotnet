@@ -18,15 +18,6 @@
 
 namespace Realms.Sync.Exceptions
 {
-    // ATTENTION: given that managed does not differentiate errors by category like core does,
-    // a special signature is given to indicate what category each error belongs to in core.
-    // Such signature is, for now, only understood by TestingExtensions::SimulateError.
-    // It's important to keep consistency.
-    // * _Cl -> for client_base::ClientError
-    //
-    // Because of legacy the error codes that don't have any signature are assumed to be part of protocol::ProtocolError.
-    // This may be wrong and for consistency all ErrorCode should have the right signature
-
     /// <summary>
     /// Error code enumeration, indicating the type of the session error.
     /// </summary>
@@ -37,11 +28,6 @@ namespace Realms.Sync.Exceptions
         /// Unrecognized error code. It usually indicates incompatibility between the authentication server and client SDK versions.
         /// </summary>
         Unknown = -1,
-
-        /// <summary>
-        /// A fatal error was encountered which prevents the completion of a client reset.
-        /// </summary>
-        AutoClientResetFailed_Cl = 132,
 
         /// <summary>
         /// Session has been closed (no error).

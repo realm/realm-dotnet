@@ -23,7 +23,7 @@ namespace Realms.Sync.ErrorHandling
     /// For more information see <see cref="ClientResetHandlerBase"/>.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
-    public class ManualRecoveryHandler : ClientResetHandlerBase
+    public sealed class ManualRecoveryHandler : ClientResetHandlerBase
     {
         /// <summary>
         /// Gets or sets thecallback that indicates a Client Reset has happened.
