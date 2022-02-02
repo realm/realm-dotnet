@@ -49,6 +49,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern SessionState get_state(SessionHandle session, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_connection_state", CallingConvention = CallingConvention.Cdecl)]
+            public static extern SessionConnectionState get_connection_state(SessionHandle session, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_path", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path(SessionHandle session, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -122,6 +125,13 @@ namespace Realms.Sync
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
+        }
+
+        public SessionConnectionState GetConnectionState()
+        {
+            var connectionState = NativeMethods.get_connection_state(this, out var ex);
+            ex.ThrowIfNecessary();
+            return connectionState;
         }
 
         public string GetPath()

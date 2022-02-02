@@ -43,6 +43,12 @@ namespace Realms.Sync
         public SessionState State => Handle.GetState();
 
         /// <summary>
+        /// Gets the session’s current connection state.
+        /// </summary>
+        /// <value>An enum value indicating the connection state of the session.</value>
+        public SessionConnectionState ConnectionState => Handle.GetConnectionState();
+
+        /// <summary>
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to MongoDB Realm.
         /// </summary>
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfigurationBase"/>.</value>

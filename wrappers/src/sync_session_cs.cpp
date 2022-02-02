@@ -82,6 +82,13 @@ REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSess
     });
 }
 
+REALM_EXPORT SyncSession::ConnectionState realm_syncsession_get_connection_state(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return session->connection_state();
+    });
+}
+
 REALM_EXPORT size_t realm_syncsession_get_path(const SharedSyncSession& session, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {

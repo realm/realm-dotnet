@@ -222,6 +222,26 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Session_ConnectionStart()
+        {
+            SyncTestHelpers.RunBaasTestAsync(() =>
+            {
+                var session = OpenRealmAndStopSession();
+
+                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+
+                session.Start();
+                //Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+
+                while (session.ConnectionState != SessionConnectionState.Connected)
+                {
+
+                }
+                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+            });
+        }
+
+        [Test]
         public void Session_WhenDisposed_MethodsThrow()
         {
             var session = OpenRealmAndStopSession();
