@@ -222,21 +222,48 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ConnectionStart()
+        public void Session_ConnectionState_Connected_AtStart()
         {
-            SyncTestHelpers.RunBaasTestAsync(() =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var session = OpenRealmAndStopSession();
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
 
+                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+            });
+        }
+
+        [Test]
+        public void Session_ConnectionState_Disconnected_AtStop()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
+
+                session.Stop();
                 Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+            });
+        }
 
+        [Test]
+        [Ignore("Ignore this test until subscription to connection state change is available")]
+        public void Session_ConnectionState_Connecting_AtRestart()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
+
+                session.Stop();
                 session.Start();
-                //Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
 
-                while (session.ConnectionState != SessionConnectionState.Connected)
-                {
+                // at this point it should subscribe for state change to check first "connecting" and then "connected
+                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
 
-                }
                 Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
             });
         }
