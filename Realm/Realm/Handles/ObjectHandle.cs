@@ -116,7 +116,7 @@ namespace Realms
 
         public bool ObjEquals(ObjectHandle other)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.equals_object(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -126,7 +126,7 @@ namespace Realms
 
         public int GetObjHash()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.get_hashcode(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -138,7 +138,7 @@ namespace Realms
 
         public RealmValue GetValue(string propertyName, RealmObjectBase.Metadata metadata, Realm realm)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
@@ -149,7 +149,7 @@ namespace Realms
 
         public RealmSchema GetSchema()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             RealmSchema result = null;
             Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
@@ -170,7 +170,7 @@ namespace Realms
 
         public void SetValue(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value, Realm realm)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
 
@@ -202,7 +202,7 @@ namespace Realms
 
         public long AddInt64(IntPtr propertyIndex, long value)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.add_int64(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -211,7 +211,7 @@ namespace Realms
 
         public void SetValueUnique(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
 
@@ -229,7 +229,7 @@ namespace Realms
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             NativeMethods.remove(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -237,7 +237,7 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
@@ -250,7 +250,7 @@ namespace Realms
 
         public RealmSet<T> GetSet<T>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
@@ -263,7 +263,7 @@ namespace Realms
 
         public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
@@ -276,7 +276,7 @@ namespace Realms
 
         public ObjectHandle CreateEmbeddedObjectForProperty(string propertyName, RealmObjectBase.Metadata metadata)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
@@ -286,7 +286,7 @@ namespace Realms
 
         public ResultsHandle GetBacklinks(string propertyName, RealmObjectBase.Metadata metadata)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
@@ -297,7 +297,7 @@ namespace Realms
 
         public ResultsHandle GetBacklinksForType(TableKey tableKey, string propertyName, RealmObjectBase.Metadata metadata)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
@@ -308,7 +308,7 @@ namespace Realms
 
         public int GetBacklinkCount()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.get_backlink_count(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -317,7 +317,7 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -327,7 +327,7 @@ namespace Realms
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -336,7 +336,7 @@ namespace Realms
 
         public ObjectHandle Freeze(SharedRealmHandle frozenRealmHandle)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();

@@ -154,9 +154,9 @@ namespace Realms
             return base.ToString() + handle.ToInt64().ToString("x8", CultureInfo.InvariantCulture);
         }
 
-        protected void EnsureValid()
+        protected void EnsureIsOpen()
         {
-            if (IsClosed || IsInvalid)
+            if (Root?.IsClosed == true || IsClosed)
             {
                 throw new RealmClosedException("This object belongs to a closed realm.");
             }

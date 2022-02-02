@@ -35,7 +35,7 @@ namespace Realms
 
         public ResultsHandle Snapshot()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var ptr = SnapshotCore(out var ex);
             ex.ThrowIfNecessary();
@@ -44,7 +44,7 @@ namespace Realms
 
         public ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var (primitiveValues, handles) = arguments.ToPrimitiveValues();
             var ptr = GetFilteredResultsCore(query, primitiveValues, out var ex);

@@ -36,10 +36,6 @@ namespace Realms
     {
         private readonly object _unbindListLock = new(); // used to serialize calls to unbind between finalizer threads
 
-        // list of children - objects, lists, queries that belong to this Realm. When the Realm handle is closed, we should
-        // invalidate all of them as they can no longer be safely used.
-        private readonly List<WeakReference> _weakChildren = new();
-
         // list of owned handles that should be unbound as soon as possible by a user thread
         private readonly List<RealmHandle> _unbindList = new();
 
@@ -281,14 +277,6 @@ namespace Realms
                     UnbindLockedList();
                 }
 
-                foreach (var child in _weakChildren.Where(c => c.IsAlive))
-                {
-                    if (child.Target is RealmHandle childHandle && !childHandle.IsClosed)
-                    {
-                        childHandle.Close();
-                    }
-                }
-
                 return true;
             }
             catch
@@ -332,11 +320,8 @@ namespace Realms
             }
         }
 
-        public void AddChild(RealmHandle handle)
+        public virtual void AddChild(RealmHandle handle)
         {
-            _weakChildren.RemoveAll(w => !w.IsAlive);
-            _weakChildren.Add(new WeakReference(handle));
-
             if (_unbindList.Count == 0)
             {
                 return;

@@ -127,7 +127,7 @@ namespace Realms.Sync
 
         public int GetCount()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.get_count(this, out var ex);
             ex.ThrowIfNecessary();
@@ -136,7 +136,7 @@ namespace Realms.Sync
 
         public SubscriptionSetState GetState()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
@@ -145,7 +145,7 @@ namespace Realms.Sync
 
         public long GetVersion()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.get_version(this, out var ex);
             ex.ThrowIfNecessary();
@@ -154,7 +154,7 @@ namespace Realms.Sync
 
         public string GetErrorMessage()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
                 NativeMethods.get_error_message(this, buffer, length, out isNull, out ex));
@@ -162,7 +162,7 @@ namespace Realms.Sync
 
         public SubscriptionSetHandle BeginWrite()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.begin_write(this, out var ex);
             ex.ThrowIfNecessary();
@@ -171,7 +171,7 @@ namespace Realms.Sync
 
         public SubscriptionSetHandle CommitWrite()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
@@ -181,35 +181,35 @@ namespace Realms.Sync
 
         public Subscription GetAtIndex(int index)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
         }
 
         public Subscription Find(string name)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
         }
 
         public Subscription Find(ResultsHandle results)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_query(this, results, callback, out ex));
         }
 
         public Subscription Add(ResultsHandle results, SubscriptionOptions options)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
         }
 
         public bool Remove(string name)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.remove(this, name, name.IntPtrLength(), out var ex);
             ex.ThrowIfNecessary();
@@ -218,7 +218,7 @@ namespace Realms.Sync
 
         public bool Remove(ObjectId id)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var subId = PrimitiveValue.ObjectId(id);
             var result = NativeMethods.remove(this, subId, out var ex);
@@ -228,7 +228,7 @@ namespace Realms.Sync
 
         public int Remove(ResultsHandle results, bool removeNamed)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.remove(this, results, removeNamed, out var ex);
             ex.ThrowIfNecessary();
@@ -237,7 +237,7 @@ namespace Realms.Sync
 
         public int RemoveAll(string type, bool removeNamed)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.remove_by_type(this, type, type.IntPtrLength(), removeNamed, out var ex);
             ex.ThrowIfNecessary();
@@ -246,7 +246,7 @@ namespace Realms.Sync
 
         public int RemoveAll(bool removeNamed)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.remove_all(this, removeNamed, out var ex);
             ex.ThrowIfNecessary();
@@ -255,7 +255,7 @@ namespace Realms.Sync
 
         public async Task<SubscriptionSetState> WaitForStateChangeAsync()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var tcs = new TaskCompletionSource<SubscriptionSetState>();
             var tcsHandle = GCHandle.Alloc(tcs);

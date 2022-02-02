@@ -95,7 +95,7 @@ namespace Realms
         {
             get
             {
-                if (IsClosed)
+                if (IsClosed || Root?.IsClosed == true)
                 {
                     return false;
                 }
@@ -114,7 +114,7 @@ namespace Realms
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
@@ -123,7 +123,7 @@ namespace Realms
 
         public void Add(in RealmValue value)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var (primitive, handles) = value.ToNative();
             NativeMethods.add_value(this, primitive, out var nativeException);
@@ -133,7 +133,7 @@ namespace Realms
 
         public ObjectHandle AddEmbedded()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.add_embedded(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -142,7 +142,7 @@ namespace Realms
 
         public void Set(int targetIndex, in RealmValue value)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var (primitive, handles) = value.ToNative();
             NativeMethods.set_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
@@ -152,7 +152,7 @@ namespace Realms
 
         public ObjectHandle SetEmbedded(int targetIndex)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -161,7 +161,7 @@ namespace Realms
 
         public void Insert(int targetIndex, in RealmValue value)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var (primitive, handles) = value.ToNative();
             NativeMethods.insert_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
@@ -171,7 +171,7 @@ namespace Realms
 
         public ObjectHandle InsertEmbedded(int targetIndex)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -180,7 +180,7 @@ namespace Realms
 
         public int Find(in RealmValue value)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);
@@ -191,7 +191,7 @@ namespace Realms
 
         public void Erase(IntPtr rowIndex)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             NativeMethods.erase(this, rowIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -199,7 +199,7 @@ namespace Realms
 
         public override void Clear()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -207,7 +207,7 @@ namespace Realms
 
         public void Move(IntPtr sourceIndex, IntPtr targetIndex)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             NativeMethods.move(this, sourceIndex, targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -215,7 +215,7 @@ namespace Realms
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -224,7 +224,7 @@ namespace Realms
 
         public override int Count()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -233,7 +233,7 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -243,7 +243,7 @@ namespace Realms
 
         public ResultsHandle ToResults()
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
@@ -253,7 +253,7 @@ namespace Realms
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
-            EnsureValid();
+            EnsureIsOpen();
 
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();

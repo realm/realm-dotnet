@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 
 namespace Realms
 {
@@ -24,15 +25,49 @@ namespace Realms
     // in the object store migration callback
     internal class UnownedRealmHandle : SharedRealmHandle
     {
+        private readonly List<WeakReference<RealmHandle>> _weakChildren = new();
+
         public UnownedRealmHandle(IntPtr handle) : base(handle)
         {
         }
 
         public override bool OwnsNativeRealm => false;
 
+        public override void AddChild(RealmHandle handle)
+        {
+            base.AddChild(handle);
+
+            _weakChildren.Add(new(handle));
+        }
+
         protected override void Unbind()
         {
             // do nothing - we don't own this, so we don't need to clean up
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            if (!base.ReleaseHandle())
+            {
+                return false;
+            }
+
+            try
+            {
+                foreach (var child in _weakChildren)
+                {
+                    if (child.TryGetTarget(out var childHandle) && !childHandle.IsClosed)
+                    {
+                        childHandle.Close();
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

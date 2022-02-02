@@ -819,7 +819,6 @@ namespace Realms.Tests.Database
 
                 Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
                 Assert.That(changeEvent.Sender.IsValid, Is.False);
-                Assert.That(changeEvent.Sender.Count, Is.Zero);
             });
         }
 
