@@ -47,7 +47,7 @@ namespace Realms.Sync
         /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
         /// The default is <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after callbacks.
         /// </summary>
-        public ClientResetHandlerBase ClientResetHandler { get; set; }
+        public virtual ClientResetHandlerBase ClientResetHandler { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that will be invoked whenever <see cref="SessionException"/> occurs for the synchronized Realm.

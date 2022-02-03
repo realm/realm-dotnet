@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Sync;
+using Realms.Sync.ErrorHandling;
 
 namespace Realms.Tests.Sync
 {
@@ -77,6 +78,13 @@ namespace Realms.Tests.Sync
             file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists);
             Assert.That(config.DatabasePath, Is.EqualTo(path));
+        }
+
+        [Test]
+        public void FlexibleSyncConfiguration_throws_When_Assigned_DiscardLocalResetHandler()
+        {
+            var conf = GetFakeFLXConfig();
+            Assert.That(() => { conf.ClientResetHandler = new DiscardLocalResetHandler(); }, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

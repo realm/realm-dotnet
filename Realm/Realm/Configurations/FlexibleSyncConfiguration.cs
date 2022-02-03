@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics.CodeAnalysis;
+using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
 {
@@ -50,6 +52,32 @@ namespace Realms.Sync
             var config = base.CreateNativeSyncConfiguration();
             config.is_flexible_sync = true;
             return config;
+        }
+
+        /// <summary>
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm.
+        /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
+        /// The default is <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after callbacks.
+        /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// Flexible sync is still in beta, so at the moment <see cref="DiscardLocalResetHandler"/> is not supported.
+        /// </exception>
+        public override ClientResetHandlerBase ClientResetHandler
+        {
+            get
+            {
+                return base.ClientResetHandler;
+            }
+
+            set
+            {
+                if (value is DiscardLocalResetHandler)
+                {
+                    throw new NotSupportedException($"Flexible sync does not yet support {nameof(DiscardLocalResetHandler)}");
+                }
+
+                base.ClientResetHandler = value;
+            }
         }
     }
 }
