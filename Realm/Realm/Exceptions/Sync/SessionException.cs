@@ -27,7 +27,7 @@ namespace Realms.Sync.Exceptions
     /// The <see cref="Session"/> where the error occurred.
     /// </param>
     /// <param name="error">
-    /// The specific <see cref="SessionException"/> occurred on this <see cref="Session"/>.
+    /// The <see cref="SessionException"/> that was raised by the <see paramref="session"/>.
     /// </param>
     public delegate void SessionErrorCallback(Session session, SessionException error);
 
