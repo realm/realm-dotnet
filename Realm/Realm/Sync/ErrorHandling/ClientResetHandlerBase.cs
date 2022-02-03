@@ -21,8 +21,9 @@ using Realms.Sync.Exceptions;
 namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
-    /// In order to specify what strategy to use when a client reset happens, instanciate a subclass of <see cref="ClientResetHandlerBase"/>
-    /// and assign it to the chosen subclass of <see cref="SyncConfigurationBase"/> to its <see cref="SyncConfigurationBase.ClientResetHandler"/> field.
+    /// The base class for the different client reset handler types. The possible implementations are <see cref="DiscardLocalResetHandler"/> and <see cref="ManualResetHandler"/>.
+    /// To use either of them, create a new instance and assign it to <see cref="SyncConfigurationBase.ClientResetHandler"/> on the configuration
+    /// you use to open the synchronized <see cref="Realm"/> instance.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
     public abstract class ClientResetHandlerBase
