@@ -88,6 +88,8 @@ namespace Realms
         /// </summary>
         public abstract void Unbind();
 
+        public virtual bool ForceRootOwnership => false;
+
         public override bool IsInvalid => handle == IntPtr.Zero;
 
         /// <summary>

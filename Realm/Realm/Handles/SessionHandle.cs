@@ -84,6 +84,8 @@ namespace Realms.Sync
             public static extern void start(SessionHandle session, out NativeException ex);
         }
 
+        public override bool ForceRootOwnership => true;
+
         [Preserve]
         public SessionHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {

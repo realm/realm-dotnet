@@ -511,19 +511,15 @@ namespace Realms.Tests.Sync
         [Test]
         public void RealmDispose_ClosesSessions()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var realm = await GetIntegrationRealmAsync();
-                var session = realm.SyncSession;
-                realm.Dispose();
+            var config = GetFakeConfig();
+            var realm = GetRealm(config);
+            var session = GetSession(realm);
+            realm.Dispose();
 
-                await Task.Delay(100);
+            Assert.That(session.IsClosed);
 
-                Assert.That(session.IsClosed);
-
-                // Dispose should close the session and allow us to delete the Realm.
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
-            });
+            // Dispose should close the session and allow us to delete the Realm.
+            Assert.That(DeleteRealmWithRetries(realm), Is.True);
         }
 
         private const int DummyDataSize = 100;

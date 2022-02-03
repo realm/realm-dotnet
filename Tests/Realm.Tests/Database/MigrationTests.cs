@@ -469,35 +469,38 @@ namespace Realms.Tests.Database
                 }
             };
 
-            using var newRealm = Realm.GetInstance(newConfig);
+            using (var newRealm = Realm.GetInstance(newConfig))
+            {
+                // Here we should see all objects accessed during the migration get disposed, even though
+                // newRealm is still open.
+                Assert.That(standaloneObject.IsValid, Is.False);
+                Assert.That(standaloneObject.IsManaged);
+                Assert.Throws<RealmClosedException>(() => _ = standaloneObject.Int32Property);
+                Assert.That(standaloneObject.ObjectHandle.IsClosed);
 
-            // Here we should see all objects accessed during the migration get disposed, even though
-            // newRealm is still open.
-            Assert.That(standaloneObject.IsValid, Is.False);
-            Assert.That(standaloneObject.IsManaged);
-            Assert.Throws<RealmClosedException>(() => _ = standaloneObject.Int32Property);
-            Assert.That(standaloneObject.ObjectHandle.IsClosed);
+                Assert.That(embeddedObject.IsValid, Is.False);
+                Assert.That(embeddedObject.IsManaged);
+                Assert.Throws<RealmClosedException>(() => _ = embeddedObject.Int32Property);
+                Assert.That(embeddedObject.ObjectHandle.IsClosed);
 
-            Assert.That(embeddedObject.IsValid, Is.False);
-            Assert.That(embeddedObject.IsManaged);
-            Assert.Throws<RealmClosedException>(() => _ = embeddedObject.Int32Property);
-            Assert.That(embeddedObject.ObjectHandle.IsClosed);
+                Assert.That(list.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = list[0]);
+                Assert.That(list.Handle.Value.IsClosed);
 
-            Assert.That(list.IsValid, Is.False);
-            Assert.Throws<RealmClosedException>(() => _ = list[0]);
-            Assert.That(list.Handle.Value.IsClosed);
+                Assert.That(set.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = set[0]);
+                Assert.That(set.Handle.Value.IsClosed);
 
-            Assert.That(set.IsValid, Is.False);
-            Assert.Throws<RealmClosedException>(() => _ = set[0]);
-            Assert.That(set.Handle.Value.IsClosed);
+                Assert.That(dict.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = dict[0]);
+                Assert.That(dict.Handle.Value.IsClosed);
 
-            Assert.That(dict.IsValid, Is.False);
-            Assert.Throws<RealmClosedException>(() => _ = dict[0]);
-            Assert.That(dict.Handle.Value.IsClosed);
+                Assert.That(query.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = query[0]);
+                Assert.That(query.ResultsHandle.IsClosed);
+            }
 
-            Assert.That(query.IsValid, Is.False);
-            Assert.Throws<RealmClosedException>(() => _ = query[0]);
-            Assert.That(query.ResultsHandle.IsClosed);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
         }
 
         [Test]

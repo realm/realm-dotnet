@@ -34,6 +34,8 @@ namespace Realms
 {
     internal class SharedRealmHandle : StandaloneHandle
     {
+        protected readonly List<WeakReference<RealmHandle>> _weakChildren = new();
+
         private readonly object _unbindListLock = new(); // used to serialize calls to unbind between finalizer threads
 
         // list of owned handles that should be unbound as soon as possible by a user thread
@@ -277,6 +279,14 @@ namespace Realms
                     UnbindLockedList();
                 }
 
+                foreach (var child in _weakChildren)
+                {
+                    if (child.TryGetTarget(out var childHandle) && !childHandle.IsClosed)
+                    {
+                        childHandle.Close();
+                    }
+                }
+
                 return true;
             }
             catch
@@ -322,6 +332,11 @@ namespace Realms
 
         public virtual void AddChild(RealmHandle handle)
         {
+            if (handle.ForceRootOwnership)
+            {
+                _weakChildren.Add(new(handle));
+            }
+
             if (_unbindList.Count == 0)
             {
                 return;

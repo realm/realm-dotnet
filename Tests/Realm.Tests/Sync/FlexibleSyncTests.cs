@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -939,7 +940,44 @@ namespace Realms.Tests.Sync
 
             realm.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => _ = subs.Count);
+            Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+            Assert.Throws<RealmClosedException>(() => _ = subs.Count);
+        }
+
+        [Test]
+        public void SubscriptionSet_WhenSupersededParentRealmIsClosed_GetsClosed()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var realm = GetFakeFLXRealm();
+                var subs = realm.Subscriptions;
+
+                await Task.Run(() =>
+                {
+                    using var bgRealm = GetRealm(realm.Config);
+                    bgRealm.Subscriptions.Update(() =>
+                    {
+                        bgRealm.Subscriptions.Add(bgRealm.All<SyncAllTypesObject>());
+                    });
+                });
+
+                var updatedSubs = realm.Subscriptions;
+                Assert.That(subs, Is.Not.SameAs(updatedSubs));
+
+                realm.Dispose();
+
+                var handleField = typeof(SubscriptionSet).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance);
+                var subsHandle = (SubscriptionSetHandle)handleField.GetValue(subs);
+                var updatedSubsHandle = (SubscriptionSetHandle)handleField.GetValue(updatedSubs);
+                Assert.That(subsHandle.IsClosed);
+                Assert.That(updatedSubsHandle.IsClosed);
+
+                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+                Assert.Throws<RealmClosedException>(() => _ = subs.Count);
+                Assert.Throws<RealmClosedException>(() => _ = updatedSubs.Count);
+            });
         }
 
         [Test]
