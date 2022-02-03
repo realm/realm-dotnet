@@ -218,7 +218,7 @@ namespace Realms
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
-            NativeMethods.DisposeGCHandleCallback onBindingContextDestructed = DisposeGCHandleCallback;
+            NativeMethods.DisposeGCHandleCallback disposeGCHandle = DisposeGCHandleCallback;
             NativeMethods.LogMessageCallback logMessage = LogMessage;
             NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
@@ -228,14 +228,14 @@ namespace Realms
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
             GCHandle.Alloc(openRealm);
-            GCHandle.Alloc(onBindingContextDestructed);
+            GCHandle.Alloc(disposeGCHandle);
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(notifyObject);
             GCHandle.Alloc(notifyDictionary);
             GCHandle.Alloc(onMigration);
             GCHandle.Alloc(shouldCompact);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact);
         }
 
         [Preserve]

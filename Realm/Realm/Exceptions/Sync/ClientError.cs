@@ -32,7 +32,7 @@ namespace Realms.Exceptions.Sync
         AutoClientResetFailed = 132,
     }
 
-    internal enum SessionErrorCategory
+    internal enum SessionErrorCategory : byte
     {
         ClientError = 0,
         SessionError = 1

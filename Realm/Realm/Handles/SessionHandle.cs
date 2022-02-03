@@ -283,7 +283,7 @@ namespace Realms.Sync
 
             var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
             var schema = syncConfiguration.GetSchema();
-            var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
+            using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
 
             try
             {
@@ -313,8 +313,8 @@ namespace Realms.Sync
 
             var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
             var schema = syncConfiguration.GetSchema();
-            var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
-            var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfiguration, schema);
+            using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
+            using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfiguration, schema);
 
             try
             {
