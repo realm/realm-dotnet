@@ -37,6 +37,17 @@ namespace Realms.Sync
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
         /// <summary>
+        /// Callback triggered when an error occurs in a session.
+        /// </summary>
+        /// <param name="session">
+        /// The <see cref="Session"/> where the error happened on.
+        /// </param>
+        /// <param name="error">
+        /// The specific <see cref="SessionException"/> occurred on this <see cref="Session"/>.
+        /// </param>
+        public delegate void SessionErrorCallback(Session session, SessionException error);
+
+        /// <summary>
         /// Gets the <see cref="User"/> used to create this <see cref="SyncConfigurationBase"/>.
         /// </summary>
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>

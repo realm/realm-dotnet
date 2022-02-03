@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@
 namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
-    /// A client reset strategy where all the not yet synchronized data is automatically discarded and a fresh copy of the synchronized Realm is obtained. To be noted that the freshly downloaded
-    /// copy of the synchronized Realm triggers all change notifications as a write transaction is internally simulated.
-    /// This strategy supplies three callbacks: <see cref="OnBeforeReset"/> and <see cref="OnAfterReset"/> to give a chance to take some user actions, respectively, before and after a client reset has happened.
+    /// A client reset strategy where all the not yet synchronized data is automatically discarded and a fresh copy of the synchronized Realm is obtained.
+    /// To be noted that the freshly downloaded copy of the synchronized Realm triggers all change notifications as a write transaction is internally simulated.
+    /// This strategy supplies three callbacks: <see cref="OnBeforeReset"/> and <see cref="OnAfterReset"/> to give a chance to take some user actions,
+    /// respectively, before and after a client reset has happened.
     /// And in case something goes wrong during the client reset, <see cref="ManualResetFallback"/> is supplied to take specific actions in such condition.
     /// For more information see <see cref="ClientResetHandlerBase"/>.
     /// </summary>

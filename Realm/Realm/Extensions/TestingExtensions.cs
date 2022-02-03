@@ -63,13 +63,6 @@ namespace Realms.Sync.Testing
             session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false);
         }
 
-        /// <summary>
-        /// Simulates a client error.
-        /// </summary>
-        /// <param name="session">The session where the simulated error will occur.</param>
-        /// <param name="errorCode">Client error code.</param>
-        /// <param name="message">Error message.</param>
-        /// <param name="isFatal">If set to <c>true</c> the error will be marked as fatal.</param>
         internal static void SimulateError(this Session session, ClientError errorCode, string message, bool isFatal = false)
         {
             Argument.NotNull(session, nameof(session));
