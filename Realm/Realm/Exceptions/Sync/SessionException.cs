@@ -24,7 +24,7 @@ namespace Realms.Sync.Exceptions
     /// Callback triggered when an error occurs in a session.
     /// </summary>
     /// <param name="session">
-    /// The <see cref="Session"/> where the error happened on.
+    /// The <see cref="Session"/> where the error occurred.
     /// </param>
     /// <param name="error">
     /// The specific <see cref="SessionException"/> occurred on this <see cref="Session"/>.
