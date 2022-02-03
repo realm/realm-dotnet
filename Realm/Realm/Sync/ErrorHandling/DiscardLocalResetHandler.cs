@@ -37,7 +37,7 @@ namespace Realms.Sync.ErrorHandling
         public delegate void BeforeResetCallback(Realm beforeFrozen);
 
         /// <summary>
-        /// Callback that indicates a Client Reset is about to happen.
+        /// Callback that indicates a Client Reset has just happened.
         /// </summary>
         /// <param name="beforeFrozen">
         /// The frozen <see cref="Realm"/> as it was before the reset.
