@@ -43,8 +43,9 @@ namespace Realms.Sync
         public User User { get; }
 
         /// <summary>
-        /// Gets or sets a subclass of <see cref="ClientResetHandlerBase"/> to specify actions to be taken for the selected Client Reset strategy: <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
-        /// If nothing is set, the strategy defaults to <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after synchronization.
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm.
+        /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
+        /// The default is <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after callbacks.
         /// </summary>
         public ClientResetHandlerBase ClientResetHandler { get; set; }
 
