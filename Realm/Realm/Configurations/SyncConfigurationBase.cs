@@ -50,8 +50,8 @@ namespace Realms.Sync
         public ClientResetHandlerBase ClientResetHandler { get; set; }
 
         /// <summary>
-        /// Gets or sets the user callback to handle all the <see cref="SessionException"/>s that could happen on a synchronized Realm.
-        /// To be noted that a client reset is not a sync error and in order to handle that subclasses of <see cref="ClientResetHandlerBase"/> are available.
+        /// Gets or sets a callback that will be invoked whenever <see cref="SessionException"/> occurs for the synchronized Realm.
+        /// Client reset errors will not be reported through this callback as they are handled by the configured <see cref="ClientResetHandler"/>.
         /// </summary>
         /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
         public SessionErrorCallback OnSessionError { get; set; }
