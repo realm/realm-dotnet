@@ -323,15 +323,6 @@ namespace Realms.Sync
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        internal void CloseHandle()
-        {
-            GC.SuppressFinalize(this);
-            if (!IsClosed)
-            {
-                _handle.Close();
-            }
-        }
-
         private void EnsureWritable()
         {
             if (_handle.IsReadonly)
