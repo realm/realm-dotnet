@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -137,18 +138,142 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void AccessingObjectInClosedRealmShouldThrow()
+        public void AccessingObject_WhenRealmIsClosed_ShouldThrow()
         {
-            // Arrange
-            Person p1 = null;
-            _realm.Write(() => p1 = _realm.Add(new Person()));
+            var person = _realm.Write(() => _realm.Add(new Person()));
             _realm.Dispose();
 
-            // Act and assert
-            Assert.Throws<RealmClosedException>(() =>
+            Assert.Throws<RealmClosedException>(() => _ = person.FirstName);
+        }
+
+        [Test]
+        public void AccessingObject_WhenRealmIsClosedWhileAnotherInstanceIsOpen_WhenShouldThrow()
+        {
+            var sameRealm = GetRealm(_realm.Config);
+
+            var person = _realm.Write(() => _realm.Add(new Person()));
+            var samePerson = sameRealm.All<Person>().Single();
+
+            _realm.Dispose();
+
+            Assert.Throws<RealmClosedException>(() => _ = person.FirstName);
+            Assert.DoesNotThrow(() => _ = samePerson.FirstName);
+        }
+
+        private void TestAccessingCollection_WhenRealmIsClosed<T>(Action<CollectionsObject> populate, Func<CollectionsObject, IRealmCollection<T>> getter)
+        {
+            var collection = _realm.Write(() =>
             {
-                var illegalAccess = p1.FirstName;
+                var obj = _realm.Add(new CollectionsObject());
+                populate(obj);
+
+                return getter(obj);
             });
+
+            _realm.Dispose();
+            Realm.DeleteRealm(_realm.Config);
+
+            Assert.Throws<RealmClosedException>(() => _ = collection[0]);
+        }
+
+        private void TestAccessingCollection_WhenRealmIsClosedWhileAnotherInstanceIsOpen<T>(Action<CollectionsObject> populate, Func<CollectionsObject, IRealmCollection<T>> getter)
+        {
+            var sameRealm = GetRealm(_realm.Config);
+
+            var collection = _realm.Write(() =>
+            {
+                var obj = _realm.Add(new CollectionsObject());
+                populate(obj);
+
+                return getter(obj);
+            });
+
+            var sameCollection = getter(sameRealm.All<CollectionsObject>().Single());
+
+            _realm.Dispose();
+
+            Assert.Throws<RealmClosedException>(() => _ = collection[0]);
+            Assert.DoesNotThrow(() => _ = sameCollection[0]);
+        }
+
+        [Test]
+        public void AccessingList_WhenRealmIsClosed_ShouldThrow()
+        {
+            TestAccessingCollection_WhenRealmIsClosed(obj =>
+            {
+                obj.StringList.Add("foo");
+            }, obj => obj.StringList.AsRealmCollection());
+        }
+
+        [Test]
+        public void AccessingList_WhenRealmIsClosedWhileAnotherInstanceIsOpen_WhenShouldThrow()
+        {
+            TestAccessingCollection_WhenRealmIsClosedWhileAnotherInstanceIsOpen(obj =>
+            {
+                obj.StringList.Add("foo");
+            }, obj => obj.StringList.AsRealmCollection());
+        }
+
+        [Test]
+        public void AccessingSet_WhenRealmIsClosed_ShouldThrow()
+        {
+            TestAccessingCollection_WhenRealmIsClosed(obj =>
+            {
+                obj.StringSet.Add("foo");
+            }, obj => obj.StringSet.AsRealmCollection());
+        }
+
+        [Test]
+        public void AccessingSet_WhenRealmIsClosedWhileAnotherInstanceIsOpen_WhenShouldThrow()
+        {
+            TestAccessingCollection_WhenRealmIsClosedWhileAnotherInstanceIsOpen(obj =>
+            {
+                obj.StringSet.Add("foo");
+            }, obj => obj.StringSet.AsRealmCollection());
+        }
+
+        [Test]
+        public void AccessingDict_WhenRealmIsClosed_ShouldThrow()
+        {
+            TestAccessingCollection_WhenRealmIsClosed(obj =>
+            {
+                obj.StringDict.Add("foo", "bar");
+            }, obj => obj.StringDict.AsRealmCollection());
+        }
+
+        [Test]
+        public void AccessingDict_WhenRealmIsClosedWhileAnotherInstanceIsOpen_WhenShouldThrow()
+        {
+            TestAccessingCollection_WhenRealmIsClosedWhileAnotherInstanceIsOpen(obj =>
+            {
+                obj.StringDict.Add("foo", "bar");
+            }, obj => obj.StringDict.AsRealmCollection());
+        }
+
+        [Test]
+        public void AccessingResults_WhenRealmIsClosed_ShouldThrow()
+        {
+            _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var collection = _realm.All<CollectionsObject>();
+
+            _realm.Dispose();
+
+            Assert.Throws<RealmClosedException>(() => _ = collection.AsRealmCollection()[0]);
+        }
+
+        [Test]
+        public void AccessingResults_WhenRealmIsClosedWhileAnotherInstanceIsOpen_WhenShouldThrow()
+        {
+            var sameRealm = GetRealm(_realm.Config);
+
+            _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var collection = _realm.All<CollectionsObject>();
+            var sameCollection = sameRealm.All<CollectionsObject>();
+
+            _realm.Dispose();
+
+            Assert.Throws<RealmClosedException>(() => _ = collection.AsRealmCollection()[0]);
+            Assert.DoesNotThrow(() => _ = sameCollection.ElementAt(0));
         }
 
         [Test]

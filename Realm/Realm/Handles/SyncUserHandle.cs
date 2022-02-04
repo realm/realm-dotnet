@@ -26,7 +26,7 @@ using Realms.Native;
 
 namespace Realms.Sync
 {
-    internal class SyncUserHandle : RealmHandle
+    internal class SyncUserHandle : StandaloneHandle
     {
         private static class NativeMethods
         {
@@ -126,7 +126,7 @@ namespace Realms.Sync
         }
 
         [Preserve]
-        public SyncUserHandle(IntPtr handle) : base(null, handle)
+        public SyncUserHandle(IntPtr handle) : base(handle)
         {
         }
 

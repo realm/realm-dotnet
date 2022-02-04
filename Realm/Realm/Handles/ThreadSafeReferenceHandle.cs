@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class ThreadSafeReferenceHandle : RealmHandle
+    internal class ThreadSafeReferenceHandle : StandaloneHandle
     {
         private static class NativeMethods
         {
@@ -34,13 +34,10 @@ namespace Realms
         }
 
         [Preserve]
-        public ThreadSafeReferenceHandle(IntPtr handle) : base(null, handle)
+        public ThreadSafeReferenceHandle(IntPtr handle) : base(handle)
         {
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        protected override void Unbind() => NativeMethods.destroy(handle);
     }
 }
