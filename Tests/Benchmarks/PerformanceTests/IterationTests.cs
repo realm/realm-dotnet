@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using Realms;
@@ -25,7 +26,7 @@ namespace PerformanceTests
     [MemoryDiagnoser]
     public class IterationTests : BenchmarkBase
     {
-        [Params(100, 1000, 10_000)]
+        [Params(1000, 10_000, 100_000, 1_000_000)]
         public int ObjectCount { get; set; }
 
         protected override void SeedData()
@@ -47,13 +48,34 @@ namespace PerformanceTests
             _realm = Realm.GetInstance(_realm.Config.DatabasePath);
         }
 
-        [Benchmark(Description = "Time to iterate a collection of %ObjectCount% objects")]
+        [Benchmark(Description = "Iterate objects")]
         public void Itearation()
         {
             foreach (var value in _realm.All<ObjectWithList>())
             {
                 _ = value;
             }
+
+            _realm.Dispose();
+            _realm = Realm.GetInstance(_realm.Config.DatabasePath);
+        }
+
+        [Benchmark(Description = "Iterate objects + 100x GC.Collect")]
+        public void SimpleIteration_WithGC()
+        {
+            var i = 0;
+
+            foreach (var value in _realm.All<ObjectWithList>())
+            {
+                _ = value;
+                if (i++ == ObjectCount / 100)
+                {
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
+                }
+            }
+
+            _realm.Dispose();
+            _realm = Realm.GetInstance(_realm.Config.DatabasePath);
         }
 
         private class ObjectWithList : RealmObject
