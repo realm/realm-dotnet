@@ -107,6 +107,8 @@ namespace Realms.Sync
 
         private delegate void GetSubscriptionBase(IntPtr callback, out NativeException ex);
 
+        public override bool ForceRootOwnership => true;
+
         public static void Initialize()
         {
             NativeMethods.GetSubscriptionCallback getSubscription = OnGetSubscription;
@@ -120,14 +122,15 @@ namespace Realms.Sync
 
         public bool IsReadonly { get; }
 
-        [Preserve]
-        public SubscriptionSetHandle(IntPtr handle, bool isReadonly = true) : base(null, handle)
+        public SubscriptionSetHandle(SharedRealmHandle root, IntPtr handle, bool isReadonly = true) : base(root, handle)
         {
             IsReadonly = isReadonly;
         }
 
         public int GetCount()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_count(this, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -135,6 +138,8 @@ namespace Realms.Sync
 
         public SubscriptionSetState GetState()
         {
+            EnsureIsOpen();
+
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
@@ -142,6 +147,8 @@ namespace Realms.Sync
 
         public long GetVersion()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_version(this, out var ex);
             ex.ThrowIfNecessary();
             return result;
@@ -149,36 +156,63 @@ namespace Realms.Sync
 
         public string GetErrorMessage()
         {
+            EnsureIsOpen();
+
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
                 NativeMethods.get_error_message(this, buffer, length, out isNull, out ex));
         }
 
         public SubscriptionSetHandle BeginWrite()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.begin_write(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(result, isReadonly: false);
+            return new SubscriptionSetHandle(Root, result, isReadonly: false);
         }
 
         public SubscriptionSetHandle CommitWrite()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new SubscriptionSetHandle(result, isReadonly: true);
+            return new SubscriptionSetHandle(Root, result, isReadonly: true);
         }
 
-        public Subscription GetAtIndex(int index) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
+        public Subscription GetAtIndex(int index)
+        {
+            EnsureIsOpen();
 
-        public Subscription Find(string name) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
+        }
 
-        public Subscription Find(ResultsHandle results) => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_query(this, results, callback, out ex));
+        public Subscription Find(string name)
+        {
+            EnsureIsOpen();
+
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
+        }
+
+        public Subscription Find(ResultsHandle results)
+        {
+            EnsureIsOpen();
+
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_query(this, results, callback, out ex));
+        }
 
         public Subscription Add(ResultsHandle results, SubscriptionOptions options)
-            => GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
+        {
+            EnsureIsOpen();
+
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
+        }
 
         public bool Remove(string name)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.remove(this, name, name.IntPtrLength(), out var ex);
             ex.ThrowIfNecessary();
             return result;
@@ -186,6 +220,8 @@ namespace Realms.Sync
 
         public bool Remove(ObjectId id)
         {
+            EnsureIsOpen();
+
             var subId = PrimitiveValue.ObjectId(id);
             var result = NativeMethods.remove(this, subId, out var ex);
             ex.ThrowIfNecessary();
@@ -194,6 +230,8 @@ namespace Realms.Sync
 
         public int Remove(ResultsHandle results, bool removeNamed)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.remove(this, results, removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -201,6 +239,8 @@ namespace Realms.Sync
 
         public int RemoveAll(string type, bool removeNamed)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.remove_by_type(this, type, type.IntPtrLength(), removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -208,6 +248,8 @@ namespace Realms.Sync
 
         public int RemoveAll(bool removeNamed)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.remove_all(this, removeNamed, out var ex);
             ex.ThrowIfNecessary();
             return (int)result;
@@ -215,6 +257,8 @@ namespace Realms.Sync
 
         public async Task<SubscriptionSetState> WaitForStateChangeAsync()
         {
+            EnsureIsOpen();
+
             var tcs = new TaskCompletionSource<SubscriptionSetState>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
@@ -249,7 +293,7 @@ namespace Realms.Sync
             return result;
         }
 
-        protected override void Unbind()
+        public override void Unbind()
         {
             if (IsReadonly)
             {

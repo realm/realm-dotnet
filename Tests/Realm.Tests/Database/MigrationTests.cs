@@ -409,6 +409,155 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Migration_WhenDone_DisposesAllObjectsAndLists()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            using (var oldRealm = GetRealm(config))
+            {
+            }
+
+            AllTypesObject standaloneObject = null;
+            EmbeddedAllTypesObject embeddedObject = null;
+            RealmList<string> list = null;
+            RealmSet<string> set = null;
+            RealmDictionary<string> dict = null;
+            RealmResults<AllTypesObject> query = null;
+
+            var newConfig = new RealmConfiguration(config.DatabasePath)
+            {
+                SchemaVersion = 1,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    standaloneObject = migration.NewRealm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                    Assert.That(standaloneObject.IsValid);
+                    Assert.That(standaloneObject.IsManaged);
+                    Assert.That(standaloneObject.Int32Property, Is.EqualTo(0));
+
+                    embeddedObject = new EmbeddedAllTypesObject();
+                    migration.NewRealm.Add(new ObjectWithEmbeddedProperties
+                    {
+                        AllTypesObject = embeddedObject
+                    });
+
+                    Assert.That(embeddedObject.IsValid);
+                    Assert.That(embeddedObject.IsManaged);
+                    Assert.That(embeddedObject.Int32Property, Is.EqualTo(0));
+
+                    var collectionObject = migration.NewRealm.Add(new CollectionsObject());
+                    list = (RealmList<string>)collectionObject.StringList;
+                    list.Add("foo");
+                    Assert.That(list.IsValid);
+                    Assert.That(list[0], Is.EqualTo("foo"));
+                    Assert.That(list.Count, Is.EqualTo(1));
+
+                    set = (RealmSet<string>)collectionObject.StringSet;
+                    set.Add("foo");
+                    Assert.That(set.IsValid);
+                    Assert.That(set[0], Is.EqualTo("foo"));
+                    Assert.That(set.Count, Is.EqualTo(1));
+
+                    dict = (RealmDictionary<string>)collectionObject.StringDict;
+                    dict.Add("foo", "bar");
+                    Assert.That(dict.IsValid);
+                    Assert.That(dict[0].Key, Is.EqualTo("foo"));
+                    Assert.That(dict.Count, Is.EqualTo(1));
+
+                    query = (RealmResults<AllTypesObject>)migration.NewRealm.All<AllTypesObject>();
+                    Assert.That(query.IsValid);
+                    Assert.That(query[0], Is.Not.Null);
+                    Assert.That(query.Count, Is.EqualTo(1));
+                }
+            };
+
+            using (var newRealm = Realm.GetInstance(newConfig))
+            {
+                // Here we should see all objects accessed during the migration get disposed, even though
+                // newRealm is still open.
+                Assert.That(standaloneObject.IsValid, Is.False);
+                Assert.That(standaloneObject.IsManaged);
+                Assert.Throws<RealmClosedException>(() => _ = standaloneObject.Int32Property);
+                Assert.That(standaloneObject.ObjectHandle.IsClosed);
+
+                Assert.That(embeddedObject.IsValid, Is.False);
+                Assert.That(embeddedObject.IsManaged);
+                Assert.Throws<RealmClosedException>(() => _ = embeddedObject.Int32Property);
+                Assert.That(embeddedObject.ObjectHandle.IsClosed);
+
+                Assert.That(list.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = list[0]);
+                Assert.That(list.Handle.Value.IsClosed);
+
+                Assert.That(set.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = set[0]);
+                Assert.That(set.Handle.Value.IsClosed);
+
+                Assert.That(dict.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = dict[0]);
+                Assert.That(dict.Handle.Value.IsClosed);
+
+                Assert.That(query.IsValid, Is.False);
+                Assert.Throws<RealmClosedException>(() => _ = query[0]);
+                Assert.That(query.ResultsHandle.IsClosed);
+            }
+
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(newConfig));
+        }
+
+        [Test]
+        public void Migration_NewRealm_Remove()
+        {
+            // Reported in https://github.com/realm/realm-dotnet/issues/2587
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
+
+            using (var realm = GetRealm())
+            {
+                realm.Write(() =>
+                {
+                    for (var i = 0; i < 10; i++)
+                    {
+                        realm.Add(new IntPropertyObject
+                        {
+                            Int = i
+                        });
+
+                        realm.Add(new RequiredStringObject
+                        {
+                            String = i.ToString()
+                        });
+                    }
+                });
+            }
+
+            var config2 = config.ConfigWithPath(config.DatabasePath);
+            config2.SchemaVersion = 1;
+            config2.MigrationCallback = (migration, oldSchemaVersion) =>
+            {
+                Assert.That(oldSchemaVersion, Is.EqualTo(0));
+
+                var intObjects = migration.NewRealm.All<IntPropertyObject>();
+                var stringObjects = migration.NewRealm.All<RequiredStringObject>();
+
+                // Delete all even values
+                for (var i = 0; i < 10; i += 2)
+                {
+                    var intObject = intObjects.Single(o => o.Int == i);
+                    var stringObject = stringObjects.Single(o => o.String == i.ToString());
+
+                    migration.NewRealm.Remove(intObject);
+                    migration.NewRealm.Remove(stringObject);
+                }
+            };
+
+            // same path, different version, should auto-migrate quietly
+            using var realm2 = GetRealm(config2);
+
+            var expected = new[] { 1, 3, 5, 7, 9 };
+
+            Assert.That(realm2.All<IntPropertyObject>().ToArray().Select(o => o.Int), Is.EqualTo(expected));
+            Assert.That(realm2.All<RequiredStringObject>().ToArray().Select(o => int.Parse(o.String)), Is.EqualTo(expected));
+        }
+
+        [Test]
         public void Migration_ChangePrimaryKey_Dynamic()
         {
             var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString());

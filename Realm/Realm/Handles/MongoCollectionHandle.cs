@@ -25,7 +25,7 @@ using Realms.Sync;
 
 namespace Realms
 {
-    internal class MongoCollectionHandle : RealmHandle
+    internal class MongoCollectionHandle : StandaloneHandle
     {
         private static class NativeMethods
         {
@@ -123,7 +123,7 @@ namespace Realms
 #pragma warning restore IDE1006 // Naming Styles
         }
 
-        private MongoCollectionHandle(SyncUserHandle root, IntPtr handle) : base(root, handle)
+        private MongoCollectionHandle(IntPtr handle) : base(handle)
         {
         }
 
@@ -132,7 +132,7 @@ namespace Realms
             var handle = NativeMethods.get(user, service, (IntPtr)service.Length, database, (IntPtr)database.Length, collection, (IntPtr)collection.Length, out var ex);
             ex.ThrowIfNecessary();
 
-            return new MongoCollectionHandle(user, handle);
+            return new MongoCollectionHandle(handle);
         }
 
         public Task<T> FindOne<T>(string filter, FindAndModifyOptions options) => CallNativeMethod<T>((IntPtr tcs, out NativeException ex) => NativeMethods.find_one(this, filter, filter.IntPtrLength(), options, tcs, out ex));

@@ -1068,6 +1068,8 @@ namespace Realms.Tests.Database
             public bool Equals(InternalObject other) => other != null &&
                        IntProperty == other.IntProperty &&
                        StringProperty == other.StringProperty;
+
+            public override string ToString() => $"{IntProperty} - {StringProperty}";
         }
     }
 }
