@@ -12,7 +12,7 @@ The .NET Performance project has an [amazing guide](https://github.com/dotnet/pe
 
 ## Historical performance
 
-Benchmarks are run as part of merge commits to master and then uploaded to MongoDB Atlas (see [#2552](https://github.com/realm/realm-dotnet/pull/2552) for details) and then plotted using MongoDB Charts. A dashboard with benchmark runs can be found [here](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/public/dashboards/6115babd-c7fe-47ee-836f-efffd92ffae3).
+Benchmarks are run as part of merge commits to main and then uploaded to MongoDB Atlas (see [#2552](https://github.com/realm/realm-dotnet/pull/2552) for details) and then plotted using MongoDB Charts. A dashboard with benchmark runs can be found [here](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/public/dashboards/6115babd-c7fe-47ee-836f-efffd92ffae3).
 
 ### Adding new benchmarks
 

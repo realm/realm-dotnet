@@ -329,7 +329,7 @@ namespace Realms
         /// var results4 = realm.All&lt;Foo&gt;("Bar.IntValue > $0 || (Bar.String == $1 &amp;&amp; Bar.Bool == $2)", 5, "small", true);
         /// </code>
         /// </example>
-        /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
+        /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
@@ -365,7 +365,7 @@ namespace Realms
         /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
         /// </code>
         /// </example>
-        /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
+        /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
@@ -402,7 +402,7 @@ namespace Realms
         /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
         /// </code>
         /// </example>
-        /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
+        /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>

@@ -432,7 +432,7 @@ equal.
   didAdd = obj.UniqueStrings.Add("foo"); // false
   ```
 * Added support for value substitution in string based queries. This enables expressions following
-[this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`.
+[this syntax](https://docs.mongodb.com/realm/reference/realm-query-language/): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`.
 (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
@@ -1076,8 +1076,7 @@ scenarios such as:
   - Distinct: `realm.All<Dog>().Filter("TRUEPREDICATE DISTINCT(Age) SORT(Name)")` - find all dogs, sort them
   by their name and pick one dog for each age value.
   - For more examples, check out the
-  [javascript query language docs](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) -
-  the query syntax is identical - or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
+  [query language reference docs](https://docs.mongodb.com/realm/reference/realm-query-language/) or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
 - The `SyncConfiguration` constructor now accepts relative Uris. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
 - Added the following methods for resetting the user's password and confirming their email:
 `RequestPasswordResetAsync`, `CompletePasswordResetAsync`, `RequestEmailConfirmationAsync`, and `ConfirmEmailAsync`.
