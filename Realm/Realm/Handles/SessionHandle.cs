@@ -245,7 +245,7 @@ namespace Realms.Sync
                                 conf.OnClientReset?.Invoke(session, (ClientResetException)exception);
                                 break;
                             default:
-                                break;
+                                throw new Exception($"ClientResetHandler of type {syncConfigurationBase.ClientResetHandler.GetType().Name} is unhandled");
                         }
 
                         // after deprecation: this won't be require anymore when Session.Error will be fully deprecated
