@@ -31,7 +31,7 @@
 namespace realm {
 namespace binding {
 
-enum realm_value_type : unsigned char {
+enum class realm_value_type : unsigned char {
     RLM_TYPE_NULL,
     RLM_TYPE_INT,
     RLM_TYPE_BOOL,
@@ -559,45 +559,6 @@ inline auto wrap_managed_callback(TReturn (*func)(TArgs... args))
             return {};
         }
     };
-}
-
-// Microsoft's GUID layout, matching how System.Guid is represented
-struct GUID {
-public:
-    inline void swap_endianness() {
-        Data1 = swap(Data1);
-        Data2 = swap(Data2);
-        Data3 = swap(Data3);
-    }
-private:
-    unsigned long  Data1;
-    unsigned short Data2;
-    unsigned short Data3;
-    unsigned char  Data4[8];
-
-    inline unsigned short swap(unsigned short value) {
-        return ((value & 0xff) << 8) | ((value & 0xff00) >> 8);
-    }
-
-    inline unsigned long swap(unsigned long value) {
-        unsigned long tmp = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
-        return (tmp << 16) | (tmp >> 16);
-    }
-};
-
-// PrimitiveValue used to encode System.Guid with Microsoft's binary representation (see GUID struct above)
-// where the first half of the struct is big-endian. This is actually not the same as UUID, which is little-endian.
-//
-// Even though PrimitiveValue uses the correct encoding method now, there are still realm files out there
-// with the old encoding. To support this, we enter the special "guid compatibility" mode.
-// In it, we change the correct UUID values to GUID when we receive a value from C# and pass it to Core,
-// and we change GUID to UUID when we read a legacy value from Core and pass it to C#.
-inline void apply_legacy_guid_representation_if_necessary(const SharedRealm& realm, realm_value_t& value)
-{
-    if (value.type == RLM_TYPE_UUID && CSharpBindingContext::get(realm).m_guid_compatibility) {
-        auto& guid = *reinterpret_cast<GUID*>(value.data);
-        guid.swap_endianness();
-    }
 }
 
 } // namespace binding

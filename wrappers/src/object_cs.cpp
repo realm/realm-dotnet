@@ -100,7 +100,6 @@ extern "C" {
                 }
                 else {
                     *value = to_capi(std::move(val));
-                    apply_legacy_guid_representation_if_necessary(object.realm(), *value);
                 }
             }
         });
@@ -155,7 +154,6 @@ extern "C" {
                 }
             }
             else {
-                apply_legacy_guid_representation_if_necessary(object.realm(), value);
                 object.obj().set_any(prop.column_key, from_capi(value));
             }
         });

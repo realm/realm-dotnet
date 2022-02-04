@@ -73,7 +73,6 @@ REALM_EXPORT void list_set_value(List& list, size_t list_ndx, realm_value_t valu
             }
         }
         else {
-            apply_legacy_guid_representation_if_necessary(list.get_realm(), value);
             list.set_any(list_ndx, from_capi(value));
         }
     });
@@ -110,7 +109,6 @@ REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t v
             }
         }
         else {
-            apply_legacy_guid_representation_if_necessary(list.get_realm(), value);
             list.insert_any(list_ndx, from_capi(value));
         }
     });
@@ -150,7 +148,6 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
             }
             else {
                 *value = to_capi(std::move(val));
-                apply_legacy_guid_representation_if_necessary(list.get_realm(), *value);
             }
         }
     });
@@ -181,7 +178,6 @@ REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeExcep
             return list.find(value.link.object->obj());
         }
 
-        apply_legacy_guid_representation_if_necessary(list.get_realm(), value);
         return list.find_any(from_capi(value));
     });
 }
