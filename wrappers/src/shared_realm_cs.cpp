@@ -148,6 +148,8 @@ inline SharedRealm* new_realm(SharedRealm realm)
 
     return new SharedRealm(realm);
 }
+
+extern bool apply_guid_representation_fix(SharedRealm&);
 }
 
 extern "C" {
@@ -237,8 +239,9 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         }
 
         config.cache = configuration.enable_cache;
-
-        return new_realm(Realm::get_shared_realm(std::move(config)));
+        auto realm = Realm::get_shared_realm(std::move(config));
+        apply_guid_representation_fix(realm);
+        return new_realm(std::move(realm));
     });
 }
 
