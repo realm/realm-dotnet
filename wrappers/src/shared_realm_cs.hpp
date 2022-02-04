@@ -108,7 +108,8 @@ public:
 
     GCHandleHolder(GCHandleHolder&& other) noexcept
     {
-        m_handle = std::move(other.m_handle);
+        m_handle = other.m_handle;
+        other.m_handle = nullptr;
     }
 
     ~GCHandleHolder()
