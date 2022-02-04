@@ -98,7 +98,7 @@ namespace Realms
         {
             get
             {
-                if (IsClosed)
+                if (IsClosed || Root?.IsClosed == true)
                 {
                     return false;
                 }
