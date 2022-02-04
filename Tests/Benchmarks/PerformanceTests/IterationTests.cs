@@ -23,10 +23,14 @@ using Realms;
 
 namespace PerformanceTests
 {
-    [MemoryDiagnoser]
+    /// <summary>
+    /// This suite evaluates performance of object allocation by iterating
+    /// over a large results set. It's intended to diagnose regressions in
+    /// case we want to restructure ownership semantics of SharedRealmHandle.
+    /// </summary>
     public class IterationTests : BenchmarkBase
     {
-        [Params(1000, 10_000, 100_000, 1_000_000)]
+        [Params(1000, 10_000)]
         public int ObjectCount { get; set; }
 
         protected override void SeedData()
