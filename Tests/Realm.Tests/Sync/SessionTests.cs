@@ -370,11 +370,13 @@ namespace Realms.Tests.Sync
                 var session = GetSession(realm);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+#pragma warning disable CS0618 // Type or member is obsolete
                 Session.Error += (sender, e) =>
                 {
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 session.SimulateClientReset("simulated client reset");
 
@@ -409,11 +411,13 @@ namespace Realms.Tests.Sync
                 var session = GetSession(realm);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+#pragma warning disable CS0618 // Type or member is obsolete
                 Session.Error += (sender, e) =>
                 {
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
