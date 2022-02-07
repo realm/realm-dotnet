@@ -29,6 +29,8 @@ namespace Realms.Sync
     /// </summary>
     public class Session
     {
+        public delegate void ConnectionStateChangeCallback(SessionConnectionState oldState, SessionConnectionState newState);
+
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
@@ -105,6 +107,9 @@ namespace Realms.Sync
         /// and use it to subscribe instead.
         /// </example>
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode) => new SyncProgressObservable(Handle, direction, mode);
+
+        public ulong RegisterConnectionChangeStateCallback(ConnectionStateChangeCallback connectionStateChangeCallback) =>
+            Handle.RegisterConnectionStateChangeCallback(connectionStateChangeCallback);
 
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.

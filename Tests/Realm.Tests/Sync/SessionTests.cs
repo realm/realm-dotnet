@@ -222,15 +222,27 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ConnectionState_Connected_AtStart()
+        public void Session_ConnectionState_Connecting_AtRestart()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
+                var completionTCS = new TaskCompletionSource<ulong>();
+                var callbackTriggered = false;
                 var session = realm.SyncSession;
-
-                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                session.Stop();
+                var token = session.RegisterConnectionChangeStateCallback((oldState, newState) =>
+                {
+                    Assert.IsFalse(callbackTriggered);
+                    Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
+                    Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
+                    callbackTriggered = true;
+                    completionTCS.TrySetResult(1);
+                });
+                session.Start();
+                await completionTCS.Task;
+                Assert.IsTrue(callbackTriggered);
             });
         }
 
@@ -241,30 +253,47 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
+                var completionTCS = new TaskCompletionSource<ulong>();
+                var callbackTriggered = false;
                 var session = realm.SyncSession;
-
+                var token = session.RegisterConnectionChangeStateCallback((oldState, newState) =>
+                {
+                    Assert.IsFalse(callbackTriggered);
+                    Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connected));
+                    Assert.That(newState, Is.EqualTo(SessionConnectionState.Disconnected));
+                    callbackTriggered = true;
+                    completionTCS.TrySetResult(1);
+                });
                 session.Stop();
-                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                await completionTCS.Task;
+                Assert.IsTrue(callbackTriggered);
             });
         }
 
         [Test]
-        [Ignore("Ignore this test until subscription to connection state change is available")]
-        public void Session_ConnectionState_Connecting_AtRestart()
+        public void Session_ConnectionState_Connected_AtRestart()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
+                var completionTCS = new TaskCompletionSource<ulong>();
+                var callbackTriggered = false;
                 var session = realm.SyncSession;
-
                 session.Stop();
+                var token = session.RegisterConnectionChangeStateCallback((oldState, newState) =>
+                {
+                    Assert.IsFalse(callbackTriggered);
+                    Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
+                    Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
+                    callbackTriggered = true;
+                    completionTCS.TrySetResult(1);
+                });
                 session.Start();
-
-                // at this point it should subscribe for state change to check first "connecting" and then "connected
-                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
-
-                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                await completionTCS.Task;
+                // TODO this needs to be finished, check what to do with unregister
+                //session.Un
+                Assert.IsTrue(callbackTriggered);
             });
         }
 

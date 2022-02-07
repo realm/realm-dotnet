@@ -40,8 +40,11 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void SessionConnectionStateChangeCallback(IntPtr stateChangeCallbackHandle, SessionConnectionState old_state, SessionConnectionState new_state);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
+            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, SessionConnectionStateChangeCallback connection_state_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user(SessionHandle session);
@@ -71,6 +74,12 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_register_connection_change_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ulong register_connection_change_callback(SessionHandle session, IntPtr state_change_callback_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_connection_change_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unregister_connection_change_callback(SessionHandle session, ulong token, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
@@ -99,12 +108,14 @@ namespace Realms.Sync
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
             NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
+            NativeMethods.SessionConnectionStateChangeCallback connectionState = HandleSessionConnectionStateChangeCallback;
 
             GCHandle.Alloc(error);
             GCHandle.Alloc(progress);
             GCHandle.Alloc(wait);
+            GCHandle.Alloc(connectionState);
 
-            NativeMethods.install_syncsession_callbacks(error, progress, wait);
+            NativeMethods.install_syncsession_callbacks(error, progress, wait, connectionState);
         }
 
         public bool TryGetUser(out SyncUserHandle userHandle)
@@ -154,6 +165,20 @@ namespace Realms.Sync
         public void UnregisterProgressNotifier(ulong token)
         {
             NativeMethods.unregister_progress_notifier(this, token, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public ulong RegisterConnectionStateChangeCallback(Session.ConnectionStateChangeCallback stateChangeCallbackHandle)
+        {
+            var gcHandleCallback = GCHandle.Alloc(stateChangeCallbackHandle);
+            var token = NativeMethods.register_connection_change_callback(this, GCHandle.ToIntPtr(gcHandleCallback), out var ex);
+            ex.ThrowIfNecessary();
+            return token;
+        }
+
+        public void UnRegisterConnectionStateChangeCallback(ulong token)
+        {
+            NativeMethods.unregister_connection_change_callback(this, token, out var ex);
             ex.ThrowIfNecessary();
         }
 
@@ -265,6 +290,13 @@ namespace Realms.Sync
                 const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
                 tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.SessionConnectionStateChangeCallback))]
+        private static void HandleSessionConnectionStateChangeCallback(IntPtr stateChangeCallbackHandle, SessionConnectionState oldState, SessionConnectionState newState)
+        {
+            var stateChangeCallback = (Session.ConnectionStateChangeCallback)GCHandle.FromIntPtr(stateChangeCallbackHandle).Target;
+            stateChangeCallback(oldState, newState);
         }
     }
 }
