@@ -437,10 +437,33 @@ namespace Realms.Tests.Sync
                 weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
                 using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
                 var session = GetSession(realm);
+                Assert.IsNotNull(weakConfigRef.Target);
             });
             TearDown();
             GC.Collect();
-            Assert.IsNull((PartitionSyncConfiguration)weakConfigRef.Target);
+            Assert.IsNull(weakConfigRef.Target);
+        }
+
+        [Test]
+        public void Test_MultipleSyncConfigs_On_OpenRealm_DontCreateMultipleGCHandles()
+        {
+            WeakReference weakOriginalConfig = null;
+            WeakReference weakSecondaryConfig = null;
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                weakOriginalConfig = new WeakReference(await GetIntegrationConfigAsync());
+                using var firstRealm = await GetRealmAsync((PartitionSyncConfiguration)weakOriginalConfig.Target);
+                var session = GetSession(firstRealm);
+
+                weakSecondaryConfig = new WeakReference(await GetIntegrationConfigAsync());
+                using var secondRealm = await GetRealmAsync((PartitionSyncConfiguration)weakSecondaryConfig.Target);
+                Assert.IsNotNull(weakSecondaryConfig.Target);
+            });
+            Assert.IsNull(weakSecondaryConfig.Target);
+
+            TearDown();
+            GC.Collect();
+            Assert.IsNull(weakOriginalConfig.Target);
         }
 
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
