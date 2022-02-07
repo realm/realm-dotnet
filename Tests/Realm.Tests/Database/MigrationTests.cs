@@ -630,6 +630,52 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Migration_ChangePrimaryKeyType()
+        {
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { typeof(ObjectV1) }
+            };
+
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    oldRealm.Add(new ObjectV1
+                    {
+                        Id = 1,
+                        Value = "foo"
+                    });
+
+                    oldRealm.Add(new ObjectV1
+                    {
+                        Id = 2,
+                        Value = "bar"
+                    });
+                });
+            }
+
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
+            {
+                SchemaVersion = 1,
+                Schema = new[] { typeof(ObjectV2) },
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    foreach (var oldObj in (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Object"))
+                    {
+                        var newObj = (ObjectV2)migration.NewRealm.ResolveReference(ThreadSafeReference.Create(oldObj));
+                        newObj.Id = oldObj.DynamicApi.Get<int>("Id").ToString();
+                    }
+                }
+            };
+
+            using var realm = GetRealm(newRealmConfig);
+
+            Assert.That(realm.All<ObjectV2>().AsEnumerable().Select(o => o.Value), Is.EquivalentTo(new[] { "foo", "bar" }));
+            Assert.That(realm.All<ObjectV2>().AsEnumerable().Select(o => o.Id), Is.EquivalentTo(new[] { "1", "2" }));
+        }
+
+        [Test]
         public void Migration_ChangePrimaryKey_WithDuplicates_Throws()
         {
             var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString());
@@ -655,12 +701,8 @@ namespace Realms.Tests.Database
                 SchemaVersion = 1,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    new Action(() =>
-                    {
-                        var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(1);
-                        value.Id = 2;
-                    })();
-                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
+                    var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(1);
+                    value.Id = 2;
                 }
             };
 
@@ -675,6 +717,26 @@ namespace Realms.Tests.Database
 
             Assert.That(obj1.StringValue, Is.EqualTo("1"));
             Assert.That(obj2.StringValue, Is.EqualTo("2"));
+        }
+
+        [Explicit]
+        [MapTo("Object")]
+        private class ObjectV1 : RealmObject
+        {
+            [PrimaryKey]
+            public int Id { get; set; }
+
+            public string Value { get; set; }
+        }
+
+        [Explicit]
+        [MapTo("Object")]
+        private class ObjectV2 : RealmObject
+        {
+            [PrimaryKey]
+            public string Id { get; set; }
+
+            public string Value { get; set; }
         }
     }
 }

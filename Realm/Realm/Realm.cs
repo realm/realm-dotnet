@@ -1191,7 +1191,12 @@ namespace Realms
                 return null;
             }
 
-            return (T)MakeObject(reference.Metadata, objectHandle);
+            if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
+            {
+                metadata = reference.Metadata;
+            }
+
+            return (T)MakeObject(metadata, objectHandle);
         }
 
         /// <summary>

@@ -1,7 +1,21 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Lifted a limitation that would prevent you from changing the primary key of objects during a migration. It is now possible to do it with both the dynamic and the strongly-typed API:
+  ```csharp
+  var config = new RealmConfiguration
+  {
+    SchemaVersion = 5,
+    MigrationCallback = (migration, oldVersion) =>
+    {
+      // Increment the primary key value of all Foos
+      foreach (var obj in realm.All<Foo>())
+      {
+        obj.Id = obj.Id + 1000;
+      }
+    }
+  }
+  ```
 
 ### Fixed
 * Fixed an issue with xUnit tests that would cause `System.Runtime.InteropServices.SEHException` to be thrown whenever Realm was accessed in a non-async test. (Issue [#1865](https://github.com/realm/realm-dotnet/issues/1865))
