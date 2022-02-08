@@ -154,6 +154,7 @@ namespace Realms
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
+        internal readonly bool IsInMigration;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm instance.
@@ -275,9 +276,10 @@ namespace Realms
             }
         }
 
-        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata metadata = null)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata metadata = null, bool isInMigration = false)
         {
             Config = config;
+            IsInMigration = isInMigration;
 
             if (config.EnableCache && sharedRealmHandle.OwnsNativeRealm)
             {
@@ -1189,7 +1191,12 @@ namespace Realms
                 return null;
             }
 
-            return (T)MakeObject(reference.Metadata, objectHandle);
+            if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
+            {
+                metadata = reference.Metadata;
+            }
+
+            return (T)MakeObject(metadata, objectHandle);
         }
 
         /// <summary>

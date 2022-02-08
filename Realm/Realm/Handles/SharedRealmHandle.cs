@@ -713,7 +713,7 @@ namespace Realms
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
             var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-            var newRealm = new Realm(newRealmHandle, migration.Configuration, migration.Schema);
+            var newRealm = new Realm(newRealmHandle, migration.Configuration, migration.Schema, isInMigration: true);
 
             var result = migration.Execute(oldRealm, newRealm, migrationSchema);
 
