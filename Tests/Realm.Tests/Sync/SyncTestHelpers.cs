@@ -47,7 +47,7 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = DummyAppId,
         };
 
-        private static Uri _baseUri = new Uri("http://192.168.0.110:9090");
+        private static Uri _baseUri;
 
         static SyncTestHelpers()
         {
