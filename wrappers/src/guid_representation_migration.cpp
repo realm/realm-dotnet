@@ -53,7 +53,7 @@ private:
 };
 
 static bool flip_guid(Mixed& mixed, bool& found_non_v4_uuid) {
-    if (mixed.get_type() == type_UUID) {
+    if (!mixed.is_null() && mixed.get_type() == type_UUID) {
         UUID::UUIDBytes bytes = mixed.get_uuid().to_bytes();
 
         // try to detect if this is a Microsoft GUID or a UUID
@@ -126,11 +126,14 @@ static void byteswap_guids(TableRef table, bool& found_non_v4_uuid)
         }
         for (auto col : dictionary_columns) {
             auto dict = obj.get_dictionary_ptr(col);
+            std::map<Mixed, Mixed> values;
             for (auto pair : *dict) {
-                if (flip_guid(pair.second, found_non_v4_uuid)) {
-                    bool newly_inserted = dict->insert(pair.first, pair.second).second;
-                    REALM_ASSERT(!newly_inserted);
-                }
+                flip_guid(pair.second, found_non_v4_uuid);
+                values.emplace(pair.first, pair.second);
+            }
+            dict->clear();
+            for (auto pair : values) {
+                dict->insert(pair.first, pair.second);
             }
         }
     }
