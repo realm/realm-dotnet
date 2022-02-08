@@ -158,8 +158,8 @@ namespace binding {
         };
     }
 
-    inline std::function<void(util::Optional<AppError>, util::Optional<bson::Bson>)> get_bson_callback_handler(void* tcs_ptr) {
-        return [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
+    inline util::UniqueFunction<void(util::Optional<bson::Bson>, util::Optional<AppError>)>&& get_bson_callback_handler(void* tcs_ptr) {
+        return [tcs_ptr](util::Optional<bson::Bson> response, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
                 MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);

@@ -43,7 +43,7 @@ struct HttpClientRequest {
 };
 
 using ExecuteRequestT = void(HttpClientRequest request, void* callback);
-using ResponseFunction = std::function<void(const Response)>;
+using ResponseFunction = util::UniqueFunction<void(const Response&)>&&;
 
 namespace realm {
 namespace binding {
@@ -62,7 +62,7 @@ struct HttpClientResponse {
 
 struct HttpClientTransport : public GenericNetworkTransport {
 public:
-    void send_request_to_server(const Request request, ResponseFunction completionBlock) override {
+    void send_request_to_server(Request&& request, ResponseFunction completionBlock) override {
         std::vector<std::pair<char*, char*>> headers;
         for (auto& kvp : request.headers) {
             headers.push_back(std::make_pair(const_cast<char*>(kvp.first.c_str()), const_cast<char*>(kvp.second.c_str())));
@@ -77,7 +77,7 @@ public:
             to_capi_value(request.body)
         };
 
-        s_execute_request(std::move(client_request), new ResponseFunction(completionBlock));
+        s_execute_request(std::move(client_request), new util::UniqueFunction<void(const Response&)>(std::move(completionBlock)));
     }
 };
 
@@ -105,7 +105,7 @@ extern "C" {
             Utf16StringAccessor(client_response.body_buf, client_response.body_len)
         };
 
-        auto& func = *reinterpret_cast<std::function<void(const Response)>*>(function_ptr);
+        auto& func = *reinterpret_cast<util::UniqueFunction<void(const Response&)>*>(function_ptr);
         func(std::move(response));
         delete& func;
     }

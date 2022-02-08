@@ -1079,6 +1079,32 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Integration_CloseRealmBeforeWaitCompletes()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                Task waitTask = null;
+                using (var realm = await GetFLXIntegrationRealmAsync())
+                {
+                    realm.Subscriptions.Update(() =>
+                    {
+                        var query = realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+
+                        realm.Subscriptions.Add(query);
+                    });
+
+                    waitTask = realm.Subscriptions.WaitForSynchronizationAsync();
+                }
+
+                await waitTask;
+            });
+        }
+
+        [Test]
         public void Integration_SubscriptionSet_AddRemove()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
