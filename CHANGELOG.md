@@ -9,7 +9,7 @@
     MigrationCallback = (migration, oldVersion) =>
     {
       // Increment the primary key value of all Foos
-      foreach (var obj in realm.All<Foo>())
+      foreach (var obj in migration.NewRealm.All<Foo>())
       {
         obj.Id = obj.Id + 1000;
       }
