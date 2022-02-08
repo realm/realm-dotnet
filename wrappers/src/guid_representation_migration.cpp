@@ -28,7 +28,7 @@
 using namespace realm;
 
 // Microsoft's GUID layout, matching how System.Guid is represented
-struct GUID {
+struct RealmGUID {
 public:
     inline void swap_endianness() {
         Data1 = swap(Data1);
@@ -66,7 +66,7 @@ static bool flip_guid(Mixed& mixed, bool& found_non_v4_uuid) {
         // of GUID values where only the 8th byte matches the version 4 bit pattern.
         found_non_v4_uuid = (bytes[6] >> 4) != 4 && (bytes[7] >> 4) == 4;
 
-        GUID& guid = *reinterpret_cast<GUID*>(bytes.data());
+        RealmGUID& guid = *reinterpret_cast<RealmGUID*>(bytes.data());
         guid.swap_endianness();
         mixed = Mixed(UUID(std::move(bytes)));
         return true;
@@ -93,7 +93,7 @@ static void byteswap_guids(TableRef table, bool& found_non_v4_uuid)
                 primitive_columns.push_back(col);
             }
         }
-        return true; // keep iterating
+        return false; // keep iterating
     });
     for (Obj& obj : *table) {
         for (auto col : primitive_columns) {
@@ -175,5 +175,5 @@ bool apply_guid_representation_fix(SharedRealm& realm)
 
 extern "C" REALM_EXPORT void _realm_flip_guid_for_testing(uint8_t* buffer)
 {
-    reinterpret_cast<GUID*>(buffer)->swap_endianness();
+    reinterpret_cast<RealmGUID*>(buffer)->swap_endianness();
 }
