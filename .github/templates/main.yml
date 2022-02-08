@@ -683,7 +683,7 @@ jobs:
           name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
           path: ${{ github.workspace }}/Realm/packages/
       - name: Build Tests
-        run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz --pack
+        run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
       - #@ uploadArtifacts("UnityTests", "Tests/Tests.Unity")
   benchmark-linux:
     name: Benchmark Linux

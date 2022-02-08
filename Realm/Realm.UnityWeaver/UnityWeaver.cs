@@ -35,10 +35,10 @@ namespace RealmWeaver
     public class UnityWeaver : IPostBuildPlayerScriptDLLs, IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private const string EnableAnalyticsPref = "realm_enable_analytics";
-        private const string EnableAnalyticsMenuItemPath = "Realm/Enable build-time analytics";
+        private const string EnableAnalyticsMenuItemPath = "Tools/Realm/Enable build-time analytics";
 
         private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
-        private const string WeaveEditorAssembliesMenuItemPath = "Realm/Process editor assemblies";
+        private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
 
         private static bool _analyticsEnabled;
 
@@ -97,7 +97,7 @@ namespace RealmWeaver
             };
         }
 
-        [MenuItem("Realm/Weave Assemblies")]
+        [MenuItem("Tools/Realm/Weave Assemblies")]
         public static async void WeaveAllAssembliesMenuItem()
         {
             var assembliesWoven = await WeaveAllAssemblies();
