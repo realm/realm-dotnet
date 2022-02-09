@@ -444,28 +444,6 @@ namespace Realms.Tests.Sync
             Assert.IsNull(weakConfigRef.Target);
         }
 
-        [Test]
-        public void Test_MultipleSyncConfigs_On_OpenRealm_DontCreateMultipleGCHandles()
-        {
-            WeakReference weakOriginalConfig = null;
-            WeakReference weakSecondaryConfig = null;
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                weakOriginalConfig = new WeakReference(await GetIntegrationConfigAsync());
-                using var firstRealm = await GetRealmAsync((PartitionSyncConfiguration)weakOriginalConfig.Target);
-                var session = GetSession(firstRealm);
-
-                weakSecondaryConfig = new WeakReference(await GetIntegrationConfigAsync());
-                using var secondRealm = await GetRealmAsync((PartitionSyncConfiguration)weakSecondaryConfig.Target);
-                Assert.IsNotNull(weakSecondaryConfig.Target);
-            });
-            Assert.IsNull(weakSecondaryConfig.Target);
-
-            TearDown();
-            GC.Collect();
-            Assert.IsNull(weakOriginalConfig.Target);
-        }
-
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)

@@ -56,6 +56,12 @@ namespace Realms.Sync.Native
         internal bool is_flexible_sync;
 
         internal ClientResyncMode client_resync_mode;
+
+        /* Passing a mutable reference the SyncConfigurationBase to native is dangerous,
+         * as the user could invalidate any callback that core assumes to always be present
+         * from a certain point afterwards. In the future this could be fixed with the arrival
+         * of "init only setters".
+         */
         internal IntPtr managed_sync_configuration_handle;
     }
 }

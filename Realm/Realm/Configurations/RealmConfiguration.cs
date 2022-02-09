@@ -84,6 +84,11 @@ namespace Realms
         /// The <see cref="MigrationCallbackDelegate"/> that will be invoked if the <see cref="Realm"/> needs
         /// to be migrated.
         /// </value>
+        /* Passing a mutable reference to the MigrationCallBackDelegate to native is dangerous,
+         * as the user could invalidate this callback at a point in time when core assumes it could never
+         * be so. In the future this could be fixed with the arrival
+         * of "init only setters".
+         */
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         /// <summary>
