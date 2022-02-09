@@ -168,6 +168,7 @@ steps:
   - name: Build Unity
     run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
   - #@ uploadArtifacts(finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
+  - #@ uploadArtifacts("AssetStorePublisher-${{ steps.get-version.outputs.version }}", "Tools/AssetStorePublisher", "${{ (github.event_name != 'pull_request' || github.head_ref.contains('release')) && 30 || 1 }}")
 #@ end
 
 #@ def netFrameworkTestSteps():
