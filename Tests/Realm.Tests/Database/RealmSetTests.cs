@@ -1004,40 +1004,34 @@ namespace Realms.Tests.Database
 
         #region IntPropertyObject
 
-        public static readonly object[] ObjectTestValues;
-
-        private static List<object> GetObjectTestValues()
+        private static IEnumerable<TestCaseData<IntPropertyObject>> ObjectTestValues()
         {
-            var result = new List<object>();
-
             var objs = GenerateObjects(1, 2, 3, 4, 5, 6);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[3], objs[4], objs[5] }) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[3], objs[4], objs[5] });
 
             objs = GenerateObjects(1, 2, 3);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[0], objs[1], objs[2] }) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1], objs[2] }, new IntPropertyObject[] { objs[0], objs[1], objs[2] });
 
             objs = GenerateObjects(0, int.MaxValue);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[1] }, new IntPropertyObject[] { objs[0] }) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[1] }, new IntPropertyObject[] { objs[0] });
 
             objs = GenerateObjects(0, int.MaxValue);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[1] }, Array.Empty<IntPropertyObject>()) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[1] }, Array.Empty<IntPropertyObject>());
 
             objs = GenerateObjects(1);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(Array.Empty<IntPropertyObject>(), new IntPropertyObject[] { objs[0] }) });
+            yield return new TestCaseData<IntPropertyObject>(Array.Empty<IntPropertyObject>(), new IntPropertyObject[] { objs[0] });
 
             objs = GenerateObjects(1, 2, 3, int.MaxValue);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1] }, new IntPropertyObject[] { objs[3], objs[0], objs[1], objs[2], objs[1] }) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[1] }, new IntPropertyObject[] { objs[3], objs[0], objs[1], objs[2], objs[1] });
 
             objs = GenerateObjects(1);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[0] }) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[0] });
 
             objs = GenerateObjects(1, 2);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[1] }) });
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[0], objs[0], objs[0] }, new IntPropertyObject[] { objs[0], objs[1] });
 
             objs = GenerateObjects(1, 2);
-            result.Add(new object[] { new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[1], objs[1] }, new IntPropertyObject[] { objs[0], objs[0] }) });
-
-            return result;
+            yield return new TestCaseData<IntPropertyObject>(new IntPropertyObject[] { objs[0], objs[0], objs[0], objs[0], objs[1], objs[1] }, new IntPropertyObject[] { objs[0], objs[0] });
         }
 
         private static IntPropertyObject[] GenerateObjects(params int[] values)
@@ -1074,9 +1068,7 @@ namespace Realms.Tests.Database
 
         #region RealmValue
 
-        public static readonly object[] RealmTestValues;
-
-        private static IEnumerable<TestCaseData<RealmValue>> GetRealmTestValues()
+        private static IEnumerable<TestCaseData<RealmValue>> RealmTestValues()
         {
             var rv0 = RealmValue.Null;
             var rv1 = RealmValue.Create(10, RealmValueType.Int);
@@ -1185,12 +1177,6 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(() => realm2.Write(() => obj2.ObjectSet.Add(item)), Throws.TypeOf<RealmException>().And.Message.Contains("object that is already in another realm"));
-        }
-
-        static RealmSetTests()
-        {
-            ObjectTestValues = GetObjectTestValues().ToArray();
-            RealmTestValues = GetRealmTestValues().ToArray();
         }
 
         private static void RunUnmanagedTests<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData)

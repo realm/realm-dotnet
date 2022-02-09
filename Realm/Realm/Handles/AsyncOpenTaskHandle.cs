@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class AsyncOpenTaskHandle : RealmHandle
+    internal class AsyncOpenTaskHandle : StandaloneHandle
     {
         private static class NativeMethods
         {
@@ -38,7 +38,7 @@ namespace Realms
             public static extern void unregister_progress_notifier(AsyncOpenTaskHandle handle, ulong token, out NativeException ex);
         }
 
-        public AsyncOpenTaskHandle(IntPtr handle) : base(null, handle)
+        public AsyncOpenTaskHandle(IntPtr handle) : base(handle)
         {
         }
 
@@ -48,10 +48,7 @@ namespace Realms
             ex.ThrowIfNecessary();
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        protected override void Unbind() => NativeMethods.destroy(handle);
 
         public ulong RegisterProgressNotifier(GCHandle managedHandle)
         {

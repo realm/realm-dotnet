@@ -2,10 +2,26 @@
 
 ### Enhancements
 * Added support for a new client reset strategy, called ["Discarding local"](add the right docs link here). Such new stragegy greatly simplifies the whole handling of a client reset on a synchronized Realm.
+* Lifted a limitation that would prevent you from changing the primary key of objects during a migration. It is now possible to do it with both the dynamic and the strongly-typed API:
+  ```csharp
+  var config = new RealmConfiguration
+  {
+    SchemaVersion = 5,
+    MigrationCallback = (migration, oldVersion) =>
+    {
+      // Increment the primary key value of all Foos
+      foreach (var obj in migration.NewRealm.All<Foo>())
+      {
+        obj.Id = obj.Id + 1000;
+      }
+    }
+  }
+  ```
 
 ### Fixed
 * Fixed an issue with xUnit tests that would cause `System.Runtime.InteropServices.SEHException` to be thrown whenever Realm was accessed in a non-async test. (Issue [#1865](https://github.com/realm/realm-dotnet/issues/1865))
 * Fixed a bug that would lead to unnecessary metadata allocation when freezing a realm. (Issue [#2789](https://github.com/realm/realm-dotnet/issues/2789))
+* Fixed an issue that would cause Realm-managed objects (e.g. `RealmObject`, list, results, and so on) allocated during a migration block to keep the Realm open until they are garbage collected. This had subtle implications, such as being unable to delete the Realm shortly after a migration or being unable to open the Realm with a different configuration. (PR [#2795](https://github.com/realm/realm-dotnet/pull/2795))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
@@ -431,7 +447,7 @@ equal.
   didAdd = obj.UniqueStrings.Add("foo"); // false
   ```
 * Added support for value substitution in string based queries. This enables expressions following
-[this syntax](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`.
+[this syntax](https://docs.mongodb.com/realm/reference/realm-query-language/): `realm.All<T>().Filter("field1 = $0 && field2 = $1", 123, "some-string-value")`.
 (Issue [#1822](https://github.com/realm/realm-dotnet/issues/1822))
 * Reduced the size of the native binaries by ~5%. (PR [#2239](https://github.com/realm/realm-dotnet/pull/2239))
 * Added a new class - `Logger`, which allows you to override the default logger implementation (previously writing to `stdout` or `stderr`) with a custom one by setting
@@ -1075,8 +1091,7 @@ scenarios such as:
   - Distinct: `realm.All<Dog>().Filter("TRUEPREDICATE DISTINCT(Age) SORT(Name)")` - find all dogs, sort them
   by their name and pick one dog for each age value.
   - For more examples, check out the
-  [javascript query language docs](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) -
-  the query syntax is identical - or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
+  [query language reference docs](https://docs.mongodb.com/realm/reference/realm-query-language/) or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
 - The `SyncConfiguration` constructor now accepts relative Uris. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
 - Added the following methods for resetting the user's password and confirming their email:
 `RequestPasswordResetAsync`, `CompletePasswordResetAsync`, `RequestEmailConfirmationAsync`, and `ConfirmEmailAsync`.

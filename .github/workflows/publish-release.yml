@@ -67,7 +67,7 @@ jobs:
         artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         name: ${{ steps.get-version.outputs.version }}
-        commit: master
+        commit: main
         tag: ${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
@@ -97,7 +97,7 @@ jobs:
         title: Prepare for vNext
         body: Update Changelog for vNext
         delete-branch: true
-        base: master
+        base: main
         commit-message: Prepare for vNext
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
