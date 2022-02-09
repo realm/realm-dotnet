@@ -13,7 +13,7 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
-      : Any
+      Any:
     second:
       enabled: 0
       settings:
@@ -31,7 +31,7 @@ PluginImporter:
       settings:
         CPU: ARMv7
   - first:
-      Any: 
+      Any:
     second:
       enabled: 0
       settings: {}
@@ -74,8 +74,8 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
-        CompileFlags: 
-        FrameworkDependencies: 
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+        CompileFlags:
+        FrameworkDependencies:
+  userData:
+  assetBundleName:
+  assetBundleVariant:
