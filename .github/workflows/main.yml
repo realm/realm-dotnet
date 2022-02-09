@@ -957,10 +957,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.targetFramework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.targetFramework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.targetFramework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/publish'
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After
     - name: Publish Unit Test Results
@@ -1313,10 +1313,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Publish Tests/Tests.XUnit
-      run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Tests.XUnit/bin/Release/net6.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Tests.XUnit/bin/Release/net6.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/publish'
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   run-tests-weaver:
@@ -1334,10 +1334,10 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} --self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/publish'
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
@@ -1461,10 +1461,10 @@ jobs:
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 --self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/publish'
     - name: Run the tests
       run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Publish Coverage
@@ -1630,10 +1630,10 @@ jobs:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}/publish'
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join
     - name: Find Results file
