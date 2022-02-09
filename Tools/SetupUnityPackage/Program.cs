@@ -176,6 +176,21 @@ namespace SetupUnityPackage
                 }
             }
 
+            var relinq = Path.Combine(tempPath, "Remotion.Linq.dll");
+            if (File.Exists(relinq))
+            {
+                const string UsedImplicitlyAttribute = "JetBrains.Annotations.UsedImplicitlyAttribute";
+                Console.WriteLine($"Found Remotion.Linq dependency, stripping {UsedImplicitlyAttribute}");
+                using var stream = File.Open(relinq, FileMode.Open, FileAccess.ReadWrite);
+                using var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);
+                var module = assembly.MainModule;
+
+                var usedImplicitly = module.Types.Single(t => t.FullName == UsedImplicitlyAttribute);
+                module.Types.Remove(usedImplicitly);
+
+                assembly.Write();
+            }
+
             var mainPackagePath = Path.Combine(opts.PackageBasePath, info.MainPackagePath);
             if (opts.NoRepack)
             {
