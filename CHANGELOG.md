@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Added support for a new client reset strategy, called ["Discarding local"](add the right docs link here). Such new stragegy greatly simplifies the whole handling of a client reset on a synchronized Realm.
+* Added support for a new client reset strategy, called ["Discarding local"](add the right link to docs here). Such new stragegy greatly simplifies the whole handling of a client reset on a synchronized Realm.
 * Lifted a limitation that would prevent you from changing the primary key of objects during a migration. It is now possible to do it with both the dynamic and the strongly-typed API:
   ```csharp
   var config = new RealmConfiguration
