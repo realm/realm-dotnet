@@ -83,6 +83,8 @@ namespace Realms.Tests.Sync
             if (ensureNoSessionErrors)
             {
                 var tcs = new TaskCompletionSource<object>();
+
+#pragma warning disable CS0618 // Type or member is obsolete
                 Session.Error += HandleSessionError;
                 try
                 {
@@ -92,6 +94,7 @@ namespace Realms.Tests.Sync
                 {
                     Session.Error -= HandleSessionError;
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 void HandleSessionError(object _, ErrorEventArgs errorArgs)
                 {
@@ -310,10 +313,14 @@ namespace Realms.Tests.Sync
                     tcs.TrySetException(ex);
                 }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 Session.Error -= handler;
+#pragma warning restore CS0618 // Type or member is obsolete
             });
 
+#pragma warning disable CS0618 // Type or member is obsolete
             Session.Error += handler;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return tcs.Task;
         }

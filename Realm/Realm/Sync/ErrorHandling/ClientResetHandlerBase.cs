@@ -21,7 +21,7 @@ using Realms.Sync.Exceptions;
 namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
-    /// The base class for the different client reset handler types. The possible implementations are <see cref="DiscardLocalResetHandler"/> and <see cref="ManualResetHandler"/>.
+    /// The base class for the different client reset handler types. The possible implementations are <see cref="DiscardLocalResetHandler"/> and <see cref="ManualRecoveryHandler"/>.
     /// To use either of them, create a new instance and assign it to <see cref="SyncConfigurationBase.ClientResetHandler"/> on the configuration
     /// you use to open the synchronized <see cref="Realm"/> instance.
     /// </summary>

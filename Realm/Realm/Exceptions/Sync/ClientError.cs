@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Sync.Exceptions;
-
 namespace Realms.Exceptions.Sync
 {
     internal enum ClientError
