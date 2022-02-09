@@ -141,16 +141,6 @@ steps:
   - #@ uploadArtifacts(outputVar, artifactsPath, 1)
 #@ end
 
-#@ def setupWin81SDK():
-  - name: Install Win8.1 SDK
-    run: |
-      md C:\win81sdk
-      Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
-      Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
-    shell: powershell
-    if: #@ wrappersCacheCondition
-#@ end
-
 #@ def buildPackages():
 #@ for pkgName in nugetPackages:
   - #@ msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}")
@@ -530,7 +520,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ], cacheVariable = "wrappers-windows"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ], cacheVariable = "wrappers-windows"))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   build-wrappers-windows-uwp:

@@ -30,21 +30,6 @@ if(ANDROID)
   endif()
 endif()
 
-option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
-if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
-    set(REALM_BUILD_LIB_ONLY ON)
-    set(REALM_ENABLE_SYNC ON)
-
-    add_subdirectory(realm-core EXCLUDE_FROM_ALL)
-
-    # force Object Store to use the generic Scheduler implementation
-    target_compile_definitions(ObjectStore PUBLIC
-      REALM_USE_CF=0
-      REALM_USE_ALOOPER=0
-      REALM_USE_UV=0
-    )
-endif()
-
 # Build as a .framework instead of .dylib
 set(BUILD_APPLE_FRAMEWORK OFF)
 
@@ -66,7 +51,23 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
 
   if(NOT WINDOWS_STORE)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    add_definitions(/D_WIN32_WINNT=0x0603 /DWINVER=0x603) # Target Windows 8.1
   endif()
+endif()
+
+option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
+if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
+    set(REALM_BUILD_LIB_ONLY ON)
+    set(REALM_ENABLE_SYNC ON)
+
+    add_subdirectory(realm-core EXCLUDE_FROM_ALL)
+
+    # force Object Store to use the generic Scheduler implementation
+    target_compile_definitions(ObjectStore PUBLIC
+      REALM_USE_CF=0
+      REALM_USE_ALOOPER=0
+      REALM_USE_UV=0
+    )
 endif()
 
 add_subdirectory(src)
