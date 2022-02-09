@@ -51,7 +51,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
 
   if(NOT WINDOWS_STORE)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    add_definitions(/D_WIN32_WINNT=0x0603 /DWINVER=0x603) # Target Windows 8.1
+    add_definitions(/D_WIN32_WINNT=0x0603 /DWINVER=0x602) # Target Windows 8
   endif()
 endif()
 
