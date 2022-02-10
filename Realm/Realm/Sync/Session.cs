@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -36,7 +37,63 @@ namespace Realms.Sync
         /// </summary>
         public static event EventHandler<ErrorEventArgs> Error;
 
+        private readonly SessionHandle _handle;
+
+        private SessionHandle Handle
+        {
+            get
+            {
+                if (_handle.IsClosed)
+                {
+                    throw new ObjectDisposedException(
+                        nameof(Session),
+                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
+                }
+
+                return _handle;
+            }
+        }
+
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
+
+        internal Session(SessionHandle handle)
+        {
+            _handle = handle;
+        }
+
+        internal static void RaiseError(Session session, Exception error)
+        {
+            var args = new ErrorEventArgs(error);
+            Error?.Invoke(session, args);
+        }
+
         internal bool IsClosed => _handle.IsClosed;
+
+        internal void CloseHandle(bool waitForShutdown = false)
+        {
+            GC.SuppressFinalize(this);
+            if (!IsClosed)
+            {
+                if (waitForShutdown)
+                {
+                    _handle.ShutdownAndWait();
+                }
+
+                _handle.Close();
+            }
+        }
+
+        public IDisposable SubscribeForConnectionStateChanges(ConnectionStateChangeCallback callback)
+        {
+            Argument.NotNull(callback, nameof(callback));
+
+            var nativeToken = Handle.RegisterConnectionStateChangeCallback(callback);
+
+            return NotificationToken.Create(callback, (callback) =>
+            {
+                Handle.UnRegisterConnectionStateChangeCallback(nativeToken);
+            });
+        }
 
         /// <summary>
         /// Gets the session’s current state.
@@ -108,9 +165,6 @@ namespace Realms.Sync
         /// </example>
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode) => new SyncProgressObservable(Handle, direction, mode);
 
-        public ulong RegisterConnectionChangeStateCallback(ConnectionStateChangeCallback connectionStateChangeCallback) =>
-            Handle.RegisterConnectionStateChangeCallback(connectionStateChangeCallback);
-
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.
         /// </summary>
@@ -145,34 +199,6 @@ namespace Realms.Sync
         /// </remarks>
         public void Start() => Handle.Start();
 
-        private readonly SessionHandle _handle;
-
-        private SessionHandle Handle
-        {
-            get
-            {
-                if (_handle.IsClosed)
-                {
-                    throw new ObjectDisposedException(
-                        nameof(Session),
-                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
-                }
-
-                return _handle;
-            }
-        }
-
-        internal Session(SessionHandle handle)
-        {
-            _handle = handle;
-        }
-
-        internal static void RaiseError(Session session, Exception error)
-        {
-            var args = new ErrorEventArgs(error);
-            Error?.Invoke(session, args);
-        }
-
         /// <inheritdoc/>
         public override bool Equals(object obj)
             => obj is Session other &&
@@ -180,21 +206,5 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
-
-        internal void CloseHandle(bool waitForShutdown = false)
-        {
-            GC.SuppressFinalize(this);
-            if (!IsClosed)
-            {
-                if (waitForShutdown)
-                {
-                    _handle.ShutdownAndWait();
-                }
-
-                _handle.Close();
-            }
-        }
-
-        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
     }
 }

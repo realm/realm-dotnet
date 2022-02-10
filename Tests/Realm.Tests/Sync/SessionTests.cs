@@ -228,20 +228,21 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
-                var completionTCS = new TaskCompletionSource<ulong>();
+                var completionTCS = new TaskCompletionSource<bool>();
                 var callbackTriggered = false;
                 var session = realm.SyncSession;
                 session.Stop();
-                var token = session.RegisterConnectionChangeStateCallback((oldState, newState) =>
+                var token = session.SubscribeForConnectionStateChanges((oldState, newState) =>
                 {
                     Assert.IsFalse(callbackTriggered);
                     Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
                     Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
                     callbackTriggered = true;
-                    completionTCS.TrySetResult(1);
+                    completionTCS.TrySetResult(true);
                 });
                 session.Start();
                 await completionTCS.Task;
+                token.Dispose();
                 Assert.IsTrue(callbackTriggered);
             });
         }
@@ -253,49 +254,76 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
-                var completionTCS = new TaskCompletionSource<ulong>();
+
+                // the delay is to allow the connection to transition from Connecting to Connected right after creation
+                await Task.Delay(1000);
+                var completionTCS = new TaskCompletionSource<bool>();
                 var callbackTriggered = false;
                 var session = realm.SyncSession;
-                var token = session.RegisterConnectionChangeStateCallback((oldState, newState) =>
+                var token = session.SubscribeForConnectionStateChanges((oldState, newState) =>
                 {
                     Assert.IsFalse(callbackTriggered);
                     Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connected));
                     Assert.That(newState, Is.EqualTo(SessionConnectionState.Disconnected));
                     callbackTriggered = true;
-                    completionTCS.TrySetResult(1);
+                    completionTCS.TrySetResult(true);
                 });
+
                 session.Stop();
                 await completionTCS.Task;
+                token.Dispose();
                 Assert.IsTrue(callbackTriggered);
             });
         }
 
         [Test]
-        public void Session_ConnectionState_Connected_AtRestart()
+        public void Session_ConnectionState_Full_Flow()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
-                var completionTCS = new TaskCompletionSource<ulong>();
-                var callbackTriggered = false;
+
+                // the delay is to allow the connection to transition from Connecting to Connected right after creation
+                await Task.Delay(1000);
+                var completionTCS = new TaskCompletionSource<bool>();
+                var callbackTriggerCount = 0;
                 var session = realm.SyncSession;
-                session.Stop();
-                var token = session.RegisterConnectionChangeStateCallback((oldState, newState) =>
+                var token = session.SubscribeForConnectionStateChanges((oldState, newState) =>
                 {
-                    Assert.IsFalse(callbackTriggered);
-                    Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
-                    Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
-                    callbackTriggered = true;
-                    completionTCS.TrySetResult(1);
+                    if (newState == SessionConnectionState.Disconnected)
+                    {
+                        Assert.IsTrue(callbackTriggerCount == 0);
+                        Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connected));
+                        Assert.That(newState, Is.EqualTo(SessionConnectionState.Disconnected));
+                        callbackTriggerCount++;
+                    }
+                    else if (newState == SessionConnectionState.Connecting)
+                    {
+                        Assert.IsTrue(callbackTriggerCount == 1);
+                        Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
+                        Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
+                        callbackTriggerCount++;
+                    }
+                    else
+                    {
+                        Assert.IsTrue(callbackTriggerCount == 2);
+                        Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connecting));
+                        Assert.That(newState, Is.EqualTo(SessionConnectionState.Connected));
+                        callbackTriggerCount++;
+                        completionTCS.TrySetResult(true);
+                    }
                 });
+
+                session.Stop();
                 session.Start();
                 await completionTCS.Task;
-                // TODO this needs to be finished, check what to do with unregister
-                //session.Un
-                Assert.IsTrue(callbackTriggered);
+                token.Dispose();
+                Assert.IsTrue(callbackTriggerCount == 3);
             });
         }
+
+        // TODO andrea: add test to check that the token is properly disposed
 
         [Test]
         public void Session_WhenDisposed_MethodsThrow()
