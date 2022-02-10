@@ -115,7 +115,11 @@ namespace SetupUnityPackage
                 Console.WriteLine("Preparing Asset Store project...");
 
                 var targetFolder = Path.Combine(Helpers.SolutionFolder, "Tools", "AssetStorePublisher", "Assets", "Realm");
-                Directory.Delete(targetFolder, recursive: true);
+                if (Directory.Exists(targetFolder))
+                {
+                    Directory.Delete(targetFolder, recursive: true);
+                }
+
                 Helpers.CopyFiles(opts.PackageBasePath, targetFolder, file => !file.StartsWith("package.json", StringComparison.OrdinalIgnoreCase));
 
                 Console.WriteLine($"Copied package files to {targetFolder}. Open the project with Unity and upload to asset store manually.");
