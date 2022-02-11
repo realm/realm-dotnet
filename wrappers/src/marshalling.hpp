@@ -339,8 +339,9 @@ static inline Mixed from_capi(realm_value_t val)
         return Mixed{ from_capi(val.uuid) };
     case realm_value_type::RLM_TYPE_LINK:
         return from_capi(val.link.object, true);
+    default:
+        REALM_TERMINATE("Invalid realm_value_t");
     }
-    REALM_TERMINATE("Invalid realm_value_t");
 }
 
 static inline realm_value_t to_capi(Obj obj, SharedRealm realm)
@@ -436,14 +437,6 @@ static inline realm_value_t to_capi(Mixed value)
             val.uuid = to_capi(value.get<UUID>());
             break;
         }
-        case type_LinkList:
-            [[fallthrough]];
-        case type_Mixed:
-            [[fallthrough]];
-        case type_OldTable:
-            [[fallthrough]];
-        case type_OldDateTime:
-            [[fallthrough]];
         default:
             REALM_TERMINATE("Invalid Mixed value type");
         }

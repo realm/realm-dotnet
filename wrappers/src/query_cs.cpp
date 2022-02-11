@@ -323,6 +323,8 @@ REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t 
         case realm_value_type::RLM_TYPE_OBJECT_ID:
             query.less(std::move(col_key), from_capi(primitive.object_id));
             break;
+        default:
+            REALM_UNREACHABLE();
         }
     });
 }
@@ -358,6 +360,8 @@ REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, s
         case realm_value_type::RLM_TYPE_OBJECT_ID:
             query.less_equal(std::move(col_key), from_capi(primitive.object_id));
             break;
+        default:
+            REALM_UNREACHABLE();
         }
     });
 }
@@ -393,6 +397,8 @@ REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size
         case realm_value_type::RLM_TYPE_OBJECT_ID:
             query.greater(std::move(col_key), from_capi(primitive.object_id));
             break;
+        default:
+            REALM_UNREACHABLE();
         }
     });
 }
@@ -428,6 +434,8 @@ REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm
         case realm_value_type::RLM_TYPE_OBJECT_ID:
             query.greater_equal(std::move(col_key), from_capi(primitive.object_id));
             break;
+        default:
+            REALM_UNREACHABLE();
         }
     });
 }
