@@ -94,7 +94,9 @@ namespace SetupUnityPackage
             await CopyPackages(Helpers.PackagesFolder, opts, testsSearchDirectory);
 
             var manifestPath = Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Packages", "manifest.json");
-            UpdateManifestJson(manifestPath, "io.realm.unity", opts.RealmPackage);
+            var relativePackagePath = Path.GetRelativePath(Path.GetDirectoryName(manifestPath), opts.RealmPackage);
+
+            UpdateManifestJson(manifestPath, "io.realm.unity", relativePackagePath);
 
             Directory.Delete(extractedPackagePath, recursive: true);
         }
@@ -120,7 +122,7 @@ namespace SetupUnityPackage
                     Directory.Delete(targetFolder, recursive: true);
                 }
 
-                Helpers.CopyFiles(opts.PackageBasePath, targetFolder, file => !file.StartsWith("package.json", StringComparison.OrdinalIgnoreCase));
+                Helpers.CopyFiles(opts.PackageBasePath, targetFolder, file => !file.StartsWith("package.json", StringComparison.OrdinalIgnoreCase) && !file.EndsWith(".tgz", StringComparison.OrdinalIgnoreCase));
 
                 Console.WriteLine($"Copied package files to {targetFolder}. Open the project with Unity and upload to asset store manually.");
             }
