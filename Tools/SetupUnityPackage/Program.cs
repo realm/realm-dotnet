@@ -301,7 +301,7 @@ namespace SetupUnityPackage
             var contents = File.ReadAllText(path);
             var regex = new Regex($"\"{packageName}\": \"file:(?<package>[^\"]*)\"");
             var oldPackagePath = regex.Match(contents).Groups["package"].Value;
-            File.WriteAllText(path, contents.Replace(oldPackagePath, packagePath.Replace("\\", "\\\\")));
+            File.WriteAllText(path, contents.Replace(oldPackagePath, packagePath.Replace("\\", "/")));
         }
 
         private static void CopyDocumentation(string packageBasePath)
