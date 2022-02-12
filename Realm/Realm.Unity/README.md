@@ -1,4 +1,4 @@
-![Realm](https://github.com/realm/realm-dotnet/raw/master/logo.png)
+![Realm](https://github.com/realm/realm-dotnet/raw/main/logo.png)
 
 Realm is an embedded mobile database that runs directly on phones, tablets, or desktops.
 

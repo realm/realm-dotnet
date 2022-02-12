@@ -33,7 +33,7 @@ namespace Realms
 #pragma warning restore IDE1006 // Naming Styles
         }
 
-        public NotificationTokenHandle(NotifiableObjectHandleBase root, IntPtr handle) : base(root, handle)
+        public NotificationTokenHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -53,7 +53,7 @@ namespace Realms
             return base.ReleaseHandle();
         }
 
-        protected override void Unbind()
+        public override void Unbind()
         {
             // The token is destroyed in Dispose
         }

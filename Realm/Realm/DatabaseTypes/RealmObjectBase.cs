@@ -224,7 +224,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetValueUnique(propertyName, _metadata, val);
+            if (_realm.IsInMigration)
+            {
+                _objectHandle.SetValue(propertyName, _metadata, val, _realm);
+            }
+            else
+            {
+                _objectHandle.SetValueUnique(propertyName, _metadata, val);
+            }
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)

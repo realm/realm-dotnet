@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
-    internal partial class AppHandle : RealmHandle
+    internal partial class AppHandle : StandaloneHandle
     {
         private static class EmailNativeMethods
         {

@@ -3,7 +3,6 @@ name: main
   push:
     branches:
     - main
-    - master
   pull_request: null
 env:
   REALM_DISABLE_ANALYTICS: true
@@ -837,7 +836,7 @@ jobs:
         privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
         differentiator: UWP Managed
   test-uwp-managed:
-    runs-on: windows-latest
+    runs-on: windows-2019
     name: Test UWP Managed
     needs:
     - build-packages

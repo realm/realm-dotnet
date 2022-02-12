@@ -18,12 +18,12 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -76,11 +76,11 @@ namespace Realms.Tests.Sync
                 });
 
                 // This tests things via reflection because we don't want to expose private members, even internally.
-                var subsRefs = typeof(Realm).GetField("_subscriptionRefs", BindingFlags.NonPublic | BindingFlags.Instance);
-                var subs = (List<WeakReference<SubscriptionSet>>)subsRefs.GetValue(realm);
+                var subsRefs = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
+                var weakSubs = (WeakReference<SubscriptionSet>)subsRefs.GetValue(realm);
 
-                Assert.That(subs.Count, Is.EqualTo(1));
-                Assert.That(subs[0].TryGetTarget(out _), Is.False);
+                Assert.That(weakSubs, Is.Not.Null);
+                Assert.That(weakSubs.TryGetTarget(out _), Is.False);
             });
         }
 
@@ -110,17 +110,19 @@ namespace Realms.Tests.Sync
                 });
 
                 // This tests things via reflection because we don't want to expose private members, even internally.
-                var subsRefs = typeof(Realm).GetField("_subscriptionRefs", BindingFlags.NonPublic | BindingFlags.Instance);
-                var subs = (List<WeakReference<SubscriptionSet>>)subsRefs.GetValue(realm);
+                var subsRef = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
+                var weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
 
-                Assert.That(subs.Count, Is.EqualTo(1));
-                Assert.That(subs[0].TryGetTarget(out _), Is.False);
+                Assert.That(weakSubs, Is.Not.Null);
+                Assert.That(weakSubs.TryGetTarget(out _), Is.False);
 
                 // The old one was gc-ed, so we should get a new one here
                 var subsAgain = realm.Subscriptions;
 
-                Assert.That(subs.Count, Is.EqualTo(2));
-                Assert.That(subs[1].TryGetTarget(out var subsFromList), Is.True);
+                weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
+
+                Assert.That(weakSubs, Is.Not.Null);
+                Assert.That(weakSubs.TryGetTarget(out var subsFromList), Is.True);
 
                 Assert.That(ReferenceEquals(subsAgain, subsFromList));
             });
@@ -938,7 +940,44 @@ namespace Realms.Tests.Sync
 
             realm.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => _ = subs.Count);
+            Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+            Assert.Throws<RealmClosedException>(() => _ = subs.Count);
+        }
+
+        [Test]
+        public void SubscriptionSet_WhenSupersededParentRealmIsClosed_GetsClosed()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var realm = GetFakeFLXRealm();
+                var subs = realm.Subscriptions;
+
+                await Task.Run(() =>
+                {
+                    using var bgRealm = GetRealm(realm.Config);
+                    bgRealm.Subscriptions.Update(() =>
+                    {
+                        bgRealm.Subscriptions.Add(bgRealm.All<SyncAllTypesObject>());
+                    });
+                });
+
+                var updatedSubs = realm.Subscriptions;
+                Assert.That(subs, Is.Not.SameAs(updatedSubs));
+
+                realm.Dispose();
+
+                var handleField = typeof(SubscriptionSet).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance);
+                var subsHandle = (SubscriptionSetHandle)handleField.GetValue(subs);
+                var updatedSubsHandle = (SubscriptionSetHandle)handleField.GetValue(updatedSubs);
+                Assert.That(subsHandle.IsClosed);
+                Assert.That(updatedSubsHandle.IsClosed);
+
+                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+                Assert.Throws<RealmClosedException>(() => _ = subs.Count);
+                Assert.Throws<RealmClosedException>(() => _ = updatedSubs.Count);
+            });
         }
 
         [Test]

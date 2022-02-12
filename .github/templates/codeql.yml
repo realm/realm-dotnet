@@ -32,15 +32,15 @@
 name: "CodeQL"
 "on":
   push:
-    branches: [ master, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ main ]
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
   analyze-cpp:
     name: Analyze C++
-    runs-on: windows-latest
+    runs-on: windows-2019
     permissions:
       actions: read
       contents: read
@@ -50,7 +50,7 @@ jobs:
     - #@ template.replace(runCodeQL("cpp", [setupVcpkg(), buildWrappers()]))
   analyze-csharp:
     name: Analyze C#
-    runs-on: windows-latest
+    runs-on: windows-2019
     permissions:
       actions: read
       contents: read

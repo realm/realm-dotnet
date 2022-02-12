@@ -2,7 +2,7 @@
     "exportVersion":4,
     "dashboards":{
       "dashboard":{
-        "description":"Benchmark results for the Realm.NET SDK: https://github.com/realm/realm-dotnet/tree/master/Tests/Benchmarks/PerformanceTests",
+        "description":"Benchmark results for the Realm.NET SDK: https://github.com/realm/realm-dotnet/tree/main/Tests/Benchmarks/PerformanceTests",
         "filters":[
           {
             "type":"String",
@@ -11,7 +11,7 @@
             "settings":{
               "allOthers":false,
               "values":[
-                "master"
+                "main"
               ]
             },
             "linkedFields":[

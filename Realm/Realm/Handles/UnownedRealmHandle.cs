@@ -30,6 +30,18 @@ namespace Realms
 
         public override bool OwnsNativeRealm => false;
 
+        public override void AddChild(RealmHandle handle)
+        {
+            base.AddChild(handle);
+
+            // The unowned realm handle needs to keep track of all children,
+            // not just the ones that are forcing ownership.
+            if (!handle.ForceRootOwnership)
+            {
+                _weakChildren.Add(new(handle));
+            }
+        }
+
         protected override void Unbind()
         {
             // do nothing - we don't own this, so we don't need to clean up

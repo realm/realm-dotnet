@@ -60,7 +60,7 @@ namespace Realms
             public static extern Int64 add_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void remove(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
+            public static extern void remove(ObjectHandle handle, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -98,6 +98,11 @@ namespace Realms
         {
             get
             {
+                if (IsClosed || Root?.IsClosed == true)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
@@ -105,12 +110,14 @@ namespace Realms
         }
 
         [Preserve]
-        public ObjectHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public ObjectHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
         public bool ObjEquals(ObjectHandle other)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.equals_object(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -119,19 +126,20 @@ namespace Realms
 
         public int GetObjHash()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_hashcode(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         public RealmValue GetValue(string propertyName, RealmObjectBase.Metadata metadata, Realm realm)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -141,6 +149,8 @@ namespace Realms
 
         public RealmSchema GetSchema()
         {
+            EnsureIsOpen();
+
             RealmSchema result = null;
             Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
             var callbackHandle = GCHandle.Alloc(callback);
@@ -160,6 +170,8 @@ namespace Realms
 
         public void SetValue(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value, Realm realm)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
 
             // We need to special-handle objects because they need to be managed before we can set them.
@@ -190,6 +202,8 @@ namespace Realms
 
         public long AddInt64(IntPtr propertyIndex, long value)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_int64(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
@@ -197,6 +211,8 @@ namespace Realms
 
         public void SetValueUnique(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
 
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
@@ -213,12 +229,16 @@ namespace Realms
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
         {
+            EnsureIsOpen();
+
             NativeMethods.remove(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public RealmList<T> GetList<T>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -230,6 +250,8 @@ namespace Realms
 
         public RealmSet<T> GetSet<T>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -241,6 +263,8 @@ namespace Realms
 
         public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -252,6 +276,8 @@ namespace Realms
 
         public ObjectHandle CreateEmbeddedObjectForProperty(string propertyName, RealmObjectBase.Metadata metadata)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
@@ -260,24 +286,30 @@ namespace Realms
 
         public ResultsHandle GetBacklinks(string propertyName, RealmObjectBase.Metadata metadata)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ResultsHandle(this, resultsPtr);
+            return new ResultsHandle(Root, resultsPtr);
         }
 
         public ResultsHandle GetBacklinksForType(TableKey tableKey, string propertyName, RealmObjectBase.Metadata metadata)
         {
+            EnsureIsOpen();
+
             var propertyIndex = GetPropertyIndex(propertyName, metadata);
             var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ResultsHandle(this, resultsPtr);
+            return new ResultsHandle(Root, resultsPtr);
         }
 
         public int GetBacklinkCount()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_backlink_count(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -285,6 +317,8 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -293,13 +327,17 @@ namespace Realms
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public ObjectHandle Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(frozenRealmHandle, result);

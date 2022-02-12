@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Linq;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
@@ -33,7 +34,7 @@ namespace PerformanceTests
         public static void Main(string[] args)
         {
             var config = GetCustomConfig()
-                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance));
+                .AddJob(Job.Default.WithToolchain(new InProcessEmitToolchain(timeout: TimeSpan.FromHours(1), logOutput: true)));
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
         }
 

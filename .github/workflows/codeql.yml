@@ -2,18 +2,16 @@ name: CodeQL
 "on":
   push:
     branches:
-    - master
     - main
   pull_request:
     branches:
-    - master
     - main
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
   analyze-cpp:
     name: Analyze C++
-    runs-on: windows-latest
+    runs-on: windows-2019
     permissions:
       actions: read
       contents: read
@@ -48,7 +46,7 @@ jobs:
       uses: github/codeql-action/analyze@v1
   analyze-csharp:
     name: Analyze C#
-    runs-on: windows-latest
+    runs-on: windows-2019
     permissions:
       actions: read
       contents: read

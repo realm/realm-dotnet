@@ -421,7 +421,6 @@ name: main
   push:
     branches:
       - main
-      - master
   pull_request:
 env:
   REALM_DISABLE_ANALYTICS: true
@@ -595,7 +594,7 @@ jobs:
     - #@ template.replace(fetchPackageArtifacts())
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
-  _: #@ template.replace(testJob("UWP Managed", "windows-latest", uwpTestSteps()))
+  _: #@ template.replace(testJob("UWP Managed", "windows-2019", uwpTestSteps()))
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: "Test .NET"
