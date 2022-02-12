@@ -33,7 +33,7 @@
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-    <NoWarn>MSB4011</NoWarn>
+    <NoWarn>MSB4011;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">

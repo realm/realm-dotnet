@@ -84,7 +84,7 @@ struct SyncConfiguration
     bool is_flexible_sync;
 
     ClientResyncMode client_resync_mode;
-    void* managed_sync_configuration_base_handle;
+    void* managed_sync_config;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

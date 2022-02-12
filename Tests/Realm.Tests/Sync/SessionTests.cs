@@ -163,8 +163,9 @@ namespace Realms.Tests.Sync
                         onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     },
-                    ManualResetFallback = (session, exception) =>
+                    ManualResetFallback = (session, err) =>
                     {
+                        Assert.IsInstanceOf<ClientResetException>(err);
                         Assert.IsFalse(onBeforeTriggered);
                         Assert.IsFalse(onAfterTriggered);
                         Assert.IsFalse(manualResetFallbackHandled);
@@ -215,7 +216,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnBeforeReset()
+        public void Session_ClientReset_DiscardLocalRecoveryHandler_When_Exception_OnBeforeReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -241,6 +242,7 @@ namespace Realms.Tests.Sync
                     },
                     ManualResetFallback = (session, err) =>
                     {
+                        Assert.IsInstanceOf<ClientResetException>(err);
                         Assert.IsTrue(onBeforeTriggered);
                         Assert.IsFalse(onAfterResetTriggered);
                         Assert.IsFalse(manualFallbackTriggered);
@@ -262,7 +264,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_ManualRecoveryHandler_When_Exception_OnAfterReset()
+        public void Session_ClientReset_DiscardLocalRecoveryHandler_When_Exception_OnAfterReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -290,6 +292,7 @@ namespace Realms.Tests.Sync
                     },
                     ManualResetFallback = (session, err) =>
                     {
+                        Assert.IsInstanceOf<ClientResetException>(err);
                         Assert.IsTrue(onBeforeTriggered);
                         Assert.IsTrue(onAfterResetTriggered);
                         Assert.IsFalse(manualFallbackTriggered);
@@ -311,17 +314,21 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_SyncError_Handler()
+        public void Session_OnSessionError_Handler()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var sessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
+                var errorMsg = "simulated sync issue";
                 config.OnSessionError = (sender, e) =>
                 {
                     Assert.IsInstanceOf<Session>(sender);
                     Assert.IsInstanceOf<SessionException>(e);
+                    Assert.That(e.ErrorCode == ErrorCode.PermissionDenied);
+                    Assert.That(e.Message == errorMsg);
+                    Assert.That(e.InnerException == null);
                     Assert.IsFalse(sessionErrorTriggered);
                     sessionErrorTriggered = true;
                     tcs.TrySetResult(true);
@@ -329,8 +336,7 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
-
-                session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
+                session.SimulateError(ErrorCode.PermissionDenied, errorMsg);
 
                 await tcs.Task;
 
@@ -370,16 +376,17 @@ namespace Realms.Tests.Sync
                 var session = GetSession(realm);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-#pragma warning disable CS0618 // Type or member is obsolete
                 Session.Error += (sender, e) =>
                 {
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 session.SimulateClientReset("simulated client reset");
 
+                // to avoid a race condition where e.g. both methods are called but because of timing differences `tcs.TrySetResult(true);` is reached
+                // earlier in a call not letting the other finish to run. This would hide an issue.
+                await Task.Delay(1000);
                 await tcs.Task;
 
                 Assert.IsTrue(onBeforeTriggered);
@@ -411,16 +418,17 @@ namespace Realms.Tests.Sync
                 var session = GetSession(realm);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-#pragma warning disable CS0618 // Type or member is obsolete
                 Session.Error += (sender, e) =>
                 {
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
+                // to avoid a race condition where e.g. both methods are called but because of timing differences `tcs.TrySetResult(true);` is reached
+                // earlier in a call not letting the other finish to run. This would hide an issue.
+                await Task.Delay(1000);
                 await tcs.Task;
 
                 Assert.IsFalse(obsoleteSessionErrorTriggered);

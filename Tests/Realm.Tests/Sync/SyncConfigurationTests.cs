@@ -81,7 +81,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void FlexibleSyncConfiguration_throws_When_Assigned_DiscardLocalResetHandler()
+        public void FlexibleSyncConfiguration_Throws_When_Assigned_DiscardLocalResetHandler()
         {
             var conf = GetFakeFLXConfig();
             Assert.That(() => { conf.ClientResetHandler = new DiscardLocalResetHandler(); }, Throws.TypeOf<NotSupportedException>());

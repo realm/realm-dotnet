@@ -27,8 +27,10 @@ namespace Realms.Sync.ErrorHandling
     {
         /// <summary>
         /// Gets or sets thecallback that indicates a Client Reset has happened.
-        /// This should be handled as quickly as possible as any further changes to the Realm will not be synchronized with the server and must be moved manually from the backup Realm to the new one.
+        /// This should be handled as quickly as possible as any further changes to the Realm will not be synchronized with the server and
+        /// must be moved manually from the backup Realm to the new one.
         /// </summary>
+        /// <value>Callback invoked on Client Reset.</value>
         public ClientResetCallback OnClientReset { get; set; }
     }
 }

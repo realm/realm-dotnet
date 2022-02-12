@@ -225,30 +225,31 @@ namespace Realms.Sync
                 var session = new Session(handle);
                 var messageString = message.AsString();
                 SessionException exception;
-                var syncConfigBaseHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
-                var syncConfigurationBase = (SyncConfigurationBase)syncConfigBaseHandle.Target;
+                var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
+                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                var isUsingNewErrorHandling = syncConfig.ClientResetHandler != null || syncConfig.OnSessionError != null;
 
                 if (isClientReset)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    if (syncConfigurationBase.ClientResetHandler != null)
+                    if (isUsingNewErrorHandling)
                     {
-                        switch (syncConfigurationBase.ClientResetHandler)
+                        if (syncConfig.ClientResetHandler != null)
                         {
-                            case DiscardLocalResetHandler conf:
-                                conf.ManualResetFallback?.Invoke(session, (ClientResetException)exception);
-                                break;
-                            case ManualRecoveryHandler conf:
-                                conf.OnClientReset?.Invoke(session, (ClientResetException)exception);
-                                break;
-                            default:
-                                throw new Exception($"ClientResetHandler of type {syncConfigurationBase.ClientResetHandler.GetType().Name} is unhandled");
+                            switch (syncConfig.ClientResetHandler)
+                            {
+                                case DiscardLocalResetHandler handler:
+                                    handler.ManualResetFallback?.Invoke(session, (ClientResetException)exception);
+                                    break;
+                                case ManualRecoveryHandler handler:
+                                    handler.OnClientReset?.Invoke(session, (ClientResetException)exception);
+                                    break;
+                                default:
+                                    throw new Exception($"ClientResetHandler of type {syncConfig.ClientResetHandler.GetType().Name} is not supported");
+                            }
                         }
-
-                        // after deprecation: this won't be require anymore when Session.Error will be fully deprecated
-                        return;
                     }
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)
@@ -261,9 +262,12 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                if (syncConfigurationBase.OnSessionError != null)
+                if (isUsingNewErrorHandling)
                 {
-                    syncConfigurationBase.OnSessionError.Invoke(session, exception);
+                    if (!isClientReset)
+                    {
+                        syncConfig.OnSessionError?.Invoke(session, exception);
+                    }
                 }
                 else
                 {
@@ -280,22 +284,22 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
         private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
-            var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-            var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
-
-            if (syncConfiguration.ClientResetHandler == null)
-            {
-                return true;
-            }
-
-            var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
-            var schema = syncConfiguration.GetSchema();
-
             try
             {
+                var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
+                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+
+                if (syncConfig.ClientResetHandler == null)
+                {
+                    return true;
+                }
+
+                var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfig.ClientResetHandler;
+                var schema = syncConfig.GetSchema();
+
                 if (discardLocalResetHandler.OnBeforeReset != null)
                 {
-                    using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
+                    using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
                     discardLocalResetHandler.OnBeforeReset(realmBefore);
                 }
             }
@@ -311,30 +315,30 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
         private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
         {
-            var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-            var syncConfiguration = (SyncConfigurationBase)syncConfigHandle.Target;
-
-            // no clientResetHandler means don't do anything for this callback
-            if (syncConfiguration.ClientResetHandler == null)
-            {
-                return true;
-            }
-
-            var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfiguration.ClientResetHandler;
-            var schema = syncConfiguration.GetSchema();
-
             try
             {
+                var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
+                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+
+                // no clientResetHandler means don't do anything for this callback
+                if (syncConfig.ClientResetHandler == null)
+                {
+                    return true;
+                }
+
+                var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfig.ClientResetHandler;
+                var schema = syncConfig.GetSchema();
+
                 if (discardLocalResetHandler.OnAfterReset != null)
                 {
-                    using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfiguration, schema);
-                    using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfiguration, schema);
+                    using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
+                    using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfig, schema);
                     discardLocalResetHandler.OnAfterReset(realmBefore, realmAfter);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing SyncConfigurationBase.OnBeforeReset during a client reset: {ex}");
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing SyncConfigurationBase.OnAfterReset during a client reset: {ex}");
                 return false;
             }
 

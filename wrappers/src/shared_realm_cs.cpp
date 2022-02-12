@@ -52,7 +52,7 @@ using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_configuration_base_handle);
+using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -113,7 +113,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, partition);
     }
     
-    auto sync_configuration_handle = std::make_shared<GCHandleHolder>(sync_configuration.managed_sync_configuration_base_handle);
+    auto sync_configuration_handle = std::make_shared<GCHandleHolder>(sync_configuration.managed_sync_config);
 
     config.sync_config->error_handler = [sync_configuration_handle](SharedSyncSession session, SyncError error) {
         std::vector<std::pair<char*, char*>> user_info_pairs;
@@ -130,14 +130,14 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal) {
 
-        config.sync_config->notify_before_client_reset = [managed_sync_configuration_base_handle = sync_configuration.managed_sync_configuration_base_handle](SharedRealm before_frozen) {
-            if (!s_notify_before_callback(before_frozen, managed_sync_configuration_base_handle)) {
+        config.sync_config->notify_before_client_reset = [sync_configuration_handle](SharedRealm before_frozen) {
+            if (!s_notify_before_callback(before_frozen, sync_configuration_handle->handle())) {
                 throw ManagedExceptionDuringClientReset();
             }
         };
 
-        config.sync_config->notify_after_client_reset = [managed_sync_configuration_base_handle = sync_configuration.managed_sync_configuration_base_handle](SharedRealm before_frozen, SharedRealm after) {
-            if (!s_notify_after_callback(before_frozen, after, managed_sync_configuration_base_handle)) {
+        config.sync_config->notify_after_client_reset = [sync_configuration_handle](SharedRealm before_frozen, SharedRealm after) {
+            if (!s_notify_after_callback(before_frozen, after, sync_configuration_handle->handle())) {
                 throw ManagedExceptionDuringClientReset();
             }
         };
