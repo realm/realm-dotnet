@@ -131,12 +131,18 @@ namespace Realms.Sync
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
             var syncConfHandle = GCHandle.Alloc(this);
+            var clientResyncMode = ClientResyncMode.DiscardLocal;
+            if (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler)
+            {
+                clientResyncMode = ClientResyncMode.Manual;
+            }
+
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
-                client_resync_mode = ClientResetHandler is DiscardLocalResetHandler ? ClientResyncMode.DiscardLocal : ClientResyncMode.Manual,
+                client_resync_mode = clientResyncMode,
                 managed_sync_configuration_handle = GCHandle.ToIntPtr(syncConfHandle),
             };
         }
