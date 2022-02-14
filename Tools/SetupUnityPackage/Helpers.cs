@@ -45,6 +45,8 @@ namespace SetupUnityPackage
 
         public static void CopyFiles(string from, string to, Func<string, bool> shouldIncludeFile = null)
         {
+            Directory.CreateDirectory(to);
+
             var testFiles = Directory.EnumerateFiles(from, "*.*", SearchOption.AllDirectories);
             foreach (var file in testFiles)
             {
