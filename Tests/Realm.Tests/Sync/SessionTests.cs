@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
@@ -212,6 +213,175 @@ namespace Realms.Tests.Sync
                 await tcs.Task;
 
                 Assert.IsTrue(manualOnClientResetTriggered);
+            });
+        }
+
+        [Test]
+        public void Session_ClientReset_Access_BeforeFrozen_OnBeforeReset()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var intId = 2;
+                var tcs = new TaskCompletionSource<bool>();
+                var onBeforeTriggered = false;
+                var configY = await GetIntegrationConfigAsync();
+                configY.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    OnBeforeReset = (beforeFrozen) =>
+                    {
+                        Assert.IsFalse(onBeforeTriggered);
+                        var frozenObj = beforeFrozen.All<PrimaryKeyInt32Object>().First();
+                        Assert.That(frozenObj.Id == intId);
+                        onBeforeTriggered = true;
+                        tcs.TrySetResult(true);
+                    }
+                };
+
+                configY.Schema = new[] { typeof(PrimaryKeyInt32Object) };
+
+                using (var realm = await GetRealmAsync(configY))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new PrimaryKeyInt32Object { Id = intId });
+                    });
+                    await WaitForUploadAsync(realm);
+                };
+
+                using var realmY = await GetRealmAsync(configY);
+                GetSession(realmY).SimulateClientReset("simulated client reset failure");
+
+                await tcs.Task;
+
+                Assert.IsTrue(onBeforeTriggered);
+            });
+        }
+
+        [Test]
+        public void Session_ClientReset_Access_BeforeFrozen_OnAfterReset()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var intId = 2;
+                var tcs = new TaskCompletionSource<bool>();
+                var onAfterTriggered = false;
+                var configY = await GetIntegrationConfigAsync();
+                configY.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    OnAfterReset = (beforeFrozen, after) =>
+                    {
+                        Assert.IsFalse(onAfterTriggered);
+                        var frozenObj = beforeFrozen.All<PrimaryKeyInt32Object>().First();
+                        Assert.That(frozenObj.Id == intId);
+                        onAfterTriggered = true;
+                        tcs.TrySetResult(true);
+                    }
+                };
+
+                configY.Schema = new[] { typeof(PrimaryKeyInt32Object) };
+
+                using (var realm = await GetRealmAsync(configY))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new PrimaryKeyInt32Object { Id = intId });
+                    });
+                    await WaitForUploadAsync(realm);
+                };
+
+                using var realmY = await GetRealmAsync(configY);
+                GetSession(realmY).SimulateClientReset("simulated client reset failure");
+
+                await tcs.Task;
+
+                Assert.IsTrue(onAfterTriggered);
+            });
+        }
+
+        [Test]
+        public void Session_ClientReset_Access_After_OnAfterReset()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var intId = 2;
+                var tcs = new TaskCompletionSource<bool>();
+                var onAfterTriggered = false;
+                var configY = await GetIntegrationConfigAsync();
+                configY.ClientResetHandler = new DiscardLocalResetHandler
+                {
+                    OnAfterReset = (beforeFrozen, after) =>
+                    {
+                        Assert.IsFalse(onAfterTriggered);
+                        var afterObj = after.All<PrimaryKeyInt32Object>().First();
+                        Assert.That(afterObj.Id == intId);
+                        onAfterTriggered = true;
+                        tcs.TrySetResult(true);
+                    }
+                };
+
+                configY.Schema = new[] { typeof(PrimaryKeyInt32Object) };
+
+                using (var realm = await GetRealmAsync(configY))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new PrimaryKeyInt32Object { Id = intId });
+                    });
+                    await WaitForUploadAsync(realm);
+                };
+
+                using var realmY = await GetRealmAsync(configY);
+                GetSession(realmY).SimulateClientReset("simulated client reset failure");
+
+                await tcs.Task;
+
+                Assert.IsTrue(onAfterTriggered);
+            });
+        }
+
+        /* GOAL: The same PK on multiple objects across different partitions isn't allowed.
+         * And if attempted a client reset is performed.
+         * This test trigger a client reset to check that the default behaviour is DiscardLocalChanges,
+         * meaning that the second addition will be disregarded.
+         */
+        [Test]
+        public void Session_ClientReset_DefaultsTo_DiscardLocalHandler()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var pk = "yourPK";
+                var partitionX = "x";
+                var partitionY = "y";
+                var app = CreateApp();
+                var configX = await GetIntegrationConfigAsync(partitionX, app);
+
+                using (var realmX = await GetRealmAsync(configX))
+                {
+                    realmX.Write(() =>
+                    {
+                        realmX.RemoveAll<PrimaryKeyStringObject>();
+                        realmX.Add(new PrimaryKeyStringObject { Id = pk, Value = "haloa" });
+                    });
+
+                    await WaitForUploadAsync(realmX);
+                }
+
+                var configY = await GetIntegrationConfigAsync(partitionY, app);
+                using var realmY = await GetRealmAsync(configY);
+                await WaitForDownloadAsync(realmY);
+                realmY.Write(() =>
+                {
+                    realmY.RemoveAll<PrimaryKeyStringObject>();
+                    realmY.Add(new PrimaryKeyStringObject { Id = pk, Value = "salut" });
+                });
+
+                //Assert.ThrowsAsync<RealmDuplicatePrimaryKeyValueException>(async () =>
+                //{
+                    await WaitForUploadAsync(realmY);
+                //});
+                var allObj = realmY.All<PrimaryKeyStringObject>();
+                Assert.That(allObj.Count() == 1);
+                Assert.That(allObj.First().Value == "haloa");
             });
         }
 
