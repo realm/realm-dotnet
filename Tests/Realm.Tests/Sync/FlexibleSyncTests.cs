@@ -1117,7 +1117,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        // TODO: enable this when https://github.com/realm/realm-core/issues/5208 is fixed
+        [Test, Ignore("Failing, reenable when https://github.com/realm/realm-core/issues/5208 is fixed")]
         public void Integration_CloseRealmBeforeWaitCompletes()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
