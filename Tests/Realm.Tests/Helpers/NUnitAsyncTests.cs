@@ -42,7 +42,7 @@ namespace Realms.Tests.Helpers
         {
             Assert.That(SynchronizationContext.Current, Is.Not.Null);
 
-            int i = 0;
+            var i = 0;
             SynchronizationContext.Current.Post(_ => i = 1, null);
             Assert.That(i, Is.EqualTo(0));
             await Task.Yield();
