@@ -115,11 +115,6 @@ namespace Realms.Tests.Sync
             }
         }
 
-        public static string[] ExtractBaasSettings(string[] args)
-        {
-            return Task.Run(() => ExtractBaasSettingsAsync(args)).Result;
-        }
-
         public static async Task CreateBaasAppsAsync(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)

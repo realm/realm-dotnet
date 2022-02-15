@@ -54,7 +54,7 @@ namespace Realms.Tests
                 {
                     test.Properties.Set(SynchronizationContextKey, current);
                 }
-                
+
                 var syncContext = (SynchronizationContext)Activator.CreateInstance(NUnitSynchronizationContext, TimeSpan.FromSeconds(10));
                 SynchronizationContext.SetSynchronizationContext(syncContext);
             }
