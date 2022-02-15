@@ -29,6 +29,7 @@
 
 ### Internal
 * Using Core 11.8.0
+* Refactored async and baas tests to use custom NUnit attributes instead of `TestHelpers.RunAsyncTest` and `SyncTestHelpers.RunBaasTestAsync` calls.
 
 ## 10.9.0 (2022-01-21)
 
