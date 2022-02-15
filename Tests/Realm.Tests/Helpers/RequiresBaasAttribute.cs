@@ -43,7 +43,11 @@ namespace Realms.Tests.Sync
             }
         }
 
+#if UNITY
+        public void ApplyToContext(ITestExecutionContext context)
+#else
         public void ApplyToContext(TestExecutionContext context)
+#endif
         {
             if (context.TestCaseTimeout == 0)
             {
