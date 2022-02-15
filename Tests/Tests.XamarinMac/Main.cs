@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Threading.Tasks;
 using AppKit;
 using Realms.Tests.Sync;
 
@@ -25,10 +26,10 @@ namespace Realms.Tests.XamarinMac
     {
         public static string[] Args { get; private set; }
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             NSApplication.Init();
-            Args = SyncTestHelpers.ExtractBaasSettings(args);
+            Args = await SyncTestHelpers.ExtractBaasSettingsAsync(args);
             NSApplication.Main(args);
         }
     }

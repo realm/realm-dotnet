@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using NUnit.Framework.Api;
 using NUnit.Runner;
 using NUnit.Runner.Services;
 using Realms.Tests.Sync;
@@ -36,6 +38,12 @@ namespace Realms.Tests.iOS
         {
             Forms.Init();
 
+            var arguments = NSProcessInfo.ProcessInfo.Arguments
+                             .Select(a => a.Replace("-app-arg=", string.Empty))
+                             .ToArray();
+
+            arguments = Task.Run(() => SyncTestHelpers.ExtractBaasSettingsAsync(arguments)).Result;
+
             var nunit = new App();
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
@@ -43,11 +51,8 @@ namespace Realms.Tests.iOS
                 LogToOutput = true
             };
 
-            var arguments = NSProcessInfo.ProcessInfo.Arguments
-                                         .Select(a => a.Replace("-app-arg=", string.Empty))
-                                         .ToArray();
-
-            arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
+            var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
+            runner.Load(typeof(TestHelpers).Assembly, new Dictionary<string, object>());
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {
