@@ -162,7 +162,7 @@ namespace Realms
         /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
         /// </summary>
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
-        public byte[] EncryptionKey
+        public virtual byte[] EncryptionKey
         {
             get
             {
