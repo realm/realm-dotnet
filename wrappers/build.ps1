@@ -49,7 +49,7 @@ $cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", "-DCMAKE_BUIL
 if ($Target -eq 'WindowsStore') {
     $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
 } else {
-    $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='8.1'", "-DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION='8.1'"
+    $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='8.1'"
 }
 
 if ($EnableLTO) {
