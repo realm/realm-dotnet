@@ -743,7 +743,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -812,7 +812,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -832,7 +832,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -909,7 +909,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -993,7 +993,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -1060,7 +1060,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -1080,7 +1080,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -1152,7 +1152,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -1172,7 +1172,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -1281,7 +1281,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -1370,7 +1370,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
       id: deploy-mdb-apps
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
@@ -1507,7 +1507,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
       with:
         projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
         realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}

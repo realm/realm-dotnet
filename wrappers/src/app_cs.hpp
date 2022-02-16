@@ -131,7 +131,7 @@ namespace binding {
     extern std::function<BsonCallbackT> s_bson_callback;
     extern std::function<ApiKeysCallbackT> s_api_keys_callback;
 
-    inline std::function<void(std::shared_ptr<SyncUser> user, util::Optional<AppError>)> get_user_callback_handler(void* tcs_ptr) {
+    inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
@@ -145,7 +145,7 @@ namespace binding {
         };
     }
 
-    inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
+    inline auto get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
@@ -158,8 +158,8 @@ namespace binding {
         };
     }
 
-    inline std::function<void(util::Optional<AppError>, util::Optional<bson::Bson>)> get_bson_callback_handler(void* tcs_ptr) {
-        return [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
+    inline auto get_bson_callback_handler(void* tcs_ptr) {
+        return [tcs_ptr](util::Optional<bson::Bson> response, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
                 MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);

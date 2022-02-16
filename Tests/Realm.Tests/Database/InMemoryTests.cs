@@ -153,24 +153,13 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void InMemoryRealm_WhenEncrypted_RequiresEncryptionKey()
+        [Obsolete("Tests obsolete functionality")]
+        public void InMemoryRealm_WhenEncrypted_Throws()
         {
-            var encryptedConfig = new InMemoryConfiguration(_config.Identifier)
+            Assert.Throws<NotSupportedException>(() => _ = new InMemoryConfiguration(_config.Identifier)
             {
                 EncryptionKey = TestHelpers.GetEncryptionKey(23)
-            };
-
-            using (var realm = GetRealm(encryptedConfig))
-            {
-                realm.Write(() => realm.Add(new IntPropertyObject
-                {
-                    Int = 42
-                }));
-
-                Assert.That(() => GetRealm(_config), Throws.TypeOf<RealmMismatchedConfigException>());
-            }
-
-            Assert.That(() => GetRealm(_config), Throws.Nothing);
+            });
         }
     }
 }

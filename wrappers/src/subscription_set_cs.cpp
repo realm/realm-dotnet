@@ -94,7 +94,7 @@ namespace binding {
             return CSharpState::Complete;
         case SubscriptionSet::State::Error:
             return CSharpState::Error;
-        case SubscriptionSet::State::Superceded:
+        case SubscriptionSet::State::Superseded:
             return CSharpState::Superseded;
         default:
             REALM_UNREACHABLE();
