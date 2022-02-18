@@ -165,6 +165,9 @@ namespace Realms.Sync
             Error?.Invoke(session, args);
         }
 
+        /// after deprecation: this needs to go when <see cref="Error"/> is fully deprecated
+        internal static bool IsErrorSet => Error != null;
+
         /// <inheritdoc/>
         public override bool Equals(object obj)
             => obj is Session other &&

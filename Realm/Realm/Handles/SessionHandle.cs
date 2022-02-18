@@ -227,7 +227,8 @@ namespace Realms.Sync
                 SessionException exception;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-                var isUsingNewErrorHandling = syncConfig.ClientResetHandler != null || syncConfig.OnSessionError != null;
+                var isUsingNewErrorHandling = (syncConfig.ClientResetHandler != null || syncConfig.OnSessionError != null) ||
+                                              (syncConfig.ClientResetHandler == null && syncConfig.OnSessionError == null && !Session.IsErrorSet);
 
                 if (isClientReset)
                 {
