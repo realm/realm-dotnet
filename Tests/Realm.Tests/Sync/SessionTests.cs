@@ -647,13 +647,15 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += (sender, e) =>
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
+
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += sessionErrorFunc;
 
                 session.SimulateClientReset("simulated client reset");
 
@@ -665,6 +667,7 @@ namespace Realms.Tests.Sync
                 Assert.IsTrue(onBeforeTriggered);
                 Assert.IsTrue(onAfterTriggered);
                 Assert.IsFalse(obsoleteSessionErrorTriggered);
+                Session.Error -= sessionErrorFunc;
             });
         }
 
@@ -696,13 +699,15 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += (sender, e) =>
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
+
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += sessionErrorFunc;
 
                 GetSession(realm).SimulateError(ClientError.AutoClientResetFailed, errorMsg);
 
@@ -713,6 +718,7 @@ namespace Realms.Tests.Sync
 
                 Assert.IsTrue(manualResetFallbackHandled);
                 Assert.IsFalse(obsoleteSessionErrorTriggered);
+                Session.Error -= sessionErrorFunc;
             });
         }
 
@@ -730,8 +736,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += (sender, e) =>
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
                     Assert.IsInstanceOf<Session>(sender);
                     Assert.IsInstanceOf<ClientResetException>(e.Exception);
@@ -745,9 +750,13 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 };
 
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += sessionErrorFunc;
+
                 session.SimulateClientReset(errorMsg);
                 await tcs.Task;
                 Assert.IsTrue(obsoleteSessionErrorTriggered);
+                Session.Error -= sessionErrorFunc;
             });
         }
 
@@ -762,6 +771,13 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 var errorMsg = "simulated sync issue";
 
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
+                {
+                    Assert.That(obsoleteSessionErrorTriggered, Is.False);
+                    obsoleteSessionErrorTriggered = true;
+                    tcs.TrySetResult(e.Exception);
+                };
+
                 using (var realm = await GetRealmAsync(config))
                 {
                     var session = GetSession(realm);
@@ -769,12 +785,7 @@ namespace Realms.Tests.Sync
                     // Session.Error is set after obtaining a realm as it truly tests coexistence given that
                     // the resynce mode is set at creation of the configuration.
                     // SyncConfigurationBase.CreateNativeSyncConfiguration.
-                    Session.Error += (sender, e) =>
-                    {
-                        Assert.That(obsoleteSessionErrorTriggered, Is.False);
-                        obsoleteSessionErrorTriggered = true;
-                        tcs.TrySetResult(e.Exception);
-                    };
+                    Session.Error += sessionErrorFunc;
 
                     session.SimulateClientReset(errorMsg);
                 }
@@ -792,6 +803,8 @@ namespace Realms.Tests.Sync
                 Assert.That(File.Exists(config.DatabasePath));
                 Assert.IsTrue(clientEx.InitiateClientReset());
                 Assert.IsFalse(File.Exists(config.DatabasePath));
+                Session.Error -= sessionErrorFunc;
+
             });
         }
 
@@ -809,8 +822,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += (sender, e) =>
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
                     Assert.IsInstanceOf<Session>(sender);
                     Assert.IsInstanceOf<SessionException>(e.Exception);
@@ -823,10 +835,14 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 };
 
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += sessionErrorFunc;
+
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
                 await tcs.Task;
                 Assert.IsTrue(obsoleteSessionErrorTriggered);
+                Session.Error -= sessionErrorFunc;
             });
         }
 
@@ -853,13 +869,15 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += (sender, e) =>
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
+
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += sessionErrorFunc;
 
                 session.SimulateClientReset("simulated client reset");
 
@@ -870,6 +888,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(manualOnClientResetTriggered, Is.True);
                 Assert.That(obsoleteSessionErrorTriggered, Is.False);
+                Session.Error -= sessionErrorFunc;
             });
         }
 
@@ -895,13 +914,15 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += (sender, e) =>
+                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
+
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += sessionErrorFunc;
 
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
@@ -912,6 +933,7 @@ namespace Realms.Tests.Sync
 
                 Assert.IsFalse(obsoleteSessionErrorTriggered);
                 Assert.IsTrue(sessionErrorTriggered);
+                Session.Error -= sessionErrorFunc;
             });
         }
 
