@@ -1,8 +1,8 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Added support for a new client reset strategy, called [Discard Local Reset](www.mongodb.com/FIXME_PLEASE). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.  
-This addition makes `Session.Error` **deprecated**. In order to migrate the existing client reset handling code to the new structure the following should be done
+* Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
+This addition makes `Session.Error` **deprecated**. In order to migrate the existing client reset handling code to the new API the following should be done
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {
@@ -15,7 +15,7 @@ This addition makes `Session.Error` **deprecated**. In order to migrate the exis
       }
     };
   ```
-  And if, instead, one wants to have the handling code to be used only if a discarding local changes fails, the following should be done instead
+  And if, instead, one wants to have the handling code to be used only if a discarding unsynced changes fails, the following should be done instead
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {

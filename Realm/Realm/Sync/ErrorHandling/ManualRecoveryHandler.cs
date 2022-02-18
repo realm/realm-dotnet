@@ -20,7 +20,6 @@ namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
     /// A client reset strategy where the user needs to fully take care of a client reset. <see cref="OnClientReset"/> is the callback where user cose is supplied.
-    /// For more information see <see cref="ClientResetHandlerBase"/>.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public sealed class ManualRecoveryHandler : ClientResetHandlerBase
