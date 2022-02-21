@@ -36,6 +36,8 @@ namespace Realms.Tests.iOS
     {
         public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
         {
+            TestHelpers.EnsureNUnitCanAwaitTasks();
+
             Forms.Init();
 
             var arguments = NSProcessInfo.ProcessInfo.Arguments
@@ -50,9 +52,6 @@ namespace Realms.Tests.iOS
             {
                 LogToOutput = true
             };
-
-            var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
-            runner.Load(typeof(TestHelpers).Assembly, new Dictionary<string, object>());
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {

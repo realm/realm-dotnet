@@ -41,6 +41,8 @@ namespace Realms.Tests.Android
         {
             base.OnCreate(savedInstanceState);
 
+            TestHelpers.EnsureNUnitCanAwaitTasks();
+
             Forms.Init(this, savedInstanceState);
 
             var arguments = TestHelpers.SplitArguments(Intent.GetStringExtra("args") ?? string.Empty);
