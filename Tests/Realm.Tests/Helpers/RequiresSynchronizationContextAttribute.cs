@@ -27,6 +27,8 @@ namespace Realms.Tests
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     internal class RequiresSynchronizationContextAttribute : TestActionAttribute
     {
+// this attribute is a no-op on Unity, which apparently already runs tests in a synchronization context
+#if !UNITY
         private const string SynchronizationContextKey = "Realm_SynchronizationContext";
 
         private static readonly Type NUnitSynchronizationContext =
@@ -70,5 +72,6 @@ namespace Realms.Tests
         }
 
         private static bool IsAsyncTest(ITest test) => test.Method.ReturnType.Type.GetMethod(nameof(Task.GetAwaiter)) != null;
+#endif
     }
 }
