@@ -109,7 +109,7 @@ REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnCont
 
 REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr, bool execute_func)
 {
-    auto& func = *reinterpret_cast<std::function<void()>*>(function_ptr);
+    auto& func = *reinterpret_cast<util::UniqueFunction<void()>*>(function_ptr);
 
     if (execute_func) {
         func();
