@@ -30,7 +30,9 @@ namespace Realms.Tests.Database
     {
         #region Primitive values
 
-        public static char[] CharValues = new[] { (char)0, 'a', char.MaxValue, char.MinValue };
+        private static readonly DateTimeOffset _someDate = new(1234, 5, 6, 7, 8, 9, TimeSpan.Zero);
+
+        public static char[] CharValues = new[] { (char)0, 'a', 'b', char.MinValue };
         public static byte[] ByteValues = new[] { (byte)0, (byte)1, byte.MaxValue, byte.MinValue };
         public static int[] IntValues = new[] { 0, 1, -1, int.MaxValue, int.MinValue };
         public static short[] ShortValues = new[] { (short)0, (short)1, (short)-1, short.MaxValue, short.MinValue };
@@ -40,9 +42,9 @@ namespace Realms.Tests.Database
         public static Decimal128[] Decimal128Values = new[] { 0, 1, -1, Decimal128.MaxValue, Decimal128.MinValue };
         public static decimal[] DecimalValues = new[] { 0, 1, -1, decimal.MaxValue, decimal.MinValue };
         public static bool[] BoolValues = new[] { false, true };
-        public static DateTimeOffset[] DateValues = new[] { DateTimeOffset.Now, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
-        public static Guid[] GuidValues = new[] { Guid.NewGuid(), Guid.Empty };
-        public static ObjectId[] ObjectIdValues = new[] { ObjectId.GenerateNewId(), ObjectId.Empty };
+        public static DateTimeOffset[] DateValues = new[] { _someDate, DateTimeOffset.MaxValue, DateTimeOffset.MinValue };
+        public static Guid[] GuidValues = new[] { Guid.Parse("3809d6d9-7618-4b3d-8044-2aa35fd02f31"), Guid.Empty };
+        public static ObjectId[] ObjectIdValues = new[] { new ObjectId("5f63e882536de46d71877979"), ObjectId.Empty };
         public static string[] StringValues = new[] { "a", "abc", string.Empty };
         public static byte[][] DataValues = new[] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
         public static RealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
