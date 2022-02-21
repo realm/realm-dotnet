@@ -190,35 +190,6 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_ManualRecovery()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var manualOnClientResetTriggered = false;
-                var tcs = new TaskCompletionSource<bool>();
-                var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler
-                {
-                    OnClientReset = (sender, e) =>
-                    {
-                        Assert.IsInstanceOf<Session>(sender);
-                        Assert.IsInstanceOf<SessionException>(e);
-                        manualOnClientResetTriggered = true;
-                        tcs.TrySetResult(true);
-                    }
-                };
-
-                using var realm = await GetRealmAsync(config);
-
-                GetSession(realm).SimulateClientReset("simulated client reset");
-
-                await tcs.Task;
-
-                Assert.IsTrue(manualOnClientResetTriggered);
-            });
-        }
-
-        [Test]
         public void Session_ClientReset_ManualRecovery_InitiateClientReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -228,13 +199,13 @@ namespace Realms.Tests.Sync
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new ManualRecoveryHandler
-                {
-                    OnClientReset = (sender, e) =>
+                (
+                    (sender, e) =>
                     {
                         manualOnClientResetTriggered = true;
                         errorTcs.TrySetResult(e);
                     }
-                };
+                );
 
                 using (var realm = await GetRealmAsync(config))
                 {
@@ -412,11 +383,10 @@ namespace Realms.Tests.Sync
                 var partitionY = Guid.NewGuid().ToString();
                 var app = CreateApp();
                 var tcs = new TaskCompletionSource<bool>();
-                var configX = await GetIntegrationConfigAsync(partitionX, app);
                 var configY = await GetIntegrationConfigAsync(partitionY, app);
                 var onBeforeTriggered = false;
 
-                configY.Schema = new[] { typeof(PrimaryKeyStringObject) };
+                configY.Schema = new[] { typeof(PrimaryKeyInt32Object) };
 
                 configY.ClientResetHandler = new DiscardLocalResetHandler
                 {
@@ -430,29 +400,15 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                using var realmX = await GetRealmAsync(configX);
                 using var realmY = await GetRealmAsync(configY);
-
-                // clean anything from previous runs
-                realmX.Write(() =>
-                {
-                    realmX.RemoveAll<PrimaryKeyStringObject>();
-                });
-                await WaitForUploadAsync(realmX);
 
                 realmY.Write(() =>
                 {
-                    realmY.RemoveAll<PrimaryKeyStringObject>();
+                    realmY.RemoveAll<PrimaryKeyInt32Object>();
                 });
                 await WaitForUploadAsync(realmY);
 
-                realmX.Write(() =>
-                {
-                    realmX.Add(new PrimaryKeyStringObject { Id = pk, Value = "haloa" });
-                });
-                await WaitForUploadAsync(realmX);
-
-                var token = realmY.All<PrimaryKeyStringObject>().SubscribeForNotifications((sender, changes, error) =>
+                var token = realmY.All<PrimaryKeyInt32Object>().SubscribeForNotifications((sender, changes, error) =>
                 {
                     if (error != null)
                     {
@@ -477,7 +433,7 @@ namespace Realms.Tests.Sync
 
                 realmY.Write(() =>
                 {
-                    realmY.Add(new PrimaryKeyStringObject { Id = pk, Value = "salut" });
+                    realmY.Add(new PrimaryKeyInt32Object { Id = 23764, PartitionKey = partitionX});
                 });
                 realmY.GetSession().Start();
 
@@ -724,44 +680,6 @@ namespace Realms.Tests.Sync
 
         // after deprecation: temporary test for co-existence of Session.Error and error handling in SyncConfigurationBase
         [Test]
-        public void Session_ClientReset_OldSessionError_Coexistence()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var obsoleteSessionErrorTriggered = false;
-                var tcs = new TaskCompletionSource<bool>();
-                var config = await GetIntegrationConfigAsync();
-                var errorMsg = "simulated sync issue";
-
-                using var realm = await GetRealmAsync(config);
-                var session = GetSession(realm);
-
-                EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
-                {
-                    Assert.IsInstanceOf<Session>(sender);
-                    Assert.IsInstanceOf<ClientResetException>(e.Exception);
-                    var sessionEx = (ClientResetException)e.Exception;
-                    Assert.That(sessionEx.ErrorCode == ErrorCode.DivergingHistories);
-                    Assert.That(sessionEx.Message == errorMsg);
-                    Assert.That(sessionEx.InnerException == null);
-
-                    Assert.That(obsoleteSessionErrorTriggered, Is.False);
-                    obsoleteSessionErrorTriggered = true;
-                    tcs.TrySetResult(true);
-                };
-
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += sessionErrorFunc;
-
-                session.SimulateClientReset(errorMsg);
-                await tcs.Task;
-                Assert.IsTrue(obsoleteSessionErrorTriggered);
-                Session.Error -= sessionErrorFunc;
-            });
-        }
-
-        // after deprecation: temporary test for co-existence of Session.Error and error handling in SyncConfigurationBase
-        [Test]
         public void Session_ClientReset_OldSessionError_InitiateClientReset_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -769,6 +687,7 @@ namespace Realms.Tests.Sync
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<Exception>();
                 var config = await GetIntegrationConfigAsync();
+                config.ClientResetHandler = new ManualRecoveryHandler();
                 var errorMsg = "simulated sync issue";
 
                 EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
@@ -793,6 +712,7 @@ namespace Realms.Tests.Sync
                 var ex = await tcs.Task;
 
                 Assert.IsTrue(obsoleteSessionErrorTriggered);
+                Session.Error -= sessionErrorFunc;
 
                 Assert.That(ex, Is.InstanceOf<ClientResetException>());
                 var clientEx = (ClientResetException)ex;
@@ -803,8 +723,6 @@ namespace Realms.Tests.Sync
                 Assert.That(File.Exists(config.DatabasePath));
                 Assert.IsTrue(clientEx.InitiateClientReset());
                 Assert.IsFalse(File.Exists(config.DatabasePath));
-                Session.Error -= sessionErrorFunc;
-
             });
         }
 
@@ -857,14 +775,14 @@ namespace Realms.Tests.Sync
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new ManualRecoveryHandler
-                {
-                    OnClientReset = (sender, e) =>
+                (
+                    (sender, e) =>
                     {
                         Assert.That(manualOnClientResetTriggered, Is.False);
                         manualOnClientResetTriggered = true;
                         tcs.TrySetResult(true);
                     }
-                };
+                );
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);

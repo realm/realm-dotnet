@@ -39,6 +39,8 @@ namespace Realms.Sync.ErrorHandling
         /// </param>
         public delegate void ClientResetCallback(Session session, ClientResetException clientResetException);
 
+        internal ClientResetCallback ManualClientReset { get; set; }
+
         internal ClientResetHandlerBase()
         {
         }

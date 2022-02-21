@@ -66,6 +66,17 @@ namespace Realms.Sync.ErrorHandling
         /// Gets or sets the callback triggered when an error has occurred that makes the operation unable to complete, for example in the case of a destructive schema change.
         /// </summary>
         /// <value>Callback invoked if a Client Reset fails.</value>
-        public ClientResetCallback ManualResetFallback { get; set; }
+        public ClientResetCallback ManualResetFallback
+        {
+            get
+            {
+                return ManualClientReset;
+            }
+
+            set
+            {
+                ManualClientReset = value;
+            }
+        }
     }
 }

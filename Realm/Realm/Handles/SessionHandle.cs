@@ -227,8 +227,7 @@ namespace Realms.Sync
                 SessionException exception;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-                var isUsingNewErrorHandling = (syncConfig.ClientResetHandler != null || syncConfig.OnSessionError != null) ||
-                                              (syncConfig.ClientResetHandler == null && syncConfig.OnSessionError == null && !Session.IsErrorSet);
+                var isUsingNewErrorHandling = (syncConfig.ClientResetHandler != null && syncConfig.ClientResetHandler.ManualClientReset != null) || syncConfig.OnSessionError != null;
 
                 if (isClientReset)
                 {
@@ -237,20 +236,7 @@ namespace Realms.Sync
 
                     if (isUsingNewErrorHandling)
                     {
-                        if (syncConfig.ClientResetHandler != null)
-                        {
-                            switch (syncConfig.ClientResetHandler)
-                            {
-                                case DiscardLocalResetHandler handler:
-                                    handler.ManualResetFallback?.Invoke(session, (ClientResetException)exception);
-                                    break;
-                                case ManualRecoveryHandler handler:
-                                    handler.OnClientReset?.Invoke(session, (ClientResetException)exception);
-                                    break;
-                                default:
-                                    throw new Exception($"ClientResetHandler of type {syncConfig.ClientResetHandler.GetType().Name} is not supported");
-                            }
-                        }
+                        syncConfig.ClientResetHandler?.ManualClientReset?.Invoke(session, (ClientResetException)exception);
                     }
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)

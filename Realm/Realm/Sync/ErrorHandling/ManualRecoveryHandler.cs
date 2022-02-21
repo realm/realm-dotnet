@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
@@ -25,11 +27,31 @@ namespace Realms.Sync.ErrorHandling
     public sealed class ManualRecoveryHandler : ClientResetHandlerBase
     {
         /// <summary>
-        /// Gets or sets thecallback that indicates a Client Reset has happened.
-        /// This should be handled as quickly as possible as any further changes to the Realm will not be synchronized with the server and
+        /// Gets the callback to manually handle a Client Reset.
+        /// A Client Reset should be handled as quickly as possible as any further changes to the Realm will not be synchronized with the server and
         /// must be moved manually from the backup Realm to the new one.
         /// </summary>
         /// <value>Callback invoked on Client Reset.</value>
-        public ClientResetCallback OnClientReset { get; set; }
+        public ClientResetCallback OnClientReset => ManualClientReset;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManualRecoveryHandler"/> class with the supplied client reset handler.
+        /// </summary>
+        /// <param name="manualClientReset">
+        /// Callback triggered when a manual client reset happens.
+        /// </param>
+        public ManualRecoveryHandler(ClientResetCallback manualClientReset)
+        {
+            ManualClientReset = manualClientReset;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManualRecoveryHandler"/> class that uses the Session.Error as handler for client resets.
+        /// </summary>
+        /// <remarks>
+        /// This obsolete constructor should be used only when the user wants to use the obsolete Session.Error event for handling session errors and client resets.
+        /// </remarks>
+        [Obsolete("Use SyncConfigurationBase.OnSessionError in conjunction with SyncConfigurationBase.ClientResetHandler instead.")]
+        public ManualRecoveryHandler() { }
     }
 }

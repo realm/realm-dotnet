@@ -33,7 +33,7 @@ namespace Realms.Sync
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
-        [Obsolete("Use SyncConfigurationBase.OnSessionError or SyncConfigurationBase.ClientResetHandler instead.")]
+        [Obsolete("Use SyncConfigurationBase.OnSessionError in conjunction with SyncConfigurationBase.ClientResetHandler instead.")]
         public static event EventHandler<ErrorEventArgs> Error;
 
         internal bool IsClosed => _handle.IsClosed;
@@ -164,9 +164,6 @@ namespace Realms.Sync
             var args = new ErrorEventArgs(error);
             Error?.Invoke(session, args);
         }
-
-        /// after deprecation: this needs to go when <see cref="Error"/> is fully deprecated
-        internal static bool IsErrorSet => Error != null;
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
