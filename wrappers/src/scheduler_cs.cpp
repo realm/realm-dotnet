@@ -41,7 +41,7 @@ public:
     : m_context(context)
     { }
 
-    bool can_deliver_notifications() const noexcept override { return true; }
+    bool can_invoke() const noexcept override { return true; }
 
     bool is_same_as(const Scheduler* other) const noexcept override
     {
@@ -55,14 +55,9 @@ public:
         return s_is_on_context(m_context, nullptr);
     }
 
-    void set_notify_callback(std::function<void()> callback) override
+    void invoke(util::UniqueFunction<void()>&& callback) override
     {
-        m_callback = std::move(callback);
-    }
-
-    void notify() override
-    {
-        s_post_on_context(m_context, new std::function<void()>(m_callback));
+        s_post_on_context(m_context, new util::UniqueFunction<void()>(std::move(callback)));
     }
 
     ~SynchronizationContextScheduler() override
@@ -71,8 +66,6 @@ public:
     }
 private:
     void* m_context;
-
-    std::function<void()> m_callback;
 };
 
 struct ThreadScheduler : public Scheduler {
@@ -85,10 +78,9 @@ public:
         auto o = dynamic_cast<const ThreadScheduler*>(other);
         return (o && (o->m_id == m_id));
     }
-    bool can_deliver_notifications() const noexcept override { return false; }
+    bool can_invoke() const noexcept override { return false; }
 
-    void set_notify_callback(std::function<void()>) override { }
-    void notify() override { }
+    void invoke(util::UniqueFunction<void()>&&) override { }
 
 private:
     std::thread::id m_id = std::this_thread::get_id();

@@ -240,7 +240,9 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         config.cache = configuration.enable_cache;
         auto realm = Realm::get_shared_realm(std::move(config));
-        apply_guid_representation_fix(realm);
+        if (!configuration.use_legacy_guid_representation) {
+            apply_guid_representation_fix(realm);
+        }
         return new_realm(std::move(realm));
     });
 }

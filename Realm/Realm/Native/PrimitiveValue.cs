@@ -153,7 +153,9 @@ namespace Realms.Native
                 Type = RealmValueType.Guid,
             };
 
-            var guidBytes = GuidConverter.ToBytes(value, GuidRepresentation.Standard);
+#pragma warning disable CS0618 // Type or member is obsolete
+            var guidBytes = Realm.UseLegacyGuidRepresentation ? value.ToByteArray() : GuidConverter.ToBytes(value, GuidRepresentation.Standard);
+#pragma warning restore CS0618 // Type or member is obsolete
             for (var i = 0; i < 16; i++)
             {
                 result.guid_bytes[i] = guidBytes[i];
@@ -233,7 +235,9 @@ namespace Realms.Native
                 bytes[i] = guid_bytes[i];
             }
 
-            return GuidConverter.FromBytes(bytes, GuidRepresentation.Standard);
+#pragma warning disable CS0618 // Type or member is obsolete
+            return Realm.UseLegacyGuidRepresentation ? new Guid(bytes) : GuidConverter.FromBytes(bytes, GuidRepresentation.Standard);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public string AsString()
