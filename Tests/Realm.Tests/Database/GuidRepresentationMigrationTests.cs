@@ -146,6 +146,37 @@ namespace Realms.Tests.Database
             AssertQueryDescription(description, guidString, useLegacyRepresentation);
         }
 
+        [Test]
+        public void Migration_WhenOpenedAsReadonly_LogsAMessageAndDoesntChangeFile()
+        {
+            TestHelpers.CopyBundledFileToDocuments("guids.realm", _configuration.DatabasePath);
+
+            _configuration.IsReadOnly = true;
+
+            var expected = GetGuidObjects().ToArray();
+            using var realm = GetRealm(_configuration);
+
+            var actual = realm.All<GuidType>().ToArray();
+
+            Assert.That(actual.Length, Is.EqualTo(expected.Length));
+
+            foreach (var expectedObj in expected)
+            {
+                // We haven't migrated the file, so we don't expect to find the correct
+                // value.
+                Assert.That(actual.All(o => o.Id != expectedObj.Id));
+
+                var flippedId = FlipGuid(expectedObj.Id);
+
+                var actualObj = actual.Single(o => o.Id == flippedId);
+                Assert.That(actualObj.RegularProperty, Is.EqualTo(FlipGuid(expectedObj.RegularProperty)));
+
+                var actualFound = realm.Find<GuidType>(expectedObj.Id);
+                Assert.That(realm.Find<GuidType>(expectedObj.Id), Is.Null);
+                Assert.That(realm.Find<GuidType>(flippedId), Is.EqualTo(actualObj));
+            }
+        }
+
         protected override void CustomSetUp()
         {
             _configuration = new RealmConfiguration(Guid.NewGuid().ToString())
@@ -159,7 +190,7 @@ namespace Realms.Tests.Database
             if (useLegacyRepresentation)
             {
                 // Flip the byte order by converting to byte array using little endian but read it as big endian
-                guidString = GuidConverter.FromBytes(Guid.Parse(guidString).ToByteArray(), GuidRepresentation.Standard).ToString();
+                guidString = FlipGuid(Guid.Parse(guidString)).ToString();
             }
 
             Assert.That(query, Does.Contain(guidString));
@@ -400,6 +431,8 @@ namespace Realms.Tests.Database
                 },
             };
         }
+
+        private static Guid FlipGuid(Guid guid) => GuidConverter.FromBytes(guid.ToByteArray(), GuidRepresentation.Standard);
 
         [Explicit]
         public class GuidType : RealmObject

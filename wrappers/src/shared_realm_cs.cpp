@@ -241,7 +241,12 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.cache = configuration.enable_cache;
         auto realm = Realm::get_shared_realm(std::move(config));
         if (!configuration.use_legacy_guid_representation) {
-            apply_guid_representation_fix(realm);
+            if (configuration.read_only) {
+                // TODO: log message if table doesn't exist
+            }
+            else {
+                apply_guid_representation_fix(realm);
+            }
         }
         return new_realm(std::move(realm));
     });
