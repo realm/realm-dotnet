@@ -28,9 +28,11 @@ jobs:
       wrappers-android-x86_64: ${{ steps.check-cache-android-x86_64.outputs.cache-hit }}
       wrappers-windows-Win32: ${{ steps.check-cache-windows-Win32.outputs.cache-hit }}
       wrappers-windows-x64: ${{ steps.check-cache-windows-x64.outputs.cache-hit }}
+      wrappers-windows-ARM64: ${{ steps.check-cache-windows-ARM64.outputs.cache-hit }}
       wrappers-windows-uwp-Win32: ${{ steps.check-cache-windows-uwp-Win32.outputs.cache-hit }}
       wrappers-windows-uwp-x64: ${{ steps.check-cache-windows-uwp-x64.outputs.cache-hit }}
       wrappers-windows-uwp-ARM: ${{ steps.check-cache-windows-uwp-ARM.outputs.cache-hit }}
+      wrappers-windows-uwp-ARM64: ${{ steps.check-cache-windows-uwp-ARM64.outputs.cache-hit }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -181,6 +183,22 @@ jobs:
       if: matrix.os == 'windows' && steps.check-cache-windows-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
+    - name: Check cache for windows-ARM64
+      id: check-cache-windows-ARM64
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-ARM64-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == 'windows'
+    - name: Store artifacts for wrappers-windows-ARM64
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-ARM64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: matrix.os == 'windows' && steps.check-cache-windows-ARM64.outputs.cache-hit == 'true'
+    - run: git clean -fdx
+      if: matrix.os == 'windows'
     - name: Check cache for windows-uwp-Win32
       id: check-cache-windows-uwp-Win32
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
@@ -227,6 +245,22 @@ jobs:
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
+    - run: git clean -fdx
+      if: matrix.os == 'windows'
+    - name: Check cache for windows-uwp-ARM64
+      id: check-cache-windows-uwp-ARM64
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-windows-uwp-ARM64-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == 'windows'
+    - name: Store artifacts for wrappers-windows-uwp-ARM64
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-windows-uwp-ARM64
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
   build-wrappers-macos:
@@ -426,6 +460,7 @@ jobs:
         arch:
         - Win32
         - x64
+        - ARM64
     timeout-minutes: 90
     needs:
     - check-wrappers-cache
@@ -454,13 +489,6 @@ jobs:
         Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true' && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
-    - name: Install Win8.1 SDK
-      run: |
-        md C:\win81sdk
-        Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
-        Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
-      shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -470,7 +498,7 @@ jobs:
         name: wrappers-windows-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-wrappers-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-x64 != 'true'
+    if: needs.check-wrappers-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-ARM64 != 'true'
   build-wrappers-windows-uwp:
     runs-on: windows-latest
     name: Wrappers UWP
@@ -480,6 +508,7 @@ jobs:
         - Win32
         - x64
         - ARM
+        - ARM64
     timeout-minutes: 90
     needs:
     - check-wrappers-cache
@@ -517,7 +546,7 @@ jobs:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-wrappers-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-ARM != 'true'
+    if: needs.check-wrappers-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
   build-packages:
     runs-on: windows-latest
     name: Package
@@ -605,6 +634,11 @@ jobs:
       with:
         name: wrappers-windows-x64
         path: wrappers/build
+    - name: Fetch artifacts for windows-ARM64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-ARM64
+        path: wrappers/build
     - name: Fetch artifacts for windows-uwp-Win32
       uses: actions/download-artifact@v2
       with:
@@ -619,6 +653,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-uwp-ARM
+        path: wrappers/build
+    - name: Fetch artifacts for windows-uwp-ARM64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-ARM64
         path: wrappers/build
     - name: Build Realm/Realm.Fody
       run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
@@ -1444,6 +1483,11 @@ jobs:
       with:
         name: wrappers-windows-x64
         path: wrappers/build
+    - name: Fetch artifacts for windows-ARM64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-ARM64
+        path: wrappers/build
     - name: Fetch artifacts for windows-uwp-Win32
       uses: actions/download-artifact@v2
       with:
@@ -1458,6 +1502,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: wrappers-windows-uwp-ARM
+        path: wrappers/build
+    - name: Fetch artifacts for windows-uwp-ARM64
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-windows-uwp-ARM64
         path: wrappers/build
     - uses: actions/setup-dotnet@v1
       with:
@@ -1559,6 +1608,10 @@ jobs:
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-x64
+    - name: Delete artifacts for windows-ARM64
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
+      with:
+        name: wrappers-windows-ARM64
     - name: Delete artifacts for windows-uwp-Win32
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
@@ -1571,6 +1624,10 @@ jobs:
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
         name: wrappers-windows-uwp-ARM
+    - name: Delete artifacts for windows-uwp-ARM64
+      uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
+      with:
+        name: wrappers-windows-uwp-ARM64
     - name: Delete artifacts for iOS Simulator
       uses: geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44
       with:
