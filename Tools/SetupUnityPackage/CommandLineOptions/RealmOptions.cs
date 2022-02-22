@@ -74,6 +74,7 @@ namespace SetupUnityPackage
                 { "native/android/armeabi-v7a/librealm-wrappers.so", "Runtime/Android/armeabi-v7a/librealm-wrappers.so" },
                 { "native/android/arm64-v8a/librealm-wrappers.so", "Runtime/Android/arm64-v8a/librealm-wrappers.so" },
                 { "native/android/x86_64/librealm-wrappers.so", "Runtime/Android/x86_64/librealm-wrappers.so" },
+                { "native/android/x86/librealm-wrappers.so", "Runtime/Android/x86/librealm-wrappers.so" },
                 { "runtimes/win-x64/native/realm-wrappers.dll", "Runtime/Windows/x86_64/realm-wrappers.dll" },
                 { "runtimes/win-x86/native/realm-wrappers.dll", "Runtime/Windows/x86/realm-wrappers.dll" },
                 { "runtimes/win10-arm/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/ARM/realm-wrappers.dll" },

@@ -111,7 +111,7 @@ namespace Realms.Tests.Database
         {
             new char?[] { 'a' },
             new char?[] { null },
-            new char?[] { char.MinValue, char.MaxValue },
+            new char?[] { char.MinValue, 'z' },
             new char?[] { 'a', 'b', 'c', 'b', null }
         };
 
@@ -207,20 +207,21 @@ namespace Realms.Tests.Database
         {
             new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c") },
             new Guid?[] { null },
-            new Guid?[] { Guid.Empty, Guid.NewGuid() },
-            new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.NewGuid(), null },
+            new Guid?[] { Guid.Empty, Guid.Parse("44e2d58e-f234-41c2-a156-dacddbb72a83") },
+            new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.Parse("7ca0a661-1146-4c94-81cd-87a7ba9e9d0a"), null },
         };
 
         public static readonly object[] GuidTestValues = GetTestCases(_guidValues);
 
         public static readonly object[] NullableGuidTestValues = GetNullableTestCases(_guidValues);
 
+        private static readonly DateTimeOffset _someDate = new(2021, 12, 3, 4, 5, 6, TimeSpan.FromHours(-1));
         private static readonly IEnumerable<DateTimeOffset?[]> _dateValues = new[]
         {
-            new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(-4) },
+            new DateTimeOffset?[] { _someDate.AddDays(-4) },
             new DateTimeOffset?[] { null },
-            new DateTimeOffset?[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow },
-            new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) },
+            new DateTimeOffset?[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, _someDate },
+            new DateTimeOffset?[] { _someDate.AddDays(5), null, _someDate.AddDays(-39), _someDate.AddDays(81), _someDate.AddDays(-69324) },
         };
 
         public static readonly object[] DateTestValues = GetTestCases(_dateValues);
@@ -733,7 +734,7 @@ namespace Realms.Tests.Database
 
         public class ListTestCaseData<T>
         {
-            private List<T> referenceList = new List<T>();
+            private readonly List<T> referenceList = new List<T>();
 
             public ListTestCaseData(params T[] listData)
             {

@@ -233,3 +233,9 @@ ExtractedChangelog.md
 !FakeRealm.nupkg
 .github/actions/benchmark-uploader/src/packageContents
 .github/actions/mdb-realm/lib
+Tools/AssetStorePublisher/Assets/Realm
+Tools/AssetStorePublisher/Library
+Tools/AssetStorePublisher/Temp
+Tools/AssetStorePublisher/UserSettings
+Tests/Tests.Unity/UserSettings
+Realm/Realm.Unity/Editor/Dependencies

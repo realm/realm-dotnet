@@ -94,7 +94,9 @@ namespace SetupUnityPackage
             await CopyPackages(Helpers.PackagesFolder, opts, testsSearchDirectory);
 
             var manifestPath = Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Packages", "manifest.json");
-            UpdateManifestJson(manifestPath, "io.realm.unity", opts.RealmPackage);
+            var relativePackagePath = Path.GetRelativePath(Path.GetDirectoryName(manifestPath), opts.RealmPackage);
+
+            UpdateManifestJson(manifestPath, "io.realm.unity", relativePackagePath);
 
             Directory.Delete(extractedPackagePath, recursive: true);
         }
@@ -111,6 +113,18 @@ namespace SetupUnityPackage
 
                 RunTool("npm", $"version {unityPackageVersion} --allow-same-version", opts.PackageBasePath);
                 RunTool("npm", $"pack", opts.PackageBasePath);
+
+                Console.WriteLine("Preparing Asset Store project...");
+
+                var targetFolder = Path.Combine(Helpers.SolutionFolder, "Tools", "AssetStorePublisher", "Assets", "Realm");
+                if (Directory.Exists(targetFolder))
+                {
+                    Directory.Delete(targetFolder, recursive: true);
+                }
+
+                Helpers.CopyFiles(opts.PackageBasePath, targetFolder, file => !file.StartsWith("package.json", StringComparison.OrdinalIgnoreCase) && !file.EndsWith(".tgz", StringComparison.OrdinalIgnoreCase));
+
+                Console.WriteLine($"Copied package files to {targetFolder}. Open the project with Unity and upload to asset store manually.");
             }
         }
 
@@ -174,6 +188,21 @@ namespace SetupUnityPackage
                     Console.WriteLine($"Error: package {package.Id} was not found either in {nameof(OptionsBase.Files)} or {nameof(OptionsBase.IgnoredDependencies)}.");
                     Environment.Exit(1);
                 }
+            }
+
+            var relinq = Path.Combine(tempPath, "Remotion.Linq.dll");
+            if (File.Exists(relinq))
+            {
+                const string UsedImplicitlyAttribute = "JetBrains.Annotations.UsedImplicitlyAttribute";
+                Console.WriteLine($"Found Remotion.Linq dependency, stripping {UsedImplicitlyAttribute}");
+                using var stream = File.Open(relinq, FileMode.Open, FileAccess.ReadWrite);
+                using var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);
+                var module = assembly.MainModule;
+
+                var usedImplicitly = module.Types.Single(t => t.FullName == UsedImplicitlyAttribute);
+                module.Types.Remove(usedImplicitly);
+
+                assembly.Write();
             }
 
             var mainPackagePath = Path.Combine(opts.PackageBasePath, info.MainPackagePath);
@@ -287,7 +316,7 @@ namespace SetupUnityPackage
             var contents = File.ReadAllText(path);
             var regex = new Regex($"\"{packageName}\": \"file:(?<package>[^\"]*)\"");
             var oldPackagePath = regex.Match(contents).Groups["package"].Value;
-            File.WriteAllText(path, contents.Replace(oldPackagePath, packagePath.Replace("\\", "\\\\")));
+            File.WriteAllText(path, contents.Replace(oldPackagePath, packagePath.Replace("\\", "/")));
         }
 
         private static void CopyDocumentation(string packageBasePath)

@@ -1101,6 +1101,50 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Integration_WaitForSynchronization_EmptyUpdate()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                });
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
+        }
+
+        // TODO: enable this when https://github.com/realm/realm-core/issues/5208 is fixed
+        [Test, Ignore("Failing, reenable when https://github.com/realm/realm-core/issues/5208 is fixed")]
+        public void Integration_CloseRealmBeforeWaitCompletes()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                Task waitTask = null;
+                using (var realm = await GetFLXIntegrationRealmAsync())
+                {
+                    realm.Subscriptions.Update(() =>
+                    {
+                        var query = realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+
+                        realm.Subscriptions.Add(query);
+                    });
+
+                    waitTask = realm.Subscriptions.WaitForSynchronizationAsync();
+                }
+
+                await waitTask;
+            });
+        }
+
+        [Test]
         public void Integration_SubscriptionSet_AddRemove()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

@@ -45,7 +45,7 @@
 
   <ItemGroup Condition="'$(UnityBuild)' == 'true'">
     <Reference Include="nunit.framework">
-      <HintPath>..\Tests.Unity\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom\nunit.framework.dll</HintPath>
+      <HintPath>..\..\dependencies\com.unity.ext.nunit@1.0.6\nunit.framework.dll</HintPath>
     </Reference>
 
     <!--
