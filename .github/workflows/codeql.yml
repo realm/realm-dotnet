@@ -27,19 +27,12 @@ jobs:
       with:
         languages: cpp
         queries: security-and-quality
-    - name: Check Vcpkg cache
-      id: check-vcpkg-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
-      with:
-        path: C:\src
-        key: vcpkg
-      if: "true"
     - name: Setup Vcpkg
-      run: |
-        Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-        Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-      shell: powershell
-      if: true && steps.check-vcpkg-cache.outputs.cache-hit != 'true'
+      uses: friendlyanon/setup-vcpkg@v1
+      with:
+        path: ${{ github.workspace }}/wrappers/realm-core/tools/vcpkg/ports
+        cache-key: vcpkg-windows-x64
+        cache-restore-keys: vcpkg-windows-x64
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
     - name: Perform CodeQL Analysis

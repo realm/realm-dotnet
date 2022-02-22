@@ -44,20 +44,13 @@
 #@ end
 #@ end
 
-#@ def setupVcpkg(ifCondition = "true"):
-  - name: Check Vcpkg cache
-    id: check-vcpkg-cache
-    uses: #@ actionCache
-    with:
-      path: 'C:\src'
-      key: vcpkg
-    if: #@ ifCondition
+#@ def setupVcpkg(preset):
   - name: Setup Vcpkg
-    run: |
-      Invoke-WebRequest -Uri https://static.realm.io/downloads/vcpkg.zip -OutFile C:\vcpkg.zip
-      Expand-Archive -Path C:\vcpkg.zip -DestinationPath C:\
-    shell: powershell
-    if: #@ ifCondition + " && steps.check-vcpkg-cache.outputs.cache-hit != 'true'"
+    uses: friendlyanon/setup-vcpkg@v1
+    with:
+      path: ${{ github.workspace }}/wrappers/realm-core/tools/vcpkg/ports
+      cache-key: #@ "vcpkg-" + preset
+      cache-restore-keys: #@ "vcpkg-" + preset
 #@ end
 
 #@ def downloadAllArtifacts(conclusion = "completed"):
