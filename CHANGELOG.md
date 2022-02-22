@@ -2,39 +2,41 @@
 
 ### Enhancements
 * Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
-This addition makes `Session.Error` **deprecated**. In order to migrate the existing client reset handling code to the new API the following should be done
+This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {
-      ClientResetHandler = new ManualRecoveryHandler
-      {
-          OnClientReset = (sender, e) =>
-          {
-              // user's code that's being migrated
-          }
-      }
+      ClientResetHandler = new ManualRecoveryHandler();
     };
   ```
-  And if, instead, one wants to have the handling code to be used only if a discarding unsynced changes fails, the following should be done instead
+  In order to take advantage of the new **Discard Unsynced Changes** feature,  the following should be done:
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {
       ClientResetHandler = new DiscardLocalResetHandler
-      {
-          OnBeforeReset = (beforeFrozen) =>
-          {
-            // executed right before a client reset is about to happen
-          },
-          OnAfterReset = (beforeFrozen, after) =>
-          {
-            // executed right after a client reset is has completed
-          },
-          ManualResetFallback = (session, err) =>
-          {
-              // user's code that's being migrated
-          }
+      {((sender, e) =>oreReset = (beforeFrozen) =>
+        {
+          // executed right before a client reset is about to happen
+        },
+        OnAfterReset = (beforeFrozen, after) =>
+        {
+          // executed right after a client reset is has completed
+        },
+        ManualResetFallback = (session, err) =>
+        {
+            // user's code for manual recovery
+        }
       }
     };
+  ```
+  If, instead, the user wants to continue using the manual solution even after the end of the deprecation period, the following should be done
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+      {
+          // user's code for manual recovery
+      });
   ```
 * Lifted a limitation that would prevent you from changing the primary key of objects during a migration. It is now possible to do it with both the dynamic and the strongly-typed API:
   ```csharp
