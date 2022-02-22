@@ -479,7 +479,7 @@ jobs:
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        path: ${{ github.workspace }}/wrappers/realm-core/tools/vcpkg/ports
+        path: wrappers/realm-core/tools/vcpkg/ports
         cache-key: vcpkg-windows-${{ matrix.arch }}
         cache-restore-keys: vcpkg-windows-${{ matrix.arch }}
     - name: Build wrappers
@@ -520,7 +520,7 @@ jobs:
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        path: ${{ github.workspace }}/wrappers/realm-core/tools/vcpkg/ports
+        path: wrappers/realm-core/tools/vcpkg/ports
         cache-key: vcpkg-uwp-${{ matrix.arch }}
         cache-restore-keys: vcpkg-uwp-${{ matrix.arch }}
     - name: Build wrappers

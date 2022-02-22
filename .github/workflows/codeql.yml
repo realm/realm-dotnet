@@ -30,7 +30,7 @@ jobs:
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
-        path: ${{ github.workspace }}/wrappers/realm-core/tools/vcpkg/ports
+        path: wrappers/realm-core/tools/vcpkg/ports
         cache-key: vcpkg-windows-x64
         cache-restore-keys: vcpkg-windows-x64
     - name: Build wrappers
