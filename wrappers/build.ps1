@@ -48,14 +48,9 @@ $cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)",
              "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", 
              "-DCMAKE_TOOLCHAIN_FILE=$PSScriptRoot\realm-core\tools\vcpkg\ports\scripts\buildsystems\vcpkg.cmake",
              "-DVCPKG_MANIFEST_DIR=$PSScriptRoot\realm-core\tools\vcpkg",
-             "-DVCPKG_OVERLAY_TRIPLETS=$PSScriptRoot\realm-core\tools\vcpkg\triplets"
-
-
-if ($Target -eq 'WindowsStore') {
-    $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
-} else {
-    $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='8.1'", "-DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION='8.1'"
-}
+             "-DVCPKG_OVERLAY_TRIPLETS=$PSScriptRoot\realm-core\tools\vcpkg\triplets",
+             "-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$PSScriptRoot\cmake\vcpkg",
+             "-DCMAKE_SYSTEM_VERSION=10.0"
 
 if ($EnableLTO) {
     $cmakeArgs += "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
