@@ -154,15 +154,6 @@ namespace Realms.Tests.Database
             };
         }
 
-        protected override void CustomTearDown()
-        {
-            base.CustomTearDown();
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            Realm.UseLegacyGuidRepresentation = false;
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
         private static void AssertQueryDescription(string query, string guidString, bool useLegacyRepresentation)
         {
             if (useLegacyRepresentation)
