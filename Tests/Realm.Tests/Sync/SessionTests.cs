@@ -369,77 +369,54 @@ namespace Realms.Tests.Sync
             });
         }
 
-        /* INTEGRATION TEST: By adding the same PK on multiple objects across different partitions
+        /* INTEGRATION TEST: By opening the same realm with different users
          * this test triggers a client reset to verify that the default behaviour of a client reset is DiscardLocalChanges.
          */
-        [Test, Ignore("It does not triggers the expected code path (client reset process)")]
+        [Test]
         public void Session_ClientReset_DefaultsTo_DiscardLocalHandler()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var collectionChanged = false;
-                var pk = Guid.NewGuid().ToString();
-                var partitionX = Guid.NewGuid().ToString();
-                var partitionY = Guid.NewGuid().ToString();
+                var pkSync = Guid.NewGuid().ToString();
+                var pkNoSync = Guid.NewGuid().ToString();
+                var objValueSync = "mon amour";
+                var objValueNoSync = "it's the love";
+                var partition = Guid.NewGuid().ToString();
                 var app = CreateApp();
-                var tcs = new TaskCompletionSource<bool>();
-                var configY = await GetIntegrationConfigAsync(partitionY, app);
-                var onBeforeTriggered = false;
+                var configA = await GetIntegrationConfigAsync(partition, app);
+                var configB = await GetIntegrationConfigAsync(partition, app, configA.DatabasePath);
 
-                configY.Schema = new[] { typeof(PrimaryKeyInt32Object) };
-
-                configY.ClientResetHandler = new DiscardLocalResetHandler
+                using (var realmA = await GetRealmAsync(configA))
                 {
-                    OnBeforeReset = (beforeFrozen) =>
+                    var objToAddSync = new PrimaryKeyStringObject { Id = pkSync, Value = objValueSync };
+                    var objToAddNoSync = new PrimaryKeyStringObject { Id = pkNoSync, Value = objValueNoSync };
+                    realmA.Write(() =>
                     {
-                        Assert.IsFalse(onBeforeTriggered);
-                        onBeforeTriggered = true;
-                    },
-                    OnAfterReset = (beforeFrozen, after) =>
+                        realmA.Add(objToAddSync);
+                    });
+
+                    await WaitForUploadAsync(realmA);
+
+                    realmA.GetSession().Stop();
+
+                    realmA.Write(() =>
                     {
-                    }
-                };
+                        realmA.Add(objToAddNoSync);
+                    });
 
-                using var realmY = await GetRealmAsync(configY);
+                    var allObjsA = realmA.All<PrimaryKeyStringObject>().ToArray();
+                    Assert.That(allObjsA.Length, Is.EqualTo(2));
+                    Assert.That(allObjsA[0], Is.EqualTo(objToAddSync));
+                    Assert.That(allObjsA[1], Is.EqualTo(objToAddNoSync));
+                }
 
-                realmY.Write(() =>
-                {
-                    realmY.RemoveAll<PrimaryKeyInt32Object>();
-                });
-                await WaitForUploadAsync(realmY);
+                using var realmB = await GetRealmAsync(configB);
+                await WaitForDownloadAsync(realmB);
 
-                var token = realmY.All<PrimaryKeyInt32Object>().SubscribeForNotifications((sender, changes, error) =>
-                {
-                    if (error != null)
-                    {
-                        tcs.SetException(new Exception("Error happened in the subscription"));
-                    }
-
-                    if (changes == null)
-                    {
-                        return;
-                    }
-
-                    var deletionCounter = changes.DeletedIndices.Length;
-                    if (deletionCounter > 0)
-                    {
-                        Assert.That(collectionChanged, Is.False);
-                        Assert.That(sender.Any(), Is.False);
-                        Assert.That(deletionCounter, Is.EqualTo(1));
-                        collectionChanged = true;
-                        tcs.TrySetResult(true);
-                    }
-                });
-
-                realmY.Write(() =>
-                {
-                    realmY.Add(new PrimaryKeyInt32Object { Id = 23764, PartitionKey = partitionX});
-                });
-                realmY.GetSession().Start();
-
-                await WaitForUploadAsync(realmY);
-                await tcs.Task;
-                Assert.That(collectionChanged, Is.True);
+                var allObjsB = realmB.All<PrimaryKeyStringObject>().ToArray();
+                Assert.That(allObjsB.Length, Is.EqualTo(1));
+                Assert.That(allObjsB[0].Id, Is.EqualTo(pkSync));
+                Assert.That(allObjsB[0].Value, Is.EqualTo(objValueSync));
             });
         }
 
