@@ -18,21 +18,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Helpers;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-#if __ANDROID__
-using Application = Android.App.Application;
-#endif
 
 namespace Realms.Tests
 {

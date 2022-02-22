@@ -27,10 +27,9 @@ using Realms.Helpers;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [RequiresBaas]
     public class MergeByPKTests : SyncTestBase
     {
-        [TestCaseSource(nameof(MergeTestCases))]
+        [TestCaseSource(nameof(MergeTestCases)), RequiresBaas]
         public async Task WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue)
         {
             var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)

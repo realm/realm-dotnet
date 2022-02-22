@@ -27,12 +27,11 @@ using NUnit.Framework;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [RequiresBaas]
     public class FunctionsTests : SyncTestBase
     {
         private readonly Queue<string> _conventionsToRemove = new Queue<string>();
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_ReturnsResult()
         {
             var user = await GetUserAsync();
@@ -41,7 +40,7 @@ namespace Realms.Tests.Sync
             Assert.That(result.AsInt64, Is.EqualTo(6));
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunctionGeneric_ReturnsResult()
         {
             var user = await GetUserAsync();
@@ -50,7 +49,7 @@ namespace Realms.Tests.Sync
             Assert.That(result, Is.EqualTo(6));
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_NoArguments()
         {
             var user = await GetUserAsync();
@@ -59,7 +58,7 @@ namespace Realms.Tests.Sync
             Assert.That(result, Is.EqualTo(0));
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_WrongGeneric()
         {
             var user = await GetUserAsync();
@@ -68,7 +67,7 @@ namespace Realms.Tests.Sync
             Assert.That(ex.Message, Does.Contain("Cannot deserialize"));
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_WithAnonymousParams_ReturnsBsonResult()
         {
             TestHelpers.IgnoreOnUnity("Anonymous objects need lambda compilation, which doesn't work on IL2CPP");
@@ -113,7 +112,7 @@ namespace Realms.Tests.Sync
             Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_WithBsonDocument_ReturnsBsonResult()
         {
             var user = await GetUserAsync();
@@ -150,7 +149,7 @@ namespace Realms.Tests.Sync
             Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_WithTypedParams_ReturnsTypedResult()
         {
             AddCamelCaseConvention();
@@ -197,85 +196,85 @@ namespace Realms.Tests.Sync
 
         #region TestDeserialization
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Short([ValueSource(nameof(ShortTestCases))] short arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Int([ValueSource(nameof(IntTestCases))] int arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Long([ValueSource(nameof(LongTestCases))] long arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Float([ValueSource(nameof(FloatTestCases))] float arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Double([ValueSource(nameof(DoubleTestCases))] double arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_String([ValueSource(nameof(StringTestCases))] string arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Guid([ValueSource(nameof(GuidTestCases))] Guid arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestDeserialization_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
         {
             return TestDeserializationAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task CallFunction_AndTestDeserialization_Null()
         {
             var user = await GetUserAsync();
@@ -322,38 +321,38 @@ namespace Realms.Tests.Sync
 
         #region TestBsonValue
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Short([ValueSource(nameof(ShortTestCases))] short arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Int([ValueSource(nameof(IntTestCases))] int arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Long([ValueSource(nameof(LongTestCases))] long arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         [Ignore("BsonValue can't represent float.")]
         public Task CallFunction_AndTestBsonValue_Float([ValueSource(nameof(FloatTestCases))] float arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Double([ValueSource(nameof(DoubleTestCases))] double arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
         {
             if (arg == decimal.MinValue || arg == decimal.MaxValue)
@@ -366,43 +365,43 @@ namespace Realms.Tests.Sync
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_String([ValueSource(nameof(StringTestCases))] string arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Guid([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
         {
             return TestBsonValueAsync(arg);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public Task CallFunction_AndTestBsonValue_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
         {
             return TestBsonValueAsync(arg);

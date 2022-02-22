@@ -26,10 +26,10 @@ using Realms.Sync;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [RequiresBaas, Timeout(60_000)]
+    [Timeout(60_000)]
     public class PartitionKeyTests : SyncTestBase
     {
-        [Test, Timeout(120_000)]
+        [Test, Timeout(120_000), RequiresBaas]
         public async Task OpenRealm_StringPK_Works()
         {
             var partitionValue = Guid.NewGuid().ToString();
@@ -39,7 +39,7 @@ namespace Realms.Tests.Sync
             await RunPartitionKeyTestsCore(config1, config2);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task OpenRealm_Int64PK_Works()
         {
             var partitionValue = TestHelpers.Random.Next(int.MinValue, int.MaxValue);
@@ -49,7 +49,7 @@ namespace Realms.Tests.Sync
             await RunPartitionKeyTestsCore(config1, config2);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task OpenRealm_ObjectIdPK_Works()
         {
             var partitionValue = ObjectId.GenerateNewId();
@@ -59,7 +59,7 @@ namespace Realms.Tests.Sync
             await RunPartitionKeyTestsCore(config1, config2);
         }
 
-        [Test]
+        [Test, RequiresBaas]
         public async Task OpenRealm_GuidPK_Works()
         {
             var partitionValue = Guid.NewGuid();

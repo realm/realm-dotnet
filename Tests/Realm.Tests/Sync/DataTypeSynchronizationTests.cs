@@ -28,236 +28,235 @@ using Realms.Helpers;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [RequiresBaas(EnsureNoSessionErrors = true)]
     public class DataTypeSynchronizationTests : SyncTestBase
     {
         #region Boolean
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Boolean() => TestListCoreAsync(o => o.BooleanList, true, false);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Boolean() => TestSetCoreAsync(o => o.BooleanSet, true, false);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Boolean() => TestDictionaryCoreAsync(o => o.BooleanDict, true, false);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Boolean() => TestPropertyCoreAsync(o => o.BooleanProperty, (o, rv) => o.BooleanProperty = rv, true, false);
 
         #endregion
 
         #region Byte
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Byte() => TestListCoreAsync(o => o.ByteList, (byte)9, (byte)255);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Byte() => TestSetCoreAsync(o => o.ByteSet, (byte)9, (byte)255);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Byte() => TestDictionaryCoreAsync(o => o.ByteDict, (byte)9, (byte)255);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Byte() => TestPropertyCoreAsync(o => o.ByteProperty, (o, rv) => o.ByteProperty = rv, (byte)9, (byte)255);
 
         #endregion
 
         #region Int16
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Int16() => TestListCoreAsync(o => o.Int16List, (short)55, (short)987);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Int16() => TestSetCoreAsync(o => o.Int16Set, (short)55, (short)987);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Int16() => TestDictionaryCoreAsync(o => o.Int16Dict, (short)55, (short)987);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Int16() => TestPropertyCoreAsync(o => o.Int16Property, (o, rv) => o.Int16Property = rv, (short)55, (short)987);
 
         #endregion
 
         #region Int32
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Int32() => TestListCoreAsync(o => o.Int32List, 987, 123);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Int32() => TestSetCoreAsync(o => o.Int32Set, 987, 123);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Int32() => TestDictionaryCoreAsync(o => o.Int32Dict, 555, 666);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Int32() => TestPropertyCoreAsync(o => o.Int32Property, (o, rv) => o.Int32Property = rv, 987, 123);
 
         #endregion
 
         #region Int64
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Int64() => TestListCoreAsync(o => o.Int64List, 12345678910111213, 987654321);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Int64() => TestSetCoreAsync(o => o.Int64Set, 12345678910111213, 987654321);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Int64() => TestDictionaryCoreAsync(o => o.Int64Dict, 9999999999999L, 1111111111111111111L);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Int64() => TestPropertyCoreAsync(o => o.Int64Property, (o, rv) => o.Int64Property = rv, 12345678910111213, 987654321);
 
         #endregion
 
         #region Byte
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Double() => TestListCoreAsync(o => o.DoubleList, 123.456, 789.123);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Double() => TestSetCoreAsync(o => o.DoubleSet, 123.456, 789.123);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Double() => TestDictionaryCoreAsync(o => o.DoubleDict, 99999.555555, 8777778.12312456);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Double() => TestPropertyCoreAsync(o => o.DoubleProperty, (o, rv) => o.DoubleProperty = rv, 99999.555555, 8777778.12312456);
 
         #endregion
 
         #region Float
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Float() => TestListCoreAsync(o => o.FloatList, 43.24f, 0.4f);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Float() => TestSetCoreAsync(o => o.FloatSet, 43.24f, 0.4f);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Float() => TestDictionaryCoreAsync(o => o.FloatDict, 43.24f, 0.4f);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Float() => TestPropertyCoreAsync(o => o.FloatProperty, (o, rv) => o.FloatProperty = rv, 43.24f, 0.4f);
 
         #endregion
 
         #region Decimal
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Decimal() => TestListCoreAsync(o => o.DecimalList, 123.7777772342322347777777m, 999.99222222999999999m);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Decimal() => TestSetCoreAsync(o => o.DecimalSet, 123.7777774444447777777m, 999.000099999999999m);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Decimal() => TestDictionaryCoreAsync(o => o.DecimalDict, 987654321.7777777m, 999.99999999999999999999m);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Decimal() => TestPropertyCoreAsync(o => o.DecimalProperty, (o, rv) => o.DecimalProperty = rv, 987654321.7777777999999999999999999m, 999.99999999999m);
 
         #endregion
 
         #region Decimal128
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Decimal128() => TestListCoreAsync(o => o.Decimal128List, 123.7777771111111117777777m, 999.99999333333333999999m);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Decimal128() => TestSetCoreAsync(o => o.Decimal128Set, 123.777444447777777777m, 999.99999999999m);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Decimal128() => TestDictionaryCoreAsync(o => o.Decimal128Dict, 1.123456789m, 987654321.77777777777777777777m);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Decimal128() => TestPropertyCoreAsync(o => o.Decimal128Property, (o, rv) => o.Decimal128Property = rv, 1.123456789m, 987654321.7777m);
 
         #endregion
 
         #region ObjectId
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_ObjectId() => TestListCoreAsync(o => o.ObjectIdList, ObjectId.GenerateNewId(), ObjectId.GenerateNewId());
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_ObjectId() => TestSetCoreAsync(o => o.ObjectIdSet, ObjectId.GenerateNewId(), ObjectId.GenerateNewId());
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_ObjectId() => TestDictionaryCoreAsync(o => o.ObjectIdDict, ObjectId.GenerateNewId(), ObjectId.GenerateNewId());
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_ObjectId() => TestPropertyCoreAsync(o => o.ObjectIdProperty, (o, rv) => o.ObjectIdProperty = rv, ObjectId.GenerateNewId(), ObjectId.GenerateNewId());
 
         #endregion
 
         #region DateTimeOffset
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_DateTimeOffset() => TestListCoreAsync(o => o.DateTimeOffsetList, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_DateTimeOffset() => TestSetCoreAsync(o => o.DateTimeOffsetSet, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_DateTimeOffset() => TestDictionaryCoreAsync(o => o.DateTimeOffsetDict, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_DateTimeOffset() => TestPropertyCoreAsync(o => o.DateTimeOffsetProperty, (o, rv) => o.DateTimeOffsetProperty = rv, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
 
         #endregion
 
         #region String
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_String() => TestListCoreAsync(o => o.StringList, "abc", "cde");
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_String() => TestSetCoreAsync(o => o.StringSet, "abc", "cde");
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_String() => TestDictionaryCoreAsync(o => o.StringDict, "hohoho", string.Empty);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_String() => TestPropertyCoreAsync(o => o.StringProperty, (o, rv) => o.StringProperty = rv, "abc", "cde");
 
         #endregion
 
         #region Byte
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Binary() => TestListCoreAsync(o => o.ByteArrayList, TestHelpers.GetBytes(5), TestHelpers.GetBytes(6), (a, b) => a.SequenceEqual(b));
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Binary() => TestSetCoreAsync(o => o.ByteArraySet, TestHelpers.GetBytes(5), TestHelpers.GetBytes(6), (a, b) => a.SequenceEqual(b));
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Binary() => TestDictionaryCoreAsync(o => o.ByteArrayDict, TestHelpers.GetBytes(10), TestHelpers.GetBytes(15), (a, b) => a.SequenceEqual(b));
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_Binary() => TestPropertyCoreAsync(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10), (a, b) => a.SequenceEqual(b));
 
         #endregion
 
         #region Object
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_Object() => TestListCoreAsync(o => o.ObjectList, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_Object() => TestSetCoreAsync(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_Object() => TestDictionaryCoreAsync(o => o.ObjectDict, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         #endregion
 
         #region EmbeddedObject
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_EmbeddedObject() => TestListCoreAsync(o => o.EmbeddedObjectList, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
-        [Test]
+        [Test, RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_EmbeddedObject() => TestDictionaryCoreAsync(o => o.EmbeddedObjectDict, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         #endregion

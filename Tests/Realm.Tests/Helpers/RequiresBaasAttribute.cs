@@ -24,7 +24,10 @@ using NUnit.Framework.Internal;
 
 namespace Realms.Tests.Sync
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    // Unity doesn't propagate TestActionAttributes applied on the test fixture to the test methods,
+    // which means that the attribute must be applied on the method itself. If/when they fix this behavior
+    // we can apply the attribute on the fixture and simplify our tests somewhat.
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     internal class RequiresBaasAttribute : TestActionAttribute, IApplyToTest, IApplyToContext
     {
         private const string ExceptionKey = "Realm_SyncSession_Exception";
