@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -1435,28 +1436,25 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void FrozenList_GetsGarbageCollected()
+        public async Task FrozenList_GetsGarbageCollected()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                await TestHelpers.EnsureObjectsAreCollected(() =>
+                var owner = _realm.Write(() =>
                 {
-                    var owner = _realm.Write(() =>
+                    return _realm.Add(new Owner
                     {
-                        return _realm.Add(new Owner
-                        {
-                            ListOfDogs = { new Dog { Name = "Lasse" } }
-                        });
+                        ListOfDogs = { new Dog { Name = "Lasse" } }
                     });
-
-                    var frozenList = owner.ListOfDogs.Freeze();
-                    var frozenRealm = frozenList.AsRealmCollection().Realm;
-                    return new object[] { frozenList, frozenRealm };
                 });
 
-                // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                var frozenList = owner.ListOfDogs.Freeze();
+                var frozenRealm = frozenList.AsRealmCollection().Realm;
+                return new object[] { frozenList, frozenRealm };
             });
+
+            // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
         [Test]
@@ -1485,24 +1483,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void FrozenQuery_GetsGarbageCollected()
+        public async Task FrozenQuery_GetsGarbageCollected()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                await TestHelpers.EnsureObjectsAreCollected(() =>
+                _realm.Write(() =>
                 {
-                    _realm.Write(() =>
-                    {
-                        _realm.Add(new Dog { Name = "Lasse" });
-                    });
-
-                    var frozenQuery = _realm.All<Dog>().Freeze();
-                    return new[] { frozenQuery };
+                    _realm.Add(new Dog { Name = "Lasse" });
                 });
 
-                // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                var frozenQuery = _realm.All<Dog>().Freeze();
+                return new[] { frozenQuery };
             });
+
+            // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
         [Test]

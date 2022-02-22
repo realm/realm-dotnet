@@ -132,34 +132,31 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void GetUniqueInstancesDifferentThreads()
+        public async Task GetUniqueInstancesDifferentThreads()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            Realm realm1 = null;
+            Realm realm2 = null;
+            try
             {
-                Realm realm1 = null;
-                Realm realm2 = null;
-                try
-                {
-                    // Arrange
-                    realm1 = GetRealm();
+                // Arrange
+                realm1 = GetRealm();
 
-                    // Act
-                    await Task.Run(() =>
-                    {
-                        realm2 = GetRealm();
-                    });
-
-                    // Assert
-                    Assert.That(ReferenceEquals(realm1, realm2), Is.False, "ReferenceEquals");
-                    Assert.That(realm1.IsSameInstance(realm2), Is.False, "IsSameInstance");
-                    Assert.That(realm1, Is.EqualTo(realm2), "IsEqualTo");  // equal and same Realm but not same instance
-                }
-                finally
+                // Act
+                await Task.Run(() =>
                 {
-                    realm1.Dispose();
-                    realm2.Dispose();
-                }
-            });
+                    realm2 = GetRealm();
+                });
+
+                // Assert
+                Assert.That(ReferenceEquals(realm1, realm2), Is.False, "ReferenceEquals");
+                Assert.That(realm1.IsSameInstance(realm2), Is.False, "IsSameInstance");
+                Assert.That(realm1, Is.EqualTo(realm2), "IsEqualTo");  // equal and same Realm but not same instance
+            }
+            finally
+            {
+                realm1.Dispose();
+                realm2.Dispose();
+            }
         }
 
         [Test]
@@ -350,25 +347,22 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
+        public async Task Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            using var realm = GetRealm();
+            AddDummyData(realm);
+
+            var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+            bool? isCompacted = null;
+            await Task.Run(() =>
             {
-                using var realm = GetRealm();
-                AddDummyData(realm);
-
-                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
-                bool? isCompacted = null;
-                await Task.Run(() =>
-                {
-                    isCompacted = Realm.Compact(realm.Config);
-                });
-
-                Assert.That(isCompacted, Is.False);
-                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
-
-                Assert.That(finalSize, Is.EqualTo(initialSize));
+                isCompacted = Realm.Compact(realm.Config);
             });
+
+            Assert.That(isCompacted, Is.False);
+            var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+
+            Assert.That(finalSize, Is.EqualTo(initialSize));
         }
 
         [Test]
@@ -403,51 +397,48 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmChangedShouldFireForEveryInstance()
+        public async Task RealmChangedShouldFireForEveryInstance()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            using var realm1 = GetRealm();
+            using var realm2 = GetRealm();
+
+            var changed1 = 0;
+            realm1.RealmChanged += (sender, e) =>
             {
-                using var realm1 = GetRealm();
-                using var realm2 = GetRealm();
+                changed1++;
+            };
 
-                var changed1 = 0;
-                realm1.RealmChanged += (sender, e) =>
-                {
-                    changed1++;
-                };
+            var changed2 = 0;
+            realm2.RealmChanged += (sender, e) =>
+            {
+                changed2++;
+            };
 
-                var changed2 = 0;
-                realm2.RealmChanged += (sender, e) =>
-                {
-                    changed2++;
-                };
-
-                realm1.Write(() =>
-                {
-                    realm1.Add(new Person());
-                });
-
-                await Task.Delay(50);
-
-                Assert.That(changed1, Is.EqualTo(1));
-                Assert.That(changed2, Is.EqualTo(1));
-
-                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
-                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
-
-                realm2.Write(() =>
-                {
-                    realm2.Add(new Person());
-                });
-
-                await Task.Delay(50);
-
-                Assert.That(changed1, Is.EqualTo(2));
-                Assert.That(changed2, Is.EqualTo(2));
-
-                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
-                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
+            realm1.Write(() =>
+            {
+                realm1.Add(new Person());
             });
+
+            await Task.Delay(50);
+
+            Assert.That(changed1, Is.EqualTo(1));
+            Assert.That(changed2, Is.EqualTo(1));
+
+            Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
+            Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
+
+            realm2.Write(() =>
+            {
+                realm2.Add(new Person());
+            });
+
+            await Task.Delay(50);
+
+            Assert.That(changed1, Is.EqualTo(2));
+            Assert.That(changed2, Is.EqualTo(2));
+
+            Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
+            Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -490,60 +481,54 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
+        public async Task Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm1 = GetRealm();
+
+            await Task.Run(() =>
             {
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-
-                var realm1 = GetRealm();
-
-                await Task.Run(() =>
-                {
-                    var realm2 = GetRealm();
-                    realm2.Write(() => realm2.Add(new Person()));
-                    realm2.Dispose();
-                });
-
-                realm1.Refresh();
-
-                var people = realm1.All<Person>();
-
-                Assert.That(people.Count(), Is.EqualTo(1));
-
-                realm1.Dispose();
+                var realm2 = GetRealm();
+                realm2.Write(() => realm2.Add(new Person()));
+                realm2.Dispose();
             });
+
+            realm1.Refresh();
+
+            var people = realm1.All<Person>();
+
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            realm1.Dispose();
         }
 
         [Test]
-        public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
+        public async Task UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var realm = GetRealm();
-                realm.Dispose();
+            var realm = GetRealm();
+            realm.Dispose();
 
-                Assert.That(realm.IsClosed);
+            Assert.That(realm.IsClosed);
 
-                var other = GetRealm();
+            var other = GetRealm();
 
-                Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.DynamicApi.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.DynamicApi.CreateObject(nameof(Person), null), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.Refresh(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.DynamicApi.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.DynamicApi.CreateObject(nameof(Person), null), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Refresh(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
 
-                await TestHelpers.AssertThrows<ObjectDisposedException>(() => realm.WriteAsync(_ => { }));
+            await TestHelpers.AssertThrows<ObjectDisposedException>(() => realm.WriteAsync(_ => { }));
 
-                other.Dispose();
-            });
+            other.Dispose();
         }
 
 #if WINDOWS_UWP
@@ -551,43 +536,40 @@ namespace Realms.Tests.Database
 #endif
 
         [Test]
-        public void GetInstanceAsync_ExecutesMigrationsInBackground()
+        public async Task GetInstanceAsync_ExecutesMigrationsInBackground()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
+            config.SchemaVersion = 1;
+
+            using (var firstRealm = GetRealm(config))
             {
-                var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
-                config.SchemaVersion = 1;
+                Assert.That(firstRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.Zero);
+            }
 
-                using (var firstRealm = GetRealm(config))
+            var threadId = Environment.CurrentManagedThreadId;
+            var hasCompletedMigration = false;
+            config.SchemaVersion = 2;
+            config.MigrationCallback = (migration, oldSchemaVersion) =>
+            {
+                Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(threadId));
+                Task.Delay(300).Wait();
+                migration.NewRealm.Add(new IntPrimaryKeyWithValueObject
                 {
-                    Assert.That(firstRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.Zero);
-                }
+                    Id = 123
+                });
+                hasCompletedMigration = true;
+            };
 
-                var threadId = Environment.CurrentManagedThreadId;
-                var hasCompletedMigration = false;
-                config.SchemaVersion = 2;
-                config.MigrationCallback = (migration, oldSchemaVersion) =>
-                {
-                    Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(threadId));
-                    Task.Delay(300).Wait();
-                    migration.NewRealm.Add(new IntPrimaryKeyWithValueObject
-                    {
-                        Id = 123
-                    });
-                    hasCompletedMigration = true;
-                };
+            var sw = new Stopwatch();
+            sw.Start();
 
-                var sw = new Stopwatch();
-                sw.Start();
+            using var realm = await GetRealmAsync(config).Timeout(1000);
 
-                using var realm = await GetRealmAsync(config).Timeout(1000);
+            sw.Stop();
 
-                sw.Stop();
-
-                Assert.That(hasCompletedMigration);
-                Assert.That(sw.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(200));
-                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
-            });
+            Assert.That(hasCompletedMigration);
+            Assert.That(sw.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(200));
+            Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
         }
 
         [TestCase(true, true)]
@@ -862,42 +844,39 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void FrozenRealms_CanBeUsedAcrossThreads()
+        public async Task FrozenRealms_CanBeUsedAcrossThreads()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            using var realm = GetRealm();
+
+            realm.Write(() =>
             {
-                using var realm = GetRealm();
-
-                realm.Write(() =>
+                var dog = realm.Add(new Dog
                 {
-                    var dog = realm.Add(new Dog
-                    {
-                        Name = "Charlie"
-                    });
-
-                    realm.Add(new Owner
-                    {
-                        Name = "George",
-                        TopDog = dog,
-                        ListOfDogs = { dog }
-                    });
+                    Name = "Charlie"
                 });
 
-                using var frozenRealm = realm.Freeze();
-
-                var georgeOnThreadOne = frozenRealm.All<Owner>().Single();
-                var georgeOnThreadTwo = await Task.Run(() =>
+                realm.Add(new Owner
                 {
-                    var bgGeorge = frozenRealm.All<Owner>().Single();
-                    Assert.That(bgGeorge.Name, Is.EqualTo("George"));
-                    Assert.That(georgeOnThreadOne.IsValid);
-                    Assert.That(georgeOnThreadOne.Name, Is.EqualTo("George"));
-                    return bgGeorge;
+                    Name = "George",
+                    TopDog = dog,
+                    ListOfDogs = { dog }
                 });
-
-                Assert.That(georgeOnThreadTwo.IsValid);
-                Assert.That(georgeOnThreadOne.Name, Is.EqualTo(georgeOnThreadTwo.Name));
             });
+
+            using var frozenRealm = realm.Freeze();
+
+            var georgeOnThreadOne = frozenRealm.All<Owner>().Single();
+            var georgeOnThreadTwo = await Task.Run(() =>
+            {
+                var bgGeorge = frozenRealm.All<Owner>().Single();
+                Assert.That(bgGeorge.Name, Is.EqualTo("George"));
+                Assert.That(georgeOnThreadOne.IsValid);
+                Assert.That(georgeOnThreadOne.Name, Is.EqualTo("George"));
+                return bgGeorge;
+            });
+
+            Assert.That(georgeOnThreadTwo.IsValid);
+            Assert.That(georgeOnThreadOne.Name, Is.EqualTo(georgeOnThreadTwo.Name));
         }
 
         [Test]
@@ -911,19 +890,16 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void FrozenRealms_GetGarbageCollected()
+        public async Task FrozenRealms_GetGarbageCollected()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                await TestHelpers.EnsureObjectsAreCollected(() =>
-                {
-                    using var realm = GetRealm();
-                    return new[] { realm.Freeze() };
-                });
-
-                // This will throw on Windows if the Realm wasn't really disposed
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                using var realm = GetRealm();
+                return new[] { realm.Freeze() };
             });
+
+            // This will throw on Windows if the Realm wasn't really disposed
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
         [Test]
@@ -972,19 +948,16 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmState_GetsGarbageCollected()
+        public async Task RealmState_GetsGarbageCollected()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                await TestHelpers.EnsureObjectsAreCollected(() =>
-                {
-                    var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
+                var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    using var realm = Realm.GetInstance();
-                    var state = stateAccessor.GetValue(realm);
+                using var realm = Realm.GetInstance();
+                var state = stateAccessor.GetValue(realm);
 
-                    return new object[] { state };
-                });
+                return new object[] { state };
             });
         }
 

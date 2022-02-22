@@ -26,7 +26,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
 #if __ANDROID__
@@ -332,14 +331,6 @@ namespace Realms.Tests
             }
 
             return value;
-        }
-
-        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000, Task errorTask = null)
-        {
-            AsyncContext.Run(async () =>
-            {
-                await testFunc().Timeout(timeout, errorTask);
-            });
         }
 
         public static async Task<T> AssertThrows<T>(Func<Task> function)

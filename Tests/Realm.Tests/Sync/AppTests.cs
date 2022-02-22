@@ -18,6 +18,7 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Sync;
@@ -52,83 +53,76 @@ namespace Realms.Tests.Sync
             Assert.That(app.Sync, Is.Not.Null);
         }
 
-        [Test]
-        public void App_Login_Anonymous()
+        [Test, RequiresBaas]
+        public async Task App_Login_Anonymous()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
-                Assert.That(user, Is.Not.Null);
-                Assert.That(user.Id, Is.Not.Null);
-            });
+            var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+            Assert.That(user, Is.Not.Null);
+            Assert.That(user.Id, Is.Not.Null);
         }
 
         [TestCase(LogLevel.Debug)]
         [TestCase(LogLevel.Info)]
-        public void App_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
+        [RequiresBaas]
+        public async Task App_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var logBuilder = new StringBuilder();
+            var logBuilder = new StringBuilder();
 
-                var appConfig = SyncTestHelpers.GetAppConfig();
+            var appConfig = SyncTestHelpers.GetAppConfig();
 #pragma warning disable CS0618 // Type or member is obsolete
-                appConfig.LogLevel = logLevel;
-                appConfig.CustomLogger = (message, level) =>
-                {
-                    lock (logBuilder)
-                    {
-                        logBuilder.AppendLine($"[{level}] {message}");
-                    }
-                };
-#pragma warning restore CS0618 // Type or member is obsolete
-
-                var app = CreateApp(appConfig);
-
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = await GetRealmAsync(config);
-                realm.Write(() =>
-                {
-                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
-                });
-
-                await WaitForUploadAsync(realm);
-
-                string log;
+            appConfig.LogLevel = logLevel;
+            appConfig.CustomLogger = (message, level) =>
+            {
                 lock (logBuilder)
                 {
-                    log = logBuilder.ToString();
+                    logBuilder.AppendLine($"[{level}] {message}");
                 }
+            };
+#pragma warning restore CS0618 // Type or member is obsolete
 
-                Assert.That(log, Does.Contain($"[{logLevel}]"));
-                Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
+            var app = CreateApp(appConfig);
+
+            var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+            using var realm = await GetRealmAsync(config);
+            realm.Write(() =>
+            {
+                realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
             });
+
+            await WaitForUploadAsync(realm);
+
+            string log;
+            lock (logBuilder)
+            {
+                log = logBuilder.ToString();
+            }
+
+            Assert.That(log, Does.Contain($"[{logLevel}]"));
+            Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
         }
 
         [TestCase(LogLevel.Debug)]
         [TestCase(LogLevel.Info)]
-        public void RealmConfiguration_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
+        [RequiresBaas]
+        public async Task RealmConfiguration_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            Logger.LogLevel = logLevel;
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+            var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+            using var realm = await GetRealmAsync(config);
+            realm.Write(() =>
             {
-                Logger.LogLevel = logLevel;
-                var logger = new Logger.InMemoryLogger();
-                Logger.Default = logger;
-
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = await GetRealmAsync(config);
-                realm.Write(() =>
-                {
-                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
-                });
-
-                await WaitForUploadAsync(realm);
-
-                var log = logger.GetLog();
-
-                Assert.That(log, Does.Contain($"{logLevel}:"));
-                Assert.That(log, Does.Not.Contain($"{logLevel - 1}:"));
+                realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
             });
+
+            await WaitForUploadAsync(realm);
+
+            var log = logger.GetLog();
+
+            Assert.That(log, Does.Contain($"{logLevel}:"));
+            Assert.That(log, Does.Not.Contain($"{logLevel - 1}:"));
         }
     }
 }

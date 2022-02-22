@@ -52,31 +52,28 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void CallingRefreshShouldRefreshQueriesAfterModificationsOnDifferentThreads()
+        public async Task CallingRefreshShouldRefreshQueriesAfterModificationsOnDifferentThreads()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            _realm.Write(() =>
             {
-                _realm.Write(() =>
-                {
-                    _realm.Add(new Person { FullName = "Person 1" });
-                });
-
-                var q = _realm.All<Person>();
-                Assert.That(q.Count, Is.EqualTo(1));
-
-                await Task.Run(() =>
-                {
-                    using var r = GetRealm(_configuration);
-                    r.Write(() => r.Add(new Person { FullName = "Person 2" }));
-                });
-
-                _realm.Refresh();
-
-                var ql2 = q.AsEnumerable()
-                           .Select(p => p.FullName)
-                           .ToArray();
-                Assert.That(ql2, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
+                _realm.Add(new Person { FullName = "Person 1" });
             });
+
+            var q = _realm.All<Person>();
+            Assert.That(q.Count, Is.EqualTo(1));
+
+            await Task.Run(() =>
+            {
+                using var r = GetRealm(_configuration);
+                r.Write(() => r.Add(new Person { FullName = "Person 2" }));
+            });
+
+            _realm.Refresh();
+
+            var ql2 = q.AsEnumerable()
+                        .Select(p => p.FullName)
+                        .ToArray();
+            Assert.That(ql2, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
         }
     }
 }

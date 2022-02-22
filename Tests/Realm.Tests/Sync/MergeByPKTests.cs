@@ -27,48 +27,46 @@ using Realms.Helpers;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
+    [RequiresBaas]
     public class MergeByPKTests : SyncTestBase
     {
         [TestCaseSource(nameof(MergeTestCases))]
-        public void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue)
+        public async Task WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                        .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+
+            var partition = Guid.NewGuid().ToString();
+            for (var i = 0; i < 5; i++)
             {
-                var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                           .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+                var instance = (RealmObject)Activator.CreateInstance(objectType);
 
-                var partition = Guid.NewGuid().ToString();
-                for (var i = 0; i < 5; i++)
+                pkProperty.SetValue(instance, pkValue);
+
+                using var realm = await GetSyncedRealm(partition);
+                try
                 {
-                    var instance = (RealmObject)Activator.CreateInstance(objectType);
-
-                    pkProperty.SetValue(instance, pkValue);
-
-                    using var realm = await GetSyncedRealm(partition);
-                    try
-                    {
-                        realm.Write(() => realm.Add(instance));
-                    }
-                    catch (RealmDuplicatePrimaryKeyValueException)
-                    {
-                        // Sync went through too quickly (that's why we do 5 attempts)
-                    }
-
-                    await WaitForUploadAsync(realm);
+                    realm.Write(() => realm.Add(instance));
+                }
+                catch (RealmDuplicatePrimaryKeyValueException)
+                {
+                    // Sync went through too quickly (that's why we do 5 attempts)
                 }
 
-                using (var realm = await GetSyncedRealm(partition))
-                {
-                    var expectedPK = Operator.Convert<RealmValue>(pkValue);
-                    await TestHelpers.WaitForConditionAsync(() => realm.DynamicApi.FindCore(objectType.Name, expectedPK) != null);
+                await WaitForUploadAsync(realm);
+            }
 
-                    var objectCount = ((IQueryable<RealmObject>)realm.DynamicApi.All(objectType.Name))
-                        .ToArray()
-                        .Count(o => o.DynamicApi.Get<RealmValue>("_id") == expectedPK);
+            using (var realm = await GetSyncedRealm(partition))
+            {
+                var expectedPK = Operator.Convert<RealmValue>(pkValue);
+                await TestHelpers.WaitForConditionAsync(() => realm.DynamicApi.FindCore(objectType.Name, expectedPK) != null);
 
-                    Assert.That(objectCount, Is.EqualTo(1));
-                }
-            });
+                var objectCount = ((IQueryable<RealmObject>)realm.DynamicApi.All(objectType.Name))
+                    .ToArray()
+                    .Count(o => o.DynamicApi.Get<RealmValue>("_id") == expectedPK);
+
+                Assert.That(objectCount, Is.EqualTo(1));
+            }
         }
 
         public static object[] MergeTestCases =

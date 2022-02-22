@@ -186,22 +186,19 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void DictionaryNotificationToken_KeepsCollectionAlive()
+        public async Task DictionaryNotificationToken_KeepsCollectionAlive()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
             {
-                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
+                var dictionary = _realm.Write(() =>
                 {
-                    var dictionary = _realm.Write(() =>
-                    {
-                        return _realm.Add(new OrderedContainer()).ItemsDictionary;
-                    });
-
-                    var dictReference = new WeakReference(dictionary);
-                    var token = dictionary.SubscribeForKeyNotifications(delegate { });
-
-                    return (token, dictReference);
+                    return _realm.Add(new OrderedContainer()).ItemsDictionary;
                 });
+
+                var dictReference = new WeakReference(dictionary);
+                var token = dictionary.SubscribeForKeyNotifications(delegate { });
+
+                return (token, dictReference);
             });
         }
 
@@ -673,78 +670,72 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void WhenSynchronizationContextExists_ShouldAutoRefresh()
+        public async Task WhenSynchronizationContextExists_ShouldAutoRefresh()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var tcs = new TaskCompletionSource<ChangeSet>();
+            var query = _realm.All<Person>();
+            void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e)
             {
-                var tcs = new TaskCompletionSource<ChangeSet>();
-                var query = _realm.All<Person>();
-                void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e)
+                if (e != null)
                 {
-                    if (e != null)
-                    {
-                        tcs.TrySetException(e);
-                    }
-                    else if (c != null)
-                    {
-                        tcs.TrySetResult(c);
-                    }
+                    tcs.TrySetException(e);
                 }
-
-                using (query.SubscribeForNotifications(OnNotification))
+                else if (c != null)
                 {
-                    _realm.Write(() => _realm.Add(new Person()));
-
-                    var changes = await tcs.Task.Timeout(2000);
-
-                    Assert.That(changes, Is.Not.Null);
-                    Assert.That(changes.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+                    tcs.TrySetResult(c);
                 }
-            });
+            }
+
+            using (query.SubscribeForNotifications(OnNotification))
+            {
+                _realm.Write(() => _realm.Add(new Person()));
+
+                var changes = await tcs.Task.Timeout(2000);
+
+                Assert.That(changes, Is.Not.Null);
+                Assert.That(changes.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+            }
         }
 
         [Test(Description = "A test to verify https://github.com/realm/realm-dotnet/issues/1689 is fixed")]
-        public void SubscribeForNotifications_InvokedWithInitialCallback()
+        public async Task SubscribeForNotifications_InvokedWithInitialCallback()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var initCalls = 0;
+            var updateCalls = 0;
+            void OnNotification(IRealmCollection<Person> _, ChangeSet changes, Exception __)
             {
-                var initCalls = 0;
-                var updateCalls = 0;
-                void OnNotification(IRealmCollection<Person> _, ChangeSet changes, Exception __)
+                if (changes == null)
                 {
-                    if (changes == null)
-                    {
-                        ++initCalls;
-                    }
-                    else
-                    {
-                        ++updateCalls;
-                    }
+                    ++initCalls;
                 }
+                else
+                {
+                    ++updateCalls;
+                }
+            }
 
-                var d = new Person();
-                _realm.Write(() => _realm.Add(d));
+            var d = new Person();
+            _realm.Write(() => _realm.Add(d));
 
-                using (d.Friends.SubscribeForNotifications(OnNotification))
+            using (d.Friends.SubscribeForNotifications(OnNotification))
+            using (d.Friends.SubscribeForNotifications(OnNotification))
+            {
+                await Task.Delay(100);
+                Assert.That(initCalls, Is.EqualTo(2));
+
                 using (d.Friends.SubscribeForNotifications(OnNotification))
                 {
                     await Task.Delay(100);
-                    Assert.That(initCalls, Is.EqualTo(2));
+                    Assert.That(initCalls, Is.EqualTo(3));
 
-                    using (d.Friends.SubscribeForNotifications(OnNotification))
+                    _realm.Write(() =>
                     {
-                        await Task.Delay(100);
-                        Assert.That(initCalls, Is.EqualTo(3));
-
-                        _realm.Write(() =>
-                        {
-                            d.Friends.Add(d); // trigger the subscriptions..
-                        });
-                        await Task.Delay(100);
-                        Assert.That(updateCalls, Is.EqualTo(3));
-                    }
+                        d.Friends.Add(d); // trigger the subscriptions..
+                    });
+                    await Task.Delay(100);
+                    Assert.That(updateCalls, Is.EqualTo(3));
                 }
-            });
+            }
         }
 
         [Test]
@@ -788,38 +779,35 @@ namespace Realms.Tests.Database
         }
 
         [Test(Description = "A test to verify https://github.com/realm/realm-dotnet/issues/1971 is fixed")]
-        public void List_WhenParentIsDeleted_RaisesReset()
+        public async Task List_WhenParentIsDeleted_RaisesReset()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var person = new Person();
+            _realm.Write(() => _realm.Add(person));
+
+            var eventHelper = new EventHelper<IRealmCollection<Person>, NotifyCollectionChangedEventArgs>();
+
+            person.Friends.AsRealmCollection().CollectionChanged += eventHelper.OnEvent;
+
+            _realm.Write(() =>
             {
-                var person = new Person();
-                _realm.Write(() => _realm.Add(person));
-
-                var eventHelper = new EventHelper<IRealmCollection<Person>, NotifyCollectionChangedEventArgs>();
-
-                person.Friends.AsRealmCollection().CollectionChanged += eventHelper.OnEvent;
-
-                _realm.Write(() =>
-                {
-                    person.Friends.Add(new Person());
-                });
-
-                var changeEvent = await eventHelper.GetNextEventAsync();
-
-                Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-                Assert.That(changeEvent.Args.NewStartingIndex, Is.EqualTo(0));
-
-                _realm.Write(() =>
-                {
-                    person.Friends.Add(new Person());
-                    _realm.Remove(person);
-                });
-
-                changeEvent = await eventHelper.GetNextEventAsync();
-
-                Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
-                Assert.That(changeEvent.Sender.IsValid, Is.False);
+                person.Friends.Add(new Person());
             });
+
+            var changeEvent = await eventHelper.GetNextEventAsync();
+
+            Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(changeEvent.Args.NewStartingIndex, Is.EqualTo(0));
+
+            _realm.Write(() =>
+            {
+                person.Friends.Add(new Person());
+                _realm.Remove(person);
+            });
+
+            changeEvent = await eventHelper.GetNextEventAsync();
+
+            Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
+            Assert.That(changeEvent.Sender.IsValid, Is.False);
         }
 
         public static object[] CollectionChangedTestCases = new[]

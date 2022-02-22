@@ -26,58 +26,47 @@ using Realms.Sync;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
+    [RequiresBaas, Timeout(60_000)]
     public class PartitionKeyTests : SyncTestBase
     {
-        [Test]
-        public void OpenRealm_StringPK_Works()
+        [Test, Timeout(120_000)]
+        public async Task OpenRealm_StringPK_Works()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partitionValue = Guid.NewGuid().ToString();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
+            var partitionValue = Guid.NewGuid().ToString();
+            var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
+            var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
 
-                await RunPartitionKeyTestsCore(config1, config2);
-            }, timeout: 120_000);
+            await RunPartitionKeyTestsCore(config1, config2);
         }
 
         [Test]
-        public void OpenRealm_Int64PK_Works()
+        public async Task OpenRealm_Int64PK_Works()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partitionValue = TestHelpers.Random.Next(int.MinValue, int.MaxValue);
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+            var partitionValue = TestHelpers.Random.Next(int.MinValue, int.MaxValue);
+            var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+            var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
 
-                await RunPartitionKeyTestsCore(config1, config2);
-            }, timeout: 60000);
+            await RunPartitionKeyTestsCore(config1, config2);
         }
 
         [Test]
-        public void OpenRealm_ObjectIdPK_Works()
+        public async Task OpenRealm_ObjectIdPK_Works()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partitionValue = ObjectId.GenerateNewId();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+            var partitionValue = ObjectId.GenerateNewId();
+            var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+            var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
 
-                await RunPartitionKeyTestsCore(config1, config2);
-            }, timeout: 60000);
+            await RunPartitionKeyTestsCore(config1, config2);
         }
 
         [Test]
-        public void OpenRealm_GuidPK_Works()
+        public async Task OpenRealm_GuidPK_Works()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partitionValue = Guid.NewGuid();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+            var partitionValue = Guid.NewGuid();
+            var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+            var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
 
-                await RunPartitionKeyTestsCore(config1, config2);
-            }, timeout: 60000);
+            await RunPartitionKeyTestsCore(config1, config2);
         }
 
         private async Task RunPartitionKeyTestsCore(PartitionSyncConfiguration config1, PartitionSyncConfiguration config2)

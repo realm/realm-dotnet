@@ -29,15 +29,34 @@ namespace Realms.Tests.Database
     public class AsyncTests : RealmInstanceTest
     {
         [Test]
-        public void AsyncWrite_ShouldExecuteOnWorkerThread()
+        public async Task AsyncWrite_ShouldExecuteOnWorkerThread()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var currentThreadId = Environment.CurrentManagedThreadId;
+            var otherThreadId = currentThreadId;
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+            Assert.That(SynchronizationContext.Current != null);
+            await _realm.WriteAsync(realm =>
+            {
+                otherThreadId = Environment.CurrentManagedThreadId;
+                realm.Add(new Person());
+            });
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
+            Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
+        }
+
+        [Test]
+        public async Task AsyncWrite_WhenOnBackgroundThread_ShouldExecuteOnSameThread()
+        {
+            await Task.Run(async () =>
             {
                 var currentThreadId = Environment.CurrentManagedThreadId;
-                var otherThreadId = currentThreadId;
+                var otherThreadId = -1;
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
-                Assert.That(SynchronizationContext.Current != null);
+                Assert.That(SynchronizationContext.Current == null);
+
                 await _realm.WriteAsync(realm =>
                 {
                     otherThreadId = Environment.CurrentManagedThreadId;
@@ -45,115 +64,81 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-                Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
+                Assert.That(otherThreadId, Is.EqualTo(currentThreadId));
+
+                _realm.Dispose();
             });
         }
 
         [Test]
-        public void AsyncWrite_WhenOnBackgroundThread_ShouldExecuteOnSameThread()
+        public async Task AsyncWrite_UpdateViaPrimaryKey()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            IntPrimaryKeyWithValueObject obj = null;
+            _realm.Write(() =>
             {
-                await Task.Run(async () =>
-                {
-                    var currentThreadId = Environment.CurrentManagedThreadId;
-                    var otherThreadId = -1;
-
-                    Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
-                    Assert.That(SynchronizationContext.Current == null);
-
-                    await _realm.WriteAsync(realm =>
-                    {
-                        otherThreadId = Environment.CurrentManagedThreadId;
-                        realm.Add(new Person());
-                    });
-
-                    Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-                    Assert.That(otherThreadId, Is.EqualTo(currentThreadId));
-
-                    _realm.Dispose();
-                });
+                obj = _realm.Add(new IntPrimaryKeyWithValueObject { Id = 123 });
             });
+
+            await _realm.WriteAsync(realm =>
+            {
+                var dataObj = realm.Find<IntPrimaryKeyWithValueObject>(123);
+                dataObj.StringValue = "foobar";
+            });
+
+            // Make sure the changes are immediately visible on the caller thread
+            Assert.That(obj.StringValue, Is.EqualTo("foobar"));
         }
 
         [Test]
-        public void AsyncWrite_UpdateViaPrimaryKey()
+        public async Task AsyncWrite_ShouldRethrowExceptions()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                IntPrimaryKeyWithValueObject obj = null;
-                _realm.Write(() =>
-                {
-                    obj = _realm.Add(new IntPrimaryKeyWithValueObject { Id = 123 });
-                });
-
-                await _realm.WriteAsync(realm =>
-                {
-                    var dataObj = realm.Find<IntPrimaryKeyWithValueObject>(123);
-                    dataObj.StringValue = "foobar";
-                });
-
-                // Make sure the changes are immediately visible on the caller thread
-                Assert.That(obj.StringValue, Is.EqualTo("foobar"));
-            });
+            const string message = "this is an exception from user code";
+            var ex = await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)));
+            Assert.That(ex.Message, Is.EqualTo(message));
         }
 
         [Test]
-        public void AsyncWrite_ShouldRethrowExceptions()
+        public async Task RefreshAsync_Tests()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            Assert.That(SynchronizationContext.Current != null);
+
+            IntPrimaryKeyWithValueObject obj = null;
+            _realm.Write(() =>
             {
-                const string message = "this is an exception from user code";
-                var ex = await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)));
-                Assert.That(ex.Message, Is.EqualTo(message));
+                obj = _realm.Add(new IntPrimaryKeyWithValueObject());
             });
-        }
 
-        [Test]
-        public void RefreshAsync_Tests()
-        {
-            TestHelpers.RunAsyncTest(async () =>
+            var reference = ThreadSafeReference.Create(obj);
+
+            Task.Run(() =>
             {
-                Assert.That(SynchronizationContext.Current != null);
-
-                IntPrimaryKeyWithValueObject obj = null;
-                _realm.Write(() =>
+                using var realm = GetRealm(_realm.Config);
+                var bgObj = realm.ResolveReference(reference);
+                realm.Write(() =>
                 {
-                    obj = _realm.Add(new IntPrimaryKeyWithValueObject());
+                    bgObj.StringValue = "123";
                 });
+            }).Wait(); // <- wait to avoid the main thread autoupdating while idle
 
-                var reference = ThreadSafeReference.Create(obj);
+            Assert.That(obj.StringValue, Is.Null);
 
-                Task.Run(() =>
-                {
-                    using var realm = GetRealm(_realm.Config);
-                    var bgObj = realm.ResolveReference(reference);
-                    realm.Write(() =>
-                    {
-                        bgObj.StringValue = "123";
-                    });
-                }).Wait(); // <- wait to avoid the main thread autoupdating while idle
+            var changeTiming = await MeasureTiming(_realm.RefreshAsync);
 
-                Assert.That(obj.StringValue, Is.Null);
+            Assert.That(obj.StringValue, Is.EqualTo("123"));
 
-                var changeTiming = await MeasureTiming(_realm.RefreshAsync);
+            // Make sure when there are no changes RefreshAsync completes quickly
+            var idleTiming = await MeasureTiming(_realm.RefreshAsync);
 
-                Assert.That(obj.StringValue, Is.EqualTo("123"));
+            Assert.That(changeTiming, Is.GreaterThan(idleTiming));
 
-                // Make sure when there are no changes RefreshAsync completes quickly
-                var idleTiming = await MeasureTiming(_realm.RefreshAsync);
-
-                Assert.That(changeTiming, Is.GreaterThan(idleTiming));
-
-                static async Task<long> MeasureTiming(Func<Task> func)
-                {
-                    var sw = new Stopwatch();
-                    sw.Start();
-                    await func();
-                    sw.Stop();
-                    return sw.ElapsedTicks;
-                }
-            });
+            static async Task<long> MeasureTiming(Func<Task> func)
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+                await func();
+                sw.Stop();
+                return sw.ElapsedTicks;
+            }
         }
     }
 }

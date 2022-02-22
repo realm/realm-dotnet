@@ -63,25 +63,22 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void SubscriptionSet_GetsGarbageCollected()
+        public async Task SubscriptionSet_GetsGarbageCollected()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var realm = GetFakeFLXRealm();
+
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                var realm = GetFakeFLXRealm();
-
-                await TestHelpers.EnsureObjectsAreCollected(() =>
-                {
-                    var subs = realm.Subscriptions;
-                    return new object[] { subs };
-                });
-
-                // This tests things via reflection because we don't want to expose private members, even internally.
-                var subsRefs = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
-                var weakSubs = (WeakReference<SubscriptionSet>)subsRefs.GetValue(realm);
-
-                Assert.That(weakSubs, Is.Not.Null);
-                Assert.That(weakSubs.TryGetTarget(out _), Is.False);
+                var subs = realm.Subscriptions;
+                return new object[] { subs };
             });
+
+            // This tests things via reflection because we don't want to expose private members, even internally.
+            var subsRefs = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
+            var weakSubs = (WeakReference<SubscriptionSet>)subsRefs.GetValue(realm);
+
+            Assert.That(weakSubs, Is.Not.Null);
+            Assert.That(weakSubs.TryGetTarget(out _), Is.False);
         }
 
         [Test]
@@ -97,35 +94,32 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Realm_Subscriptions_WhenVersionIsGCed_CreatesANewOne()
-        {
-            TestHelpers.RunAsyncTest(async () =>
+        public async Task Realm_Subscriptions_WhenVersionIsGCed_CreatesANewOne()
+    {
+            var realm = GetFakeFLXRealm();
+
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                var realm = GetFakeFLXRealm();
-
-                await TestHelpers.EnsureObjectsAreCollected(() =>
-                {
-                    var subs = realm.Subscriptions;
-                    return new object[] { subs };
-                });
-
-                // This tests things via reflection because we don't want to expose private members, even internally.
-                var subsRef = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
-                var weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
-
-                Assert.That(weakSubs, Is.Not.Null);
-                Assert.That(weakSubs.TryGetTarget(out _), Is.False);
-
-                // The old one was gc-ed, so we should get a new one here
-                var subsAgain = realm.Subscriptions;
-
-                weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
-
-                Assert.That(weakSubs, Is.Not.Null);
-                Assert.That(weakSubs.TryGetTarget(out var subsFromList), Is.True);
-
-                Assert.That(ReferenceEquals(subsAgain, subsFromList));
+                var subs = realm.Subscriptions;
+                return new object[] { subs };
             });
+
+            // This tests things via reflection because we don't want to expose private members, even internally.
+            var subsRef = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
+            var weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
+
+            Assert.That(weakSubs, Is.Not.Null);
+            Assert.That(weakSubs.TryGetTarget(out _), Is.False);
+
+            // The old one was gc-ed, so we should get a new one here
+            var subsAgain = realm.Subscriptions;
+
+            weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
+
+            Assert.That(weakSubs, Is.Not.Null);
+            Assert.That(weakSubs.TryGetTarget(out var subsFromList), Is.True);
+
+            Assert.That(ReferenceEquals(subsAgain, subsFromList));
         }
 
         [Test]
@@ -946,38 +940,35 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void SubscriptionSet_WhenSupersededParentRealmIsClosed_GetsClosed()
+        public async Task SubscriptionSet_WhenSupersededParentRealmIsClosed_GetsClosed()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var realm = GetFakeFLXRealm();
+            var subs = realm.Subscriptions;
+
+            await Task.Run(() =>
             {
-                var realm = GetFakeFLXRealm();
-                var subs = realm.Subscriptions;
-
-                await Task.Run(() =>
+                using var bgRealm = GetRealm(realm.Config);
+                bgRealm.Subscriptions.Update(() =>
                 {
-                    using var bgRealm = GetRealm(realm.Config);
-                    bgRealm.Subscriptions.Update(() =>
-                    {
-                        bgRealm.Subscriptions.Add(bgRealm.All<SyncAllTypesObject>());
-                    });
+                    bgRealm.Subscriptions.Add(bgRealm.All<SyncAllTypesObject>());
                 });
-
-                var updatedSubs = realm.Subscriptions;
-                Assert.That(subs, Is.Not.SameAs(updatedSubs));
-
-                realm.Dispose();
-
-                var handleField = typeof(SubscriptionSet).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance);
-                var subsHandle = (SubscriptionSetHandle)handleField.GetValue(subs);
-                var updatedSubsHandle = (SubscriptionSetHandle)handleField.GetValue(updatedSubs);
-                Assert.That(subsHandle.IsClosed);
-                Assert.That(updatedSubsHandle.IsClosed);
-
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
-
-                Assert.Throws<RealmClosedException>(() => _ = subs.Count);
-                Assert.Throws<RealmClosedException>(() => _ = updatedSubs.Count);
             });
+
+            var updatedSubs = realm.Subscriptions;
+            Assert.That(subs, Is.Not.SameAs(updatedSubs));
+
+            realm.Dispose();
+
+            var handleField = typeof(SubscriptionSet).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance);
+            var subsHandle = (SubscriptionSetHandle)handleField.GetValue(subs);
+            var updatedSubsHandle = (SubscriptionSetHandle)handleField.GetValue(updatedSubs);
+            Assert.That(subsHandle.IsClosed);
+            Assert.That(updatedSubsHandle.IsClosed);
+
+            Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+            Assert.Throws<RealmClosedException>(() => _ = subs.Count);
+            Assert.Throws<RealmClosedException>(() => _ = updatedSubs.Count);
         }
 
         [Test]
@@ -1100,664 +1091,623 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [Test]
-        public void Integration_WaitForSynchronization_EmptyUpdate()
+        [Test, RequiresBaas]
+        public async Task Integration_WaitForSynchronization_EmptyUpdate()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            realm.Subscriptions.Update(() =>
             {
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                realm.Subscriptions.Update(() =>
-                {
-                });
-
-                await realm.Subscriptions.WaitForSynchronizationAsync();
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
             });
+
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
         }
 
         // TODO: enable this when https://github.com/realm/realm-core/issues/5208 is fixed
-        [Test, Ignore("Failing, reenable when https://github.com/realm/realm-core/issues/5208 is fixed")]
-        public void Integration_CloseRealmBeforeWaitCompletes()
+        [Ignore("Failing, reenable when https://github.com/realm/realm-core/issues/5208 is fixed")]
+        [Test, RequiresBaas]
+        public async Task Integration_CloseRealmBeforeWaitCompletes()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var testGuid = Guid.NewGuid();
+
+            await AddSomeData(testGuid);
+
+            Task waitTask = null;
+            using (var realm = await GetFLXIntegrationRealmAsync())
             {
-                var testGuid = Guid.NewGuid();
-
-                await AddSomeData(testGuid);
-
-                Task waitTask = null;
-                using (var realm = await GetFLXIntegrationRealmAsync())
+                realm.Subscriptions.Update(() =>
                 {
-                    realm.Subscriptions.Update(() =>
-                    {
-                        var query = realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+                    var query = realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
 
-                        realm.Subscriptions.Add(query);
-                    });
+                    realm.Subscriptions.Add(query);
+                });
 
-                    waitTask = realm.Subscriptions.WaitForSynchronizationAsync();
+                waitTask = realm.Subscriptions.WaitForSynchronizationAsync();
+            }
+
+            await waitTask;
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionSet_AddRemove()
+        {
+            var testGuid = Guid.NewGuid();
+
+            await AddSomeData(testGuid);
+
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
+
+            await UpdateAndWaitForSubscription(query);
+
+            Assert.That(query.Count(), Is.EqualTo(1));
+            Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
+
+            var query2 = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty < 2 && o.GuidProperty == testGuid);
+            await UpdateAndWaitForSubscription(query2);
+
+            Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(2));
+
+            await UpdateAndWaitForSubscription(query, shouldAdd: false);
+
+            Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(1));
+            Assert.That(query.Count(), Is.EqualTo(0));
+            Assert.That(query2.Count(), Is.EqualTo(1));
+
+            await UpdateAndWaitForSubscription(query2, shouldAdd: false);
+
+            Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(0));
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionSet_MoveObjectOutsideView()
+        {
+            var testGuid = Guid.NewGuid();
+
+            await AddSomeData(testGuid);
+
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
+
+            await UpdateAndWaitForSubscription(query);
+
+            Assert.That(query.Count(), Is.EqualTo(1));
+            Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
+
+            realm.Write(() =>
+            {
+                query.Single().DoubleProperty = 1.99;
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => !query.Any());
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionSet_MoveObjectInsideView()
+        {
+            var testGuid = Guid.NewGuid();
+
+            var writerRealm = await AddSomeData(testGuid);
+
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
+
+            await UpdateAndWaitForSubscription(query);
+
+            Assert.That(query.Count(), Is.EqualTo(1));
+            Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
+
+            // Add a new object
+            writerRealm.Write(() =>
+            {
+                writerRealm.Add(new SyncAllTypesObject
+                {
+                    DoubleProperty = 9.9,
+                    GuidProperty = testGuid
+                });
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => query.Count() == 2);
+
+            Assert.That(query.AsEnumerable().Select(o => o.DoubleProperty), Is.EquivalentTo(new[] { 2.5, 9.9 }));
+
+            // Update an existing object
+            writerRealm.Write(() =>
+            {
+                writerRealm.All<SyncAllTypesObject>().Single(o => o.DoubleProperty == 1.5).DoubleProperty = 11;
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => query.Count() == 3);
+
+            Assert.That(query.AsEnumerable().Select(o => o.DoubleProperty), Is.EquivalentTo(new[] { 2.5, 9.9, 11 }));
+
+            writerRealm.Write(() =>
+            {
+                writerRealm.All<SyncAllTypesObject>().Single(o => o.DoubleProperty == 11).DoubleProperty = 0;
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => query.Count() == 2);
+
+            Assert.That(query.AsEnumerable().Select(o => o.DoubleProperty), Is.EquivalentTo(new[] { 2.5, 9.9 }));
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionWithLinks()
+        {
+            var testGuid = Guid.NewGuid();
+
+            var realm1 = await GetFLXIntegrationRealmAsync();
+            realm1.Subscriptions.Update(() =>
+            {
+                realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
+            });
+
+            realm1.Write(() =>
+            {
+                realm1.Add(getAtoWithLink(1));
+                realm1.Add(getAtoWithLink(2));
+                realm1.Add(getAtoWithLink(3));
+            });
+
+            await WaitForUploadAsync(realm1);
+
+            var realm2 = await GetFLXIntegrationRealmAsync();
+            realm2.Subscriptions.Update(() =>
+            {
+                realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.Int64Property >= 2));
+            });
+
+            await realm2.Subscriptions.WaitForSynchronizationAsync();
+
+            var atos = realm2.All<SyncAllTypesObject>().OrderBy(o => o.Int64Property);
+            CollectionAssert.AreEqual(new[] { 2, 3 }, atos.AsEnumerable().Select(o => o.Int64Property));
+
+            // We didn't subscribe to IntPropertyObject, so even though SyncAllTypesObject links to those, we should not see any.
+            Assert.That(realm2.All<IntPropertyObject>().Count(), Is.EqualTo(0));
+            Assert.That(atos.AsEnumerable().All(o => o.ObjectProperty == null));
+
+            realm2.Subscriptions.Update(() =>
+            {
+                realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int <= 2));
+            });
+
+            await realm2.Subscriptions.WaitForSynchronizationAsync();
+
+            CollectionAssert.AreEqual(new[] { 2, 3 }, atos.AsEnumerable().Select(o => o.Int64Property));
+
+            // Now we should have subscribed and should see 2 objects
+            var intObjects = realm2.All<IntPropertyObject>().OrderBy(o => o.Int);
+            CollectionAssert.AreEqual(new[] { 1, 2 }, intObjects.AsEnumerable().Select(o => o.Int));
+
+            // We subscribed to ato 2 and 3, but intObject 1 and 2. So 2 should point to 2, 3 to null
+            Assert.That(atos.ElementAt(0).ObjectProperty.Int, Is.EqualTo(2));
+            Assert.That(atos.ElementAt(1).ObjectProperty, Is.Null);
+
+            realm1.Write(() =>
+            {
+                // ato 3 points to intObject 3, but that's outside of the view. We'll update intObject
+                // to -1 to bring it into view.
+                realm1.All<IntPropertyObject>().Single(o => o.Int == 3).Int = -1;
+            });
+
+            // intObject3 should sync down so we'll end up with 3 intObjects
+            await TestHelpers.WaitForConditionAsync(() => intObjects.Count() == 3);
+
+            Assert.That(atos.ElementAt(1).ObjectProperty.Int, Is.EqualTo(-1));
+
+            SyncAllTypesObject getAtoWithLink(int value) => new()
+            {
+                Int64Property = value,
+                GuidProperty = testGuid,
+                ObjectProperty = GetIntPropertyObject(value, testGuid)
+            };
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionWithEmbeddedObjects()
+        {
+            var testGuid = Guid.NewGuid();
+
+            var realm1 = await GetFLXIntegrationRealmAsync();
+            realm1.Subscriptions.Update(() =>
+            {
+                realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
+            });
+
+            realm1.Write(() =>
+            {
+                realm1.Add(getAtoWithEmbedded(1));
+                realm1.Add(getAtoWithEmbedded(2));
+                realm1.Add(getAtoWithEmbedded(3));
+            });
+
+            await WaitForUploadAsync(realm1);
+
+            var realm2 = await GetFLXIntegrationRealmAsync();
+            realm2.Subscriptions.Update(() =>
+            {
+                realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.Int64Property >= 2));
+            });
+
+            await realm2.Subscriptions.WaitForSynchronizationAsync();
+
+            var atos = realm2.All<SyncAllTypesObject>().OrderBy(o => o.Int64Property);
+
+            Assert.That(atos.ElementAt(0).Int64Property, Is.EqualTo(2));
+            Assert.That(atos.ElementAt(0).EmbeddedObjectProperty.Int, Is.EqualTo(2));
+
+            Assert.That(atos.ElementAt(1).Int64Property, Is.EqualTo(3));
+            Assert.That(atos.ElementAt(1).EmbeddedObjectProperty.Int, Is.EqualTo(3));
+
+            realm1.Write(() =>
+            {
+                realm1.All<SyncAllTypesObject>().Single(o => o.Int64Property == 3).Int64Property = 1;
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => atos.Count() == 1);
+
+            Assert.That(atos.Single().Int64Property, Is.EqualTo(2));
+            Assert.That(atos.Single().EmbeddedObjectProperty.Int, Is.EqualTo(2));
+
+            SyncAllTypesObject getAtoWithEmbedded(int value) => new()
+            {
+                Int64Property = value,
+                GuidProperty = testGuid,
+                EmbeddedObjectProperty = new EmbeddedIntPropertyObject
+                {
+                    Int = value
                 }
-
-                await waitTask;
-            });
+            };
         }
 
-        [Test]
-        public void Integration_SubscriptionSet_AddRemove()
+        [Test, RequiresBaas]
+        public async Task Integration_SubscritpionWithCollections()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var testGuid = Guid.NewGuid();
+
+            var realm1 = await GetFLXIntegrationRealmAsync();
+            realm1.Subscriptions.Update(() =>
             {
-                var testGuid = Guid.NewGuid();
-
-                await AddSomeData(testGuid);
-
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
-
-                var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
-
-                await UpdateAndWaitForSubscription(query);
-
-                Assert.That(query.Count(), Is.EqualTo(1));
-                Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
-
-                var query2 = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty < 2 && o.GuidProperty == testGuid);
-                await UpdateAndWaitForSubscription(query2);
-
-                Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(2));
-
-                await UpdateAndWaitForSubscription(query, shouldAdd: false);
-
-                Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(1));
-                Assert.That(query.Count(), Is.EqualTo(0));
-                Assert.That(query2.Count(), Is.EqualTo(1));
-
-                await UpdateAndWaitForSubscription(query2, shouldAdd: false);
-
-                Assert.That(realm.All<SyncAllTypesObject>().Count(), Is.EqualTo(0));
+                realm1.Subscriptions.Add(realm1.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
+                realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
             });
-        }
 
-        [Test]
-        public void Integration_SubscriptionSet_MoveObjectOutsideView()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var ito1 = GetIntPropertyObject(1, testGuid);
+            var ito2 = GetIntPropertyObject(2, testGuid);
+            var ito3 = GetIntPropertyObject(3, testGuid);
+
+            var colObj1 = realm1.Write(() =>
             {
-                var testGuid = Guid.NewGuid();
-
-                await AddSomeData(testGuid);
-
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
-
-                var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
-
-                await UpdateAndWaitForSubscription(query);
-
-                Assert.That(query.Count(), Is.EqualTo(1));
-                Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
-
-                realm.Write(() =>
+                var collection = realm1.Add(new SyncCollectionsObject
                 {
-                    query.Single().DoubleProperty = 1.99;
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => !query.Any());
-            });
-        }
-
-        [Test]
-        public void Integration_SubscriptionSet_MoveObjectInsideView()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var testGuid = Guid.NewGuid();
-
-                var writerRealm = await AddSomeData(testGuid);
-
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
-
-                var query = realm.All<SyncAllTypesObject>().Where(o => o.DoubleProperty > 2 && o.GuidProperty == testGuid);
-
-                await UpdateAndWaitForSubscription(query);
-
-                Assert.That(query.Count(), Is.EqualTo(1));
-                Assert.That(query.Single().DoubleProperty, Is.EqualTo(2.5));
-
-                // Add a new object
-                writerRealm.Write(() =>
-                {
-                    writerRealm.Add(new SyncAllTypesObject
-                    {
-                        DoubleProperty = 9.9,
-                        GuidProperty = testGuid
-                    });
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => query.Count() == 2);
-
-                Assert.That(query.AsEnumerable().Select(o => o.DoubleProperty), Is.EquivalentTo(new[] { 2.5, 9.9 }));
-
-                // Update an existing object
-                writerRealm.Write(() =>
-                {
-                    writerRealm.All<SyncAllTypesObject>().Single(o => o.DoubleProperty == 1.5).DoubleProperty = 11;
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => query.Count() == 3);
-
-                Assert.That(query.AsEnumerable().Select(o => o.DoubleProperty), Is.EquivalentTo(new[] { 2.5, 9.9, 11 }));
-
-                writerRealm.Write(() =>
-                {
-                    writerRealm.All<SyncAllTypesObject>().Single(o => o.DoubleProperty == 11).DoubleProperty = 0;
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => query.Count() == 2);
-
-                Assert.That(query.AsEnumerable().Select(o => o.DoubleProperty), Is.EquivalentTo(new[] { 2.5, 9.9 }));
-            });
-        }
-
-        [Test]
-        public void Integration_SubscriptionWithLinks()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var testGuid = Guid.NewGuid();
-
-                var realm1 = await GetFLXIntegrationRealmAsync();
-                realm1.Subscriptions.Update(() =>
-                {
-                    realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                    realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                realm1.Write(() =>
-                {
-                    realm1.Add(getAtoWithLink(1));
-                    realm1.Add(getAtoWithLink(2));
-                    realm1.Add(getAtoWithLink(3));
-                });
-
-                await WaitForUploadAsync(realm1);
-
-                var realm2 = await GetFLXIntegrationRealmAsync();
-                realm2.Subscriptions.Update(() =>
-                {
-                    realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.Int64Property >= 2));
-                });
-
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
-
-                var atos = realm2.All<SyncAllTypesObject>().OrderBy(o => o.Int64Property);
-                CollectionAssert.AreEqual(new[] { 2, 3 }, atos.AsEnumerable().Select(o => o.Int64Property));
-
-                // We didn't subscribe to IntPropertyObject, so even though SyncAllTypesObject links to those, we should not see any.
-                Assert.That(realm2.All<IntPropertyObject>().Count(), Is.EqualTo(0));
-                Assert.That(atos.AsEnumerable().All(o => o.ObjectProperty == null));
-
-                realm2.Subscriptions.Update(() =>
-                {
-                    realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int <= 2));
-                });
-
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
-
-                CollectionAssert.AreEqual(new[] { 2, 3 }, atos.AsEnumerable().Select(o => o.Int64Property));
-
-                // Now we should have subscribed and should see 2 objects
-                var intObjects = realm2.All<IntPropertyObject>().OrderBy(o => o.Int);
-                CollectionAssert.AreEqual(new[] { 1, 2 }, intObjects.AsEnumerable().Select(o => o.Int));
-
-                // We subscribed to ato 2 and 3, but intObject 1 and 2. So 2 should point to 2, 3 to null
-                Assert.That(atos.ElementAt(0).ObjectProperty.Int, Is.EqualTo(2));
-                Assert.That(atos.ElementAt(1).ObjectProperty, Is.Null);
-
-                realm1.Write(() =>
-                {
-                    // ato 3 points to intObject 3, but that's outside of the view. We'll update intObject
-                    // to -1 to bring it into view.
-                    realm1.All<IntPropertyObject>().Single(o => o.Int == 3).Int = -1;
-                });
-
-                // intObject3 should sync down so we'll end up with 3 intObjects
-                await TestHelpers.WaitForConditionAsync(() => intObjects.Count() == 3);
-
-                Assert.That(atos.ElementAt(1).ObjectProperty.Int, Is.EqualTo(-1));
-
-                SyncAllTypesObject getAtoWithLink(int value) => new()
-                {
-                    Int64Property = value,
                     GuidProperty = testGuid,
-                    ObjectProperty = GetIntPropertyObject(value, testGuid)
-                };
+                });
+
+                collection.ObjectList.Add(ito1);
+                collection.ObjectList.Add(ito2);
+                collection.ObjectList.Add(ito3);
+
+                // Add 1 and 2 again
+                collection.ObjectList.Add(ito1);
+                collection.ObjectList.Add(ito2);
+
+                collection.ObjectSet.Add(ito1);
+                collection.ObjectSet.Add(ito2);
+                collection.ObjectSet.Add(ito3);
+
+                collection.ObjectDict.Add("1", ito1);
+                collection.ObjectDict.Add("2", ito2);
+                collection.ObjectDict.Add("3", ito3);
+                collection.ObjectDict.Add("1_again", ito1);
+                collection.ObjectDict.Add("3_again", ito3);
+
+                return collection;
             });
+
+            await WaitForUploadAsync(realm1);
+
+            var realm2 = await GetFLXIntegrationRealmAsync();
+
+            realm2.Subscriptions.Update(() =>
+            {
+                realm2.Subscriptions.Add(realm2.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
+                realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int >= 2));
+            });
+
+            await realm2.Subscriptions.WaitForSynchronizationAsync();
+
+            Assert.That(realm2.All<SyncCollectionsObject>().Count(), Is.EqualTo(1));
+            Assert.That(realm2.All<IntPropertyObject>().Count(), Is.EqualTo(2));
+
+            var colObj2 = realm2.All<SyncCollectionsObject>().Single();
+
+            // We should have 2,3,2 because the 1s should be filtered
+            CollectionAssert.AreEqual(new[] { 2, 3, 2 }, colObj2.ObjectList.Select(o => o.Int));
+            Assert.That(colObj2.ObjectList[0], Is.EqualTo(colObj2.ObjectList[2]));
+
+            Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 2, 3 }));
+
+            Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(5));
+            Assert.That(colObj2.ObjectDict["1"], Is.Null);
+            Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
+            Assert.That(colObj2.ObjectDict["3"].Int, Is.EqualTo(3));
+            Assert.That(colObj2.ObjectDict["1_again"], Is.Null);
+            Assert.That(colObj2.ObjectDict["3_again"].Int, Is.EqualTo(3));
+            Assert.That(colObj2.ObjectDict["3_again"], Is.EqualTo(colObj2.ObjectDict["3"]));
+
+            // Add 4th element from the second client
+            realm2.Write(() =>
+            {
+                var ito4 = realm2.Add(GetIntPropertyObject(4, testGuid));
+                colObj2.ObjectList.Add(ito4);
+                colObj2.ObjectSet.Add(ito4);
+                colObj2.ObjectDict.Add("4", ito4);
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => realm1.All<IntPropertyObject>().Count() == 4);
+
+            Assert.That(colObj1.ObjectList.Count, Is.EqualTo(6));
+            CollectionAssert.AreEqual(new[] { 1, 2, 3, 1, 2, 4 }, colObj1.ObjectList.Select(o => o.Int));
+
+            Assert.That(colObj1.ObjectSet.Count, Is.EqualTo(4));
+            Assert.That(colObj1.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 1, 2, 3, 4 }));
+
+            Assert.That(colObj1.ObjectDict.Count, Is.EqualTo(6));
+            Assert.That(colObj1.ObjectDict["4"].Int, Is.EqualTo(4));
+
+            // Move an element out of view from client1
+            realm1.Write(() =>
+            {
+                ito3.Int = -1;
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => realm2.All<IntPropertyObject>().Count() == 2);
+
+            // We should have 2, 2, 4 because 1 and 3 should be filtered
+            CollectionAssert.AreEqual(new[] { 2, 2, 4 }, colObj2.ObjectList.Select(o => o.Int));
+            Assert.That(colObj2.ObjectList[0], Is.EqualTo(colObj2.ObjectList[1]));
+
+            Assert.That(colObj2.ObjectSet.Count, Is.EqualTo(2));
+            Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 2, 4 }));
+
+            Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(6));
+            Assert.That(colObj2.ObjectDict["1"], Is.Null);
+            Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
+            Assert.That(colObj2.ObjectDict["3"], Is.Null);
+            Assert.That(colObj2.ObjectDict["1_again"], Is.Null);
+            Assert.That(colObj2.ObjectDict["3_again"], Is.Null);
+            Assert.That(colObj2.ObjectDict["4"].Int, Is.EqualTo(4));
+
+            // Move an element into view from client1
+            realm1.Write(() =>
+            {
+                ito1.Int = 100;
+            });
+
+            await TestHelpers.WaitForConditionAsync(() => realm2.All<IntPropertyObject>().Count() == 3);
+
+            // We should have 100, 2, 100, 2, 4 because 3 should be filtered
+            CollectionAssert.AreEqual(new[] { 100, 2, 100, 2, 4 }, colObj2.ObjectList.Select(o => o.Int));
+            Assert.That(colObj2.ObjectList[0], Is.EqualTo(colObj2.ObjectList[2]));
+            Assert.That(colObj2.ObjectList[1], Is.EqualTo(colObj2.ObjectList[3]));
+
+            Assert.That(colObj2.ObjectSet.Count, Is.EqualTo(3));
+            Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 100, 2, 4 }));
+
+            Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(6));
+            Assert.That(colObj2.ObjectDict["1"].Int, Is.EqualTo(100));
+            Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
+            Assert.That(colObj2.ObjectDict["3"], Is.Null);
+            Assert.That(colObj2.ObjectDict["1_again"].Int, Is.EqualTo(100));
+            Assert.That(colObj2.ObjectDict["3_again"], Is.Null);
+            Assert.That(colObj2.ObjectDict["4"].Int, Is.EqualTo(4));
+            Assert.That(colObj2.ObjectDict["1_again"], Is.EqualTo(colObj2.ObjectDict["1"]));
         }
 
-        [Test]
-        public void Integration_SubscriptionWithEmbeddedObjects()
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionSet_WaitForSynchronization_CanBeCalledMultipleTimes()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var testGuid = Guid.NewGuid();
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            realm.Subscriptions.Update(() =>
             {
-                var testGuid = Guid.NewGuid();
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+            });
 
-                var realm1 = await GetFLXIntegrationRealmAsync();
-                realm1.Subscriptions.Update(() =>
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+
+            // Call WaitForSynchronizationAsync again
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
+        {
+            var testGuid = Guid.NewGuid();
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+            });
+
+            var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
+            {
+                Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
+            });
+
+            realm.Write(() =>
+            {
+                realm.Add(new SyncAllTypesObject());
+            });
+
+            var sessionError = await sessionErrorTask;
+            Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+        }
+
+        [Test, RequiresBaas]
+        public async Task Integration_UpdateObjectNotMatchingSubscriptions_ShouldError()
+        {
+            var testGuid = Guid.NewGuid();
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+            });
+
+            var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
+            {
+                Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
+            });
+
+            var ato = realm.Write(() =>
+            {
+                return realm.Add(new SyncAllTypesObject
                 {
-                    realm1.Subscriptions.Add(realm1.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                    realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                realm1.Write(() =>
-                {
-                    realm1.Add(getAtoWithEmbedded(1));
-                    realm1.Add(getAtoWithEmbedded(2));
-                    realm1.Add(getAtoWithEmbedded(3));
-                });
-
-                await WaitForUploadAsync(realm1);
-
-                var realm2 = await GetFLXIntegrationRealmAsync();
-                realm2.Subscriptions.Update(() =>
-                {
-                    realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.Int64Property >= 2));
-                });
-
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
-
-                var atos = realm2.All<SyncAllTypesObject>().OrderBy(o => o.Int64Property);
-
-                Assert.That(atos.ElementAt(0).Int64Property, Is.EqualTo(2));
-                Assert.That(atos.ElementAt(0).EmbeddedObjectProperty.Int, Is.EqualTo(2));
-
-                Assert.That(atos.ElementAt(1).Int64Property, Is.EqualTo(3));
-                Assert.That(atos.ElementAt(1).EmbeddedObjectProperty.Int, Is.EqualTo(3));
-
-                realm1.Write(() =>
-                {
-                    realm1.All<SyncAllTypesObject>().Single(o => o.Int64Property == 3).Int64Property = 1;
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => atos.Count() == 1);
-
-                Assert.That(atos.Single().Int64Property, Is.EqualTo(2));
-                Assert.That(atos.Single().EmbeddedObjectProperty.Int, Is.EqualTo(2));
-
-                SyncAllTypesObject getAtoWithEmbedded(int value) => new()
-                {
-                    Int64Property = value,
                     GuidProperty = testGuid,
-                    EmbeddedObjectProperty = new EmbeddedIntPropertyObject
-                    {
-                        Int = value
-                    }
-                };
+                });
             });
+
+            await WaitForUploadAsync(realm);
+
+            realm.Write(() =>
+            {
+                ato.GuidProperty = Guid.NewGuid();
+            });
+
+            realm.Write(() =>
+            {
+                ato.Int32Property = 15;
+            });
+
+            var sessionError = await sessionErrorTask;
+            Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
         }
 
-        [Test]
-        public void Integration_SubscritpionWithCollections()
+        [Test, RequiresBaas]
+        public async Task Integration_SubscriptionOnUnqueryableField_ShouldError()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            realm.Subscriptions.Update(() =>
             {
-                var testGuid = Guid.NewGuid();
-
-                var realm1 = await GetFLXIntegrationRealmAsync();
-                realm1.Subscriptions.Update(() =>
-                {
-                    realm1.Subscriptions.Add(realm1.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
-                    realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                var ito1 = GetIntPropertyObject(1, testGuid);
-                var ito2 = GetIntPropertyObject(2, testGuid);
-                var ito3 = GetIntPropertyObject(3, testGuid);
-
-                var colObj1 = realm1.Write(() =>
-                {
-                    var collection = realm1.Add(new SyncCollectionsObject
-                    {
-                        GuidProperty = testGuid,
-                    });
-
-                    collection.ObjectList.Add(ito1);
-                    collection.ObjectList.Add(ito2);
-                    collection.ObjectList.Add(ito3);
-
-                    // Add 1 and 2 again
-                    collection.ObjectList.Add(ito1);
-                    collection.ObjectList.Add(ito2);
-
-                    collection.ObjectSet.Add(ito1);
-                    collection.ObjectSet.Add(ito2);
-                    collection.ObjectSet.Add(ito3);
-
-                    collection.ObjectDict.Add("1", ito1);
-                    collection.ObjectDict.Add("2", ito2);
-                    collection.ObjectDict.Add("3", ito3);
-                    collection.ObjectDict.Add("1_again", ito1);
-                    collection.ObjectDict.Add("3_again", ito3);
-
-                    return collection;
-                });
-
-                await WaitForUploadAsync(realm1);
-
-                var realm2 = await GetFLXIntegrationRealmAsync();
-
-                realm2.Subscriptions.Update(() =>
-                {
-                    realm2.Subscriptions.Add(realm2.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
-                    realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int >= 2));
-                });
-
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
-
-                Assert.That(realm2.All<SyncCollectionsObject>().Count(), Is.EqualTo(1));
-                Assert.That(realm2.All<IntPropertyObject>().Count(), Is.EqualTo(2));
-
-                var colObj2 = realm2.All<SyncCollectionsObject>().Single();
-
-                // We should have 2,3,2 because the 1s should be filtered
-                CollectionAssert.AreEqual(new[] { 2, 3, 2 }, colObj2.ObjectList.Select(o => o.Int));
-                Assert.That(colObj2.ObjectList[0], Is.EqualTo(colObj2.ObjectList[2]));
-
-                Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 2, 3 }));
-
-                Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(5));
-                Assert.That(colObj2.ObjectDict["1"], Is.Null);
-                Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
-                Assert.That(colObj2.ObjectDict["3"].Int, Is.EqualTo(3));
-                Assert.That(colObj2.ObjectDict["1_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["3_again"].Int, Is.EqualTo(3));
-                Assert.That(colObj2.ObjectDict["3_again"], Is.EqualTo(colObj2.ObjectDict["3"]));
-
-                // Add 4th element from the second client
-                realm2.Write(() =>
-                {
-                    var ito4 = realm2.Add(GetIntPropertyObject(4, testGuid));
-                    colObj2.ObjectList.Add(ito4);
-                    colObj2.ObjectSet.Add(ito4);
-                    colObj2.ObjectDict.Add("4", ito4);
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => realm1.All<IntPropertyObject>().Count() == 4);
-
-                Assert.That(colObj1.ObjectList.Count, Is.EqualTo(6));
-                CollectionAssert.AreEqual(new[] { 1, 2, 3, 1, 2, 4 }, colObj1.ObjectList.Select(o => o.Int));
-
-                Assert.That(colObj1.ObjectSet.Count, Is.EqualTo(4));
-                Assert.That(colObj1.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 1, 2, 3, 4 }));
-
-                Assert.That(colObj1.ObjectDict.Count, Is.EqualTo(6));
-                Assert.That(colObj1.ObjectDict["4"].Int, Is.EqualTo(4));
-
-                // Move an element out of view from client1
-                realm1.Write(() =>
-                {
-                    ito3.Int = -1;
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => realm2.All<IntPropertyObject>().Count() == 2);
-
-                // We should have 2, 2, 4 because 1 and 3 should be filtered
-                CollectionAssert.AreEqual(new[] { 2, 2, 4 }, colObj2.ObjectList.Select(o => o.Int));
-                Assert.That(colObj2.ObjectList[0], Is.EqualTo(colObj2.ObjectList[1]));
-
-                Assert.That(colObj2.ObjectSet.Count, Is.EqualTo(2));
-                Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 2, 4 }));
-
-                Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(6));
-                Assert.That(colObj2.ObjectDict["1"], Is.Null);
-                Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
-                Assert.That(colObj2.ObjectDict["3"], Is.Null);
-                Assert.That(colObj2.ObjectDict["1_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["3_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["4"].Int, Is.EqualTo(4));
-
-                // Move an element into view from client1
-                realm1.Write(() =>
-                {
-                    ito1.Int = 100;
-                });
-
-                await TestHelpers.WaitForConditionAsync(() => realm2.All<IntPropertyObject>().Count() == 3);
-
-                // We should have 100, 2, 100, 2, 4 because 3 should be filtered
-                CollectionAssert.AreEqual(new[] { 100, 2, 100, 2, 4 }, colObj2.ObjectList.Select(o => o.Int));
-                Assert.That(colObj2.ObjectList[0], Is.EqualTo(colObj2.ObjectList[2]));
-                Assert.That(colObj2.ObjectList[1], Is.EqualTo(colObj2.ObjectList[3]));
-
-                Assert.That(colObj2.ObjectSet.Count, Is.EqualTo(3));
-                Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 100, 2, 4 }));
-
-                Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(6));
-                Assert.That(colObj2.ObjectDict["1"].Int, Is.EqualTo(100));
-                Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
-                Assert.That(colObj2.ObjectDict["3"], Is.Null);
-                Assert.That(colObj2.ObjectDict["1_again"].Int, Is.EqualTo(100));
-                Assert.That(colObj2.ObjectDict["3_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["4"].Int, Is.EqualTo(4));
-                Assert.That(colObj2.ObjectDict["1_again"], Is.EqualTo(colObj2.ObjectDict["1"]));
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
             });
-        }
 
-        [Test]
-        public void Integration_SubscriptionSet_WaitForSynchronization_CanBeCalledMultipleTimes()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            try
             {
-                var testGuid = Guid.NewGuid();
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
                 await realm.Subscriptions.WaitForSynchronizationAsync();
+                Assert.Fail("Expected an error to be thrown.");
+            }
+            catch (SubscriptionException ex)
+            {
+                Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+            }
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error));
+            Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+        }
 
-                // Call WaitForSynchronizationAsync again
+        [Test, RequiresBaas]
+        public async Task Integration_AfterAnError_CanRecover()
+        {
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
+            });
+
+            try
+            {
                 await realm.Subscriptions.WaitForSynchronizationAsync();
+                Assert.Fail("Expected an error to be thrown.");
+            }
+            catch (SubscriptionException ex)
+            {
+                Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+            }
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error));
+            Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+
+            var testGuid = Guid.NewGuid();
+
+            realm.Subscriptions.Update(() =>
+            {
+                realm.Subscriptions.RemoveAll(removeNamed: true);
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
             });
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            Assert.That(realm.Subscriptions.Error, Is.Null);
         }
 
-        [Test]
-        public void Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
+        [Test, RequiresBaas]
+        public async Task Integration_UpdatingSubscription_SupersedesPreviousOnes()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var realm = await GetFLXIntegrationRealmAsync();
+
+            var testGuid = Guid.NewGuid();
+
+            realm.Subscriptions.Update(() =>
             {
-                var testGuid = Guid.NewGuid();
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
-                {
-                    Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
-                });
-
-                realm.Write(() =>
-                {
-                    realm.Add(new SyncAllTypesObject());
-                });
-
-                var sessionError = await sessionErrorTask;
-                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+                realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
             });
-        }
 
-        [Test]
-        public void Integration_UpdateObjectNotMatchingSubscriptions_ShouldError()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var version = realm.Subscriptions.Version;
+
+            // Capture subs here as we expect the collection to be superseded by the background update
+            var subs = realm.Subscriptions;
+
+            await Task.Run(() =>
             {
-                var testGuid = Guid.NewGuid();
-                var realm = await GetFLXIntegrationRealmAsync();
+                using var bgRealm = GetRealm(realm.Config);
 
-                realm.Subscriptions.Update(() =>
+                Assert.That(bgRealm.Subscriptions.Version, Is.EqualTo(version));
+
+                bgRealm.Subscriptions.Update(() =>
                 {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                    bgRealm.Subscriptions.Add(bgRealm.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
                 });
 
-                var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
-                {
-                    Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
-                });
-
-                var ato = realm.Write(() =>
-                {
-                    return realm.Add(new SyncAllTypesObject
-                    {
-                        GuidProperty = testGuid,
-                    });
-                });
-
-                await WaitForUploadAsync(realm);
-
-                realm.Write(() =>
-                {
-                    ato.GuidProperty = Guid.NewGuid();
-                });
-
-                realm.Write(() =>
-                {
-                    ato.Int32Property = 15;
-                });
-
-                var sessionError = await sessionErrorTask;
-                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+                Assert.That(bgRealm.Subscriptions.Version, Is.EqualTo(version + 1));
             });
-        }
 
-        [Test]
-        public void Integration_SubscriptionOnUnqueryableField_ShouldError()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var realm = await GetFLXIntegrationRealmAsync();
+            Assert.That(subs.Version, Is.EqualTo(version));
+            Assert.That(realm.Subscriptions.Version, Is.EqualTo(version + 1));
+            Assert.That(ReferenceEquals(subs, realm.Subscriptions), Is.False);
 
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
-                });
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+            await subs.WaitForSynchronizationAsync();
 
-                try
-                {
-                    await realm.Subscriptions.WaitForSynchronizationAsync();
-                    Assert.Fail("Expected an error to be thrown.");
-                }
-                catch (SubscriptionException ex)
-                {
-                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
-                }
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error));
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
-            });
-        }
-
-        [Test]
-        public void Integration_AfterAnError_CanRecover()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
-                });
-
-                try
-                {
-                    await realm.Subscriptions.WaitForSynchronizationAsync();
-                    Assert.Fail("Expected an error to be thrown.");
-                }
-                catch (SubscriptionException ex)
-                {
-                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
-                }
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error));
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
-
-                var testGuid = Guid.NewGuid();
-
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.RemoveAll(removeNamed: true);
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
-
-                await realm.Subscriptions.WaitForSynchronizationAsync();
-
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
-                Assert.That(realm.Subscriptions.Error, Is.Null);
-            });
-        }
-
-        [Test]
-        public void Integration_UpdatingSubscription_SupersedesPreviousOnes()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var realm = await GetFLXIntegrationRealmAsync();
-
-                var testGuid = Guid.NewGuid();
-
-                realm.Subscriptions.Update(() =>
-                {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                var version = realm.Subscriptions.Version;
-
-                // Capture subs here as we expect the collection to be superseded by the background update
-                var subs = realm.Subscriptions;
-
-                await Task.Run(() =>
-                {
-                    using var bgRealm = GetRealm(realm.Config);
-
-                    Assert.That(bgRealm.Subscriptions.Version, Is.EqualTo(version));
-
-                    bgRealm.Subscriptions.Update(() =>
-                    {
-                        bgRealm.Subscriptions.Add(bgRealm.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
-                    });
-
-                    Assert.That(bgRealm.Subscriptions.Version, Is.EqualTo(version + 1));
-                });
-
-                Assert.That(subs.Version, Is.EqualTo(version));
-                Assert.That(realm.Subscriptions.Version, Is.EqualTo(version + 1));
-                Assert.That(ReferenceEquals(subs, realm.Subscriptions), Is.False);
-
-                await realm.Subscriptions.WaitForSynchronizationAsync();
-                await subs.WaitForSynchronizationAsync();
-
-                Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Superseded));
-                Assert.That(subs.Version, Is.EqualTo(version));
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
-            });
+            Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Superseded));
+            Assert.That(subs.Version, Is.EqualTo(version));
+            Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
         }
 
         private async Task<Realm> AddSomeData(Guid testGuid)

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using NUnit.Framework;
@@ -26,321 +27,295 @@ using NUnit.Framework;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
+    [RequiresBaas]
     public class FunctionsTests : SyncTestBase
     {
         private readonly Queue<string> _conventionsToRemove = new Queue<string>();
 
         [Test]
-        public void CallFunction_ReturnsResult()
+        public async Task CallFunction_ReturnsResult()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                var result = await user.Functions.CallAsync("sumFunc", 1L, 2L, 3L);
+            var user = await GetUserAsync();
+            var result = await user.Functions.CallAsync("sumFunc", 1L, 2L, 3L);
 
-                Assert.That(result.AsInt64, Is.EqualTo(6));
-            });
+            Assert.That(result.AsInt64, Is.EqualTo(6));
         }
 
         [Test]
-        public void CallFunctionGeneric_ReturnsResult()
+        public async Task CallFunctionGeneric_ReturnsResult()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                var result = await user.Functions.CallAsync<int>("sumFunc", 1, 2, 3);
+            var user = await GetUserAsync();
+            var result = await user.Functions.CallAsync<int>("sumFunc", 1, 2, 3);
 
-                Assert.That(result, Is.EqualTo(6));
-            });
+            Assert.That(result, Is.EqualTo(6));
         }
 
         [Test]
-        public void CallFunction_NoArguments()
+        public async Task CallFunction_NoArguments()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                var result = await user.Functions.CallAsync<int>("sumFunc");
+            var user = await GetUserAsync();
+            var result = await user.Functions.CallAsync<int>("sumFunc");
 
-                Assert.That(result, Is.EqualTo(0));
-            });
+            Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
-        public void CallFunction_WrongGeneric()
+        public async Task CallFunction_WrongGeneric()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                var ex = await TestHelpers.AssertThrows<Exception>(() => user.Functions.CallAsync<string>("sumFunc", 1, 2));
+            var user = await GetUserAsync();
+            var ex = await TestHelpers.AssertThrows<Exception>(() => user.Functions.CallAsync<string>("sumFunc", 1, 2));
 
-                Assert.That(ex.Message, Does.Contain("Cannot deserialize"));
-            });
+            Assert.That(ex.Message, Does.Contain("Cannot deserialize"));
         }
 
         [Test]
-        public void CallFunction_WithAnonymousParams_ReturnsBsonResult()
+        public async Task CallFunction_WithAnonymousParams_ReturnsBsonResult()
         {
             TestHelpers.IgnoreOnUnity("Anonymous objects need lambda compilation, which doesn't work on IL2CPP");
 
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var user = await GetUserAsync();
+            var first = new
             {
-                var user = await GetUserAsync();
-                var first = new
+                intValue = 1,
+                floatValue = 1.2,
+                stringValue = "Hello ",
+                objectId = ObjectId.GenerateNewId(),
+                arr = new[] { 1, 2, 3 },
+                date = DateTime.UtcNow,
+                child = new
                 {
-                    intValue = 1,
-                    floatValue = 1.2,
-                    stringValue = "Hello ",
-                    objectId = ObjectId.GenerateNewId(),
-                    arr = new[] { 1, 2, 3 },
-                    date = DateTime.UtcNow,
-                    child = new
-                    {
-                        intValue = 2L
-                    }
-                };
+                    intValue = 2L
+                }
+            };
 
-                var second = new
+            var second = new
+            {
+                intValue = 2,
+                floatValue = 2.3,
+                stringValue = "world",
+                objectId = ObjectId.GenerateNewId(),
+                date = DateTime.UtcNow.AddHours(5),
+                arr = new[] { 4, 5, 6 },
+                child = new
                 {
-                    intValue = 2,
-                    floatValue = 2.3,
-                    stringValue = "world",
-                    objectId = ObjectId.GenerateNewId(),
-                    date = DateTime.UtcNow.AddHours(5),
-                    arr = new[] { 4, 5, 6 },
-                    child = new
-                    {
-                        intValue = 3L
-                    }
-                };
+                    intValue = 3L
+                }
+            };
 
-                var result = await user.Functions.CallAsync("documentFunc", first, second);
+            var result = await user.Functions.CallAsync("documentFunc", first, second);
 
-                Assert.That(result["intValue"].AsInt32, Is.EqualTo(3));
-                Assert.That(result["floatValue"].AsDouble, Is.EqualTo(3.5));
-                Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
-                Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first.objectId));
-                AssertDateTimeEquals(result["date"].ToUniversalTime(), second.date);
-                Assert.That(result["arr"].AsBsonArray.Select(a => a.AsInt32), Is.EquivalentTo(new[] { 1, 4 }));
-                Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
-            });
+            Assert.That(result["intValue"].AsInt32, Is.EqualTo(3));
+            Assert.That(result["floatValue"].AsDouble, Is.EqualTo(3.5));
+            Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
+            Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first.objectId));
+            AssertDateTimeEquals(result["date"].ToUniversalTime(), second.date);
+            Assert.That(result["arr"].AsBsonArray.Select(a => a.AsInt32), Is.EquivalentTo(new[] { 1, 4 }));
+            Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
         }
 
         [Test]
-        public void CallFunction_WithBsonDocument_ReturnsBsonResult()
+        public async Task CallFunction_WithBsonDocument_ReturnsBsonResult()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var user = await GetUserAsync();
+            var first = new BsonDocument
             {
-                var user = await GetUserAsync();
-                var first = new BsonDocument
-                {
-                    { "intValue", 1 },
-                    { "floatValue", 1.2 },
-                    { "stringValue", "Hello " },
-                    { "objectId", ObjectId.GenerateNewId() },
-                    { "arr", new BsonArray { 1, 2, 3 } },
-                    { "date", DateTime.UtcNow },
-                    { "child", new BsonDocument { { "intValue", 2L } } }
-                };
+                { "intValue", 1 },
+                { "floatValue", 1.2 },
+                { "stringValue", "Hello " },
+                { "objectId", ObjectId.GenerateNewId() },
+                { "arr", new BsonArray { 1, 2, 3 } },
+                { "date", DateTime.UtcNow },
+                { "child", new BsonDocument { { "intValue", 2L } } }
+            };
 
-                var second = new BsonDocument
-                {
-                    { "intValue", 2 },
-                    { "floatValue", 2.3 },
-                    { "stringValue", "world" },
-                    { "objectId", ObjectId.GenerateNewId() },
-                    { "date", DateTime.UtcNow.AddHours(5) },
-                    { "arr", new BsonArray { 4, 5, 6 } },
-                    { "child", new BsonDocument { { "intValue", 3L } } }
-                };
+            var second = new BsonDocument
+            {
+                { "intValue", 2 },
+                { "floatValue", 2.3 },
+                { "stringValue", "world" },
+                { "objectId", ObjectId.GenerateNewId() },
+                { "date", DateTime.UtcNow.AddHours(5) },
+                { "arr", new BsonArray { 4, 5, 6 } },
+                { "child", new BsonDocument { { "intValue", 3L } } }
+            };
 
-                var result = await user.Functions.CallAsync("documentFunc", first, second);
+            var result = await user.Functions.CallAsync("documentFunc", first, second);
 
-                Assert.That(result["intValue"].AsInt32, Is.EqualTo(3));
-                Assert.That(result["floatValue"].AsDouble, Is.EqualTo(3.5));
-                Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
-                Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first["objectId"].AsObjectId));
-                AssertDateTimeEquals(result["date"].ToUniversalTime(), second["date"].ToUniversalTime());
-                Assert.That(result["arr"].AsBsonArray.Select(a => a.AsInt32), Is.EquivalentTo(new[] { 1, 4 }));
-                Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
-            });
+            Assert.That(result["intValue"].AsInt32, Is.EqualTo(3));
+            Assert.That(result["floatValue"].AsDouble, Is.EqualTo(3.5));
+            Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
+            Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first["objectId"].AsObjectId));
+            AssertDateTimeEquals(result["date"].ToUniversalTime(), second["date"].ToUniversalTime());
+            Assert.That(result["arr"].AsBsonArray.Select(a => a.AsInt32), Is.EquivalentTo(new[] { 1, 4 }));
+            Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
         }
 
         [Test]
-        public void CallFunction_WithTypedParams_ReturnsTypedResult()
+        public async Task CallFunction_WithTypedParams_ReturnsTypedResult()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            AddCamelCaseConvention();
+
+            var user = await GetUserAsync();
+            var first = new FunctionArgument
             {
-                AddCamelCaseConvention();
-
-                var user = await GetUserAsync();
-                var first = new FunctionArgument
+                IntValue = 1,
+                FloatValue = 1.2,
+                StringValue = "Hello ",
+                ObjectId = ObjectId.GenerateNewId(),
+                Arr = new[] { 1, 2, 3 },
+                Date = DateTime.UtcNow,
+                Child = new Child
                 {
-                    IntValue = 1,
-                    FloatValue = 1.2,
-                    StringValue = "Hello ",
-                    ObjectId = ObjectId.GenerateNewId(),
-                    Arr = new[] { 1, 2, 3 },
-                    Date = DateTime.UtcNow,
-                    Child = new Child
-                    {
-                        IntValue = 2
-                    }
-                };
+                    IntValue = 2
+                }
+            };
 
-                var second = new FunctionArgument
+            var second = new FunctionArgument
+            {
+                IntValue = 2,
+                FloatValue = 2.3,
+                StringValue = "world",
+                ObjectId = ObjectId.GenerateNewId(),
+                Date = DateTime.UtcNow.AddHours(5),
+                Arr = new[] { 4, 5, 6 },
+                Child = new Child
                 {
-                    IntValue = 2,
-                    FloatValue = 2.3,
-                    StringValue = "world",
-                    ObjectId = ObjectId.GenerateNewId(),
-                    Date = DateTime.UtcNow.AddHours(5),
-                    Arr = new[] { 4, 5, 6 },
-                    Child = new Child
-                    {
-                        IntValue = 3
-                    }
-                };
+                    IntValue = 3
+                }
+            };
 
-                var result = await user.Functions.CallAsync<FunctionArgument>("documentFunc", first, second);
+            var result = await user.Functions.CallAsync<FunctionArgument>("documentFunc", first, second);
 
-                Assert.That(result.IntValue, Is.EqualTo(3));
-                Assert.That(result.FloatValue, Is.EqualTo(3.5));
-                Assert.That(result.StringValue, Is.EqualTo("Hello world"));
-                AssertDateTimeEquals(result.Date, second.Date);
-                Assert.That(result.ObjectId, Is.EqualTo(first.ObjectId));
-                Assert.That(result.Arr, Is.EquivalentTo(new[] { 1, 4 }));
-                Assert.That(result.Child.IntValue, Is.EqualTo(5));
-            });
+            Assert.That(result.IntValue, Is.EqualTo(3));
+            Assert.That(result.FloatValue, Is.EqualTo(3.5));
+            Assert.That(result.StringValue, Is.EqualTo("Hello world"));
+            AssertDateTimeEquals(result.Date, second.Date);
+            Assert.That(result.ObjectId, Is.EqualTo(first.ObjectId));
+            Assert.That(result.Arr, Is.EquivalentTo(new[] { 1, 4 }));
+            Assert.That(result.Child.IntValue, Is.EqualTo(5));
         }
 
         #region TestDeserialization
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Short([ValueSource(nameof(ShortTestCases))] short arg)
+        public Task CallFunction_AndTestDeserialization_Short([ValueSource(nameof(ShortTestCases))] short arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Int([ValueSource(nameof(IntTestCases))] int arg)
+        public Task CallFunction_AndTestDeserialization_Int([ValueSource(nameof(IntTestCases))] int arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Long([ValueSource(nameof(LongTestCases))] long arg)
+        public Task CallFunction_AndTestDeserialization_Long([ValueSource(nameof(LongTestCases))] long arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Float([ValueSource(nameof(FloatTestCases))] float arg)
+        public Task CallFunction_AndTestDeserialization_Float([ValueSource(nameof(FloatTestCases))] float arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Double([ValueSource(nameof(DoubleTestCases))] double arg)
+        public Task CallFunction_AndTestDeserialization_Double([ValueSource(nameof(DoubleTestCases))] double arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
+        public Task CallFunction_AndTestDeserialization_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
+        public Task CallFunction_AndTestDeserialization_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_String([ValueSource(nameof(StringTestCases))] string arg)
+        public Task CallFunction_AndTestDeserialization_String([ValueSource(nameof(StringTestCases))] string arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
+        public Task CallFunction_AndTestDeserialization_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
+        public Task CallFunction_AndTestDeserialization_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
+        public Task CallFunction_AndTestDeserialization_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Guid([ValueSource(nameof(GuidTestCases))] Guid arg)
+        public Task CallFunction_AndTestDeserialization_Guid([ValueSource(nameof(GuidTestCases))] Guid arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
+        public Task CallFunction_AndTestDeserialization_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
         {
-            TestDeserialization(arg);
+            return TestDeserializationAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestDeserialization_Null()
+        public async Task CallFunction_AndTestDeserialization_Null()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var user = await GetUserAsync();
+
+            string str = null;
+            var result = await user.Functions.CallAsync<string>("mirror", str);
+
+            Assert.That(result, Is.Null);
+        }
+
+        private async Task TestDeserializationAsync<T>(T val)
+        {
+            var user = await GetUserAsync();
+
+            var result = await user.Functions.CallAsync<T>("mirror", val);
+
+            if (val is DateTime date && result is DateTime dateResult)
             {
-                var user = await GetUserAsync();
-
-                string str = null;
-                var result = await user.Functions.CallAsync<string>("mirror", str);
-
-                Assert.That(result, Is.Null);
-            });
-        }
-
-        private void TestDeserialization<T>(T val)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+                AssertDateTimeEquals(date, dateResult);
+            }
+            else
             {
-                var user = await GetUserAsync();
+                Assert.That(result, Is.EqualTo(val));
+            }
 
-                var result = await user.Functions.CallAsync<T>("mirror", val);
+            var arr = new[] { val };
+            var arrResult = await user.Functions.CallAsync<T[]>("mirror", arr);
 
-                if (val is DateTime date && result is DateTime dateResult)
+            if (arr is DateTime[] dateArr && arrResult is DateTime[] dateArrResult)
+            {
+                Assert.That(dateArr.Length, Is.EqualTo(dateArrResult.Length));
+                for (var i = 0; i < dateArr.Length; i++)
                 {
-                    AssertDateTimeEquals(date, dateResult);
+                    AssertDateTimeEquals(dateArr[i], dateArrResult[i]);
                 }
-                else
-                {
-                    Assert.That(result, Is.EqualTo(val));
-                }
-
-                var arr = new[] { val };
-                var arrResult = await user.Functions.CallAsync<T[]>("mirror", arr);
-
-                if (arr is DateTime[] dateArr && arrResult is DateTime[] dateArrResult)
-                {
-                    Assert.That(dateArr.Length, Is.EqualTo(dateArrResult.Length));
-                    for (var i = 0; i < dateArr.Length; i++)
-                    {
-                        AssertDateTimeEquals(dateArr[i], dateArrResult[i]);
-                    }
-                }
-                else
-                {
-                    Assert.That(arrResult, Is.EquivalentTo(arr));
-                }
-            });
+            }
+            else
+            {
+                Assert.That(arrResult, Is.EquivalentTo(arr));
+            }
         }
 
         #endregion
@@ -348,38 +323,38 @@ namespace Realms.Tests.Sync
         #region TestBsonValue
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Short([ValueSource(nameof(ShortTestCases))] short arg)
+        public Task CallFunction_AndTestBsonValue_Short([ValueSource(nameof(ShortTestCases))] short arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Int([ValueSource(nameof(IntTestCases))] int arg)
+        public Task CallFunction_AndTestBsonValue_Int([ValueSource(nameof(IntTestCases))] int arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Long([ValueSource(nameof(LongTestCases))] long arg)
+        public Task CallFunction_AndTestBsonValue_Long([ValueSource(nameof(LongTestCases))] long arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
         [Ignore("BsonValue can't represent float.")]
-        public void CallFunction_AndTestBsonValue_Float([ValueSource(nameof(FloatTestCases))] float arg)
+        public Task CallFunction_AndTestBsonValue_Float([ValueSource(nameof(FloatTestCases))] float arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Double([ValueSource(nameof(DoubleTestCases))] double arg)
+        public Task CallFunction_AndTestBsonValue_Double([ValueSource(nameof(DoubleTestCases))] double arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
+        public Task CallFunction_AndTestBsonValue_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
         {
             if (arg == decimal.MinValue || arg == decimal.MaxValue)
             {
@@ -388,100 +363,97 @@ namespace Realms.Tests.Sync
                 Assert.Ignore("MongoDB.Bson representation for decimal.MinValue/MaxValue is incorrect.");
             }
 
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
+        public Task CallFunction_AndTestBsonValue_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_String([ValueSource(nameof(StringTestCases))] string arg)
+        public Task CallFunction_AndTestBsonValue_String([ValueSource(nameof(StringTestCases))] string arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
+        public Task CallFunction_AndTestBsonValue_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
+        public Task CallFunction_AndTestBsonValue_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
+        public Task CallFunction_AndTestBsonValue_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Guid([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
+        public Task CallFunction_AndTestBsonValue_Guid([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
         [Test]
-        public void CallFunction_AndTestBsonValue_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
+        public Task CallFunction_AndTestBsonValue_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
         {
-            TestBsonValue(arg);
+            return TestBsonValueAsync(arg);
         }
 
-        private void TestBsonValue<T>(T val)
+        private async Task TestBsonValueAsync<T>(T val)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var user = await GetUserAsync();
+
+            var result = await user.Functions.CallAsync("mirror", val);
+
+            if (val is DateTime date)
             {
-                var user = await GetUserAsync();
+                AssertDateTimeEquals(result.ToUniversalTime(), date);
+            }
+            else if (val is DateTimeOffset dto)
+            {
+                AssertDateTimeOffsetEquals(result, dto);
+            }
+            else
+            {
+                Assert.That(result.ToString().ToLower(), Is.EqualTo(val.ToString().ToLower()));
+            }
 
-                var result = await user.Functions.CallAsync("mirror", val);
+            var arr = new[] { val };
+            var arrResult = await user.Functions.CallAsync("mirror", arr);
 
-                if (val is DateTime date)
+            if (arr is DateTime[] dateArr)
+            {
+                var dateArrResult = arrResult.AsBsonArray.Select(a => a.ToUniversalTime()).ToArray();
+                Assert.That(dateArrResult.Length, Is.EqualTo(dateArr.Length));
+                for (var i = 0; i < dateArr.Length; i++)
                 {
-                    AssertDateTimeEquals(result.ToUniversalTime(), date);
+                    AssertDateTimeEquals(dateArrResult[i], dateArr[i]);
                 }
-                else if (val is DateTimeOffset dto)
+            }
+            else if (arr is DateTimeOffset[] dtoArr)
+            {
+                var dtoArrResult = arrResult.AsBsonArray;
+                Assert.That(dtoArrResult.Count, Is.EqualTo(dtoArr.Length));
+                for (var i = 0; i < dtoArr.Length; i++)
                 {
-                    AssertDateTimeOffsetEquals(result, dto);
+                    AssertDateTimeOffsetEquals(dtoArrResult[i], dtoArr[i]);
                 }
-                else
-                {
-                    Assert.That(result.ToString().ToLower(), Is.EqualTo(val.ToString().ToLower()));
-                }
-
-                var arr = new[] { val };
-                var arrResult = await user.Functions.CallAsync("mirror", arr);
-
-                if (arr is DateTime[] dateArr)
-                {
-                    var dateArrResult = arrResult.AsBsonArray.Select(a => a.ToUniversalTime()).ToArray();
-                    Assert.That(dateArrResult.Length, Is.EqualTo(dateArr.Length));
-                    for (var i = 0; i < dateArr.Length; i++)
-                    {
-                        AssertDateTimeEquals(dateArrResult[i], dateArr[i]);
-                    }
-                }
-                else if (arr is DateTimeOffset[] dtoArr)
-                {
-                    var dtoArrResult = arrResult.AsBsonArray;
-                    Assert.That(dtoArrResult.Count, Is.EqualTo(dtoArr.Length));
-                    for (var i = 0; i < dtoArr.Length; i++)
-                    {
-                        AssertDateTimeOffsetEquals(dtoArrResult[i], dtoArr[i]);
-                    }
-                }
-                else
-                {
-                    Assert.That(
-                        arrResult.AsBsonArray.Select(a => a.ToString().ToLower()),
-                        Is.EquivalentTo(arr.Select(a => a.ToString().ToLower())));
-                }
-            });
+            }
+            else
+            {
+                Assert.That(
+                    arrResult.AsBsonArray.Select(a => a.ToString().ToLower()),
+                    Is.EquivalentTo(arr.Select(a => a.ToString().ToLower())));
+            }
         }
 
         #endregion

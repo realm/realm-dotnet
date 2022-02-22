@@ -70,154 +70,136 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [Test]
-        public void GetInstanceAsync_ShouldDownloadRealm([Values(true, false)] bool singleTransaction)
+        [Test, RequiresBaas, Timeout(120_000)]
+        public async Task GetInstanceAsync_ShouldDownloadRealm([Values(true, false)] bool singleTransaction)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partition = Guid.NewGuid().ToString();
+            var partition = Guid.NewGuid().ToString();
 
-                var config = await GetIntegrationConfigAsync(partition);
-                var asyncConfig = await GetIntegrationConfigAsync(partition);
+            var config = await GetIntegrationConfigAsync(partition);
+            var asyncConfig = await GetIntegrationConfigAsync(partition);
 
-                using var realm = GetRealm(config);
-                AddDummyData(realm, singleTransaction);
+            using var realm = GetRealm(config);
+            AddDummyData(realm, singleTransaction);
 
-                await WaitForUploadAsync(realm);
+            await WaitForUploadAsync(realm);
 
-                using var asyncRealm = await GetRealmAsync(asyncConfig);
-                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
-            }, timeout: 120000);
+            using var asyncRealm = await GetRealmAsync(asyncConfig);
+            Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
         }
 
-        [Test]
-        public void GetInstanceAsync_CreatesNonExistentRealm()
+        [Test, RequiresBaas]
+        public async Task GetInstanceAsync_CreatesNonExistentRealm()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var config = await GetIntegrationConfigAsync();
-                await GetRealmAsync(config);
-            });
+            var config = await GetIntegrationConfigAsync();
+            await GetRealmAsync(config);
         }
 
-        [Test]
-        public void GetInstanceAsync_ReportsProgress()
+        [Test, RequiresBaas, Timeout(60_000)]
+        public async Task GetInstanceAsync_ReportsProgress()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var config = await GetIntegrationConfigAsync();
+
+            await PopulateData(config);
+
+            var callbacksInvoked = 0;
+
+            var lastProgress = default(SyncProgress);
+            config = await GetIntegrationConfigAsync((string)config.Partition);
+            config.OnProgress = (progress) =>
             {
-                var config = await GetIntegrationConfigAsync();
+                callbacksInvoked++;
+                lastProgress = progress;
+            };
 
-                await PopulateData(config);
+            using var realm = await GetRealmAsync(config);
+            Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
+            Assert.That(callbacksInvoked, Is.GreaterThan(0));
 
-                var callbacksInvoked = 0;
-
-                var lastProgress = default(SyncProgress);
-                config = await GetIntegrationConfigAsync((string)config.Partition);
-                config.OnProgress = (progress) =>
-                {
-                    callbacksInvoked++;
-                    lastProgress = progress;
-                };
-
-                using var realm = await GetRealmAsync(config);
-                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
-                Assert.That(callbacksInvoked, Is.GreaterThan(0));
-
-                // We can't validate exact values because there's a reasonable chance that
-                // the last notification won't be invoked if the Realm is downloaded first.
-                Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
-                Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
-            }, 60000);
+            // We can't validate exact values because there's a reasonable chance that
+            // the last notification won't be invoked if the Realm is downloaded first.
+            Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
+            Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
         }
 
-        [Test]
-        public void GetInstanceAsync_WithOnProgress_DoesntThrowWhenOnProgressIsSetToNull()
+        [Test, RequiresBaas, Timeout(60_000)]
+        public async Task GetInstanceAsync_WithOnProgress_DoesntThrowWhenOnProgressIsSetToNull()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var config = await GetIntegrationConfigAsync();
+
+            await PopulateData(config, 4);
+
+            var callbacksInvoked = 0;
+
+            var lastProgress = default(SyncProgress);
+            config = await GetIntegrationConfigAsync((string)config.Partition);
+            config.OnProgress = (progress) =>
             {
-                var config = await GetIntegrationConfigAsync();
+                callbacksInvoked++;
+                lastProgress = progress;
+            };
 
-                await PopulateData(config, 4);
+            var realmTask = GetRealmAsync(config);
+            config.OnProgress = null;
 
-                var callbacksInvoked = 0;
+            using var realm = await realmTask;
 
-                var lastProgress = default(SyncProgress);
-                config = await GetIntegrationConfigAsync((string)config.Partition);
-                config.OnProgress = (progress) =>
-                {
-                    callbacksInvoked++;
-                    lastProgress = progress;
-                };
+            Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+            Assert.That(callbacksInvoked, Is.GreaterThan(0));
 
-                var realmTask = GetRealmAsync(config);
-                config.OnProgress = null;
-
-                using var realm = await realmTask;
-
-                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
-                Assert.That(callbacksInvoked, Is.GreaterThan(0));
-
-                // We can't validate exact values because there's a reasonable chance that
-                // the last notification won't be invoked if the Realm is downloaded first.
-                Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
-                Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
-            }, 60000);
+            // We can't validate exact values because there's a reasonable chance that
+            // the last notification won't be invoked if the Realm is downloaded first.
+            Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
+            Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
         }
 
-        [Test]
-        public void GetInstanceAsync_WithOnProgressThrowing_ReportsErrorToLogs()
+        [Test, RequiresBaas, Timeout(60_000)]
+        public async Task GetInstanceAsync_WithOnProgressThrowing_ReportsErrorToLogs()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var config = await GetIntegrationConfigAsync();
+
+            await PopulateData(config, 4);
+
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+            config = await GetIntegrationConfigAsync((string)config.Partition);
+            config.OnProgress = (progress) =>
             {
-                var config = await GetIntegrationConfigAsync();
+                throw new Exception("Exception in OnProgress");
+            };
 
-                await PopulateData(config, 4);
+            var realmTask = GetRealmAsync(config);
+            config.OnProgress = null;
 
-                var logger = new Logger.InMemoryLogger();
-                Logger.Default = logger;
+            using var realm = await realmTask;
 
-                config = await GetIntegrationConfigAsync((string)config.Partition);
-                config.OnProgress = (progress) =>
-                {
-                    throw new Exception("Exception in OnProgress");
-                };
+            Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
 
-                var realmTask = GetRealmAsync(config);
-                config.OnProgress = null;
-
-                using var realm = await realmTask;
-
-                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
-
-                // Notifications are delivered async, so let's wait a little
-                await TestHelpers.WaitForConditionAsync(() => logger.GetLog().Contains("Exception in OnProgress"));
-                Assert.That(logger.GetLog(), Does.Contain("Exception in OnProgress"));
-            }, 60000);
+            // Notifications are delivered async, so let's wait a little
+            await TestHelpers.WaitForConditionAsync(() => logger.GetLog().Contains("Exception in OnProgress"));
+            Assert.That(logger.GetLog(), Does.Contain("Exception in OnProgress"));
         }
 
-        [Test]
-        public void GetInstanceAsync_Cancel_ShouldCancelWait()
+        [Test, RequiresBaas]
+        public async Task GetInstanceAsync_Cancel_ShouldCancelWait()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var config = await GetIntegrationConfigAsync();
+            await PopulateData(config);
+
+            config = await GetIntegrationConfigAsync((string)config.Partition);
+
+            using var cts = new CancellationTokenSource(10);
+
+            try
             {
-                var config = await GetIntegrationConfigAsync();
-                await PopulateData(config);
-
-                config = await GetIntegrationConfigAsync((string)config.Partition);
-
-                using var cts = new CancellationTokenSource(10);
-
-                try
-                {
-                    var realm = await Realm.GetInstanceAsync(config, cts.Token);
-                    CleanupOnTearDown(realm);
-                    Assert.Fail("Expected task to be cancelled.");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
-                }
-            });
+                var realm = await Realm.GetInstanceAsync(config, cts.Token);
+                CleanupOnTearDown(realm);
+                Assert.Fail("Expected task to be cancelled.");
+            }
+            catch (Exception ex)
+            {
+                Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
+            }
         }
 
         [Test]
@@ -262,61 +244,59 @@ namespace Realms.Tests.Sync
             Assert.That(realm.Schema, Is.Empty);
         }
 
-        [Test, Ignore("Doesn't work due to a OS bug")]
-        public void InvalidSchemaChange_RaisesClientReset()
+        [Test, RequiresBaas]
+        [Ignore("Doesn't work due to a OS bug")]
+        public async Task InvalidSchemaChange_RaisesClientReset()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var config = await GetIntegrationConfigAsync();
+
+            var backupLocation = config.DatabasePath + "_backup";
+            using (var realm = await GetRealmAsync(config))
             {
-                var config = await GetIntegrationConfigAsync();
+                // Backup the file
+                File.Copy(config.DatabasePath, backupLocation);
 
-                var backupLocation = config.DatabasePath + "_backup";
-                using (var realm = await GetRealmAsync(config))
+                realm.Write(() => realm.Add(new HugeSyncObject(1024)));
+
+                await WaitForUploadAsync(realm);
+            }
+
+            // restore the backup
+            while (true)
+            {
+                try
                 {
-                    // Backup the file
-                    File.Copy(config.DatabasePath, backupLocation);
-
-                    realm.Write(() => realm.Add(new HugeSyncObject(1024)));
-
-                    await WaitForUploadAsync(realm);
+                    File.Copy(backupLocation, config.DatabasePath, overwrite: true);
+                    break;
                 }
-
-                // restore the backup
-                while (true)
+                catch
                 {
-                    try
-                    {
-                        File.Copy(backupLocation, config.DatabasePath, overwrite: true);
-                        break;
-                    }
-                    catch
-                    {
-                        await Task.Delay(50);
-                    }
+                    await Task.Delay(50);
                 }
+            }
 
-                var errorTcs = new TaskCompletionSource<Exception>();
-                Session.Error += (s, e) =>
-                {
-                    errorTcs.TrySetResult(e.Exception);
-                };
+            var errorTcs = new TaskCompletionSource<Exception>();
+            Session.Error += (s, e) =>
+            {
+                errorTcs.TrySetResult(e.Exception);
+            };
 
-                using var realm2 = GetRealm(config);
+            using var realm2 = GetRealm(config);
 
-                var ex = await errorTcs.Task.Timeout(5000);
+            var ex = await errorTcs.Task.Timeout(5000);
 
-                Assert.That(ex, Is.InstanceOf<ClientResetException>());
-                var clientEx = (ClientResetException)ex;
+            Assert.That(ex, Is.InstanceOf<ClientResetException>());
+            var clientEx = (ClientResetException)ex;
 
-                Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
+            Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
 
-                var realmPath = config.DatabasePath;
+            var realmPath = config.DatabasePath;
 
-                Assert.That(File.Exists(realmPath));
+            Assert.That(File.Exists(realmPath));
 
-                Assert.That(clientEx.InitiateClientReset(), Is.True);
+            Assert.That(clientEx.InitiateClientReset(), Is.True);
 
-                Assert.That(File.Exists(realmPath), Is.False);
-            });
+            Assert.That(File.Exists(realmPath), Is.False);
         }
 
         [Test]
@@ -328,145 +308,133 @@ namespace Realms.Tests.Sync
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
         }
 
-        [Test]
-        public void WriteCopy_CanSynchronizeData([Values(true, false)] bool originalEncrypted,
-                                                 [Values(true, false)] bool copyEncrypted)
+        [Test, RequiresBaas]
+        public async Task WriteCopy_CanSynchronizeData([Values(true, false)] bool originalEncrypted,
+                                                       [Values(true, false)] bool copyEncrypted)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var partition = Guid.NewGuid().ToString();
+
+            var originalConfig = await GetIntegrationConfigAsync(partition);
+            if (originalEncrypted)
             {
-                var partition = Guid.NewGuid().ToString();
+                originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+            }
 
-                var originalConfig = await GetIntegrationConfigAsync(partition);
-                if (originalEncrypted)
+            var copyConfig = await GetIntegrationConfigAsync(partition);
+            Assert.That(originalConfig.Partition, Is.EqualTo(copyConfig.Partition));
+            if (copyEncrypted)
+            {
+                copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+            }
+
+            File.Delete(copyConfig.DatabasePath);
+
+            using var originalRealm = GetRealm(originalConfig);
+
+            AddDummyData(originalRealm, true);
+
+            await WaitForUploadAsync(originalRealm);
+            await WaitForDownloadAsync(originalRealm);
+
+            originalRealm.WriteCopy(copyConfig);
+
+            using var copiedRealm = GetRealm(copyConfig);
+
+            Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+
+            var fromCopy = copiedRealm.Write(() =>
+            {
+                return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
                 {
-                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
-                }
-
-                var copyConfig = await GetIntegrationConfigAsync(partition);
-                Assert.That(originalConfig.Partition, Is.EqualTo(copyConfig.Partition));
-                if (copyEncrypted)
-                {
-                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
-                }
-
-                File.Delete(copyConfig.DatabasePath);
-
-                using var originalRealm = GetRealm(originalConfig);
-
-                AddDummyData(originalRealm, true);
-
-                await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
-
-                originalRealm.WriteCopy(copyConfig);
-
-                using var copiedRealm = GetRealm(copyConfig);
-
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
-
-                var fromCopy = copiedRealm.Write(() =>
-                {
-                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
-                    {
-                        StringValue = "Added from copy"
-                    });
+                    StringValue = "Added from copy"
                 });
+            });
 
-                await WaitForUploadAsync(copiedRealm);
-                await WaitForDownloadAsync(originalRealm);
+            await WaitForUploadAsync(copiedRealm);
+            await WaitForDownloadAsync(originalRealm);
 
-                var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
-                Assert.That(itemInOriginal, Is.Not.Null);
-                Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
+            var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
+            Assert.That(itemInOriginal, Is.Not.Null);
+            Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
 
-                var fromOriginal = originalRealm.Write(() =>
+            var fromOriginal = originalRealm.Write(() =>
+            {
+                return originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
                 {
-                    return originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
-                    {
-                        StringValue = "Added from original"
-                    });
+                    StringValue = "Added from original"
                 });
-
-                await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(copiedRealm);
-
-                var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
-                Assert.That(itemInCopy, Is.Not.Null);
-                Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
             });
+
+            await WaitForUploadAsync(originalRealm);
+            await WaitForDownloadAsync(copiedRealm);
+
+            var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
+            Assert.That(itemInCopy, Is.Not.Null);
+            Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
         }
 
-        [Test]
-        public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
-                                                        [Values(true, false)] bool copyEncrypted)
+        [Test, RequiresBaas]
+        public async Task WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
+                                                              [Values(true, false)] bool copyEncrypted)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var originalPartition = Guid.NewGuid().ToString();
+            var originalConfig = await GetIntegrationConfigAsync(originalPartition);
+            if (originalEncrypted)
             {
-                var originalPartition = Guid.NewGuid().ToString();
-                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
-                if (originalEncrypted)
-                {
-                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
-                }
+                originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+            }
 
-                var copiedPartition = Guid.NewGuid().ToString();
-                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
-                if (copyEncrypted)
-                {
-                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
-                }
+            var copiedPartition = Guid.NewGuid().ToString();
+            var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
+            if (copyEncrypted)
+            {
+                copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+            }
 
-                Assert.That(originalConfig.Partition, !Is.EqualTo(copyConfig.Partition));
+            Assert.That(originalConfig.Partition, !Is.EqualTo(copyConfig.Partition));
 
-                File.Delete(copyConfig.DatabasePath);
+            File.Delete(copyConfig.DatabasePath);
 
-                using var originalRealm = GetRealm(originalConfig);
+            using var originalRealm = GetRealm(originalConfig);
 
-                Assert.Throws<NotSupportedException>(() => originalRealm.WriteCopy(copyConfig));
-            });
+            Assert.Throws<NotSupportedException>(() => originalRealm.WriteCopy(copyConfig));
         }
 
-        [Test]
-        public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
-                                                   [Values(true, false)] bool copyEncrypted)
+        [Test, RequiresBaas]
+        public async Task WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
+                                                         [Values(true, false)] bool copyEncrypted)
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var partition = Guid.NewGuid().ToString();
+
+            var originalConfig = await GetIntegrationConfigAsync(partition);
+            if (originalEncrypted)
             {
-                var partition = Guid.NewGuid().ToString();
+                originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+            }
 
-                var originalConfig = await GetIntegrationConfigAsync(partition);
-                if (originalEncrypted)
-                {
-                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
-                }
+            var copyConfig = await GetIntegrationConfigAsync(partition);
+            if (copyEncrypted)
+            {
+                copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+            }
 
-                var copyConfig = await GetIntegrationConfigAsync(partition);
-                if (copyEncrypted)
-                {
-                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
-                }
+            File.Delete(copyConfig.DatabasePath);
 
-                File.Delete(copyConfig.DatabasePath);
+            using var originalRealm = GetRealm(originalConfig);
 
-                using var originalRealm = GetRealm(originalConfig);
+            AddDummyData(originalRealm, true);
 
-                AddDummyData(originalRealm, true);
-
-                // The error is thrown as a generic `RealmError` by Core which translates to a generic `RealmException` on our side.
-                Assert.Throws<RealmException>(() => originalRealm.WriteCopy(copyConfig));
-            });
+            // The error is thrown as a generic `RealmError` by Core which translates to a generic `RealmException` on our side.
+            Assert.Throws<RealmException>(() => originalRealm.WriteCopy(copyConfig));
         }
 
-        [Test]
-        public void WriteCopy_FailsWithEmptyConfig()
+        [Test, RequiresBaas]
+        public async Task WriteCopy_FailsWithEmptyConfig()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partition = Guid.NewGuid().ToString();
-                var originalConfig = await GetIntegrationConfigAsync(partition);
-                using var originalRealm = GetRealm(originalConfig);
-                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null));
-            });
+            var partition = Guid.NewGuid().ToString();
+            var originalConfig = await GetIntegrationConfigAsync(partition);
+            using var originalRealm = GetRealm(originalConfig);
+            Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null));
         }
 
         [Test]
@@ -481,31 +449,28 @@ namespace Realms.Tests.Sync
             Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
         }
 
-        [Test]
-        public void DeleteRealm_AfterDispose_Succeeds([Values(true, false)] bool singleTransaction)
+        [Test, RequiresBaas, Timeout(120_000)]
+        public async Task DeleteRealm_AfterDispose_Succeeds([Values(true, false)] bool singleTransaction)
         {
             // This test verifies that disposing a Realm will eventually close its session and
             // release the file, so that we can delete it.
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var partition = Guid.NewGuid().ToString();
+            var partition = Guid.NewGuid().ToString();
 
-                var config = await GetIntegrationConfigAsync(partition);
-                var asyncConfig = await GetIntegrationConfigAsync(partition);
+            var config = await GetIntegrationConfigAsync(partition);
+            var asyncConfig = await GetIntegrationConfigAsync(partition);
 
-                var realm = GetRealm(config);
-                AddDummyData(realm, singleTransaction);
+            var realm = GetRealm(config);
+            AddDummyData(realm, singleTransaction);
 
-                await WaitForUploadAsync(realm);
-                realm.Dispose();
+            await WaitForUploadAsync(realm);
+            realm.Dispose();
 
-                // Ensure that the Realm can be deleted from the filesystem. If the sync
-                // session was still using it, we would get a permission denied error.
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+            // Ensure that the Realm can be deleted from the filesystem. If the sync
+            // session was still using it, we would get a permission denied error.
+            Assert.That(DeleteRealmWithRetries(realm), Is.True);
 
-                using var asyncRealm = await GetRealmAsync(asyncConfig);
-                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
-            }, timeout: 120000);
+            using var asyncRealm = await GetRealmAsync(asyncConfig);
+            Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
         }
 
         [Test]

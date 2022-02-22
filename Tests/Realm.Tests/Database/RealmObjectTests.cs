@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using MongoDB.Bson;
 using NUnit.Framework;
@@ -355,27 +356,24 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void FrozenObject_GetsGarbageCollected()
+        public async Task FrozenObject_GetsGarbageCollected()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                await TestHelpers.EnsureObjectsAreCollected(() =>
+                using var realm = Realm.GetInstance(_configuration);
+                var owner = realm.Write(() =>
                 {
-                    using var realm = Realm.GetInstance(_configuration);
-                    var owner = realm.Write(() =>
-                    {
-                        return realm.Add(new Owner());
-                    });
-
-                    var frozenOwner = owner.Freeze();
-                    var frozenRealm = frozenOwner.Realm;
-
-                    return new object[] { frozenOwner, frozenRealm };
+                    return realm.Add(new Owner());
                 });
 
-                // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
-                Realm.DeleteRealm(_configuration);
+                var frozenOwner = owner.Freeze();
+                var frozenRealm = frozenOwner.Realm;
+
+                return new object[] { frozenOwner, frozenRealm };
             });
+
+            // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
+            Realm.DeleteRealm(_configuration);
         }
 
         [Test]

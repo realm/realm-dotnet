@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -103,86 +104,74 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void WriteAsync_ShouldReturnPrimitive()
+        public async Task WriteAsync_ShouldReturnPrimitive()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var primitive = await _realm.WriteAsync(realm =>
             {
-                var primitive = await _realm.WriteAsync(realm =>
-                {
-                    return 2;
-                });
-                Assert.That(primitive, Is.EqualTo(2));
+                return 2;
             });
+            Assert.That(primitive, Is.EqualTo(2));
         }
 
         [Test]
-        public void WriteAsync_ShouldReturnRealmObject()
+        public async Task WriteAsync_ShouldReturnRealmObject()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var pko = await _realm.WriteAsync(realm =>
             {
-                var pko = await _realm.WriteAsync(realm =>
+                return realm.Add(new IntPrimaryKeyWithValueObject
                 {
-                    return realm.Add(new IntPrimaryKeyWithValueObject
+                    Id = 1,
+                    StringValue = "bla"
+                });
+            });
+
+            var queried = _realm.Find<IntPrimaryKeyWithValueObject>(1);
+            Assert.That(queried, Is.EqualTo(pko));
+        }
+
+        [Test]
+        public async Task WriteAsync_ShouldReturnUnmanagedRealmObject()
+        {
+            var pko = new IntPrimaryKeyWithValueObject
+            {
+                Id = 1,
+                StringValue = "bla"
+            };
+
+            var writeResult = await _realm.WriteAsync(realm =>
+            {
+                return pko;
+            });
+
+            Assert.That(writeResult, Is.EqualTo(pko));
+        }
+
+        [Test]
+        public async Task WriteAsync_ShouldReturnQueryable()
+        {
+            var queryable = await _realm.WriteAsync(realm =>
+                {
+                    realm.Add(new IntPrimaryKeyWithValueObject
                     {
                         Id = 1,
                         StringValue = "bla"
                     });
+
+                    realm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 2,
+                        StringValue = "ble"
+                    });
+
+                    return realm.All<IntPrimaryKeyWithValueObject>();
                 });
 
-                var queried = _realm.Find<IntPrimaryKeyWithValueObject>(1);
-                Assert.That(queried, Is.EqualTo(pko));
-            });
+            var queried = _realm.All<IntPrimaryKeyWithValueObject>();
+            Assert.That(queried, Is.EqualTo(queryable));
         }
 
         [Test]
-        public void WriteAsync_ShouldReturnUnmanagedRealmObject()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var pko = new IntPrimaryKeyWithValueObject
-                {
-                    Id = 1,
-                    StringValue = "bla"
-                };
-
-                var writeResult = await _realm.WriteAsync(realm =>
-                {
-                    return pko;
-                });
-
-                Assert.That(writeResult, Is.EqualTo(pko));
-            });
-        }
-
-        [Test]
-        public void WriteAsync_ShouldReturnQueryable()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var queryable = await _realm.WriteAsync(realm =>
-                   {
-                       realm.Add(new IntPrimaryKeyWithValueObject
-                       {
-                           Id = 1,
-                           StringValue = "bla"
-                       });
-
-                       realm.Add(new IntPrimaryKeyWithValueObject
-                       {
-                           Id = 2,
-                           StringValue = "ble"
-                       });
-
-                       return realm.All<IntPrimaryKeyWithValueObject>();
-                   });
-
-                var queried = _realm.All<IntPrimaryKeyWithValueObject>();
-                Assert.That(queried, Is.EqualTo(queryable));
-            });
-        }
-
-        [Test]
-        public void WriteAsync_ShouldReturnUnmanagedQueryable()
+        public async Task WriteAsync_ShouldReturnUnmanagedQueryable()
         {
             var pko1 = new IntPrimaryKeyWithValueObject
             {
@@ -198,49 +187,43 @@ namespace Realms.Tests.Database
 
             var queryable = new IntPrimaryKeyWithValueObject[] { pko1, pko2 }.AsQueryable();
 
-            TestHelpers.RunAsyncTest(async () =>
+            var queryableResult = await _realm.WriteAsync(realm =>
             {
-                var queryableResult = await _realm.WriteAsync(realm =>
-                {
-                    return queryable;
-                });
-
-                Assert.That(queryable, Is.EqualTo(queryableResult));
+                return queryable;
             });
+
+            Assert.That(queryable, Is.EqualTo(queryableResult));
         }
 
         [Test]
-        public void WriteAsync_ShouldReturnCollection()
+        public async Task WriteAsync_ShouldReturnCollection()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var dogs = await _realm.WriteAsync(realm =>
+            var dogs = await _realm.WriteAsync(realm =>
+                {
+                    var owner = realm.Add(new Owner
                     {
-                        var owner = realm.Add(new Owner
-                        {
-                            Name = "Owen"
-                        });
-
-                        owner.ListOfDogs.Add(new Dog
-                        {
-                            Name = "Puppy1"
-                        });
-
-                        owner.ListOfDogs.Add(new Dog
-                        {
-                            Name = "Puppy2"
-                        });
-
-                        return owner.ListOfDogs;
+                        Name = "Owen"
                     });
 
-                var queried = _realm.All<Owner>().First().ListOfDogs;
-                Assert.That(queried, Is.EqualTo(dogs));
-            });
+                    owner.ListOfDogs.Add(new Dog
+                    {
+                        Name = "Puppy1"
+                    });
+
+                    owner.ListOfDogs.Add(new Dog
+                    {
+                        Name = "Puppy2"
+                    });
+
+                    return owner.ListOfDogs;
+                });
+
+            var queried = _realm.All<Owner>().First().ListOfDogs;
+            Assert.That(queried, Is.EqualTo(dogs));
         }
 
         [Test]
-        public void WriteAsync_ShouldReturnUnmanagedCollection()
+        public async Task WriteAsync_ShouldReturnUnmanagedCollection()
         {
             var owner = new Owner
             {
@@ -257,38 +240,32 @@ namespace Realms.Tests.Database
                 Name = "Puppy2"
             });
 
-            TestHelpers.RunAsyncTest(async () =>
+            var collectionResult = await _realm.WriteAsync(realm =>
             {
-                var collectionResult = await _realm.WriteAsync(realm =>
-                {
-                    return owner.ListOfDogs;
-                });
-
-                Assert.That(owner.ListOfDogs, Is.EqualTo(collectionResult));
+                return owner.ListOfDogs;
             });
+
+            Assert.That(owner.ListOfDogs, Is.EqualTo(collectionResult));
         }
 
         [Test]
-        public void WriteAsync_WhenReturningManagedObjectIndirectly_ShouldThrow()
+        public async Task WriteAsync_WhenReturningManagedObjectIndirectly_ShouldThrow()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var pko = await _realm.WriteAsync(realm =>
             {
-                var pko = await _realm.WriteAsync(realm =>
+                var ipo = realm.Add(new IntPrimaryKeyWithValueObject
                 {
-                    var ipo = realm.Add(new IntPrimaryKeyWithValueObject
-                    {
-                        Id = 1,
-                        StringValue = "bla"
-                    });
-
-                    return new
-                    {
-                        IPO = ipo,
-                    };
+                    Id = 1,
+                    StringValue = "bla"
                 });
 
-                Assert.Throws<Exceptions.RealmClosedException>(() => { _ = pko.IPO.Id != 3; });
+                return new
+                {
+                    IPO = ipo,
+                };
             });
+
+            Assert.Throws<Exceptions.RealmClosedException>(() => { _ = pko.IPO.Id != 3; });
         }
     }
 }

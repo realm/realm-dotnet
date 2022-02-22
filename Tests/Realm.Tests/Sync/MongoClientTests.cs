@@ -69,2068 +69,1831 @@ namespace Realms.Tests.Sync
             Assert.That(collection.Database.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
-        [Test]
-        public void MongoCollection_InsertOne()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertOne()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
 
-                var foo = new Foo("a", 5);
-                var result = await collection.InsertOneAsync(foo);
+            var foo = new Foo("a", 5);
+            var result = await collection.InsertOneAsync(foo);
 
-                Assert.That(result.InsertedId, Is.EqualTo(foo.Id));
+            Assert.That(result.InsertedId, Is.EqualTo(foo.Id));
 
-                var foos = await collection.FindAsync();
-                Assert.That(foos.Length, Is.EqualTo(1));
-                Assert.That(foos[0], Is.EqualTo(foo));
-            });
+            var foos = await collection.FindAsync();
+            Assert.That(foos.Length, Is.EqualTo(1));
+            Assert.That(foos[0], Is.EqualTo(foo));
         }
 
-        [Test]
-        public void MongoCollection_InsertOne_WithNullDoc()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertOne_WithNullDoc()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
 
-                await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertOneAsync(null));
-            });
+            await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertOneAsync(null));
         }
 
-        [Test]
-        public void MongoCollection_InsertOne_WithDocWithInvalidSchema()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertOne_WithDocWithInvalidSchema()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetBsonCollection();
+
+            var doc = new BsonDocument
             {
-                var collection = await GetBsonCollection();
+                { "_id", ObjectId.GenerateNewId() },
+                { "longValue", "this is a string!" }
+            };
 
-                var doc = new BsonDocument
-                {
-                    { "_id", ObjectId.GenerateNewId() },
-                    { "longValue", "this is a string!" }
-                };
-
-                var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
-                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-                Assert.That(ex.Message, Does.Contain("insert not permitted"));
-                Assert.That(ex.HelpLink, Does.Contain("/logs?co_id="));
-            });
+            var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
+            Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(ex.Message, Does.Contain("insert not permitted"));
+            Assert.That(ex.HelpLink, Does.Contain("/logs?co_id="));
         }
 
-        [Test]
-        public void MongoCollection_InsertOne_WithBsonDoc()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertOne_WithBsonDoc()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetBsonCollection();
+            var collection = await GetBsonCollection();
 
-                var doc = new BsonDocument
+            var doc = new BsonDocument
+            {
+                { "_id", ObjectId.GenerateNewId() },
+                { "longValue", 5L },
+                { "stringValue", "bla bla" },
+            };
+            var result = await collection.InsertOneAsync(doc);
+
+            Assert.That(result.InsertedId, Is.EqualTo(doc["_id"].AsObjectId));
+
+            var foos = await collection.FindAsync();
+            Assert.That(foos.Length, Is.EqualTo(1));
+            Assert.That(foos[0]["stringValue"].AsString, Is.EqualTo("bla bla"));
+            Assert.That(foos[0]["longValue"].AsInt64, Is.EqualTo(5));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertMany()
+        {
+            var collection = await GetCollection();
+
+            var foos = new[]
+            {
+                new Foo("first", 123),
+                new Foo("second", 456)
+            };
+
+            var result = await collection.InsertManyAsync(foos);
+
+            Assert.That(result.InsertedIds.Length, Is.EqualTo(2));
+            Assert.That(result.InsertedIds, Is.EquivalentTo(foos.Select(f => f.Id)));
+
+            var foundFoos = await collection.FindAsync();
+            Assert.That(foundFoos.Length, Is.EqualTo(2));
+            Assert.That(foundFoos, Is.EquivalentTo(foos));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertMany_WithNullCollection()
+        {
+            var collection = await GetCollection();
+
+            await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertManyAsync(null));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertMany_WithNullDocuments()
+        {
+            var collection = await GetCollection();
+
+            var foos = new[]
+            {
+                new Foo("first", 123),
+                null
+            };
+
+            var ex = await TestHelpers.AssertThrows<ArgumentException>(() => collection.InsertManyAsync(foos));
+            Assert.That(ex.ParamName, Is.EqualTo("docs"));
+            Assert.That(ex.Message, Does.Contain("null elements"));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertMany_WithDocWithInvalidSchema()
+        {
+            var collection = await GetBsonCollection();
+
+            var doc = new BsonDocument
+            {
+                { "_id", ObjectId.GenerateNewId() },
+                { "longValue", "this is a string!" }
+            };
+
+            var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertManyAsync(new[] { doc }));
+            Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(ex.Message, Does.Contain("insert not permitted"));
+            Assert.That(ex.HelpLink, Does.Contain("/logs?co_id="));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_InsertMany_WithBsonDoc()
+        {
+            var collection = await GetBsonCollection();
+
+            var docs = new[]
+            {
+                new BsonDocument
                 {
                     { "_id", ObjectId.GenerateNewId() },
                     { "longValue", 5L },
-                    { "stringValue", "bla bla" },
-                };
-                var result = await collection.InsertOneAsync(doc);
-
-                Assert.That(result.InsertedId, Is.EqualTo(doc["_id"].AsObjectId));
-
-                var foos = await collection.FindAsync();
-                Assert.That(foos.Length, Is.EqualTo(1));
-                Assert.That(foos[0]["stringValue"].AsString, Is.EqualTo("bla bla"));
-                Assert.That(foos[0]["longValue"].AsInt64, Is.EqualTo(5));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_InsertMany()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var foos = new[]
-                {
-                    new Foo("first", 123),
-                    new Foo("second", 456)
-                };
-
-                var result = await collection.InsertManyAsync(foos);
-
-                Assert.That(result.InsertedIds.Length, Is.EqualTo(2));
-                Assert.That(result.InsertedIds, Is.EquivalentTo(foos.Select(f => f.Id)));
-
-                var foundFoos = await collection.FindAsync();
-                Assert.That(foundFoos.Length, Is.EqualTo(2));
-                Assert.That(foundFoos, Is.EquivalentTo(foos));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_InsertMany_WithNullCollection()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertManyAsync(null));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_InsertMany_WithNullDocuments()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var foos = new[]
-                {
-                    new Foo("first", 123),
-                    null
-                };
-
-                var ex = await TestHelpers.AssertThrows<ArgumentException>(() => collection.InsertManyAsync(foos));
-                Assert.That(ex.ParamName, Is.EqualTo("docs"));
-                Assert.That(ex.Message, Does.Contain("null elements"));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_InsertMany_WithDocWithInvalidSchema()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetBsonCollection();
-
-                var doc = new BsonDocument
+                    { "stringValue", "first" },
+                },
+                new BsonDocument
                 {
                     { "_id", ObjectId.GenerateNewId() },
-                    { "longValue", "this is a string!" }
-                };
+                    { "longValue", 999L },
+                    { "stringValue", "second" },
+                },
+            };
 
-                var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertManyAsync(new[] { doc }));
-                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-                Assert.That(ex.Message, Does.Contain("insert not permitted"));
-                Assert.That(ex.HelpLink, Does.Contain("/logs?co_id="));
-            });
+            var result = await collection.InsertManyAsync(docs);
+
+            Assert.That(result.InsertedIds, Is.EquivalentTo(docs.Select(d => d["_id"].AsObjectId)));
+
+            var foos = await collection.FindAsync();
+            Assert.That(foos.Length, Is.EqualTo(2));
+            Assert.That(foos[0]["stringValue"].AsString, Is.EqualTo("first"));
+            Assert.That(foos[0]["longValue"].AsInt64, Is.EqualTo(5));
+            Assert.That(foos[1]["stringValue"].AsString, Is.EqualTo("second"));
+            Assert.That(foos[1]["longValue"].AsInt64, Is.EqualTo(999));
         }
 
-        [Test]
-        public void MongoCollection_InsertMany_WithBsonDoc()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateOne_WithoutFilter()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetBsonCollection();
+            var collection = await GetCollection();
 
-                var docs = new[]
+            var inserted = await InsertSomeData(collection, 3);
+
+            var update = BsonDocument.Parse(@"{
+                $set: {
+                    StringValue: ""this is update!"",
+                    LongValue: { $numberLong: ""999""}
+                }
+            }");
+
+            var result = await collection.UpdateOneAsync(filter: null, update);
+
+            Assert.That(result.UpsertedId, Is.Null);
+            Assert.That(result.MatchedCount, Is.EqualTo(1));
+            Assert.That(result.ModifiedCount, Is.EqualTo(1));
+
+            // Update inserted with expected values after the update
+            inserted[0].StringValue = "this is update!";
+            inserted[0].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateOne_WithFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var update = BsonDocument.Parse(@"{
+                $set: {
+                    StringValue: ""this is update!"",
+                    LongValue: { $numberLong: ""999"" }
+                }
+            }");
+
+            var filter = BsonDocument.Parse(@"{
+                LongValue: { $gte: 1 }
+            }");
+
+            var result = await collection.UpdateOneAsync(filter, update);
+
+            Assert.That(result.UpsertedId, Is.Null);
+            Assert.That(result.MatchedCount, Is.EqualTo(1));
+            Assert.That(result.ModifiedCount, Is.EqualTo(1));
+
+            // Update inserted with expected values after the update - should have matched
+            // the second element
+            inserted[1].StringValue = "this is update!";
+            inserted[1].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateOne_NoMatches_Upsert()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var upsertId = ObjectId.GenerateNewId();
+
+            var test = new BsonDocument
+            {
+                { "foo", upsertId }
+            }.ToJson();
+
+            var update = BsonDocument.Parse(@"{
+                $set: {
+                    StringValue: ""this is update!"",
+                    LongValue: { $numberLong: ""999"" }
+                },
+                $setOnInsert: {
+                    _id: ObjectId(""" + upsertId + @""")
+                }
+            }");
+
+            var filter = BsonDocument.Parse(@"{
+                LongValue: { $gte: 5 }
+            }");
+
+            var result = await collection.UpdateOneAsync(filter, update, upsert: true);
+
+            Assert.That(result.UpsertedId, Is.EqualTo(upsertId));
+            Assert.That(result.MatchedCount, Is.EqualTo(0));
+            Assert.That(result.ModifiedCount, Is.EqualTo(0));
+
+            // Update inserted with expected values after the update - should have matched
+            // no docs, so we expect an upsert
+            inserted = inserted.Concat(new[]
+            {
+                new Foo("this is update!", 999)
                 {
-                    new BsonDocument
-                    {
-                        { "_id", ObjectId.GenerateNewId() },
-                        { "longValue", 5L },
-                        { "stringValue", "first" },
-                    },
-                    new BsonDocument
-                    {
-                        { "_id", ObjectId.GenerateNewId() },
-                        { "longValue", 999L },
-                        { "stringValue", "second" },
-                    },
-                };
+                    Id = upsertId
+                }
+            }).ToArray();
 
-                var result = await collection.InsertManyAsync(docs);
-
-                Assert.That(result.InsertedIds, Is.EquivalentTo(docs.Select(d => d["_id"].AsObjectId)));
-
-                var foos = await collection.FindAsync();
-                Assert.That(foos.Length, Is.EqualTo(2));
-                Assert.That(foos[0]["stringValue"].AsString, Is.EqualTo("first"));
-                Assert.That(foos[0]["longValue"].AsInt64, Is.EqualTo(5));
-                Assert.That(foos[1]["stringValue"].AsString, Is.EqualTo("second"));
-                Assert.That(foos[1]["longValue"].AsInt64, Is.EqualTo(999));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_UpdateOne_WithoutFilter()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateOne_NoMatches_Noupsert()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{
-                    $set: {
-                        StringValue: ""this is update!"",
-                        LongValue: { $numberLong: ""999""}
-                    }
-                }");
+            var upsertId = ObjectId.GenerateNewId();
+            var update = BsonDocument.Parse(@"{
+                $set: {
+                    StringValue: ""this is update!"",
+                    LongValue: { $numberLong: ""999"" }
+                },
+                $setOnInsert: {
+                    _id: ObjectId(""" + upsertId + @""")
+                }
+            }");
 
-                var result = await collection.UpdateOneAsync(filter: null, update);
+            var filter = BsonDocument.Parse(@"{
+                LongValue: { $gte: 5 }
+            }");
 
-                Assert.That(result.UpsertedId, Is.Null);
-                Assert.That(result.MatchedCount, Is.EqualTo(1));
-                Assert.That(result.ModifiedCount, Is.EqualTo(1));
+            var result = await collection.UpdateOneAsync(filter, update, upsert: false);
 
-                // Update inserted with expected values after the update
-                inserted[0].StringValue = "this is update!";
-                inserted[0].LongValue = 999;
+            Assert.That(result.UpsertedId, Is.Null);
+            Assert.That(result.MatchedCount, Is.EqualTo(0));
+            Assert.That(result.ModifiedCount, Is.EqualTo(0));
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_UpdateOne_WithFilter()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateOne_NullUpdate_Throws()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var update = BsonDocument.Parse(@"{
-                    $set: {
-                        StringValue: ""this is update!"",
-                        LongValue: { $numberLong: ""999"" }
-                    }
-                }");
-
-                var filter = BsonDocument.Parse(@"{
-                    LongValue: { $gte: 1 }
-                }");
-
-                var result = await collection.UpdateOneAsync(filter, update);
-
-                Assert.That(result.UpsertedId, Is.Null);
-                Assert.That(result.MatchedCount, Is.EqualTo(1));
-                Assert.That(result.ModifiedCount, Is.EqualTo(1));
-
-                // Update inserted with expected values after the update - should have matched
-                // the second element
-                inserted[1].StringValue = "this is update!";
-                inserted[1].LongValue = 999;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_UpdateOne_NoMatches_Upsert()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var upsertId = ObjectId.GenerateNewId();
-
-                var test = new BsonDocument
-                {
-                    { "foo", upsertId }
-                }.ToJson();
-
-                var update = BsonDocument.Parse(@"{
-                    $set: {
-                        StringValue: ""this is update!"",
-                        LongValue: { $numberLong: ""999"" }
-                    },
-                    $setOnInsert: {
-                        _id: ObjectId(""" + upsertId + @""")
-                    }
-                }");
-
-                var filter = BsonDocument.Parse(@"{
-                    LongValue: { $gte: 5 }
-                }");
-
-                var result = await collection.UpdateOneAsync(filter, update, upsert: true);
-
-                Assert.That(result.UpsertedId, Is.EqualTo(upsertId));
-                Assert.That(result.MatchedCount, Is.EqualTo(0));
-                Assert.That(result.ModifiedCount, Is.EqualTo(0));
-
-                // Update inserted with expected values after the update - should have matched
-                // no docs, so we expect an upsert
-                inserted = inserted.Concat(new[]
-                {
-                    new Foo("this is update!", 999)
-                    {
-                        Id = upsertId
-                    }
-                }).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_UpdateOne_NoMatches_Noupsert()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var upsertId = ObjectId.GenerateNewId();
-                var update = BsonDocument.Parse(@"{
-                    $set: {
-                        StringValue: ""this is update!"",
-                        LongValue: { $numberLong: ""999"" }
-                    },
-                    $setOnInsert: {
-                        _id: ObjectId(""" + upsertId + @""")
-                    }
-                }");
-
-                var filter = BsonDocument.Parse(@"{
-                    LongValue: { $gte: 5 }
-                }");
-
-                var result = await collection.UpdateOneAsync(filter, update, upsert: false);
-
-                Assert.That(result.UpsertedId, Is.Null);
-                Assert.That(result.MatchedCount, Is.EqualTo(0));
-                Assert.That(result.ModifiedCount, Is.EqualTo(0));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_UpdateOne_NullUpdate_Throws()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
                 var collection = await GetCollection();
 
                 var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateOneAsync(filter: null, updateDocument: null));
                 Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
-            });
         }
 
-        [Test]
-        public void MongoCollection_UpdateMany_WithoutFilter()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateMany_WithoutFilter()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
+
+            var result = await collection.UpdateManyAsync(filter: null, update);
+
+            Assert.That(result.UpsertedId, Is.Null);
+            Assert.That(result.MatchedCount, Is.EqualTo(3));
+            Assert.That(result.ModifiedCount, Is.EqualTo(3));
+
+            // Update inserted with expected values after the update
+            foreach (var foo in inserted)
             {
-                var collection = await GetCollection();
+                foo.StringValue = "this is update!";
+                foo.LongValue = 999;
+            }
 
-                var inserted = await InsertSomeData(collection, 3);
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
 
-                var update = BsonDocument.Parse(@"{ $set: { 
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateMany_WithFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
+
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
+
+            var result = await collection.UpdateManyAsync(filter, update);
+
+            Assert.That(result.UpsertedId, Is.Null);
+            Assert.That(result.MatchedCount, Is.EqualTo(2));
+            Assert.That(result.ModifiedCount, Is.EqualTo(2));
+
+            // Update inserted with expected values after the update - should have matched
+            // the second element
+            for (var i = 1; i < 3; i++)
+            {
+                inserted[i].StringValue = "this is update!";
+                inserted[i].LongValue = 999;
+            }
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateMany_NoMatches_Upsert()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var upsertId = ObjectId.GenerateNewId();
+
+            var update = BsonDocument.Parse(@"{ 
+                $set: { 
                     StringValue: ""this is update!"",
                     LongValue: { $numberLong: ""999"" }
-                } }");
-
-                var result = await collection.UpdateManyAsync(filter: null, update);
-
-                Assert.That(result.UpsertedId, Is.Null);
-                Assert.That(result.MatchedCount, Is.EqualTo(3));
-                Assert.That(result.ModifiedCount, Is.EqualTo(3));
-
-                // Update inserted with expected values after the update
-                foreach (var foo in inserted)
-                {
-                    foo.StringValue = "this is update!";
-                    foo.LongValue = 999;
+                },
+                $setOnInsert: {
+                    _id: ObjectId(""" + upsertId + @""")
                 }
+            }");
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5 } }");
+
+            var result = await collection.UpdateManyAsync(filter, update, upsert: true);
+
+            Assert.That(result.UpsertedId, Is.EqualTo(upsertId));
+            Assert.That(result.MatchedCount, Is.EqualTo(0));
+            Assert.That(result.ModifiedCount, Is.EqualTo(0));
+
+            // Update inserted with expected values after the update - should have matched
+            // no docs, so we expect an upsert
+            inserted = inserted.Concat(new[]
+            {
+                new Foo("this is update!", 999)
+                {
+                    Id = upsertId
+                }
+            }).ToArray();
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_UpdateMany_WithFilter()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateMany_NoMatches_Noupsert()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
+            var upsertId = ObjectId.GenerateNewId();
+
+            var update = BsonDocument.Parse(@"{ 
+                $set: { 
                     StringValue: ""this is update!"",
                     LongValue: { $numberLong: ""999"" }
-                } }");
-
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
-
-                var result = await collection.UpdateManyAsync(filter, update);
-
-                Assert.That(result.UpsertedId, Is.Null);
-                Assert.That(result.MatchedCount, Is.EqualTo(2));
-                Assert.That(result.ModifiedCount, Is.EqualTo(2));
-
-                // Update inserted with expected values after the update - should have matched
-                // the second element
-                for (var i = 1; i < 3; i++)
-                {
-                    inserted[i].StringValue = "this is update!";
-                    inserted[i].LongValue = 999;
+                },
+                $setOnInsert: {
+                    _id: ObjectId(""" + upsertId + @""")
                 }
+            }");
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5 } }");
+
+            var result = await collection.UpdateManyAsync(filter, update, upsert: false);
+
+            Assert.That(result.UpsertedId, Is.Null);
+            Assert.That(result.MatchedCount, Is.EqualTo(0));
+            Assert.That(result.ModifiedCount, Is.EqualTo(0));
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_UpdateMany_NoMatches_Upsert()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_UpdateMany_NullUpdate_Throws()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateManyAsync(filter: null, updateDocument: null));
+            Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_DeleteOne_WithoutFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var result = await collection.DeleteOneAsync();
+
+            Assert.That(result.DeletedCount, Is.EqualTo(1));
+
+            // The first element is removed
+            inserted = inserted.Where((_, i) => i > 0).ToArray();
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_DeleteOne_WithFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
             {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var upsertId = ObjectId.GenerateNewId();
-
-                var update = BsonDocument.Parse(@"{ 
-                    $set: { 
-                        StringValue: ""this is update!"",
-                        LongValue: { $numberLong: ""999"" }
-                    },
-                    $setOnInsert: {
-                        _id: ObjectId(""" + upsertId + @""")
-                    }
-                }");
-
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5 } }");
-
-                var result = await collection.UpdateManyAsync(filter, update, upsert: true);
-
-                Assert.That(result.UpsertedId, Is.EqualTo(upsertId));
-                Assert.That(result.MatchedCount, Is.EqualTo(0));
-                Assert.That(result.ModifiedCount, Is.EqualTo(0));
-
-                // Update inserted with expected values after the update - should have matched
-                // no docs, so we expect an upsert
-                inserted = inserted.Concat(new[]
                 {
-                    new Foo("this is update!", 999)
+                    "LongValue", new BsonDocument
                     {
-                        Id = upsertId
+                        { "$gte", 1 }
                     }
-                }).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_UpdateMany_NoMatches_Noupsert()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var upsertId = ObjectId.GenerateNewId();
-
-                var update = BsonDocument.Parse(@"{ 
-                    $set: { 
-                        StringValue: ""this is update!"",
-                        LongValue: { $numberLong: ""999"" }
-                    },
-                    $setOnInsert: {
-                        _id: ObjectId(""" + upsertId + @""")
-                    }
-                }");
-
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5 } }");
-
-                var result = await collection.UpdateManyAsync(filter, update, upsert: false);
-
-                Assert.That(result.UpsertedId, Is.Null);
-                Assert.That(result.MatchedCount, Is.EqualTo(0));
-                Assert.That(result.ModifiedCount, Is.EqualTo(0));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_UpdateMany_NullUpdate_Throws()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateManyAsync(filter: null, updateDocument: null));
-                Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_DeleteOne_WithoutFilter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var result = await collection.DeleteOneAsync();
-
-                Assert.That(result.DeletedCount, Is.EqualTo(1));
-
-                // The first element is removed
-                inserted = inserted.Where((_, i) => i > 0).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_DeleteOne_WithFilter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
-
-                var result = await collection.DeleteOneAsync(filter);
-
-                Assert.That(result.DeletedCount, Is.EqualTo(1));
-
-                // The second element is removed
-                inserted = inserted.Where((_, i) => i != 1).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_DeleteOne_WithFilter_NoMatches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
-
-                var result = await collection.DeleteOneAsync(filter);
-
-                Assert.That(result.DeletedCount, Is.EqualTo(0));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_DeleteMany_WithoutFilter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var result = await collection.DeleteManyAsync();
-
-                Assert.That(result.DeletedCount, Is.EqualTo(3));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.Empty);
-            });
-        }
-
-        [Test]
-        public void MongoCollection_DeleteMany_WithFilter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
-
-                var result = await collection.DeleteManyAsync(filter);
-
-                Assert.That(result.DeletedCount, Is.EqualTo(2));
-
-                // The second and third elements are removed
-                inserted = inserted.Where((_, i) => i == 0).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_DeleteMany_WithFilter_NoMatches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
-
-                var result = await collection.DeleteManyAsync(filter);
-
-                Assert.That(result.DeletedCount, Is.EqualTo(0));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_Count_WithoutFilter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var result = await collection.CountAsync();
-                Assert.That(result, Is.EqualTo(3));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_Count_WithFilter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
-
-                var result = await collection.CountAsync(filter);
-
-                Assert.That(result, Is.EqualTo(2));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_Count_WithFilter_NoMatches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
-
-                var result = await collection.CountAsync(filter);
-
-                Assert.That(result, Is.EqualTo(0));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOne()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var result = await collection.FindOneAsync();
-                Assert.That(result, Is.EqualTo(inserted[0]));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOne_Sort()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var sort = new BsonDocument { { "LongValue", -1 } };
-                var result = await collection.FindOneAsync(sort: sort);
-                Assert.That(result, Is.EqualTo(inserted[2]));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOne_Filter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
-
-                var result = await collection.FindOneAsync(filter);
-                Assert.That(result, Is.EqualTo(inserted[1]));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOne_FilterSort()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
-
-                var sort = new BsonDocument { { "StringValue", -1 } };
-
-                var result = await collection.FindOneAsync(filter, sort: sort);
-                Assert.That(result, Is.EqualTo(inserted[2]));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOne_Projection()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var projection = new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "StringValue", 1 }
-                };
-
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                    foo.LongValue = default;
                 }
+            };
 
-                var result = await collection.FindOneAsync(projection: projection);
-                Assert.That(result, Is.EqualTo(inserted[0]));
-            });
+            var result = await collection.DeleteOneAsync(filter);
+
+            Assert.That(result.DeletedCount, Is.EqualTo(1));
+
+            // The second element is removed
+            inserted = inserted.Where((_, i) => i != 1).ToArray();
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOne_FilterProjection()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_DeleteOne_WithFilter_NoMatches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
             {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
                 {
+                    "LongValue", new BsonDocument
                     {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
+                        { "$gte", 5 }
                     }
-                };
+                }
+            };
 
-                var projection = new BsonDocument
+            var result = await collection.DeleteOneAsync(filter);
+
+            Assert.That(result.DeletedCount, Is.EqualTo(0));
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_DeleteMany_WithoutFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var result = await collection.DeleteManyAsync();
+
+            Assert.That(result.DeletedCount, Is.EqualTo(3));
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.Empty);
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_DeleteMany_WithFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
                 {
-                    { "_id", 0 },
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var result = await collection.DeleteManyAsync(filter);
+
+            Assert.That(result.DeletedCount, Is.EqualTo(2));
+
+            // The second and third elements are removed
+            inserted = inserted.Where((_, i) => i == 0).ToArray();
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_DeleteMany_WithFilter_NoMatches()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 5 }
+                    }
+                }
+            };
+
+            var result = await collection.DeleteManyAsync(filter);
+
+            Assert.That(result.DeletedCount, Is.EqualTo(0));
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Count_WithoutFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var result = await collection.CountAsync();
+            Assert.That(result, Is.EqualTo(3));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Count_WithFilter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var result = await collection.CountAsync(filter);
+
+            Assert.That(result, Is.EqualTo(2));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Count_WithFilter_NoMatches()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 5 }
+                    }
+                }
+            };
+
+            var result = await collection.CountAsync(filter);
+
+            Assert.That(result, Is.EqualTo(0));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var result = await collection.FindOneAsync();
+            Assert.That(result, Is.EqualTo(inserted[0]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_Sort()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var sort = new BsonDocument { { "LongValue", -1 } };
+            var result = await collection.FindOneAsync(sort: sort);
+            Assert.That(result, Is.EqualTo(inserted[2]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_Filter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var result = await collection.FindOneAsync(filter);
+            Assert.That(result, Is.EqualTo(inserted[1]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_FilterSort()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var sort = new BsonDocument { { "StringValue", -1 } };
+
+            var result = await collection.FindOneAsync(filter, sort: sort);
+            Assert.That(result, Is.EqualTo(inserted[2]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_Projection()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
+            {
+                { "_id", 0 },
+                { "StringValue", 1 }
+            };
+
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+                foo.LongValue = default;
+            }
+
+            var result = await collection.FindOneAsync(projection: projection);
+            Assert.That(result, Is.EqualTo(inserted[0]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_FilterProjection()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var projection = new BsonDocument
+            {
+                { "_id", 0 },
+                { "LongValue", 1 }
+            };
+
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+                foo.StringValue = default;
+            }
+
+            var result = await collection.FindOneAsync(filter, projection: projection);
+            Assert.That(result, Is.EqualTo(inserted[1]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_ProjectionSort()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
+            {
+                { "_id", 1 },
+                { "LongValue", 1 }
+            };
+
+            var sort = new BsonDocument { { "LongValue", -1 } };
+
+            foreach (var foo in inserted)
+            {
+                foo.StringValue = default;
+            }
+
+            var result = await collection.FindOneAsync(sort: sort, projection: projection);
+            Assert.That(result, Is.EqualTo(inserted[2]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOne_FilterProjectionSort()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
+            {
+                { "_id", 0 },
+                { "LongValue", 1 },
+                { "StringValue", 1 }
+            };
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var sort = new BsonDocument { { "LongValue", -1 } };
+
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+            }
+
+            var result = await collection.FindOneAsync(filter, sort, projection);
+            Assert.That(result, Is.EqualTo(inserted[2]));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var result = await collection.FindAsync();
+            Assert.That(result, Is.EquivalentTo(inserted));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_Sort()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var sort = new BsonDocument { { "LongValue", -1 } };
+            var result = await collection.FindAsync(sort: sort);
+            Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_Filter()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var result = await collection.FindAsync(filter);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1)));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_FilterSort()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            var sort = new BsonDocument { { "StringValue", -1 } };
+
+            var result = await collection.FindAsync(filter, sort: sort);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse()));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_Projection()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
+            {
+                { "_id", 0 },
+                { "StringValue", 1 }
+            };
+
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+                foo.LongValue = default;
+            }
+
+            var result = await collection.FindAsync(projection: projection);
+            Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_FilterProjection()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
+
+            object projection;
+            if (TestHelpers.IsUnity)
+            {
+                projection = new BsonDocument
+                {
+                    { "_id",  0 },
                     { "LongValue", 1 }
                 };
-
-                foreach (var foo in inserted)
+            }
+            else
+            {
+                projection = new
                 {
-                    foo.Id = default;
-                    foo.StringValue = default;
-                }
+                    _id = 0,
+                    LongValue = 1
+                };
+            }
 
-                var result = await collection.FindOneAsync(filter, projection: projection);
-                Assert.That(result, Is.EqualTo(inserted[1]));
-            });
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+                foo.StringValue = default;
+            }
+
+            var result = await collection.FindAsync(filter, projection: projection);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1)));
         }
 
-        [Test]
-        public void MongoCollection_FindOne_ProjectionSort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_ProjectionSort()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            object projection;
+            object sort;
+            if (TestHelpers.IsUnity)
             {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var projection = new BsonDocument
+                sort = new BsonDocument { { "LongValue", -1 } };
+                projection = new BsonDocument
                 {
                     { "_id", 1 },
                     { "LongValue", 1 }
                 };
-
-                var sort = new BsonDocument { { "LongValue", -1 } };
-
-                foreach (var foo in inserted)
+            }
+            else
+            {
+                sort = new { LongValue = -1 };
+                projection = new
                 {
-                    foo.StringValue = default;
-                }
+                    _id = 1,
+                    LongValue = 1
+                };
+            }
 
-                var result = await collection.FindOneAsync(sort: sort, projection: projection);
-                Assert.That(result, Is.EqualTo(inserted[2]));
-            });
+            foreach (var foo in inserted)
+            {
+                foo.StringValue = default;
+            }
+
+            var result = await collection.FindAsync(sort: sort, projection: projection);
+            Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
         }
 
-        [Test]
-        public void MongoCollection_FindOne_FilterProjectionSort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_FilterProjectionSort()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
             {
-                var collection = await GetCollection();
+                {
+                    "LongValue", new BsonDocument
+                    {
+                        { "$gte", 1 }
+                    }
+                }
+            };
 
-                var inserted = await InsertSomeData(collection, 3);
-
-                var projection = new BsonDocument
+            object projection;
+            object sort;
+            if (TestHelpers.IsUnity)
+            {
+                sort = new BsonDocument { { "LongValue", -1 } };
+                projection = new BsonDocument
                 {
                     { "_id", 0 },
                     { "LongValue", 1 },
-                    { "StringValue", 1 }
+                    { "StringValue", 1 },
                 };
-
-                var filter = new BsonDocument
+            }
+            else
+            {
+                sort = new { LongValue = -1 };
+                projection = new
                 {
+                    _id = 0,
+                    LongValue = 1,
+                    StringValue = 1
+                };
+            }
+
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+            }
+
+            var result = await collection.FindAsync(filter, sort, projection);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse()));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_Limit()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var result = await collection.FindAsync(limit: 2);
+            Assert.That(result, Is.EquivalentTo(inserted.Take(2)));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_SortLimit()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var sort = new BsonDocument { { "LongValue", -1 } };
+            var result = await collection.FindAsync(sort: sort, limit: 2);
+            Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(2)));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_Filter_Limit()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
+                {
+                    "LongValue", new BsonDocument
                     {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
+                        { "$gte", 1 }
                     }
-                };
-
-                var sort = new BsonDocument { { "LongValue", -1 } };
-
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
                 }
+            };
 
-                var result = await collection.FindOneAsync(filter, sort, projection);
-                Assert.That(result, Is.EqualTo(inserted[2]));
-            });
+            var result = await collection.FindAsync(filter, limit: 1);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Take(1)));
         }
 
-        [Test]
-        public void MongoCollection_Find()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_FilterSortLimit()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
             {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var result = await collection.FindAsync();
-                Assert.That(result, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_Find_Sort()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var sort = new BsonDocument { { "LongValue", -1 } };
-                var result = await collection.FindAsync(sort: sort);
-                Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_Find_Filter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = new BsonDocument
                 {
+                    "LongValue", new BsonDocument
                     {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
+                        { "$gte", 1 }
                     }
-                };
+                }
+            };
 
-                var result = await collection.FindAsync(filter);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1)));
-            });
+            var sort = new BsonDocument { { "StringValue", -1 } };
+
+            var result = await collection.FindAsync(filter, sort: sort, limit: 1);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse().Take(1)));
         }
 
-        [Test]
-        public void MongoCollection_Find_FilterSort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_ProjectionLimit()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
             {
-                var collection = await GetCollection();
+                { "_id", 0 },
+                { "StringValue", 1 }
+            };
 
-                var inserted = await InsertSomeData(collection, 3);
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+                foo.LongValue = default;
+            }
 
-                var filter = new BsonDocument
+            var result = await collection.FindAsync(projection: projection, limit: 100);
+            Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(100)));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_FilterProjectionLimit()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var filter = new BsonDocument
+            {
                 {
+                    "LongValue", new BsonDocument
                     {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
+                        { "$gte", 1 }
                     }
-                };
-
-                var sort = new BsonDocument { { "StringValue", -1 } };
-
-                var result = await collection.FindAsync(filter, sort: sort);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse()));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_Find_Projection()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-
-                var inserted = await InsertSomeData(collection, 3);
-
-                var projection = new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "StringValue", 1 }
-                };
-
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                    foo.LongValue = default;
                 }
+            };
 
-                var result = await collection.FindAsync(projection: projection);
-                Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
-            });
+            var projection = new BsonDocument
+            {
+                { "_id", 0 },
+                { "LongValue", 1 }
+            };
+
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+                foo.StringValue = default;
+            }
+
+            var result = await collection.FindAsync(filter, projection: projection, limit: 2);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Take(2)));
         }
 
-        [Test]
-        public void MongoCollection_Find_FilterProjection()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_ProjectionSortLimit()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
             {
-                var collection = await GetCollection();
+                { "_id", 1 },
+                { "LongValue", 1 }
+            };
 
-                var inserted = await InsertSomeData(collection, 3);
+            var sort = new BsonDocument { { "LongValue", -1 } };
 
-                var filter = new BsonDocument
+            foreach (var foo in inserted)
+            {
+                foo.StringValue = default;
+            }
+
+            var result = await collection.FindAsync(sort: sort, projection: projection, limit: 2);
+            Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(2)));
+        }
+
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Find_FilterProjectionSortLimit()
+        {
+            var collection = await GetCollection();
+
+            var inserted = await InsertSomeData(collection, 3);
+
+            var projection = new BsonDocument
+            {
+                { "_id", 0 },
+                { "LongValue", 1 },
+                { "StringValue", 1 }
+            };
+
+            var filter = new BsonDocument
+            {
                 {
+                    "LongValue", new BsonDocument
                     {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
+                        { "$gte", 1 }
                     }
-                };
-
-                object projection;
-                if (TestHelpers.IsUnity)
-                {
-                    projection = new BsonDocument
-                    {
-                        { "_id",  0 },
-                        { "LongValue", 1 }
-                    };
                 }
-                else
-                {
-                    projection = new
-                    {
-                        _id = 0,
-                        LongValue = 1
-                    };
-                }
+            };
 
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                    foo.StringValue = default;
-                }
+            var sort = new BsonDocument { { "LongValue", -1 } };
 
-                var result = await collection.FindAsync(filter, projection: projection);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1)));
-            });
+            foreach (var foo in inserted)
+            {
+                foo.Id = default;
+            }
+
+            var result = await collection.FindAsync(filter, sort, projection, limit: 1);
+            Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse().Take(1)));
         }
 
-        [Test]
-        public void MongoCollection_Find_ProjectionSort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Aggregate()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetSalesCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+            await InsertSalesData(collection);
 
-                object projection;
-                object sort;
-                if (TestHelpers.IsUnity)
-                {
-                    sort = new BsonDocument { { "LongValue", -1 } };
-                    projection = new BsonDocument
-                    {
-                        { "_id", 1 },
-                        { "LongValue", 1 }
-                    };
-                }
-                else
-                {
-                    sort = new { LongValue = -1 };
-                    projection = new
-                    {
-                        _id = 1,
-                        LongValue = 1
-                    };
-                }
+            var aggregation = GetSalesAggregation();
 
-                foreach (var foo in inserted)
-                {
-                    foo.StringValue = default;
-                }
+            var result = await collection.AggregateAsync(aggregation);
 
-                var result = await collection.FindAsync(sort: sort, projection: projection);
-                Assert.That(result, Is.EquivalentTo(inserted.Reverse()));
-            });
+            // Expected results:
+            // { "_id" : { "day" : 46, "year" : 2014 }, "totalAmount" : 150, "count" : 2 }
+            // { "_id" : { "day" : 34, "year" : 2014 }, "totalAmount" : 45, "count" : 2 }
+            // { "_id" : { "day" : 1, "year" : 2014 }, "totalAmount" : 20, "count" : 1 }
+            Assert.That(result.Length, Is.EqualTo(3));
+
+            // Fix the ordering to make it easier to assert the expected values
+            result = result.OrderByDescending(r => r["_id"]["Day"].AsInt32).ToArray();
+
+            Assert.That(result[0]["_id"]["Day"].AsInt32, Is.EqualTo(46));
+            Assert.That(result[0]["_id"]["Year"].AsInt32, Is.EqualTo(2014));
+            Assert.That(result[0]["TotalAmount"].AsDecimal, Is.EqualTo(150));
+            Assert.That(result[0]["Count"].AsInt32, Is.EqualTo(2));
+
+            Assert.That(result[1]["_id"]["Day"].AsInt32, Is.EqualTo(34));
+            Assert.That(result[1]["_id"]["Year"].AsInt32, Is.EqualTo(2014));
+            Assert.That(result[1]["TotalAmount"].AsDecimal, Is.EqualTo(45));
+            Assert.That(result[1]["Count"].AsInt32, Is.EqualTo(2));
+
+            Assert.That(result[2]["_id"]["Day"].AsInt32, Is.EqualTo(1));
+            Assert.That(result[2]["_id"]["Year"].AsInt32, Is.EqualTo(2014));
+            Assert.That(result[2]["TotalAmount"].AsDecimal, Is.EqualTo(20));
+            Assert.That(result[2]["Count"].AsInt32, Is.EqualTo(1));
         }
 
-        [Test]
-        public void MongoCollection_Find_FilterProjectionSort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_Aggregate_GenericResult()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetSalesCollection();
 
-                var inserted = await InsertSomeData(collection, 3);
+            await InsertSalesData(collection);
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+            var aggregation = GetSalesAggregation();
 
-                object projection;
-                object sort;
-                if (TestHelpers.IsUnity)
-                {
-                    sort = new BsonDocument { { "LongValue", -1 } };
-                    projection = new BsonDocument
-                    {
-                        { "_id", 0 },
-                        { "LongValue", 1 },
-                        { "StringValue", 1 },
-                    };
-                }
-                else
-                {
-                    sort = new { LongValue = -1 };
-                    projection = new
-                    {
-                        _id = 0,
-                        LongValue = 1,
-                        StringValue = 1
-                    };
-                }
+            var result = await collection.AggregateAsync<AggregationResult>(aggregation);
 
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                }
+            // Expected results:
+            // { "_id" : { "day" : 46, "year" : 2014 }, "totalAmount" : 150, "count" : 2 }
+            // { "_id" : { "day" : 34, "year" : 2014 }, "totalAmount" : 45, "count" : 2 }
+            // { "_id" : { "day" : 1, "year" : 2014 }, "totalAmount" : 20, "count" : 1 }
+            Assert.That(result.Length, Is.EqualTo(3));
 
-                var result = await collection.FindAsync(filter, sort, projection);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse()));
-            });
+            // Fix the ordering to make it easier to assert the expected values
+            result = result.OrderByDescending(r => r.Id.Day).ToArray();
+
+            Assert.That(result[0].Id.Day, Is.EqualTo(46));
+            Assert.That(result[0].Id.Year, Is.EqualTo(2014));
+            Assert.That(result[0].TotalAmount, Is.EqualTo(150));
+            Assert.That(result[0].Count, Is.EqualTo(2));
+
+            Assert.That(result[1].Id.Day, Is.EqualTo(34));
+            Assert.That(result[1].Id.Year, Is.EqualTo(2014));
+            Assert.That(result[1].TotalAmount, Is.EqualTo(45));
+            Assert.That(result[1].Count, Is.EqualTo(2));
+
+            Assert.That(result[2].Id.Day, Is.EqualTo(1));
+            Assert.That(result[2].Id.Year, Is.EqualTo(2014));
+            Assert.That(result[2].TotalAmount, Is.EqualTo(20));
+            Assert.That(result[2].Count, Is.EqualTo(1));
         }
 
-        [Test]
-        public void MongoCollection_Find_Limit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var result = await collection.FindAsync(limit: 2);
-                Assert.That(result, Is.EquivalentTo(inserted.Take(2)));
-            });
+            var result = await collection.FindOneAndUpdateAsync(filter: null, update);
+
+            Assert.That(result, Is.EqualTo(inserted[0]));
+
+            // Update inserted with expected values after the update
+            inserted[0].StringValue = "this is update!";
+            inserted[0].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_SortLimit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_ReturnNewDocument()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var sort = new BsonDocument { { "LongValue", -1 } };
-                var result = await collection.FindAsync(sort: sort, limit: 2);
-                Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(2)));
-            });
+            var result = await collection.FindOneAndUpdateAsync(filter: null, update, returnNewDocument: true);
+
+            Assert.That(result.StringValue, Is.EqualTo("this is update!"));
+            Assert.That(result.LongValue, Is.EqualTo(999));
+
+            // Update inserted with expected values after the update
+            inserted[0] = result;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_Filter_Limit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_Filter()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindAsync(filter, limit: 1);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Take(1)));
-            });
+            var result = await collection.FindOneAndUpdateAsync(filter, update);
+
+            Assert.That(result, Is.EqualTo(inserted[1]));
+
+            // Update inserted with expected values after the update
+            inserted[1].StringValue = "this is update!";
+            inserted[1].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_FilterSortLimit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_Sort()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
 
-                var sort = new BsonDocument { { "StringValue", -1 } };
+            var result = await collection.FindOneAndUpdateAsync(filter: null, update, sort: sort);
 
-                var result = await collection.FindAsync(filter, sort: sort, limit: 1);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse().Take(1)));
-            });
+            Assert.That(result, Is.EqualTo(inserted[2]));
+
+            // Update inserted with expected values after the update
+            inserted[2].StringValue = "this is update!";
+            inserted[2].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_ProjectionLimit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_Projection()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var projection = new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "StringValue", 1 }
-                };
+            var projection = BsonDocument.Parse("{ LongValue: 1, _id: 0 }");
 
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                    foo.LongValue = default;
-                }
+            var result = await collection.FindOneAndUpdateAsync(filter: null, update, projection: projection);
 
-                var result = await collection.FindAsync(projection: projection, limit: 100);
-                Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(100)));
-            });
+            Assert.That(result.StringValue, Is.Null);
+            Assert.That(result.LongValue, Is.EqualTo(inserted[0].LongValue));
+            Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
+
+            // Update inserted with expected values after the update
+            inserted[0].StringValue = "this is update!";
+            inserted[0].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_FilterProjectionLimit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_FilterUpsert_Matches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var projection = new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "LongValue", 1 }
-                };
+            var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true);
 
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                    foo.StringValue = default;
-                }
+            Assert.That(result, Is.EqualTo(inserted[1]));
 
-                var result = await collection.FindAsync(filter, projection: projection, limit: 2);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Take(2)));
-            });
+            // Update inserted with expected values after the update
+            inserted[1].StringValue = "this is update!";
+            inserted[1].LongValue = 999;
+
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_ProjectionSortLimit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_FilterUpsert_NoMatches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var projection = new BsonDocument
-                {
-                    { "_id", 1 },
-                    { "LongValue", 1 }
-                };
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var sort = new BsonDocument { { "LongValue", -1 } };
+            var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true);
+            Assert.That(result, Is.Null);
 
-                foreach (var foo in inserted)
-                {
-                    foo.StringValue = default;
-                }
+            // Update inserted with expected values after the update
+            inserted = inserted.Concat(new[] { new Foo("this is update!", 999) }).ToArray();
 
-                var result = await collection.FindAsync(sort: sort, projection: projection, limit: 2);
-                Assert.That(result, Is.EquivalentTo(inserted.Reverse().Take(2)));
-            });
+            var docs = await collection.FindAsync();
+            inserted[3].Id = docs[3].Id;
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Find_FilterProjectionSortLimit()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_FilterUpsertReturnNewDocument_NoMatches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var inserted = await InsertSomeData(collection, 3);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var projection = new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "LongValue", 1 },
-                    { "StringValue", 1 }
-                };
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+            var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true, returnNewDocument: true);
+            Assert.That(result.StringValue, Is.EqualTo("this is update!"));
+            Assert.That(result.LongValue, Is.EqualTo(999));
 
-                var sort = new BsonDocument { { "LongValue", -1 } };
+            // Update inserted with expected values after the update
+            inserted = inserted.Concat(new[] { result }).ToArray();
 
-                foreach (var foo in inserted)
-                {
-                    foo.Id = default;
-                }
-
-                var result = await collection.FindAsync(filter, sort, projection, limit: 1);
-                Assert.That(result, Is.EquivalentTo(inserted.Where((_, i) => i >= 1).Reverse().Take(1)));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Aggregate()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndUpdate_FilterSortProjectionUpsertReturnNewDocument()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetSalesCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                await InsertSalesData(collection);
+            var update = BsonDocument.Parse(@"{ $set: { 
+                StringValue: ""this is update!"",
+                LongValue: { $numberLong: ""999"" }
+            } }");
 
-                var aggregation = GetSalesAggregation();
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
+            var projection = BsonDocument.Parse("{ StringValue: 1, _id: 0 }");
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.AggregateAsync(aggregation);
+            var result = await collection.FindOneAndUpdateAsync(filter, update, sort, projection, upsert: true, returnNewDocument: true);
+            Assert.That(result.StringValue, Is.EqualTo("this is update!"));
+            Assert.That(result.LongValue, Is.EqualTo(default(long)));
+            Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
 
-                // Expected results:
-                // { "_id" : { "day" : 46, "year" : 2014 }, "totalAmount" : 150, "count" : 2 }
-                // { "_id" : { "day" : 34, "year" : 2014 }, "totalAmount" : 45, "count" : 2 }
-                // { "_id" : { "day" : 1, "year" : 2014 }, "totalAmount" : 20, "count" : 1 }
-                Assert.That(result.Length, Is.EqualTo(3));
+            inserted[2].StringValue = "this is update!";
+            inserted[2].LongValue = 999;
 
-                // Fix the ordering to make it easier to assert the expected values
-                result = result.OrderByDescending(r => r["_id"]["Day"].AsInt32).ToArray();
-
-                Assert.That(result[0]["_id"]["Day"].AsInt32, Is.EqualTo(46));
-                Assert.That(result[0]["_id"]["Year"].AsInt32, Is.EqualTo(2014));
-                Assert.That(result[0]["TotalAmount"].AsDecimal, Is.EqualTo(150));
-                Assert.That(result[0]["Count"].AsInt32, Is.EqualTo(2));
-
-                Assert.That(result[1]["_id"]["Day"].AsInt32, Is.EqualTo(34));
-                Assert.That(result[1]["_id"]["Year"].AsInt32, Is.EqualTo(2014));
-                Assert.That(result[1]["TotalAmount"].AsDecimal, Is.EqualTo(45));
-                Assert.That(result[1]["Count"].AsInt32, Is.EqualTo(2));
-
-                Assert.That(result[2]["_id"]["Day"].AsInt32, Is.EqualTo(1));
-                Assert.That(result[2]["_id"]["Year"].AsInt32, Is.EqualTo(2014));
-                Assert.That(result[2]["TotalAmount"].AsDecimal, Is.EqualTo(20));
-                Assert.That(result[2]["Count"].AsInt32, Is.EqualTo(1));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_Aggregate_GenericResult()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetSalesCollection();
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                await InsertSalesData(collection);
+            var replacement = Foo.WithoutId("this is update!", 999);
 
-                var aggregation = GetSalesAggregation();
+            var result = await collection.FindOneAndReplaceAsync(filter: null, replacement);
 
-                var result = await collection.AggregateAsync<AggregationResult>(aggregation);
+            Assert.That(result, Is.EqualTo(inserted[0]));
 
-                // Expected results:
-                // { "_id" : { "day" : 46, "year" : 2014 }, "totalAmount" : 150, "count" : 2 }
-                // { "_id" : { "day" : 34, "year" : 2014 }, "totalAmount" : 45, "count" : 2 }
-                // { "_id" : { "day" : 1, "year" : 2014 }, "totalAmount" : 20, "count" : 1 }
-                Assert.That(result.Length, Is.EqualTo(3));
+            // Update inserted with expected values after the update
+            inserted[0].StringValue = replacement.StringValue;
+            inserted[0].LongValue = replacement.LongValue;
 
-                // Fix the ordering to make it easier to assert the expected values
-                result = result.OrderByDescending(r => r.Id.Day).ToArray();
-
-                Assert.That(result[0].Id.Day, Is.EqualTo(46));
-                Assert.That(result[0].Id.Year, Is.EqualTo(2014));
-                Assert.That(result[0].TotalAmount, Is.EqualTo(150));
-                Assert.That(result[0].Count, Is.EqualTo(2));
-
-                Assert.That(result[1].Id.Day, Is.EqualTo(34));
-                Assert.That(result[1].Id.Year, Is.EqualTo(2014));
-                Assert.That(result[1].TotalAmount, Is.EqualTo(45));
-                Assert.That(result[1].Count, Is.EqualTo(2));
-
-                Assert.That(result[2].Id.Day, Is.EqualTo(1));
-                Assert.That(result[2].Id.Year, Is.EqualTo(2014));
-                Assert.That(result[2].TotalAmount, Is.EqualTo(20));
-                Assert.That(result[2].Count, Is.EqualTo(1));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_ReturnNewDocument()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
 
-                var result = await collection.FindOneAndUpdateAsync(filter: null, update);
+            var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, returnNewDocument: true);
 
-                Assert.That(result, Is.EqualTo(inserted[0]));
+            replacement.Id = inserted[0].Id;
+            Assert.That(result, Is.EqualTo(replacement));
 
-                // Update inserted with expected values after the update
-                inserted[0].StringValue = "this is update!";
-                inserted[0].LongValue = 999;
+            // Update inserted with expected values after the update
+            inserted[0].StringValue = replacement.StringValue;
+            inserted[0].LongValue = replacement.LongValue;
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_ReturnNewDocument()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_UpsertNoMatches_GeneratesId()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndUpdateAsync(filter: null, update, returnNewDocument: true);
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true, returnNewDocument: true);
 
-                Assert.That(result.StringValue, Is.EqualTo("this is update!"));
-                Assert.That(result.LongValue, Is.EqualTo(999));
+            Assert.That(result.Id, Is.Not.EqualTo(default(ObjectId)));
+            replacement.Id = result.Id;
+            Assert.That(result, Is.EqualTo(replacement));
 
-                // Update inserted with expected values after the update
-                inserted[0] = result;
+            // Update inserted with expected values after the update
+            inserted = inserted.Concat(new[] { result }).ToArray();
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_Filter()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_Filter()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
 
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndUpdateAsync(filter, update);
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement);
 
-                Assert.That(result, Is.EqualTo(inserted[1]));
+            Assert.That(result, Is.EqualTo(inserted[1]));
 
-                // Update inserted with expected values after the update
-                inserted[1].StringValue = "this is update!";
-                inserted[1].LongValue = 999;
+            // Update inserted with expected values after the update
+            inserted[1].StringValue = replacement.StringValue;
+            inserted[1].LongValue = replacement.LongValue;
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_Sort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_Sort()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
 
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
+            var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, sort: sort);
 
-                var result = await collection.FindOneAndUpdateAsync(filter: null, update, sort: sort);
+            Assert.That(result, Is.EqualTo(inserted[2]));
 
-                Assert.That(result, Is.EqualTo(inserted[2]));
+            // Update inserted with expected values after the update
+            inserted[2].StringValue = replacement.StringValue;
+            inserted[2].LongValue = replacement.LongValue;
 
-                // Update inserted with expected values after the update
-                inserted[2].StringValue = "this is update!";
-                inserted[2].LongValue = 999;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_Projection()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_Projection()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
+            var projection = BsonDocument.Parse("{ LongValue: 1, _id: 0 }");
 
-                var projection = BsonDocument.Parse("{ LongValue: 1, _id: 0 }");
+            var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, projection: projection);
 
-                var result = await collection.FindOneAndUpdateAsync(filter: null, update, projection: projection);
+            Assert.That(result.StringValue, Is.Null);
+            Assert.That(result.LongValue, Is.EqualTo(inserted[0].LongValue));
+            Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
 
-                Assert.That(result.StringValue, Is.Null);
-                Assert.That(result.LongValue, Is.EqualTo(inserted[0].LongValue));
-                Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
+            // Update inserted with expected values after the update
+            inserted[0].StringValue = replacement.StringValue;
+            inserted[0].LongValue = replacement.LongValue;
 
-                // Update inserted with expected values after the update
-                inserted[0].StringValue = "this is update!";
-                inserted[0].LongValue = 999;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_FilterUpsert_Matches()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_FilterUpsert_Matches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true);
 
-                var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true);
+            Assert.That(result, Is.EqualTo(inserted[1]));
 
-                Assert.That(result, Is.EqualTo(inserted[1]));
+            // Update inserted with expected values after the update
+            inserted[1].StringValue = replacement.StringValue;
+            inserted[1].LongValue = replacement.LongValue;
 
-                // Update inserted with expected values after the update
-                inserted[1].StringValue = "this is update!";
-                inserted[1].LongValue = 999;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_FilterUpsert_NoMatches()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_FilterUpsert_NoMatches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = new Foo("this is update!", 999);
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true);
+            Assert.That(result, Is.Null);
 
-                var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true);
-                Assert.That(result, Is.Null);
+            // Update inserted with expected values after the update
+            inserted = inserted.Concat(new[] { replacement }).ToArray();
 
-                // Update inserted with expected values after the update
-                inserted = inserted.Concat(new[] { new Foo("this is update!", 999) }).ToArray();
-
-                var docs = await collection.FindAsync();
-                inserted[3].Id = docs[3].Id;
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_FilterUpsertReturnNewDocument_NoMatches()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_FilterUpsertReturnNewDocument_NoMatches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = new Foo("this is update!", 999);
 
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true, returnNewDocument: true);
-                Assert.That(result.StringValue, Is.EqualTo("this is update!"));
-                Assert.That(result.LongValue, Is.EqualTo(999));
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true, returnNewDocument: true);
+            Assert.That(result, Is.EqualTo(replacement));
 
-                // Update inserted with expected values after the update
-                inserted = inserted.Concat(new[] { result }).ToArray();
+            // Update inserted with expected values after the update
+            inserted = inserted.Concat(new[] { replacement }).ToArray();
 
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndUpdate_FilterSortProjectionUpsertReturnNewDocument()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndReplace_FilterSortProjectionUpsertReturnNewDocument()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var update = BsonDocument.Parse(@"{ $set: { 
-                    StringValue: ""this is update!"",
-                    LongValue: { $numberLong: ""999"" }
-                } }");
+            var replacement = Foo.WithoutId("this is update!", 999);
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
+            var projection = BsonDocument.Parse("{ StringValue: 1, _id: 0 }");
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
-                var projection = BsonDocument.Parse("{ StringValue: 1, _id: 0 }");
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, sort, projection, upsert: true, returnNewDocument: true);
+            Assert.That(result.StringValue, Is.EqualTo(replacement.StringValue));
+            Assert.That(result.LongValue, Is.EqualTo(default(long)));
+            Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
 
-                var result = await collection.FindOneAndUpdateAsync(filter, update, sort, projection, upsert: true, returnNewDocument: true);
-                Assert.That(result.StringValue, Is.EqualTo("this is update!"));
-                Assert.That(result.LongValue, Is.EqualTo(default(long)));
-                Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
+            inserted[2].StringValue = replacement.StringValue;
+            inserted[2].LongValue = replacement.LongValue;
 
-                inserted[2].StringValue = "this is update!";
-                inserted[2].LongValue = 999;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndReplace()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndDelete()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var replacement = Foo.WithoutId("this is update!", 999);
+            var result = await collection.FindOneAndDeleteAsync();
+            Assert.That(result, Is.EqualTo(inserted[0]));
 
-                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement);
-
-                Assert.That(result, Is.EqualTo(inserted[0]));
-
-                // Update inserted with expected values after the update
-                inserted[0].StringValue = replacement.StringValue;
-                inserted[0].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 0)));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndReplace_ReturnNewDocument()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndDelete_Filter()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var replacement = Foo.WithoutId("this is update!", 999);
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, returnNewDocument: true);
+            var result = await collection.FindOneAndDeleteAsync(filter);
+            Assert.That(result, Is.EqualTo(inserted[1]));
 
-                replacement.Id = inserted[0].Id;
-                Assert.That(result, Is.EqualTo(replacement));
-
-                // Update inserted with expected values after the update
-                inserted[0].StringValue = replacement.StringValue;
-                inserted[0].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 1)));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndReplace_UpsertNoMatches_GeneratesId()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndDelete_Filter_NoMatches()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var replacement = Foo.WithoutId("this is update!", 999);
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
+            var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true, returnNewDocument: true);
+            var result = await collection.FindOneAndDeleteAsync(filter);
+            Assert.That(result, Is.Null);
 
-                Assert.That(result.Id, Is.Not.EqualTo(default(ObjectId)));
-                replacement.Id = result.Id;
-                Assert.That(result, Is.EqualTo(replacement));
-
-                // Update inserted with expected values after the update
-                inserted = inserted.Concat(new[] { result }).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndReplace_Filter()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndDelete_Sort()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var replacement = Foo.WithoutId("this is update!", 999);
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
 
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
+            var result = await collection.FindOneAndDeleteAsync(sort: sort);
+            Assert.That(result, Is.EqualTo(inserted[2]));
 
-                var result = await collection.FindOneAndReplaceAsync(filter, replacement);
-
-                Assert.That(result, Is.EqualTo(inserted[1]));
-
-                // Update inserted with expected values after the update
-                inserted[1].StringValue = replacement.StringValue;
-                inserted[1].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 2)));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndReplace_Sort()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndDelete_FilterSort()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var replacement = Foo.WithoutId("this is update!", 999);
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
+            var filter = BsonDocument.Parse("{ LongValue: { $lt: 2 } }");
 
-                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, sort: sort);
+            var result = await collection.FindOneAndDeleteAsync(filter, sort: sort);
+            Assert.That(result, Is.EqualTo(inserted[1]));
 
-                Assert.That(result, Is.EqualTo(inserted[2]));
-
-                // Update inserted with expected values after the update
-                inserted[2].StringValue = replacement.StringValue;
-                inserted[2].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 1)));
         }
 
-        [Test]
-        public void MongoCollection_FindOneAndReplace_Projection()
+        [Test, RequiresBaas]
+        public async Task MongoCollection_FindOneAndDelete_FilterSortProjection()
         {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
+            var collection = await GetCollection();
+            var inserted = await InsertSomeData(collection, 3);
 
-                var replacement = Foo.WithoutId("this is update!", 999);
-                var projection = BsonDocument.Parse("{ LongValue: 1, _id: 0 }");
+            var sort = BsonDocument.Parse("{ LongValue: -1 }");
+            var filter = BsonDocument.Parse("{ LongValue: { $lt: 2 } }");
+            var projection = BsonDocument.Parse("{ LongValue: 1 }");
 
-                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, projection: projection);
+            var result = await collection.FindOneAndDeleteAsync(filter, sort, projection);
+            Assert.That(result.Id, Is.EqualTo(inserted[1].Id));
+            Assert.That(result.StringValue, Is.Null);
+            Assert.That(result.LongValue, Is.EqualTo(inserted[1].LongValue));
 
-                Assert.That(result.StringValue, Is.Null);
-                Assert.That(result.LongValue, Is.EqualTo(inserted[0].LongValue));
-                Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
-
-                // Update inserted with expected values after the update
-                inserted[0].StringValue = replacement.StringValue;
-                inserted[0].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndReplace_FilterUpsert_Matches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var replacement = Foo.WithoutId("this is update!", 999);
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
-
-                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true);
-
-                Assert.That(result, Is.EqualTo(inserted[1]));
-
-                // Update inserted with expected values after the update
-                inserted[1].StringValue = replacement.StringValue;
-                inserted[1].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndReplace_FilterUpsert_NoMatches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var replacement = new Foo("this is update!", 999);
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
-
-                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true);
-                Assert.That(result, Is.Null);
-
-                // Update inserted with expected values after the update
-                inserted = inserted.Concat(new[] { replacement }).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndReplace_FilterUpsertReturnNewDocument_NoMatches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var replacement = new Foo("this is update!", 999);
-
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
-
-                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true, returnNewDocument: true);
-                Assert.That(result, Is.EqualTo(replacement));
-
-                // Update inserted with expected values after the update
-                inserted = inserted.Concat(new[] { replacement }).ToArray();
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndReplace_FilterSortProjectionUpsertReturnNewDocument()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var replacement = Foo.WithoutId("this is update!", 999);
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
-                var projection = BsonDocument.Parse("{ StringValue: 1, _id: 0 }");
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
-
-                var result = await collection.FindOneAndReplaceAsync(filter, replacement, sort, projection, upsert: true, returnNewDocument: true);
-                Assert.That(result.StringValue, Is.EqualTo(replacement.StringValue));
-                Assert.That(result.LongValue, Is.EqualTo(default(long)));
-                Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
-
-                inserted[2].StringValue = replacement.StringValue;
-                inserted[2].LongValue = replacement.LongValue;
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndDelete()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var result = await collection.FindOneAndDeleteAsync();
-                Assert.That(result, Is.EqualTo(inserted[0]));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 0)));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndDelete_Filter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
-
-                var result = await collection.FindOneAndDeleteAsync(filter);
-                Assert.That(result, Is.EqualTo(inserted[1]));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 1)));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndDelete_Filter_NoMatches()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
-
-                var result = await collection.FindOneAndDeleteAsync(filter);
-                Assert.That(result, Is.Null);
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndDelete_Sort()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
-
-                var result = await collection.FindOneAndDeleteAsync(sort: sort);
-                Assert.That(result, Is.EqualTo(inserted[2]));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 2)));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndDelete_FilterSort()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
-                var filter = BsonDocument.Parse("{ LongValue: { $lt: 2 } }");
-
-                var result = await collection.FindOneAndDeleteAsync(filter, sort: sort);
-                Assert.That(result, Is.EqualTo(inserted[1]));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 1)));
-            });
-        }
-
-        [Test]
-        public void MongoCollection_FindOneAndDelete_FilterSortProjection()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var collection = await GetCollection();
-                var inserted = await InsertSomeData(collection, 3);
-
-                var sort = BsonDocument.Parse("{ LongValue: -1 }");
-                var filter = BsonDocument.Parse("{ LongValue: { $lt: 2 } }");
-                var projection = BsonDocument.Parse("{ LongValue: 1 }");
-
-                var result = await collection.FindOneAndDeleteAsync(filter, sort, projection);
-                Assert.That(result.Id, Is.EqualTo(inserted[1].Id));
-                Assert.That(result.StringValue, Is.Null);
-                Assert.That(result.LongValue, Is.EqualTo(inserted[1].LongValue));
-
-                var docs = await collection.FindAsync();
-                Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 1)));
-            });
+            var docs = await collection.FindAsync();
+            Assert.That(docs, Is.EquivalentTo(inserted.Where((_, i) => i != 1)));
         }
 
         private static async Task<Foo[]> InsertSomeData(MongoClient.Collection<Foo> collection, int documentCount)

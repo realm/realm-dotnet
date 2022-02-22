@@ -29,32 +29,29 @@ namespace Realms.Tests.Database
     public class PropertyChangedTests : RealmInstanceTest
     {
         [Test]
-        public void UnmanagedObject()
+        public async Task UnmanagedObject()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            string notifiedPropertyName = null;
+            var person = new Person();
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
             {
-                string notifiedPropertyName = null;
-                var person = new Person();
-
-                var handler = new PropertyChangedEventHandler((sender, e) =>
-                {
-                    notifiedPropertyName = e.PropertyName;
-                });
-                person.PropertyChanged += handler;
-
-                // Subscribed - should trigger
-                person.FirstName = "Peter";
-                await Task.Yield();
-                Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
-
-                notifiedPropertyName = null;
-                person.PropertyChanged -= handler;
-
-                // Unsubscribed - should not trigger
-                person.FirstName = "George";
-                await Task.Yield();
-                Assert.That(notifiedPropertyName, Is.Null);
+                notifiedPropertyName = e.PropertyName;
             });
+            person.PropertyChanged += handler;
+
+            // Subscribed - should trigger
+            person.FirstName = "Peter";
+            await Task.Yield();
+            Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
+
+            notifiedPropertyName = null;
+            person.PropertyChanged -= handler;
+
+            // Unsubscribed - should not trigger
+            person.FirstName = "George";
+            await Task.Yield();
+            Assert.That(notifiedPropertyName, Is.Null);
         }
 
         [Test]
@@ -94,53 +91,44 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ManagedObject_WhenSameInstanceChanged()
+        public async Task ManagedObject_WhenSameInstanceChanged()
         {
-            TestHelpers.RunAsyncTest(() =>
+            await TestManagedAsync((person, name) =>
             {
-                return TestManagedAsync((person, name) =>
+                _realm.Write(() =>
                 {
-                    _realm.Write(() =>
-                    {
-                        person.FirstName = name;
-                    });
-                    return Task.CompletedTask;
+                    person.FirstName = name;
                 });
+                return Task.CompletedTask;
             });
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherInstanceChanged()
+        public async Task ManagedObject_WhenAnotherInstanceChanged()
         {
-            TestHelpers.RunAsyncTest(() =>
+            await TestManagedAsync((_, name) =>
             {
-                return TestManagedAsync((_, name) =>
+                _realm.Write(() =>
                 {
-                    _realm.Write(() =>
-                    {
-                        var otherPersonInstance = _realm.All<Person>().First();
-                        otherPersonInstance.FirstName = name;
-                    });
-                    return Task.CompletedTask;
+                    var otherPersonInstance = _realm.All<Person>().First();
+                    otherPersonInstance.FirstName = name;
                 });
+                return Task.CompletedTask;
             });
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherThreadInstanceChanged()
+        public async Task ManagedObject_WhenAnotherThreadInstanceChanged()
         {
-            TestHelpers.RunAsyncTest(() =>
+            await TestManagedAsync(async (_, name) =>
             {
-                return TestManagedAsync(async (_, name) =>
+                await _realm.WriteAsync(otherRealm =>
                 {
-                    await _realm.WriteAsync(otherRealm =>
-                    {
-                        var otherPersonInstance = otherRealm.All<Person>().First();
-                        otherPersonInstance.FirstName = name;
-                    });
-
-                    await Task.Delay(50);
+                    var otherPersonInstance = otherRealm.All<Person>().First();
+                    otherPersonInstance.FirstName = name;
                 });
+
+                await Task.Delay(50);
             });
         }
 
@@ -164,38 +152,35 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
+        public async Task ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
             {
-                var notifiedPropertyNames = new List<string>();
-                var person = new Person();
-                _realm.Write(() =>
-                {
-                    _realm.Add(person);
-                });
-
-                person.PropertyChanged += (sender, e) =>
-                {
-                    notifiedPropertyNames.Add(e.PropertyName);
-                };
-
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    using var transaction = otherRealm.BeginWrite();
-
-                    var otherInstance = otherRealm.All<Person>().First();
-                    otherInstance.FirstName = "Peter";
-
-                    Assert.That(notifiedPropertyNames, Is.Empty);
-
-                    transaction.Rollback();
-                });
-
-                _realm.Refresh();
-                Assert.That(notifiedPropertyNames, Is.Empty);
+                _realm.Add(person);
             });
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            await Task.Run(() =>
+            {
+                using var otherRealm = GetRealm(_realm.Config);
+                using var transaction = otherRealm.BeginWrite();
+
+                var otherInstance = otherRealm.All<Person>().First();
+                otherInstance.FirstName = "Peter";
+
+                Assert.That(notifiedPropertyNames, Is.Empty);
+
+                transaction.Rollback();
+            });
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
         [Test]
@@ -401,42 +386,39 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
+        public async Task ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var notifiedPropertyNames = new List<string>();
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                var notifiedPropertyNames = new List<string>();
-                await TestHelpers.EnsureObjectsAreCollected(() =>
+                var person = _realm.Write(() => _realm.Add(new Person()));
+
+                person.PropertyChanged += (sender, e) =>
                 {
-                    var person = _realm.Write(() => _realm.Add(new Person()));
+                    notifiedPropertyNames.Add(e.PropertyName);
+                };
 
-                    person.PropertyChanged += (sender, e) =>
-                    {
-                        notifiedPropertyNames.Add(e.PropertyName);
-                    };
+                _realm.Write(() => person.FirstName = "Peter");
 
-                    _realm.Write(() => person.FirstName = "Peter");
-
-                    // Sanity check
-                    _realm.Refresh();
-                    Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
-
-                    notifiedPropertyNames.Clear();
-
-                    return new[] { person };
-                });
-
-                _realm.Write(() =>
-                {
-                    var peter = _realm.All<Person>().Single();
-                    Assert.That(peter.FirstName, Is.EqualTo("Peter"));
-                    peter.FirstName = "George";
-                });
-
-                // person was garbage collected, so we should not be notified and no exception should be thrown.
+                // Sanity check
                 _realm.Refresh();
-                Assert.That(notifiedPropertyNames, Is.Empty);
+                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
+
+                notifiedPropertyNames.Clear();
+
+                return new[] { person };
             });
+
+            _realm.Write(() =>
+            {
+                var peter = _realm.All<Person>().Single();
+                Assert.That(peter.FirstName, Is.EqualTo("Peter"));
+                peter.FirstName = "George";
+            });
+
+            // person was garbage collected, so we should not be notified and no exception should be thrown.
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
         [Test]
@@ -466,33 +448,30 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
+        public async Task ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var item = new AgedObject
             {
-                var item = new AgedObject
-                {
-                    Birthday = DateTimeOffset.UtcNow.AddYears(-5)
-                };
+                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+            };
 
-                _realm.Write(() => _realm.Add(item));
+            _realm.Write(() => _realm.Add(item));
 
-                var notifiedPropertyNames = new List<string>();
-                item.PropertyChanged += (sender, e) =>
-                {
-                    notifiedPropertyNames.Add(e.PropertyName);
-                };
+            var notifiedPropertyNames = new List<string>();
+            item.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
 
-                await _realm.WriteAsync(r =>
-                {
-                    var otherThreadInstance = r.All<AgedObject>().Single();
-                    otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
-                });
-
-                await Task.Yield();
-
-                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
+            await _realm.WriteAsync(r =>
+            {
+                var otherThreadInstance = r.All<AgedObject>().Single();
+                otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
             });
+
+            await Task.Yield();
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
         [Test]
