@@ -198,14 +198,11 @@ namespace Realms.Tests.Sync
                 var errorMsg = "simulated client reset";
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler
-                (
-                    (sender, e) =>
-                    {
-                        manualOnClientResetTriggered = true;
-                        errorTcs.TrySetResult(e);
-                    }
-                );
+                config.ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+                {
+                    manualOnClientResetTriggered = true;
+                    errorTcs.TrySetResult(e);
+                });
 
                 using (var realm = await GetRealmAsync(config))
                 {
@@ -751,15 +748,12 @@ namespace Realms.Tests.Sync
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler
-                (
-                    (sender, e) =>
-                    {
-                        Assert.That(manualOnClientResetTriggered, Is.False);
-                        manualOnClientResetTriggered = true;
-                        tcs.TrySetResult(true);
-                    }
-                );
+                config.ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+                {
+                    Assert.That(manualOnClientResetTriggered, Is.False);
+                    manualOnClientResetTriggered = true;
+                    tcs.TrySetResult(true);
+                });
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
