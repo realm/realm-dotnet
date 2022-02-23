@@ -29,7 +29,7 @@ using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true), NonParallelizable]
+    [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {
         [Test]

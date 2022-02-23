@@ -9,12 +9,13 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
       ClientResetHandler = new ManualRecoveryHandler();
     };
   ```
-  In order to take advantage of the new **Discard Unsynced Changes** feature,  the following should be done:
+  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done:
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {
       ClientResetHandler = new DiscardLocalResetHandler
-      {((sender, e) =>oreReset = (beforeFrozen) =>
+      {
+        OnBeforeReset = (beforeFrozen) =>
         {
           // executed right before a client reset is about to happen
         },
