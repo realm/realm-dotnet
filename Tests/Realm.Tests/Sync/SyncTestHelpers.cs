@@ -83,7 +83,6 @@ namespace Realms.Tests.Sync
             if (ensureNoSessionErrors)
             {
                 var tcs = new TaskCompletionSource<object>();
-
                 Session.Error += HandleSessionError;
                 try
                 {
@@ -315,6 +314,7 @@ namespace Realms.Tests.Sync
             });
 
             Session.Error += handler;
+
             return tcs.Task;
         }
     }

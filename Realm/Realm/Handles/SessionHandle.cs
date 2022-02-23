@@ -307,7 +307,6 @@ namespace Realms.Sync
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-                // no clientResetHandler means don't do anything for this callback
                 if (syncConfig.ClientResetHandler == null)
                 {
                     return true;
