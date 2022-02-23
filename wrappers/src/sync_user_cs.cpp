@@ -26,6 +26,8 @@
 #include <realm/object-store/sync/app.hpp>
 #include "app_cs.hpp"
 
+#include <external/json/json.hpp>
+
 using namespace realm;
 using namespace realm::binding;
 using namespace app;
@@ -33,69 +35,8 @@ using namespace app;
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
-struct UserApiKey {
-    const char* id;
-    size_t id_len;
-
-    const char* key;
-    size_t key_len;
-
-    const char* name;
-    size_t name_len;
-
-    bool disabled;
-};
-
 namespace realm {
     namespace binding {
-        void (*s_api_key_callback)(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
-
-        inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
-            if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
-
-                s_api_key_callback(tcs_ptr, nullptr, 0, app_error);
-            }
-            else {
-                std::vector<UserApiKey> marshalled_keys(keys.size());
-                std::vector<std::string> id_storage(keys.size());
-
-                for (auto i = 0; i < keys.size(); i++) {
-                    auto& api_key = keys[i];
-                    UserApiKey marshaled_key;
-
-                    id_storage[i] = api_key.id.to_string();
-                    marshaled_key.id = id_storage[i].c_str();
-                    marshaled_key.id_len = id_storage[i].size();
-
-                    if (api_key.key) {
-                        marshaled_key.key = api_key.key->c_str();
-                        marshaled_key.key_len = api_key.key->size();
-                    }
-                    else {
-                        marshaled_key.key = nullptr;
-                        marshaled_key.key_len = 0;
-                    }
-
-                    marshaled_key.name = api_key.name.c_str();
-                    marshaled_key.name_len = api_key.name.size();
-                    marshaled_key.disabled = api_key.disabled;
-
-                    marshalled_keys[i] = marshaled_key;
-                }
-
-                s_api_key_callback(tcs_ptr, marshalled_keys.data(), static_cast<int>(marshalled_keys.size()), MarshaledAppError());
-            }
-        }
-
-        inline void invoke_api_key_callback(void* tcs_ptr, App::UserAPIKey key, util::Optional<AppError> err) {
-            std::vector<App::UserAPIKey> api_keys;
-            api_keys.push_back(key);
-
-            invoke_api_key_callback(tcs_ptr, api_keys, err);
-        }
-
         inline AuthProvider to_auth_provider(const std::string& provider) {
             if (provider == IdentityProviderAnonymous) {
                 return AuthProvider::ANONYMOUS;
@@ -147,11 +88,6 @@ namespace realm {
 }
 
 extern "C" {
-    REALM_EXPORT void realm_sync_user_initialize(decltype(s_api_key_callback) api_key_callback)
-    {
-        s_api_key_callback = api_key_callback;
-    }
-
     REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&] {
@@ -245,31 +181,31 @@ extern "C" {
             switch (profile_field)
             {
             case UserProfileField::name:
-                field = user->user_profile().name;
+                field = user->user_profile().name();
                 break;
             case UserProfileField::email:
-                field = user->user_profile().email;
+                field = user->user_profile().email();
                 break;
             case UserProfileField::picture_url:
-                field = user->user_profile().picture_url;
+                field = user->user_profile().picture_url();
                 break;
             case UserProfileField::first_name:
-                field = user->user_profile().first_name;
+                field = user->user_profile().first_name();
                 break;
             case UserProfileField::last_name:
-                field = user->user_profile().last_name;
+                field = user->user_profile().last_name();
                 break;
             case UserProfileField::gender:
-                field = user->user_profile().gender;
+                field = user->user_profile().gender();
                 break;
             case UserProfileField::birthday:
-                field = user->user_profile().birthday;
+                field = user->user_profile().birthday();
                 break;
             case UserProfileField::min_age:
-                field = user->user_profile().min_age;
+                field = user->user_profile().min_age();
                 break;
             case UserProfileField::max_age:
-                field = user->user_profile().max_age;
+                field = user->user_profile().max_age();
                 break;
             default:
                 REALM_UNREACHABLE();
@@ -294,8 +230,12 @@ extern "C" {
     REALM_EXPORT SharedApp* realm_syncuser_get_app(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            if (auto shared_app = user->sync_manager()->app().lock()) {
-                return new SharedApp(shared_app);
+            // If the user is detached from the sync manager, we'll hit an assert, so this early check avoids that.
+            if (user->state() != SyncUser::State::Removed)
+            {
+                if (auto shared_app = user->sync_manager()->app().lock()) {
+                    return new SharedApp(shared_app);
+                }
             }
 
             return (SharedApp*)nullptr;

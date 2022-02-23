@@ -101,7 +101,7 @@ namespace Realms
             public static extern void destroy(IntPtr queryHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_count", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr count(QueryHandle QueryHandle, out NativeException ex);
+            public static extern IntPtr count(QueryHandle QueryHandle, SortDescriptorHandle sortDescriptor, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor, out NativeException ex);
@@ -115,20 +115,19 @@ namespace Realms
 #pragma warning restore IDE1006 // Naming Styles
         }
 
-        public QueryHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public QueryHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         /// <summary>
         /// If the user hasn't specified it, should be caseSensitive=true.
         /// </summary>
         public void StringContains(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.string_contains(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
             handles?.Dispose();
@@ -140,6 +139,8 @@ namespace Realms
         /// </summary>
         public void StringStartsWith(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.string_starts_with(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
             handles?.Dispose();
@@ -151,6 +152,8 @@ namespace Realms
         /// </summary>
         public void StringEndsWith(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.string_ends_with(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
             handles?.Dispose();
@@ -162,6 +165,8 @@ namespace Realms
         /// </summary>
         public void StringEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.string_equal(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
             handles?.Dispose();
@@ -173,6 +178,8 @@ namespace Realms
         /// </summary>
         public void StringNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.string_not_equal(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
             handles?.Dispose();
@@ -181,6 +188,8 @@ namespace Realms
 
         public void StringLike(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
+            EnsureIsOpen();
+
             NativeException nativeException;
             if (value.Type == RealmValueType.Null)
             {
@@ -196,48 +205,60 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_equal(this, realm, propertyIndex, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_not_equal(this, realm, propertyIndex, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueLess(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueLess(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_less(this, realm, propertyIndex, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_less_equal(this, realm, propertyIndex, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueGreater(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueGreater(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_greater(this, realm, propertyIndex, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void ValueGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        public void ValueGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.primitive_greater_equal(this, realm, propertyIndex, primitive, out var nativeException);
             handles?.Dispose();
@@ -246,61 +267,81 @@ namespace Realms
 
         public void NullEqual(SharedRealmHandle realm, IntPtr propertyIndex)
         {
+            EnsureIsOpen();
+
             NativeMethods.null_equal(this, realm, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void NullNotEqual(SharedRealmHandle realm, IntPtr propertyIndex)
         {
+            EnsureIsOpen();
+
             NativeMethods.null_not_equal(this, realm, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void RealmValueTypeEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
+        public void RealmValueTypeEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
         {
+            EnsureIsOpen();
+
             NativeMethods.realm_value_type_equal(this, realm, propertyIndex, type, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void RealmValueTypeNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
+        public void RealmValueTypeNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, RealmValueType type)
         {
+            EnsureIsOpen();
+
             NativeMethods.realm_value_type_not_equal(this, realm, propertyIndex, type, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Not()
         {
+            EnsureIsOpen();
+
             NativeMethods.not(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void GroupBegin()
         {
+            EnsureIsOpen();
+
             NativeMethods.group_begin(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void GroupEnd()
         {
+            EnsureIsOpen();
+
             NativeMethods.group_end(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Or()
         {
+            EnsureIsOpen();
+
             NativeMethods.or(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public int Count()
+        public int Count(SortDescriptorHandle sortDescriptor)
         {
-            var result = NativeMethods.count(this, out var nativeException);
+            EnsureIsOpen();
+
+            var result = NativeMethods.count(this, sortDescriptor, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
 
         public ResultsHandle CreateResults(SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.create_results(this, sharedRealm, sortDescriptor, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(sharedRealm, result);

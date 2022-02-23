@@ -18,10 +18,13 @@
 
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Realms.Logging;
+using Realms.Native;
+using Realms.Sync;
 
 namespace Realms
 {
@@ -32,7 +35,7 @@ namespace Realms
 
         private static int _isInitialized;
 
-        internal static unsafe void Initialize()
+        internal static void Initialize()
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
@@ -49,6 +52,40 @@ namespace Realms
                     // This is the path in the Unity package - it is what the Editor uses.
                     AddWindowsWrappersToPath("Windows", isUnityTarget: true);
                 }
+
+                SynchronizationContextScheduler.Initialize();
+                SharedRealmHandle.Initialize();
+                SessionHandle.Initialize();
+                HttpClientTransport.Initialize();
+                AppHandle.Initialize();
+                SubscriptionSetHandle.Initialize();
+            }
+        }
+
+        /// <summary>
+        /// **WARNING**: This will close all native Realm instances and AppHandles. This method is extremely unsafe
+        /// to call in any circumstance where the user might be accessing anything Realm-related. The only places
+        /// where we do call it is in DomainUnload and Application.quitting on Unity. We expect that at this point
+        /// the Application/Domain is being torn down and the user should not be interracting with Realm.
+        /// </summary>
+        public static void CleanupNativeResources(string reason)
+        {
+            try
+            {
+                Logger.LogDefault(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                AppHandle.ForceCloseHandles();
+                SharedRealmHandle.ForceCloseNativeRealms();
+
+                sw.Stop();
+                Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDefault(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
             }
         }
 
@@ -56,7 +93,7 @@ namespace Realms
         {
             try
             {
-                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
+                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location);
 
                 var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, getArchitecture()));
                 var path = expectedFilePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);

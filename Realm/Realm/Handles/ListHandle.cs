@@ -26,8 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_value", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_value(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
 
@@ -80,47 +78,53 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_snapshot", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool get_is_frozen(ListHandle list, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ListHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
-#pragma warning restore IDE1006 // Naming Styles
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_to_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr to_results(ListHandle list, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(ListHandle results,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
         }
 
         public override bool IsValid
         {
             get
             {
+                if (IsClosed || Root?.IsClosed == true)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }
         }
 
-        protected override SnapshotDelegate SnapshotCore { get; }
+        public override bool CanSnapshot => true;
 
-        public ListHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public ListHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
-            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
-        }
-
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
+            EnsureIsOpen();
+
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
             return new RealmValue(result, realm);
         }
 
-        public unsafe void Add(in RealmValue value)
+        public void Add(in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.add_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -129,13 +133,17 @@ namespace Realms
 
         public ObjectHandle AddEmbedded()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_embedded(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe void Set(int targetIndex, in RealmValue value)
+        public void Set(int targetIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.set_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
             handles?.Dispose();
@@ -144,13 +152,17 @@ namespace Realms
 
         public ObjectHandle SetEmbedded(int targetIndex)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe void Insert(int targetIndex, in RealmValue value)
+        public void Insert(int targetIndex, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             NativeMethods.insert_value(this, (IntPtr)targetIndex, primitive, out var nativeException);
             handles?.Dispose();
@@ -159,13 +171,17 @@ namespace Realms
 
         public ObjectHandle InsertEmbedded(int targetIndex)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe int Find(in RealmValue value)
+        public int Find(in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -175,31 +191,41 @@ namespace Realms
 
         public void Erase(IntPtr rowIndex)
         {
+            EnsureIsOpen();
+
             NativeMethods.erase(this, rowIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override void Clear()
         {
+            EnsureIsOpen();
+
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Move(IntPtr sourceIndex, IntPtr targetIndex)
         {
+            EnsureIsOpen();
+
             NativeMethods.move(this, sourceIndex, targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override int Count()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -207,32 +233,38 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        public ResultsHandle ToResults()
         {
-            throw new NotImplementedException("Lists can't be filtered yet.");
-        }
+            EnsureIsOpen();
 
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
+            var ptr = NativeMethods.to_results(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            return new ResultsHandle(Root, ptr);
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ListHandle(frozenRealmHandle, result);
         }
+
+        public override void Unbind() => NativeMethods.destroy(handle);
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
+
+        protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
     }
 }

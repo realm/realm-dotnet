@@ -23,6 +23,27 @@ using Realms;
 
 namespace AssemblyToProcess
 {
+    public class LambdaPropertyObject : RealmObject
+    {
+        public IList<Person> ListProperty { get; }
+
+        public Person FirstPropertyObject => ListProperty.First();
+
+        public int IntProperty => ListProperty.Count();
+    }
+
+    public class RealmCollectionsWithCounter : RealmObject
+    {
+        public int Id { get; set; }
+
+        public IList<RealmInteger<int>> CounterList { get; set; }
+
+        public ISet<RealmInteger<int>> CounterSet { get; set; }
+
+        public IDictionary<string, RealmInteger<int>> CounterDict { get; set; }
+
+    }
+
     public class RealmListWithSetter : RealmObject
     {
         public IList<Person> People { get; set; }
@@ -251,5 +272,19 @@ namespace AssemblyToProcess
         public IQueryable<Person> NoSuchRelationshipProperty { get; }
 
         public IQueryable<Person> BacklinkNotAppliedProperty { get; set; }
+    }
+
+    public class AccessorTestObject : RealmObject
+    {
+        // One normal property to avoid triggering "object has no properties" error
+        public int IntProperty { get; set; }
+
+        public AccessorTestObject GetterLessObject { set { } }
+
+        public AccessorTestObject SetterLessObject { get; }
+
+        public string GetterLessString { set { } }
+
+        public string SetterLessString { get; }
     }
 }

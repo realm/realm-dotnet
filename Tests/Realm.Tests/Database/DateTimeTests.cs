@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -27,8 +26,11 @@ namespace Realms.Tests.Database
     public class DateTimeTests : RealmInstanceTest
     {
         [Test]
-        [TestCaseSource(nameof(SetAndGetPropertyTestCases))]
-        public void SetAndGetPropertyTest(int hour, int mins, int secs, int ms)
+        public void SetAndGetPropertyTest(
+            [Values(0, 11, 23)] int hour,
+            [Values(0, 6, 30, 59)] int mins,
+            [Values(0, 6, 30, 59)] int secs,
+            [Values(0, 1, 999)] int ms)
         {
             var turingsBirthday = new DateTimeOffset(1912, 6, 23, hour, mins, secs, ms, TimeSpan.Zero);
 
@@ -46,32 +48,6 @@ namespace Realms.Tests.Database
             var turingAgain = _realm.All<Person>().First();
 
             Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
-        }
-
-        public static object[] SetAndGetPropertyTestCases()
-        {
-            var result = new List<object>();
-
-            var hours = new[] { 0, 11, 23 };
-            var minutes = new[] { 0, 6, 30, 59 };
-            var seconds = new[] { 0, 6, 30, 59 };
-            var milliseconds = new[] { 0, 1, 999 };
-
-            foreach (var hour in hours)
-            {
-                foreach (var minute in minutes)
-                {
-                    foreach (var second in seconds)
-                    {
-                        foreach (var millisecond in milliseconds)
-                        {
-                            result.Add(new object[] { hour, minute, second, millisecond });
-                        }
-                    }
-                }
-            }
-
-            return result.ToArray();
         }
 
         [Test]
@@ -137,7 +113,7 @@ namespace Realms.Tests.Database
             // Arrange
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) }
+                Schema = new[] { typeof(IndexedDateTimeOffsetObject) }
             };
 
             // Act and "assert" that no exception is thrown here

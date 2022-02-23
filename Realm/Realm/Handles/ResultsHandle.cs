@@ -18,7 +18,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms
@@ -27,8 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
@@ -73,48 +70,36 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_descriptor_ordering", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_sort_descriptor(ResultsHandle results, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool get_is_frozen(ResultsHandle results, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ResultsHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid
         {
             get
             {
+                if (IsClosed || Root?.IsClosed == true)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }
         }
 
-        protected override SnapshotDelegate SnapshotCore { get; }
-
-        // keep this one even though warned that it is not used. It is in fact used by marshalling
-        // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
-        [Preserve]
-        public ResultsHandle() : this(null, IntPtr.Zero)
-        {
-        }
+        public override bool CanSnapshot => true;
 
         [Preserve]
-        public ResultsHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public ResultsHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
-            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
-        }
-
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
         }
 
         public RealmValue GetValueAtIndex(int index, Realm realm)
         {
+            EnsureIsOpen();
+
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
             return new RealmValue(result, realm);
@@ -122,6 +107,8 @@ namespace Realms
 
         public override int Count()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.count(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -129,92 +116,55 @@ namespace Realms
 
         public void Clear(SharedRealmHandle realmHandle)
         {
+            EnsureIsOpen();
+
             NativeMethods.clear(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public QueryHandle GetQuery()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new QueryHandle(Root ?? this, result);
+            return new QueryHandle(Root, result);
         }
 
         public SortDescriptorHandle GetSortDescriptor()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_sort_descriptor(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new SortDescriptorHandle(Root ?? this, result);
+            return new SortDescriptorHandle(Root, result);
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
-        }
-
-        public override bool Equals(object obj)
-        {
-            // If parameter is null, return false.
-            if (obj is null)
-            {
-                return false;
-            }
-
-            // Optimization for a common success case.
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (!(obj is ResultsHandle resultsHandle))
-            {
-                return false;
-            }
-
-            var result = NativeMethods.is_same_internal_results(this, resultsHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        public int Find(in RealmValue value)
         {
-            var primitiveValues = new PrimitiveValue[arguments.Length];
-            var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                var argument = arguments[i];
-                if (argument.Type == RealmValueType.Object && !argument.AsRealmObject().IsManaged)
-                {
-                    throw new RealmException("Can't use unmanaged object as argument of Filter");
-                }
+            EnsureIsOpen();
 
-                (primitiveValues[i], handles[i]) = argument.ToNative();
-            }
-
-            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, primitiveValues, (IntPtr)primitiveValues.Length, out var ex);
-            foreach (var handle in handles)
-            {
-                handle?.Dispose();
-            }
-
-            ex.ThrowIfNecessary();
-            return new ResultsHandle(this, ptr);
-        }
-
-        public unsafe int Find(in RealmValue value)
-        {
             var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_value(this, primitive, out var nativeException);
             handles?.Dispose();
@@ -222,23 +172,22 @@ namespace Realms
             return (int)result;
         }
 
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
-        }
-
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(frozenRealmHandle, result);
         }
 
         public override void Clear() => throw new NotSupportedException("Clearing a Results collection is not supported.");
+
+        protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
+
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
+
+        public override void Unbind() => NativeMethods.destroy(handle);
     }
 }

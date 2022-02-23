@@ -18,7 +18,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Versioning;
 using Mono.Cecil;
 
 namespace RealmWeaver
@@ -27,8 +26,6 @@ namespace RealmWeaver
 
     internal abstract class ImportedReferences
     {
-        public FrameworkName Framework { get; }
-
         public TypeReference IEnumerableOfT { get; }
 
         public TypeReference ICollectionOfT { get; }
@@ -137,10 +134,6 @@ namespace RealmWeaver
 
         public MethodReference WovenPropertyAttribute_Constructor { get; private set; }
 
-        public TypeReference PropertyChanged_DoNotNotifyAttribute { get; private set; }
-
-        public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
-
         public MethodReference RealmSchema_AddDefaultTypes { get; private set; }
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
@@ -155,11 +148,10 @@ namespace RealmWeaver
 
         public TypeSystem Types { get; }
 
-        protected ImportedReferences(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName)
+        protected ImportedReferences(ModuleDefinition module, TypeSystem types)
         {
             Module = module;
             Types = types;
-            Framework = frameworkName;
 
             IEnumerableOfT = new TypeReference("System.Collections.Generic", "IEnumerable`1", Module, Module.TypeSystem.CoreLibrary);
             IEnumerableOfT.GenericParameters.Add(new GenericParameter(IEnumerableOfT));
@@ -209,13 +201,6 @@ namespace RealmWeaver
                 HasThis = false,
                 Parameters = { new ParameterDefinition(runtimeTypeHandle) }
             };
-
-            // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
-            var PropertyChanged_Fody = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "PropertyChanged");
-            if (PropertyChanged_Fody != null)
-            {
-                InitializePropertyChanged_Fody(PropertyChanged_Fody);
-            }
         }
 
         private void InitializeFrameworkMethods()
@@ -403,15 +388,21 @@ namespace RealmWeaver
             }
         }
 
-        private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
-        {
-            PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", Module, propertyChangedAssembly);
-            PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
-        }
-
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)
         {
-            var assembly = Module.AssemblyReferences.SingleOrDefault(a => a.Name == assemblyName);
+            var assembly = Module.FindReference(assemblyName);
+
+            // Since Remotion.Linq has all the needed dlls references, try to find the right version there first
+            if (assembly == null)
+            {
+                assembly = Module.ResolveReference("Realm")?.ResolveReference("Remotion.Linq")?.FindReference(assemblyName);
+                if (assembly != null)
+                {
+                    Module.AssemblyReferences.Add(assembly);
+                }
+            }
+
+            // if Remotion.Linq failed to be loaded then we fall back to search versions in System.CoreLib
             if (assembly == null)
             {
                 var corlib = (AssemblyNameReference)Module.TypeSystem.CoreLibrary;
@@ -449,7 +440,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NETFramework(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NETFramework(ModuleDefinition module, TypeSystem types) : base(module, types)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -488,7 +479,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NETPortable(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NETPortable(ModuleDefinition module, TypeSystem types) : base(module, types)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Linq.Expressions"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -527,7 +518,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NetStandard2(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NetStandard2(ModuleDefinition module, TypeSystem types) : base(module, types)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, Module.TypeSystem.CoreLibrary);
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -550,41 +541,34 @@ namespace RealmWeaver
             }
         }
 
-        public static ImportedReferences Create(ModuleDefinition module, FrameworkName frameworkName)
+        public static ImportedReferences Create(ModuleDefinition module, string framework)
         {
             ImportedReferences references;
-            switch (frameworkName.Identifier)
+            switch (framework)
             {
                 case ".NETFramework":
                 case "Xamarin.iOS":
                 case "MonoAndroid":
                 case "Xamarin.Mac":
-                    references = new NETFramework(module, module.TypeSystem, frameworkName);
+                case "Unity":
+                    references = new NETFramework(module, module.TypeSystem);
                     break;
                 case ".NETStandard":
-                    if (frameworkName.Version >= new Version(2, 0))
-                    {
-                        references = new NetStandard2(module, module.TypeSystem, frameworkName);
-                    }
-                    else
-                    {
-                        references = new NETPortable(module, module.TypeSystem, frameworkName);
-                    }
-
+                    references = new NetStandard2(module, module.TypeSystem);
                     break;
                 case ".NETPortable":
                 case ".NETCore":
                 case ".NETCoreApp":
-                    references = new NETPortable(module, module.TypeSystem, frameworkName);
+                    references = new NETPortable(module, module.TypeSystem);
                     break;
                 default:
-                    throw new Exception($"Unsupported target framework: {frameworkName}");
+                    throw new Exception($"Unsupported target framework: {framework}");
             }
 
             references.InitializeFrameworkMethods();
 
             // Weaver may be run on an assembly which is not **yet** using Realm, if someone just adds nuget and builds.
-            var realmAssembly = module.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm");
+            var realmAssembly = module.FindReference("Realm");
             if (realmAssembly != null)
             {
                 references.InitializeRealm(realmAssembly);

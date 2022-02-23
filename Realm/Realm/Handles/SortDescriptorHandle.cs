@@ -26,29 +26,32 @@ namespace Realms
     {
         private static class NativeMethods
         {
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sort_descriptor_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr queryHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sort_descriptor_add_clause", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_clause(SortDescriptorHandle descriptor, TableKey table_key, SharedRealmHandle realm,
+            public static extern void add_clause(SortDescriptorHandle descriptor, UInt32 table_key, SharedRealmHandle realm,
                 [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_index_chain, IntPtr column_keys_count,
                 [MarshalAs(UnmanagedType.U1)] bool ascending, [MarshalAs(UnmanagedType.U1)] bool replacing,
                 out NativeException ex);
+
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
-        public SortDescriptorHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public SortDescriptorHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        public void AddClause(SharedRealmHandle realm, TableKey tableKey, IntPtr[] propertyIndexChain, bool ascending, bool replacing)
+        public void AddClause(TableKey tableKey, IntPtr[] propertyIndexChain, bool ascending, bool replacing)
         {
-            NativeMethods.add_clause(this, tableKey, realm, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
+            EnsureIsOpen();
+
+            NativeMethods.add_clause(this, tableKey.Value, Root, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
     }
 }

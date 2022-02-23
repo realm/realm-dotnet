@@ -1,4 +1,4 @@
-![Realm](https://github.com/realm/realm-dotnet/raw/master/logo.png)
+![Realm](https://github.com/realm/realm-dotnet/raw/main/logo.png)
 
 Realm is a mobile database that runs directly on phones, tablets or wearables.
 
@@ -29,15 +29,8 @@ The API reference is located at [docs.mongodb.com/realm-sdks/dotnet/latest/](htt
 ## Nightly builds
 
 If you want to test recent bugfixes or features that have not been packaged in an official release yet, you can use the preview releases published after every
-commit to the [GitHub packages](https://github.com/realm/realm-dotnet/packages) NuGet feed. To consume the packages, you have two options:
-1. Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume) for instructions on adding custom sources to the NuGet Package Manager.
-    - The source URL you need to specify is `https://nuget.pkg.github.com/realm/index.json`. 
-    - For `username`, specify your GitHub username
-    - For password, specify an access token with the `read:packages` scope.
-  
-    There is an [ongoing thread](https://github.community/t/download-from-github-package-registry-without-authentication/) with the GitHub team to 
-    streamline this by not requiring authentication for public packages, but as of Sept. 2020, this is still needed.
-1. Download the package locally and [install it](https://stackoverflow.com/questions/10240029/how-do-i-install-a-nuget-package-nupkg-file-locally).
+commit to our private NuGet feed. The source URL you need to specify for our feed is `https://s3.amazonaws.com/realm.nugetpackages/index.json`.
+Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume) for instructions on adding custom sources to the NuGet Package Manager.
 
 ## Building Realm
 
@@ -57,13 +50,21 @@ Prerequisites:
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
+## Examples
+
+Some minimal examples of Realm use can be found in the `examples` folder:
+
+* [QuickJournal](examples/QuickJournal): a simple Xamarin.Forms application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 
-This project adheres to the [Contributor Covenant Code of Conduct](https://www.mongodb.com/community-code-of-conduct).
+## Code of Conduct
+
+This project adheres to the [MongoDB Code of Conduct](https://www.mongodb.com/community-code-of-conduct).
 By participating, you are expected to uphold this code. Please report
-unacceptable behavior to [info@realm.io](mailto:info@realm.io).
+unacceptable behavior to [community-conduct@mongodb.com](mailto:community-conduct@mongodb.com).
 
 ## License
 
@@ -78,3 +79,5 @@ not eligible to receive the product under U.S. law.**
 **_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm) to share your thoughts!_**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
+
+<img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-dotnet#README.md">

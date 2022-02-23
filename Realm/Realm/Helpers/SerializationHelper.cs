@@ -16,12 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
+using Realms.Sync;
 
 namespace Realms.Helpers
 {
@@ -34,33 +37,93 @@ namespace Realms.Helpers
 
         static SerializationHelper()
         {
-            var decimalSerializer = new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false));
-            BsonSerializer.RegisterSerializer(decimalSerializer);
+            BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)));
             BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
         }
 
-        public static string ToNativeJson<T>(this T value, bool tryDynamic = true)
+        [Preserve]
+        internal static void PreserveSerializers()
         {
-            if (tryDynamic && !(value is null))
-            {
-                if (typeof(T) == typeof(object))
-                {
-                    return ToNativeJson((dynamic)value, tryDynamic: false);
-                }
+            _ = new BooleanSerializer();
+            _ = new ByteSerializer();
+            _ = new CharSerializer();
+            _ = new Int16Serializer();
+            _ = new Int32Serializer();
+            _ = new Int64Serializer();
+            _ = new SingleSerializer();
+            _ = new DoubleSerializer();
+            _ = new DecimalSerializer();
+            _ = new Decimal128Serializer();
+            _ = new ObjectIdSerializer();
+            _ = new GuidSerializer();
+            _ = new DateTimeSerializer();
+            _ = new DateTimeOffsetSerializer();
+            _ = new StringSerializer();
+            _ = new ByteArraySerializer();
 
-                if (typeof(T) == typeof(object[]))
-                {
-                    var elements = (value as object[]).Select(o => o is null ? ToNativeJson(o, tryDynamic: false) : ToNativeJson((dynamic)o, tryDynamic: false));
-                    return $"[{string.Join(",", elements)}]";
-                }
+            _ = new EnumSerializer<Credentials.AuthProvider>();
+
+            _ = new ArraySerializer<bool>();
+            _ = new ArraySerializer<byte>();
+            _ = new ArraySerializer<char>();
+            _ = new ArraySerializer<short>();
+            _ = new ArraySerializer<int>();
+            _ = new ArraySerializer<long>();
+            _ = new ArraySerializer<float>();
+            _ = new ArraySerializer<double>();
+            _ = new ArraySerializer<decimal>();
+            _ = new ArraySerializer<Decimal128>();
+            _ = new ArraySerializer<ObjectId>();
+            _ = new ArraySerializer<Guid>();
+            _ = new ArraySerializer<DateTime>();
+            _ = new ArraySerializer<DateTimeOffset>();
+            _ = new ArraySerializer<string>();
+            _ = new ArraySerializer<byte[]>();
+
+            _ = new NullableSerializer<bool>();
+            _ = new NullableSerializer<byte>();
+            _ = new NullableSerializer<char>();
+            _ = new NullableSerializer<short>();
+            _ = new NullableSerializer<int>();
+            _ = new NullableSerializer<long>();
+            _ = new NullableSerializer<float>();
+            _ = new NullableSerializer<double>();
+            _ = new NullableSerializer<decimal>();
+            _ = new NullableSerializer<Decimal128>();
+            _ = new NullableSerializer<ObjectId>();
+            _ = new NullableSerializer<Guid>();
+            _ = new NullableSerializer<DateTime>();
+            _ = new NullableSerializer<DateTimeOffset>();
+
+            _ = new BsonDocumentSerializer();
+            _ = new BsonArraySerializer();
+
+            _ = new ObjectSerializer();
+
+            _ = new EnumerableInterfaceImplementerSerializer<IEnumerable<object>, object>();
+            _ = new ExpandoObjectSerializer();
+        }
+
+        public static string ToNativeJson(this object value)
+        {
+            if (value is RealmValue rv)
+            {
+                return rv.AsAny().ToNativeJson();
             }
 
-            if (tryDynamic && (typeof(T) == typeof(object)) && !(value is null))
+            if (value is object[] arr)
             {
-                return ToNativeJson((dynamic)value, tryDynamic: false);
+                var elements = arr.Select(ToNativeJson);
+                return $"[{string.Join(",", elements)}]";
             }
 
-            return value.ToJson(_jsonSettings);
+            if (value is null)
+            {
+                return value.ToJson(_jsonSettings);
+            }
+
+            return value.ToJson(value.GetType(), _jsonSettings);
         }
     }
 }

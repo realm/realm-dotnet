@@ -21,14 +21,6 @@ using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
-    [return: MarshalAs(UnmanagedType.U1)]
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
-
-    [return: MarshalAs(UnmanagedType.U1)]
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool ShouldCompactCallback(IntPtr config, ulong totalSize, ulong dataSize);
-
     [StructLayout(LayoutKind.Sequential)]
     internal struct Configuration
     {
@@ -45,6 +37,19 @@ namespace Realms.Native
             }
         }
 
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string fallback_path;
+        private IntPtr fallback_path_len;
+
+        internal string FallbackPipePath
+        {
+            set
+            {
+                fallback_path = value;
+                fallback_path_len = value.IntPtrLength();
+            }
+        }
+
         [MarshalAs(UnmanagedType.U1)]
         internal bool read_only;
         [MarshalAs(UnmanagedType.U1)]
@@ -57,7 +62,6 @@ namespace Realms.Native
 
         internal IntPtr managed_migration_handle;
 
-        internal ShouldCompactCallback should_compact_callback;
         internal IntPtr managed_should_compact_delegate;
 
         [MarshalAs(UnmanagedType.U1)]

@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -50,6 +51,7 @@ namespace Realms
     /// </code>
     /// </example>
     [Preserve(AllMembers = true)]
+    [DebuggerDisplay("Type = {Type}, Value = {ToString(),nq}")]
     public readonly struct RealmValue : IEquatable<RealmValue>
     {
         private readonly PrimitiveValue _primitiveValue;
@@ -118,7 +120,7 @@ namespace Realms
         /// <summary>
         /// Gets a RealmValue representing <c>null</c>.
         /// </summary>
-        /// <value>A new RealmValue instance of type <see cref="RealmValue.Null"/>.</value>
+        /// <value>A new RealmValue instance of type <see cref="Null"/>.</value>
         public static RealmValue Null => new RealmValue(PrimitiveValue.Null());
 
         private static RealmValue Bool(bool value) => new RealmValue(PrimitiveValue.Bool(value));
@@ -635,17 +637,23 @@ namespace Realms
                 return Operator.Convert<RealmValue, T>(this);
             }
 
-            if (Type == RealmValueType.Int)
+            // This largely copies AsAny to avoid boxing the underlying value in an object
+            return Type switch
             {
-                return Operator.Convert<long, T>(AsInt64());
-            }
-
-            if (Type == RealmValueType.Decimal128)
-            {
-                return Operator.Convert<Decimal128, T>(AsDecimal128());
-            }
-
-            return (T)AsAny();
+                RealmValueType.Null => Operator.Convert<T>(null),
+                RealmValueType.Int => Operator.Convert<long, T>(AsInt64()),
+                RealmValueType.Bool => Operator.Convert<bool, T>(AsBool()),
+                RealmValueType.String => Operator.Convert<string, T>(AsString()),
+                RealmValueType.Data => Operator.Convert<byte[], T>(AsData()),
+                RealmValueType.Date => Operator.Convert<DateTimeOffset, T>(AsDate()),
+                RealmValueType.Float => Operator.Convert<float, T>(AsFloat()),
+                RealmValueType.Double => Operator.Convert<double, T>(AsDouble()),
+                RealmValueType.Decimal128 => Operator.Convert<Decimal128, T>(AsDecimal128()),
+                RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(AsObjectId()),
+                RealmValueType.Guid => Operator.Convert<Guid, T>(AsGuid()),
+                RealmValueType.Object => Operator.Convert<RealmObjectBase, T>(AsRealmObject()),
+                _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
+            };
         }
 
         /// <summary>

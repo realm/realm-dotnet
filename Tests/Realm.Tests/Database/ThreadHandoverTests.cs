@@ -53,12 +53,12 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new Owner();
-                obj.Dogs.Add(new Dog { Name = "1" });
-                obj.Dogs.Add(new Dog { Name = "2" });
+                obj.ListOfDogs.Add(new Dog { Name = "1" });
+                obj.ListOfDogs.Add(new Dog { Name = "2" });
 
                 _realm.Write(() => _realm.Add(obj));
 
-                var listReference = ThreadSafeReference.Create(obj.Dogs);
+                var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
 
                 await Task.Run(() =>
                 {
@@ -149,25 +149,51 @@ namespace Realms.Tests.Database
                 new Dog()
             };
 
-            Assert.That(() => ThreadSafeReference.Create(unmanagedDogs), Throws.InstanceOf<InvalidCastException>());
+            Assert.That(() => ThreadSafeReference.Create(unmanagedDogs), Throws.InstanceOf<ArgumentException>());
 
             _realm.Write(() => _realm.Add(new Dog()));
 
             IList<Dog> managedDogs = _realm.All<Dog>().ToList();
 
-            Assert.That(() => ThreadSafeReference.Create(managedDogs), Throws.InstanceOf<InvalidCastException>());
+            Assert.That(() => ThreadSafeReference.Create(managedDogs), Throws.InstanceOf<ArgumentException>());
         }
 
         [Test]
         public void QueryReference_WhenQueryIsNotRealmResults_ShouldFail()
         {
             var unmanagedDogs = new[] { new Dog() };
-            Assert.That(() => ThreadSafeReference.Create(unmanagedDogs.AsQueryable()), Throws.InstanceOf<InvalidCastException>());
+            Assert.That(() => ThreadSafeReference.Create(unmanagedDogs.AsQueryable()), Throws.InstanceOf<ArgumentException>());
 
             _realm.Write(() => _realm.Add(new Dog()));
 
             var managedDogs = _realm.All<Dog>().ToArray().AsQueryable();
-            Assert.That(() => ThreadSafeReference.Create(managedDogs), Throws.InstanceOf<InvalidCastException>());
+            Assert.That(() => ThreadSafeReference.Create(managedDogs), Throws.InstanceOf<ArgumentException>());
+        }
+
+        [Test]
+        public void SetReference_WhenSetIsNotRealmList_ShouldFail()
+        {
+            var unmanagedDogs = new HashSet<Dog> { new Dog() };
+
+            Assert.That(() => ThreadSafeReference.Create(unmanagedDogs), Throws.InstanceOf<ArgumentException>());
+
+            _realm.Write(() => _realm.Add(new Dog()));
+
+            var managedDogs = new HashSet<Dog>(_realm.All<Dog>());
+
+            Assert.That(() => ThreadSafeReference.Create(managedDogs), Throws.InstanceOf<ArgumentException>());
+        }
+
+        [Test]
+        public void DictionaryReference_WhenDictionaryIsNotRealmResults_ShouldFail()
+        {
+            var unmanagedDogs = new Dictionary<string, Dog> { ["a"] = new Dog() };
+            Assert.That(() => ThreadSafeReference.Create(unmanagedDogs), Throws.InstanceOf<ArgumentException>());
+
+            _realm.Write(() => _realm.Add(new Dog()));
+
+            var managedDogs = _realm.All<Dog>().ToDictionary(_ => "a", d => d);
+            Assert.That(() => ThreadSafeReference.Create(managedDogs), Throws.InstanceOf<ArgumentException>());
         }
 
         [Test]
@@ -261,12 +287,12 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new Owner();
-                obj.Dogs.Add(new Dog { Name = "1" });
-                obj.Dogs.Add(new Dog { Name = "2" });
+                obj.ListOfDogs.Add(new Dog { Name = "1" });
+                obj.ListOfDogs.Add(new Dog { Name = "2" });
 
                 _realm.Write(() => _realm.Add(obj));
 
-                var listReference = ThreadSafeReference.Create(obj.Dogs);
+                var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
 
                 _realm.Write(() => _realm.Remove(obj));
 

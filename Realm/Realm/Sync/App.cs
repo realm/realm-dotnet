@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -37,7 +36,7 @@ namespace Realms.Sync
     /// Register uses and perform various user-related operations through authentication providers (e.g. <see cref="User.ApiKeys"/>, <see cref="EmailPasswordAuth"/>).
     /// </description></item>
     /// <item><description>
-    /// Synchronize data between the local device and a remote Realm App with Synchronized Realms (using <see cref="SyncConfiguration"/>).
+    /// Synchronize data between the local device and a remote Realm App with Synchronized Realms (using <see cref="SyncConfigurationBase"/>).
     /// </description></item>
     /// <item><description>
     /// Invoke Realm App functions with Functions (using <see cref="User.Functions"/>).
@@ -65,9 +64,9 @@ namespace Realms.Sync
     /// // Login with existing user
     /// var user = app.LoginAsync(Credentials.EmailPassword("foo@bar.com", "password");
     /// </code>
-    /// With an authorized user you can synchronize data between the local device and the remote Realm App by opening a Realm with a <see cref="SyncConfiguration"/> as indicated below:
+    /// With an authorized user you can synchronize data between the local device and the remote Realm App by opening a Realm with a <see cref="SyncConfigurationBase"/> as indicated below:
     /// <code>
-    /// var syncConfig = new SyncConfiguration("some-partition-value", user);
+    /// var syncConfig = new PartitionSyncConfiguration("some-partition-value", user);
     /// using var realm = await Realm.GetInstanceAsync(syncConfig);
     ///
     /// realm.Write(() =>
@@ -111,7 +110,7 @@ namespace Realms.Sync
         /// Gets the currently user. If none exists, null is returned.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
 
         /// <summary>
@@ -206,9 +205,7 @@ namespace Realms.Sync
         {
             Argument.NotNull(credentials, nameof(credentials));
 
-            var tcs = new TaskCompletionSource<SyncUserHandle>();
-            Handle.LogIn(credentials.ToNative(), tcs);
-            var handle = await tcs.Task;
+            var handle = await Handle.LogInAsync(credentials.ToNative());
 
             return new User(handle, this);
         }
@@ -235,13 +232,11 @@ namespace Realms.Sync
         /// An awaitable <see cref="Task"/> that represents the asynchronous RemoveUser operation. Successful completion indicates that the user has been logged out,
         /// their local data - removed, and the user's <see cref="User.RefreshToken"/> - revoked on the server.
         /// </returns>
-        public async Task RemoveUserAsync(User user)
+        public Task RemoveUserAsync(User user)
         {
             Argument.NotNull(user, nameof(user));
 
-            var tcs = new TaskCompletionSource<object>();
-            Handle.Remove(user.Handle, tcs);
-            await tcs.Task;
+            return Handle.RemoveAsync(user.Handle);
         }
 
         /// <summary>

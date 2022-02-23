@@ -71,6 +71,9 @@ namespace realm {
         catch (const SchemaValidationException& e) {
             return { RealmErrorType::RealmSchemaValidation, e.what() };
         }
+        catch (const InvalidSchemaException& e) {
+            return { RealmErrorType::RealmSchemaValidation, e.what() };
+        }
         catch (const MismatchedConfigException& e) {
             return { RealmErrorType::RealmMismatchedConfig, e.what() };
         }
@@ -126,6 +129,9 @@ namespace realm {
         catch (const KeyAlreadyExistsException& e) {
             return { RealmErrorType::KeyAlreadyExists, e.what() };
         }
+        catch (const DuplicateSubscriptionException& e) {
+            return { RealmErrorType::DuplicateSubscription, e.what() };
+        }
         catch (const AppError& e) {
             if (e.is_client_error()) {
                 return { RealmErrorType::AppClientError, e.message };
@@ -148,6 +154,9 @@ namespace realm {
             }
 
             return { RealmErrorType::AppUnknownError, e.message };
+        }
+        catch (const DeleteOnOpenRealmException& e) {
+            return { RealmErrorType::RealmInUseException, e.what() };
         }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };

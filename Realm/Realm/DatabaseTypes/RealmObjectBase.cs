@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Exceptions;
@@ -39,30 +40,23 @@ namespace Realms
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    [Preserve(AllMembers = true, Conditional = false)]
-    [Serializable]
+    [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
         : INotifyPropertyChanged,
           IThreadConfined,
           INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IReflectableType
     {
-        [NonSerialized, XmlIgnore]
         private Lazy<int> _hashCode;
 
-        [NonSerialized, XmlIgnore]
         private Realm _realm;
 
-        [NonSerialized, XmlIgnore]
         private ObjectHandle _objectHandle;
 
-        [NonSerialized, XmlIgnore]
         private Metadata _metadata;
 
-        [NonSerialized, XmlIgnore]
         private NotificationTokenHandle _notificationToken;
 
-        [field: NonSerialized, XmlIgnore]
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
@@ -102,7 +96,26 @@ namespace Realms
         /// <see cref="Realm.Add{T}(T, bool)"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
+        [IgnoreDataMember]
         public bool IsManaged => _realm != null;
+
+        /// <summary>
+        /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
+        /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
+        [IgnoreDataMember]
+        public Dynamic DynamicApi
+        {
+            get
+            {
+                if (!IsManaged)
+                {
+                    throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
+                }
+
+                return new Dynamic(this);
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this object is managed and represents a row in the database.
@@ -111,6 +124,7 @@ namespace Realms
         /// Unmanaged objects are always considered valid.
         /// </summary>
         /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
+        [IgnoreDataMember]
         public bool IsValid => _objectHandle?.IsValid != false;
 
         /// <summary>
@@ -118,19 +132,23 @@ namespace Realms
         /// and will not update when writes are made to the Realm. Unlike live objects, frozen
         /// objects can be used across threads.
         /// </summary>
+        /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
-        public bool IsFrozen => _objectHandle?.IsFrozen == true;
+        [IgnoreDataMember]
+        public bool IsFrozen => _realm?.IsFrozen == true;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
+        [IgnoreDataMember]
         public Realm Realm => _realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
+        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
         /// <summary>
@@ -139,6 +157,8 @@ namespace Realms
         /// <remarks>
         /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
         /// </remarks>
+        /// <value>The number of objects referring to this one.</value>
+        [IgnoreDataMember]
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
         internal RealmObjectBase FreezeImpl()
@@ -176,7 +196,7 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
-            _hashCode = new Lazy<int>(() => _objectHandle.GetObjKey().GetHashCode());
+            _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
 
             if (_propertyChanged != null)
             {
@@ -197,16 +217,21 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var propertyIndex = _metadata.PropertyIndices[propertyName];
-
-            _objectHandle.SetValue(propertyIndex, val, _realm);
+            _objectHandle.SetValue(propertyName, _metadata, val, _realm);
         }
 
         protected void SetValueUnique(string propertyName, RealmValue val)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetValueUnique(_metadata.PropertyIndices[propertyName], val);
+            if (_realm.IsInMigration)
+            {
+                _objectHandle.SetValue(propertyName, _metadata, val, _realm);
+            }
+            else
+            {
+                _objectHandle.SetValueUnique(propertyName, _metadata, val);
+            }
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -217,7 +242,7 @@ namespace Realms
             }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetList<T>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         protected internal ISet<T> GetSetValue<T>(string propertyName)
@@ -228,7 +253,7 @@ namespace Realms
             }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetSet<T>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
@@ -239,7 +264,7 @@ namespace Realms
             }
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetDictionary<TValue>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetDictionary<TValue>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -247,7 +272,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
+            var resultsHandle = _objectHandle.GetBacklinks(propertyName, _metadata);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
@@ -268,19 +293,8 @@ namespace Realms
         /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
-        {
-            Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
-            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
-
-            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, relatedMeta.PropertyIndices[property]);
-            if (relatedMeta.Schema.IsEmbedded)
-            {
-                return new RealmResults<EmbeddedObject>(Realm, resultsHandle, relatedMeta);
-            }
-
-            return new RealmResults<RealmObject>(Realm, resultsHandle, relatedMeta);
-        }
+        [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -295,6 +309,12 @@ namespace Realms
             if (ReferenceEquals(this, obj))
             {
                 return true;
+            }
+
+            // Special case to cover possible bugs similar to WPF (#1903)
+            if (obj is InvalidObject)
+            {
+                return !IsValid;
             }
 
             // If run-time types are not exactly the same, return false.
@@ -317,7 +337,7 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.Equals(robj.ObjectHandle);
+            return ObjectHandle.ObjEquals(robj.ObjectHandle);
         }
 
         /// <inheritdoc/>
@@ -326,6 +346,33 @@ namespace Realms
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
             return _hashCode?.Value ?? base.GetHashCode();
+        }
+
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            var typeString = GetType().Name;
+
+            if (!IsManaged)
+            {
+                return $"{typeString} (unmanaged)";
+            }
+
+            if (!IsValid)
+            {
+                return $"{typeString} (removed)";
+            }
+
+            if (this is RealmObject ro && _metadata.Helper.TryGetPrimaryKeyValue(ro, out var pkValue))
+            {
+                var pkProperty = _metadata.Schema.PrimaryKeyProperty;
+                return $"{typeString} ({pkProperty.Value.Name} = {pkValue})";
+            }
+
+            return typeString;
         }
 
         /// <summary>
@@ -475,6 +522,243 @@ namespace Realms
                 Helper = helper;
                 PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
                 Schema = schema;
+            }
+        }
+
+        /// <summary>
+        /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
+        /// </summary>
+        public struct Dynamic
+        {
+            private readonly RealmObjectBase _realmObject;
+
+            internal Dynamic(RealmObjectBase ro)
+            {
+                _realmObject = ro;
+            }
+
+            /// <summary>
+            /// Gets the value of the property <paramref name="propertyName"/> and casts it to
+            /// <typeparamref name="T"/>.
+            /// </summary>
+            /// <typeparam name="T">The type of the property.</typeparam>
+            /// <param name="propertyName">The name of the property.</param>
+            /// <returns>The value of the property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting to <see cref="RealmValue"/> is always valid. When the property is of type
+            /// object, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
+            public T Get<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName);
+
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                }
+
+                if (property.Type.IsCollection(out var collectionType))
+                {
+                    var collectionMethodName = collectionType switch
+                    {
+                        PropertyType.Array => "GetList",
+                        PropertyType.Set => "GetSet",
+                        PropertyType.Dictionary => "GetDictionary",
+                        _ => throw new NotSupportedException($"Invalid collection type received: {collectionType}")
+                    };
+
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
+                }
+
+                return _realmObject.GetValue(propertyName).As<T>();
+            }
+
+            /// <summary>
+            /// Sets the value of the property at <paramref name="propertyName"/> to
+            /// <paramref name="value"/>.
+            /// </summary>
+            /// <param name="propertyName">The name of the property to set.</param>
+            /// <param name="value">The new value of the property.</param>
+            public void Set(string propertyName, RealmValue value)
+            {
+                var property = GetProperty(propertyName);
+
+                if (property.Type.IsComputed())
+                {
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
+                }
+
+                if (property.Type.IsCollection(out _))
+                {
+                    throw new NotSupportedException(
+                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
+                }
+
+                if (!property.Type.IsNullable() && value.Type == RealmValueType.Null)
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
+                }
+
+                if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
+                }
+
+                if (property.IsPrimaryKey)
+                {
+                    _realmObject.SetValueUnique(propertyName, value);
+                }
+                else
+                {
+                    _realmObject.SetValue(propertyName, value);
+                }
+            }
+
+            /// <summary>
+            /// Gets the value of a backlink property. This property must have been declared
+            /// explicitly and annotated with <see cref="BacklinkAttribute"/>.
+            /// </summary>
+            /// <param name="propertyName">The name of the backlink property.</param>
+            /// <returns>
+            /// A queryable collection containing all objects pointing to this one via the
+            /// property specified in <see cref="BacklinkAttribute.Property"/>.
+            /// </returns>
+            public IQueryable<RealmObjectBase> GetBacklinks(string propertyName)
+            {
+                var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
+
+                var resultsHandle = _realmObject._objectHandle.GetBacklinks(propertyName, _realmObject._metadata);
+
+                var relatedMeta = _realmObject._realm.Metadata[property.ObjectType];
+                if (relatedMeta.Schema.IsEmbedded)
+                {
+                    return new RealmResults<EmbeddedObject>(_realmObject._realm, resultsHandle, relatedMeta);
+                }
+
+                return new RealmResults<RealmObject>(_realmObject._realm, resultsHandle, relatedMeta);
+            }
+
+            /// <summary>
+            /// Gets a collection of all the objects that link to this object in the specified relationship.
+            /// </summary>
+            /// <param name="fromObjectType">The type of the object that is on the other end of the relationship.</param>
+            /// <param name="fromPropertyName">The property that is on the other end of the relationship.</param>
+            /// <returns>
+            /// A queryable collection containing all objects of <paramref name="fromObjectType"/> that link
+            /// to the current object via <paramref name="fromPropertyName"/>.
+            /// </returns>
+            public IQueryable<RealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName)
+            {
+                Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
+
+                var resultsHandle = _realmObject._objectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
+                if (relatedMeta.Schema.IsEmbedded)
+                {
+                    return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+                }
+
+                return new RealmResults<RealmObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+            }
+
+            /// <summary>
+            /// Gets a <see cref="IList{T}"/> property.
+            /// </summary>
+            /// <typeparam name="T">The type of the elements in the list.</typeparam>
+            /// <param name="propertyName">The name of the list property.</param>
+            /// <returns>The value of the list property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
+            /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
+            public IList<T> GetList<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName, PropertyTypeEx.IsList);
+
+                var result = _realmObject._objectHandle.GetList<T>(_realmObject._realm, propertyName, _realmObject._metadata, property.ObjectType);
+                result.IsDynamic = true;
+                return result;
+            }
+
+            /// <summary>
+            /// Gets a <see cref="ISet{T}"/> property.
+            /// </summary>
+            /// <typeparam name="T">The type of the elements in the Set.</typeparam>
+            /// <param name="propertyName">The name of the Set property.</param>
+            /// <returns>The value of the Set property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
+            /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
+            public ISet<T> GetSet<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
+
+                var result = _realmObject._objectHandle.GetSet<T>(_realmObject._realm, propertyName, _realmObject._metadata, property.ObjectType);
+                result.IsDynamic = true;
+                return result;
+            }
+
+            /// <summary>
+            /// Gets a <see cref="IDictionary{TKey, TValue}"/> property.
+            /// </summary>
+            /// <typeparam name="T">The type of the values in the dictionary.</typeparam>
+            /// <param name="propertyName">The name of the dictionary property.</param>
+            /// <returns>The value of the dictionary property.</returns>
+            /// <remarks>
+            /// To get a list of all properties available on the object along with their types,
+            /// use <see cref="ObjectSchema"/>.
+            /// <br/>
+            /// Casting the values to <see cref="RealmValue"/> is always valid. When the collection
+            /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+            /// </remarks>
+            public IDictionary<string, T> GetDictionary<T>(string propertyName)
+            {
+                var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
+
+                var result = _realmObject._objectHandle.GetDictionary<T>(_realmObject._realm, propertyName, _realmObject._metadata, property.ObjectType);
+                result.IsDynamic = true;
+                return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private Property GetProperty(string propertyName)
+            {
+                if (!_realmObject.ObjectSchema.TryFindProperty(propertyName, out var property))
+                {
+                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_realmObject.ObjectSchema.Name}", propertyName);
+                }
+
+                return property;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = null)
+            {
+                Argument.NotNull(propertyName, nameof(propertyName));
+
+                if (!_realmObject.ObjectSchema.TryFindProperty(propertyName, out var property))
+                {
+                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_realmObject.ObjectSchema.Name}", propertyName);
+                }
+
+                if (!typeCheck(property.Type))
+                {
+                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which can't be accessed using {methodName}.");
+                }
+
+                return property;
             }
         }
     }

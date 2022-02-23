@@ -83,7 +83,7 @@ namespace RealmWeaver
                 Config = config
             };
 
-            return weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" });
+            return weaver.ExecuteTestRun(assemblyPath, runPeVerify: false, ignoreCodes: new[] { "80131869" });
         }
 
         #endregion helpers
@@ -110,26 +110,13 @@ namespace RealmWeaver
         public void FixtureSetup()
         {
             var sourceAssemblyPath = typeof(AssemblyToProcess.Person).Assembly.Location;
-            TestResult result;
-
-            switch (_propertyChangedWeaver)
+            var result = _propertyChangedWeaver switch
             {
-                case PropertyChangedWeaver.NoPropertyChanged:
-                    result = WeaveRealm(sourceAssemblyPath);
-                    break;
-
-                case PropertyChangedWeaver.BeforeRealmWeaver:
-                    result = WeaveRealm(WeavePropertyChanged(sourceAssemblyPath).AssemblyPath);
-                    break;
-
-                case PropertyChangedWeaver.AfterRealmWeaver:
-                    result = WeavePropertyChanged(WeaveRealm(sourceAssemblyPath).AssemblyPath);
-                    break;
-
-                default:
-                    throw new NotSupportedException();
-            }
-
+                PropertyChangedWeaver.NoPropertyChanged => WeaveRealm(sourceAssemblyPath),
+                PropertyChangedWeaver.BeforeRealmWeaver => WeaveRealm(WeavePropertyChanged(sourceAssemblyPath).AssemblyPath),
+                PropertyChangedWeaver.AfterRealmWeaver => WeavePropertyChanged(WeaveRealm(sourceAssemblyPath).AssemblyPath),
+                _ => throw new NotSupportedException(),
+            };
             _assembly = result.Assembly;
 
             if (_weaveTwice)
@@ -235,7 +222,7 @@ namespace RealmWeaver
         }
 
         [TestCaseSource(nameof(RandomValues))]
-        public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
+        public void GetValueManagedShouldGetQueryDatabase(string typeName, object _)
         {
             // Arrange
             var propertyName = typeName + "Property";
@@ -464,8 +451,8 @@ namespace RealmWeaver
             instance = (dynamic)Activator.CreateInstance(objectType);
             instance.IsManaged = true;
 
-            var persons = instance.Persons;
-            persons = instance.Persons;
+            _ = instance.Persons;
+            _ = instance.Persons;
 
             // the getter is invoked only once because the result is cached
             Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
@@ -477,7 +464,7 @@ namespace RealmWeaver
             var objectType = _assembly.GetType("AssemblyToProcess.Person");
             var property = objectType.GetProperty("SomeQueryableProperty");
 
-            Assert.That(property.GetCustomAttribute<Realms.WovenPropertyAttribute>(), Is.Null);
+            Assert.That(property.GetCustomAttribute<WovenPropertyAttribute>(), Is.Null);
         }
 
         [Test]
@@ -486,10 +473,21 @@ namespace RealmWeaver
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
             // were produced, we make one assertion on all of them here.
 
-            var expectedWarnings = Array.Empty<string>();
+            var expectedWarnings = new[]
+            {
+                "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
+                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "AccessorTestObject.SetterLessObject does not have a setter but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
+            };
 
             var expectedErrors = new[]
             {
+                "RealmCollectionsWithCounter.CounterList is an IList<RealmInteger> which is not supported.",
+                "RealmCollectionsWithCounter.CounterSet is an ISet<RealmInteger> which is not supported.",
+                "RealmCollectionsWithCounter.CounterDict is an IDictionary<RealmInteger> which is not supported.",
                 "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
                 "Class EmbeddedWithPrimaryKey is an EmbeddedObject but has a primary key NotAllowed defined.",
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",
@@ -504,10 +502,6 @@ namespace RealmWeaver
                 "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
                 "NotSupportedProperties.People is declared as List<Person> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<Person>, otherwise annotate the property with the [Ignored] attribute.",
                 "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
-                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
                 "InvalidBacklinkRelationships.ParentRelationship has [Backlink] applied, but is not IQueryable.",
                 "InvalidBacklinkRelationships.ChildRelationShips has [Backlink] applied, but is not IQueryable.",
                 "InvalidBacklinkRelationships.WritableBacklinksProperty has a setter but also has [Backlink] applied, which only supports getters.",
@@ -618,7 +612,7 @@ namespace RealmWeaver
             CopyToRealm(objectType, instance);
 
             var propertyType = objectType.GetProperty(type + "Property").PropertyType;
-            var defaultValue = propertyType.IsValueType ? Activator.CreateInstance(propertyType).ToString() : string.Empty;
+            _ = propertyType.IsValueType ? Activator.CreateInstance(propertyType).ToString() : string.Empty;
             Assert.That(instance.LogList, Does.Not.Contain($"RealmObject.SetValueUnique(propertyName = \"{type}Property\", value = Realms.RealmValue)"));
         }
 
@@ -661,7 +655,7 @@ namespace RealmWeaver
             var instance = (dynamic)Activator.CreateInstance(objectType);
 
             CopyToRealm(objectType, instance);
-            var persons = instance.Persons;
+            _ = instance.Persons;
 
             Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
         }

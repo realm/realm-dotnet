@@ -34,12 +34,27 @@ namespace Realms.Logging
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
+        private static Logger _defaultLogger;
+
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
         /// using <see cref="Console.WriteLine()"/> but certain platforms may use different implementations.
         /// </summary>
         /// <value>A <see cref="Logger"/> instance that outputs to the platform's console.</value>
         public static Logger Console { get; internal set; } = new ConsoleLogger();
+
+        /// <summary>
+        /// Gets a <see cref="FileLogger"/> that saves the log messages to a file.
+        /// </summary>
+        /// <param name="filePath">Path of the file to save messages to. The file is created if it does not already exists.</param>
+        /// <param name="encoding">Character encoding to use. Defaults to <see cref="System.Text.Encoding.UTF8"/> if not specified.</param>
+        /// <remarks>
+        /// Please note that this logger is not optimized for performance, and could lead to overall sync performance slowdown with more verbose log levels.
+        /// </remarks>
+        /// <returns>
+        /// A <see cref="Logger"/> instance that will save log messages to a file.
+        /// </returns>
+        public static Logger File(string filePath, Encoding encoding = null) => new FileLogger(filePath, encoding);
 
         /// <summary>
         /// Gets a <see cref="NullLogger"/> that ignores all messages.
@@ -84,7 +99,11 @@ namespace Realms.Logging
         /// replaces the deprecated <see cref="AppConfiguration.CustomLogger"/>.
         /// </remarks>
         /// <value>The logger to be used for Realm-originating messages.</value>
-        public static Logger Default { get; set; } = Console;
+        public static Logger Default
+        {
+            get => _defaultLogger ?? Console;
+            set => _defaultLogger = value;
+        }
 
         internal GCHandle GCHandle => _gcHandle.Value;
 
@@ -144,6 +163,27 @@ namespace Realms.Logging
             }
         }
 
+        private class FileLogger : Logger
+        {
+            private readonly object locker = new object();
+            private readonly string _filePath;
+            private readonly Encoding _encoding;
+
+            public FileLogger(string filePath, Encoding encoding = null)
+            {
+                _filePath = filePath;
+                _encoding = encoding ?? Encoding.UTF8;
+            }
+
+            protected override void LogImpl(LogLevel level, string message)
+            {
+                lock (locker)
+                {
+                    System.IO.File.AppendAllText(_filePath, FormatLog(level, message) + Environment.NewLine, _encoding);
+                }
+            }
+        }
+
         private class FunctionLogger : Logger
         {
             private readonly Action<LogLevel, string> _logFunction;
@@ -175,7 +215,13 @@ namespace Realms.Logging
                 }
             }
 
-            public string GetLog() => _builder.ToString();
+            public string GetLog()
+            {
+                lock (_builder)
+                {
+                    return _builder.ToString();
+                }
+            }
 
             public void Clear() => _builder.Clear();
         }

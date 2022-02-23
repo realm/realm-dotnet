@@ -40,7 +40,6 @@ namespace Realms.Native
         }
 
 #pragma warning disable SA1300 // Element should begin with upper-case letter
-#pragma warning disable IDE1006 // Naming Styles
 
         private enum NativeHttpMethod
         {
@@ -52,24 +51,22 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct HttpClientRequest
+        private struct HttpClientRequest
         {
             public NativeHttpMethod method;
 
-            private byte* url_buf;
-            private IntPtr url_len;
+            private PrimitiveValue url;
 
             public UInt64 timeout_ms;
 
             public IntPtr /* StringStringPair[] */ headers;
-            public int headers_len;
+            public IntPtr headers_len;
 
-            private byte* body_buf;
-            private IntPtr body_len;
+            private PrimitiveValue body;
 
-            public string Url => Encoding.UTF8.GetString(url_buf, (int)url_len);
+            public string Url => url.AsString();
 
-            public string Body => Encoding.UTF8.GetString(body_buf, (int)body_len);
+            public string Body => body.AsString();
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -105,12 +102,11 @@ namespace Realms.Native
             [MarshalAs(UnmanagedType.LPArray), In] StringStringPair[] headers, int headers_len,
             IntPtr callback_ptr);
 
-#pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1300 // Element should begin with upper-case letter
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
-        internal static void Install()
+        internal static void Initialize()
         {
             execute_request execute = ExecuteRequest;
 
@@ -127,7 +123,7 @@ namespace Realms.Native
                 try
                 {
                     using var message = new HttpRequestMessage(request.method.ToHttpMethod(), request.Url);
-                    foreach (var header in StringStringPair.UnmarshalDictionary(request.headers, request.headers_len))
+                    foreach (var header in StringStringPair.UnmarshalDictionary(request.headers, request.headers_len.ToInt32()))
                     {
                         message.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     }
@@ -137,10 +133,9 @@ namespace Realms.Native
                         message.Content = new StringContent(request.Body, Encoding.UTF8, "application/json");
                     }
 
-                    using var cts = new CancellationTokenSource();
-                    cts.CancelAfter((int)request.timeout_ms);
+                    using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
-                    var response = await _httpClient.SendAsync(message, cts.Token);
+                    var response = await _httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
                     var headers = new List<StringStringPair>(response.Headers.Count());
                     foreach (var header in response.Headers)
                     {
@@ -163,7 +158,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         http_status_code = (int)response.StatusCode,
-                        Body = await response.Content.ReadAsStringAsync(),
+                        Body = await response.Content.ReadAsStringAsync().ConfigureAwait(false),
                     };
 
                     respond(nativeResponse, headers.ToArray(), headers.Count, callback);

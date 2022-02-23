@@ -20,139 +20,28 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using Realms.Helpers;
 
 namespace Realms.Schema
 {
     /// <summary>
     /// Describes the complete set of classes which may be stored in a Realm, either from assembly declarations or,
-    /// dynamically, by evaluating a Realm from disk.
+    /// dynamically, by evaluating a Realm from disk. To construct a new <see cref="RealmSchema"/> instance, use the
+    /// <see cref="Builder">RealmSchema.Builder</see> API.
     /// </summary>
     /// <remarks>
     /// By default this will be all the <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s in all your assemblies
-    /// unless you restrict with <see cref="RealmConfigurationBase.ObjectClasses"/>. Just because a given class <em>may</em>
+    /// unless you restrict with <see cref="RealmConfigurationBase.Schema"/>. Just because a given class <em>may</em>
     /// be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
     /// take up space once written.
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(GetSchema);
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
-
-        /// <summary>
-        /// Adds a collection of types to the default schema.
-        /// </summary>
-        /// <param name="types">Types to be added to the default schema.</param>
-        /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
-        public static void AddDefaultTypes(IEnumerable<Type> types)
-        {
-            Argument.NotNull(types, nameof(types));
-
-            foreach (var type in types)
-            {
-                if (_defaultTypes.Add(type) &&
-                    _default.IsValueCreated)
-                {
-                    throw new NotSupportedException("AddDefaultTypes should be called before creating a Realm instance with the default schema. If you see this error, please report it to help@realm.io.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of known classes in the schema.
-        /// </summary>
-        /// <value>The number of known classes.</value>
-        public int Count => _objects.Count;
-
-        internal static RealmSchema Default => _default.Value;
-
-        internal static RealmSchema Empty => new RealmSchema(Enumerable.Empty<ObjectSchema>());
-
-        private RealmSchema(IEnumerable<ObjectSchema> objects)
-        {
-            _objects = new ReadOnlyDictionary<string, ObjectSchema>(objects.ToDictionary(o => o.Name));
-        }
-
-        /// <summary>
-        /// Finds the definition of a class in this schema.
-        /// </summary>
-        /// <param name="name">A valid class name which may be in this schema.</param>
-        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
-        /// <returns>An <see cref="ObjectSchema"/> or <c>null</c> to indicate not found.</returns>
-        public ObjectSchema Find(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
-            }
-
-            _objects.TryGetValue(name, out var obj);
-            return obj;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-        public IEnumerator<ObjectSchema> GetEnumerator()
-        {
-            return _objects.Values.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes, RealmSchema existing = null)
-        {
-            var builder = new Builder();
-            var classNames = new HashSet<string>();
-            if (existing != null)
-            {
-                builder.AddRange(existing);
-                foreach (var item in existing)
-                {
-                    classNames.Add(item.Name);
-                }
-            }
-
-            foreach (var @class in classes)
-            {
-                var typeInfo = @class.GetTypeInfo();
-                var objectSchema = ObjectSchema.FromType(@class.GetTypeInfo());
-
-                if (classNames.Add(objectSchema.Name))
-                {
-                    builder.Add(objectSchema);
-                }
-                else
-                {
-                    var duplicateType = builder.FirstOrDefault(s => s.Name == objectSchema.Name).Type;
-                    if (typeInfo.FullName != duplicateType.FullName)
-                    {
-                        var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
-                            $"The duplicate types are {@class.FullName} and {duplicateType.FullName}. Either rename one" +
-                            " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
-                        throw new NotSupportedException(errorMessage);
-                    }
-                }
-            }
-
-            return builder.Build();
-        }
-
-        internal static RealmSchema GetSchema()
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() =>
         {
             if (_defaultTypes.Count == 0)
             {
@@ -174,50 +63,303 @@ namespace Realms.Schema
                 }
             }
 
-            return CreateSchemaForClasses(_defaultTypes);
+            return _defaultTypes;
+        });
+
+        /// <summary>
+        /// Adds a collection of types to the default schema.
+        /// </summary>
+        /// <param name="types">Types to be added to the default schema.</param>
+        /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
+        public static void AddDefaultTypes(IEnumerable<Type> types)
+        {
+            Argument.NotNull(types, nameof(types));
+
+            foreach (var type in types)
+            {
+                if (!type.IsRealmObject() && !type.IsEmbeddedObject())
+                {
+                    throw new ArgumentException($"The type {type.FullName} must inherit directly from RealmObject or EmbeddedObject to be used in the Realm schema.");
+                }
+
+                if (_defaultTypes.Add(type) &&
+                    _default.IsValueCreated)
+                {
+                    throw new NotSupportedException("AddDefaultTypes should be called before creating a Realm instance with the default schema. If you see this error, please report it to help@realm.io.");
+                }
+            }
         }
+
+        /// <summary>
+        /// Gets the number of known classes in the schema.
+        /// </summary>
+        /// <value>The number of known classes.</value>
+        public int Count => _objects.Count;
+
+        internal static RealmSchema Default => _default.Value;
+
+        internal static RealmSchema Empty { get; } = new RealmSchema(new Dictionary<string, ObjectSchema>());
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RealmSchema"/> class with a collection of <see cref="ObjectSchema"/>s.
+        /// </summary>
+        /// <param name="objectSchemas">
+        /// A collection of <see cref="ObjectSchema"/> instances that will describe the types of objects contained in the <see cref="Realm"/>
+        /// instance.
+        /// </param>
+        private RealmSchema(IDictionary<string, ObjectSchema> objectSchemas)
+        {
+            Argument.NotNull(objectSchemas, nameof(objectSchemas));
+
+            _objects = new ReadOnlyDictionary<string, ObjectSchema>(objectSchemas);
+        }
+
+        /// <summary>
+        /// Finds the definition of a class in this schema.
+        /// </summary>
+        /// <param name="name">A valid class name which may be in this schema.</param>
+        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
+        /// <returns>An <see cref="ObjectSchema"/> or <c>null</c> to indicate not found.</returns>
+        [Obsolete("This method is obsolete. Use TryFindObjectSchema instead.")]
+        public ObjectSchema Find(string name)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            _objects.TryGetValue(name, out var obj);
+            return obj;
+        }
+
+        /// <summary>
+        /// Attempts to find the definition of a class in this schema.
+        /// </summary>
+        /// <param name="name">A valid class name which may be in this schema.</param>
+        /// <param name="schema">The schema corresponding to the provided <paramref name="name"/> or <c>null</c> if the schema is not found.</param>
+        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
+        /// <returns>
+        /// <c>true</c> if this <see cref="RealmSchema"/> contains a class definition with the supplied <paramref name="name"/>; <c>false</c> otherwise.
+        /// </returns>
+        public bool TryFindObjectSchema(string name, out ObjectSchema schema)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return _objects.TryGetValue(name, out schema);
+        }
+
+        /// <summary>
+        /// Create a mutable <see cref="Builder"/> containing the object schemas in this Realm schema.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Builder"/> instance that can be used to mutate the schema and eventually
+        /// produce a new one by calling <see cref="Builder.Build"/>.
+        /// </returns>
+        public Builder GetBuilder()
+        {
+            var builder = new Builder();
+            foreach (var schema in this)
+            {
+                builder.Add(schema);
+            }
+
+            return builder;
+        }
+
+        /// <inheritdoc/>
+        public IEnumerator<ObjectSchema> GetEnumerator() => _objects.Values.GetEnumerator();
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
         {
-            var objects = new ObjectSchema[nativeSchema.objects_len];
+            var builder = new Builder();
             for (var i = 0; i < nativeSchema.objects_len; i++)
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
 
-                var builder = new ObjectSchema.Builder(objectSchema.name, objectSchema.is_embedded);
+                var osBuilder = new ObjectSchema.Builder(objectSchema.name, objectSchema.is_embedded);
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {
                     var nativeProperty = Marshal.PtrToStructure<Native.SchemaProperty>(IntPtr.Add(nativeSchema.properties, n * Native.SchemaProperty.Size));
-                    builder.Add(new Property
-                    {
-                        Name = nativeProperty.name,
-                        Type = nativeProperty.type,
-                        ObjectType = nativeProperty.object_type,
-                        LinkOriginPropertyName = nativeProperty.link_origin_property_name,
-                        IsPrimaryKey = nativeProperty.is_primary,
-                        IsIndexed = nativeProperty.is_indexed
-                    });
+                    osBuilder.Add(new Property(nativeProperty));
                 }
 
-                objects[i] = builder.Build();
+                builder.Add(osBuilder);
             }
 
-            return new RealmSchema(objects);
+            return builder.Build();
         }
 
-        internal class Builder : List<ObjectSchema>
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="ObjectSchema"/> instances.
+        /// </summary>
+        /// <param name="objects">The object schemas that will be contained in the newly constructed <see cref="RealmSchema"/>.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the array contains multiple <see cref="ObjectSchema"/> instances with the same <see cref="ObjectSchema.Name"/>.
+        /// </exception>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        public static implicit operator RealmSchema(ObjectSchema[] objects) => objects == null ? null : new Builder(objects).Build();
+
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from a list of <see cref="ObjectSchema"/> instances.
+        /// </summary>
+        /// <param name="objects">The object schemas that will be contained in the newly constructed <see cref="RealmSchema"/>.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the list contains multiple <see cref="ObjectSchema"/> instances with the same <see cref="ObjectSchema.Name"/>.
+        /// </exception>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        public static implicit operator RealmSchema(List<ObjectSchema> objects) => objects == null ? null : new Builder(objects).Build();
+
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="Type"/> instances.
+        /// </summary>
+        /// <param name="objects">The <see cref="Type"/>s that will be converted to <see cref="ObjectSchema"/> and added to the resulting <see cref="RealmSchema"/>.</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        /// <seealso cref="Builder.Add(Type)"/>
+        public static implicit operator RealmSchema(Type[] objects) => objects == null ? null : new Builder(objects).Build();
+
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from a List of <see cref="Type"/> instances.
+        /// </summary>
+        /// <param name="objects">The <see cref="Type"/>s that will be converted to <see cref="ObjectSchema"/> and added to the resulting <see cref="RealmSchema"/>.</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        /// <seealso cref="Builder.Add(Type)"/>
+        public static implicit operator RealmSchema(List<Type> objects) => objects == null ? null : new Builder(objects).Build();
+
+        /// <summary>
+        /// Constructs a <see cref="RealmSchema"/> from a HashSet of <see cref="Type"/> instances.
+        /// </summary>
+        /// <param name="objects">The <see cref="Type"/>s that will be converted to <see cref="ObjectSchema"/> and added to the resulting <see cref="RealmSchema"/>.</param>
+        /// <returns>
+        /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
+        /// </returns>
+        /// <seealso cref="Builder.Add(Type)"/>
+        public static implicit operator RealmSchema(HashSet<Type> objects) => objects == null ? null : new Builder(objects).Build();
+
+        /// <summary>
+        /// A convenience operator to construct a <see cref="RealmSchema"/> from a <see cref="Builder"/> by calling the
+        /// <see cref="Builder.Build"/> method.
+        /// </summary>
+        /// <param name="builder">The builder that describes the newly created schema.</param>
+        /// <returns><c>null</c> if <paramref name="builder"/> is <c>null</c>; the result of <see cref="Builder.Build"/> otherwise.</returns>
+        public static implicit operator RealmSchema(Builder builder) => builder?.Build();
+
+        /// <summary>
+        /// A mutable builder that allows you to construct a <see cref="RealmSchema"/> instance.
+        /// </summary>
+        public class Builder : SchemaBuilderBase<ObjectSchema>
         {
-            public RealmSchema Build()
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class.
+            /// </summary>
+            public Builder()
             {
-                if (Count == 0)
+            }
+
+            internal Builder(IEnumerable<Type> types)
+            {
+                Argument.NotNull(types, nameof(types));
+
+                foreach (var type in types)
                 {
-                    throw new InvalidOperationException(
-                        "No RealmObjects. Has linker stripped them? See https://docs.mongodb.com/realm-legacy/docs/dotnet/latest/#linker-stripped-schema");
+                    Add(type);
+                }
+            }
+
+            internal Builder(IEnumerable<ObjectSchema> schemas)
+            {
+                Argument.NotNull(schemas, nameof(schemas));
+
+                foreach (var schema in schemas)
+                {
+                    Add(schema);
+                }
+            }
+
+            /// <summary>
+            /// Constructs a <see cref="RealmSchema"/> from the properties added to this <see cref="Builder"/>.
+            /// </summary>
+            /// <returns>An immutable <see cref="RealmSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
+            public RealmSchema Build() => new RealmSchema(_values);
+
+            /// <summary>
+            /// Adds a new <see cref="ObjectSchema"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="schema">The <see cref="ObjectSchema"/> to add.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(ObjectSchema)"/> calls.</returns>
+            public new Builder Add(ObjectSchema schema)
+            {
+                Argument.NotNull(schema, nameof(schema));
+
+                base.Add(schema);
+                return this;
+            }
+
+            /// <summary>
+            /// Adds a new <see cref="ObjectSchema.Builder"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="schemaBuilder">The <see cref="ObjectSchema.Builder"/> to add.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(ObjectSchema.Builder)"/> calls.</returns>
+            /// <remarks>
+            /// This is a convenience method that will call <see cref="ObjectSchema.Builder.Build"/> internally. It is intended to simplify declarative
+            /// schema construction via collection initializers:
+            /// <code>
+            /// var schema = new RealmSchema.Builder
+            /// {
+            ///     new ObjectSchema.Builder("MyClass", isEmbedded: false)
+            ///     {
+            ///         Property.Primitive("MyProperty", RealmValueType.Int)
+            ///     }
+            /// }
+            /// </code>
+            /// </remarks>
+            public Builder Add(ObjectSchema.Builder schemaBuilder)
+            {
+                Argument.NotNull(schemaBuilder, nameof(schemaBuilder));
+
+                base.Add(schemaBuilder.Build());
+                return this;
+            }
+
+            /// <summary>
+            /// Adds a new <see cref="Type"/> to this <see cref="Builder"/>.
+            /// </summary>
+            /// <param name="type">The <see cref="Type"/> to add. It will be converted to <see cref="ObjectSchema"/> and added to the builder.</param>
+            /// <returns>The original <see cref="Builder"/> instance to enable chaining multiple <see cref="Add(Type)"/> calls.</returns>
+            public Builder Add(Type type)
+            {
+                Argument.NotNull(type, nameof(type));
+
+                var objectSchema = ObjectSchema.FromType(type);
+
+                if (_values.TryGetValue(objectSchema.Name, out var existingOS) && existingOS.Type != null)
+                {
+                    var duplicateType = existingOS.Type;
+                    if (objectSchema.Type.FullName != duplicateType.FullName)
+                    {
+                        var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
+                            $"The duplicate types are {type.FullName} and {duplicateType.FullName}. Either rename one" +
+                            " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
+                        throw new ArgumentException(errorMessage);
+                    }
+
+                    return this;
                 }
 
-                return new RealmSchema(this);
+                base.Add(objectSchema);
+
+                return this;
             }
+
+            protected override string GetKey(ObjectSchema item) => item?.Name;
         }
     }
 }

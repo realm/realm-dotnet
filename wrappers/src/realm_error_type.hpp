@@ -77,6 +77,8 @@ namespace realm {
         ObjectManagedByAnotherRealm = 25,
 
         KeyAlreadyExists = 26,
+
+        RealmInUseException = 27,
      
         RealmDotNetExceptionDuringMigration = 30,
 
@@ -103,6 +105,8 @@ namespace realm {
         AppUnknownError = 59,
 
         SessionError = 60,
+
+        DuplicateSubscription = 61,
     };
 
 }   // namespace realm

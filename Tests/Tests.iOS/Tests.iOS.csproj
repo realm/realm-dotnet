@@ -29,7 +29,7 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>SdkOnly</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
-    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway --linkskip=Newtonsoft.Json</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -40,7 +40,7 @@
     <MtouchLink>Full</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
     <ConsolePause>false</ConsolePause>
-    <MtouchExtraArgs>--linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway --linkskip=Newtonsoft.Json</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,7 +55,8 @@
     <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
-    <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=nunit.framework --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=nunit.framework --nolinkaway --linkskip=Newtonsoft.Json</MtouchExtraArgs>
+    <MtouchLink>SdkOnly</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -67,7 +68,7 @@
     <ConsolePause>false</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
-    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.runner.iOS --linkskip=nunit.framework --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.runner.iOS --linkskip=nunit.framework --nolinkaway --linkskip=Newtonsoft.Json</MtouchExtraArgs>
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <ItemGroup>
@@ -131,9 +132,11 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
     <PackageReference Include="PCLStorage" Version="1.0.2" />
-    <PackageReference Include="NUnit.Xamarin.Realm">
-      <Version>3.12.1</Version>
-    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NUnit.Xamarin">
+      <HintPath>..\..\dependencies\NUnit.Xamarin.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
@@ -142,7 +145,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
-    <NativeReference Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework">
+    <NativeReference Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.xcframework">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

@@ -25,6 +25,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
@@ -39,14 +41,19 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
-        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject() || (typeof(T).IsClosedGeneric(typeof(KeyValuePair<,>), out var typeArgs) && typeArgs.Last().IsEmbeddedObject());
-
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+
+        private NotificationTokenHandle _notificationToken;
+
+        private bool _deliveredInitialNotification;
+
+        internal readonly bool _isEmbedded;
+
+        internal readonly Lazy<CollectionHandleBase> Handle;
 
         internal readonly RealmObjectBase.Metadata Metadata;
 
-        private NotificationTokenHandle _notificationToken;
-        private bool _deliveredInitialNotification;
+        internal bool IsDynamic;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event NotifyCollectionChangedEventHandler _collectionChanged;
@@ -88,6 +95,7 @@ namespace Realms
             }
         }
 
+        [IgnoreDataMember]
         public int Count
         {
             get
@@ -101,50 +109,24 @@ namespace Realms
             }
         }
 
+        [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
         RealmObjectBase.Metadata IMetadataObject.Metadata => Metadata;
 
+        [IgnoreDataMember]
         public bool IsManaged => Realm != null;
 
+        [IgnoreDataMember]
         public bool IsValid => Handle.Value.IsValid;
 
-        public bool IsFrozen => Handle.Value.IsFrozen;
+        [IgnoreDataMember]
+        public bool IsFrozen => Realm?.IsFrozen == true;
 
+        [IgnoreDataMember]
         public Realm Realm { get; }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
-        public IRealmCollection<T> Freeze()
-        {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
-            return CreateCollection(frozenRealm, frozenHandle);
-        }
-
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
-
-        internal readonly Lazy<CollectionHandleBase> Handle;
-
-        internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
-        {
-            Realm = realm;
-            Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
-            Metadata = metadata;
-        }
-
-        ~RealmCollectionBase()
-        {
-            UnsubscribeFromNotifications();
-        }
-
-        internal abstract CollectionHandleBase GetOrCreateHandle();
-
-        internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
         public T this[int index]
         {
@@ -159,10 +141,40 @@ namespace Realms
             }
         }
 
+        internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
+        {
+            Realm = realm;
+            Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
+            Metadata = metadata;
+            _isEmbedded = metadata?.Schema.IsEmbedded ?? false;
+        }
+
+        ~RealmCollectionBase()
+        {
+            UnsubscribeFromNotifications();
+        }
+
+        internal abstract CollectionHandleBase GetOrCreateHandle();
+
+        internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
+
         internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
         {
-            var handle = Handle.Value.GetFilteredResults(query, arguments);
-            return new RealmResults<T>(Realm, handle, Metadata);
+            var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
+            return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
+
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
+        public IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
+            return CreateCollection(frozenRealm, frozenHandle);
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
@@ -193,6 +205,12 @@ namespace Realms
             }
 
             var robj = value.AsRealmObject<RealmObject>();
+
+            if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
+            {
+                throw new RealmException("Can't add to the collection an object that is already in another realm.");
+            }
+
             if (!robj.IsManaged)
             {
                 Realm.Add(robj);
@@ -225,7 +243,7 @@ namespace Realms
 
             Realm.ExecuteOutsideTransaction(() =>
             {
-                var managedResultsHandle = GCHandle.Alloc(this);
+                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }
@@ -289,7 +307,8 @@ namespace Realms
                     return;
                 }
 
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default, out var removedItems, out var removedStartIndex);
+                // InvalidRealmObject is used to go around a bug in WPF (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>)
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => InvalidObject.Instance, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
@@ -330,7 +349,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, T> getter, out IList items, out int startIndex)
+        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
         {
             items = null;
 
@@ -458,12 +477,17 @@ namespace Realms
 
             internal Enumerator(RealmCollectionBase<T> parent)
             {
+                if (!parent.IsValid)
+                {
+                    throw new RealmInvalidObjectException("Can't enumerate the collection because it was deleted or the Realm it is contained in has been closed.");
+                }
+
                 _index = -1;
-                _enumerating = parent.Handle.Value.CanSnapshot ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
-                // parent collection after iterating it.
-                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot;
+                // parent collection after iterating it. Only collections of objects support snapshotting.
+                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 
             public T Current => _enumerating[_index];
@@ -508,5 +532,25 @@ namespace Realms
         /// Gets the native handle for that collection.
         /// </summary>
         THandle NativeHandle { get; }
+    }
+
+    /// <summary>
+    /// Special invalid object that is used to avoid an exception in WPF
+    /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
+    internal sealed class InvalidObject
+    {
+        private InvalidObject()
+        {
+        }
+
+        public static InvalidObject Instance { get; } = new InvalidObject();
+
+        // The method is overriden to avoid the bug in WPF
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
     }
 }

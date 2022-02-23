@@ -16,25 +16,70 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.IO;
 using NUnit.Runner.Services;
+using Realms.Tests.Sync;
+using Windows.ApplicationModel.Core;
+using Windows.Storage;
+using Windows.UI.Xaml.Navigation;
 
 namespace Realms.Tests.UWP
 {
     public sealed partial class MainPage
     {
+        private NUnit.Runner.App _nunit;
+
         public MainPage()
         {
             InitializeComponent();
+        }
 
-            var nunit = new NUnit.Runner.App();
-            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
 
-            nunit.Options = new TestOptions
+            var outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
+            TestHelpers.Output = outputWriter;
+
+            try
             {
-                LogToOutput = true
-            };
+                _nunit = new NUnit.Runner.App(outputWriter);
+                _nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
 
-            LoadApplication(nunit);
+                _nunit.Options = new TestOptions
+                {
+                    LogToOutput = true
+                };
+
+                if (e.Parameter != null && e.Parameter is string launchParams)
+                {
+                    var args = await SyncTestHelpers.ExtractBaasSettingsAsync(TestHelpers.SplitArguments(launchParams));
+                    if (TestHelpers.IsHeadlessRun(args))
+                    {
+                        _nunit.Options.AutoRun = true;
+                        _nunit.Options.CreateXmlResultFile = true;
+
+                        var resultPath = TestHelpers.GetResultsPath(args);
+                        _nunit.Options.ResultFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, resultPath);
+                        _nunit.Options.OnCompletedCallback = async () =>
+                        {
+                            await TestHelpersUWP.TransformTestResults(_nunit.Options.ResultFilePath);
+                            outputWriter.WriteLine("Test finished, reporting results");
+                            outputWriter.Dispose();
+                            CoreApplication.Exit();
+                        };
+                    }
+                }
+
+                LoadApplication(_nunit);
+            }
+            catch (Exception ex)
+            {
+                outputWriter.WriteLine($"An error occurred in OnNavigatedTo: {ex}");
+                outputWriter.Flush();
+                Environment.FailFast("An error occurred in OnNavigatedTo", ex);
+            }
         }
     }
 }

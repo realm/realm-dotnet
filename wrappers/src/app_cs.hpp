@@ -35,30 +35,22 @@ namespace binding {
     struct MarshaledAppError
     {
         bool is_null = true;
-        const char* message_buf = nullptr;
-        size_t message_len = 0;
-        const char* error_category_buf = nullptr;
-        size_t error_category_len = 0;
-        const char* logs_link_buf = nullptr;
-        size_t logs_link_len = 0;
+        realm_value_t message = realm_value_t{};
+        realm_value_t error_category = realm_value_t{};
+        realm_value_t logs_link = realm_value_t{};
         int http_status_code = 0;
 
         MarshaledAppError()
         {
         }
 
-        MarshaledAppError(const std::string& message, const std::string& error_category, const std::string& logs_link, util::Optional<int> http_code)
+        MarshaledAppError(const std::string& message_str, const std::string& error_category_str, const std::string& logs_link_str, util::Optional<int> http_code)
         {
             is_null = false;
 
-            message_buf = message.c_str();
-            message_len = message.size();
-
-            error_category_buf = error_category.c_str();
-            error_category_len = error_category.size();
-
-            logs_link_buf = logs_link.c_str();
-            logs_link_len = logs_link.size();
+            message = to_capi_value(message_str);
+            error_category = to_capi_value(error_category_str);
+            logs_link = to_capi_value(logs_link_str);
 
             http_status_code = http_code.value_or(0);
         }
@@ -119,20 +111,27 @@ namespace binding {
         }
     };
 
-    struct BsonPayload {
-        const char* serialized;
-        size_t serialized_len;
+    struct UserApiKey {
+        realm_value_t id = realm_value_t{};
+
+        realm_value_t key = realm_value_t{};
+
+        realm_value_t name = realm_value_t{};
+
+        bool disabled;
     };
 
     using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
     using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
-    using BsonCallbackT = void(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
+    using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
+    using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, size_t api_keys_len, MarshaledAppError err);
 
     extern std::function<VoidCallbackT> s_void_callback;
     extern std::function<UserCallbackT> s_user_callback;
     extern std::function<BsonCallbackT> s_bson_callback;
+    extern std::function<ApiKeysCallbackT> s_api_keys_callback;
 
-    inline std::function<void(std::shared_ptr<SyncUser> user, util::Optional<AppError>)> get_user_callback_handler(void* tcs_ptr) {
+    inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
@@ -146,7 +145,7 @@ namespace binding {
         };
     }
 
-    inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
+    inline auto get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
@@ -159,26 +158,63 @@ namespace binding {
         };
     }
 
-    inline std::function<void(util::Optional<AppError>, util::Optional<bson::Bson>)> get_bson_callback_handler(void* tcs_ptr) {
-        return [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
+    inline auto get_bson_callback_handler(void* tcs_ptr) {
+        return [tcs_ptr](util::Optional<bson::Bson> response, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
                 MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
-                s_bson_callback(tcs_ptr, BsonPayload(), app_error);
+                s_bson_callback(tcs_ptr, realm_value_t{}, app_error);
             }
             else if (response) {
-                BsonPayload payload;
                 std::string serialized = response->to_string();
-                payload.serialized = serialized.c_str();
-                payload.serialized_len = serialized.size();
-                s_bson_callback(tcs_ptr, payload, MarshaledAppError());
+                s_bson_callback(tcs_ptr, to_capi_value(serialized), MarshaledAppError());
             }
             else {
-                s_bson_callback(tcs_ptr, BsonPayload(), MarshaledAppError());
+                s_bson_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
             }
         };
     }
+
+    inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
+        if (err) {
+            std::string error_category = err->error_code.message();
+            MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+
+            s_api_keys_callback(tcs_ptr, nullptr, 0, app_error);
+        }
+        else {
+            std::vector<UserApiKey> marshalled_keys(keys.size());
+            std::vector<std::string> id_storage(keys.size());
+
+            for (size_t i = 0; i < keys.size(); i++) {
+                auto& api_key = keys[i];
+                UserApiKey marshaled_key{};
+
+                id_storage[i] = api_key.id.to_string();
+                marshaled_key.id = to_capi_value(id_storage[i]);
+
+                if (api_key.key) {
+                    marshaled_key.key = to_capi_value(api_key.key.value());
+                }
+ 
+                marshaled_key.name = to_capi_value(api_key.name);
+                marshaled_key.disabled = api_key.disabled;
+
+                marshalled_keys[i] = marshaled_key;
+            }
+
+            s_api_keys_callback(tcs_ptr, marshalled_keys.data(), marshalled_keys.size(), MarshaledAppError());
+        }
+    }
+
+    inline void invoke_api_key_callback(void* tcs_ptr, App::UserAPIKey key, util::Optional<AppError> err) {
+        std::vector<App::UserAPIKey> api_keys;
+        api_keys.push_back(key);
+
+        invoke_api_key_callback(tcs_ptr, api_keys, err);
+    }
+
 
     inline bson::BsonDocument to_document(uint16_t* buf, size_t len) {
         if (buf == nullptr) {

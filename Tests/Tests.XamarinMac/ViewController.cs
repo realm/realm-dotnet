@@ -34,7 +34,7 @@ namespace Realms.Tests.XamarinMac
         {
             base.ViewDidAppear();
 
-            RunTests();
+            _ = RunTests();
         }
 
         private async Task RunTests()
@@ -43,18 +43,14 @@ namespace Realms.Tests.XamarinMac
 
             await Task.Delay(50);
 
-            var result = new AutoRun(typeof(TestHelpers).Assembly).Execute(MainClass.NUnitArgs);
+            var result = new AutoRun(typeof(TestHelpers).Assembly).Execute(MainClass.Args.Where(a => a != "--headless").ToArray());
 
             StateField.StringValue = $"Test run complete. Failed: {result}";
 
-            if (MainClass.Headless)
+            if (TestHelpers.IsHeadlessRun(MainClass.Args))
             {
-                var resultPath = MainClass.NUnitArgs.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", "");
-                if (!string.IsNullOrEmpty(resultPath))
-                {
-                    TestHelpers.TransformTestResults(resultPath);
-                }
-
+                var resultPath = TestHelpers.GetResultsPath(MainClass.Args);
+                TestHelpers.TransformTestResults(resultPath);
                 NSApplication.SharedApplication.Terminate(this);
             }
         }

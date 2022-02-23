@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mono.Cecil.Cil;
 using UnityEditor;
@@ -33,10 +32,13 @@ using UnityEngine;
 namespace RealmWeaver
 {
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
-    public class UnityWeaver : IPostBuildPlayerScriptDLLs
+    public class UnityWeaver : IPostBuildPlayerScriptDLLs, IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private const string EnableAnalyticsPref = "realm_enable_analytics";
-        private const string EnableAnalyticsMenuItemPath = "Realm/Enable build-time analytics";
+        private const string EnableAnalyticsMenuItemPath = "Tools/Realm/Enable build-time analytics";
+
+        private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
+        private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
 
         private static bool _analyticsEnabled;
 
@@ -51,6 +53,19 @@ namespace RealmWeaver
             }
         }
 
+        private static bool _weaveEditorAssemblies;
+
+        private static bool WeaveEditorAssemblies
+        {
+            get => _weaveEditorAssemblies;
+            set
+            {
+                _weaveEditorAssemblies = value;
+                EditorPrefs.SetBool(WeaveEditorAssembliesPref, value);
+                Menu.SetChecked(WeaveEditorAssembliesMenuItemPath, value);
+            }
+        }
+
         public int callbackOrder => 0;
 
         [InitializeOnLoadMethod]
@@ -60,6 +75,8 @@ namespace RealmWeaver
             EditorApplication.delayCall += () =>
             {
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
+                WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
+                WeaveAssembliesOnEditorLaunch();
             };
 
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
@@ -69,8 +86,7 @@ namespace RealmWeaver
                     return;
                 }
 
-                var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
-                                      .FirstOrDefault(p => p.outputPath == assemblyPath);
+                var assembly = GetAssemblies().FirstOrDefault(p => p.outputPath == assemblyPath);
 
                 if (assembly == null)
                 {
@@ -79,12 +95,9 @@ namespace RealmWeaver
 
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
             };
-
-            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
-            WeaveAssembliesOnEditorLaunch();
         }
 
-        [MenuItem("Realm/Weave Assemblies")]
+        [MenuItem("Tools/Realm/Weave Assemblies")]
         public static async void WeaveAllAssembliesMenuItem()
         {
             var assembliesWoven = await WeaveAllAssemblies();
@@ -94,7 +107,20 @@ namespace RealmWeaver
         [MenuItem(EnableAnalyticsMenuItemPath)]
         public static void DisableAnalyticsMenuItem()
         {
-            AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
+            AnalyticsEnabled = !AnalyticsEnabled;
+        }
+
+        [MenuItem(WeaveEditorAssembliesMenuItemPath)]
+        public static void WeaveEditorAssembliesMenuItem()
+        {
+            WeaveEditorAssemblies = !WeaveEditorAssemblies;
+
+            // If we're switching weaving of editor assemblies on, we should re-weave all assemblies
+            // to pick up the editor assemblies as well.
+            if (WeaveEditorAssemblies)
+            {
+                WeaveAllAssembliesMenuItem();
+            }
         }
 
         private static void WeaveAssembliesOnEditorLaunch()
@@ -118,26 +144,28 @@ namespace RealmWeaver
             try
             {
                 EditorApplication.LockReloadAssemblies();
-                var weavingTasks = CompilationPipeline.GetAssemblies(AssembliesType.Player)
-                    .Select(assembly => Task.Run(() =>
+                var assembliesToWeave = GetAssemblies();
+                var weaveResults = new List<string>();
+                await Task.Run(() =>
+                {
+                    foreach (var assembly in assembliesToWeave)
                     {
                         if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
                         {
-                            return null;
+                            continue;
                         }
 
                         string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
                         if (sourceFilePath == null)
                         {
-                            return null;
+                            continue;
                         }
 
-                        return sourceFilePath;
-                    }));
+                        weaveResults.Add(sourceFilePath);
+                    }
+                });
 
-                var weaveResults = await Task.WhenAll(weavingTasks);
-
-                foreach (var result in weaveResults.Where(r => r != null))
+                foreach (var result in weaveResults)
                 {
                     AssetDatabase.ImportAsset(result, ImportAssetOptions.ForceUpdate);
                     assembliesWoven++;
@@ -145,7 +173,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Error($"Failed to weave assemblies: {ex}");
+                UnityLogger.Instance.Error($"[Realm] Failed to weave assemblies. If the error persists, please report it to https://github.com/realm/realm-dotnet/issues: {ex}");
             }
             finally
             {
@@ -177,8 +205,8 @@ namespace RealmWeaver
                 using (resolutionResult)
                 {
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
-                    // using NETStandard2, so we just hardcode this.
-                    var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, new FrameworkName(".NETStandard,Version=v2.0"));
+                    // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
+                    var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
 
                     var analyticsConfig = new Analytics.Config
                     {
@@ -189,6 +217,12 @@ namespace RealmWeaver
                     };
 
                     var results = weaver.Execute(analyticsConfig);
+
+                    if (results.ErrorMessage != null)
+                    {
+                        UnityLogger.Instance.Error($"[{name}] Weaving failed: {results}");
+                        return false;
+                    }
 
                     // Unity creates an entry in the build console for each item, so let's not pollute it.
                     if (results.SkipReason == null)
@@ -201,7 +235,7 @@ namespace RealmWeaver
             }
             catch (Exception ex)
             {
-                UnityLogger.Instance.Warning($"[{name}] Weaving failed: {ex}");
+                UnityLogger.Instance.Error($"[{name}] Failed to weave assembly. If the error persists, please report it to https://github.com/realm/realm-dotnet/issues: {ex}");
             }
 
             return false;
@@ -245,6 +279,73 @@ namespace RealmWeaver
                     }
                 }
             }
+        }
+
+        public void OnPostprocessBuild(BuildReport report)
+        {
+            if (report == null || report.summary.platform != BuildTarget.iOS)
+            {
+                return;
+            }
+
+            UpdateiOSFrameworks(
+                enableForDevice: false,
+                enableForSimulator: false);
+        }
+
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            if (report == null || report.summary.platform != BuildTarget.iOS)
+            {
+                return;
+            }
+
+            UpdateiOSFrameworks(
+                enableForDevice: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK,
+                enableForSimulator: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK);
+        }
+
+        /// <summary>
+        /// Updates the native module import config for the wrappers framework. Unity doesn't support
+        /// xcframework, which means that it won't correctly include it when building for iOS. This is
+        /// a somewhat hacky solution that will manually update the compatibilify flag and the AddToEmbeddedBinaries
+        /// flag just for the slice that is compatible with the current build target (simulator or device).
+        /// </summary>
+        private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator)
+        {
+            const string ErrorMessage = "Failed to find the native Realm framework at '{0}'. " +
+                "Please double check that you have imported Realm correctly and that the file exists. " +
+                "Typically, it should be located at Packages/io.realm.unity/Runtime/iOS";
+            const string SimulatorPath = "ios-arm64_i386_x86_64-simulator";
+            const string DevicePath = "ios-arm64_armv7";
+
+            var importers = PluginImporter.GetAllImporters();
+
+            UpdateiOSFramework(SimulatorPath, enableForSimulator);
+            UpdateiOSFramework(DevicePath, enableForDevice);
+
+            void UpdateiOSFramework(string path, bool enabled)
+            {
+                path = $"realm-wrappers.xcframework/{path}/realm-wrappers.framework";
+                var frameworkImporter = importers.SingleOrDefault(i => i.assetPath.Contains(path));
+                if (frameworkImporter == null)
+                {
+                    throw new Exception(string.Format(ErrorMessage, path));
+                }
+
+                frameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enabled);
+                frameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enabled.ToString().ToLower());
+            }
+        }
+
+        private static Assembly[] GetAssemblies()
+        {
+            if (WeaveEditorAssemblies)
+            {
+                return CompilationPipeline.GetAssemblies();
+            }
+
+            return CompilationPipeline.GetAssemblies(AssembliesType.Player);
         }
 
         private static string GetTargetOSName(BuildTarget target)

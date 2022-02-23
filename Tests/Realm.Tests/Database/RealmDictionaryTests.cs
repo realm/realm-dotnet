@@ -119,22 +119,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.ByteDictionary, testData);
         }
 
-        [TestCaseSource(nameof(ByteTestValues))]
-        public void ByteCounter_Unmanaged(TestCaseData<byte> testData)
-        {
-            RunUnmanagedTests(o => o.ByteCounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void NullableByte_Unmanaged(TestCaseData<byte?> testData)
         {
             RunUnmanagedTests(o => o.NullableByteDictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
-        public void NullableByteCounter_Unmanaged(TestCaseData<byte?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
@@ -143,22 +131,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.ByteDictionary, testData);
         }
 
-        [TestCaseSource(nameof(ByteTestValues))]
-        public void ByteCounter_Managed(TestCaseData<byte> testData)
-        {
-            RunManagedTests(o => o.ByteCounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void NullableByte_Managed(TestCaseData<byte?> testData)
         {
             RunManagedTests(o => o.NullableByteDictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableByteTestValues))]
-        public void NullableByteCounter_Managed(TestCaseData<byte?> testData)
-        {
-            RunManagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -171,18 +147,6 @@ namespace Realms.Tests.Database
         public void NullableByte_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableByteDictionary, NullableByteTestValues().Last());
-        }
-
-        [Test]
-        public void ByteCounter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.ByteCounterDictionary, ToInteger(ByteTestValues().Last()));
-        }
-
-        [Test]
-        public void NullableByteCounter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableByteCounterDictionary, ToInteger(NullableByteTestValues().Last()));
         }
 
         #endregion
@@ -218,22 +182,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int16Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int16TestValues))]
-        public void Int16Counter_Unmanaged(TestCaseData<short> testData)
-        {
-            RunUnmanagedTests(o => o.Int16CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void NullableInt16_Unmanaged(TestCaseData<short?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt16Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void NullableInt16Counter_Unmanaged(TestCaseData<short?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
@@ -242,22 +194,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int16Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int16TestValues))]
-        public void Int16Counter_Managed(TestCaseData<short> testData)
-        {
-            RunManagedTests(o => o.Int16CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void NullableInt16_Managed(TestCaseData<short?> testData)
         {
             RunManagedTests(o => o.NullableInt16Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void NullableInt16Counter_Managed(TestCaseData<short?> testData)
-        {
-            RunManagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -270,18 +210,6 @@ namespace Realms.Tests.Database
         public void NullableInt16_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt16Dictionary, NullableInt16TestValues().Last());
-        }
-
-        [Test]
-        public void Int16Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int16CounterDictionary, ToInteger(Int16TestValues().Last()));
-        }
-
-        [Test]
-        public void NullableInt16Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt16CounterDictionary, ToInteger(NullableInt16TestValues().Last()));
         }
 
         #endregion
@@ -317,22 +245,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int32Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int32TestValues))]
-        public void Int32Counter_Unmanaged(TestCaseData<int> testData)
-        {
-            RunUnmanagedTests(o => o.Int32CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void NullableInt32_Unmanaged(TestCaseData<int?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt32Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void NullableInt32Counter_Unmanaged(TestCaseData<int?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
@@ -341,22 +257,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int32Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int32TestValues))]
-        public void Int32Counter_Managed(TestCaseData<int> testData)
-        {
-            RunManagedTests(o => o.Int32CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void NullableInt32_Managed(TestCaseData<int?> testData)
         {
             RunManagedTests(o => o.NullableInt32Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void NullableInt32Counter_Managed(TestCaseData<int?> testData)
-        {
-            RunManagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -369,18 +273,6 @@ namespace Realms.Tests.Database
         public void NullableInt32_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt32Dictionary, NullableInt32TestValues().Last());
-        }
-
-        [Test]
-        public void Int32Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int32CounterDictionary, ToInteger(Int32TestValues().Last()));
-        }
-
-        [Test]
-        public void NullableInt32Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt32CounterDictionary, ToInteger(NullableInt32TestValues().Last()));
         }
 
         #endregion
@@ -416,22 +308,10 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int64Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void Int64Counter_Unmanaged(TestCaseData<long> testData)
-        {
-            RunUnmanagedTests(o => o.Int64CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void NullableInt64_Unmanaged(TestCaseData<long?> testData)
         {
             RunUnmanagedTests(o => o.NullableInt64Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void NullableInt64Counter_Unmanaged(TestCaseData<long?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -440,22 +320,10 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.Int64Dictionary, testData);
         }
 
-        [TestCaseSource(nameof(Int64TestValues))]
-        public void Int64Counter_Managed(TestCaseData<long> testData)
-        {
-            RunManagedTests(o => o.Int64CounterDictionary, ToInteger(testData));
-        }
-
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void NullableInt64_Managed(TestCaseData<long?> testData)
         {
             RunManagedTests(o => o.NullableInt64Dictionary, testData);
-        }
-
-        [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void NullableInt64Counter_Managed(TestCaseData<long?> testData)
-        {
-            RunManagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [Test]
@@ -468,18 +336,6 @@ namespace Realms.Tests.Database
         public void NullableInt64_Notifications()
         {
             RunManagedNotificationsTests(o => o.NullableInt64Dictionary, NullableInt64TestValues().Last());
-        }
-
-        [Test]
-        public void Int64Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int64CounterDictionary, ToInteger(Int64TestValues().Last()));
-        }
-
-        [Test]
-        public void NullableInt64Counter_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt64CounterDictionary, ToInteger(NullableInt64TestValues().Last()));
         }
         #endregion
 
@@ -1189,6 +1045,34 @@ namespace Realms.Tests.Database
             });
         }
 
+        [Test]
+        public void ObjectFromAnotherRealm_ThrowsRealmException()
+        {
+            var realm2 = GetRealm(CreateConfiguration(Guid.NewGuid().ToString()));
+
+            var item = new IntPropertyObject { Int = 5 };
+            var embeddedItem = new EmbeddedIntPropertyObject { Int = 10 };
+
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new DictionariesObject());
+            });
+
+            var obj2 = realm2.Write(() =>
+            {
+                return realm2.Add(new DictionariesObject());
+            });
+
+            _realm.Write(() =>
+            {
+                obj1.ObjectDictionary["foo"] = item;
+                obj1.EmbeddedObjectDictionary["foo"] = embeddedItem;
+            });
+
+            Assert.That(() => realm2.Write(() => obj2.ObjectDictionary["foo"] = item), Throws.TypeOf<RealmException>().And.Message.Contains("object that is already in another realm"));
+            Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectDictionary["foo"] = embeddedItem), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
+        }
+
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -1543,6 +1427,7 @@ namespace Realms.Tests.Database
 
                 var changes = await EnsureRefreshed(callbacks, 1);
 
+                Assert.That(changes.DeletedKeys.Length, Is.EqualTo(0));
                 Assert.That(changes.InsertedKeys.Length, Is.EqualTo(1));
                 Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(0));
 
@@ -1562,11 +1447,27 @@ namespace Realms.Tests.Database
 
                 changes = await EnsureRefreshed(callbacks, 2);
 
+                Assert.That(changes.DeletedKeys.Length, Is.EqualTo(0));
                 Assert.That(changes.InsertedKeys.Length, Is.EqualTo(0));
                 Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(1));
 
                 Assert.That(changes.ModifiedKeys.Single(), Is.EqualTo(keyToUpdate));
                 Assert.That(target[changes.ModifiedKeys.Single()], IsEqualTo(SampleValue));
+
+                var keyToDelete = result.Key;
+                WriteIfNecessary(target, () =>
+                {
+                    target.Remove(keyToDelete);
+                });
+
+                changes = await EnsureRefreshed(callbacks, 3);
+
+                Assert.That(changes.DeletedKeys.Length, Is.EqualTo(1));
+                Assert.That(changes.InsertedKeys.Length, Is.EqualTo(0));
+                Assert.That(changes.ModifiedKeys.Length, Is.EqualTo(0));
+
+                Assert.That(changes.DeletedKeys.Single(), Is.EqualTo(keyToDelete));
+                Assert.That(target.ContainsKey(keyToDelete), Is.False);
 
                 // Verify we stop receiving notifications after we dispose of the token
                 token.Dispose();
@@ -1578,7 +1479,7 @@ namespace Realms.Tests.Database
 
                 target.AsRealmCollection().Realm.Refresh();
 
-                Assert.That(callbacks.Count, Is.EqualTo(2));
+                Assert.That(callbacks.Count, Is.EqualTo(3));
             }
 
             public async Task AssertNotifications_Realm(IDictionary<string, T> target)
@@ -1793,12 +1694,10 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
 
-                    using (var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config))
-                    {
-                        var bgDict = bgRealm.ResolveReference(tsr);
+                    using var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config);
+                    var bgDict = bgRealm.ResolveReference(tsr);
 
-                        Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
-                    }
+                    Assert.That(bgDict, IsEquivalentTo(GetReferenceDictionary()));
                 });
             }
 
@@ -1839,7 +1738,9 @@ namespace Realms.Tests.Database
                     return Is.EqualTo(other);
                 }
 
-                return Is.EqualTo(other).Using<T>(_equalityFunc);
+                return Is.EqualTo(other).Using((Comparison<T>)comparison);
+
+                int comparison(T a, T b) => _equalityFunc(a, b) ? 0 : 1;
             }
 
             private CollectionItemsEqualConstraint IsEquivalentTo(IDictionary<string, T> dict)
@@ -1849,7 +1750,9 @@ namespace Realms.Tests.Database
                     return Is.EquivalentTo(dict);
                 }
 
-                return Is.EquivalentTo(dict).Using<KeyValuePair<string, T>>((first, second) => first.Key == second.Key && _equalityFunc(first.Value, second.Value));
+                var comparer = new Func<KeyValuePair<string, T>, KeyValuePair<string, T>, bool>((first, second) => first.Key == second.Key && _equalityFunc(first.Value, second.Value));
+
+                return Is.EquivalentTo(dict).Using(comparer);
             }
 
             private CollectionItemsEqualConstraint IsEquivalentTo(IEnumerable<T> other)
@@ -1859,7 +1762,7 @@ namespace Realms.Tests.Database
                     return Is.EquivalentTo(other);
                 }
 
-                return Is.EquivalentTo(other).Using<T>(_equalityFunc);
+                return Is.EquivalentTo(other).Using(_equalityFunc);
             }
 
             private static void WriteIfNecessary(IDictionary<string, T> collection, Action writeAction)

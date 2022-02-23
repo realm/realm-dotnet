@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -47,13 +46,6 @@ namespace Realms
     public class Realm : IDisposable
     {
         #region static
-
-        // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file.
-        // Theoretically we could use trackAllValues: true, but that would create locking issues.
-        private static readonly ThreadLocal<IDictionary<string, WeakReference<State>>> _states = new ThreadLocal<IDictionary<string, WeakReference<State>>>(DictionaryConstructor<string, WeakReference<State>>);
-
-        // TODO: due to a Mono bug, this needs to be a function rather than a lambda
-        private static IDictionary<TKey, TValue> DictionaryConstructor<TKey, TValue>() => new Dictionary<TKey, TValue>();
 
         /// <summary>
         /// Factory for obtaining a <see cref="Realm"/> instance for this thread.
@@ -83,14 +75,16 @@ namespace Realms
         /// </exception>
         public static Realm GetInstance(RealmConfigurationBase config = null)
         {
-            return GetInstance(config ?? RealmConfiguration.DefaultConfiguration, null);
+            config ??= RealmConfiguration.DefaultConfiguration;
+
+            return config.CreateRealm();
         }
 
         /// <summary>
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration is <see cref="SyncConfiguration"/>, the realm will be downloaded and fully
+        /// If the configuration is <see cref="SyncConfigurationBase"/>, the realm will be downloaded and fully
         /// synchronized with the server prior to the completion of the returned Task object.
         /// Otherwise this method will perform any migrations on a background thread before returning an
         /// opened instance to the calling thread.
@@ -108,40 +102,7 @@ namespace Realms
                 config = RealmConfiguration.DefaultConfiguration;
             }
 
-            RealmSchema schema = GetSchema(config);
-
-            return config.CreateRealmAsync(schema, cancellationToken);
-        }
-
-        internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
-        {
-            Argument.NotNull(config, nameof(config));
-
-            if (schema == null)
-            {
-                schema = GetSchema(config);
-            }
-
-            return config.CreateRealm(schema);
-        }
-
-        internal static RealmSchema GetSchema(RealmConfigurationBase config)
-        {
-            RealmSchema schema;
-            if (config.ObjectClasses != null)
-            {
-                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
-            }
-            else if (config.IsDynamic)
-            {
-                schema = RealmSchema.Empty;
-            }
-            else
-            {
-                schema = RealmSchema.Default;
-            }
-
-            return schema;
+            return config.CreateRealmAsync(cancellationToken);
         }
 
         /// <summary>
@@ -158,70 +119,57 @@ namespace Realms
         public static bool Compact(RealmConfigurationBase config = null)
         {
             using var realm = GetInstance(config);
-            if (config is SyncConfiguration)
+            if (config is SyncConfigurationBase)
             {
-                var session = realm.GetSession();
-                session.Handle.ShutdownAndWait();
-                session.CloseHandle();
+                // For synchronized Realms, shutdown the session, otherwise Compact will fail.
+                var session = realm.SyncSession;
+                session.CloseHandle(waitForShutdown: true);
             }
 
             return realm.SharedRealmHandle.Compact();
         }
 
         /// <summary>
-        /// Deletes all the files associated with a realm.
+        /// Deletes all files associated with a given Realm if the Realm exists and is not open.
         /// </summary>
+        /// <remarks>
+        /// The Realm file must not be open on other threads.<br/>
+        /// All but the .lock file will be deleted by this.
+        /// </remarks>
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
+        /// <exception cref="RealmInUseException">Thrown if the Realm is still open.</exception>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             Argument.NotNull(configuration, nameof(configuration));
 
-            var fullpath = configuration.DatabasePath;
-            if (IsRealmOpen(fullpath))
-            {
-                throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
-            }
-
-            var filesToDelete = new[] { string.Empty, ".log_a", ".log_b", ".log", ".lock", ".note" }
-                .Select(ext => fullpath + ext)
-                .Where(File.Exists);
-
-            foreach (var file in filesToDelete)
-            {
-                File.Delete(file);
-            }
-
-            if (Directory.Exists($"{fullpath}.management"))
-            {
-                Directory.Delete($"{fullpath}.management", recursive: true);
-            }
-        }
-
-        private static bool IsRealmOpen(string path)
-        {
-            return _states.Value.TryGetValue(path, out var reference) &&
-                   reference.TryGetTarget(out var state) &&
-                   state.GetLiveRealms().Any();
+            SharedRealmHandle.DeleteFiles(configuration.DatabasePath);
         }
 
         #endregion static
 
-        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "A State can be shared between multiple Realm instances. It is disposed when the native instance and its BindingContext is destroyed")]
+        private WeakReference<SubscriptionSet> _subscriptionRef;
+
         private State _state;
+        private WeakReference<Session> _sessionRef;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
+        internal readonly bool IsInMigration;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm instance.
         /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this Realm.</value>
         [Preserve]
         public Dynamic DynamicApi { get; }
 
         /// <summary>
-        /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
+        /// Gets a value indicating whether there is an active write transaction associated
+        /// with this Realm.
         /// </summary>
-        /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if the Realm is in transaction; <c>false</c> otherwise.</value>
+        /// <seealso cref="BeginWrite"/>
+        /// <seealso cref="Transaction"/>
         public bool IsInTransaction
         {
             get
@@ -237,6 +185,7 @@ namespace Realms
         /// and will not update when writes are made to the database. Unlike live Realms, frozen
         /// Realms can be used across threads.
         /// </summary>
+        /// <value><c>true</c> if the Realm is frozen and immutable; <c>false</c> otherwise.</value>
         /// <see cref="Freeze"/>
         public bool IsFrozen { get; }
 
@@ -252,11 +201,87 @@ namespace Realms
         /// <value>The Realm's configuration.</value>
         public RealmConfigurationBase Config { get; }
 
-        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
+        /// <summary>
+        /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm
+        /// server if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
+        /// otherwise.
+        /// </value>
+        public Session SyncSession
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                if (Config is SyncConfigurationBase)
+                {
+                    if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
+                    {
+                        var sessionHandle = SharedRealmHandle.GetSession();
+                        session = new Session(sessionHandle);
+
+                        if (_sessionRef == null)
+                        {
+                            _sessionRef = new WeakReference<Session>(session);
+                        }
+                        else
+                        {
+                            _sessionRef.SetTarget(session);
+                        }
+                    }
+
+                    return session;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
+        /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
+        /// this will always be <c>null</c>.
+        /// </value>
+        public SubscriptionSet Subscriptions
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                if (Config is FlexibleSyncConfiguration)
+                {
+                    // If the last subscription ref is alive and its version matches the current subscription
+                    // version, we return it. Otherwise, we create a new set and replace the existing one.
+                    if (_subscriptionRef != null && _subscriptionRef.TryGetTarget(out var existingSet))
+                    {
+                        var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
+                        if (existingSet.Version >= currentVersion)
+                        {
+                            return existingSet;
+                        }
+                    }
+
+                    var handle = SharedRealmHandle.GetSubscriptions();
+                    var set = new SubscriptionSet(handle);
+                    _subscriptionRef = new WeakReference<SubscriptionSet>(set);
+                    return set;
+                }
+
+                return null;
+            }
+        }
+
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata metadata = null, bool isInMigration = false)
         {
             Config = config;
+            IsInMigration = isInMigration;
 
-            if (config.EnableCache && sharedRealmHandle.CanCache)
+            if (config.EnableCache && sharedRealmHandle.OwnsNativeRealm)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
@@ -268,18 +293,13 @@ namespace Realms
             if (_state == null)
             {
                 _state = new State();
-                sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(_state.GCHandle));
-
-                if (config.EnableCache && sharedRealmHandle.CanCache)
-                {
-                    _states.Value[config.DatabasePath] = new WeakReference<State>(_state);
-                }
+                sharedRealmHandle.SetManagedStateHandle(_state);
             }
 
             _state.AddRealm(this);
 
             SharedRealmHandle = sharedRealmHandle;
-            Metadata = new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
+            Metadata = metadata ?? new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
             Schema = schema;
             IsFrozen = SharedRealmHandle.IsFrozen;
             DynamicApi = new Dynamic(this);
@@ -383,11 +403,9 @@ namespace Realms
         {
             if (!IsClosed)
             {
-                // only mutate the state on explicit disposal
-                // otherwise we do so on the finalizer thread
-                if (Config.EnableCache && SharedRealmHandle.CanCache && _state.RemoveRealm(this))
+                if (SharedRealmHandle.OwnsNativeRealm)
                 {
-                    _states.Value.Remove(Config.DatabasePath);
+                    _state.RemoveRealm(this);
                 }
 
                 _state = null;
@@ -418,7 +436,7 @@ namespace Realms
             }
 
             var handle = SharedRealmHandle.Freeze();
-            return new Realm(handle, Config, Schema);
+            return new Realm(handle, Config, Schema, Metadata);
         }
 
         private void ThrowIfDisposed()
@@ -588,7 +606,7 @@ namespace Realms
         internal void ManageEmbedded(EmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
             obj.SetOwner(this, handle, metadata);
@@ -605,7 +623,7 @@ namespace Realms
                 return;
             }
 
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(objectType));
 
             ObjectHandle objectHandle;
@@ -1057,7 +1075,7 @@ namespace Realms
 
             var type = typeof(T);
             Argument.Ensure(
-                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                Metadata.TryGetValue(type.GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type == type,
                 $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
@@ -1071,7 +1089,7 @@ namespace Realms
 
             var type = typeof(T);
             Argument.Ensure(
-                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                Metadata.TryGetValue(type.GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type == type,
                 $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
@@ -1131,12 +1149,12 @@ namespace Realms
             where T : RealmObject => FindCore<T>(primaryKey);
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        private T FindCore<T>(RealmValue primaryKey)
+        internal T FindCore<T>(RealmValue primaryKey)
             where T : RealmObject
         {
             ThrowIfDisposed();
 
-            var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
+            var metadata = Metadata[typeof(T).GetMappedOrOriginalName()];
             if (SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
@@ -1173,7 +1191,12 @@ namespace Realms
                 return null;
             }
 
-            return (T)MakeObject(reference.Metadata, objectHandle);
+            if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
+            {
+                metadata = reference.Metadata;
+            }
+
+            return (T)MakeObject(metadata, objectHandle);
         }
 
         /// <summary>
@@ -1307,9 +1330,7 @@ namespace Realms
             ThrowIfDisposed();
 
             Argument.NotNull(range, nameof(range));
-            Argument.Ensure(range is RealmResults<T>, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
-
-            var results = (RealmResults<T>)range;
+            var results = Argument.EnsureType<RealmResults<T>>(range, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
             results.ResultsHandle.Clear(SharedRealmHandle);
         }
 
@@ -1353,15 +1374,22 @@ namespace Realms
         /// non-null <see cref="RealmConfigurationBase.EncryptionKey"/>, the copy will be encrypted with that key.
         /// </summary>
         /// <remarks>
-        /// The destination file cannot already exist.
-        /// <para/>
-        /// If this is called from within a transaction it writes the current data, and not the data as it was when
-        /// the last transaction was committed.
+        /// 1. The destination file cannot already exist.
+        /// 2. When using a local Realm and this is called from within a transaction it writes the current data,
+        ///    and not the data as it was when the last transaction was committed.
+        /// 3. When using Sync, it is required that all local changes are synchronized with the server before the copy can be written.
+        ///    This is to be sure that the file can be used as a starting point for a newly installed application.
+        ///    The function will throw if there are pending uploads.
         /// </remarks>
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
             Argument.NotNull(config, nameof(config));
+
+            if (Config is PartitionSyncConfiguration originalConfig && config is PartitionSyncConfiguration copiedConfig && originalConfig.Partition != copiedConfig.Partition)
+            {
+                throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
+            }
 
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
         }
@@ -1442,18 +1470,11 @@ namespace Realms
             }
         }
 
-        internal class State : IDisposable
+        internal class State
         {
             private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
 
-            public readonly GCHandle GCHandle;
             public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
-
-            public State()
-            {
-                // this is freed in a native callback when the CSharpBindingContext is destroyed
-                GCHandle = GCHandle.Alloc(this);
-            }
 
             internal void NotifyChanged(EventArgs e)
             {
@@ -1467,29 +1488,32 @@ namespace Realms
             {
                 // We only want to have each realm once. That should be the case as AddRealm
                 // is only called in the Realm ctor, but let's check just in case.
-                Debug.Assert(!_weakRealms.Any(r =>
-                {
-                    return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
-                }), "Trying to add a duplicate Realm to the RealmState.");
+                Debug.Assert(!GetLiveRealms().Any(other => ReferenceEquals(realm, other)), "Trying to add a duplicate Realm to the RealmState.");
 
                 _weakRealms.Add(new WeakReference<Realm>(realm));
             }
 
-            public bool RemoveRealm(Realm realm)
+            /// <summary>
+            /// Remove a Realm from the list of Realms tracked by this state. This is only called when
+            /// Dispose is called on the Realm file and will not execute for garbage collected Realm
+            /// instances. This is fine because for GC-ed instances the lifecycle is as:
+            /// 1. Instance is GC-ed, its fields are GC-ed.
+            /// 2. The SharedRealmHandled is GC-ed, which causes Unbind to be called.
+            /// 3. The native pointer is deleted, which calls RealmCoordinator::unregister_realm.
+            /// 4. Once the last instance is deleted, the CSharpBindingContext destructor is called, which frees the state GCHandle.
+            /// 5. The State is now eligible for collection, and its fields will be GC-ed.
+            /// </summary>
+            public void RemoveRealm(Realm realm)
             {
-                var weakRealm = _weakRealms.SingleOrDefault(r =>
+                _weakRealms.RemoveAll(r =>
                 {
-                    return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
+                    return !r.TryGetTarget(out var other) || ReferenceEquals(realm, other);
                 });
-                _weakRealms.Remove(weakRealm);
 
                 if (!_weakRealms.Any())
                 {
                     realm.SharedRealmHandle.CloseRealm();
-                    return true;
                 }
-
-                return false;
             }
 
             public IEnumerable<Realm> GetLiveRealms()
@@ -1527,11 +1551,6 @@ namespace Realms
                         }
                     }
                 }
-            }
-
-            public void Dispose()
-            {
-                GCHandle.Free();
             }
         }
 
@@ -1580,16 +1599,10 @@ namespace Realms
 
                 var result = metadata.Helper.CreateInstance();
 
-                ObjectHandle objectHandle;
                 var pkProperty = metadata.Schema.PrimaryKeyProperty;
-                if (pkProperty.HasValue)
-                {
-                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _);
-                }
-                else
-                {
-                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
-                }
+                var objectHandle = pkProperty.HasValue
+                    ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
+                    : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
                 result.SetOwner(_realm, objectHandle, metadata);
                 result.OnManaged();
@@ -1618,7 +1631,7 @@ namespace Realms
                 Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
-                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(parent.ObjectMetadata.PropertyIndices[propertyName]);
+                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(propertyName, parent.ObjectMetadata);
 
                 obj.SetOwner(_realm, handle, metadata);
                 obj.OnManaged();
@@ -1639,7 +1652,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToList(IRealmCollection<EmbeddedObject> list)
+            public dynamic AddEmbeddedObjectToList(object list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
             }
@@ -1658,7 +1671,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic InsertEmbeddedObjectInList(IRealmCollection<EmbeddedObject> list, int index)
+            public dynamic InsertEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1685,7 +1698,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInList(IRealmCollection<EmbeddedObject> list, int index)
+            public dynamic SetEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1821,20 +1834,20 @@ namespace Realms
             public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            private dynamic FindCore(string className, RealmValue primaryKey)
+            internal RealmObject FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
                 if (_realm.SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
                 {
-                    return _realm.MakeObject(metadata, objectHandle);
+                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
                 }
 
                 return null;
             }
 
-            private dynamic PerformEmbeddedListOperation(IRealmCollection<EmbeddedObject> list, Func<ListHandle, ObjectHandle> getHandle)
+            private EmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1845,7 +1858,7 @@ namespace Realms
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
-                var obj = realmList.Metadata.Helper.CreateInstance();
+                var obj = (EmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
                 obj.OnManaged();
@@ -1853,7 +1866,7 @@ namespace Realms
                 return obj;
             }
 
-            private dynamic PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            private EmbeddedObject PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1864,7 +1877,7 @@ namespace Realms
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }
 
-                var obj = realmDict.Metadata.Helper.CreateInstance();
+                var obj = (EmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata);
                 obj.OnManaged();

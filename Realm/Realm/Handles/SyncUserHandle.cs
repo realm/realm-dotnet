@@ -17,24 +17,20 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Native;
-using Realms.Sync.Exceptions;
-using Realms.Sync.Native;
 
 namespace Realms.Sync
 {
-    internal class SyncUserHandle : RealmHandle
+    internal class SyncUserHandle : StandaloneHandle
     {
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, int api_keys_len, AppError error);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
@@ -74,9 +70,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_sync_user_initialize", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr initialize(ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_call_function", CallingConvention = CallingConvention.Cdecl)]
             public static extern void call_function(SyncUserHandle handle, AppHandle app,
@@ -130,22 +123,10 @@ namespace Realms.Sync
             #endregion
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
-        }
-
-        static unsafe SyncUserHandle()
-        {
-            NativeCommon.Initialize();
-
-            NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
-
-            GCHandle.Alloc(apiKeysCallback);
-
-            NativeMethods.initialize(apiKeysCallback);
         }
 
         [Preserve]
-        public SyncUserHandle(IntPtr handle) : base(null, handle)
+        public SyncUserHandle(IntPtr handle) : base(handle)
         {
         }
 
@@ -220,11 +201,21 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public void RefreshCustomData(TaskCompletionSource<object> tcs)
+        public async Task RefreshCustomDataAsync()
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.refresh_custom_data(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+            try
+            {
+                NativeMethods.refresh_custom_data(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public string GetProfileData(UserProfileField field)
@@ -243,19 +234,39 @@ namespace Realms.Sync
             });
         }
 
-        public void CallFunction(AppHandle app, string name, string args, TaskCompletionSource<BsonPayload> tcs)
+        public async Task<string> CallFunctionAsync(AppHandle app, string name, string args)
         {
+            var tcs = new TaskCompletionSource<string>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
-            NativeMethods.call_function(this, app, name, (IntPtr)name.Length, args, (IntPtr)args.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary();
+            try
+            {
+                NativeMethods.call_function(this, app, name, (IntPtr)name.Length, args, (IntPtr)args.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                return await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public void LinkCredentials(AppHandle app, Native.Credentials credentials, TaskCompletionSource<SyncUserHandle> tcs)
+        public async Task<SyncUserHandle> LinkCredentialsAsync(AppHandle app, Native.Credentials credentials)
         {
+            var tcs = new TaskCompletionSource<SyncUserHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.link_credentials(this, app, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+            try
+            {
+                NativeMethods.link_credentials(this, app, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                return await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public string GetIdentities()
@@ -289,50 +300,123 @@ namespace Realms.Sync
 
         #region Api Keys
 
-        public void CreateApiKey(AppHandle app, string name, TaskCompletionSource<UserApiKey[]> tcs)
+        public async Task<ApiKey> CreateApiKeyAsync(AppHandle app, string name)
         {
+            var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.create_api_key(this, app, name, (IntPtr)name.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+
+            try
+            {
+                NativeMethods.create_api_key(this, app, name, (IntPtr)name.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                var result = await tcs.Task;
+
+                Debug.Assert(result.Length == 1, "The result of Create should be exactly 1 ApiKey.");
+
+                return result.Single();
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public unsafe void FetchApiKey(AppHandle app, ObjectId id, TaskCompletionSource<UserApiKey[]> tcs)
+        public async Task<ApiKey> FetchApiKeyAsync(AppHandle app, ObjectId id)
         {
+            var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            var primitiveId = PrimitiveValue.ObjectId(id);
-            NativeMethods.fetch_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+
+            try
+            {
+                var primitiveId = PrimitiveValue.ObjectId(id);
+                NativeMethods.fetch_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                var result = await tcs.Task;
+
+                Debug.Assert(result == null || result.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
+
+                return result == null || result.Length == 0 ? null : result.Single();
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public void FetchAllApiKeys(AppHandle app, TaskCompletionSource<UserApiKey[]> tcs)
+        public async Task<ApiKey[]> FetchAllApiKeysAsync(AppHandle app)
         {
+            var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.fetch_api_keys(this, app, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+
+            try
+            {
+                NativeMethods.fetch_api_keys(this, app, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                return await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public unsafe void DeleteApiKey(AppHandle app, ObjectId id, TaskCompletionSource<object> tcs)
+        public async Task DeleteApiKeyAsync(AppHandle app, ObjectId id)
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            var primitiveId = PrimitiveValue.ObjectId(id);
-            NativeMethods.delete_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+            try
+            {
+                var primitiveId = PrimitiveValue.ObjectId(id);
+                NativeMethods.delete_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public unsafe void DisableApiKey(AppHandle app, ObjectId id, TaskCompletionSource<object> tcs)
+        public async Task DisableApiKeyAsync(AppHandle app, ObjectId id)
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            var primitiveId = PrimitiveValue.ObjectId(id);
-            NativeMethods.disable_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+
+            try
+            {
+                var primitiveId = PrimitiveValue.ObjectId(id);
+                NativeMethods.disable_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
-        public unsafe void EnableApiKey(AppHandle app, ObjectId id, TaskCompletionSource<object> tcs)
+        public async Task EnableApiKeyAsync(AppHandle app, ObjectId id)
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            var primitiveId = PrimitiveValue.ObjectId(id);
-            NativeMethods.enable_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary(tcsHandle);
+
+            try
+            {
+                var primitiveId = PrimitiveValue.ObjectId(id);
+                NativeMethods.enable_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         #endregion
@@ -340,34 +424,6 @@ namespace Realms.Sync
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
-        }
-
-        [MonoPInvokeCallback(typeof(NativeMethods.ApiKeysCallback))]
-        private static unsafe void HandleApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error)
-        {
-            var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            try
-            {
-                var tcs = (TaskCompletionSource<UserApiKey[]>)tcsHandle.Target;
-                if (error.is_null)
-                {
-                    var result = new UserApiKey[api_keys_len];
-                    for (var i = 0; i < api_keys_len; i++)
-                    {
-                        result[i] = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
-                    }
-
-                    tcs.TrySetResult(result);
-                }
-                else
-                {
-                    tcs.TrySetException(new AppException(error));
-                }
-            }
-            finally
-            {
-                tcsHandle.Free();
-            }
         }
     }
 }

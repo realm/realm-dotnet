@@ -28,3 +28,4 @@ using UnityEngine.Scripting;
 // as a measure of precaution it's left since issues could arise at medium
 // and high levels of stripping
 [assembly: Preserve]
+[assembly: Realms.WovenAssembly]

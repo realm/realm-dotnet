@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Exceptions;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -81,7 +82,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> contained in the query.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Query{T})"/> on a different thread.</returns>
-        public static Query<T> Create<T>(IQueryable<T> value) => new Query<T>(value);
+        public static Query<T> Create<T>(IQueryable<T> value)
+            => new Query<T>(Argument.EnsureType<RealmResults<T>>(value, "value must be a managed Query (i.e. the result of realm.All<T>).", nameof(value)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Object{T}"/> class.
@@ -104,7 +106,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(List{T})"/> on a different thread.</returns>
-        public static List<T> Create<T>(IList<T> value) => new List<T>(value);
+        public static List<T> Create<T>(IList<T> value)
+            => new List<T>(Argument.EnsureType<RealmList<T>>(value, "value must be a managed List (i.e. property of a RealmObject).", nameof(value)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Set{T}"/> class.
@@ -115,7 +118,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of the objects contained in the set.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Set{T})"/> on a different thread.</returns>
-        public static Set<T> Create<T>(ISet<T> value) => new Set<T>(value);
+        public static Set<T> Create<T>(ISet<T> value)
+            => new Set<T>(Argument.EnsureType<RealmSet<T>>(value, "value must be a managed Set (i.e. property of a RealmObject).", nameof(value)));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dictionary{TValue}"/> class.
@@ -126,7 +130,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{TValue}(Dictionary{TValue})"/> on a different thread.</returns>
-        public static Dictionary<TValue> Create<TValue>(IDictionary<string, TValue> value) => new Dictionary<TValue>(value);
+        public static Dictionary<TValue> Create<TValue>(IDictionary<string, TValue> value)
+            => new Dictionary<TValue>(Argument.EnsureType<RealmDictionary<TValue>>(value, "value must be a managed dictionary (i.e. property of a RealmObject).", nameof(value)));
 
         #endregion
 
@@ -150,7 +155,7 @@ namespace Realms
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> contained in the query.</typeparam>
         public class Query<T> : ThreadSafeReference
         {
-            internal Query(IQueryable<T> value) : base((RealmResults<T>)value, Type.Query)
+            internal Query(RealmResults<T> value) : base(value, Type.Query)
             {
             }
         }
@@ -199,7 +204,7 @@ namespace Realms
         /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
         public class List<T> : ThreadSafeReference
         {
-            internal List(IList<T> value) : base((RealmList<T>)value, Type.List)
+            internal List(RealmList<T> value) : base(value, Type.List)
             {
             }
         }
@@ -223,7 +228,7 @@ namespace Realms
         [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "A nested class with generic argument is unlikely to be confused with a property setter.")]
         public class Set<T> : ThreadSafeReference
         {
-            internal Set(ISet<T> value) : base((RealmSet<T>)value, Type.Set)
+            internal Set(RealmSet<T> value) : base(value, Type.Set)
             {
             }
         }
@@ -246,7 +251,7 @@ namespace Realms
         /// <typeparam name="TValue">The type of the dictionary values.</typeparam>
         public class Dictionary<TValue> : ThreadSafeReference
         {
-            internal Dictionary(IDictionary<string, TValue> value) : base((RealmDictionary<TValue>)value, Type.Dictionary)
+            internal Dictionary(RealmDictionary<TValue> value) : base(value, Type.Dictionary)
             {
             }
         }

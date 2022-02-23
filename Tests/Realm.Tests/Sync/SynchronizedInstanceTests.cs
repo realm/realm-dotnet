@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -35,11 +36,8 @@ namespace Realms.Tests.Sync
         private const int OneMegabyte = 1024 * 1024;
         private const int NumberOfObjects = 20;
 
-        [TestCase(true, true)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(false, false)]
-        public void Compact_ShouldReduceSize(bool encrypt, bool populate)
+        [Test]
+        public void Compact_ShouldReduceSize([Values(true, false)] bool encrypt, [Values(true, false)] bool populate)
         {
             var config = GetFakeConfig();
             if (encrypt)
@@ -72,9 +70,8 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void GetInstanceAsync_ShouldDownloadRealm(bool singleTransaction)
+        [Test]
+        public void GetInstanceAsync_ShouldDownloadRealm([Values(true, false)] bool singleTransaction)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -125,7 +122,76 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
-                Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
+
+                // We can't validate exact values because there's a reasonable chance that
+                // the last notification won't be invoked if the Realm is downloaded first.
+                Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
+                Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
+            }, 60000);
+        }
+
+        [Test]
+        public void GetInstanceAsync_WithOnProgress_DoesntThrowWhenOnProgressIsSetToNull()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                await PopulateData(config, 4);
+
+                var callbacksInvoked = 0;
+
+                var lastProgress = default(SyncProgress);
+                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config.OnProgress = (progress) =>
+                {
+                    callbacksInvoked++;
+                    lastProgress = progress;
+                };
+
+                var realmTask = GetRealmAsync(config);
+                config.OnProgress = null;
+
+                using var realm = await realmTask;
+
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+                Assert.That(callbacksInvoked, Is.GreaterThan(0));
+
+                // We can't validate exact values because there's a reasonable chance that
+                // the last notification won't be invoked if the Realm is downloaded first.
+                Assert.That(lastProgress.TransferredBytes, Is.GreaterThan(OneMegabyte));
+                Assert.That(lastProgress.TransferableBytes, Is.GreaterThan(OneMegabyte));
+            }, 60000);
+        }
+
+        [Test]
+        public void GetInstanceAsync_WithOnProgressThrowing_ReportsErrorToLogs()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                await PopulateData(config, 4);
+
+                var logger = new Logger.InMemoryLogger();
+                Logger.Default = logger;
+
+                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config.OnProgress = (progress) =>
+                {
+                    throw new Exception("Exception in OnProgress");
+                };
+
+                var realmTask = GetRealmAsync(config);
+                config.OnProgress = null;
+
+                using var realm = await realmTask;
+
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+
+                // Notifications are delivered async, so let's wait a little
+                await TestHelpers.WaitForConditionAsync(() => logger.GetLog().Contains("Exception in OnProgress"));
+                Assert.That(logger.GetLog(), Does.Contain("Exception in OnProgress"));
             }, 60000);
         }
 
@@ -139,12 +205,7 @@ namespace Realms.Tests.Sync
 
                 config = await GetIntegrationConfigAsync((string)config.Partition);
 
-                using var cts = new CancellationTokenSource();
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(10);
-                    cts.Cancel();
-                });
+                using var cts = new CancellationTokenSource(10);
 
                 try
                 {
@@ -163,7 +224,7 @@ namespace Realms.Tests.Sync
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {
             var config = GetFakeConfig();
-            config.ObjectClasses = new[] { typeof(IntPrimaryKeyWithValueObject) };
+            config.Schema = new[] { typeof(IntPrimaryKeyWithValueObject) };
 
             // Create the realm and add some objects
             using (var realm = GetRealm(config))
@@ -180,21 +241,21 @@ namespace Realms.Tests.Sync
             using var dynamicRealm = GetRealm(config);
             Assert.That(dynamicRealm.Schema.Count == 1);
 
-            var objectSchema = dynamicRealm.Schema.Find(nameof(IntPrimaryKeyWithValueObject));
+            Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(IntPrimaryKeyWithValueObject), out var objectSchema), Is.True);
             Assert.That(objectSchema, Is.Not.Null);
 
             Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var dynamicObj = dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject)).Single();
-            Assert.That(dynamicObj.StringValue, Is.EqualTo("This is a string!"));
+            var dynamicObj = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject))).Single();
+            Assert.That(dynamicObj.DynamicApi.Get<string>(nameof(IntPrimaryKeyWithValueObject.StringValue)), Is.EqualTo("This is a string!"));
         }
 
         [Test]
         public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
         {
             var config = GetFakeConfig();
-            config.ObjectClasses = null;
+            config.Schema = null;
             config.IsDynamic = true;
 
             using var realm = GetRealm(config);
@@ -262,9 +323,203 @@ namespace Realms.Tests.Sync
         public void EmbeddedObject_WhenAdditiveExplicit_ShouldThrow()
         {
             var conf = GetFakeConfig();
-            conf.ObjectClasses = new[] { typeof(EmbeddedLevel3) };
+            conf.Schema = new[] { typeof(EmbeddedLevel3) };
 
             Assert.Throws<RealmSchemaValidationException>(() => Realm.GetInstance(conf), $"Embedded object {nameof(EmbeddedLevel3)} is unreachable by any link path from top level objects");
+        }
+
+        [Test]
+        public void WriteCopy_CanSynchronizeData([Values(true, false)] bool originalEncrypted,
+                                                 [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(partition);
+                Assert.That(originalConfig.Partition, Is.EqualTo(copyConfig.Partition));
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                originalRealm.WriteCopy(copyConfig);
+
+                using var copiedRealm = GetRealm(copyConfig);
+
+                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+
+                var fromCopy = copiedRealm.Write(() =>
+                {
+                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from copy"
+                    });
+                });
+
+                await WaitForUploadAsync(copiedRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
+                Assert.That(itemInOriginal, Is.Not.Null);
+                Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
+
+                var fromOriginal = originalRealm.Write(() =>
+                {
+                    return originalRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from original"
+                    });
+                });
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(copiedRealm);
+
+                var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
+                Assert.That(itemInCopy, Is.Not.Null);
+                Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
+                                                        [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalPartition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(originalPartition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copiedPartition = Guid.NewGuid().ToString();
+                var copyConfig = await GetIntegrationConfigAsync(copiedPartition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                Assert.That(originalConfig.Partition, !Is.EqualTo(copyConfig.Partition));
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                Assert.Throws<NotSupportedException>(() => originalRealm.WriteCopy(copyConfig));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
+                                                   [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(partition);
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                // The error is thrown as a generic `RealmError` by Core which translates to a generic `RealmException` on our side.
+                Assert.Throws<RealmException>(() => originalRealm.WriteCopy(copyConfig));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_FailsWithEmptyConfig()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+                var originalConfig = await GetIntegrationConfigAsync(partition);
+                using var originalRealm = GetRealm(originalConfig);
+                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null));
+            });
+        }
+
+        [Test]
+        public void DeleteRealmWorksIfCalledMultipleTimes()
+        {
+            var config = GetFakeConfig();
+            var openRealm = GetRealm(config);
+            openRealm.Dispose();
+            Assert.That(File.Exists(config.DatabasePath));
+
+            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+        }
+
+        [Test]
+        public void DeleteRealm_AfterDispose_Succeeds([Values(true, false)] bool singleTransaction)
+        {
+            // This test verifies that disposing a Realm will eventually close its session and
+            // release the file, so that we can delete it.
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+
+                var config = await GetIntegrationConfigAsync(partition);
+                var asyncConfig = await GetIntegrationConfigAsync(partition);
+
+                var realm = GetRealm(config);
+                AddDummyData(realm, singleTransaction);
+
+                await WaitForUploadAsync(realm);
+                realm.Dispose();
+
+                // Ensure that the Realm can be deleted from the filesystem. If the sync
+                // session was still using it, we would get a permission denied error.
+                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+                using var asyncRealm = await GetRealmAsync(asyncConfig);
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+            }, timeout: 120000);
+        }
+
+        [Test]
+        public void RealmDispose_ClosesSessions()
+        {
+            var config = GetFakeConfig();
+            var realm = GetRealm(config);
+            var session = GetSession(realm);
+            realm.Dispose();
+
+            Assert.That(session.IsClosed);
+
+            // Dispose should close the session and allow us to delete the Realm.
+            Assert.That(DeleteRealmWithRetries(realm), Is.True);
         }
 
         private const int DummyDataSize = 100;
@@ -317,13 +572,13 @@ namespace Realms.Tests.Sync
             }
         }
 
-        private async Task PopulateData(SyncConfiguration config)
+        private async Task PopulateData(PartitionSyncConfiguration config, int numberOfObjects = NumberOfObjects)
         {
             using var realm = GetRealm(config);
 
             // Split in 2 because MDB Realm has a limit of 16 MB per changeset
-            var firstBatch = NumberOfObjects / 2;
-            var secondBatch = NumberOfObjects - firstBatch;
+            var firstBatch = numberOfObjects / 2;
+            var secondBatch = numberOfObjects - firstBatch;
 
             realm.Write(() =>
             {

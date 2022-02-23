@@ -32,24 +32,22 @@ using namespace realm::binding;
 struct HttpClientRequest {
     HttpMethod method;
 
-    const char* url;
-    size_t url_len;
+    realm_value_t url;
 
     uint64_t timeout_ms;
 
     std::pair<char*, char*>* headers;
-    int headers_len;
+    size_t headers_len;
 
-    const char* body;
-    size_t body_len;
+    realm_value_t body;
 };
 
 using ExecuteRequestT = void(HttpClientRequest request, void* callback);
-using ResponseFunction = std::function<void(const Response)>;
+using ResponseFunction = util::UniqueFunction<void(const Response&)>;
 
 namespace realm {
 namespace binding {
-GenericNetworkTransport::NetworkTransportFactory s_transport_factory;
+std::shared_ptr<GenericNetworkTransport> s_transport;
 std::function<ExecuteRequestT> s_execute_request;
 }
 }
@@ -64,7 +62,7 @@ struct HttpClientResponse {
 
 struct HttpClientTransport : public GenericNetworkTransport {
 public:
-    void send_request_to_server(const Request request, ResponseFunction completionBlock) override {
+    void send_request_to_server(Request&& request, ResponseFunction&& completionBlock) override {
         std::vector<std::pair<char*, char*>> headers;
         for (auto& kvp : request.headers) {
             headers.push_back(std::make_pair(const_cast<char*>(kvp.first.c_str()), const_cast<char*>(kvp.second.c_str())));
@@ -72,16 +70,14 @@ public:
 
         HttpClientRequest client_request = {
             request.method,
-            request.url.c_str(),
-            request.url.length(),
+            to_capi_value(request.url),
             request.timeout_ms,
             headers.data(),
-            (int)headers.size(),
-            request.body.c_str(),
-            request.body.length()
+            headers.size(),
+            to_capi_value(request.body)
         };
 
-        s_execute_request(std::move(client_request), new ResponseFunction(completionBlock));
+        s_execute_request(std::move(client_request), new ResponseFunction(std::move(completionBlock)));
     }
 };
 
@@ -89,9 +85,7 @@ extern "C" {
     REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
         s_execute_request = wrap_managed_callback(execute);
-        s_transport_factory = []() -> std::unique_ptr<HttpClientTransport> {
-            return std::make_unique<HttpClientTransport>();
-        };
+        s_transport = std::make_shared<HttpClientTransport>();
 
         realm::binding::s_can_call_managed = true;
     }
@@ -111,7 +105,7 @@ extern "C" {
             Utf16StringAccessor(client_response.body_buf, client_response.body_len)
         };
 
-        auto& func = *reinterpret_cast<std::function<void(const Response)>*>(function_ptr);
+        auto& func = *reinterpret_cast<ResponseFunction*>(function_ptr);
         func(std::move(response));
         delete& func;
     }

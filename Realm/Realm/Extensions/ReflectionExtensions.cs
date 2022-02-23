@@ -48,5 +48,7 @@ namespace Realms
         public static bool IsEmbeddedObject(this Type type) => type == typeof(EmbeddedObject) || type.BaseType == typeof(EmbeddedObject);
 
         public static bool IsRealmObject(this Type type) => type == typeof(RealmObject) || type.BaseType == typeof(RealmObject);
+
+        public static T[] GetEnumValues<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();
     }
 }

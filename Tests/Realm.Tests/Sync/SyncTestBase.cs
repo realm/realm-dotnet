@@ -21,14 +21,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly List<Session> _sessions = new List<Session>();
-        private readonly List<App> _apps = new List<App>();
+        private readonly Queue<Session> _sessions = new Queue<Session>();
+        private readonly Queue<App> _apps = new Queue<App>();
 
         private App _defaultApp;
 
@@ -45,7 +46,7 @@ namespace Realms.Tests.Sync
             config ??= SyncTestHelpers.GetAppConfig();
 
             var app = App.Create(config);
-            _apps.Add(app);
+            _apps.Enqueue(app);
 
             if (_defaultApp == null)
             {
@@ -57,45 +58,50 @@ namespace Realms.Tests.Sync
 
         protected override void CustomTearDown()
         {
-            foreach (var session in _sessions)
-            {
-                session?.CloseHandle();
-            }
+            _sessions.DrainQueue(session => session?.CloseHandle());
 
             base.CustomTearDown();
 
-            foreach (var app in _apps)
-            {
-                app.Handle.ResetForTesting();
-            }
+            _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
         }
 
         protected void CleanupOnTearDown(Session session)
         {
-            _sessions.Add(session);
+            _sessions.Enqueue(session);
         }
 
         protected Session GetSession(Realm realm)
         {
-            var result = realm.GetSession();
+            var result = realm.SyncSession;
             CleanupOnTearDown(result);
             return result;
         }
 
         protected static async Task WaitForUploadAsync(Realm realm)
         {
-            var session = realm.GetSession();
+            var session = realm.SyncSession;
             await session.WaitForUploadAsync();
             session.CloseHandle();
         }
 
         protected static async Task WaitForDownloadAsync(Realm realm)
         {
-            var session = realm.GetSession();
+            var session = realm.SyncSession;
             await session.WaitForDownloadAsync();
             session.CloseHandle();
+        }
+
+        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
+            where T : RealmObject
+        {
+            await WaitForUploadAsync(obj.Realm);
+            await WaitForDownloadAsync(realm2);
+
+            var id = obj.DynamicApi.Get<RealmValue>("_id");
+
+            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
         }
 
         protected async Task<User> GetUserAsync(App app = null)
@@ -105,8 +111,19 @@ namespace Realms.Tests.Sync
             var username = SyncTestHelpers.GetVerifiedUsername();
             await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
 
-            var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
-            return await app.LogInAsync(credentials);
+            for (var i = 0; i < 5; i++)
+            {
+                try
+                {
+                    var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
+                    return await app.LogInAsync(credentials);
+                }
+                catch (AppException ex) when (ex.Message.Contains("confirmation required"))
+                {
+                }
+            }
+
+            throw new Exception("Could not login user after 5 attempts.");
         }
 
         protected User GetFakeUser(App app = null, string id = null, string refreshToken = null, string accessToken = null)
@@ -116,7 +133,7 @@ namespace Realms.Tests.Sync
             refreshToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVmcmVzaCB0b2tlbiIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTM2MjM5MDIyfQ.SWH98a-UYBEoJ7DLxpP7mdibleQFeCbGt4i3CrsyT2M";
             accessToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjJ9.bgnlxP_mGztBZsImn7HaF-6lDevFDn2U_K7D8WUC2GQ";
             var handle = app.Handle.GetUserForTesting(id, refreshToken, accessToken);
-            return new User(handle);
+            return new User(handle, app);
         }
 
         protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)
@@ -125,51 +142,71 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.UUIDPartitionKey));
 
             var user = await GetUserAsync(app);
-            return UpdateConfig(new SyncConfiguration(partition, user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        private static SyncConfiguration UpdateConfig(SyncConfiguration config)
+        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App app = null, string optionalPath = null)
         {
-            config.ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
+            app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
+            var user = await GetUserAsync(app);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null)
+        {
+            var config = await GetFLXIntegrationConfigAsync(app);
+            return await GetRealmAsync(config);
+        }
+
+        private static T UpdateConfig<T>(T config)
+            where T : SyncConfigurationBase
+        {
+            config.Schema = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject), typeof(SyncCollectionsObject), typeof(IntPropertyObject), typeof(EmbeddedIntPropertyObject), typeof(SyncAllTypesObject) };
             config.SessionStopPolicy = SessionStopPolicy.Immediately;
 
             return config;
         }
 
-        public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
-            return UpdateConfig(new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
+            return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
+        }
+
+        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        {
+            var user = GetFakeUser(app, userId);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
     }
 }

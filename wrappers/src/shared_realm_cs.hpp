@@ -34,8 +34,7 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using namespace realm;
 using namespace realm::binding;
 
-class ManagedExceptionDuringMigration : public std::runtime_error
-{
+class ManagedExceptionDuringMigration : public std::runtime_error {
 public:
     ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
     }
@@ -46,6 +45,9 @@ struct Configuration
     uint16_t* path;
     size_t path_len;
     
+    uint16_t* fallback_path;
+    size_t fallback_path_len;
+
     bool read_only;
     
     bool in_memory;
@@ -56,7 +58,6 @@ struct Configuration
     
     void* managed_migration_handle;
     
-    bool (*should_compact_callback)(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
     void* managed_should_compact_delegate;
     
     bool enable_cache;
@@ -67,12 +68,14 @@ struct SyncConfiguration
 {
     SharedSyncUser* user;
 
-    uint16_t* url;
-    size_t url_len;
+    uint16_t* partition;
+    size_t partition_len;
 
     SyncSessionStopPolicy session_stop_policy;
 
     SchemaMode schema_mode;
+
+    bool is_flexible_sync;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

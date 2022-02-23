@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Realms
 {
@@ -48,34 +47,29 @@ namespace Realms
                 return typeof(IEnumerable<>).MakeGenericType(seqType.GetElementType());
             }
 
-            if (seqType.GetTypeInfo().IsGenericType)
+            if (seqType.IsGenericType)
             {
-                foreach (var arg in seqType.GetGenericArguments())
+                var result = seqType.GetGenericArguments()
+                    .Select(arg => typeof(IEnumerable<>).MakeGenericType(arg))
+                    .FirstOrDefault(i => i.IsAssignableFrom(seqType));
+
+                if (result != null)
                 {
-                    var ienum = typeof(IEnumerable<>).MakeGenericType(arg);
-                    if (ienum.IsAssignableFrom(seqType))
-                    {
-                        return ienum;
-                    }
+                    return result;
                 }
             }
 
-            var ifaces = seqType.GetInterfaces().ToArray();
-            if (ifaces != null && ifaces.Length > 0)
+            var ienum = seqType.GetInterfaces()
+                .Select(FindIEnumerable)
+                .FirstOrDefault(i => i != null);
+            if (ienum != null)
             {
-                foreach (var iface in ifaces)
-                {
-                    var ienum = FindIEnumerable(iface);
-                    if (ienum != null)
-                    {
-                        return ienum;
-                    }
-                }
+                return ienum;
             }
 
-            if (seqType.GetTypeInfo().BaseType != null && seqType.GetTypeInfo().BaseType != typeof(object))
+            if (seqType.BaseType != null && seqType.BaseType != typeof(object))
             {
-                return FindIEnumerable(seqType.GetTypeInfo().BaseType);
+                return FindIEnumerable(seqType.BaseType);
             }
 
             return null;

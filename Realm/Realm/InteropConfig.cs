@@ -18,10 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using Realms.Logging;
 
 namespace Realms
 {
@@ -31,6 +29,10 @@ namespace Realms
         /// Name of the DLL used in native declarations, constant varying per-platform.
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
+
+        public const string UnityPlatform = "Realm Unity";
+
+        public const string DotNetPlatform = "Realm .NET";
 
         public static readonly string Platform;
 
@@ -86,22 +88,7 @@ namespace Realms
 
             AppDomain.CurrentDomain.DomainUnload += (_, __) =>
             {
-                Logger.LogDefault(LogLevel.Info, "Realm: Domain is unloading, force closing all Realm instances.");
-
-                try
-                {
-                    var sw = new Stopwatch();
-                    sw.Start();
-
-                    SharedRealmHandle.CloseAllRealms();
-
-                    sw.Stop();
-                    Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogDefault(LogLevel.Error, $"Realm: Failed to close all native instances. You may need to restart your app. Error: {ex}");
-                }
+                NativeCommon.CleanupNativeResources("AppDomain is unloading");
             };
         }
 
@@ -152,15 +139,18 @@ namespace Realms
             {
                 var result = getter();
 
-                if (result != null && !Directory.Exists(result))
+                if (result != null)
                 {
-                    Directory.CreateDirectory(result);
-                }
+                    if (!Directory.Exists(result))
+                    {
+                        Directory.CreateDirectory(result);
+                    }
 
-                if (result != null && IsDirectoryWritable(result))
-                {
-                    folder = result;
-                    return true;
+                    if (IsDirectoryWritable(result))
+                    {
+                        folder = result;
+                        return true;
+                    }
                 }
             }
             catch

@@ -12,7 +12,13 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
-      : Any
+      Android: Android
+    second:
+      enabled: 1
+      settings:
+        CPU: x86_64
+  - first:
+      Any: 
     second:
       enabled: 0
       settings:
@@ -23,17 +29,6 @@ PluginImporter:
         Exclude Win: 1
         Exclude Win64: 1
         Exclude iOS: 1
-  - first:
-      Android: Android
-    second:
-      enabled: 1
-      settings:
-        CPU: x86
-  - first:
-      Any: 
-    second:
-      enabled: 0
-      settings: {}
   - first:
       Editor: Editor
     second:

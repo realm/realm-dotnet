@@ -4,11 +4,13 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap mp uap3 desktop">
 
   <Identity
-    Name="032e482b-1a73-46f2-afb7-1c22f2e68be8"
-    Publisher="CN=irinc"
+    Name="realm.uwp.tests"
+    Publisher="CN=Realm Tests"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="032e482b-1a73-46f2-afb7-1c22f2e68be8" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
@@ -40,10 +42,19 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+
+      <Extensions>
+        <uap3:Extension Category="windows.appExecutionAlias">
+          <uap3:AppExecutionAlias>
+            <desktop:ExecutionAlias Alias="Tests.UWP.exe" />
+          </uap3:AppExecutionAlias>
+        </uap3:Extension>
+      </Extensions>
     </Application>
   </Applications>
 
   <Capabilities>
     <Capability Name="internetClient" />
+    <Capability Name="privateNetworkClientServer"/>
   </Capabilities>
 </Package>

@@ -66,6 +66,11 @@ namespace Realms
 
                 if (_isEmbedded && realmValue.Type != RealmValueType.Null)
                 {
+                    if (IsDynamic)
+                    {
+                        throw new NotSupportedException("Can't set embedded objects directly. Instead use Realm.DynamicApi.SetEmbeddedObjectInDictionary.");
+                    }
+
                     Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.SetEmbedded(key));
                     return;
                 }
@@ -80,7 +85,7 @@ namespace Realms
             get
             {
                 var resultsHandle = _dictionaryHandle.GetKeys();
-                return new RealmResults<string>(Realm, resultsHandle, Metadata);
+                return new RealmResults<string>(Realm, resultsHandle, metadata: null);
             }
         }
 
@@ -108,6 +113,11 @@ namespace Realms
 
             if (_isEmbedded && realmValue.Type != RealmValueType.Null)
             {
+                if (IsDynamic)
+                {
+                    throw new NotSupportedException("Can't add embedded objects directly. Instead use Realm.DynamicApi.AddEmbeddedObjectToDictionary.");
+                }
+
                 Realm.ManageEmbedded(EnsureUnmanagedEmbedded(realmValue), _dictionaryHandle.AddEmbedded(key));
                 return;
             }
@@ -179,7 +189,7 @@ namespace Realms
 
             Realm.ExecuteOutsideTransaction(() =>
             {
-                var managedResultsHandle = GCHandle.Alloc(this);
+                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                 _keyNotificationToken = _dictionaryHandle.AddKeyNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }
@@ -234,6 +244,7 @@ namespace Realms
             {
                 var actualChanges = changes.Value;
                 changeset = new DictionaryChangeSet(
+                    deletedKeys: actualChanges.Deletions.AsEnumerable().Select(v => v.AsString()).ToArray(),
                     insertedKeys: actualChanges.Insertions.AsEnumerable().Select(v => v.AsString()).ToArray(),
                     modifiedKeys: actualChanges.Modifications.AsEnumerable().Select(v => v.AsString()).ToArray());
             }

@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <OutputType Condition="$(TargetFramework) == 'net5.0'">Exe</OutputType>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
+    <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
+    <TargetFrameworks>netstandard2.0;$(AdditionalFrameworks)</TargetFrameworks>
     <CodeAnalysisRuleSet>../../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>8.0</LangVersion>
+    <NoWarn>MSB4011</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

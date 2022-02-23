@@ -130,8 +130,10 @@ namespace Realms.Tests
 
         public IList<Guid> GuidList { get; }
 
+        [Required]
         public IList<string> StringList { get; }
 
+        [Required]
         public IList<byte[]> ByteArrayList { get; }
 
         public IList<DateTimeOffset> DateTimeOffsetList { get; }
@@ -162,21 +164,9 @@ namespace Realms.Tests
 
         public IList<Guid?> NullableGuidList { get; }
 
-        public IList<RealmInteger<byte>> ByteCounterList { get; }
+        public IList<string> NullableStringList { get; }
 
-        public IList<RealmInteger<short>> Int16CounterList { get; }
-
-        public IList<RealmInteger<int>> Int32CounterList { get; }
-
-        public IList<RealmInteger<long>> Int64CounterList { get; }
-
-        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
-
-        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
-
-        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
-
-        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
+        public IList<byte[]> NullableByteArrayList { get; }
 
         public IList<RealmValue> RealmValueList { get; }
     }
@@ -241,22 +231,6 @@ namespace Realms.Tests
 
         public ISet<ObjectId?> NullableObjectIdSet { get; }
 
-        public ISet<RealmInteger<byte>> ByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>> Int16CounterSet { get; }
-
-        public ISet<RealmInteger<int>> Int32CounterSet { get; }
-
-        public ISet<RealmInteger<long>> Int64CounterSet { get; }
-
-        public ISet<RealmInteger<byte>?> NullableByteCounterSet { get; }
-
-        public ISet<RealmInteger<short>?> NullableInt16CounterSet { get; }
-
-        public ISet<RealmInteger<int>?> NullableInt32CounterSet { get; }
-
-        public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
-
         public ISet<IntPropertyObject> ObjectSet { get; }
 
         public ISet<RealmValue> RealmValueSet { get; }
@@ -319,23 +293,9 @@ namespace Realms.Tests
 
         public IList<ObjectId?> NullableObjectIdList { get; }
 
-        public IList<RealmInteger<byte>> ByteCounterList { get; }
-
-        public IList<RealmInteger<short>> Int16CounterList { get; }
-
-        public IList<RealmInteger<int>> Int32CounterList { get; }
-
-        public IList<RealmInteger<long>> Int64CounterList { get; }
-
-        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
-
-        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
-
-        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
-
-        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
-
         public IList<IntPropertyObject> ObjectList { get; }
+
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
 
         public IList<RealmValue> RealmValueList { get; }
 
@@ -397,34 +357,56 @@ namespace Realms.Tests
 
         public IDictionary<string, ObjectId?> NullableObjectIdDict { get; }
 
-        public IDictionary<string, RealmInteger<byte>> ByteCounterDict { get; }
-
-        public IDictionary<string, RealmInteger<short>> Int16CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<int>> Int32CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<long>> Int64CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDict { get; }
-
-        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDict { get; }
-
-        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDict { get; }
-
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
         public IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
-    // This is a stripped-down version of SetsObject because Sync doesn't support float
-    // or collections of nullable primitives
+    // This is a stripped-down version of SetsObject because Sync doesn't support
+    // collections of nullable primitives
     public class SyncCollectionsObject : RealmObject
     {
         [MapTo("_id")]
         [PrimaryKey]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public Guid GuidProperty { get; set; }
+
+        public IList<char> CharList { get; }
+
+        public IList<byte> ByteList { get; }
+
+        public IList<short> Int16List { get; }
+
+        public IList<int> Int32List { get; }
+
+        public IList<long> Int64List { get; }
+
+        public IList<float> FloatList { get; }
+
+        public IList<double> DoubleList { get; }
+
+        public IList<bool> BooleanList { get; }
+
+        public IList<decimal> DecimalList { get; }
+
+        public IList<Decimal128> Decimal128List { get; }
+
+        public IList<ObjectId> ObjectIdList { get; }
+
+        [Required]
+        public IList<string> StringList { get; }
+
+        [Required]
+        public IList<byte[]> ByteArrayList { get; }
+
+        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+
+        public IList<IntPropertyObject> ObjectList { get; }
+
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+
+        public IList<RealmValue> RealmValueList { get; }
 
         public ISet<char> CharSet { get; }
 
@@ -435,6 +417,8 @@ namespace Realms.Tests
         public ISet<int> Int32Set { get; }
 
         public ISet<long> Int64Set { get; }
+
+        public ISet<float> FloatSet { get; }
 
         public ISet<double> DoubleSet { get; }
 
@@ -468,6 +452,8 @@ namespace Realms.Tests
 
         public IDictionary<string, long> Int64Dict { get; }
 
+        public IDictionary<string, float> FloatDict { get; }
+
         public IDictionary<string, double> DoubleDict { get; }
 
         public IDictionary<string, bool> BooleanDict { get; }
@@ -488,13 +474,13 @@ namespace Realms.Tests
 
         public IDictionary<string, IntPropertyObject> ObjectDict { get; }
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
 
         public IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
-    // This is a stripped-down version of SetsObject because Sync doesn't support float
-    // or collections of nullable primitives
+    // This is a stripped-down version of SetsObject because Sync doesn't support
+    // collections of nullable primitives
     public class SyncAllTypesObject : RealmObject
     {
         [MapTo("_id")]
@@ -510,6 +496,8 @@ namespace Realms.Tests
         public int Int32Property { get; set; }
 
         public long Int64Property { get; set; }
+
+        public float FloatProperty { get; set; }
 
         public double DoubleProperty { get; set; }
 
@@ -530,6 +518,10 @@ namespace Realms.Tests
         public byte[] ByteArrayProperty { get; set; }
 
         public RealmValue RealmValueProperty { get; set; }
+
+        public IntPropertyObject ObjectProperty { get; set; }
+
+        public EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
     }
 
     public class DictionariesObject : RealmObject
@@ -589,22 +581,6 @@ namespace Realms.Tests
 
         public IDictionary<string, ObjectId?> NullableObjectIdDictionary { get; }
 
-        public IDictionary<string, RealmInteger<byte>> ByteCounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<short>> Int16CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<int>> Int32CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<long>> Int64CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDictionary { get; }
-
-        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDictionary { get; }
-
         public IDictionary<string, byte[]> NullableBinaryDictionary { get; }
 
         [Required]
@@ -615,7 +591,6 @@ namespace Realms.Tests
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
 
         public IDictionary<string, RealmValue> RealmValueDictionary { get; }
-
     }
 
     public class CounterObject : RealmObject
@@ -665,42 +640,42 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public char CharProperty { get; set; }
+        public char Id { get; set; }
     }
 
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public byte ByteProperty { get; set; }
+        public byte Id { get; set; }
     }
 
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public short Int16Property { get; set; }
+        public short Id { get; set; }
     }
 
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public int Int32Property { get; set; }
+        public int Id { get; set; }
     }
 
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public long Int64Property { get; set; }
+        public long Id { get; set; }
     }
 
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public string StringProperty { get; set; }
+        public string Id { get; set; }
 
         public string Value { get; set; }
     }
@@ -710,7 +685,7 @@ namespace Realms.Tests
         [PrimaryKey]
         [Required]
         [MapTo("_id")]
-        public string StringProperty { get; set; }
+        public string Id { get; set; }
 
         public string Value { get; set; }
     }
@@ -719,63 +694,63 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public ObjectId ObjectIdProperty { get; set; }
+        public ObjectId Id { get; set; }
     }
 
     public class PrimaryKeyGuidObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public Guid GuidProperty { get; set; }
+        public Guid Id { get; set; }
     }
 
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public char? CharProperty { get; set; }
+        public char? Id { get; set; }
     }
 
     public class PrimaryKeyNullableByteObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public byte? ByteProperty { get; set; }
+        public byte? Id { get; set; }
     }
 
     public class PrimaryKeyNullableInt16Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public short? Int16Property { get; set; }
+        public short? Id { get; set; }
     }
 
     public class PrimaryKeyNullableInt32Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public int? Int32Property { get; set; }
+        public int? Id { get; set; }
     }
 
     public class PrimaryKeyNullableInt64Object : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public long? Int64Property { get; set; }
+        public long? Id { get; set; }
     }
 
     public class PrimaryKeyNullableObjectIdObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public ObjectId? ObjectIdProperty { get; set; }
+        public ObjectId? Id { get; set; }
     }
 
     public class PrimaryKeyNullableGuidObject : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public Guid? GuidProperty { get; set; }
+        public Guid? Id { get; set; }
     }
 
     public class ClassWithUnqueryableMembers : RealmObject
@@ -813,6 +788,8 @@ namespace Realms.Tests
 
         [Backlink(nameof(UnqueryableBacklinks.Parent))]
         public IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
+
+        public static string StaticProperty { get; set; }
     }
 
     public class UnqueryableBacklinks : RealmObject
@@ -828,7 +805,9 @@ namespace Realms.Tests
 
         public bool Vaccinated { get; set; }
 
-        [Backlink(nameof(Owner.Dogs))]
+        public int Age { get; set; }
+
+        [Backlink(nameof(Owner.ListOfDogs))]
         public IQueryable<Owner> Owners { get; }
     }
 
@@ -838,7 +817,9 @@ namespace Realms.Tests
 
         public Dog TopDog { get; set; }
 
-        public IList<Dog> Dogs { get; }
+        public IList<Dog> ListOfDogs { get; }
+
+        public ISet<Dog> SetOfDogs { get; }
     }
 
     // A copy of Owner that verifies that different objects referring to the same type (Dog)
@@ -849,7 +830,9 @@ namespace Realms.Tests
 
         public Dog TopDog { get; set; }
 
-        public IList<Dog> Dogs { get; }
+        public IList<Dog> ListOfDogs { get; }
+
+        public ISet<Dog> SetOfDogs { get; }
     }
 
     public class RequiredStringObject : RealmObject
@@ -871,7 +854,19 @@ namespace Realms.Tests
 
         public int Int { get; set; }
 
+        public Guid GuidProperty { get; set; }
+
+        [Backlink(nameof(SyncCollectionsObject.ObjectList))]
+        public IQueryable<SyncCollectionsObject> ContainingCollections { get; }
+
         public override string ToString() => $"Int: {Int}";
+    }
+
+    public class ObjectWithObjectProperties : RealmObject
+    {
+        public IntPropertyObject StandaloneObject { get; set; }
+
+        public EmbeddedIntPropertyObject EmbeddedObject { get; set; }
     }
 
     public class EmbeddedIntPropertyObject : EmbeddedObject

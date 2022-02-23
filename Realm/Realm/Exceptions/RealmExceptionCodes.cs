@@ -44,6 +44,7 @@ namespace Realms.Exceptions
         RealmClosed = 24,
         ObjectManagedByAnotherRealm = 25,
         KeyAlreadyExists = 26,
+        RealmInUseException = 27,
 
         RealmDotNetExceptionDuringMigration = 30,
 
@@ -58,6 +59,7 @@ namespace Realms.Exceptions
         AppUnknownError = 59,
 
         SessionError = 60,
+        DuplicateSubscription = 61,
 
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,

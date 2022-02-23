@@ -28,7 +28,7 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class FunctionsTests : SyncTestBase
     {
-        private readonly List<string> _conventionsToRemove = new List<string>();
+        private readonly Queue<string> _conventionsToRemove = new Queue<string>();
 
         [Test]
         public void CallFunction_ReturnsResult()
@@ -81,6 +81,8 @@ namespace Realms.Tests.Sync
         [Test]
         public void CallFunction_WithAnonymousParams_ReturnsBsonResult()
         {
+            TestHelpers.IgnoreOnUnity("Anonymous objects need lambda compilation, which doesn't work on IL2CPP");
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await GetUserAsync();
@@ -119,6 +121,46 @@ namespace Realms.Tests.Sync
                 Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
                 Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first.objectId));
                 AssertDateTimeEquals(result["date"].ToUniversalTime(), second.date);
+                Assert.That(result["arr"].AsBsonArray.Select(a => a.AsInt32), Is.EquivalentTo(new[] { 1, 4 }));
+                Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
+            });
+        }
+
+        [Test]
+        public void CallFunction_WithBsonDocument_ReturnsBsonResult()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var first = new BsonDocument
+                {
+                    { "intValue", 1 },
+                    { "floatValue", 1.2 },
+                    { "stringValue", "Hello " },
+                    { "objectId", ObjectId.GenerateNewId() },
+                    { "arr", new BsonArray { 1, 2, 3 } },
+                    { "date", DateTime.UtcNow },
+                    { "child", new BsonDocument { { "intValue", 2L } } }
+                };
+
+                var second = new BsonDocument
+                {
+                    { "intValue", 2 },
+                    { "floatValue", 2.3 },
+                    { "stringValue", "world" },
+                    { "objectId", ObjectId.GenerateNewId() },
+                    { "date", DateTime.UtcNow.AddHours(5) },
+                    { "arr", new BsonArray { 4, 5, 6 } },
+                    { "child", new BsonDocument { { "intValue", 3L } } }
+                };
+
+                var result = await user.Functions.CallAsync("documentFunc", first, second);
+
+                Assert.That(result["intValue"].AsInt32, Is.EqualTo(3));
+                Assert.That(result["floatValue"].AsDouble, Is.EqualTo(3.5));
+                Assert.That(result["stringValue"].AsString, Is.EqualTo("Hello world"));
+                Assert.That(result["objectId"].AsObjectId, Is.EqualTo(first["objectId"].AsObjectId));
+                AssertDateTimeEquals(result["date"].ToUniversalTime(), second["date"].ToUniversalTime());
                 Assert.That(result["arr"].AsBsonArray.Select(a => a.AsInt32), Is.EquivalentTo(new[] { 1, 4 }));
                 Assert.That(result["child"]["intValue"].AsInt64, Is.EqualTo(5));
             });
@@ -172,16 +214,84 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(DeserializationTestCases))]
-        public void CallFunction_AndTestDeserialization(dynamic arg)
+        #region TestDeserialization
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Short([ValueSource(nameof(ShortTestCases))] short arg)
         {
             TestDeserialization(arg);
         }
 
-        [TestCaseSource(nameof(DeserializationTestCases))]
-        public void CallFunction_AndTestBsonValue(dynamic arg)
+        [Test]
+        public void CallFunction_AndTestDeserialization_Int([ValueSource(nameof(IntTestCases))] int arg)
         {
-            TestBsonValue(arg);
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Long([ValueSource(nameof(LongTestCases))] long arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Float([ValueSource(nameof(FloatTestCases))] float arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Double([ValueSource(nameof(DoubleTestCases))] double arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_String([ValueSource(nameof(StringTestCases))] string arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Guid([ValueSource(nameof(GuidTestCases))] Guid arg)
+        {
+            TestDeserialization(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestDeserialization_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
+        {
+            TestDeserialization(arg);
         }
 
         [Test]
@@ -233,6 +343,96 @@ namespace Realms.Tests.Sync
             });
         }
 
+        #endregion
+
+        #region TestBsonValue
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Short([ValueSource(nameof(ShortTestCases))] short arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Int([ValueSource(nameof(IntTestCases))] int arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Long([ValueSource(nameof(LongTestCases))] long arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        [Ignore("BsonValue can't represent float.")]
+        public void CallFunction_AndTestBsonValue_Float([ValueSource(nameof(FloatTestCases))] float arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Double([ValueSource(nameof(DoubleTestCases))] double arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Decimal([ValueSource(nameof(DecimalTestCases))] decimal arg)
+        {
+            if (arg == decimal.MinValue || arg == decimal.MaxValue)
+            {
+                // MongoDB.Bson serializes MinValue/MaxValue as Decimal128.MinValue/MaxValue:
+                // https://github.com/mongodb/mongo-csharp-driver/blob/b2668fb80c8d45be58a8009e336006c9545c1581/src/MongoDB.Bson/Serialization/Options/RepresentationConverter.cs#L153-L160
+                Assert.Ignore("MongoDB.Bson representation for decimal.MinValue/MaxValue is incorrect.");
+            }
+
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Decimal128([ValueSource(nameof(Decimal128TestCases))] Decimal128 arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_String([ValueSource(nameof(StringTestCases))] string arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_DateTime([ValueSource(nameof(DateTimeTestCases))] DateTime arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_DateTimeOffset([ValueSource(nameof(DateTimeOffsetTestCases))] DateTimeOffset arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_ObjectId([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Guid([ValueSource(nameof(ObjectIdTestCases))] ObjectId arg)
+        {
+            TestBsonValue(arg);
+        }
+
+        [Test]
+        public void CallFunction_AndTestBsonValue_Boolean([ValueSource(nameof(BooleanTestCases))] bool arg)
+        {
+            TestBsonValue(arg);
+        }
+
         private void TestBsonValue<T>(T val)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -244,6 +444,10 @@ namespace Realms.Tests.Sync
                 if (val is DateTime date)
                 {
                     AssertDateTimeEquals(result.ToUniversalTime(), date);
+                }
+                else if (val is DateTimeOffset dto)
+                {
+                    AssertDateTimeOffsetEquals(result, dto);
                 }
                 else
                 {
@@ -262,6 +466,15 @@ namespace Realms.Tests.Sync
                         AssertDateTimeEquals(dateArrResult[i], dateArr[i]);
                     }
                 }
+                else if (arr is DateTimeOffset[] dtoArr)
+                {
+                    var dtoArrResult = arrResult.AsBsonArray;
+                    Assert.That(dtoArrResult.Count, Is.EqualTo(dtoArr.Length));
+                    for (var i = 0; i < dtoArr.Length; i++)
+                    {
+                        AssertDateTimeOffsetEquals(dtoArrResult[i], dtoArr[i]);
+                    }
+                }
                 else
                 {
                     Assert.That(
@@ -271,22 +484,26 @@ namespace Realms.Tests.Sync
             });
         }
 
+        #endregion
+
         protected override void CustomTearDown()
         {
             base.CustomTearDown();
 
-            foreach (var convention in _conventionsToRemove)
-            {
-                ConventionRegistry.Remove(convention);
-            }
-
-            _conventionsToRemove.Clear();
+            _conventionsToRemove.DrainQueue(ConventionRegistry.Remove);
         }
 
         private static void AssertDateTimeEquals(DateTime first, DateTime second)
         {
             var diff = (first - second).TotalMilliseconds;
             Assert.That(Math.Abs(diff), Is.LessThan(1), $"Expected {first} to equal {second} with millisecond precision, but it didn't.");
+        }
+
+        private static void AssertDateTimeOffsetEquals(BsonValue first, DateTimeOffset second)
+        {
+            Assert.That(first.IsString);
+            var firstDto = DateTimeOffset.Parse(first.AsString);
+            Assert.That(firstDto, Is.EqualTo(second));
         }
 
         private void AddCamelCaseConvention()
@@ -296,7 +513,7 @@ namespace Realms.Tests.Sync
             pack.Add(new CamelCaseElementNameConvention());
             ConventionRegistry.Register(name, pack, _ => true);
 
-            _conventionsToRemove.Add(name);
+            _conventionsToRemove.Enqueue(name);
         }
 
         private class FunctionArgument
@@ -321,48 +538,111 @@ namespace Realms.Tests.Sync
             public int IntValue { get; set; }
         }
 
-        public static readonly object[] DeserializationTestCases = new[]
+        public static readonly int[] IntTestCases = new[]
         {
-            new object[] { 1 },
-            new object[] { 0 },
-            new object[] { -1 },
-            new object[] { int.MinValue },
-            new object[] { int.MaxValue },
-            new object[] { 1L },
-            new object[] { -1L },
-            new object[] { 0L },
-            new object[] { long.MinValue },
-            new object[] { long.MaxValue },
-            new object[] { 1.54 },
-            new object[] { 0.00 },
-            new object[] { -1.224 },
+            1,
+            0,
+            -1,
+            int.MinValue,
+            int.MaxValue,
+        };
+
+        public static readonly long[] LongTestCases = new[]
+        {
+            1L,
+            -1L,
+            0L,
+            long.MinValue,
+            long.MaxValue,
+        };
+
+        public static readonly double[] DoubleTestCases = new[]
+        {
+            1.54,
+            0.00,
+            -1.224,
 
             // These don't roundtrip correctly: https://github.com/realm/realm-object-store/issues/1106
-            // new object[] { double.MinValue },
-            // new object[] { double.MaxValue },
+            // double.MinValue,
+            // double.MaxValue,
+        };
 
-            // These are unsupported by core - it has a limit of 19 digits for string parsing
-            // new object[] { Decimal128.MinValue },
-            // new object[] { Decimal128.MaxValue },
-            new object[] { new Decimal128(1.2M) },
-            new object[] { new Decimal128(0) },
-            new object[] { new Decimal128(-1.53464399239324M) },
-            new object[] { "fooo" },
-            new object[] { string.Empty },
-            new object[] { ObjectId.Parse("5f766ae78d273beeab5b0e6b") },
-            new object[] { ObjectId.Empty },
-            new object[] { new DateTime(202065954, DateTimeKind.Utc) },
-            new object[] { new DateTime(3333444, DateTimeKind.Utc) },
-            new object[] { new DateTime(0, DateTimeKind.Utc) },
-            new object[] { DateTime.MinValue },
-            new object[] { DateTime.MaxValue },
-            new object[] { true },
-            new object[] { false },
-            new object[] { (short)1 },
-            new object[] { (short)0 },
-            new object[] { (short)-1 },
-            new object[] { short.MinValue },
-            new object[] { short.MaxValue },
+        public static readonly float[] FloatTestCases = new[]
+        {
+            1.54f,
+            0.00f,
+            -1.224f,
+            float.MinValue,
+            float.MaxValue,
+        };
+
+        public static readonly Decimal128[] Decimal128TestCases = new[]
+        {
+            Decimal128.MinValue,
+            Decimal128.MaxValue,
+            new Decimal128(1.2M),
+            new Decimal128(0),
+            new Decimal128(-1.53464399239324M),
+        };
+
+        public static readonly decimal[] DecimalTestCases = new[]
+        {
+            decimal.MinValue,
+            decimal.MaxValue,
+            1.2M,
+            0M,
+            -1.53464399239324M,
+        };
+
+        public static readonly string[] StringTestCases = new[]
+        {
+            "fooo",
+            string.Empty,
+        };
+
+        public static readonly ObjectId[] ObjectIdTestCases = new[]
+        {
+            ObjectId.Parse("5f766ae78d273beeab5b0e6b"),
+            ObjectId.Empty,
+        };
+
+        public static readonly Guid[] GuidTestCases = new[]
+        {
+            Guid.Parse("86CA0BAD-F069-4713-AD42-F9175579B83D"),
+            Guid.Empty,
+        };
+
+        public static readonly DateTime[] DateTimeTestCases = new[]
+        {
+            new DateTime(202065954, DateTimeKind.Utc),
+            new DateTime(3333444, DateTimeKind.Utc),
+            new DateTime(0, DateTimeKind.Utc),
+            DateTime.MinValue,
+            DateTime.MaxValue,
+        };
+
+        public static readonly DateTimeOffset[] DateTimeOffsetTestCases = new[]
+        {
+            new DateTimeOffset(202065955, TimeSpan.Zero),
+            new DateTimeOffset(3333444, TimeSpan.Zero),
+            new DateTimeOffset(0, TimeSpan.Zero),
+            DateTimeOffset.MinValue,
+            DateTimeOffset.MaxValue,
+        };
+
+        public static readonly bool[] BooleanTestCases = new[]
+        {
+            true,
+            false,
+        };
+
+        public static readonly short[] ShortTestCases = new[]
+        {
+            (short)1,
+            (short)0,
+            (short)-1,
+            short.MinValue,
+            short.MaxValue,
         };
     }
 }

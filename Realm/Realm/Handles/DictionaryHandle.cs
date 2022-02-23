@@ -28,6 +28,7 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct DictionaryChangeSet
         {
+            public MarshaledVector<PrimitiveValue> Deletions;
             public MarshaledVector<PrimitiveValue> Insertions;
             public MarshaledVector<PrimitiveValue> Modifications;
         }
@@ -37,8 +38,6 @@ namespace Realms
 
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_clear", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear(DictionaryHandle handle, out NativeException ex);
 
@@ -60,10 +59,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_thread_safe_reference(DictionaryHandle handle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool get_is_frozen(DictionaryHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(DictionaryHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
@@ -104,51 +99,59 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_keys", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_keys(DictionaryHandle handle, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid
         {
             get
             {
+                if (IsClosed || Root?.IsClosed == true)
+                {
+                    return false;
+                }
+
                 var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }
         }
 
-        public DictionaryHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        public DictionaryHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         public override void Clear()
         {
+            EnsureIsOpen();
+
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public NotificationTokenHandle AddKeyNotificationCallback(IntPtr managedObjectHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.add_key_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(this, result);
+            return new NotificationTokenHandle(Root, result);
         }
 
         public override int Count()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
@@ -156,29 +159,23 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
         {
             throw new NotImplementedException("Dictionaries can't be filtered yet.");
         }
 
-        public override bool IsFrozen
-        {
-            get
-            {
-                var result = NativeMethods.get_is_frozen(this, out var nativeException);
-                nativeException.ThrowIfNecessary();
-                return result;
-            }
-        }
-
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
+            EnsureIsOpen();
+
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new DictionaryHandle(frozenRealmHandle, result);
@@ -186,6 +183,8 @@ namespace Realms
 
         public bool TryGet(string key, Realm realm, out RealmValue value)
         {
+            EnsureIsOpen();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
             var containsValue = NativeMethods.try_get_value(this, primitiveKey, out var result, out var nativeException);
@@ -204,14 +203,18 @@ namespace Realms
 
         public KeyValuePair<string, TValue> GetValueAtIndex<TValue>(int index, Realm realm)
         {
+            EnsureIsOpen();
+
             NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var ex);
             ex.ThrowIfNecessary();
             var value = new RealmValue(primitiveValue, realm);
             return new KeyValuePair<string, TValue>(key.AsString(), value.As<TValue>());
         }
 
-        public unsafe void Set(string key, in RealmValue value)
+        public void Set(string key, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, valueHandles) = value.ToNative();
 
             RealmValue keyValue = key;
@@ -223,8 +226,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void Add(string key, in RealmValue value)
+        public void Add(string key, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitive, handles) = value.ToNative();
 
             RealmValue keyValue = key;
@@ -238,6 +243,8 @@ namespace Realms
 
         public ObjectHandle AddEmbedded(string key)
         {
+            EnsureIsOpen();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -250,6 +257,8 @@ namespace Realms
 
         public ObjectHandle SetEmbedded(string key)
         {
+            EnsureIsOpen();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -260,8 +269,10 @@ namespace Realms
             return new ObjectHandle(Root, result);
         }
 
-        public unsafe bool ContainsKey(string key)
+        public bool ContainsKey(string key)
         {
+            EnsureIsOpen();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -274,6 +285,8 @@ namespace Realms
 
         public bool Remove(string key)
         {
+            EnsureIsOpen();
+
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
@@ -286,6 +299,8 @@ namespace Realms
 
         public bool Remove(string key, in RealmValue value)
         {
+            EnsureIsOpen();
+
             var (primitiveValue, valueHandles) = value.ToNative();
 
             RealmValue keyValue = key;
@@ -302,16 +317,20 @@ namespace Realms
 
         public ResultsHandle GetValues()
         {
+            EnsureIsOpen();
+
             var resultsPtr = NativeMethods.get_values(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root ?? this, resultsPtr);
+            return new ResultsHandle(Root, resultsPtr);
         }
 
         public ResultsHandle GetKeys()
         {
+            EnsureIsOpen();
+
             var resultsPtr = NativeMethods.get_keys(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root ?? this, resultsPtr);
+            return new ResultsHandle(Root, resultsPtr);
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]

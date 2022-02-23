@@ -24,6 +24,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using MongoDB.Bson;
 using Realms.Dynamic;
 using Realms.Helpers;
 
@@ -38,7 +39,23 @@ namespace Realms
         private readonly SetHandle _setHandle;
 
         [SuppressMessage("Design", "CA1000:Do not declare static members on generic types", Justification = "We need to be on the generic class so that the weaver can use it.")]
-        public static IEqualityComparer<T> Comparer { get; } = typeof(T) == typeof(byte[]) ? (IEqualityComparer<T>)new BinaryEqualityComparer() : EqualityComparer<T>.Default;
+        public static IEqualityComparer<T> Comparer { get; }
+
+        static RealmSet()
+        {
+            if (typeof(T) == typeof(byte[]))
+            {
+                Comparer = (IEqualityComparer<T>)new BinaryEqualityComparer();
+            }
+            else if (typeof(T) == typeof(RealmValue))
+            {
+                Comparer = (IEqualityComparer<T>)new RealmValueEqualityComparer();
+            }
+            else
+            {
+                Comparer = EqualityComparer<T>.Default;
+            }
+        }
 
         internal RealmSet(Realm realm, SetHandle adoptedSet, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
@@ -50,15 +67,7 @@ namespace Realms
         {
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
-            if (realmValue.Type == RealmValueType.Object)
-            {
-                var robj = realmValue.AsRealmObject<RealmObject>();
-                if (!robj.IsManaged)
-                {
-                    Realm.Add(robj);
-                }
-            }
-
+            AddToRealmIfNecessary(realmValue);
             return _setHandle.Add(realmValue);
         }
 
@@ -91,6 +100,12 @@ namespace Realms
         void ICollection<T>.Add(T item) => Add(item);
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmSet(expression, this);
+
+        internal RealmResults<T> ToResults()
+        {
+            var resultsHandle = _setHandle.ToResults();
+            return new RealmResults<T>(Realm, resultsHandle, Metadata);
+        }
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmSet<T>(realm, (SetHandle)handle, Metadata);
 
@@ -234,15 +249,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in other)
-            {
-                if (Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return other.Any(Contains);
         }
 
         public bool SetEquals(IEnumerable<T> other)
@@ -260,16 +267,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in otherSet)
-            {
-                if (!Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We already know that counts are the same
-            return true;
+            return otherSet.All(Contains);
         }
 
         private bool IsSubsetCore(IEnumerable<T> other, bool proper)
@@ -302,16 +300,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in this)
-            {
-                if (!otherSet.Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We've already established that we have less than the max element count, so we're a subset.
-            return true;
+            return this.All(otherSet.Contains);
         }
 
         private bool IsSupersetCore(IEnumerable<T> other, bool proper)
@@ -346,16 +335,7 @@ namespace Realms
                 return false;
             }
 
-            foreach (var item in otherSet)
-            {
-                if (!Contains(item))
-                {
-                    return false;
-                }
-            }
-
-            // We've already established that we have more than the min element count, so we're a superset.
-            return true;
+            return otherSet.All(Contains);
         }
 
         private static ISet<T> GetSet(IEnumerable<T> collection)
@@ -400,6 +380,35 @@ namespace Realms
                 }
 
                 return obj.Length;
+            }
+        }
+
+        private class RealmValueEqualityComparer : EqualityComparer<RealmValue>
+        {
+            public override bool Equals(RealmValue x, RealmValue y)
+            {
+                // We're converting numeric types to Decimal128 as it can hold the entire range
+                // of long, float, and double
+                if (x.Type.IsNumeric() && y.Type.IsNumeric())
+                {
+                    var decimalX = x.As<Decimal128>();
+                    var decimalY = x.As<Decimal128>();
+                    return decimalX == decimalY;
+                }
+
+                return x == y;
+            }
+
+            public override int GetHashCode(RealmValue obj)
+            {
+                // We're getting the hashcode of numeric types by casting them to double
+                // because Decimal128's hashcode function is incorrect: https://jira.mongodb.org/browse/CSHARP-3288
+                if (obj.Type.IsNumeric())
+                {
+                    return obj.As<double>().GetHashCode();
+                }
+
+                return obj.GetHashCode();
             }
         }
     }

@@ -24,7 +24,7 @@ namespace Realms.Sync
 {
     /// <summary>
     /// An object encapsulating a synchronization session. Sessions represent the communication between the client (and a local Realm file on disk),
-    /// and the server (and a remote Realm at a given partition served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
+    /// and the server (and a remote Realm served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
     /// out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
     /// </summary>
     public class Session
@@ -34,6 +34,8 @@ namespace Realms.Sync
         /// </summary>
         public static event EventHandler<ErrorEventArgs> Error;
 
+        internal bool IsClosed => _handle.IsClosed;
+
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
@@ -41,9 +43,9 @@ namespace Realms.Sync
         public SessionState State => Handle.GetState();
 
         /// <summary>
-        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to MongoDB Realm.
+        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to MongoDB Realm.
         /// </summary>
-        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
+        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfigurationBase"/>.</value>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User User => Handle.TryGetUser(out var userHandle) ? new User(userHandle) : null;
 
@@ -96,34 +98,21 @@ namespace Realms.Sync
         /// If you prefer not to take a dependency on it, you can create a class that implements <see cref="IObserver{T}"/>
         /// and use it to subscribe instead.
         /// </example>
-        public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
-        {
-            return new SyncProgressObservable(this, direction, mode);
-        }
+        public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode) => new SyncProgressObservable(Handle, direction, mode);
 
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.
         /// </summary>
         /// <returns>An awaitable <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
-        public Task WaitForUploadAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            Handle.Wait(tcs, ProgressDirection.Upload);
-            return tcs.Task;
-        }
+        public Task WaitForUploadAsync() => Handle.WaitAsync(ProgressDirection.Upload);
 
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending downloads.
         /// </summary>
         /// <returns>An awaitable <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
-        public Task WaitForDownloadAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            Handle.Wait(tcs, ProgressDirection.Download);
-            return tcs.Task;
-        }
+        public Task WaitForDownloadAsync() => Handle.WaitAsync(ProgressDirection.Download);
 
         /// <summary>
         /// Stops any synchronization with the server until the Realm is re-opened again
@@ -134,10 +123,7 @@ namespace Realms.Sync
         /// <remarks>
         /// If the session is already stopped, calling this method will do nothing.
         /// </remarks>
-        public void Stop()
-        {
-            Handle.Stop();
-        }
+        public void Stop() => Handle.Stop();
 
         /// <summary>
         /// Attempts to resume the session and enable synchronization with the server.
@@ -146,16 +132,28 @@ namespace Realms.Sync
         /// All sessions will be active by default and calling this method only makes sense if
         /// <see cref="Stop"/> was called before that.
         /// </remarks>
-        public void Start()
-        {
-            Handle.Start();
-        }
+        public void Start() => Handle.Start();
 
-        internal readonly SessionHandle Handle;
+        private readonly SessionHandle _handle;
+
+        private SessionHandle Handle
+        {
+            get
+            {
+                if (_handle.IsClosed)
+                {
+                    throw new ObjectDisposedException(
+                        nameof(Session),
+                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
+                }
+
+                return _handle;
+            }
+        }
 
         internal Session(SessionHandle handle)
         {
-            Handle = handle;
+            _handle = handle;
         }
 
         internal static void RaiseError(Session session, Exception error)
@@ -166,26 +164,26 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
-        {
-            var session = obj as Session;
-
-            return session != null &&
-                   session.Handle.GetRawPointer() == Handle.GetRawPointer();
-        }
+            => obj is Session other &&
+               Handle.GetRawPointer() == other.Handle.GetRawPointer();
 
         /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Handle.GetRawPointer().GetHashCode();
-        }
+        public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
 
-        internal void CloseHandle()
+        internal void CloseHandle(bool waitForShutdown = false)
         {
             GC.SuppressFinalize(this);
-            if (!Handle.IsClosed)
+            if (!IsClosed)
             {
-                Handle.Close();
+                if (waitForShutdown)
+                {
+                    _handle.ShutdownAndWait();
+                }
+
+                _handle.Close();
             }
         }
+
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
     }
 }

@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Schema;
@@ -45,6 +46,17 @@ namespace Realms
         public string DatabasePath { get; protected set; }
 
         /// <summary>
+        /// Gets or sets the path where the named pipes used by Realm can be placed.
+        /// </summary>
+        /// <remarks>
+        /// In the vast majority of cases this value should be left null.
+        /// It needs to be set if the Realm is opened on a filesystem where a named pipe cannot be created, such as external storage on Android that uses FAT32.
+        /// In this case the path should point to a location on a filesystem where the pipes can be created.
+        /// </remarks>
+        /// <value>The path where named pipes can be created.</value>
+        public string FallbackPipePath { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the Realm will be open in dynamic mode. If opened in dynamic mode,
         /// the schema will be read from the file on disk.
         /// </summary>
@@ -69,7 +81,49 @@ namespace Realms
         /// </code>
         /// </example>
         /// <value>The classes that can be persisted in the Realm.</value>
-        public Type[] ObjectClasses { get; set; }
+        [Obsolete("Use Schema = new[] { typeof(...) } instead.")]
+        public Type[] ObjectClasses
+        {
+            get => Schema?.Select(s => s.Type).Where(t => t != null).ToArray();
+            set => Schema = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the schema of the Realm opened with this configuration.
+        /// </summary>
+        /// <remarks>
+        /// Typically left null so by default all <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s will be able to be stored in all Realms.
+        /// <br />
+        /// If specifying the schema explicitly, you can either use the implicit conversion operator from <c>Type[]</c> to <see cref="RealmSchema"/>
+        /// or construct it using the <see cref="RealmSchema.Builder"/> API.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// config.Schema = new Type[]
+        /// {
+        ///     typeof(CommonClass),
+        ///     typeof(RareClass)
+        /// };
+        ///
+        /// // Alternatively
+        /// config.Schema = new RealmSchema.Builder
+        /// {
+        ///     new ObjectSchema.Builder("Person")
+        ///     {
+        ///         Property.Primitive("Name", RealmValueType.String, isPrimaryKey: true),
+        ///         Property.Primitive("Birthday", RealmValueType.Date, isNullable: true),
+        ///         Property.ObjectList("Addresses", objectType: "Address")
+        ///     },
+        ///     new ObjectSchema.Builder("Address")
+        ///     {
+        ///         Property.Primitive("City", RealmValueType.String),
+        ///         Property.Primitive("Street", RealmValueType.String),
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <value>The schema of the types that can be persisted in the Realm.</value>
+        public RealmSchema Schema { get; set; }
 
         /// <summary>
         /// Utility to build a path in which a Realm will be created so can consistently use filenames and relative paths.
@@ -108,7 +162,7 @@ namespace Realms
         /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
         /// </summary>
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
-        public byte[] EncryptionKey
+        public virtual byte[] EncryptionKey
         {
             get
             {
@@ -146,19 +200,57 @@ namespace Realms
             return (RealmConfigurationBase)MemberwiseClone();
         }
 
-        internal abstract Realm CreateRealm(RealmSchema schema);
+        internal abstract Realm CreateRealm();
 
-        internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
+        internal abstract Task<Realm> CreateRealmAsync(CancellationToken cancellationToken);
 
         internal Native.Configuration CreateNativeConfiguration()
         {
             return new Native.Configuration
             {
                 Path = DatabasePath,
+                FallbackPipePath = FallbackPipePath,
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,
                 max_number_of_active_versions = MaxNumberOfActiveVersions
             };
+        }
+
+        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema)
+        {
+            if (IsDynamic && !schema.Any())
+            {
+                try
+                {
+                    schema = sharedRealmHandle.GetSchema();
+                }
+                catch
+                {
+                    sharedRealmHandle.Close();
+                    throw;
+                }
+            }
+
+            return new Realm(sharedRealmHandle, this, schema);
+        }
+
+        /// <summary>
+        /// Method to use when opening a Realm with this configuration. It takes care of dynamic mode
+        /// as well as explicitly defined user schema.
+        /// </summary>
+        internal RealmSchema GetSchema()
+        {
+            if (Schema != null)
+            {
+                return Schema;
+            }
+
+            if (IsDynamic)
+            {
+                return RealmSchema.Empty;
+            }
+
+            return RealmSchema.Default;
         }
     }
 }

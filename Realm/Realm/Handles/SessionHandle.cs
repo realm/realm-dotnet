@@ -18,9 +18,9 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Native;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
@@ -31,16 +31,14 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset);
+            public delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, PrimitiveValue message, IntPtr user_info_pairs, IntPtr user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, byte* message_buf, IntPtr message_len);
+            public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
@@ -71,7 +69,6 @@ namespace Realms.Sync
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
@@ -85,22 +82,16 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_start", CallingConvention = CallingConvention.Cdecl)]
             public static extern void start(SessionHandle session, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
-        static SessionHandle()
-        {
-            NativeCommon.Initialize();
-        }
+        public override bool ForceRootOwnership => true;
 
         [Preserve]
-        public SessionHandle(IntPtr handle) : base(null, handle)
+        public SessionHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        public static unsafe void InstallCallbacks()
+        public static void Initialize()
         {
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
@@ -113,16 +104,16 @@ namespace Realms.Sync
             NativeMethods.install_syncsession_callbacks(error, progress, wait);
         }
 
-        public bool TryGetUser(out SyncUserHandle handle)
+        public bool TryGetUser(out SyncUserHandle userHandle)
         {
             var ptr = NativeMethods.get_user(this);
             if (ptr == IntPtr.Zero)
             {
-                handle = null;
+                userHandle = null;
                 return false;
             }
 
-            handle = new SyncUserHandle(ptr);
+            userHandle = new SyncUserHandle(ptr);
             return true;
         }
 
@@ -156,11 +147,22 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public void Wait(TaskCompletionSource<object> tcs, ProgressDirection direction)
+        public async Task WaitAsync(ProgressDirection direction)
         {
+            var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
-            ex.ThrowIfNecessary();
+
+            try
+            {
+                NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
+                ex.ThrowIfNecessary();
+
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public IntPtr GetRawPointer()
@@ -194,42 +196,39 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        protected override void Unbind()
-        {
-            NativeMethods.destroy(handle);
-        }
+        public override void Unbind() => NativeMethods.destroy(handle);
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength, bool isClientReset)
+        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset)
         {
             try
             {
-                var handle = new SessionHandle(sessionHandlePtr);
+                using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
-                var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
+                var messageString = message.AsString();
 
                 SessionException exception;
 
                 if (isClientReset)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
-                    exception = new ClientResetException(session.User.App, message, userInfo);
+                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+                    exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
-                    exception = new PermissionDeniedException(session.User.App, message, userInfo);
+                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+                    exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
                 }
                 else
                 {
-                    exception = new SessionException(message, errorCode);
+                    exception = new SessionException(messageString, errorCode);
                 }
 
                 Session.RaiseError(session, exception);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
             }
         }
 
@@ -241,27 +240,20 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
-        private static unsafe void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, byte* messageBuffer, IntPtr messageLength)
+        private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, PrimitiveValue message)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<object>)handle.Target;
 
-            try
+            if (error_code == 0)
             {
-                if (error_code == 0)
-                {
-                    tcs.TrySetResult(null);
-                }
-                else
-                {
-                    var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
-                    const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
-                    tcs.TrySetException(new RealmException(OuterMessage, inner));
-                }
+                tcs.TrySetResult(null);
             }
-            finally
+            else
             {
-                handle.Free();
+                var inner = new SessionException(message.AsString(), (ErrorCode)error_code);
+                const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
+                tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
         }
     }

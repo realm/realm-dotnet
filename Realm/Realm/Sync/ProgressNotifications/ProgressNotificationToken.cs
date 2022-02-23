@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Realms.Logging;
 
 namespace Realms.Sync
 {
@@ -51,7 +52,14 @@ namespace Realms.Sync
         {
             Task.Run(() =>
             {
-                _observer(new SyncProgress(transferredBytes, transferableBytes));
+                try
+                {
+                    _observer(new SyncProgress(transferredBytes, transferableBytes));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Default.Log(LogLevel.Warn, $"An error occurred while reporting progress: {ex}");
+                }
             });
         }
 

@@ -1,18 +1,70 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <Import Project="..\LocalDev.props" Condition="Exists('..\LocalDev.props')" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
-    <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
+    <LocalDev Condition="'$(LocalDev)' == ''">false</LocalDev>
+    <UnityBuild>false</UnityBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
+    <PackageId>Realm.Tests</PackageId>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
+    <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UnityBuild)' != 'true'">
+    <TargetFrameworks>net461</TargetFrameworks>
+    <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
+    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;$(AdditionalFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
+
+    <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
+    <LangVersion Condition="$(TargetFramework.Contains('net6.0'))">10.0</LangVersion>
     <GenerateProgramFile>false</GenerateProgramFile>
-    <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <NoWarn>MSB4011</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(UnityBuild)' != 'true'">
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnitLite" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UnityBuild)' == 'true'">
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\dependencies\com.unity.ext.nunit@1.0.6\nunit.framework.dll</HintPath>
+    </Reference>
+
+    <!--
+    In the Unity Tests project, we're referincing Realm.dll that has bundled dependencies in it. We should reference
+    the same dll here, otherwise when we try to ilrepack the test dependencies, we won't find MongoDB.Bson and friends.
+    -->
+    <Reference Include="Realm">
+      <HintPath>$(RealmDllPath)</HintPath>
+    </Reference>
+
+    <!--
+    Since this is a compiled binary, the Unity weaver will not pick it up, which means we need to pre-weave it using the
+    Fody Weaver.
+    -->
+    <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Realm\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
@@ -20,19 +72,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnitLite" Version="3.12.0" />
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Reactive" Version="4.1.6" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(UnityBuild)' != 'true'">
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
   </ItemGroup>
   <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
@@ -83,9 +131,17 @@
     <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
+    <None Include="..\App.config" Link="App.config" />
+    <None Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\v6db.realm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

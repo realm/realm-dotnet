@@ -19,11 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
@@ -32,27 +28,41 @@ using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
-    public enum AppConfigType
+    public static class AppConfigType
     {
-        Default,
-        IntPartitionKey,
-        ObjectIdPartitionKey,
-        UUIDPartitionKey,
+        public const string Default = "integration-tests";
+        public const string IntPartitionKey = "int-partition-key";
+        public const string ObjectIdPartitionKey = "objectid-partition-key";
+        public const string UUIDPartitionKey = "uuid-part-key";
+        public const string FlexibleSync = "flexible-sync";
     }
 
-    public static class SyncTestHelpers
+    public static partial class SyncTestHelpers
     {
         public const string DefaultPassword = "123456";
         private const string DummyAppId = "myapp-123";
 
-        private static readonly IDictionary<AppConfigType, string> _appIds = new Dictionary<AppConfigType, string>
+        private static readonly IDictionary<string, string> _appIds = new Dictionary<string, string>
         {
             [AppConfigType.Default] = DummyAppId,
         };
 
         private static Uri _baseUri;
 
-        public static AppConfiguration GetAppConfig(AppConfigType type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
+        static SyncTestHelpers()
+        {
+#if !UNITY
+            try
+            {
+                _baseUri = new Uri(System.Configuration.ConfigurationManager.AppSettings["BaasUrl"]);
+            }
+            catch
+            {
+            }
+#endif
+        }
+
+        public static AppConfiguration GetAppConfig(string type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
         {
             BaseUri = _baseUri ?? new Uri("http://localhost:12345"),
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
@@ -65,7 +75,10 @@ namespace Realms.Tests.Sync
                 Assert.Ignore("MongoDB Realm is not setup.");
             }
 
-            ExtractBaasApps();
+            AsyncContext.Run(async () =>
+            {
+                await CreateBaasAppsAsync();
+            });
 
             if (ensureNoSessionErrors)
             {
@@ -93,52 +106,195 @@ namespace Realms.Tests.Sync
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
-        public static string[] ExtractBaasSettings(string[] args)
+        public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
             var result = new List<string>();
 
+            string baasCluster = null;
+            string baasApiKey = null;
+            string baasPrivateApiKey = null;
+            string groupId = null;
+            string baseUrl = null;
+
             for (var i = 0; i < args.Length; i++)
             {
-                switch (args[i])
+                if (!ExtractArg(i, "baasurl", ref baseUrl) &&
+                    !ExtractArg(i, "baascluster", ref baasCluster) &&
+                    !ExtractArg(i, "baasapikey", ref baasApiKey) &&
+                    !ExtractArg(i, "baasprivateapikey", ref baasPrivateApiKey) &&
+                    !ExtractArg(i, "baasprojectid", ref groupId))
                 {
-                    case "--baasurl":
-                        _baseUri = new Uri(args[++i]);
-                        break;
-                    default:
-                        result.Add(args[i]);
-                        break;
+                    result.Add(args[i]);
                 }
             }
 
-            ExtractBaasApps();
+            if (baseUrl != null)
+            {
+                _baseUri = new Uri(baseUrl);
+            }
+
+            await CreateBaasAppsAsync(baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
             return result.ToArray();
+
+            bool ExtractArg(int index, string name, ref string value)
+            {
+                var arg = args[index];
+                if (arg.StartsWith($"--{name}="))
+                {
+                    value = arg.Replace($"--{name}=", string.Empty);
+                    return true;
+                }
+
+                return false;
+            }
         }
 
-        private static void ExtractBaasApps()
+        public static string[] ExtractBaasSettings(string[] args)
+        {
+            return AsyncContext.Run(async () =>
+            {
+                return await ExtractBaasSettingsAsync(args);
+            });
+        }
+
+        private static async Task CreateBaasAppsAsync(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {
                 return;
             }
 
-            AsyncContext.Run(async () =>
+#if !UNITY
+            try
             {
-                using var client = new BaasClient(_baseUri);
+                cluster ??= System.Configuration.ConfigurationManager.AppSettings["Cluster"];
+                apiKey ??= System.Configuration.ConfigurationManager.AppSettings["ApiKey"];
+                privateApiKey ??= System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
+                groupId ??= System.Configuration.ConfigurationManager.AppSettings["GroupId"];
+            }
+            catch
+            {
+            }
+#endif
 
+            BaasClient client;
+            if (cluster != null)
+            {
+                client = await BaasClient.Atlas(_baseUri, cluster, apiKey, privateApiKey, groupId);
+            }
+            else
+            {
+                client = await BaasClient.Docker(_baseUri);
+            }
+
+            using (client)
+            {
                 var apps = await client.GetApps();
 
-                foreach (var (appName, appId) in apps)
+                TestHelpers.Output.WriteLine($"Found {apps.Length} apps.");
+
+                if (apps.Any())
                 {
-                    _appIds[GetConfigTypeForId(appName)] = appId;
+                    foreach (var app in apps)
+                    {
+                        _appIds[app.Name] = app.ClientAppId;
+                    }
                 }
-            });
+                else
+                {
+                    var defaultApp = await client.CreateApp(AppConfigType.Default, "string", setupCollections: true);
+
+                    var authFuncId = await client.CreateFunction(defaultApp, "authFunc", @"exports = (loginPayload) => {
+                      return loginPayload[""realmCustomAuthFuncUserId""];
+                    };");
+
+                    await client.CreateFunction(defaultApp, "documentFunc", @"exports = function(first, second){
+                      return {
+                        intValue: first.intValue + second.intValue,
+                        floatValue: first.floatValue + second.floatValue,
+                        stringValue: first.stringValue + second.stringValue,
+                        objectId: first.objectId,
+                        date: second.date,
+                        child: {
+                          intValue: first.child.intValue + second.child.intValue
+                        },
+                        arr: [ first.arr[0], second.arr[0] ]
+                      }
+                    };");
+
+                    await client.CreateFunction(defaultApp, "mirror", @"exports = function(arg){
+                      return arg;
+                    };");
+
+                    await client.CreateFunction(defaultApp, "sumFunc", @"exports = function(...args) {
+                      return args.reduce((a,b) => a + b, 0);
+                    };");
+
+                    await client.EnableProvider(defaultApp, "api-key");
+                    _appIds[AppConfigType.Default] = defaultApp.ClientAppId;
+
+                    await client.EnableProvider(defaultApp, "custom-function", new
+                    {
+                        authFunctionName = "authFunc",
+                        authFunctionId = authFuncId
+                    });
+
+                    await client.EnableProvider(defaultApp, "custom-token", new
+                    {
+                        audience = "my-audience",
+                        signingAlgorithm = "RS256",
+                        useJWKURI = false,
+                        signingKey = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAntjcGTEsm1r7UqEYgovi\nUX3SV6+26ExRHFOGfUVXG+nUejq5Px/vYHl5f0w+MBZ5Pz8IlyTuPod2zm8iyR/I\npqreOjpNH+RdmMQuJohNdzXPUHCHkcZWIU84cpI2ap+/W/0GubHxg6ItHllsDun/\n9Tgc47sJGRLwGrH7JAE/IsUDLdA+ayl18IBE5aq4SqdXbqLQw6wi+xVj4PF+ITpp\n3ZHg3lJUN2QIe2ewdUuesGDkxTM7d4rAO9MuiVQozdViNeW7kYH8JG+WyXRrZX0v\niseQHyOLiAhJrsyk4J/MN0rtm2rzHYFDFaHsQPIkv7n8G7hySJbQfZpPG2JsMQ2L\nywIDAQAB\n-----END PUBLIC KEY-----",
+                    }, new[]
+                    {
+                        new BaasClient.AuthMetadataField("userId", "externalUserId", true),
+                        new BaasClient.AuthMetadataField("name.first", "first_name"),
+                        new BaasClient.AuthMetadataField("name.last", "last_name"),
+                        new BaasClient.AuthMetadataField("jobTitle", "title"),
+                        new BaasClient.AuthMetadataField("email", "email"),
+                        new BaasClient.AuthMetadataField("pictureUrl", "picture_url"),
+                        new BaasClient.AuthMetadataField("gender", "gender"),
+                        new BaasClient.AuthMetadataField("birthday", "birthday"),
+                        new BaasClient.AuthMetadataField("minAge", "min_age"),
+                        new BaasClient.AuthMetadataField("maxAge", "max_age"),
+                    });
+
+                    await client.CreateService(defaultApp, "gcm", "gcm", new
+                    {
+                        senderId = "gcm",
+                        apiKey = "gcm",
+                    });
+
+                    var intApp = await client.CreateApp(AppConfigType.IntPartitionKey, "long");
+                    _appIds[AppConfigType.IntPartitionKey] = intApp.ClientAppId;
+
+                    var uuidApp = await client.CreateApp(AppConfigType.UUIDPartitionKey, "uuid");
+                    _appIds[AppConfigType.UUIDPartitionKey] = uuidApp.ClientAppId;
+
+                    var objectIdApp = await client.CreateApp(AppConfigType.ObjectIdPartitionKey, "objectId");
+                    _appIds[AppConfigType.ObjectIdPartitionKey] = objectIdApp.ClientAppId;
+
+                    var flexibleSyncApp = await client.CreateFlxApp(AppConfigType.FlexibleSync);
+                    _appIds[AppConfigType.FlexibleSync] = flexibleSyncApp.ClientAppId;
+                }
+            }
         }
 
-        public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)
+        public static Task<T> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message, Action<Session> sessionAssertions)
             where T : Exception
         {
-            var tcs = new TaskCompletionSource<Tuple<Session, T>>();
+            var task = WaitForSessionError<T>(sessionAssertions);
+
+            session.SimulateError(code, message);
+
+            return task;
+        }
+
+        public static Task<T> WaitForSessionError<T>(Action<Session> sessionAssertions)
+            where T : Exception
+        {
+            var tcs = new TaskCompletionSource<T>();
             EventHandler<ErrorEventArgs> handler = null;
             handler = new EventHandler<ErrorEventArgs>((sender, e) =>
             {
@@ -146,7 +302,8 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.TypeOf<Session>());
                     Assert.That(e.Exception, Is.TypeOf<T>());
-                    tcs.TrySetResult(Tuple.Create((Session)sender, (T)e.Exception));
+                    sessionAssertions((Session)sender);
+                    tcs.TrySetResult((T)e.Exception);
                 }
                 catch (Exception ex)
                 {
@@ -158,107 +315,7 @@ namespace Realms.Tests.Sync
 
             Session.Error += handler;
 
-            session.SimulateError(code, message);
-
             return tcs.Task;
-        }
-
-        private static AppConfigType GetConfigTypeForId(string appName)
-        {
-            if (appName == "dotnet-integration-tests")
-            {
-                return AppConfigType.Default;
-            }
-
-            if (appName == "int-partition-key")
-            {
-                return AppConfigType.IntPartitionKey;
-            }
-
-            if (appName == "objectid-partition-key")
-            {
-                return AppConfigType.ObjectIdPartitionKey;
-            }
-
-            if (appName == "uuid-partition-key")
-            {
-                return AppConfigType.UUIDPartitionKey;
-            }
-
-            return (AppConfigType)(-1);
-        }
-
-        private class BaasClient : IDisposable
-        {
-            private readonly Uri _baseUri;
-            private readonly HttpClient _client = new HttpClient();
-
-            public BaasClient(Uri baseUri)
-            {
-                _baseUri = baseUri;
-                _client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
-            }
-
-            private async Task Authenticate()
-            {
-                if (_client.DefaultRequestHeaders.Authorization != null)
-                {
-                    return;
-                }
-
-                using var request = GetJsonContent(new
-                {
-                    username = "unique_user@domain.com",
-                    password = "password"
-                });
-
-                var response = await _client.PostAsync(GetAdminUri("auth/providers/local-userpass/login"), request);
-                var content = await response.Content.ReadAsStringAsync();
-                var doc = BsonDocument.Parse(content);
-                _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {doc["access_token"].AsString}");
-            }
-
-            private async Task<string> GetGroupId()
-            {
-                await Authenticate();
-                var response = await _client.GetAsync(GetAdminUri("auth/profile"));
-                var content = await response.Content.ReadAsStringAsync();
-                var doc = BsonDocument.Parse(content);
-                return doc["roles"].AsBsonArray[0].AsBsonDocument["group_id"].AsString;
-            }
-
-            public async Task<(string AppName, string AppId)[]> GetApps()
-            {
-                var groupId = await GetGroupId();
-                var response = await _client.GetAsync(GetAdminUri($"groups/{groupId}/apps"));
-                var content = await response.Content.ReadAsStringAsync();
-                return BsonSerializer.Deserialize<BsonArray>(content)
-                    .Select(x => x.AsBsonDocument)
-                    .Select(doc => (doc["name"].AsString, doc["client_app_id"].AsString))
-                    .ToArray();
-            }
-
-            public void Dispose()
-            {
-                _client.Dispose();
-            }
-
-            private Uri GetAdminUri(string relativePath)
-            {
-                var builder = new UriBuilder(_baseUri);
-                builder.Path = $"api/admin/v3.0/{relativePath}";
-                return builder.Uri;
-            }
-
-            private static HttpContent GetJsonContent(object obj)
-            {
-                var json = obj.ToJson();
-                var content = new StringContent(json);
-
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-                return content;
-            }
         }
     }
 }

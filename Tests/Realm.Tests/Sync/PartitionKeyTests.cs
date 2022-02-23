@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
@@ -32,12 +33,12 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var partitionValue = $"partition_tests_{Guid.NewGuid()}";
-                var config1 = await GetIntegrationConfigAsync(partitionValue);
-                var config2 = await GetIntegrationConfigAsync(partitionValue);
+                var partitionValue = Guid.NewGuid().ToString();
+                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
+                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000);
 
                 await RunPartitionKeyTestsCore(config1, config2);
-            });
+            }, timeout: 120_000);
         }
 
         [Test]
@@ -45,12 +46,12 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var partitionValue = TestHelpers.Random.Next(0, int.MaxValue);
-                var config1 = await GetIntegrationConfigAsync(partitionValue);
-                var config2 = await GetIntegrationConfigAsync(partitionValue);
+                var partitionValue = TestHelpers.Random.Next(int.MinValue, int.MaxValue);
+                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
 
                 await RunPartitionKeyTestsCore(config1, config2);
-            });
+            }, timeout: 60000);
         }
 
         [Test]
@@ -59,11 +60,11 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = ObjectId.GenerateNewId();
-                var config1 = await GetIntegrationConfigAsync(partitionValue);
-                var config2 = await GetIntegrationConfigAsync(partitionValue);
+                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
 
                 await RunPartitionKeyTestsCore(config1, config2);
-            });
+            }, timeout: 60000);
         }
 
         [Test]
@@ -72,16 +73,16 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = Guid.NewGuid();
-                var config1 = await GetIntegrationConfigAsync(partitionValue);
-                var config2 = await GetIntegrationConfigAsync(partitionValue);
+                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
+                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(10000);
 
                 await RunPartitionKeyTestsCore(config1, config2);
-            });
+            }, timeout: 60000);
         }
 
-        private async Task RunPartitionKeyTestsCore(SyncConfiguration config1, SyncConfiguration config2)
+        private async Task RunPartitionKeyTestsCore(PartitionSyncConfiguration config1, PartitionSyncConfiguration config2)
         {
-            var objectClasses = new Type[]
+            var schema = new Type[]
             {
                 typeof(PrimaryKeyInt64Object),
                 typeof(PrimaryKeyObjectIdObject),
@@ -93,61 +94,55 @@ namespace Realms.Tests.Sync
                 typeof(PrimaryKeyStringObject),
             };
 
-            config1.ObjectClasses = objectClasses;
-            config2.ObjectClasses = objectClasses;
+            config1.Schema = schema;
+            config2.Schema = schema;
 
-            using var realm1 = await GetRealmAsync(config1);
-            using var realm2 = await GetRealmAsync(config2);
+            using var realm1 = await GetRealmAsync(config1).Timeout(5000);
+            using var realm2 = await GetRealmAsync(config2).Timeout(5000);
 
-            var fromRealm1 = realm1.Write(() =>
+            await AssertChangePropagation(realm1, realm2).Timeout(15000);
+            await AssertChangePropagation(realm2, realm1).Timeout(15000);
+
+            async Task AssertChangePropagation(Realm first, Realm second)
             {
-                return (
-                    realm1.Add(new PrimaryKeyInt64Object { Int64Property = 1234567890987654321 }),
-                    realm1.Add(new PrimaryKeyObjectIdObject { ObjectIdProperty = ObjectId.GenerateNewId() }),
-                    realm1.Add(new PrimaryKeyGuidObject { GuidProperty = Guid.NewGuid() }),
-                    realm1.Add(new RequiredPrimaryKeyStringObject { StringProperty = "abcdef" }),
-                    realm1.Add(new PrimaryKeyNullableInt64Object { Int64Property = null }),
-                    realm1.Add(new PrimaryKeyNullableObjectIdObject { ObjectIdProperty = null }),
-                    realm1.Add(new PrimaryKeyNullableGuidObject { GuidProperty = null }),
-                    realm1.Add(new PrimaryKeyStringObject { StringProperty = null }));
-            });
+                var ids = new
+                {
+                    Long = (long)TestHelpers.Random.Next(int.MinValue, int.MaxValue),
+                    ObjectId = ObjectId.GenerateNewId(),
+                    Guid = Guid.NewGuid(),
+                    String = Guid.NewGuid().ToString(),
+                };
 
-            await WaitForUploadAsync(realm1);
-            await WaitForDownloadAsync(realm2);
+                var intObjectToAdd = new PrimaryKeyInt64Object { Id = ids.Long };
+                first.Write(() =>
+                {
+                    first.Add(intObjectToAdd);
+                    first.Add(new PrimaryKeyObjectIdObject { Id = ids.ObjectId });
+                    first.Add(new PrimaryKeyGuidObject { Id = ids.Guid });
+                    first.Add(new RequiredPrimaryKeyStringObject { Id = ids.String });
+                    first.Add(new PrimaryKeyNullableInt64Object { Id = ids.Long });
+                    first.Add(new PrimaryKeyNullableObjectIdObject { Id = ids.ObjectId });
+                    first.Add(new PrimaryKeyNullableGuidObject { Id = ids.Guid });
+                    first.Add(new PrimaryKeyStringObject { Id = ids.String });
+                });
 
-            Assert.That(realm2.Find<PrimaryKeyInt64Object>(fromRealm1.Item1.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyObjectIdObject>(fromRealm1.Item2.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyGuidObject>(fromRealm1.Item3.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<RequiredPrimaryKeyStringObject>(fromRealm1.Item4.StringProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableInt64Object>(fromRealm1.Item5.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item6.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyNullableGuidObject>(fromRealm1.Item7.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm2.Find<PrimaryKeyStringObject>(fromRealm1.Item8.StringProperty)?.IsValid, Is.True);
+                await WaitForObjectAsync(intObjectToAdd, second);
 
-            var fromRealm2 = realm2.Write(() =>
+                AssertFind<PrimaryKeyInt64Object>(second, ids.Long);
+                AssertFind<PrimaryKeyObjectIdObject>(second, ids.ObjectId);
+                AssertFind<PrimaryKeyGuidObject>(second, ids.Guid);
+                AssertFind<RequiredPrimaryKeyStringObject>(second, ids.String);
+                AssertFind<PrimaryKeyNullableInt64Object>(second, ids.Long);
+                AssertFind<PrimaryKeyNullableObjectIdObject>(second, ids.ObjectId);
+                AssertFind<PrimaryKeyNullableGuidObject>(second, ids.Guid);
+                AssertFind<PrimaryKeyStringObject>(second, ids.String);
+            }
+
+            void AssertFind<T>(Realm realm, RealmValue id)
+                where T : RealmObject
             {
-                return (
-                    realm2.Add(new PrimaryKeyInt64Object { Int64Property = 0 }),
-                    realm2.Add(new PrimaryKeyObjectIdObject { ObjectIdProperty = ObjectId.GenerateNewId() }),
-                    realm2.Add(new PrimaryKeyGuidObject { GuidProperty = Guid.NewGuid() }),
-                    realm2.Add(new RequiredPrimaryKeyStringObject { StringProperty = string.Empty }),
-                    realm2.Add(new PrimaryKeyNullableInt64Object { Int64Property = 123 }),
-                    realm2.Add(new PrimaryKeyNullableObjectIdObject { ObjectIdProperty = ObjectId.GenerateNewId() }),
-                    realm2.Add(new PrimaryKeyNullableGuidObject { GuidProperty = Guid.NewGuid() }),
-                    realm2.Add(new PrimaryKeyStringObject { StringProperty = "hola" }));
-            });
-
-            await WaitForUploadAsync(realm2);
-            await WaitForDownloadAsync(realm1);
-
-            Assert.That(realm1.Find<PrimaryKeyInt64Object>(fromRealm2.Item1.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyObjectIdObject>(fromRealm2.Item2.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyGuidObject>(fromRealm2.Item3.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<RequiredPrimaryKeyStringObject>(fromRealm2.Item4.StringProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableInt64Object>(fromRealm2.Item5.Int64Property)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableObjectIdObject>(fromRealm2.Item6.ObjectIdProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyNullableGuidObject>(fromRealm2.Item7.GuidProperty)?.IsValid, Is.True);
-            Assert.That(realm1.Find<PrimaryKeyStringObject>(fromRealm2.Item8.StringProperty)?.IsValid, Is.True);
+                Assert.That(realm.FindCore<T>(id)?.IsValid, Is.True, $"Failed to find {typeof(T).Name} with id {id}. Objects in Realm: {realm.All<T>().ToArray().Select(o => o.DynamicApi.Get<RealmValue>("_id").ToString()).Join()}");
+            }
         }
     }
 }

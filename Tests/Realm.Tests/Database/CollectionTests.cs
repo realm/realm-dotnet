@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -179,8 +178,8 @@ namespace Realms.Tests.Database
             var owner = new Owner();
             _realm.Write(() => _realm.Add(owner));
 
-            Assert.That(() => owner.Dogs.AsRealmCollection()[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
-            Assert.That(() => owner.Dogs.AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => owner.ListOfDogs.AsRealmCollection()[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => owner.ListOfDogs.AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
@@ -278,6 +277,237 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ListAsRealmQueryable_RaisesNotifications()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.ListOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => joe.ListOfDogs.Add(new Dog { Age = i }));
+                _realm.Refresh();
+
+                if (i >= 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 4));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                }
+            }
+        }
+
+        [Test]
+        public void ListAsRealmQueryable_WhenNotRealmList_Throws()
+        {
+            var list = new List<Dog>();
+
+            Assert.That(
+                () => list.AsRealmQueryable(),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("list must be a Realm List property"));
+        }
+
+        [Test]
+        public void ListFilter_ReturnsCorrectElementAtResult()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.ListOfDogs.Filter("Age >= 5");
+
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    joe.ListOfDogs.Add(new Dog { Age = i });
+                }
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                var dog = oldDogs.ElementAt(i);
+                Assert.That(dog.Age, Is.EqualTo(i + 5));
+            }
+        }
+
+        [Test]
+        public void ListFilter_PassesArgumentsCorrectly()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.ListOfDogs.Add(new Dog { Name = "Rick" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fido" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fester" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ToArray().Select(d => d.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
+        }
+
+        [Test]
+        public void ListFilter_CanSortResults()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.ListOfDogs.Add(new Dog { Name = "Rick" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fido" });
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ElementAt(0).Name, Is.EqualTo("Fifi"));
+            Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
+        }
+
+        [Test]
+        public void ListFilter_CanBeFilteredWithLinq()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.ListOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.ListOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Where(d => d.Vaccinated).OrderBy(d => d.Age);
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void ListFilter_CanBeFilteredWithStringPredicate()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.ListOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.ListOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.ListOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.ListOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.ListOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.ListOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Filter("Vaccinated = true SORT(Age asc)");
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void ListFilter_WhenNotRealmList_Throws()
+        {
+            var list = new List<Dog>();
+
+            Assert.That(
+                () => list.Filter(string.Empty),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("list must be a Realm List property"));
+        }
+
+        [Test]
+        public void ListFilter_InvalidPredicate_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.ListOfDogs.Filter(string.Empty),
+                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+        }
+
+        [Test]
+        public void ListFilter_NoArguments_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.ListOfDogs.Filter("Name = $0"),
+                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+        }
+
+        [Test]
         public void Set_WhenIndexIsNegative_ShouldThrow()
         {
             var container = new ContainerObject();
@@ -358,6 +588,237 @@ namespace Realms.Tests.Database
             Assert.That(container.Items.Count, Is.EqualTo(1));
             Assert.That(container.Items[0], Is.EqualTo(objectToSet));
             Assert.That(container.Items[0].Int, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void SetAsRealmQueryable_RaisesNotifications()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.SetOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => joe.SetOfDogs.Add(new Dog { Age = i }));
+                _realm.Refresh();
+
+                if (i >= 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 4));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                }
+            }
+        }
+
+        [Test]
+        public void SetAsRealmQueryable_WhenNotRealmSet_Throws()
+        {
+            var set = new HashSet<Dog>();
+
+            Assert.That(
+                () => set.AsRealmQueryable(),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("set must be a Realm Set property"));
+        }
+
+        [Test]
+        public void SetFilter_ReturnsCorrectElementAtResult()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.SetOfDogs.Filter("Age >= 5");
+
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    joe.SetOfDogs.Add(new Dog { Age = i });
+                }
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                var dog = oldDogs.ElementAt(i);
+                Assert.That(dog.Age, Is.EqualTo(i + 5));
+            }
+        }
+
+        [Test]
+        public void SetFilter_PassesArgumentsCorrectly()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Rick" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fido" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fester" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ToArray().Select(d => d.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
+        }
+
+        [Test]
+        public void SetFilter_CanSortResults()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var fiDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Rick" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fido" });
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi" });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ElementAt(0).Name, Is.EqualTo("Fifi"));
+            Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
+        }
+
+        [Test]
+        public void SetFilter_CanBeFilteredWithLinq()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.SetOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.SetOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Where(d => d.Vaccinated).OrderBy(d => d.Age);
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void SetFilter_CanBeFilteredWithStringPredicate()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var rDogs = joe.SetOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                joe.SetOfDogs.Add(new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                joe.SetOfDogs.Add(new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                joe.SetOfDogs.Add(new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                joe.SetOfDogs.Add(new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                joe.SetOfDogs.Add(new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Filter("Vaccinated = true SORT(Age asc)");
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void SetFilter_WhenNotRealmSet_Throws()
+        {
+            var set = new HashSet<Dog>();
+
+            Assert.That(
+                () => set.Filter(string.Empty),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("set must be a Realm Set property"));
+        }
+
+        [Test]
+        public void SetFilter_InvalidPredicate_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.SetOfDogs.Filter(string.Empty),
+                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+        }
+
+        [Test]
+        public void SetFilter_NoArguments_Throws()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            Assert.That(
+                () => joe.SetOfDogs.Filter("Name = $0"),
+                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
         }
 
         [Test]
@@ -465,78 +926,78 @@ namespace Realms.Tests.Database
             return boxed;
         }
 
-        public static IEnumerable<StringQueryTestData> StringQuery_AllTypes()
+        public static object[] StringQuery_AllTypes =
         {
-            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 'b');
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 0x4);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 5, 4);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 34, 42);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 74L, 23L);
-            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 3.0f, 2.0f);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 4.0, 2.0);
-            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, false);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2020, 8, 2, 0, 0, 0, TimeSpan.Zero));
-            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 0.9999999999999999999999999999, 0.3333333333333333333333333333);
-            yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new Decimal128(666.42300000003));
-            yield return new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5ffffffffffff22222222222"));
-            yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0ffffffb-dddd-4444-aaaa-70000000000e"));
-            yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello world", "no salute");
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 });
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteCounterProperty), new RealmInteger<byte>(0x6), new RealmInteger<byte>(0x8));
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int16CounterProperty), new RealmInteger<short>(2), new RealmInteger<short>(7));
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int32CounterProperty), new RealmInteger<int>(10), new RealmInteger<int>(24));
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int64CounterProperty), new RealmInteger<long>(5L), new RealmInteger<long>(22L));
-        }
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', 'b') },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x5, 0x4) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int16Property), 5, 4) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int32Property), 34, 42) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int64Property), 74L, 23L) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 3.0f, 2.0f) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 4.0, 2.0) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, false) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2020, 8, 2, 0, 0, 0, TimeSpan.Zero)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 0.9999999999999999999999999999, 0.3333333333333333333333333333) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new Decimal128(666.42300000003)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5ffffffffffff22222222222")) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0ffffffb-dddd-4444-aaaa-70000000000e")) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello world", "no salute") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, new byte[] { 0x1, 0x1, 0x1 }) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteCounterProperty), new RealmInteger<byte>(0x6), new RealmInteger<byte>(0x8)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int16CounterProperty), new RealmInteger<short>(2), new RealmInteger<short>(7)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int32CounterProperty), new RealmInteger<int>(10), new RealmInteger<int>(24)) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int64CounterProperty), new RealmInteger<long>(5L), new RealmInteger<long>(22L)) },
+        };
 
-        public static IEnumerable<StringQueryNumericData> StringQuery_NumericValues()
+        public static object[] StringQuery_NumericValues =
         {
             // implicit conversion match
-            yield return new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'a', 97, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x6, 6, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0xf, 15.0f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 55, 55.0f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 66, 66.0, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 19, 19.0f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 77L, 77, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 82L, 82m, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 88.8f, 88.8, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 49f, 49, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 106.0, 106m, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 1m, 1f, true);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 5m, 5.0, true);
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'a', 97, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x6, 6, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0xf, 15.0f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 55, 55.0f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 66, 66.0, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 19, 19.0f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 77L, 77, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 82L, 82m, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 88.8f, 88.8, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 49f, 49, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 106.0, 106m, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 1m, 1f, true) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DecimalProperty), 5m, 5.0, true) },
 
             // implicit conversion no match
-            yield return new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'c', 2555, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x5, 'g', false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 5, 35L, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 34, 563.0f, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 74L, 7435, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 3.0f, 21.0, false);
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 4.0, 'c', false);
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.CharProperty), 'c', 2555, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.ByteProperty), 0x5, 'g', false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int16Property), 5, 35L, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int32Property), 34, 563.0f, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.Int64Property), 74L, 7435, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.SingleProperty), 3.0f, 21.0, false) },
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 4.0, 'c', false) },
 
             // no implicit conversion no match
-            yield return new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 109.9, 109.9f, false);
-        }
+            new object[] { new StringQueryNumericData(nameof(AllTypesObject.DoubleProperty), 109.9, 109.9f, false) },
+        };
 
-        public static IEnumerable<StringQueryTestData> StringQuery_MismatchingTypes_ToThrow()
+        public static object[] StringQuery_MismatchingTypes_ToThrow =
         {
-            yield return new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', "who are you");
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int16Property), 2, "no one is here");
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int32Property), 3, "go away");
-            yield return new StringQueryTestData(nameof(AllTypesObject.Int64Property), 32L, "again you?");
-            yield return new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 4.0f, "I said go");
-            yield return new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 5.0, "I'm getting angry");
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, "I give up");
-            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, "enough");
-            yield return new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 1);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), 5);
-            yield return new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 7m, new byte[] { 0x1, 0x2, 0x3 });
-            yield return new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new byte[] { 0x3, 0x2, 0x1 });
-            yield return new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), "hello world");
-            yield return new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), 'v');
-            yield return new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello you", 13m);
-            yield return new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, 34L);
-        }
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.CharProperty), 'c', "who are you") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int16Property), 2, "no one is here") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int32Property), 3, "go away") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Int64Property), 32L, "again you?") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.SingleProperty), 4.0f, "I said go") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DoubleProperty), 5.0, "I'm getting angry") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteProperty), 0x6, "I give up") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, "enough") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.BooleanProperty), true, 1) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DateTimeOffsetProperty), new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero), 5) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.DecimalProperty), 7m, new byte[] { 0x1, 0x2, 0x3 }) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.Decimal128Property), new Decimal128(564.42343424323), new byte[] { 0x3, 0x2, 0x1 }) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ObjectIdProperty), new ObjectId("5f64cd9f1691c361b2451d96"), "hello world") },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.GuidProperty), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), 'v') },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.StringProperty), "hello you", 13m) },
+            new object[] { new StringQueryTestData(nameof(AllTypesObject.ByteArrayProperty), new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }, 34L) },
+        };
 
         [TestCaseSource(nameof(StringQuery_AllTypes))]
         public void QueryFilter_WithAnyArguments_ShouldMatch(StringQueryTestData data)
@@ -644,8 +1105,8 @@ namespace Realms.Tests.Database
             var dog2 = new Dog { Name = "Pluto", Color = "white", Vaccinated = true };
             var dog3 = new Dog { Name = "Pippo", Color = "brown", Vaccinated = false };
             var dog4 = new Dog { Name = "JustDog", Color = "pink", Vaccinated = false };
-            var marioOwner = new Owner { Name = "Mario", TopDog = dog1, Dogs = { dog1, dog2, dog3 } };
-            var luigiOwner = new Owner { Name = "Luigi", TopDog = dog4, Dogs = { dog4 } };
+            var marioOwner = new Owner { Name = "Mario", TopDog = dog1, ListOfDogs = { dog1, dog2, dog3 } };
+            var luigiOwner = new Owner { Name = "Luigi", TopDog = dog4, ListOfDogs = { dog4 } };
 
             _realm.Write(() =>
             {
@@ -654,7 +1115,7 @@ namespace Realms.Tests.Database
             });
             IList<Dog> list = new List<Dog>();
             list.Add(dog1);
-            var matches = queryList ? _realm.All<Owner>().Filter("ANY Dogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
+            var matches = queryList ? _realm.All<Owner>().Filter("ANY ListOfDogs.Name == $0", dog1.Name) : _realm.All<Owner>().Filter("TopDog == $0", dog1);
             Assert.AreEqual(marioOwner, matches.Single());
         }
 
@@ -712,7 +1173,7 @@ namespace Realms.Tests.Database
                     var owner = new Owner
                     {
                         Name = $"Owner {i}",
-                        Dogs =
+                        ListOfDogs =
                         {
                             new Dog
                             {
@@ -730,9 +1191,9 @@ namespace Realms.Tests.Database
                 }
             });
 
-            var owners = _realm.All<Owner>().Filter("Dogs.Vaccinated == true");
+            var owners = _realm.All<Owner>().Filter("ListOfDogs.Vaccinated == true");
             Assert.That(owners.Count(), Is.EqualTo(4));
-            Assert.That(owners.ToArray().All(o => o.Dogs.Any(d => d.Vaccinated)));
+            Assert.That(owners.ToArray().All(o => o.ListOfDogs.Any(d => d.Vaccinated)));
         }
 
         [Test]
@@ -750,13 +1211,13 @@ namespace Realms.Tests.Database
                     _realm.Add(new Owner
                     {
                         Name = $"Person {(2 * i) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
 
                     _realm.Add(new Owner
                     {
                         Name = $"Person {((2 * i) + 1) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
                 }
             });
@@ -781,18 +1242,18 @@ namespace Realms.Tests.Database
                     _realm.Add(new Owner
                     {
                         Name = $"Person {(2 * i) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
 
                     _realm.Add(new Owner
                     {
                         Name = $"Person {((2 * i) + 1) % 5}",
-                        Dogs = { dog }
+                        ListOfDogs = { dog }
                     });
                 }
             });
 
-            var dogs = _realm.All<Dog>().Filter("@links.Owner.Dogs.Name == 'Person 0'");
+            var dogs = _realm.All<Dog>().Filter("@links.Owner.ListOfDogs.Name == 'Person 0'");
             Assert.That(dogs.Count(), Is.EqualTo(4));
             Assert.That(dogs.ToArray().All(d => d.Owners.Any(o => o.Name == "Person 0")));
         }
@@ -898,6 +1359,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Results_GetFiltered_Limit()
+        {
+            PopulateAObjects();
+            var objects = _realm.All<A>().Filter("TRUEPREDICATE SORT(Value ASC) Limit(1)");
+
+            Assert.That(objects.Count(), Is.EqualTo(1));
+            Assert.That(objects.AsRealmCollection().Count, Is.EqualTo(1));
+            Assert.That(objects.Single().Value, Is.False);
+        }
+
+        [Test]
         public void Results_GetFiltered_WhenPredicateIsInvalid_Throws()
         {
             Assert.That(
@@ -922,7 +1394,7 @@ namespace Realms.Tests.Database
                 otherRealm.Add(otherRealmDog);
             });
 
-            Assert.That(() => owner.Dogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
+            Assert.That(() => owner.ListOfDogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
         }
 
         [Test]
@@ -931,7 +1403,7 @@ namespace Realms.Tests.Database
             var obj = new Owner
             {
                 Name = "Peter",
-                Dogs =
+                ListOfDogs =
                 {
                     new Dog { Name = "Alpha" },
                     new Dog { Name = "Beta" }
@@ -945,12 +1417,12 @@ namespace Realms.Tests.Database
 
             Assert.That(obj.IsManaged);
 
-            var frozenDogs = Freeze(obj.Dogs);
+            var frozenDogs = Freeze(obj.ListOfDogs);
 
             Assert.That(obj.IsManaged);
             Assert.That(obj.IsValid);
             Assert.That(obj.IsFrozen, Is.False);
-            Assert.That(obj.Dogs.AsRealmCollection().IsFrozen, Is.False);
+            Assert.That(obj.ListOfDogs.AsRealmCollection().IsFrozen, Is.False);
             Assert.That(obj.Realm.IsFrozen, Is.False);
 
             Assert.That(frozenDogs.AsRealmCollection().IsFrozen);
@@ -967,27 +1439,20 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference listRef = null;
-                new Action(() =>
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    var owner = new Owner
+                    var owner = _realm.Write(() =>
                     {
-                        Dogs = { new Dog { Name = "Lasse" } }
-                    };
-                    _realm.Write(() =>
-                    {
-                        _realm.Add(owner);
+                        return _realm.Add(new Owner
+                        {
+                            ListOfDogs = { new Dog { Name = "Lasse" } }
+                        });
                     });
 
-                    listRef = new WeakReference(Freeze(owner.Dogs));
-                })();
-
-                while (listRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                    var frozenList = owner.ListOfDogs.Freeze();
+                    var frozenRealm = frozenList.AsRealmCollection().Realm;
+                    return new object[] { frozenList, frozenRealm };
+                });
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -1024,23 +1489,16 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                WeakReference queryRef = null;
-                new Action(() =>
+                await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
                     _realm.Write(() =>
                     {
                         _realm.Add(new Dog { Name = "Lasse" });
                     });
 
-                    queryRef = new WeakReference(_realm.All<Dog>());
-                })();
-
-                while (queryRef.IsAlive)
-                {
-                    await Task.Yield();
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                    var frozenQuery = _realm.All<Dog>().Freeze();
+                    return new[] { frozenQuery };
+                });
 
                 // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
@@ -1070,8 +1528,8 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            var frozenList = Freeze(obj.Dogs);
-            Assert.That(ReferenceEquals(frozenList, obj.Dogs), Is.False);
+            var frozenList = Freeze(obj.ListOfDogs);
+            Assert.That(ReferenceEquals(frozenList, obj.ListOfDogs), Is.False);
 
             var deepFrozenList = Freeze(frozenList);
             Assert.That(ReferenceEquals(frozenList, deepFrozenList));
@@ -1099,7 +1557,7 @@ namespace Realms.Tests.Database
         {
             var obj = new Owner
             {
-                Dogs =
+                ListOfDogs =
                 {
                     new Dog { Name = "Rex" },
                     new Dog { Name = "Luthor" }
@@ -1111,14 +1569,14 @@ namespace Realms.Tests.Database
                 _realm.Add(obj);
             });
 
-            var frozenList = Freeze(obj.Dogs);
+            var frozenList = Freeze(obj.ListOfDogs);
 
             Assert.That(frozenList.Count, Is.EqualTo(2));
 
             _realm.Write(() =>
             {
-                obj.Dogs[0].Name = "Lex";
-                obj.Dogs.Insert(1, new Dog());
+                obj.ListOfDogs[0].Name = "Lex";
+                obj.ListOfDogs.Insert(1, new Dog());
             });
 
             Assert.That(frozenList.Count, Is.EqualTo(2));
@@ -1202,6 +1660,34 @@ namespace Realms.Tests.Database
 
             Assert.That(frozenQuery.Count(), Is.EqualTo(2));
             Assert.That(frozenQuery.ToArray().FirstOrDefault(d => d.Name == "Randy"), Is.Null);
+        }
+
+        [Test]
+        public void ObjectFromAnotherRealm_ThrowsRealmException()
+        {
+            var realm2 = GetRealm(CreateConfiguration(Guid.NewGuid().ToString()));
+
+            var item = new IntPropertyObject { Int = 5 };
+            var embeddedItem = new EmbeddedIntPropertyObject { Int = 10 };
+
+            var obj1 = _realm.Write(() =>
+            {
+                return _realm.Add(new CollectionsObject());
+            });
+
+            var obj2 = realm2.Write(() =>
+            {
+                return realm2.Add(new CollectionsObject());
+            });
+
+            _realm.Write(() =>
+            {
+                obj1.ObjectList.Add(item);
+                obj1.EmbeddedObjectList.Add(embeddedItem);
+            });
+
+            Assert.That(() => realm2.Write(() => obj2.ObjectList.Add(item)), Throws.TypeOf<RealmException>().And.Message.Contains("object that is already in another realm"));
+            Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectList.Add(embeddedItem)), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
         private void PopulateAObjects(params int[] values)

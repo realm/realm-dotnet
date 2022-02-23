@@ -18,6 +18,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -193,8 +195,7 @@ namespace Realms.Tests.Database
             // Arrange
             _configuration.IsReadOnly = true;
             _configuration.SchemaVersion = 42;
-            TestHelpers.CopyBundledFileToDocuments(
-                "ForMigrationsToCopyAndMigrate.realm", Path.GetFileName(_configuration.DatabasePath));
+            TestHelpers.CopyBundledFileToDocuments("ForMigrationsToCopyAndMigrate.realm", Path.GetFileName(_configuration.DatabasePath));
 
             // Assert
             Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmMigrationNeededException>());
@@ -228,20 +229,34 @@ namespace Realms.Tests.Database
         [Test]
         public void DuplicateClassNames_ThrowsException()
         {
-            var config = new RealmConfiguration
+            var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
             {
-                ObjectClasses = new[]
+                Schema = new[]
                 {
                     typeof(Foo.DuplicateClass),
                     typeof(Bar.DuplicateClass)
                 }
-            };
+            });
 
-            var constraint = Throws.TypeOf<NotSupportedException>().And
-                                   .Message.Contains("Foo.DuplicateClass").And
-                                   .Message.Contains("Bar.DuplicateClass");
+            Assert.That(ex.Message, Does.Contain("Foo.DuplicateClass"));
+            Assert.That(ex.Message, Does.Contain("Bar.DuplicateClass"));
+        }
 
-            Assert.That(() => GetRealm(config), constraint);
+        [Test]
+        public void Configuration_WhenCreatedFromMultipleThreads_DoesntThrow()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
+                {
+                    return new RealmConfiguration
+                    {
+                        Schema = new[] { typeof(Person), typeof(AllTypesObject), typeof(ListsObject), typeof(CollectionsObject) }
+                    };
+                }));
+
+                await Task.WhenAll(tasks);
+            });
         }
     }
 }

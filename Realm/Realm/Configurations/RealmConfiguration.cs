@@ -17,13 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -97,11 +95,30 @@ namespace Realms
         /// </value>
         public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
 
+        private static RealmConfigurationBase _defaultConfiguration;
+
         /// <summary>
         /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
         /// <value>The default configuration.</value>
-        public static RealmConfigurationBase DefaultConfiguration { get; set; } = new RealmConfiguration();
+        public static RealmConfigurationBase DefaultConfiguration
+        {
+            get
+            {
+                if (_defaultConfiguration == null)
+                {
+                    _defaultConfiguration = new RealmConfiguration();
+                }
+
+                return _defaultConfiguration;
+            }
+
+            set
+            {
+                Argument.NotNull(value, nameof(value));
+                _defaultConfiguration = value;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.
@@ -123,8 +140,9 @@ namespace Realms
             return ret;
         }
 
-        internal override Realm CreateRealm(RealmSchema schema)
+        internal override Realm CreateRealm()
         {
+            var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             configuration.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
             configuration.read_only = IsReadOnly;
@@ -133,36 +151,35 @@ namespace Realms
             if (MigrationCallback != null)
             {
                 migration = new Migration(this, schema);
-                migration.PopulateConfiguration(ref configuration);
+                configuration.managed_migration_handle = GCHandle.ToIntPtr(migration.MigrationHandle);
             }
 
+            GCHandle? shouldCompactHandle = null;
             if (ShouldCompactOnLaunch != null)
             {
-                var handle = GCHandle.Alloc(ShouldCompactOnLaunch);
-                configuration.should_compact_callback = ShouldCompactOnLaunchCallback;
-                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(handle);
+                shouldCompactHandle = GCHandle.Alloc(ShouldCompactOnLaunch);
+                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(shouldCompactHandle.Value);
             }
 
-            var srPtr = IntPtr.Zero;
+            SharedRealmHandle sharedRealmHandle;
             try
             {
-                srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+                sharedRealmHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
             }
             catch (ManagedExceptionDuringMigrationException)
             {
                 throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
-
-            var srHandle = new SharedRealmHandle(srPtr);
-            if (IsDynamic && !schema.Any())
+            finally
             {
-                srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                migration?.ReleaseHandle();
+                shouldCompactHandle?.Free();
             }
 
-            return new Realm(srHandle, this, schema);
+            return GetRealm(sharedRealmHandle, schema);
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
@@ -170,28 +187,13 @@ namespace Realms
             {
                 return Task.Run(() =>
                 {
-                    using (CreateRealm(schema))
+                    using (CreateRealm())
                     {
                     }
-                }, cancellationToken).ContinueWith(_ => CreateRealm(schema), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateRealm(), scheduler);
             }
 
-            return Task.FromResult(CreateRealm(schema));
-        }
-
-        [MonoPInvokeCallback(typeof(ShouldCompactCallback))]
-        private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
-        {
-            var handle = GCHandle.FromIntPtr(delegatePtr);
-            var compactDelegate = (ShouldCompactDelegate)handle.Target;
-            try
-            {
-                return compactDelegate(totalSize, dataSize);
-            }
-            finally
-            {
-                handle.Free();
-            }
+            return Task.FromResult(CreateRealm());
         }
     }
 }

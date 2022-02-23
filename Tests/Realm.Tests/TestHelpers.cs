@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
+#if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
+#endif
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.XPath;
-using System.Xml.Xsl;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -38,6 +38,8 @@ namespace Realms.Tests
     public static class TestHelpers
     {
         public static readonly Random Random = new Random();
+
+        public static TextWriter Output { get; set; } = Console.Out;
 
         public static byte[] GetBytes(int size, byte? value = null)
         {
@@ -85,22 +87,82 @@ namespace Realms.Tests
 
         public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
         {
-            var assembly = typeof(TestHelpers).Assembly;
-            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
-            if (resourceName == null)
-            {
-                throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
-            }
-
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
-
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-            {
-                stream.CopyTo(destination);
-            }
-
+            TransformHelpers.ExtractBundledFile(realmName, destPath);
             return destPath;
+        }
+
+        public static async Task EnsureObjectsAreCollected(Func<object[]> objectsGetter)
+        {
+            var references = new Func<WeakReference[]>(() =>
+            {
+                var objects = objectsGetter();
+                var result = new WeakReference[objects.Length];
+
+                for (var i = 0; i < objects.Length; i++)
+                {
+                    result[i] = new WeakReference(objects[i]);
+                }
+
+                return result;
+            })();
+
+            await WaitUntilReferencesAreCollected(10000, references);
+
+            Assert.That(references.All(r => !r.IsAlive), "Expected all references to be GC-ed within 10 seconds but they weren't");
+        }
+
+        private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
+        {
+            using var cts = new CancellationTokenSource(milliseconds);
+
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    while (references.Any(r => r.IsAlive))
+                    {
+                        cts.Token.ThrowIfCancellationRequested();
+
+                        await Task.Yield();
+
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        public static async Task EnsurePreserverKeepsObjectAlive<T>(Func<(T Preserver, WeakReference Reference)> func, Action<(T Preserver, WeakReference Reference)> assertReferenceIsAlive = null)
+        {
+            WeakReference reference = null;
+            WeakReference preserverReference = null;
+            await new Func<Task>(async () =>
+            {
+                T preserver;
+                (preserver, reference) = func();
+                await WaitUntilReferencesAreCollected(2000, reference);
+
+                Assert.That(reference.IsAlive, "Preserver hasn't been disposed so expected object to still be alive.");
+
+                assertReferenceIsAlive?.Invoke((preserver, reference));
+
+                if (preserver is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                preserverReference = new WeakReference(preserver);
+                preserver = default;
+            })();
+
+            await WaitUntilReferencesAreCollected(10000, reference, preserverReference);
+
+            Assert.That(preserverReference.IsAlive, Is.False, "Expected the preserver instance to be GC-ed but it wasn't.");
+            Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
         public static bool IsWindows
@@ -153,12 +215,53 @@ namespace Realms.Tests
             }
         }
 
+        public static bool IsUnity
+        {
+            get
+            {
+#if UNITY
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         public static void IgnoreOnAOT(string message)
         {
             if (IsAOTTarget)
             {
                 Assert.Ignore(message);
             }
+        }
+
+        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
+        {
+            if (IsUnity)
+            {
+                Assert.Ignore(message);
+            }
+        }
+
+        private static readonly decimal _decimalValue = 1.23456789M;
+
+        public static readonly Action _preserveAction;
+
+        static TestHelpers()
+        {
+            // Preserve the >= and <= operators on System.decimal as IL2CPP will strip them otherwise.
+            _ = decimal.MaxValue >= _decimalValue;
+            _ = decimal.MinValue <= _decimalValue;
+
+            _preserveAction = () =>
+            {
+                // Preserve all the realm.Find<T> overloads
+                using var r = Realm.GetInstance(Guid.NewGuid().ToString());
+                _ = r.Find<PrimaryKeyStringObject>(string.Empty);
+                _ = r.Find<PrimaryKeyObjectIdObject>(ObjectId.GenerateNewId());
+                _ = r.Find<PrimaryKeyGuidObject>(Guid.NewGuid());
+                _ = r.Find<PrimaryKeyInt64Object>(123L);
+            };
         }
 
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
@@ -235,7 +338,7 @@ namespace Realms.Tests
         {
             AsyncContext.Run(async () =>
             {
-                await (errorTask == null ? testFunc() : Task.WhenAny(testFunc(), errorTask)).Timeout(timeout);
+                await testFunc().Timeout(timeout, errorTask);
             });
         }
 
@@ -255,18 +358,10 @@ namespace Realms.Tests
             return null;
         }
 
-        [SuppressMessage("Security", "CA3075:Insecure DTD processing in XML", Justification = "The xml is static and trusted.")]
-        [SuppressMessage("Security", "CA5372:Use XmlReader For XPathDocument", Justification = "The xml is static and trusted.")]
         public static void TransformTestResults(string resultPath)
         {
-            CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-            var transformFile = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
-
-            var xpathDocument = new XPathDocument(resultPath);
-            var transform = new XslCompiledTransform();
-            transform.Load(transformFile);
-            using var writer = new XmlTextWriter(resultPath, null);
-            transform.Transform(xpathDocument, null, writer);
+            var transformFile = CopyBundledFileToDocuments("nunit3-junit.xslt", $"{Guid.NewGuid()}.xslt");
+            TransformHelpers.TransformTestResults(resultPath, transformFile);
         }
 
         public static string ByteArrayToTestDescription<T>(T arr)
@@ -284,6 +379,80 @@ namespace Realms.Tests
             }
 
             return $"<{byteArr[0]}>";
+        }
+
+        public static void DrainQueue<T>(this Queue<T> queue, Action<T> action)
+        {
+            while (queue.Count > 0)
+            {
+                action(queue.Dequeue());
+            }
+        }
+
+        public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)
+        {
+            var observer = new FunctionObserver<T>(onNext);
+            return observable.Subscribe(observer);
+        }
+
+        public static string Join<T>(this IEnumerable<T> collection, string separator = ", ") => string.Join(separator, collection);
+
+        public static string[] SplitArguments(string commandLine)
+        {
+            var paramChars = commandLine.ToCharArray();
+
+            var inSingleQuote = false;
+            var inDoubleQuote = false;
+            for (var index = 0; index < paramChars.Length; index++)
+            {
+                if (paramChars[index] == '"' && !inSingleQuote)
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                    paramChars[index] = '\n';
+                }
+
+                if (paramChars[index] == '\'' && !inDoubleQuote)
+                {
+                    inSingleQuote = !inSingleQuote;
+                    paramChars[index] = '\n';
+                }
+
+                if (!inSingleQuote && !inDoubleQuote && paramChars[index] == ' ')
+                {
+                    paramChars[index] = '\n';
+                }
+            }
+
+            return new string(paramChars).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public static bool IsHeadlessRun(string[] args) => args.Contains("--headless");
+
+        public static string GetResultsPath(string[] args)
+            => args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty) ??
+                throw new Exception("You must provide path to store test results with --result path/to/results.xml");
+
+        private class FunctionObserver<T> : IObserver<T>
+        {
+            private readonly Action<T> _onNext;
+
+            public FunctionObserver(Action<T> onNext)
+            {
+                _onNext = onNext;
+            }
+
+            public void OnCompleted()
+            {
+            }
+
+            public void OnError(Exception error)
+            {
+            }
+
+            public void OnNext(T value)
+            {
+                _onNext?.Invoke(value);
+            }
         }
     }
 }

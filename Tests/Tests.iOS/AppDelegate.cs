@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Foundation;
 using NUnit.Runner;
 using NUnit.Runner.Services;
+using Realms.Tests.Sync;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
@@ -45,27 +46,14 @@ namespace Realms.Tests.iOS
             var arguments = NSProcessInfo.ProcessInfo.Arguments
                                          .Select(a => a.Replace("-app-arg=", string.Empty))
                                          .ToArray();
-            if (arguments.Any("--headless".Equals))
+
+            arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
+
+            if (TestHelpers.IsHeadlessRun(arguments))
             {
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
-
-                var hasResultsPath = false;
-                for (var i = 0; i < arguments.Length; i++)
-                {
-                    if (arguments[i] == "--resultpath")
-                    {
-                        options.ResultFilePath = arguments[i + 1];
-                        hasResultsPath = true;
-                        break;
-                    }
-                }
-
-                if (!hasResultsPath)
-                {
-                    throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
-                }
-
+                options.ResultFilePath = TestHelpers.GetResultsPath(arguments);
                 options.OnCompletedCallback = () =>
                 {
                     TestHelpers.TransformTestResults(options.ResultFilePath);
@@ -75,7 +63,6 @@ namespace Realms.Tests.iOS
 
                     return Task.CompletedTask;
                 };
-
             }
 
             nunit.Options = options;

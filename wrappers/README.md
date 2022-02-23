@@ -18,17 +18,17 @@ Downloading ObjectStore
 If you cloned your `realm-dotnet` repository, you can use a git command to get the submodule:
 
 1. Open a terminal window in the `realm-dotnet` source directory
-1. Enter the command `git submodule update --recursive`
+1. Enter the command `git submodule update --init --recursive`
 
 
 ### Direct Download
 
-If you downloaded a zip of the source, you need to go back to github to identify which version of Objectstore is required. There is no git information in the zip file which specifies this.
+If you downloaded a zip of the source, you need to go back to github to identify which version of Core is required. There is no git information in the zip file which specifies this.
 
-1. Look in the github repo [wrappers/src](https://github.com/realm/realm-dotnet/tree/master/wrappers/src) and you will see the link to the submodule, eg: `object-store @ fb2ed6a`.
-1. Click the link to take you to the tree in ObjectStore
-1. Download a zip using the GitHub download button in that tree, eg `realm-object-store-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
-1. Unpack its contents into `wrappers/src/object-store`
+1. Look in the github repo [wrappers](https://github.com/realm/realm-dotnet/tree/main/wrappers) and you will see the link to the submodule, eg: `realm-core @ 802aa43`.
+1. Click the link to take you to the tree in Core
+1. Download a zip using the GitHub download button in that tree, eg `realm-core-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
+1. Unpack its contents into `wrappers/src/realm-core`
 
 Building iOS wrappers on macOS
 ------------------------------------------
@@ -46,7 +46,7 @@ Building Android wrappers
 
 Building for Android uses CMake with a toolchain file. You can either configure CMake with an Android toolchain file manually, or build with `build-android.sh`. By default it will build for armeabi-v7a, arm64-v8a, x86, and x86_64. You can specify a single ABI to build by passing `--arch=$ABI`. You can also choose a build configuration by passing `--configuration=$CONFIG`. The script also accepts CMake arguments like `-GNinja`.
 
-You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK` pointing to its location.
+You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK_HOME` pointing to its location.
 
 Building Windows wrappers
 -------------
@@ -69,9 +69,9 @@ Building .NET Core wrappers for macOS and Linux
 
 `build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
 
-For Linux builds you can just build and run `Dockerfile.centos` if you don't have access to a Linux environment:
+For Linux builds you can just build and run `centos.Dockerfile` if you don't have access to a Linux environment:
 
-1. `docker build . -f Dockerfile.centos -t realm-dotnet/wrappers`
+1. `docker build . -f centos.Dockerfile -t realm-dotnet/wrappers`
 1. `docker run -v path/to/wrappers:/source realm-dotnet/wrappers`
 
 General Notes
@@ -79,3 +79,4 @@ General Notes
 All builds steps download the required realm components (core and sync) automatically.
 
 **Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `src/CMakeLists.txt` for builds to work.
+

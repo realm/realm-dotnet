@@ -1,0 +1,12 @@
+{
+    "username": "realm",
+    "useremail": "nuget@realm.io",
+    "sources": [
+      {
+        "name": "NugetSource",
+        "type": "s3",
+        "bucketName": "realm.nugetpackages",
+        "region": "us-east-1"
+      }
+    ]
+  }

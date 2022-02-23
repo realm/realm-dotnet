@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -53,11 +54,10 @@ namespace RealmWeaver
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
-        private const string MixPanelToken = "ce0fac19508f6c8f20066d345d360fd0";
         private const string JsonTemplate = @"{
-   ""event"": ""%EVENT%"",
+   ""event"": ""Run"",
    ""properties"": {
-      ""token"": ""%TOKEN%"",
+      ""token"": ""ce0fac19508f6c8f20066d345d360fd0"",
       ""distinct_id"": ""%USER_ID%"",
       ""Anonymized MAC Address"": ""%USER_ID%"",
       ""Anonymized Bundle ID"": ""%APP_ID%"",
@@ -107,16 +107,13 @@ namespace RealmWeaver
             {
                 ComputeHostOSNameAndVersion(out var osName, out var osVersion);
                 return JsonTemplate
-                    .Replace("%EVENT%", "Run")
-                    .Replace("%TOKEN%", MixPanelToken)
                     .Replace("%USER_ID%", AnonymizedUserID)
                     .Replace("%APP_ID%", _config.ModuleName)
 
                     .Replace("%SYNC_ENABLED%", _config.IsUsingSync.ToString())
 
                     // Version of weaver is expected to match that of the library.
-                    // TODO: temp - remove that when we're out of beta
-                    .Replace("%REALM_VERSION%", "10.2.0-beta.2") // Assembly.GetExecutingAssembly().GetName().Version.ToString())
+                    .Replace("%REALM_VERSION%", Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)
@@ -135,7 +132,9 @@ namespace RealmWeaver
 
         internal string SubmitAnalytics()
         {
-            if (!_config.RunAnalytics || Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null)
+            if (!_config.RunAnalytics ||
+                Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null ||
+                Environment.GetEnvironmentVariable("CI") != null)
             {
                 return "Analytics disabled";
             }
@@ -146,12 +145,6 @@ namespace RealmWeaver
             // Debugger.Launch();
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-
-            // this will need to go when mixPanel won't be used anymore
-            SendRequest(
-                "https://api.mixpanel.com/track/?data=",
-                base64Payload,
-                "&ip=1");
 
             SendRequest(
                 "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?data=",

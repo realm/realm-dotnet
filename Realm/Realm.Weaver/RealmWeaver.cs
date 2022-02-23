@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -131,10 +130,11 @@ namespace RealmWeaver
             "MapToAttribute",
         };
 
+        private readonly Lazy<MethodReference> _propertyChanged_DoNotNotify_Ctor;
+
         private readonly ImportedReferences _references;
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
-        private readonly FrameworkName _frameworkName;
 
         private IEnumerable<TypeDefinition> GetMatchingTypes()
         {
@@ -155,19 +155,19 @@ namespace RealmWeaver
             }
         }
 
-        public Weaver(ModuleDefinition module, ILogger logger, FrameworkName frameworkName)
-        {
-            _moduleDefinition = module;
-            _logger = logger;
-            _frameworkName = frameworkName;
-            _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
-        }
-
-        public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
+        public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
             //// System.Diagnostics.Debugger.Launch();
 
+            _moduleDefinition = module;
+            _logger = logger;
+            _references = ImportedReferences.Create(_moduleDefinition, framework);
+            _propertyChanged_DoNotNotify_Ctor = new Lazy<MethodReference>(GetOrAddPropertyChanged_DoNotNotify);
+        }
+
+        public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
+        {
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
             if (_references.WovenAssemblyAttribute == null)
@@ -204,7 +204,6 @@ Analytics payload
             });
 
             var matchingTypes = GetMatchingTypes().ToArray();
-            var WeavePropertyResults = new List<WeaveTypeResult>();
 
             var weaveResults = matchingTypes.Select(type =>
             {
@@ -214,10 +213,10 @@ Analytics payload
                 }
                 catch (Exception e)
                 {
-                    _logger.Error($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
-                    return null;
+                    _logger.Error($"An unexpected error occurred while weaving '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                    return WeaveTypeResult.Error(type.Name);
                 }
-            }).Where(r => r != null).ToArray();
+            }).ToArray();
 
             WeaveSchema(matchingTypes);
 
@@ -226,6 +225,12 @@ Analytics payload
 
             submitAnalytics.Wait();
 
+            var failedResults = weaveResults.Where(r => !r.IsSuccessful);
+            if (failedResults.Any())
+            {
+                return WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}");
+            }
+
             return WeaveModuleResult.Success(weaveResults);
         }
 
@@ -233,6 +238,7 @@ Analytics payload
         {
             _logger.Debug("Weaving " + type.Name);
 
+            var didSucceed = true;
             var persistedProperties = new List<WeavePropertyResult>();
             foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
@@ -245,11 +251,14 @@ Analytics payload
                     }
                     else
                     {
-                        var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
+                        var sequencePoint = prop.GetSequencePoint();
                         if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
                         {
                             // We only want one error point, so even though there may be more problems, we only log the first one.
                             _logger.Error(weaveResult.ErrorMessage, sequencePoint);
+
+                            // We set didSucceed to false, but we want to continue weaving so that if there are multiple problems, they'll all be reported.
+                            didSucceed = false;
                         }
                         else
                         {
@@ -266,37 +275,39 @@ Analytics payload
 
                             if (realmAttributeNames.Any())
                             {
-                                _logger.Error($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                                _logger.Warning($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
                             }
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
+                    var sequencePoint = prop.GetSequencePoint();
                     _logger.Error(
                         $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                         sequencePoint);
+
+                    return WeaveTypeResult.Error(type.Name);
                 }
             }
 
             if (!persistedProperties.Any())
             {
-                _logger.Error($"Class {type.Name} is a RealmObject but has no persisted properties.");
-                return null;
+                _logger.Error($"Class {type.Name} is a RealmObject but has no persisted properties.", type.GetSequencePoint());
+                return WeaveTypeResult.Error(type.Name);
             }
 
             var pkProperty = persistedProperties.FirstOrDefault(p => p.IsPrimaryKey);
             if (type.IsEmbeddedObjectInheritor(_references) && pkProperty != null)
             {
-                _logger.Error($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.");
-                return null;
+                _logger.Error($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.", type.GetSequencePoint());
+                return WeaveTypeResult.Error(type.Name);
             }
 
             if (persistedProperties.Count(p => p.IsPrimaryKey) > 1)
             {
-                _logger.Error($"Class {type.Name} has more than one property marked with [PrimaryKey].");
-                return null;
+                _logger.Error($"Class {type.Name} has more than one property marked with [PrimaryKey].", type.GetSequencePoint());
+                return WeaveTypeResult.Error(type.Name);
             }
 
             var objectConstructor = type.GetConstructors()
@@ -306,7 +317,7 @@ Analytics payload
                 var nonDefaultConstructor = type.GetConstructors().First();
                 var sequencePoint = nonDefaultConstructor.DebugInformation.SequencePoints.FirstOrDefault();
                 _logger.Error($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
-                return null;
+                return WeaveTypeResult.Error(type.Name);
             }
 
             var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);
@@ -322,7 +333,7 @@ Analytics payload
             wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_references.System_Type, helperType));
             type.CustomAttributes.Add(wovenAttribute);
 
-            return WeaveTypeResult.Success(type.Name, persistedProperties);
+            return didSucceed ? WeaveTypeResult.Success(type.Name, persistedProperties) : WeaveTypeResult.Error(type.Name);
         }
 
         private WeavePropertyResult WeaveProperty(PropertyDefinition prop, TypeDefinition type)
@@ -332,6 +343,11 @@ Analytics payload
             if (mapToAttribute != null)
             {
                 columnName = (string)mapToAttribute.ConstructorArguments[0].Value;
+            }
+
+            if (prop.GetMethod == null)
+            {
+                return WeavePropertyResult.Skipped();
             }
 
             var backingField = prop.GetBackingField();
@@ -390,10 +406,18 @@ Analytics payload
             {
                 var genericArguments = ((GenericInstanceType)prop.PropertyType).GenericArguments;
                 var elementType = genericArguments.Last();
-                if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_realmValueTypes.Contains(elementType.FullName))
+
+                if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references))
                 {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
+                    if (elementType.IsRealmInteger(out _, out _))
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<RealmInteger> which is not supported.");
+                    }
+
+                    if (!_realmValueTypes.Contains(elementType.FullName))
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
+                    }
                 }
 
                 if (prop.SetMethod != null)
@@ -430,6 +454,11 @@ Analytics payload
             }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
+                if (prop.SetMethod == null)
+                {
+                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} does not have a setter but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
+                }
+
                 // with casting in the _realmObject methods, should just work
                 ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
                 ReplaceSetter(prop, backingField, columnName, _references.RealmObject_SetValue);
@@ -599,9 +628,6 @@ Analytics payload
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.
-
-            // Let Cecil optimize things for us.
-            // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
         // WARNING
@@ -655,9 +681,6 @@ Analytics payload
 
             // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
             // FALL THROUGH to return the backing field.
-
-            // Let Cecil optimize things for us.
-            // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
         private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)
@@ -698,13 +721,9 @@ Analytics payload
             prop.SetMethod.Body.Variables.Clear();
 
             // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in.
-            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
-            // the property such that PropertyChanged.Fody won't touch it.
-            if (_references.PropertyChanged_DoNotNotifyAttribute_Constructor != null)
-            {
-                prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
-            }
+            // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
+            // PropertyChanged.Fody will respect.
+            prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
 
             var managedSetStart = il.Create(OpCodes.Ldarg_0);
             il.Append(il.Create(OpCodes.Ldarg_0));
@@ -1079,6 +1098,41 @@ Analytics payload
                        .Any(i => i.OpCode == OpCodes.Newobj &&
                                  i.Operand is MethodReference mRef &&
                                  mRef.ConstructsType(type));
+        }
+
+        private MethodReference GetOrAddPropertyChanged_DoNotNotify()
+        {
+            // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
+            // It is possible that a project references PropertyChanged.Fody but it doesn't show up in the Module references
+            // because it is not being used in code. There's not much we can do about it in this case as there's no obvious
+            // way to determine whether PropertyChanged is in use or not. That's why we construct our own PropertyChanged.DoNotNotify
+            // attribute and apply it to Realm-processed properties.
+            var propertyChanged_Fody = _moduleDefinition.FindReference("PropertyChanged");
+            if (propertyChanged_Fody != null)
+            {
+                var propertyChanged_DoNotNotify = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", _moduleDefinition, propertyChanged_Fody);
+                return new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, propertyChanged_DoNotNotify) { HasThis = true };
+            }
+
+            var system_Attribute = new TypeReference("System", "Attribute", _moduleDefinition, _moduleDefinition.TypeSystem.CoreLibrary);
+
+            var userAssembly_DoNotNotify = new TypeDefinition("PropertyChanged", "DoNotNotifyAttribute",
+                                TypeAttributes.Class | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed,
+                                system_Attribute);
+
+            const MethodAttributes CtorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+            var userAssembly_DoNotNotify_Ctor = new MethodDefinition(".ctor", CtorAttributes, _moduleDefinition.TypeSystem.Void);
+            {
+                var il = userAssembly_DoNotNotify_Ctor.Body.GetILProcessor();
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, new MethodReference(".ctor", _moduleDefinition.TypeSystem.Void, system_Attribute) { HasThis = true });
+                il.Emit(OpCodes.Ret);
+            }
+
+            userAssembly_DoNotNotify.Methods.Add(userAssembly_DoNotNotify_Ctor);
+            _moduleDefinition.Types.Add(userAssembly_DoNotNotify);
+
+            return userAssembly_DoNotNotify_Ctor;
         }
     }
 }

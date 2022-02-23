@@ -17,20 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Native;
 
 namespace Realms
 {
     internal abstract class CollectionHandleBase : NotifiableObjectHandleBase
     {
-        protected delegate IntPtr SnapshotDelegate(out NativeException ex);
-
         public abstract bool IsValid { get; }
 
-        public bool CanSnapshot => SnapshotCore != null;
+        public virtual bool CanSnapshot => false;
 
-        protected virtual SnapshotDelegate SnapshotCore => null;
-
-        protected CollectionHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
+        protected CollectionHandleBase(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -38,20 +35,31 @@ namespace Realms
 
         public ResultsHandle Snapshot()
         {
-            if (CanSnapshot)
-            {
-                var ptr = SnapshotCore(out var ex);
-                ex.ThrowIfNecessary();
-                return new ResultsHandle(Root ?? this, ptr);
-            }
+            EnsureIsOpen();
 
-            throw new NotSupportedException("Snapshotting this collection is not supported.");
+            var ptr = SnapshotCore(out var ex);
+            ex.ThrowIfNecessary();
+            return new ResultsHandle(Root, ptr);
         }
 
-        public abstract ResultsHandle GetFilteredResults(string query, RealmValue[] arguments);
+        public ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        {
+            EnsureIsOpen();
+
+            var (primitiveValues, handles) = arguments.ToPrimitiveValues();
+            var ptr = GetFilteredResultsCore(query, primitiveValues, out var ex);
+            handles.Dispose();
+
+            ex.ThrowIfNecessary();
+            return new ResultsHandle(Root, ptr);
+        }
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
+
+        protected abstract IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex);
+
+        protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
     }
 }

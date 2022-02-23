@@ -44,7 +44,7 @@ namespace Realms.Schema
             Argument.NotNull(type, nameof(type));
 
             objectType = null;
-            var nullabilityModifier = PropertyType.Required;
+            PropertyType nullabilityModifier = default;
 
             var nullableType = Nullable.GetUnderlyingType(type);
             if (nullableType != null)
@@ -170,17 +170,80 @@ namespace Realms.Schema
             };
         }
 
+        public static PropertyType ToPropertyType(this RealmValueType type, bool isNullable)
+        {
+            var nullabilityModifier = isNullable ? PropertyType.Nullable : default;
+
+            return nullabilityModifier | type switch
+            {
+                RealmValueType.Int => PropertyType.Int,
+                RealmValueType.Bool => PropertyType.Bool,
+                RealmValueType.String => PropertyType.String,
+                RealmValueType.Data => PropertyType.Data,
+                RealmValueType.Date => PropertyType.Date,
+                RealmValueType.Float => PropertyType.Float,
+                RealmValueType.Double => PropertyType.Double,
+                RealmValueType.Object => PropertyType.Object,
+                RealmValueType.ObjectId => PropertyType.ObjectId,
+                RealmValueType.Decimal128 => PropertyType.Decimal,
+                RealmValueType.Guid => PropertyType.Guid,
+                _ => throw new NotSupportedException($"Type {type} can't be converted to {nameof(PropertyType)}"),
+            };
+        }
+
         public static bool IsComputed(this PropertyType propertyType) => propertyType == (PropertyType.LinkingObjects | PropertyType.Array);
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 
-        public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.IsComputed();
 
         public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
 
         public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary);
 
-        public static bool IsCollection(this PropertyType propertyType) => propertyType.IsArray() || propertyType.IsSet() || propertyType.IsDictionary();
+        public static bool IsCollection(this PropertyType propertyType, out PropertyType collection)
+        {
+            if (propertyType.IsList())
+            {
+                collection = PropertyType.Array;
+            }
+            else if (propertyType.IsSet())
+            {
+                collection = PropertyType.Set;
+            }
+            else if (propertyType.IsDictionary())
+            {
+                collection = PropertyType.Dictionary;
+            }
+            else
+            {
+                collection = default;
+            }
+
+            return collection != default;
+        }
+
+        public static bool IsRealmValue(this PropertyType propertyType) => propertyType == (PropertyType.RealmValue | PropertyType.Nullable);
+
+        public static string GetDotnetTypeName(this Property property)
+        {
+            _ = property.Type.IsCollection(out var collection);
+            var format = collection switch
+            {
+                PropertyType.Array => "IList<{0}>",
+                PropertyType.Set => "ISet<{0}>",
+                PropertyType.Dictionary => "IDictionary<string, {0}>",
+                _ => "{0}"
+            };
+
+            if (property.Type.IsComputed())
+            {
+                format = "IQueryable<{0}>";
+            }
+
+            var elementType = property.Type & ~(PropertyType.Array | PropertyType.Set | PropertyType.Dictionary);
+            return string.Format(format, property.ObjectType ?? elementType.ToType().Name);
+        }
 
         public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
     }

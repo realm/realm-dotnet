@@ -18,15 +18,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -194,9 +191,7 @@ namespace Realms.Sync
         /// </returns>
         public async Task<BsonDocument> RefreshCustomDataAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
-            Handle.RefreshCustomData(tcs);
-            await tcs.Task;
+            await Handle.RefreshCustomDataAsync();
 
             return GetCustomData();
         }
@@ -274,10 +269,7 @@ namespace Realms.Sync
         {
             Argument.NotNull(credentials, nameof(credentials));
 
-            var tcs = new TaskCompletionSource<SyncUserHandle>();
-            Handle.LinkCredentials(App.Handle, credentials.ToNative(), tcs);
-            var handle = await tcs.Task;
-
+            var handle = await Handle.LinkCredentialsAsync(App.Handle, credentials.ToNative());
             return new User(handle, App);
         }
 
@@ -330,17 +322,11 @@ namespace Realms.Sync
             /// that the <see cref="ApiKey"/> has been created on the server and its <see cref="ApiKey.Value"/> can
             /// be used to create <see cref="Credentials.ApiKey(string)"/>.
             /// </returns>
-            public async Task<ApiKey> CreateAsync(string name)
+            public Task<ApiKey> CreateAsync(string name)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
-                var tcs = new TaskCompletionSource<UserApiKey[]>();
-                _user.Handle.CreateApiKey(_user.App.Handle, name, tcs);
-                var apiKeys = await tcs.Task;
-
-                Debug.Assert(apiKeys.Length == 1, "The result of Create should be exactly 1 ApiKey.");
-
-                return new ApiKey(apiKeys.Single());
+                return _user.Handle.CreateApiKeyAsync(_user.App.Handle, name);
             }
 
             /// <summary>
@@ -350,16 +336,7 @@ namespace Realms.Sync
             /// <returns>
             /// An awaitable <see cref="Task{T}"/> representing the asynchronous lookup operation.
             /// </returns>
-            public async Task<ApiKey> FetchAsync(ObjectId id)
-            {
-                var tcs = new TaskCompletionSource<UserApiKey[]>();
-                _user.Handle.FetchApiKey(_user.App.Handle, id, tcs);
-                var apiKeys = await Handle404(tcs);
-
-                Debug.Assert(apiKeys == null || apiKeys.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
-
-                return apiKeys == null || apiKeys.Length == 0 ? null : new ApiKey(apiKeys.Single());
-            }
+            public Task<ApiKey> FetchAsync(ObjectId id) => Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
 
             /// <summary>
             /// Fetches all API keys associated with the user.
@@ -370,11 +347,7 @@ namespace Realms.Sync
             /// </returns>
             public async Task<IEnumerable<ApiKey>> FetchAllAsync()
             {
-                var tcs = new TaskCompletionSource<UserApiKey[]>();
-                _user.Handle.FetchAllApiKeys(_user.App.Handle, tcs);
-                var apiKeys = await tcs.Task;
-
-                return apiKeys.Select(k => new ApiKey(k)).ToArray();
+                return await _user.Handle.FetchAllApiKeysAsync(_user.App.Handle);
             }
 
             /// <summary>
@@ -382,13 +355,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="id">The id of the key to delete.</param>
             /// <returns>An awaitable <see cref="Task"/> representing the asynchronous delete operation.</returns>
-            public Task DeleteAsync(ObjectId id)
-            {
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.DeleteApiKey(_user.App.Handle, id, tcs);
-
-                return Handle404(tcs);
-            }
+            public Task DeleteAsync(ObjectId id) => Handle404(_user.Handle.DeleteApiKeyAsync(_user.App.Handle, id));
 
             /// <summary>
             /// Disables an API key by id.
@@ -396,13 +363,7 @@ namespace Realms.Sync
             /// <param name="id">The id of the key to disable.</param>
             /// <returns>An awaitable <see cref="Task"/> representing the asynchronous disable operation.</returns>
             /// <seealso cref="EnableAsync(ObjectId)"/>
-            public Task DisableAsync(ObjectId id)
-            {
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.DisableApiKey(_user.App.Handle, id, tcs);
-
-                return Handle404(tcs, id, shouldThrow: true);
-            }
+            public Task DisableAsync(ObjectId id) => Handle404(_user.Handle.DisableApiKeyAsync(_user.App.Handle, id), id);
 
             /// <summary>
             /// Enables an API key by id.
@@ -410,28 +371,32 @@ namespace Realms.Sync
             /// <param name="id">The id of the key to enable.</param>
             /// <returns>An awaitable <see cref="Task"/> representing the asynchrounous enable operation.</returns>
             /// <seealso cref="DisableAsync(ObjectId)"/>
-            public Task EnableAsync(ObjectId id)
-            {
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.EnableApiKey(_user.App.Handle, id, tcs);
+            public Task EnableAsync(ObjectId id) => Handle404(_user.Handle.EnableApiKeyAsync(_user.App.Handle, id), id);
 
-                return Handle404(tcs, id, shouldThrow: true);
-            }
-
-            private static async Task<T> Handle404<T>(TaskCompletionSource<T> tcs, ObjectId? id = null, bool shouldThrow = false)
+            private static async Task<T> Handle404<T>(Task<T> task)
             {
                 try
                 {
-                    return await tcs.Task;
+                    return await task;
                 }
                 catch (AppException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                 {
-                    if (shouldThrow)
+                    return default;
+                }
+            }
+
+            private static async Task Handle404(Task task, ObjectId? id = null)
+            {
+                try
+                {
+                    await task;
+                }
+                catch (AppException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+                {
+                    if (id.HasValue)
                     {
                         throw new AppException($"Failed to execute operation because ApiKey with Id: {id} doesn't exist.", ex.HelpLink, 404);
                     }
-
-                    return default;
                 }
             }
         }
@@ -485,13 +450,9 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
-                var tcs = new TaskCompletionSource<BsonPayload>();
+                var response = await _user.Handle.CallFunctionAsync(_user.App.Handle, name, args.ToNativeJson());
 
-                _user.Handle.CallFunction(_user.App.Handle, name, args.ToNativeJson(), tcs);
-
-                var response = await tcs.Task;
-
-                return response.GetValue<T>();
+                return BsonSerializer.Deserialize<T>(response);
             }
         }
 

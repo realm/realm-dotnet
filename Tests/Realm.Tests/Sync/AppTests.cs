@@ -30,6 +30,8 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCreate_CreatesApp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+
             // This is mostly a smoke test to ensure that nothing blows up when setting all properties.
             var config = new AppConfiguration("abc-123")
             {
@@ -44,6 +46,8 @@ namespace Realms.Tests.Sync
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
 
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
         }
@@ -54,6 +58,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.Id, Is.Not.Null);
             });
         }
 
@@ -66,6 +72,7 @@ namespace Realms.Tests.Sync
                 var logBuilder = new StringBuilder();
 
                 var appConfig = SyncTestHelpers.GetAppConfig();
+#pragma warning disable CS0618 // Type or member is obsolete
                 appConfig.LogLevel = logLevel;
                 appConfig.CustomLogger = (message, level) =>
                 {
@@ -74,6 +81,7 @@ namespace Realms.Tests.Sync
                         logBuilder.AppendLine($"[{level}] {message}");
                     }
                 };
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 var app = CreateApp(appConfig);
 
@@ -81,12 +89,16 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
+                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
                 });
 
                 await WaitForUploadAsync(realm);
 
-                var log = logBuilder.ToString();
+                string log;
+                lock (logBuilder)
+                {
+                    log = logBuilder.ToString();
+                }
 
                 Assert.That(log, Does.Contain($"[{logLevel}]"));
                 Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
@@ -107,7 +119,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
+                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
                 });
 
                 await WaitForUploadAsync(realm);

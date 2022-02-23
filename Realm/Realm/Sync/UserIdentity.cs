@@ -24,28 +24,31 @@ namespace Realms.Sync
     /// A class containing information about an identity associated with a user.
     /// </summary>
     [BsonNoId]
-    [Preserve(AllMembers = true)]
     public class UserIdentity
     {
         /// <summary>
         /// Gets the unique identifier for this identity.
         /// </summary>
         /// <value>The identity's Id.</value>
+        [Preserve]
         public string Id { get; private set; }
 
         /// <summary>
         /// Gets the auth provider defining this identity.
         /// </summary>
         /// <value>The identity's auth provider.</value>
+        [Preserve]
         public Credentials.AuthProvider Provider { get; private set; }
 
         /// <inheritdoc/>
+        [Preserve]
         public override bool Equals(object obj) => (obj is UserIdentity id) && id.Id == Id && id.Provider == Provider;
 
         /// <summary>
         /// Gets the hash code.
         /// </summary>
         /// <returns>The hash code.</returns>
+        [Preserve]
         public override int GetHashCode()
         {
             unchecked
@@ -61,6 +64,7 @@ namespace Realms.Sync
         /// Returns a string representation of the value.
         /// </summary>
         /// <returns>A string representation of the value.</returns>
+        [Preserve]
         public override string ToString() => $"UserIdentity: {Id} ({Provider})";
     }
 }

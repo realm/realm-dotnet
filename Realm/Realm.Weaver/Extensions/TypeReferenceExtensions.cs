@@ -17,12 +17,35 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.ComponentModel;
+using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using RealmWeaver;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class TypeReferenceExtensions
 {
+    public static SequencePoint GetSequencePoint(this TypeDefinition @this)
+    {
+        return GetCtorSequencePoint() ?? GetPropSequencePoint();
+
+        SequencePoint GetCtorSequencePoint()
+        {
+            return @this.GetConstructors()
+                .OrderBy(c => c.Parameters.Count)
+                .SelectMany(c => c.DebugInformation.SequencePoints)
+                .FirstOrDefault();
+        }
+
+        SequencePoint GetPropSequencePoint()
+        {
+            return @this.Properties
+                .Select(p => p.GetSequencePoint())
+                .FirstOrDefault(sp => sp != null);
+        }
+    }
+
     public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
     {
         try

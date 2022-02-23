@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -31,7 +31,18 @@ namespace Realms
         /// <summary>
         /// Gets a value indicating the identifier of the Realm that will be opened with this <see cref="InMemoryConfiguration"/>.
         /// </summary>
+        /// <value>The identifier for this configuration.</value>
         public string Identifier { get; }
+
+        /// <inheritdoc/>
+        [Obsolete("Encryption is not supported for in-memory realms. This property will be removed in a future version.")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+        public override byte[] EncryptionKey
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+        {
+            get => base.EncryptionKey;
+            set => throw new NotSupportedException("Encryption is not supported for in-memory realms");
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryConfiguration"/> class with a specified identifier.
@@ -47,18 +58,19 @@ namespace Realms
             Identifier = identifier;
         }
 
-        internal override Realm CreateRealm(RealmSchema schema)
+        internal override Realm CreateRealm()
         {
+            var schema = GetSchema();
             var configuration = CreateNativeConfiguration();
             configuration.in_memory = true;
 
-            var srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
-            return new Realm(new SharedRealmHandle(srPtr), this, schema);
+            var srHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+            return new Realm(srHandle, this, schema);
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(CreateRealm(schema));
+            return Task.FromResult(CreateRealm());
         }
     }
 }

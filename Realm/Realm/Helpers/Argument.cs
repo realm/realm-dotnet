@@ -27,9 +27,14 @@ namespace Realms.Helpers
 
         public static void NotNullOrEmpty(string value, string paramName)
         {
-            if (string.IsNullOrEmpty(value))
+            if (value == null)
             {
                 throw new ArgumentNullException(paramName);
+            }
+
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentException($"{paramName} must not be empty", paramName);
             }
         }
 
