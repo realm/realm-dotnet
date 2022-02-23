@@ -44,7 +44,7 @@ namespace SetupUnityPackage
             "System.Dynamic.Runtime",
         };
 
-        private static IEnumerable<DependencyInfo> _realmDependencies = new[]
+        private static readonly IEnumerable<DependencyInfo> _realmDependencies = new[]
         {
             new DependencyInfo("MongoDB.Bson", "lib/netstandard2.0/MongoDB.Bson.dll"),
             new DependencyInfo("Remotion.Linq", "lib/netstandard1.0/Remotion.Linq.dll"),
@@ -52,7 +52,7 @@ namespace SetupUnityPackage
             new DependencyInfo("System.Buffers", "lib/netstandard2.0/System.Buffers.dll"),
         };
 
-        private static IEnumerable<DependencyInfo> _weaverDependencies = new[]
+        private static readonly IEnumerable<DependencyInfo> _weaverDependencies = new[]
         {
             new DependencyInfo("Mono.Cecil", "lib/netstandard2.0/Mono.Cecil.dll", "lib/netstandard2.0/Mono.Cecil.Pdb.dll", "lib/netstandard2.0/Mono.Cecil.Rocks.dll"),
             new DependencyInfo("Unity3D.SDK", referenceOnly: true, "lib/UnityEditor.dll", "lib/UnityEngine.dll"),
@@ -78,6 +78,7 @@ namespace SetupUnityPackage
                 { "runtimes/win-x64/native/realm-wrappers.dll", "Runtime/Windows/x86_64/realm-wrappers.dll" },
                 { "runtimes/win-x86/native/realm-wrappers.dll", "Runtime/Windows/x86/realm-wrappers.dll" },
                 { "runtimes/win10-arm/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/ARM/realm-wrappers.dll" },
+                { "runtimes/win10-arm64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/ARM64/realm-wrappers.dll" },
                 { "runtimes/win10-x64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86_64/realm-wrappers.dll" },
                 { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86/realm-wrappers.dll" },
             }, _realmDependencies),
