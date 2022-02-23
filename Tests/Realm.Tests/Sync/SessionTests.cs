@@ -119,14 +119,14 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.IsFalse(onBeforeTriggered);
-                        Assert.IsFalse(onAfterTriggered);
+                        Assert.That(onBeforeTriggered, Is.False);
+                        Assert.That(onAfterTriggered, Is.False);
                         onBeforeTriggered = true;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        Assert.IsTrue(onBeforeTriggered);
-                        Assert.IsFalse(onAfterTriggered);
+                        Assert.That(onBeforeTriggered, Is.True);
+                        Assert.That(onAfterTriggered, Is.False);
                         onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     }
@@ -138,8 +138,8 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsTrue(onBeforeTriggered);
-                Assert.IsTrue(onAfterTriggered);
+                Assert.That(onBeforeTriggered, Is.True);
+                Assert.That(onAfterTriggered, Is.True);
             });
         }
 
@@ -167,10 +167,10 @@ namespace Realms.Tests.Sync
                     },
                     ManualResetFallback = (session, err) =>
                     {
-                        Assert.IsInstanceOf<ClientResetException>(err);
-                        Assert.IsFalse(onBeforeTriggered);
-                        Assert.IsFalse(onAfterTriggered);
-                        Assert.IsFalse(manualResetFallbackHandled);
+                        Assert.That(err, Is.InstanceOf<ClientResetException>());
+                        Assert.That(onBeforeTriggered, Is.False);
+                        Assert.That(onAfterTriggered, Is.False);
+                        Assert.That(manualResetFallbackHandled, Is.False);
                         manualResetFallbackHandled = true;
                         tcs.TrySetResult(true);
                     }
@@ -182,9 +182,9 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsFalse(onBeforeTriggered);
-                Assert.IsFalse(onAfterTriggered);
-                Assert.IsTrue(manualResetFallbackHandled);
+                Assert.That(onBeforeTriggered, Is.False);
+                Assert.That(onAfterTriggered, Is.False);
+                Assert.That(manualResetFallbackHandled, Is.True);
             });
         }
 
@@ -210,15 +210,15 @@ namespace Realms.Tests.Sync
 
                 var clientEx = await errorTcs.Task;
 
-                Assert.IsTrue(manualOnClientResetTriggered);
+                Assert.That(manualOnClientResetTriggered, Is.True);
 
                 Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.DivergingHistories));
                 Assert.That(clientEx.Message == errorMsg);
                 Assert.That(clientEx.InnerException == null);
 
                 Assert.That(File.Exists(config.DatabasePath));
-                Assert.IsTrue(clientEx.InitiateClientReset());
-                Assert.IsFalse(File.Exists(config.DatabasePath));
+                Assert.That(clientEx.InitiateClientReset(), Is.True);
+                Assert.That(File.Exists(config.DatabasePath), Is.False);
             });
         }
 
@@ -246,11 +246,11 @@ namespace Realms.Tests.Sync
 
                 var clientEx = await errorTcs.Task;
 
-                Assert.IsTrue(manualResetFallbackHandled);
+                Assert.That(manualResetFallbackHandled, Is.True);
                 Assert.That((int)clientEx.ErrorCode, Is.EqualTo((int)ClientError.AutoClientResetFailed));
                 Assert.That(File.Exists(config.DatabasePath));
-                Assert.IsTrue(clientEx.InitiateClientReset());
-                Assert.IsFalse(File.Exists(config.DatabasePath));
+                Assert.That(clientEx.InitiateClientReset(), Is.True);
+                Assert.That(File.Exists(config.DatabasePath), Is.False);
             });
         }
 
@@ -269,7 +269,7 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.IsFalse(onBeforeTriggered);
+                        Assert.That(onBeforeTriggered, Is.False);
 
                         var frozenObjs = beforeFrozen.All<PrimaryKeyInt32Object>().ToArray();
                         Assert.That(frozenObjs.Length, Is.EqualTo(2));
@@ -304,7 +304,7 @@ namespace Realms.Tests.Sync
                 session.Start();
 
                 await tcs.Task;
-                Assert.IsTrue(onBeforeTriggered);
+                Assert.That(onBeforeTriggered, Is.True);
             });
         }
 
@@ -323,7 +323,7 @@ namespace Realms.Tests.Sync
                 {
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        Assert.IsFalse(onAfterTriggered);
+                        Assert.That(onAfterTriggered, Is.False);
 
                         var frozenObjs = beforeFrozen.All<PrimaryKeyInt32Object>().ToArray();
                         Assert.That(frozenObjs.Length, Is.EqualTo(2));
@@ -364,7 +364,7 @@ namespace Realms.Tests.Sync
                 session.Start();
 
                 await tcs.Task;
-                Assert.IsTrue(onAfterTriggered);
+                Assert.That(onAfterTriggered, Is.True);
             });
         }
 
@@ -433,9 +433,9 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.IsFalse(onBeforeTriggered);
-                        Assert.IsFalse(onAfterResetTriggered);
-                        Assert.IsFalse(manualFallbackTriggered);
+                        Assert.That(onBeforeTriggered, Is.False);
+                        Assert.That(onAfterResetTriggered, Is.False);
+                        Assert.That(manualFallbackTriggered, Is.False);
                         onBeforeTriggered = true;
                         throw new Exception("Exception thrown in OnBeforeReset");
                     },
@@ -446,10 +446,10 @@ namespace Realms.Tests.Sync
                     },
                     ManualResetFallback = (session, err) =>
                     {
-                        Assert.IsInstanceOf<ClientResetException>(err);
-                        Assert.IsTrue(onBeforeTriggered);
-                        Assert.IsFalse(onAfterResetTriggered);
-                        Assert.IsFalse(manualFallbackTriggered);
+                        Assert.That(err, Is.InstanceOf<ClientResetException>());
+                        Assert.That(onBeforeTriggered, Is.True);
+                        Assert.That(onAfterResetTriggered, Is.False);
+                        Assert.That(manualFallbackTriggered, Is.False);
                         manualFallbackTriggered = true;
                         tcs.TrySetResult(true);
                     }
@@ -461,9 +461,9 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsTrue(manualFallbackTriggered);
-                Assert.IsTrue(onBeforeTriggered);
-                Assert.IsFalse(onAfterResetTriggered);
+                Assert.That(manualFallbackTriggered, Is.True);
+                Assert.That(onBeforeTriggered, Is.True);
+                Assert.That(onAfterResetTriggered, Is.False);
             });
         }
 
@@ -481,25 +481,25 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.IsFalse(onBeforeTriggered);
-                        Assert.IsFalse(onAfterResetTriggered);
-                        Assert.IsFalse(manualFallbackTriggered);
+                        Assert.That(onBeforeTriggered, Is.False);
+                        Assert.That(onAfterResetTriggered, Is.False);
+                        Assert.That(manualFallbackTriggered, Is.False);
                         onBeforeTriggered = true;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        Assert.IsTrue(onBeforeTriggered);
-                        Assert.IsFalse(onAfterResetTriggered);
-                        Assert.IsFalse(manualFallbackTriggered);
+                        Assert.That(onBeforeTriggered, Is.True);
+                        Assert.That(onAfterResetTriggered, Is.False);
+                        Assert.That(manualFallbackTriggered, Is.False);
                         onAfterResetTriggered = true;
                         throw new Exception("Exception thrown in OnAfterReset");
                     },
                     ManualResetFallback = (session, err) =>
                     {
-                        Assert.IsInstanceOf<ClientResetException>(err);
-                        Assert.IsTrue(onBeforeTriggered);
-                        Assert.IsTrue(onAfterResetTriggered);
-                        Assert.IsFalse(manualFallbackTriggered);
+                        Assert.That(err, Is.InstanceOf<ClientResetException>());
+                        Assert.That(onBeforeTriggered, Is.True);
+                        Assert.That(onAfterResetTriggered, Is.True);
+                        Assert.That(manualFallbackTriggered, Is.False);
                         manualFallbackTriggered = true;
                         tcs.TrySetResult(true);
                     }
@@ -511,9 +511,9 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsTrue(manualFallbackTriggered);
-                Assert.IsTrue(onBeforeTriggered);
-                Assert.IsTrue(onAfterResetTriggered);
+                Assert.That(manualFallbackTriggered, Is.True);
+                Assert.That(onBeforeTriggered, Is.True);
+                Assert.That(onAfterResetTriggered, Is.True);
             });
         }
 
@@ -528,12 +528,12 @@ namespace Realms.Tests.Sync
                 var errorMsg = "simulated sync issue";
                 config.OnSessionError = (sender, e) =>
                 {
-                    Assert.IsInstanceOf<Session>(sender);
-                    Assert.IsInstanceOf<SessionException>(e);
+                    Assert.That(sender, Is.InstanceOf<Session>());
+                    Assert.That(e, Is.InstanceOf<SessionException>());
                     Assert.That(e.ErrorCode == ErrorCode.PermissionDenied);
                     Assert.That(e.Message == errorMsg);
                     Assert.That(e.InnerException == null);
-                    Assert.IsFalse(sessionErrorTriggered);
+                    Assert.That(sessionErrorTriggered, Is.False);
                     sessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
@@ -544,7 +544,7 @@ namespace Realms.Tests.Sync
 
                 await tcs.Task;
 
-                Assert.IsTrue(sessionErrorTriggered);
+                Assert.That(sessionErrorTriggered, Is.True);
             });
         }
 
@@ -563,14 +563,14 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = (beforeFrozen) =>
                     {
-                        Assert.IsFalse(onBeforeTriggered);
-                        Assert.IsFalse(onAfterTriggered);
+                        Assert.That(onBeforeTriggered, Is.False);
+                        Assert.That(onAfterTriggered, Is.False);
                         onBeforeTriggered = true;
                     },
                     OnAfterReset = (beforeFrozen, after) =>
                     {
-                        Assert.IsTrue(onBeforeTriggered);
-                        Assert.IsFalse(onAfterTriggered);
+                        Assert.That(onBeforeTriggered, Is.True);
+                        Assert.That(onAfterTriggered, Is.False);
                         onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     }
@@ -596,9 +596,9 @@ namespace Realms.Tests.Sync
                 await Task.Delay(1000);
                 await tcs.Task;
 
-                Assert.IsTrue(onBeforeTriggered);
-                Assert.IsTrue(onAfterTriggered);
-                Assert.IsFalse(obsoleteSessionErrorTriggered);
+                Assert.That(onBeforeTriggered, Is.True);
+                Assert.That(onAfterTriggered, Is.True);
+                Assert.That(obsoleteSessionErrorTriggered, Is.False);
                 Session.Error -= sessionErrorFunc;
             });
         }
@@ -618,12 +618,12 @@ namespace Realms.Tests.Sync
                 {
                     ManualResetFallback = (session, err) =>
                     {
-                        Assert.IsFalse(manualResetFallbackHandled);
-                        Assert.IsInstanceOf<ClientResetException>(err);
+                        Assert.That(manualResetFallbackHandled, Is.False);
+                        Assert.That(err, Is.InstanceOf<ClientResetException>());
 
                         Assert.That((int)err.ErrorCode, Is.EqualTo((int)ClientError.AutoClientResetFailed));
-                        Assert.That(err.Message == errorMsg);
-                        Assert.That(err.InnerException == null);
+                        Assert.That(err.Message, Is.EqualTo(errorMsg));
+                        Assert.That(err.InnerException, Is.Null);
                         manualResetFallbackHandled = true;
                         tcs.TrySetResult(true);
                     }
@@ -648,8 +648,8 @@ namespace Realms.Tests.Sync
                 await Task.Delay(1000);
                 await tcs.Task;
 
-                Assert.IsTrue(manualResetFallbackHandled);
-                Assert.IsFalse(obsoleteSessionErrorTriggered);
+                Assert.That(manualResetFallbackHandled, Is.True);
+                Assert.That(obsoleteSessionErrorTriggered, Is.False);
                 Session.Error -= sessionErrorFunc;
             });
         }
@@ -687,18 +687,18 @@ namespace Realms.Tests.Sync
 
                 var ex = await tcs.Task;
 
-                Assert.IsTrue(obsoleteSessionErrorTriggered);
+                Assert.That(obsoleteSessionErrorTriggered, Is.True);
                 Session.Error -= sessionErrorFunc;
 
                 Assert.That(ex, Is.InstanceOf<ClientResetException>());
                 var clientEx = (ClientResetException)ex;
                 Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.DivergingHistories));
-                Assert.That(clientEx.Message == errorMsg);
-                Assert.That(clientEx.InnerException == null);
+                Assert.That(clientEx.Message, Is.EqualTo(errorMsg));
+                Assert.That(clientEx.InnerException, Is.Null);
 
                 Assert.That(File.Exists(config.DatabasePath));
-                Assert.IsTrue(clientEx.InitiateClientReset());
-                Assert.IsFalse(File.Exists(config.DatabasePath));
+                Assert.That(clientEx.InitiateClientReset(), Is.True);
+                Assert.That(File.Exists(config.DatabasePath), Is.False);
             });
         }
 
@@ -718,8 +718,8 @@ namespace Realms.Tests.Sync
 
                 EventHandler<ErrorEventArgs> sessionErrorFunc = (sender, e) =>
                 {
-                    Assert.IsInstanceOf<Session>(sender);
-                    Assert.IsInstanceOf<SessionException>(e.Exception);
+                    Assert.That(sender, Is.InstanceOf<Session>());
+                    Assert.That(e.Exception, Is.InstanceOf<SessionException>());
                     var sessionEx = (SessionException)e.Exception;
                     Assert.That(sessionEx.ErrorCode == ErrorCode.PermissionDenied);
                     Assert.That(sessionEx.Message == errorMsg);
@@ -735,7 +735,7 @@ namespace Realms.Tests.Sync
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
                 await tcs.Task;
-                Assert.IsTrue(obsoleteSessionErrorTriggered);
+                Assert.That(obsoleteSessionErrorTriggered, Is.True);
                 Session.Error -= sessionErrorFunc;
             });
         }
@@ -795,9 +795,9 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 config.OnSessionError = (sender, e) =>
                 {
-                    Assert.IsInstanceOf<Session>(sender);
-                    Assert.IsInstanceOf<SessionException>(e);
-                    Assert.IsFalse(sessionErrorTriggered);
+                    Assert.That(sender, Is.InstanceOf<Session>());
+                    Assert.That(e, Is.InstanceOf<SessionException>());
+                    Assert.That(sessionErrorTriggered, Is.False);
                     sessionErrorTriggered = true;
                     tcs.TrySetResult(true);
                 };
@@ -822,8 +822,8 @@ namespace Realms.Tests.Sync
                 await Task.Delay(1000);
                 await tcs.Task;
 
-                Assert.IsFalse(obsoleteSessionErrorTriggered);
-                Assert.IsTrue(sessionErrorTriggered);
+                Assert.That(obsoleteSessionErrorTriggered, Is.False);
+                Assert.That(sessionErrorTriggered, Is.True);
                 Session.Error -= sessionErrorFunc;
             });
         }
