@@ -52,6 +52,8 @@ namespace Realms.Sync.ErrorHandling
         /// This obsolete constructor should be used only when the user wants to use the obsolete Session.Error event for handling session errors and client resets.
         /// </remarks>
         [Obsolete("Use SyncConfigurationBase.OnSessionError in conjunction with SyncConfigurationBase.ClientResetHandler instead.")]
-        public ManualRecoveryHandler() { }
+        public ManualRecoveryHandler()
+        {
+        }
     }
 }

@@ -24,8 +24,13 @@ namespace Realms.Sync.ErrorHandling
     /// <remarks>
     /// The freshly downloaded copy of the synchronized Realm triggers all change notifications as a write transaction is internally simulated.
     /// This strategy supplies three callbacks: <see cref="OnBeforeReset"/>, <see cref="OnAfterReset"/>, and <see cref="ManualResetFallback"/>.
-    /// The first two give notify you just before and after the client reset has happened,
+    /// The first two notify you just before and after the client reset has happened,
     /// while the last one will be invoked in case an error occurs during the automated process and the system needs to fallback to a manual mode.
+    /// The overall recommendation for using this strategy is that using the three available callbacks should only be considered when:
+    /// 1. the user needs to be notified (in <see cref="OnBeforeReset"/>) of an incoming data loss of unsynced data
+    /// 2. the user needs to be notified (in <see cref="OnAfterReset"/>) that the reset process has completed
+    /// 3. advanced use cases for data-sensitive applications where the developer wants to manually-merge/recover the unsynced
+    /// 4. backup the whole realm before the client reset happens (in <see cref="OnBeforeReset"/>). Such backup could, for example, be used to restore the unsynced data (see 3.)
     /// </remarks>
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public sealed class DiscardLocalResetHandler : ClientResetHandlerBase
