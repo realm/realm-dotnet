@@ -22,7 +22,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
-using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
@@ -30,7 +29,7 @@ using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true)]
+    [TestFixture, Preserve(AllMembers = true), NonParallelizable]
     public class SessionTests : SyncTestBase
     {
         [Test]
