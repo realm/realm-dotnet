@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Logging;
 using Realms.Tests.Sync;
 
 namespace Realms.Tests.Database
@@ -147,8 +148,10 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Migration_WhenOpenedAsReadonly_LogsAMessageAndDoesntChangeFile()
+        public void UnmigratedRealm_WhenOpenedAsReadonly_LogsAMessageAndDoesntChangeFile()
         {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
             TestHelpers.CopyBundledFileToDocuments("guids.realm", _configuration.DatabasePath);
 
             _configuration.IsReadOnly = true;
@@ -175,6 +178,44 @@ namespace Realms.Tests.Database
                 Assert.That(realm.Find<GuidType>(expectedObj.Id), Is.Null);
                 Assert.That(realm.Find<GuidType>(flippedId), Is.EqualTo(actualObj));
             }
+
+            Assert.That(logger.GetLog(), Does.Contain("may contain legacy guid values but is opened as readonly so it cannot be migrated"));
+        }
+
+        [Test]
+        public void MigratedRealm_WhenOpenedAsReadonly_DoesntDoAnything()
+        {
+            TestHelpers.CopyBundledFileToDocuments("guids.realm", _configuration.DatabasePath);
+
+            using (var realm = GetRealm(_configuration))
+            {
+                // Open the Realm to migrate it
+            }
+
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+            _configuration.IsReadOnly = true;
+
+            var expected = GetGuidObjects().ToArray();
+            using var readonlyRealm = GetRealm(_configuration);
+
+            var actual = readonlyRealm.All<GuidType>().ToArray();
+
+            Assert.That(actual.Length, Is.EqualTo(expected.Length));
+
+            foreach (var expectedObj in expected)
+            {
+                var actualObj = actual.Single(o => o.Id == expectedObj.Id);
+
+                AssertEqual(expectedObj, actualObj);
+
+                var actualFound = readonlyRealm.Find<GuidType>(expectedObj.Id);
+                Assert.That(actualObj, Is.EqualTo(actualFound));
+            }
+
+            Assert.That(logger.GetLog(), Is.Empty);
+
         }
 
         protected override void CustomSetUp()

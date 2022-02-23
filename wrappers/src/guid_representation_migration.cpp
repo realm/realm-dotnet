@@ -143,12 +143,13 @@ static void byteswap_guids(TableRef table, bool& found_non_v4_uuid)
 static constexpr char c_guid_fix_table[] = "dotnet_guid_representation_fixed";
 
 namespace realm {
+bool requires_guid_representation_fix(SharedRealm& realm)
+{
+    return !realm->read_group().has_table(c_guid_fix_table);
+}
+
 bool apply_guid_representation_fix(SharedRealm& realm)
 {
-    if (realm->read_group().has_table(c_guid_fix_table)) {
-        return false;
-    }
-
     bool found_non_v4_uuid;
 
     realm->begin_transaction();

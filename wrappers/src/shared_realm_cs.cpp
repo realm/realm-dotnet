@@ -150,6 +150,8 @@ inline SharedRealm* new_realm(SharedRealm realm)
 }
 
 extern bool apply_guid_representation_fix(SharedRealm&);
+
+extern bool requires_guid_representation_fix(SharedRealm&);
 }
 
 extern "C" {
@@ -183,7 +185,6 @@ REALM_EXPORT void shared_realm_install_callbacks(
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-
         Realm::Config config;
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
@@ -240,9 +241,12 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         config.cache = configuration.enable_cache;
         auto realm = Realm::get_shared_realm(std::move(config));
-        if (!configuration.use_legacy_guid_representation) {
+        if (!configuration.use_legacy_guid_representation && requires_guid_representation_fix(realm)) {
             if (configuration.read_only) {
-                // TODO: log message if table doesn't exist
+                static constexpr char message_format[] = "Realm at path %1 may contain legacy guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
+                log_message(
+                    util::format(message_format, realm->config().path),
+                    realm::util::Logger::Level::warn);
             }
             else {
                 apply_guid_representation_fix(realm);
