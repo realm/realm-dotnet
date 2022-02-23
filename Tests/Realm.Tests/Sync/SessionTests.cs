@@ -255,11 +255,13 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_Access_BeforeFrozen_OnBeforeReset()
+        public void Session_ClientReset_Access_Realm_OnBeforeReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var intId = new Random().Next(0, 1000);
+                var randomGen = new Random();
+                var intIdSynced = randomGen.Next(0, 1000);
+                var intIdUnSynced = randomGen.Next(0, 1000);
                 var tcs = new TaskCompletionSource<bool>();
                 var onBeforeTriggered = false;
                 var config = await GetIntegrationConfigAsync();
@@ -268,21 +270,38 @@ namespace Realms.Tests.Sync
                     OnBeforeReset = (beforeFrozen) =>
                     {
                         Assert.IsFalse(onBeforeTriggered);
-                        var frozenObj = beforeFrozen.All<PrimaryKeyInt32Object>().First();
-                        Assert.That(frozenObj.Id == intId);
+
+                        var frozenObjs = beforeFrozen.All<PrimaryKeyInt32Object>().ToArray();
+                        Assert.That(frozenObjs.Length, Is.EqualTo(2));
+                        Assert.That(frozenObjs[0].Id, Is.EqualTo(intIdSynced));
+                        Assert.That(frozenObjs[1].Id, Is.EqualTo(intIdUnSynced));
+
                         onBeforeTriggered = true;
                         tcs.TrySetResult(true);
                     }
                 };
                 config.Schema = new[] { typeof(PrimaryKeyInt32Object) };
 
-                using var realmY = await GetRealmAsync(config);
-                realmY.Write(() =>
+                using var realm = await GetRealmAsync(config);
+                realm.Write(() =>
                 {
-                    realmY.Add(new PrimaryKeyInt32Object { Id = intId });
+                    realm.Add(new PrimaryKeyInt32Object { Id = intIdSynced });
                 });
-                await WaitForUploadAsync(realmY);
-                GetSession(realmY).SimulateClientReset("simulated client reset failure");
+                await WaitForUploadAsync(realm);
+
+                var session = GetSession(realm);
+                session.Stop();
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyInt32Object { Id = intIdUnSynced });
+                });
+                var objs = realm.All<PrimaryKeyInt32Object>().ToArray();
+                Assert.That(objs.Length, Is.EqualTo(2));
+                Assert.That(objs[0].Id, Is.EqualTo(intIdSynced));
+                Assert.That(objs[1].Id, Is.EqualTo(intIdUnSynced));
+
+                session.SimulateClientReset("simulated client reset failure");
+                session.Start();
 
                 await tcs.Task;
                 Assert.IsTrue(onBeforeTriggered);
@@ -290,11 +309,13 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset_Access_BeforeFrozen_OnAfterReset()
+        public void Session_ClientReset_Access_Realms_OnAfterReset()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var intId = new Random().Next(0, 1000);
+                var randomGen = new Random();
+                var intIdSynced = randomGen.Next(0, 1000);
+                var intIdUnSynced = randomGen.Next(0, 1000);
                 var tcs = new TaskCompletionSource<bool>();
                 var onAfterTriggered = false;
                 var config = await GetIntegrationConfigAsync();
@@ -303,8 +324,16 @@ namespace Realms.Tests.Sync
                     OnAfterReset = (beforeFrozen, after) =>
                     {
                         Assert.IsFalse(onAfterTriggered);
-                        var frozenObj = beforeFrozen.All<PrimaryKeyInt32Object>().First();
-                        Assert.That(frozenObj.Id == intId);
+
+                        var frozenObjs = beforeFrozen.All<PrimaryKeyInt32Object>().ToArray();
+                        Assert.That(frozenObjs.Length, Is.EqualTo(2));
+                        Assert.That(frozenObjs[0].Id, Is.EqualTo(intIdSynced));
+                        Assert.That(frozenObjs[1].Id, Is.EqualTo(intIdUnSynced));
+
+                        var objs = after.All<PrimaryKeyInt32Object>().ToArray();
+                        Assert.That(objs.Length, Is.EqualTo(1));
+                        Assert.That(objs[0].Id, Is.EqualTo(intIdSynced));
+
                         onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     }
@@ -315,50 +344,24 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyInt32Object { Id = intId });
+                    realm.Add(new PrimaryKeyInt32Object { Id = intIdSynced });
                 });
 
-                var objs = realm.All<PrimaryKeyInt32Object>();
-                Assert.That(objs.Any(), Is.True);
-                Assert.That(objs.First().Id, Is.EqualTo(intId));
-
                 await WaitForUploadAsync(realm);
-                GetSession(realm).SimulateClientReset("simulated client reset failure");
 
-                await tcs.Task;
-                Assert.IsTrue(onAfterTriggered);
-            });
-        }
-
-        [Test]
-        public void Session_ClientReset_Access_After_OnAfterReset()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var intId = new Random().Next(0, 1000);
-                var tcs = new TaskCompletionSource<bool>();
-                var onAfterTriggered = false;
-                var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
-                {
-                    OnAfterReset = (beforeFrozen, after) =>
-                    {
-                        Assert.IsFalse(onAfterTriggered);
-                        var afterObj = after.All<PrimaryKeyInt32Object>().First();
-                        Assert.That(afterObj.Id == intId);
-                        onAfterTriggered = true;
-                        tcs.TrySetResult(true);
-                    }
-                };
-                config.Schema = new[] { typeof(PrimaryKeyInt32Object) };
-
-                using var realm = await GetRealmAsync(config);
+                var session = GetSession(realm);
+                session.Stop();
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyInt32Object { Id = intId });
+                    realm.Add(new PrimaryKeyInt32Object { Id = intIdUnSynced });
                 });
-                await WaitForUploadAsync(realm);
-                GetSession(realm).SimulateClientReset("simulated client reset failure");
+                var objs = realm.All<PrimaryKeyInt32Object>().ToArray();
+                Assert.That(objs.Length, Is.EqualTo(2));
+                Assert.That(objs[0].Id, Is.EqualTo(intIdSynced));
+                Assert.That(objs[1].Id, Is.EqualTo(intIdUnSynced));
+
+                session.SimulateClientReset("simulated client reset failure");
+                session.Start();
 
                 await tcs.Task;
                 Assert.IsTrue(onAfterTriggered);
