@@ -132,7 +132,9 @@ namespace Realms.Sync
         {
             var syncConfHandle = GCHandle.Alloc(this);
             var clientResyncMode = ClientResyncMode.DiscardLocal;
-            if (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler)
+
+            if (typeof(FlexibleSyncConfiguration).IsSubclassOf(typeof(SyncConfigurationBase)) || // <-- this specific check will need to go when FlexibleSync supports also discard local
+                (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler))
             {
                 clientResyncMode = ClientResyncMode.Manual;
             }
