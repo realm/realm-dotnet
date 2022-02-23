@@ -41,3 +41,11 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 12.x
+        registry-url: https://registry.npmjs.org
+    - name: Npm Publish io.realm.unity-${{steps.get-version.outputs.version}}.tgz
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{steps.get-version.outputs.version}}.tgz/io.realm.unity-${{steps.get-version.outputs.version}}.tgz --tag pre
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

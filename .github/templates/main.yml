@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "uploadToNpm")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
@@ -584,9 +584,9 @@ jobs:
       - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(buildUnityPackage())
       - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
-  publish-packages-to-sleet:
+  publish-nightly-builds:
     runs-on: ubuntu-latest
-    name: Publish package to S3
+    name: Publish nightly builds
     needs:
     - build-packages
     if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
@@ -594,6 +594,7 @@ jobs:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
+    - #@ template.replace(uploadToNpm("nightly", "needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
   _: #@ template.replace(testJob("UWP Managed", "windows-2019", uwpTestSteps()))
   run-tests-netcore:

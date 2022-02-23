@@ -692,9 +692,9 @@ jobs:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-  publish-packages-to-sleet:
+  publish-nightly-builds:
     runs-on: ubuntu-latest
-    name: Publish package to S3
+    name: Publish nightly builds
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
@@ -731,6 +731,14 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 12.x
+        registry-url: https://registry.npmjs.org
+    - name: Npm Publish io.realm.unity-${{needs.build-packages.outputs.package_version}}.tgz
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{needs.build-packages.outputs.package_version}}.tgz --tag nightly
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   baas-net-framework:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for .NET Framework

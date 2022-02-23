@@ -46,8 +46,8 @@ jobs:
       with:
         node-version: 12.x
         registry-url: https://registry.npmjs.org
-    - name: Npm Publish io.realm.unity-${{ steps.get-version.outputs.version }}
-      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+    - name: Npm Publish io.realm.unity-${{steps.get-version.outputs.version}}.tgz
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{steps.get-version.outputs.version}}.tgz/io.realm.unity-${{steps.get-version.outputs.version}}.tgz --tag latest
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Find Release PR
