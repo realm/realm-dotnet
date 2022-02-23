@@ -703,7 +703,7 @@ namespace Realms.Tests.Database
             new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectIdMax }, new ObjectId[] { ObjectId0 }) },
             new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId0, ObjectId1, ObjectIdMax }, Array.Empty<ObjectId>()) },
             new object[] { new TestCaseData<ObjectId>(Array.Empty<ObjectId>(), new ObjectId[] { ObjectId0 }) },
-            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2 }, new ObjectId[] { ObjectIdMax, ObjectId.GenerateNewId(), ObjectId1, ObjectId2, ObjectId3, ObjectId2 }) },
+            new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId2 }, new ObjectId[] { ObjectIdMax, new ObjectId("5f63e882536de46d71877979"), ObjectId1, ObjectId2, ObjectId3, ObjectId2 }) },
             new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId[] { ObjectId1, ObjectId1 }) },
             new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId[] { ObjectId1, ObjectId2 }) },
             new object[] { new TestCaseData<ObjectId>(new ObjectId[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId2, ObjectId2 }, new ObjectId[] { ObjectId1, ObjectId1 }) },
@@ -716,7 +716,7 @@ namespace Realms.Tests.Database
             new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectIdMax }, new ObjectId?[] { ObjectId0 }) },
             new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId0, ObjectId1, ObjectIdMax }, Array.Empty<ObjectId?>()) },
             new object[] { new TestCaseData<ObjectId?>(Array.Empty<ObjectId?>(), new ObjectId?[] { ObjectId0 }) },
-            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2 }, new ObjectId?[] { ObjectIdMax, ObjectId.GenerateNewId(), ObjectId1, ObjectId2, ObjectId3, ObjectId2 }) },
+            new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId2 }, new ObjectId?[] { ObjectIdMax, new ObjectId("5f63e882536de46d71877979"), ObjectId1, ObjectId2, ObjectId3, ObjectId2 }) },
             new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId?[] { ObjectId1, ObjectId1 }) },
             new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId1 }, new ObjectId?[] { ObjectId1, ObjectId2 }) },
             new object[] { new TestCaseData<ObjectId?>(new ObjectId?[] { ObjectId1, ObjectId1, ObjectId1, ObjectId1, ObjectId2, ObjectId2 }, new ObjectId?[] { ObjectId1, ObjectId1 }) },
@@ -767,25 +767,27 @@ namespace Realms.Tests.Database
 
         #region DateTimeOffset
 
-        private static readonly DateTimeOffset Date0 = new DateTimeOffset(0, TimeSpan.Zero);
-        private static readonly DateTimeOffset Date1 = new DateTimeOffset(1999, 3, 4, 5, 30, 0, TimeSpan.Zero);
-        private static readonly DateTimeOffset Date2 = new DateTimeOffset(2030, 1, 3, 9, 25, 34, TimeSpan.FromHours(3));
-        private static readonly DateTimeOffset Date3 = new DateTimeOffset(2000, 9, 7, 12, 39, 24, TimeSpan.FromHours(12));
-        private static readonly DateTimeOffset Date4 = new DateTimeOffset(1975, 6, 9, 11, 59, 59, TimeSpan.Zero);
-        private static readonly DateTimeOffset Date5 = new DateTimeOffset(2034, 12, 24, 4, 0, 14, TimeSpan.FromHours(-3));
-        private static readonly DateTimeOffset Date6 = new DateTimeOffset(2020, 10, 11, 19, 17, 10, TimeSpan.Zero);
+        private static readonly DateTimeOffset _someDate = new(1234, 5, 6, 7, 8, 9, TimeSpan.Zero);
+
+        private static readonly DateTimeOffset Date0 = new(0, TimeSpan.Zero);
+        private static readonly DateTimeOffset Date1 = new(1999, 3, 4, 5, 30, 0, TimeSpan.Zero);
+        private static readonly DateTimeOffset Date2 = new(2030, 1, 3, 9, 25, 34, TimeSpan.FromHours(3));
+        private static readonly DateTimeOffset Date3 = new(2000, 9, 7, 12, 39, 24, TimeSpan.FromHours(12));
+        private static readonly DateTimeOffset Date4 = new(1975, 6, 9, 11, 59, 59, TimeSpan.Zero);
+        private static readonly DateTimeOffset Date5 = new(2034, 12, 24, 4, 0, 14, TimeSpan.FromHours(-3));
+        private static readonly DateTimeOffset Date6 = new(2020, 10, 11, 19, 17, 10, TimeSpan.Zero);
 
         public static readonly object[] DateTimeOffsetTestValues = new[]
         {
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2, Date3 }, new DateTimeOffset[] { Date4, Date5, Date6 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2, Date3 }, new DateTimeOffset[] { Date1, Date2, Date3 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new DateTimeOffset[] { Date0 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset>()) },
-            new object[] { new TestCaseData<DateTimeOffset>(Array.Empty<DateTimeOffset>(), new DateTimeOffset[] { Date0 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date2 }, new DateTimeOffset[] { DateTimeOffset.MaxValue, DateTimeOffset.UtcNow, Date1, Date2, Date3, Date2 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset[] { Date1, Date1 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset[] { Date1, Date2 }) },
-            new object[] { new TestCaseData<DateTimeOffset>(new DateTimeOffset[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new DateTimeOffset[] { Date1, Date1 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date1, Date2, Date3 }, new[] { Date4, Date5, Date6 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date1, Date2, Date3 }, new[] { Date1, Date2, Date3 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new[] { Date0 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset>()) },
+            new object[] { new TestCaseData<DateTimeOffset>(Array.Empty<DateTimeOffset>(), new[] { Date0 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date1, Date2 }, new[] { DateTimeOffset.MaxValue, _someDate, Date1, Date2, Date3, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new[] { Date1, Date1 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new[] { Date1, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset>(new[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new[] { Date1, Date1 }) },
         };
 
         public static readonly object[] NullableDateTimeOffsetTestValues = new object[]
@@ -795,7 +797,7 @@ namespace Realms.Tests.Database
             new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { DateTimeOffset.MaxValue, DateTimeOffset.MinValue }, new DateTimeOffset?[] { Date0 }) },
             new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date0, Date1, DateTimeOffset.MaxValue }, Array.Empty<DateTimeOffset?>()) },
             new object[] { new TestCaseData<DateTimeOffset?>(Array.Empty<DateTimeOffset?>(), new DateTimeOffset?[] { Date0 }) },
-            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2 }, new DateTimeOffset?[] { DateTimeOffset.MaxValue, DateTimeOffset.UtcNow, Date1, Date2, Date3, Date2 }) },
+            new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date2 }, new DateTimeOffset?[] { DateTimeOffset.MaxValue, _someDate, Date1, Date2, Date3, Date2 }) },
             new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset?[] { Date1, Date1 }) },
             new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date1, Date1, Date1 }, new DateTimeOffset?[] { Date1, Date2 }) },
             new object[] { new TestCaseData<DateTimeOffset?>(new DateTimeOffset?[] { Date1, Date1, Date1, Date1, Date2, Date2 }, new DateTimeOffset?[] { Date1, Date1 }) },
