@@ -29,11 +29,11 @@ namespace Realms.Tests.Sync
 {
     public static class AppConfigType
     {
-        public const string Default = "integration-tests";
-        public const string IntPartitionKey = "int-partition-key";
-        public const string ObjectIdPartitionKey = "objectid-partition-key";
+        public const string Default = "string-part-key";
+        public const string IntPartitionKey = "int-part-key";
+        public const string ObjectIdPartitionKey = "oid-part-key";
         public const string UUIDPartitionKey = "uuid-part-key";
-        public const string FlexibleSync = "flexible-sync";
+        public const string FlexibleSync = "flx-sync";
     }
 
     public static partial class SyncTestHelpers
