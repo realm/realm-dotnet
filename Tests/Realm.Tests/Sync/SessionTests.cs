@@ -165,7 +165,7 @@ namespace Realms.Tests.Sync
                         onAfterTriggered = true;
                         tcs.TrySetResult(true);
                     },
-                    ManualResetFallback = (session, err) =>
+                    ManualResetFallback = (err) =>
                     {
                         Assert.That(err, Is.InstanceOf<ClientResetException>());
                         Assert.That(onBeforeTriggered, Is.False);
@@ -197,7 +197,7 @@ namespace Realms.Tests.Sync
                 var errorMsg = "simulated client reset";
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+                config.ClientResetHandler = new ManualRecoveryHandler((e) =>
                 {
                     manualOnClientResetTriggered = true;
                     errorTcs.TrySetResult(e);
@@ -232,7 +232,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
-                    ManualResetFallback = (session, err) =>
+                    ManualResetFallback = (err) =>
                     {
                         manualResetFallbackHandled = true;
                         errorTcs.TrySetResult(err);
@@ -444,7 +444,7 @@ namespace Realms.Tests.Sync
                         onAfterResetTriggered = true;
                         tcs.TrySetResult(true);
                     },
-                    ManualResetFallback = (session, err) =>
+                    ManualResetFallback = (err) =>
                     {
                         Assert.That(err, Is.InstanceOf<ClientResetException>());
                         Assert.That(onBeforeTriggered, Is.True);
@@ -494,7 +494,7 @@ namespace Realms.Tests.Sync
                         onAfterResetTriggered = true;
                         throw new Exception("Exception thrown in OnAfterReset");
                     },
-                    ManualResetFallback = (session, err) =>
+                    ManualResetFallback = (err) =>
                     {
                         Assert.That(err, Is.InstanceOf<ClientResetException>());
                         Assert.That(onBeforeTriggered, Is.True);
@@ -616,7 +616,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
-                    ManualResetFallback = (session, err) =>
+                    ManualResetFallback = (err) =>
                     {
                         Assert.That(manualResetFallbackHandled, Is.False);
                         Assert.That(err, Is.InstanceOf<ClientResetException>());
@@ -751,7 +751,7 @@ namespace Realms.Tests.Sync
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+                config.ClientResetHandler = new ManualRecoveryHandler((e) =>
                 {
                     Assert.That(manualOnClientResetTriggered, Is.False);
                     manualOnClientResetTriggered = true;

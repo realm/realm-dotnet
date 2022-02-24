@@ -236,7 +236,7 @@ namespace Realms.Sync
 
                     if (isUsingNewErrorHandling)
                     {
-                        syncConfig.ClientResetHandler?.ManualClientReset?.Invoke(session, (ClientResetException)exception);
+                        syncConfig.ClientResetHandler?.ManualClientReset?.Invoke((ClientResetException)exception);
                     }
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)

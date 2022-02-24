@@ -31,13 +31,10 @@ namespace Realms.Sync.ErrorHandling
         /// <summary>
         /// Callback triggered when a Client Reset error happens in a synchronized Realm.
         /// </summary>
-        /// <param name="session">
-        /// The <see cref="Session"/> where the error happened on.
-        /// </param>
         /// <param name="clientResetException">
         /// The specific <see cref="ClientResetException"/> that holds useful data to be used when trying to manually recover from a client reset.
         /// </param>
-        public delegate void ClientResetCallback(Session session, ClientResetException clientResetException);
+        public delegate void ClientResetCallback(ClientResetException clientResetException);
 
         internal ClientResetCallback ManualClientReset { get; set; }
 
