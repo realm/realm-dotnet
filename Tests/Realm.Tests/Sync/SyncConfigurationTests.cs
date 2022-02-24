@@ -81,6 +81,22 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Test_SyncConfigRelease()
+        {
+            WeakReference weakConfigRef = null;
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
+                using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
+                var session = GetSession(realm);
+                Assert.That(weakConfigRef.Target, Is.Not.Null);
+            });
+            TearDown();
+            GC.Collect();
+            Assert.That(weakConfigRef.Target, Is.Null);
+        }
+
+        [Test]
         public void FlexibleSyncConfiguration_Throws_When_Assigned_DiscardLocalResetHandler()
         {
             var conf = GetFakeFLXConfig();

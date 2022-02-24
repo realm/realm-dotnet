@@ -213,10 +213,10 @@ namespace Realms.Tests.Sync
                 Assert.That(manualOnClientResetTriggered, Is.True);
 
                 Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.DivergingHistories));
-                Assert.That(clientEx.Message == errorMsg);
-                Assert.That(clientEx.InnerException == null);
+                Assert.That(clientEx.Message, Is.EqualTo(errorMsg));
+                Assert.That(clientEx.InnerException, Is.Null);
 
-                Assert.That(File.Exists(config.DatabasePath));
+                Assert.That(File.Exists(config.DatabasePath), Is.True);
                 Assert.That(clientEx.InitiateClientReset(), Is.True);
                 Assert.That(File.Exists(config.DatabasePath), Is.False);
             });
@@ -248,7 +248,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(manualResetFallbackHandled, Is.True);
                 Assert.That((int)clientEx.ErrorCode, Is.EqualTo((int)ClientError.AutoClientResetFailed));
-                Assert.That(File.Exists(config.DatabasePath));
+                Assert.That(File.Exists(config.DatabasePath), Is.True);
                 Assert.That(clientEx.InitiateClientReset(), Is.True);
                 Assert.That(File.Exists(config.DatabasePath), Is.False);
             });
@@ -530,9 +530,9 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.InstanceOf<Session>());
                     Assert.That(e, Is.InstanceOf<SessionException>());
-                    Assert.That(e.ErrorCode == ErrorCode.PermissionDenied);
-                    Assert.That(e.Message == errorMsg);
-                    Assert.That(e.InnerException == null);
+                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.PermissionDenied));
+                    Assert.That(e.Message, Is.EqualTo(errorMsg));
+                    Assert.That(e.InnerException, Is.Null);
                     Assert.That(sessionErrorTriggered, Is.False);
                     sessionErrorTriggered = true;
                     tcs.TrySetResult(true);
@@ -696,7 +696,7 @@ namespace Realms.Tests.Sync
                 Assert.That(clientEx.Message, Is.EqualTo(errorMsg));
                 Assert.That(clientEx.InnerException, Is.Null);
 
-                Assert.That(File.Exists(config.DatabasePath));
+                Assert.That(File.Exists(config.DatabasePath), Is.True);
                 Assert.That(clientEx.InitiateClientReset(), Is.True);
                 Assert.That(File.Exists(config.DatabasePath), Is.False);
             });
@@ -711,6 +711,7 @@ namespace Realms.Tests.Sync
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<bool>();
                 var config = await GetIntegrationConfigAsync();
+                config.ClientResetHandler = new ManualRecoveryHandler();
                 var errorMsg = "simulated sync issue";
 
                 using var realm = await GetRealmAsync(config);
@@ -826,22 +827,6 @@ namespace Realms.Tests.Sync
                 Assert.That(sessionErrorTriggered, Is.True);
                 Session.Error -= sessionErrorFunc;
             });
-        }
-
-        [Test]
-        public void Test_SyncConfigRelease()
-        {
-            WeakReference weakConfigRef = null;
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
-                using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
-                var session = GetSession(realm);
-                Assert.IsNotNull(weakConfigRef.Target);
-            });
-            TearDown();
-            GC.Collect();
-            Assert.IsNull(weakConfigRef.Target);
         }
 
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
