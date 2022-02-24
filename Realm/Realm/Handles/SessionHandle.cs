@@ -281,18 +281,17 @@ namespace Realms.Sync
                     return true;
                 }
 
-                var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfig.ClientResetHandler;
-                var schema = syncConfig.GetSchema();
-
-                if (discardLocalResetHandler.OnBeforeReset != null)
+                if (syncConfig.ClientResetHandler is DiscardLocalResetHandler discardLocalHandler &&
+                    discardLocalHandler.OnBeforeReset != null)
                 {
+                    var schema = syncConfig.GetSchema();
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
-                    discardLocalResetHandler.OnBeforeReset(realmBefore);
+                    discardLocalHandler.OnBeforeReset(realmBefore);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing SyncConfigurationBase.OnBeforeReset during a client reset: {ex}");
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing DiscardLocalResetHandler.OnBeforeReset during a client reset: {ex}");
                 return false;
             }
 
@@ -312,19 +311,18 @@ namespace Realms.Sync
                     return true;
                 }
 
-                var discardLocalResetHandler = (DiscardLocalResetHandler)syncConfig.ClientResetHandler;
-                var schema = syncConfig.GetSchema();
-
-                if (discardLocalResetHandler.OnAfterReset != null)
+                if (syncConfig.ClientResetHandler is DiscardLocalResetHandler discardLocalHandler &&
+                    discardLocalHandler.OnAfterReset != null)
                 {
+                    var schema = syncConfig.GetSchema();
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
                     using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfig, schema);
-                    discardLocalResetHandler.OnAfterReset(realmBefore, realmAfter);
+                    discardLocalHandler.OnAfterReset(realmBefore, realmAfter);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing SyncConfigurationBase.OnAfterReset during a client reset: {ex}");
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing DiscardLocalResetHandler.OnAfterReset during a client reset: {ex}");
                 return false;
             }
 

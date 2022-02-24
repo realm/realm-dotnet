@@ -9,7 +9,7 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
       ClientResetHandler = new ManualRecoveryHandler();
     };
   ```
-  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done:
+  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done (all callbacks are optional):
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {
@@ -25,12 +25,12 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
         },
         ManualResetFallback = (session, err) =>
         {
-            // user's code for manual recovery
+          // handle the reset manually
         }
       }
     };
   ```
-  If, instead, the user wants to continue using the manual solution even after the end of the deprecation period, the following should be done
+  If, instead,you want to continue using the manual solution even after the end of the deprecation period, the following should be done
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {
