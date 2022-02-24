@@ -64,7 +64,7 @@ static bool flip_guid(Mixed& mixed, bool& found_non_v4_uuid) {
         // created with Guid.NewGuid(). Manual testing shows that Guid.NewGuid() has only about ~6% probability of generating a GUID where
         // both the 7th and 8th bits match the bit pattern, so a realm file created with the .NET SDK should hold a majority
         // of GUID values where only the 8th byte matches the version 4 bit pattern.
-        found_non_v4_uuid = (bytes[6] >> 4) != 4 && (bytes[7] >> 4) == 4;
+        found_non_v4_uuid |= (bytes[6] >> 4) != 4 && (bytes[7] >> 4) == 4;
 
         RealmGUID& guid = *reinterpret_cast<RealmGUID*>(bytes.data());
         guid.swap_endianness();
@@ -74,14 +74,17 @@ static bool flip_guid(Mixed& mixed, bool& found_non_v4_uuid) {
     return false;
 }
 
-static void byteswap_guids(TableRef table, bool& found_non_v4_uuid)
+static bool byteswap_guids(TableRef table, bool& found_non_v4_uuid)
 {
+    bool has_uuid_column = false;
     std::vector<ColKey> primitive_columns;
     std::vector<ColKey> list_columns;
     std::vector<ColKey> set_columns;
     std::vector<ColKey> dictionary_columns;
     table->for_each_public_column([&](ColKey col) {
         if (col.get_type() == col_type_UUID || col.get_type() == col_type_Mixed) {
+            has_uuid_column = true;
+
             if (col.is_list()) {
                 list_columns.push_back(col);
             } else if (col.is_set()) {
@@ -95,6 +98,12 @@ static void byteswap_guids(TableRef table, bool& found_non_v4_uuid)
         }
         return false; // keep iterating
     });
+
+    if (!has_uuid_column)
+    {
+        return false;
+    }
+
     for (Obj& obj : *table) {
         for (auto col : primitive_columns) {
             Mixed m = obj.get_any(col);
@@ -137,6 +146,8 @@ static void byteswap_guids(TableRef table, bool& found_non_v4_uuid)
             }
         }
     }
+
+    return table->size() > 0;
 }
 
 // marker table to say that this file has been processed already and can be skipped.
@@ -148,32 +159,28 @@ bool requires_guid_representation_fix(SharedRealm& realm)
     return !realm->read_group().has_table(c_guid_fix_table);
 }
 
-bool apply_guid_representation_fix(SharedRealm& realm)
+void apply_guid_representation_fix(SharedRealm& realm, bool& found_non_v4_uuid, bool& found_guid_columns)
 {
-    bool found_non_v4_uuid;
-
     realm->begin_transaction();
-    auto& group = realm->read_group();
-    for (TableKey key : group.get_table_keys()) {
-        if (group.table_is_public(key)) {
-            byteswap_guids(group.get_table(key), found_non_v4_uuid);
+    auto* group = &realm->read_group();
+    for (TableKey key : group->get_table_keys()) {
+        if (group->table_is_public(key)) {
+            found_guid_columns |= byteswap_guids(group->get_table(key), found_non_v4_uuid);
         }
     }
 
-    //TODO: should we have this or not?
-    // if (!found_non_v4_uuid) {
-    //     // we didn't find any Microsoft GUID (see comment in flip_guid())
-    //     // so this is likely a realm file that wasn't created with the .NET SDK
-    //     // or doesn't have big-endian GUID values anyway
-    //     // let's cancel the current transaction and start a new one just to record the marker table
-    //     realm->cancel_transaction();
-    //     realm->begin_transaction();
-    //     group = realm->read_group();
-    // }
+     if (!found_non_v4_uuid) {
+         // we didn't find any Microsoft GUID (see comment in flip_guid())
+         // so this is likely a realm file that wasn't created with the .NET SDK
+         // or doesn't have big-endian GUID values anyway
+         // let's cancel the current transaction and start a new one just to record the marker table
+         realm->cancel_transaction();
+         realm->begin_transaction();
+         group = &realm->read_group();
+     }
 
-    group.add_table(c_guid_fix_table);
+    group->add_table(c_guid_fix_table);
     realm->commit_transaction();
-    return true;
 }
 } // namespace realm
 

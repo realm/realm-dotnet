@@ -51,6 +51,9 @@ namespace Realms.Tests.Database
         [Test]
         public void Migration_FromLittleEndianGuidFile([Values(true, false)] bool useLegacyRepresentation)
         {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
 #pragma warning disable CS0618 // Type or member is obsolete
             Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -73,11 +76,23 @@ namespace Realms.Tests.Database
                 var actualFound = realm.Find<GuidType>(expectedObj.Id);
                 Assert.That(actualObj, Is.EqualTo(actualFound));
             }
+
+            if (useLegacyRepresentation)
+            {
+                Assert.That(logger.GetLog(), Is.Empty);
+            }
+            else
+            {
+                Assert.That(logger.GetLog(), Does.Contain("found to contain Guid values in little-endian format and was automatically migrated"));
+            }
         }
 
         [Test]
         public void PopulatingANewFile([Values(true, false)] bool useLegacyRepresentation)
         {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
 #pragma warning disable CS0618 // Type or member is obsolete
             Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -103,6 +118,8 @@ namespace Realms.Tests.Database
                 var actualFound = realm.Find<GuidType>(expectedObj.Id);
                 Assert.That(actualObj, Is.EqualTo(actualFound));
             }
+
+            Assert.That(logger.GetLog(), Is.Empty);
         }
 
         [Test]
@@ -216,6 +233,66 @@ namespace Realms.Tests.Database
 
             Assert.That(logger.GetLog(), Is.Empty);
 
+        }
+
+        [Test]
+        public void Migration_FromLittleEndian_WhenContainingAmbiguousGuids_LogsWarning()
+        {
+            // This tests that a file that doesn't appear to have little-endian guids is not migrated
+            // See comment in guid_representation_migration.cpp/flip_guid
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+            TestHelpers.CopyBundledFileToDocuments("bad-guids.realm", _configuration.DatabasePath);
+
+            using var realm = GetRealm(_configuration);
+
+            var actual = realm.All<GuidType>().ToArray();
+
+            Assert.That(actual.Length, Is.EqualTo(1));
+
+            // This is the guid that we stored. When we migrate, we expect that we won't touch it
+            // but we start reading Guids in the new representation, so we should see it getting flipped.
+            // This is a bug, but the expectation is that there's a very low probability of it occurring
+            // and the alternative is worse.
+            var expectedGuid = Guid.Parse("28dde607-8e34-4741-a9ce-0b777d2d39a1");
+            var actualGuid = actual.Single().Id;
+
+            Assert.That(actualGuid, Is.Not.EqualTo(expectedGuid));
+            Assert.That(actualGuid, Is.EqualTo(FlipGuid(expectedGuid)));
+
+            Assert.That(logger.GetLog(), Does.Contain("not marked as having migrated its Guid values, but none of the values appeared to be in little-endian"));
+        }
+
+        [Test]
+        public void Migration_FromLittleEndian_WhenContainingBothGoodAndBadGuids_LogsWarning()
+        {
+            // This tests that a file that contains both ambiguous (xxxxxxxx-xxxx-4x4x-xxxx-xxxxxxxx) and unambiguous guids
+            // does get migrated.
+            // See comment in guid_representation_migration.cpp/flip_guid
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+            TestHelpers.CopyBundledFileToDocuments("mixed-guids.realm", _configuration.DatabasePath);
+
+            using var realm = GetRealm(_configuration);
+
+            var actual = realm.All<GuidType>().ToArray();
+
+            Assert.That(actual.Length, Is.EqualTo(2));
+
+            var expectedBadGuid = Guid.Parse("28dde607-8e34-4741-a9ce-0b777d2d39a1");
+            var expectedGoodGuid = Guid.Parse("78e97bb2-e5fa-4256-856f-e6e304e79f3a");
+
+            var actualGood = realm.Find<GuidType>(expectedGoodGuid);
+            Assert.That(actualGood, Is.Not.Null);
+            Assert.That(actualGood.Id, Is.EqualTo(expectedGoodGuid));
+
+            var actualBad = realm.Find<GuidType>(expectedBadGuid);
+            Assert.That(actualBad, Is.Not.Null);
+            Assert.That(actualBad.Id, Is.EqualTo(expectedBadGuid));
+
+            Assert.That(logger.GetLog(), Does.Contain("found to contain Guid values in little-endian format and was automatically migrated"));
         }
 
         protected override void CustomSetUp()
