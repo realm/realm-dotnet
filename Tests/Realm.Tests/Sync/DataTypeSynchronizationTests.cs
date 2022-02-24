@@ -274,15 +274,19 @@ namespace Realms.Tests.Sync
         };
 
         [TestCaseSource(nameof(RealmTestValues))]
+        [RequiresBaas(EnsureNoSessionErrors = true)]
         public Task List_RealmValue(RealmValue first, RealmValue second) => TestListCoreAsync(o => o.RealmValueList, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         [TestCaseSource(nameof(RealmTestValues))]
+        [RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Set_RealmValue(RealmValue first, RealmValue second) => TestSetCoreAsync(o => o.RealmValueSet, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         [TestCaseSource(nameof(RealmTestValues))]
+        [RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Dict_RealmValue(RealmValue first, RealmValue second) => TestDictionaryCoreAsync(o => o.RealmValueDict, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         [TestCaseSource(nameof(RealmTestValues))]
+        [RequiresBaas(EnsureNoSessionErrors = true)]
         public Task Property_RealmValue(RealmValue first, RealmValue second) => TestPropertyCoreAsync(o => o.RealmValueProperty, (o, rv) => o.RealmValueProperty = rv, Clone(first), Clone(second), equalsOverride: RealmValueEquals);
 
         #endregion
