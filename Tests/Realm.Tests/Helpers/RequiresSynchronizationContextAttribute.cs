@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
 
 namespace Realms.Tests
 {
@@ -57,17 +58,26 @@ namespace Realms.Tests
                     test.Properties.Set(SynchronizationContextKey, current);
                 }
 
-                var syncContext = (SynchronizationContext)Activator.CreateInstance(NUnitSynchronizationContext, TimeSpan.FromSeconds(10));
+                var timeout = TestExecutionContext.CurrentContext.TestCaseTimeout;
+                timeout = Math.Min(timeout, 10_000);
+                var syncContext = (SynchronizationContext)Activator.CreateInstance(NUnitSynchronizationContext, TimeSpan.FromMilliseconds(timeout));
                 SynchronizationContext.SetSynchronizationContext(syncContext);
             }
         }
 
         public override void AfterTest(ITest test)
         {
-            if (test.Properties.Get(SynchronizationContextKey) is SynchronizationContext current)
+            if (IsAsyncTest(test))
             {
-                SynchronizationContext.SetSynchronizationContext(current);
-                test.Properties[SynchronizationContextKey].Clear();
+                if (test.Properties.Get(SynchronizationContextKey) is SynchronizationContext current)
+                {
+                    SynchronizationContext.SetSynchronizationContext(current);
+                    test.Properties[SynchronizationContextKey].Clear();
+                }
+                else
+                {
+                    SynchronizationContext.SetSynchronizationContext(null);
+                }
             }
         }
 
