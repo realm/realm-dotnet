@@ -232,7 +232,6 @@ namespace Realms.Tests.Database
             }
 
             Assert.That(logger.GetLog(), Is.Empty);
-
         }
 
         [Test]
