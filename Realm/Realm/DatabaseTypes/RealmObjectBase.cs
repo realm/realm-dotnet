@@ -37,6 +37,94 @@ using Realms.Weaving;
 
 namespace Realms
 {
+    internal class RealmAccessor : IRealmObjectAccessor
+    {
+        private Lazy<int> _hashCode;
+
+        private Realm _realm;
+
+        private ObjectHandle _objectHandle;
+
+        private Metadata _metadata;
+
+        private NotificationTokenHandle _notificationToken;
+
+        public RealmAccessor(Realm realm, ObjectHandle objectHandle, Metadata metadata)
+        {
+            _realm = realm;
+            _objectHandle = objectHandle;
+            _metadata = metadata;
+            _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
+        }
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        public bool IsManaged => _realm != null;
+
+        public bool IsValid => _objectHandle?.IsValid != false;
+
+        public bool IsFrozen => _realm?.IsFrozen == true;
+
+        public Realm Realm => _realm;
+
+        public ObjectSchema ObjectSchema => _metadata?.Schema;
+
+        public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+
+        public RealmValue GetValue(string propertyName)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            return _objectHandle.GetValue(propertyName, _metadata, _realm);
+        }
+
+        public void SetValue(string propertyName, RealmValue val)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetValue(propertyName, _metadata, val, _realm);
+        }
+
+        internal class Metadata
+        {
+            internal readonly TableKey TableKey;
+
+            internal readonly IRealmObjectHelper Helper;
+
+            internal readonly IReadOnlyDictionary<string, IntPtr> PropertyIndices;
+
+            internal readonly ObjectSchema Schema;
+
+            public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
+            {
+                TableKey = tableKey;
+                Helper = helper;
+                PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
+                Schema = schema;
+            }
+        }
+    }
+
+    public interface IRealmObjectAccessor
+    {
+        public bool IsManaged { get; }
+
+        public bool IsValid { get; }
+
+        public bool IsFrozen { get; }
+
+        public Realm Realm { get; }
+
+        public ObjectSchema ObjectSchema { get; }
+
+        public int BacklinksCount { get; }
+
+        RealmValue GetValue(string propertyName);
+
+        void SetValue(string propertyName, RealmValue val);
+    }
+
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
@@ -56,6 +144,8 @@ namespace Realms
         private Metadata _metadata;
 
         private NotificationTokenHandle _notificationToken;
+
+        private IRealmObjectAccessor _accessor;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
@@ -191,8 +281,10 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
+        internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)  //TODO This is where I can change the accessor
         {
+            _accessor = new RealmAccessor(_realm, objectHandle, metadata);
+
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
