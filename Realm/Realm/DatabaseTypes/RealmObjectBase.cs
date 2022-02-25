@@ -62,7 +62,7 @@ namespace Realms
 
         internal RealmObjectBase.Metadata ObjectMetadata => _metadata;
 
-        public bool IsManaged => _realm != null;
+        public bool IsManaged => _realm != null;  //TODO Should just be true...
 
         public bool IsValid => _objectHandle?.IsValid != false;
 
@@ -129,7 +129,7 @@ namespace Realms
 
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            if (!IsManaged)
+            if (!IsManaged)  //TODO Maybe we can remove them
             {
                 return new Dictionary<string, TValue>();
             }
@@ -213,16 +213,31 @@ namespace Realms
 
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
+            if (!_container.ContainsKey(propertyName))
+            {
+                _container[propertyName] = new Dictionary<string, TValue>();
+            }
+
             return (IDictionary<string, TValue>)_container[propertyName];
         }
 
         public IList<T> GetListValue<T>(string propertyName)
         {
+            if (!_container.ContainsKey(propertyName))
+            {
+                _container[propertyName] = new List<T>();
+            }
+
             return (IList<T>)_container[propertyName];
         }
 
         public ISet<T> GetSetValue<T>(string propertyName)
         {
+            if (!_container.ContainsKey(propertyName))
+            {
+                _container[propertyName] = new HashSet<T>(RealmSet<T>.Comparer);
+            }
+
             return (ISet<T>)_container[propertyName];
         }
 
