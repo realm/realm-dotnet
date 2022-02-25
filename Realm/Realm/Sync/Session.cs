@@ -17,9 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -28,7 +29,7 @@ namespace Realms.Sync
     /// and the server (and a remote Realm served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
     /// out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
     /// </summary>
-    public class Session
+    public class Session : INotifyPropertyChanged
     {
         public delegate void ConnectionStateChangeCallback(SessionConnectionState oldState, SessionConnectionState newState);
 
@@ -36,6 +37,41 @@ namespace Realms.Sync
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
         public static event EventHandler<ErrorEventArgs> Error;
+
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (_notificationToken == null)
+                {
+                    SubscribeForConnectionChangeNotifications();
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (_propertyChanged == null)
+                {
+                    UnsubscribeConnectionChangeNotifications();
+                }
+            }
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private IDisposable _notificationToken;
 
         private readonly SessionHandle _handle;
 
@@ -54,11 +90,22 @@ namespace Realms.Sync
             }
         }
 
+        private void UnsubscribeConnectionChangeNotifications()
+        {
+            _notificationToken?.Dispose();
+            _notificationToken = null;
+        }
+
         internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
 
         internal Session(SessionHandle handle)
         {
             _handle = handle;
+        }
+
+        ~Session()
+        {
+            UnsubscribeConnectionChangeNotifications();
         }
 
         internal static void RaiseError(Session session, Exception error)
@@ -83,13 +130,12 @@ namespace Realms.Sync
             }
         }
 
-        public IDisposable SubscribeForConnectionStateChanges(ConnectionStateChangeCallback callback)
+        private void SubscribeForConnectionChangeNotifications()
         {
-            Argument.NotNull(callback, nameof(callback));
+            ConnectionStateChangeCallback cb = (oldState, newState) => { NotifyPropertyChanged(nameof(ConnectionState)); };
+            var nativeToken = Handle.RegisterConnectionStateChangeCallback(cb);
 
-            var nativeToken = Handle.RegisterConnectionStateChangeCallback(callback);
-
-            return NotificationToken.Create(callback, (callback) =>
+            _notificationToken = NotificationToken.Create(cb, (callback) =>
             {
                 Handle.UnRegisterConnectionStateChangeCallback(nativeToken);
             });
@@ -104,6 +150,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the session’s current connection state.
         /// </summary>
+        /// <remarks>This field respects the <see href="https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.inotifypropertychanged?view=net-6.0">INotifyPropertyChanged</see> interface.</remarks>
         /// <value>An enum value indicating the connection state of the session.</value>
         public SessionConnectionState ConnectionState => Handle.GetConnectionState();
 

@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
+using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
@@ -222,108 +224,96 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ConnectionState_Connecting_AtRestart()
+        public void Session_ConnectionState_FullFlow()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
+                var stateChanged = 0;
                 var completionTCS = new TaskCompletionSource<bool>();
-                var callbackTriggered = false;
+
                 var session = realm.SyncSession;
                 session.Stop();
-                var token = session.SubscribeForConnectionStateChanges((oldState, newState) =>
+
+                session.PropertyChanged += (sender, e) =>
                 {
-                    Assert.IsFalse(callbackTriggered);
-                    Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
-                    Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
-                    callbackTriggered = true;
-                    completionTCS.TrySetResult(true);
-                });
-                session.Start();
-                await completionTCS.Task;
-                token.Dispose();
-                Assert.IsTrue(callbackTriggered);
-            });
-        }
+                    Assert.That(sender is Session, Is.True);
+                    Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
 
-        [Test]
-        public void Session_ConnectionState_Disconnected_AtStop()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var config = await GetIntegrationConfigAsync();
-                using var realm = GetRealm(config);
+                    stateChanged++;
 
-                // the delay is to allow the connection to transition from Connecting to Connected right after creation
-                await Task.Delay(1000);
-                var completionTCS = new TaskCompletionSource<bool>();
-                var callbackTriggered = false;
-                var session = realm.SyncSession;
-                var token = session.SubscribeForConnectionStateChanges((oldState, newState) =>
-                {
-                    Assert.IsFalse(callbackTriggered);
-                    Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connected));
-                    Assert.That(newState, Is.EqualTo(SessionConnectionState.Disconnected));
-                    callbackTriggered = true;
-                    completionTCS.TrySetResult(true);
-                });
-
-                session.Stop();
-                await completionTCS.Task;
-                token.Dispose();
-                Assert.IsTrue(callbackTriggered);
-            });
-        }
-
-        [Test]
-        public void Session_ConnectionState_Full_Flow()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var config = await GetIntegrationConfigAsync();
-                using var realm = GetRealm(config);
-
-                // the delay is to allow the connection to transition from Connecting to Connected right after creation
-                await Task.Delay(1000);
-                var completionTCS = new TaskCompletionSource<bool>();
-                var callbackTriggerCount = 0;
-                var session = realm.SyncSession;
-                var token = session.SubscribeForConnectionStateChanges((oldState, newState) =>
-                {
-                    if (newState == SessionConnectionState.Disconnected)
+                    if (stateChanged == 1)
                     {
-                        Assert.IsTrue(callbackTriggerCount == 0);
-                        Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connected));
-                        Assert.That(newState, Is.EqualTo(SessionConnectionState.Disconnected));
-                        callbackTriggerCount++;
+                        Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
                     }
-                    else if (newState == SessionConnectionState.Connecting)
+                    else if (stateChanged == 2)
                     {
-                        Assert.IsTrue(callbackTriggerCount == 1);
-                        Assert.That(oldState, Is.EqualTo(SessionConnectionState.Disconnected));
-                        Assert.That(newState, Is.EqualTo(SessionConnectionState.Connecting));
-                        callbackTriggerCount++;
+                        Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
                     }
-                    else
+                    else if (stateChanged == 3)
                     {
-                        Assert.IsTrue(callbackTriggerCount == 2);
-                        Assert.That(oldState, Is.EqualTo(SessionConnectionState.Connecting));
-                        Assert.That(newState, Is.EqualTo(SessionConnectionState.Connected));
-                        callbackTriggerCount++;
+                        Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
                         completionTCS.TrySetResult(true);
                     }
-                });
+                };
 
-                session.Stop();
                 session.Start();
+                await Task.Delay(1000);
+                session.Stop();
                 await completionTCS.Task;
-                token.Dispose();
-                Assert.IsTrue(callbackTriggerCount == 3);
+                Assert.That(stateChanged, Is.EqualTo(3));
+                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
             });
         }
 
-        // TODO andrea: add test to check that the token is properly disposed
+        [Test]
+        public void Session_ConnectionState_FreedNotificationToken()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
+                var stateChanged = 0;
+                var completionTCS = new TaskCompletionSource<bool>();
+
+                var internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Null);
+
+                // to avoid possible "Connecting state"
+                await Task.Delay(500);
+                session.PropertyChanged += NotificationChanged;
+                internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Not.Null);
+
+                session.Stop();
+                await completionTCS.Task;
+
+                session.PropertyChanged -= NotificationChanged;
+                internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Null);
+
+                session.Start();
+
+                Assert.That(stateChanged, Is.EqualTo(1));
+
+                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                {
+                    Assert.That(sender is Session, Is.True);
+                    Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
+                    Assert.That(stateChanged, Is.EqualTo(0));
+                    Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                    stateChanged++;
+                    completionTCS.TrySetResult(true);
+                }
+
+                IDisposable GetNotificationToken(Session session)
+                {
+                    return (IDisposable)typeof(Session).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+                }
+            });
+        }
 
         [Test]
         public void Session_WhenDisposed_MethodsThrow()
