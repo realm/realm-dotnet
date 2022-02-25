@@ -57,18 +57,18 @@ namespace Realms.Sync
 
         /// <summary>
         /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm.
-        /// Currently, Flexible sync only supports the <see cref="ManualRecoveryHandler"/>. Support for <see cref="DiscardLocalResetHandler"/> will come in the future.
         /// </summary>
+        /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
+        /// <remarks>
+        /// Currently, Flexible sync only supports the <see cref="ManualRecoveryHandler"/>. Support for <see cref="DiscardLocalResetHandler"/> will come in the future.
+        /// </remarks>
         /// <exception cref="NotSupportedException">
         /// Flexible sync is still in beta, so at the moment <see cref="DiscardLocalResetHandler"/> is not supported.
         /// </exception>
+        /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
         public override ClientResetHandlerBase ClientResetHandler
         {
-            get
-            {
-                return base.ClientResetHandler;
-            }
-
+            get => base.ClientResetHandler;
             set
             {
                 if (value is DiscardLocalResetHandler)

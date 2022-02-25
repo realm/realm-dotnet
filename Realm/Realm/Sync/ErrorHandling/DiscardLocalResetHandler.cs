@@ -27,12 +27,12 @@ namespace Realms.Sync.ErrorHandling
     /// The first two are invoked just before and after the client reset has happened,
     /// while the last one will be invoked in case an error occurs during the automated process and the system needs to fallback to a manual mode.
     /// The overall recommendation for using this strategy is that using the three available callbacks should only be considered when:
-    /// 1. the user needs to be notified (in <see cref="OnBeforeReset"/>) of an incoming data loss of unsynced data
+    /// 1. the user needs to be notified (in <see cref="OnBeforeReset"/>) of an incoming potential data loss of unsynced data
     /// 2. the user needs to be notified (in <see cref="OnAfterReset"/>) that the reset process has completed
     /// 3. advanced use cases for data-sensitive applications where the developer wants to recover in the most appropriate way the unsynced data
     /// 4. backup the whole realm before the client reset happens (in <see cref="OnBeforeReset"/>). Such backup could, for example, be used to restore the unsynced data (see 3.)
     /// </remarks>
-    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
+    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
     public sealed class DiscardLocalResetHandler : ClientResetHandlerBase
     {
         /// <summary>
@@ -41,6 +41,11 @@ namespace Realms.Sync.ErrorHandling
         /// <param name="beforeFrozen">
         /// The frozen <see cref="Realm"/> before the reset.
         /// </param>
+        /// <remarks>
+        /// The lifetime of the Realm is tied to the callback, so don't store references to the Realm or objects
+        /// obtained from it for use outside of the callback. If you need to preserve the state as it was, use
+        /// <see cref="Realm.WriteCopy(RealmConfigurationBase)"/> to create a backup.
+        /// </remarks>
         public delegate void BeforeResetCallback(Realm beforeFrozen);
 
         /// <summary>
@@ -52,6 +57,11 @@ namespace Realms.Sync.ErrorHandling
         /// <param name="after">
         /// The <see cref="Realm"/> after the client reset. In order to modify this realm a write transaction needs to be started.
         /// </param>
+        /// <remarks>
+        /// The lifetime of the Realm instances supplied is tied to the callback, so don't store references to
+        /// the Realm or objects obtained from it for use outside of the callback. If you need to preserve the
+        /// state as it was, use <see cref="Realm.WriteCopy(RealmConfigurationBase)"/> to create a backup.
+        /// </remarks>
         public delegate void AfterResetCallback(Realm beforeFrozen, Realm after);
 
         /// <summary>
@@ -62,7 +72,6 @@ namespace Realms.Sync.ErrorHandling
 
         /// <summary>
         /// Gets or sets the callback that indicates a Client Reset just happened.
-        /// Special custom actions can be taken at this point like merging local changes from <value>beforeFrozen</value>.
         /// </summary>
         /// <value>Callback invoked right after a Client Reset.</value>
         public AfterResetCallback OnAfterReset { get; set; }
@@ -70,18 +79,11 @@ namespace Realms.Sync.ErrorHandling
         /// <summary>
         /// Gets or sets the callback triggered when an error has occurred that makes the operation unable to complete, for example in the case of a destructive schema change.
         /// </summary>
-        /// <value>Callback invoked if a Client Reset fails.</value>
+        /// <value>Callback invoked if automatic Client Reset handling fails.</value>
         public ClientResetCallback ManualResetFallback
         {
-            get
-            {
-                return ManualClientReset;
-            }
-
-            set
-            {
-                ManualClientReset = value;
-            }
+            get => ManualClientReset;
+            set => ManualClientReset = value;
         }
     }
 }

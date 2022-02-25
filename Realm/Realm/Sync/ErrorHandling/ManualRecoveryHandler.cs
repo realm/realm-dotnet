@@ -21,9 +21,9 @@ using System;
 namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
-    /// A client reset strategy where the user needs to fully take care of a client reset. <see cref="OnClientReset"/> is the callback where user cose is supplied.
+    /// A client reset strategy where the user needs to fully take care of a client reset.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
+    /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
     public sealed class ManualRecoveryHandler : ClientResetHandlerBase
     {
         /// <summary>
@@ -37,12 +37,12 @@ namespace Realms.Sync.ErrorHandling
         /// <summary>
         /// Initializes a new instance of the <see cref="ManualRecoveryHandler"/> class with the supplied client reset handler.
         /// </summary>
-        /// <param name="manualClientReset">
+        /// <param name="onClientReset">
         /// Callback triggered when a manual client reset happens.
         /// </param>
-        public ManualRecoveryHandler(ClientResetCallback manualClientReset)
+        public ManualRecoveryHandler(ClientResetCallback onClientReset)
         {
-            ManualClientReset = manualClientReset;
+            ManualClientReset = onClientReset;
         }
 
         /// <summary>

@@ -63,12 +63,17 @@ namespace Realms.Sync.Testing
             session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false);
         }
 
-        internal static void SimulateError(this Session session, ClientError errorCode, string message, bool isFatal = false)
+        /// <summary>
+        /// Simulates an error occurring during automatic handling of client reset.
+        /// </summary>
+        /// <param name="session">The session where the simulated client reset will occur.</param>
+        /// <param name="message">Error message.</param>
+        public static void SimulateAutomaticClientResetFailure(this Session session, string message)
         {
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.ClientError, message, isFatal);
+            session.ReportErrorForTesting((int)ClientError.AutoClientResetFailed, SessionErrorCategory.ClientError, message, false);
         }
     }
 }

@@ -54,17 +54,23 @@ namespace Realms.Sync
         public User User { get; }
 
         /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm.
-        /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
-        /// The default is <see cref="DiscardLocalResetHandler"/> with no custom actions set for the before and after callbacks.
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="DiscardLocalResetHandler"/>.
         /// </summary>
+        /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
+        /// <remarks>
+        /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
+        /// The default <see cref="DiscardLocalResetHandler"/> will have no custom actions set for the before and after callbacks.
+        /// </remarks>
+        /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
         public virtual ClientResetHandlerBase ClientResetHandler { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that will be invoked whenever a <see cref="SessionException"/> occurs for the synchronized Realm.
-        /// Client reset errors will not be reported through this callback as they are handled by the set <see cref="ClientResetHandler"/>.
         /// </summary>
-        /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
+        /// <value>The <see cref="SessionErrorCallback"/> that will be used to report transient session errors.</value>
+        /// <remarks>
+        /// Client reset errors will not be reported through this callback as they are handled by the set <see cref="ClientResetHandler"/>.
+        /// </remarks>
         public SessionErrorCallback OnSessionError { get; set; }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;

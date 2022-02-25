@@ -227,17 +227,12 @@ namespace Realms.Sync
                 SessionException exception;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-                var isUsingNewErrorHandling = (syncConfig.ClientResetHandler != null && syncConfig.ClientResetHandler.ManualClientReset != null) || syncConfig.OnSessionError != null;
+                var isUsingNewErrorHandling = syncConfig.ClientResetHandler?.ManualClientReset != null || syncConfig.OnSessionError != null;
 
                 if (isClientReset)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
-
-                    if (isUsingNewErrorHandling)
-                    {
-                        syncConfig.ClientResetHandler?.ManualClientReset?.Invoke((ClientResetException)exception);
-                    }
                 }
                 else if (errorCode == ErrorCode.PermissionDenied)
                 {
@@ -251,7 +246,11 @@ namespace Realms.Sync
 
                 if (isUsingNewErrorHandling)
                 {
-                    if (!isClientReset)
+                    if (isClientReset)
+                    {
+                        syncConfig.ClientResetHandler.ManualClientReset?.Invoke((ClientResetException)exception);
+                    }
+                    else
                     {
                         syncConfig.OnSessionError?.Invoke(session, exception);
                     }
@@ -275,11 +274,6 @@ namespace Realms.Sync
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-
-                if (syncConfig.ClientResetHandler == null)
-                {
-                    return true;
-                }
 
                 if (syncConfig.ClientResetHandler is DiscardLocalResetHandler discardLocalHandler &&
                     discardLocalHandler.OnBeforeReset != null)
@@ -305,11 +299,6 @@ namespace Realms.Sync
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-
-                if (syncConfig.ClientResetHandler == null)
-                {
-                    return true;
-                }
 
                 if (syncConfig.ClientResetHandler is DiscardLocalResetHandler discardLocalHandler &&
                     discardLocalHandler.OnAfterReset != null)

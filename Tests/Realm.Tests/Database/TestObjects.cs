@@ -678,6 +678,9 @@ namespace Realms.Tests
         public string Id { get; set; }
 
         public string Value { get; set; }
+
+        [MapTo("realm_id")]
+        public string Partition { get; set; }
     }
 
     public class RequiredPrimaryKeyStringObject : RealmObject
