@@ -26,6 +26,7 @@ using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Schema;
 using Realms.Sync;
+using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
@@ -267,7 +268,12 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var config = await GetIntegrationConfigAsync();
+                config.ClientResetHandler = new ManualRecoveryHandler((error) =>
+                {
+                    errorTcs.TrySetResult(error);
+                });
 
                 var backupLocation = config.DatabasePath + "_backup";
                 using (var realm = await GetRealmAsync(config))
@@ -294,18 +300,9 @@ namespace Realms.Tests.Sync
                     }
                 }
 
-                var errorTcs = new TaskCompletionSource<Exception>();
-                Session.Error += (s, e) =>
-                {
-                    errorTcs.TrySetResult(e.Exception);
-                };
-
                 using var realm2 = GetRealm(config);
 
-                var ex = await errorTcs.Task.Timeout(5000);
-
-                Assert.That(ex, Is.InstanceOf<ClientResetException>());
-                var clientEx = (ClientResetException)ex;
+                var clientEx = await errorTcs.Task.Timeout(5000);
 
                 Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
 

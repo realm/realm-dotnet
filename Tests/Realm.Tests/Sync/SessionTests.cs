@@ -86,7 +86,7 @@ namespace Realms.Tests.Sync
             Assert.That(session1.GetHashCode(), Is.EqualTo(session2.GetHashCode()));
         }
 
-        [Test]
+        [Test, Obsolete("Tests Session.Error")]
         public void Session_Error_ShouldPassCorrectSession()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -95,16 +95,28 @@ namespace Realms.Tests.Sync
                 using var realm = GetRealm(config);
                 var session = GetSession(realm);
 
+                var tcs = new TaskCompletionSource<SessionException>();
+
+                Session.Error += onSessionError;
+
                 const ErrorCode code = (ErrorCode)102;
                 const string message = "Some fake error has occurred";
 
-                var error = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message, errorSession =>
-                {
-                    Assert.That(errorSession, Is.EqualTo(session));
-                });
+                session.SimulateError(code, message);
+
+                var error = await tcs.Task;
 
                 Assert.That(error.Message, Is.EqualTo(message));
                 Assert.That(error.ErrorCode, Is.EqualTo(code));
+
+                Session.Error -= onSessionError;
+
+                void onSessionError(object sender, ErrorEventArgs args)
+                {
+                    Assert.That(sender, Is.EqualTo(session));
+
+                    tcs.TrySetResult((SessionException)args.Exception);
+                }
             });
         }
 
