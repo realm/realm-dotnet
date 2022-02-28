@@ -44,6 +44,23 @@ namespace Realms.Sync
 
         private IDisposable _connectionChangeNotificationToken;
 
+        private SessionHandle Handle
+        {
+            get
+            {
+                if (_handle.IsClosed)
+                {
+                    throw new ObjectDisposedException(
+                        nameof(Session),
+                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
+                }
+
+                return _handle;
+            }
+        }
+
+        internal bool IsClosed => _handle.IsClosed;
+
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
@@ -68,67 +85,6 @@ namespace Realms.Sync
                     UnsubscribeNotifications();
                 }
             }
-        }
-
-        private SessionHandle Handle
-        {
-            get
-            {
-                if (_handle.IsClosed)
-                {
-                    throw new ObjectDisposedException(
-                        nameof(Session),
-                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
-                }
-
-                return _handle;
-            }
-        }
-
-        internal Session(SessionHandle handle)
-        {
-            _handle = handle;
-        }
-
-        ~Session()
-        {
-            UnsubscribeNotifications();
-        }
-
-        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
-
-        internal static void RaiseError(Session session, Exception error)
-        {
-            var args = new ErrorEventArgs(error);
-            Error?.Invoke(session, args);
-        }
-
-        internal bool IsClosed => _handle.IsClosed;
-
-        internal void CloseHandle(bool waitForShutdown = false)
-        {
-            GC.SuppressFinalize(this);
-            if (!IsClosed)
-            {
-                if (waitForShutdown)
-                {
-                    _handle.ShutdownAndWait();
-                }
-
-                _handle.Close();
-            }
-        }
-
-        private void SubscribeNotifications()
-        {
-            var cb = new Action(() => NotifyPropertyChanged(nameof(ConnectionState)));
-            var callbackHandle = GCHandle.Alloc(cb);
-            var nativeToken = Handle.RegisterConnectionChangeCallback(GCHandle.ToIntPtr(callbackHandle));
-
-            _connectionChangeNotificationToken = NotificationToken.Create(callbackHandle, (gcHandle) =>
-            {
-                Handle.UnRegisterConnectionStateChangeCallback(nativeToken);
-            });
         }
 
         /// <summary>
@@ -244,15 +200,59 @@ namespace Realms.Sync
         /// <inheritdoc/>
         public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        internal Session(SessionHandle handle)
         {
-            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _handle = handle;
+        }
+
+        ~Session()
+        {
+            UnsubscribeNotifications();
+        }
+
+        internal void CloseHandle(bool waitForShutdown = false)
+        {
+            GC.SuppressFinalize(this);
+            if (!IsClosed)
+            {
+                if (waitForShutdown)
+                {
+                    _handle.ShutdownAndWait();
+                }
+
+                _handle.Close();
+            }
+        }
+
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
+
+        internal static void RaiseError(Session session, Exception error)
+        {
+            var args = new ErrorEventArgs(error);
+            Error?.Invoke(session, args);
+        }
+
+        private void SubscribeNotifications()
+        {
+            var cb = new Action(() => NotifyPropertyChanged(nameof(ConnectionState)));
+            var callbackHandle = GCHandle.Alloc(cb);
+            var nativeToken = Handle.RegisterConnectionChangeCallback(GCHandle.ToIntPtr(callbackHandle));
+
+            _connectionChangeNotificationToken = NotificationToken.Create(callbackHandle, (gcHandle) =>
+            {
+                Handle.UnRegisterConnectionStateChangeCallback(nativeToken);
+            });
         }
 
         private void UnsubscribeNotifications()
         {
             _connectionChangeNotificationToken?.Dispose();
             _connectionChangeNotificationToken = null;
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
