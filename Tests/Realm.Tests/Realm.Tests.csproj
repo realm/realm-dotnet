@@ -129,6 +129,7 @@
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <EmbeddedResource Include="EmbeddedResources\guids.realm" />
+    <EmbeddedResource Include="EmbeddedResources\sync-guids.realm" />
     <EmbeddedResource Include="EmbeddedResources\bad-guids.realm" />
     <EmbeddedResource Include="EmbeddedResources\mixed-guids.realm" />
     <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt">

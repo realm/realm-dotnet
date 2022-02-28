@@ -294,6 +294,53 @@ namespace Realms.Tests.Database
             Assert.That(logger.GetLog(), Does.Contain("found to contain Guid values in little-endian format and was automatically migrated"));
         }
 
+        [Test]
+        public void SynchronizedRealm_DoesntMigrate([Values(true, false)] bool useLegacyRepresentation)
+        {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            var expected = GetGuidObjects().ToArray();
+
+            var config = GetFakeConfig(userId: "sync-guids-test-user");
+            config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
+
+            TestHelpers.CopyBundledFileToDocuments("sync-guids.realm", config.DatabasePath);
+            using var realm = GetRealm(config);
+
+            var actual = realm.All<GuidType>().ToArray();
+
+            Assert.That(actual.Length, Is.EqualTo(expected.Length));
+
+            if (useLegacyRepresentation)
+            {
+                foreach (var expectedObj in expected)
+                {
+                    var actualObj = actual.Single(o => o.Id == expectedObj.Id);
+
+                    AssertEqual(expectedObj, actualObj);
+
+                    var actualFound = realm.Find<GuidType>(expectedObj.Id);
+                    Assert.That(actualObj, Is.EqualTo(actualFound));
+                }
+            }
+            else
+            {
+                foreach (var expectedObj in expected)
+                {
+                    var flipped = FlipGuid(expectedObj.Id);
+                    var actualObj = actual.Single(o => o.Id == flipped);
+                    Assert.That(actualObj.RegularProperty, Is.EqualTo(FlipGuid(expectedObj.RegularProperty)));
+                }
+            }
+
+            Assert.That(logger.GetLog(), Does.Not.Contain("migrated"));
+        }
+
         protected override void CustomSetUp()
         {
             _configuration = new RealmConfiguration(Guid.NewGuid().ToString())
