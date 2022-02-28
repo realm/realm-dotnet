@@ -10,7 +10,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.10.0.
 
 ## 10.10.0 (2022-02-28)
 
@@ -74,7 +74,7 @@ If for some reason, you want to opt out of the fixed behavior, you can temporari
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.8.0
+* Using Core 11.10.0
 
 ## 10.9.0 (2022-01-21)
 
