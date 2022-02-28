@@ -72,6 +72,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(ResultsHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_description", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_description(ResultsHandle resultsHandle, IntPtr buffer, IntPtr bufferLength, out NativeException ex);
         }
 
         public override bool IsValid
@@ -90,6 +93,20 @@ namespace Realms
         }
 
         public override bool CanSnapshot => true;
+
+        public string Description
+        {
+            get
+            {
+                EnsureIsOpen();
+
+                return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                {
+                    isNull = false;
+                    return NativeMethods.get_description(this, buffer, bufferLength, out ex);
+                });
+            }
+        }
 
         [Preserve]
         public ResultsHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)

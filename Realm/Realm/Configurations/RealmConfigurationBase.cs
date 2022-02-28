@@ -212,7 +212,10 @@ namespace Realms
                 FallbackPipePath = FallbackPipePath,
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,
-                max_number_of_active_versions = MaxNumberOfActiveVersions
+                max_number_of_active_versions = MaxNumberOfActiveVersions,
+#pragma warning disable CS0618 // Type or member is obsolete
+                use_legacy_guid_representation = Realm.UseLegacyGuidRepresentation,
+#pragma warning restore CS0618 // Type or member is obsolete
             };
         }
 

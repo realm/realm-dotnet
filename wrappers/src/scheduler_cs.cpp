@@ -41,7 +41,7 @@ public:
     : m_context(context)
     { }
 
-    bool can_deliver_notifications() const noexcept override { return true; }
+    bool can_invoke() const noexcept override { return true; }
 
     bool is_same_as(const Scheduler* other) const noexcept override
     {
@@ -55,14 +55,9 @@ public:
         return s_is_on_context(m_context, nullptr);
     }
 
-    void set_notify_callback(std::function<void()> callback) override
+    void invoke(util::UniqueFunction<void()>&& func) override
     {
-        m_callback = std::move(callback);
-    }
-
-    void notify() override
-    {
-        s_post_on_context(m_context, new std::function<void()>(m_callback));
+        s_post_on_context(m_context, new util::UniqueFunction<void()>(std::move(func)));
     }
 
     ~SynchronizationContextScheduler() override
@@ -71,27 +66,6 @@ public:
     }
 private:
     void* m_context;
-
-    std::function<void()> m_callback;
-};
-
-struct ThreadScheduler : public Scheduler {
-public:
-    ThreadScheduler() = default;
-
-    bool is_on_thread() const noexcept override { return m_id == std::this_thread::get_id(); }
-    bool is_same_as(const Scheduler* other) const noexcept override
-    {
-        auto o = dynamic_cast<const ThreadScheduler*>(other);
-        return (o && (o->m_id == m_id));
-    }
-    bool can_deliver_notifications() const noexcept override { return false; }
-
-    void set_notify_callback(std::function<void()>) override { }
-    void notify() override { }
-
-private:
-    std::thread::id m_id = std::this_thread::get_id();
 };
 
 extern "C" {
@@ -103,13 +77,13 @@ REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnCont
     s_release_context = wrap_managed_callback(release);
     s_is_on_context = wrap_managed_callback(is_on);
 
-    Scheduler::set_default_factory([]() -> std::unique_ptr<Scheduler> {
+    Scheduler::set_default_factory([]() -> std::shared_ptr<Scheduler> {
         void* context = s_get_context();
         if (context) {
-            return std::make_unique<SynchronizationContextScheduler>(context);
+            return std::make_shared<SynchronizationContextScheduler>(context);
         }
 
-        return std::make_unique<ThreadScheduler>();
+        return Scheduler::make_generic();
     });
 
     realm::binding::s_can_call_managed = true;
@@ -117,7 +91,7 @@ REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnCont
 
 REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr, bool execute_func)
 {
-    auto& func = *reinterpret_cast<std::function<void()>*>(function_ptr);
+    auto& func = *reinterpret_cast<util::UniqueFunction<void()>*>(function_ptr);
 
     if (execute_func) {
         func();

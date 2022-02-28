@@ -86,6 +86,10 @@ namespace Realms.Tests
                 Logger.Default = _originalLogger;
                 Logger.LogLevel = _originalLogLevel;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+                Realm.UseLegacyGuidRepresentation = false;
+#pragma warning restore CS0618 // Type or member is obsolete
+
                 _isSetup = false;
                 try
                 {
