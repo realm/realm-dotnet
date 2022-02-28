@@ -69,7 +69,7 @@ namespace SetupUnityPackage
                 { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/Info.plist", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/Info.plist" },
                 { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/realm-wrappers" },
                 { "native/ios/universal/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/_CodeSignature/CodeResources", "Runtime/iOS/realm-wrappers.xcframework/ios-arm64_i386_x86_64-simulator/realm-wrappers.framework/_CodeSignature/CodeResources" },
-                { "runtimes/osx-x64/native/librealm-wrappers.dylib", "Runtime/macOS/librealm-wrappers.dylib" },
+                { "runtimes/osx/native/librealm-wrappers.dylib", "Runtime/macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Runtime/Linux/librealm-wrappers.so" },
                 { "native/android/armeabi-v7a/librealm-wrappers.so", "Runtime/Android/armeabi-v7a/librealm-wrappers.so" },
                 { "native/android/arm64-v8a/librealm-wrappers.so", "Runtime/Android/arm64-v8a/librealm-wrappers.so" },
