@@ -101,7 +101,7 @@ namespace realm {
             result.push_back(to_capi(key));
         }
 
-        return std::move(result);
+        return result;
     }
 
     static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
