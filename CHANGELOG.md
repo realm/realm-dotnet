@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.10.0 (2022-02-28)
 
 ### Guid representation issue
 
