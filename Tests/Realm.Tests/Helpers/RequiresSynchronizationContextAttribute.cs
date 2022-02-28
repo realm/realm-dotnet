@@ -69,6 +69,9 @@ namespace Realms.Tests
         {
             if (IsAsyncTest(test))
             {
+                SynchronizationContextScheduler.InvalidateSchedulerFor(SynchronizationContext.Current);
+                (SynchronizationContext.Current as IDisposable)?.Dispose();
+
                 if (test.Properties.Get(SynchronizationContextKey) is SynchronizationContext current)
                 {
                     SynchronizationContext.SetSynchronizationContext(current);

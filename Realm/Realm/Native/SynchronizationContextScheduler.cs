@@ -47,7 +47,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_scheduler_callbacks", CallingConvention = CallingConvention.Cdecl)]
         private static extern void install_scheduler_callbacks(get_context get, post_on_context post, release_context release, is_on_context is_on);
 
-        private class Scheduler
+        private static ConditionalWeakTable<SynchronizationContext, Scheduler> _schedulers = new ConditionalWeakTable<SynchronizationContext, Scheduler>();
+
+        private class Scheduler : IDisposable
         {
             private static readonly Lazy<FieldInfo> XunitInnerContext = new Lazy<FieldInfo>(() =>
             {
@@ -121,7 +123,7 @@ namespace Realms
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal void Invalidate()
+            public void Dispose()
             {
                 _isReleased = true;
                 _context = null;
@@ -137,7 +139,8 @@ namespace Realms
                 return IntPtr.Zero;
             }
 
-            return GCHandle.ToIntPtr(GCHandle.Alloc(new Scheduler(context)));
+            var scheduler = _schedulers.GetValue(context, ctx => new Scheduler(ctx));
+            return GCHandle.ToIntPtr(GCHandle.Alloc(scheduler));
         }
 
         [MonoPInvokeCallback(typeof(post_on_context))]
@@ -156,7 +159,7 @@ namespace Realms
             if (context != IntPtr.Zero)
             {
                 var gcHandle = GCHandle.FromIntPtr(context);
-                ((Scheduler)gcHandle.Target).Invalidate();
+                ((Scheduler)gcHandle.Target).Dispose();
                 gcHandle.Free();
             }
         }
@@ -193,6 +196,15 @@ namespace Realms
             GCHandle.Alloc(is_on);
 
             install_scheduler_callbacks(get, post, release, is_on);
+        }
+
+        // Used by our tests to make sure nothing is scheduled after a test concludes
+        internal static void InvalidateSchedulerFor(SynchronizationContext context)
+        {
+            if (_schedulers.TryGetValue(context, out var scheduler))
+            {
+                scheduler.Dispose();
+            }
         }
     }
 }
