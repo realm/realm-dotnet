@@ -40,10 +40,15 @@
     </None>
     <!-- iOS -->
     <None Update="ios-dllmap.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
-    <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.xcframework\**">
+    <None Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework\**">
       <Pack>true</Pack>
-      <PackagePath>native\ios\universal\realm-wrappers.xcframework</PackagePath>
-      <Link>wrappers\iOS\realm-wrappers.xcframework\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <PackagePath>runtimes\ios\native</PackagePath>
+      <Link>wrappers\iphoneos\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\..\wrappers\build\iphonesimulator\$(Configuration)\realm-wrappers.framework\**">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\iossimulator\native</PackagePath>
+      <Link>wrappers\iphonesimulator\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
     <!-- macOS -->
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
@@ -60,22 +65,22 @@
     <!-- Android -->
     <None Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
       <Pack>true</Pack>
-      <PackagePath>native\android\armeabi-v7a</PackagePath>
+      <PackagePath>runtimes\android-arm\native</PackagePath>
       <Link>wrappers\Android\armeabi-v7a\%(Filename)%(Extension)</Link>
     </None>
     <None Include="..\..\wrappers\build\Android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
       <Pack>true</Pack>
-      <PackagePath>native\android\arm64-v8a</PackagePath>
+      <PackagePath>runtimes\android-arm64\native</PackagePath>
       <Link>wrappers\Android\arm64-v8a\%(Filename)%(Extension)</Link>
     </None>
     <None Include="..\..\wrappers\build\Android\$(Configuration)-x86\librealm-wrappers.so">
       <Pack>true</Pack>
-      <PackagePath>native\android\x86</PackagePath>
+      <PackagePath>runtimes\android-x86\native</PackagePath>
       <Link>wrappers\Android\x86\%(Filename)%(Extension)</Link>
     </None>
     <None Include="..\..\wrappers\build\Android\$(Configuration)-x86_64\librealm-wrappers.so">
       <Pack>true</Pack>
-      <PackagePath>native\android\x86_64</PackagePath>
+      <PackagePath>runtimes\android-x64\native</PackagePath>
       <Link>wrappers\Android\x86_64\%(Filename)%(Extension)</Link>
     </None>
     <!-- Windows -->
