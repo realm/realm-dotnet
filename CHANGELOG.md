@@ -1,6 +1,22 @@
 ## 10.10.0 (2022-02-28)
 
-####### **Synchronized Realms**
+### Guid representation issue
+
+This release fixes a major bug in the way Guid values are stored in the database. It provides an automatic migration for local (non-synchronized) databases, but extra caution is needed when upgrading an app that uses Sync.
+
+#### **Context**
+
+A Guid is represented by 4 components - `int`, `short`, `short`, and a `byte[8]`. Microsoft's Guids diverge from the UUID spec in that they encode the first three components with the endianness of the system (little-endian for all modern CPUs), while UUIDs encode their components as big-endian. The end result is that the same bytes have a different string representations when interpreted as a `Guid` by the .NET SDK vs when interpreted as a `UUID` by the Realm Database - e.g. `f2952191-a847-41c3-8362-497f92cb7d24` vs `912195f2-47a8-c341-8362-497f92cb7d24` (note the swapping of bytes in the first three components). You can see the issue by opening a database created by the .NET SDK in Realm Studio and inspecting the values for Guid properties.
+
+#### **Fix**
+
+The fix we're providing is to adjust the behavior of the .NET SDK to read/write Guids to the database with big-endian representation. This means that the SDK and the database will consistently display the same values. This has some implications which are described in the Local- and Synchronized Realms sections.
+
+#### **Local Realms**
+
+For local Realms, we're executing a one-time migration the first time the Realm is opened with the new SDK. During this migration, we'll update all Guid fields to big-endian format. This means that their string representation will remain the same, but the value in the database will change to match it. This means that the upgrade process should be seamless, but if you decide to downgrade to an older version of the SDK, you'll see the byte order get flipped. The migration will not execute multiple times, even if you downgrade.
+
+#### **Synchronized Realms**
 
 There's no client migration provided for synchronized Realms. This is because the distributed nature of the system would mean that there will inevitably be a period of inconsistent state. Instead, the values of the `Guid` properties are read as they're already stored in the database, meaning the string representation will be flipped compared to previous versions of the SDK but it will now match the representation in Atlas/Compass/Realm Studio. There are three general groups your app will fall under:
 * If you don't care about the string values of Guid properties on the client, then you don't need to do anything. The values will still be unique and valid Guids.
@@ -9,7 +25,13 @@ There's no client migration provided for synchronized Realms. This is because th
 
 If you are using sync and need to update to the latest version of the SDK but are not ready to migrate your data yet, see the `Opting out` section.
 
-#### Enhancements
+#### **Opting out**
+
+If for some reason, you want to opt out of the fixed behavior, you can temporarily opt out of it by setting the `Realm.UseLegacyGuidRepresentation` property to `true`. This is not recommended but can be used when you need more time to test out the migration while still getting bugfixes and other improvements. Setting it to `true` does two things:
+1. It brings back the pre-10.10.0 behavior of reading/writing Guid values with little-endian representation.
+1. It disables the migration code for local Realms. Note that it will not revert the migration if you already opened the Realm file when `UseLegacyGuidRepresentation` was set to `false`.
+
+### Enhancements
 * Lifted a limitation that would prevent you from changing the primary key of objects during a migration. It is now possible to do it with both the dynamic and the strongly-typed API:
   ```csharp
   var config = new RealmConfiguration
