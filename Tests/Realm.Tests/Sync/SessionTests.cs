@@ -294,8 +294,6 @@ namespace Realms.Tests.Sync
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Null);
 
-                session.Start();
-
                 Assert.That(stateChanged, Is.EqualTo(1));
 
                 void NotificationChanged(object sender, PropertyChangedEventArgs e)
@@ -310,7 +308,7 @@ namespace Realms.Tests.Sync
 
                 IDisposable GetNotificationToken(Session session)
                 {
-                    return (IDisposable)typeof(Session).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+                    return (IDisposable)typeof(Session).GetField("_connectionChangeNotificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
                 }
             });
         }

@@ -20,6 +20,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Realms.Sync
@@ -31,14 +32,17 @@ namespace Realms.Sync
     /// </summary>
     public class Session : INotifyPropertyChanged
     {
-        public delegate void ConnectionStateChangeCallback(SessionConnectionState oldState, SessionConnectionState newState);
-
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
         public static event EventHandler<ErrorEventArgs> Error;
 
+        private readonly SessionHandle _handle;
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
+
+        private IDisposable _connectionChangeNotificationToken;
 
         /// <summary>
         /// Occurs when a property value changes.
@@ -47,9 +51,9 @@ namespace Realms.Sync
         {
             add
             {
-                if (_notificationToken == null)
+                if (_connectionChangeNotificationToken == null)
                 {
-                    SubscribeForConnectionChangeNotifications();
+                    SubscribeNotifications();
                 }
 
                 _propertyChanged += value;
@@ -61,19 +65,10 @@ namespace Realms.Sync
 
                 if (_propertyChanged == null)
                 {
-                    UnsubscribeConnectionChangeNotifications();
+                    UnsubscribeNotifications();
                 }
             }
         }
-
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private IDisposable _notificationToken;
-
-        private readonly SessionHandle _handle;
 
         private SessionHandle Handle
         {
@@ -90,14 +85,6 @@ namespace Realms.Sync
             }
         }
 
-        private void UnsubscribeConnectionChangeNotifications()
-        {
-            _notificationToken?.Dispose();
-            _notificationToken = null;
-        }
-
-        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
-
         internal Session(SessionHandle handle)
         {
             _handle = handle;
@@ -105,8 +92,10 @@ namespace Realms.Sync
 
         ~Session()
         {
-            UnsubscribeConnectionChangeNotifications();
+            UnsubscribeNotifications();
         }
+
+        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
 
         internal static void RaiseError(Session session, Exception error)
         {
@@ -130,12 +119,13 @@ namespace Realms.Sync
             }
         }
 
-        private void SubscribeForConnectionChangeNotifications()
+        private void SubscribeNotifications()
         {
-            ConnectionStateChangeCallback cb = (oldState, newState) => { NotifyPropertyChanged(nameof(ConnectionState)); };
-            var nativeToken = Handle.RegisterConnectionStateChangeCallback(cb);
+            var cb = new Action(() => NotifyPropertyChanged(nameof(ConnectionState)));
+            var callbackHandle = GCHandle.Alloc(cb);
+            var nativeToken = Handle.RegisterConnectionChangeCallback(GCHandle.ToIntPtr(callbackHandle));
 
-            _notificationToken = NotificationToken.Create(cb, (callback) =>
+            _connectionChangeNotificationToken = NotificationToken.Create(callbackHandle, (gcHandle) =>
             {
                 Handle.UnRegisterConnectionStateChangeCallback(nativeToken);
             });
@@ -253,5 +243,16 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void UnsubscribeNotifications()
+        {
+            _connectionChangeNotificationToken?.Dispose();
+            _connectionChangeNotificationToken = null;
+        }
     }
 }

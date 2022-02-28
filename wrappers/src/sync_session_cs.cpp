@@ -35,14 +35,14 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset);
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
-using ConnectionStateChangeCallbackT = void(void* state_change_callback_handle, realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state);
+using ConnectionChangeCallbackT = void(void* connection_change_callback_handle);
 
 namespace realm {
 namespace binding {
     std::function<ErrorCallbackT> s_session_error_callback;
     std::function<ProgressCallbackT> s_progress_callback;
     std::function<WaitCallbackT> s_wait_callback;
-    std::function<ConnectionStateChangeCallbackT> s_connection_state_change_callback;
+    std::function<ConnectionChangeCallbackT> s_connection_change_callback;
 
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
     {
@@ -109,12 +109,12 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, ConnectionStateChangeCallbackT* state_chage_callback)
+REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, ConnectionChangeCallbackT* connection_change_callback)
 {
     s_session_error_callback = wrap_managed_callback(session_error_callback);
     s_progress_callback = wrap_managed_callback(progress_callback);
     s_wait_callback = wrap_managed_callback(wait_callback);
-    s_connection_state_change_callback = wrap_managed_callback(state_chage_callback);
+    s_connection_change_callback = wrap_managed_callback(connection_change_callback);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -144,11 +144,11 @@ REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyn
     });
 }
 
-REALM_EXPORT uint64_t realm_syncsession_register_connection_change_callback(const SharedSyncSession& session, void* state_change_callback_handle, NativeException::Marshallable& ex)
+REALM_EXPORT uint64_t realm_syncsession_register_connection_change_callback(const SharedSyncSession& session, void* connection_change_callback_handle, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return session->register_connection_change_callback([state_change_callback_handle](realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state) {
-            s_connection_state_change_callback(state_change_callback_handle, old_state, new_state);
+        return session->register_connection_change_callback([connection_change_callback_handle](realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state) {
+            s_connection_change_callback(connection_change_callback_handle);
         });
     });
 }

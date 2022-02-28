@@ -41,10 +41,10 @@ namespace Realms.Sync
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SessionConnectionStateChangeCallback(IntPtr stateChangeCallbackHandle, SessionConnectionState old_state, SessionConnectionState new_state);
+            public delegate void SessionConnectionChangeCallback(IntPtr connectionChangeCallbackHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, SessionConnectionStateChangeCallback connection_state_callback);
+            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, SessionConnectionChangeCallback connection_change_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user(SessionHandle session);
@@ -108,7 +108,7 @@ namespace Realms.Sync
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
             NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
-            NativeMethods.SessionConnectionStateChangeCallback connectionState = HandleSessionConnectionStateChangeCallback;
+            NativeMethods.SessionConnectionChangeCallback connectionState = HandleSessionConnectionChangeCallback;
 
             GCHandle.Alloc(error);
             GCHandle.Alloc(progress);
@@ -168,10 +168,9 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public ulong RegisterConnectionStateChangeCallback(Session.ConnectionStateChangeCallback stateChangeCallbackHandle)
+        public ulong RegisterConnectionChangeCallback(IntPtr managedCallbackHandle)
         {
-            var gcHandleCallback = GCHandle.Alloc(stateChangeCallbackHandle);
-            var token = NativeMethods.register_connection_change_callback(this, GCHandle.ToIntPtr(gcHandleCallback), out var ex);
+            var token = NativeMethods.register_connection_change_callback(this, managedCallbackHandle, out var ex);
             ex.ThrowIfNecessary();
             return token;
         }
@@ -292,11 +291,10 @@ namespace Realms.Sync
             }
         }
 
-        [MonoPInvokeCallback(typeof(NativeMethods.SessionConnectionStateChangeCallback))]
-        private static void HandleSessionConnectionStateChangeCallback(IntPtr stateChangeCallbackHandle, SessionConnectionState oldState, SessionConnectionState newState)
+        [MonoPInvokeCallback(typeof(NativeMethods.SessionConnectionChangeCallback))]
+        private static void HandleSessionConnectionChangeCallback(IntPtr connectionChangeCallbackHandle)
         {
-            var stateChangeCallback = (Session.ConnectionStateChangeCallback)GCHandle.FromIntPtr(stateChangeCallbackHandle).Target;
-            stateChangeCallback(oldState, newState);
+            ((Action)GCHandle.FromIntPtr(connectionChangeCallbackHandle).Target)();
         }
     }
 }
