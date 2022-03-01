@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -34,6 +35,9 @@ namespace Realms.Tests
 
         private static readonly Type NUnitSynchronizationContext =
             typeof(NUnitAttribute).Assembly.GetType("NUnit.Framework.Internal.SingleThreadedTestSynchronizationContext");
+
+        private static readonly FieldInfo NUnitSynchronizationContext_Status =
+            NUnitSynchronizationContext.GetField("_status", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public override ActionTargets Targets => ActionTargets.Test;
 
@@ -59,9 +63,12 @@ namespace Realms.Tests
                 }
 
                 var timeout = TestExecutionContext.CurrentContext.TestCaseTimeout;
-                timeout = Math.Max(timeout, 10_000);
+                timeout = Math.Max(timeout, 30_000);
                 var syncContext = (SynchronizationContext)Activator.CreateInstance(NUnitSynchronizationContext, TimeSpan.FromMilliseconds(timeout));
                 SynchronizationContext.SetSynchronizationContext(syncContext);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                SynchronizationContextScheduler.EmplaceScheduler(syncContext, new NUnitScheduler(syncContext));
+#pragma warning restore CA2000 // Dispose objects before losing scope
             }
         }
 
@@ -69,9 +76,6 @@ namespace Realms.Tests
         {
             if (IsAsyncTest(test))
             {
-                SynchronizationContextScheduler.InvalidateSchedulerFor(SynchronizationContext.Current);
-                (SynchronizationContext.Current as IDisposable)?.Dispose();
-
                 if (test.Properties.Get(SynchronizationContextKey) is SynchronizationContext current)
                 {
                     SynchronizationContext.SetSynchronizationContext(current);
@@ -84,7 +88,23 @@ namespace Realms.Tests
             }
         }
 
-        private static bool IsAsyncTest(ITest test) => test.Method.ReturnType.Type.GetMethod(nameof(Task.GetAwaiter)) != null;
+        private static bool IsAsyncTest(ITest test) => test.Method?.ReturnType.Type.GetMethod(nameof(Task.GetAwaiter)) != null;
+
+        private class NUnitScheduler : SynchronizationContextScheduler.Scheduler
+        {
+            internal NUnitScheduler(SynchronizationContext context) : base(context)
+            {
+            }
+
+            internal override void Post(IntPtr function_ptr)
+            {
+                var isShutDown = _context == null || NUnitSynchronizationContext_Status.GetValue(_context).ToString() == "ShutDown";
+                if (!isShutDown)
+                {
+                    base.Post(function_ptr);
+                }
+            }
+        }
 #endif
     }
 }

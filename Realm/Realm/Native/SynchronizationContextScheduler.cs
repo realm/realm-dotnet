@@ -49,7 +49,7 @@ namespace Realms
 
         private static ConditionalWeakTable<SynchronizationContext, Scheduler> _schedulers = new ConditionalWeakTable<SynchronizationContext, Scheduler>();
 
-        private class Scheduler : IDisposable
+        internal class Scheduler : IDisposable
         {
             private static readonly Lazy<FieldInfo> XunitInnerContext = new Lazy<FieldInfo>(() =>
             {
@@ -67,7 +67,7 @@ namespace Realms
             private readonly int _threadId;
 
             private volatile bool _isReleased;
-            private SynchronizationContext _context;
+            protected SynchronizationContext _context;
 
             internal Scheduler(SynchronizationContext context)
             {
@@ -77,7 +77,7 @@ namespace Realms
                 _threadId = Environment.CurrentManagedThreadId;
             }
 
-            internal void Post(IntPtr function_ptr)
+            internal virtual void Post(IntPtr function_ptr)
             {
                 _context?.Post(f_ptr =>
                 {
@@ -198,13 +198,16 @@ namespace Realms
             install_scheduler_callbacks(get, post, release, is_on);
         }
 
-        // Used by our tests to make sure nothing is scheduled after a test concludes
-        internal static void InvalidateSchedulerFor(SynchronizationContext context)
+        internal static void EmplaceScheduler(SynchronizationContext context, Scheduler scheduler)
         {
-            if (_schedulers.TryGetValue(context, out var scheduler))
+            Argument.NotNull(context, nameof(context));
+
+            if (_schedulers.TryGetValue(context, out var _))
             {
-                scheduler.Dispose();
+                throw new InvalidOperationException("Cannot emplace a custom scheduler for a context that already has one.");
             }
+
+            _schedulers.Add(context, scheduler);
         }
     }
 }
