@@ -30,7 +30,7 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
       }
     };
   ```
-  If, instead,you want to continue using the manual solution even after the end of the deprecation period, the following should be done
+  If, instead, you want to continue using the manual solution even after the end of the deprecation period, the following should be done
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {

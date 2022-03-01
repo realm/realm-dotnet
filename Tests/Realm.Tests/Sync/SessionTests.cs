@@ -389,7 +389,7 @@ namespace Realms.Tests.Sync
         /* INTEGRATION TEST: By opening the same realm with different users
          * this test triggers a client reset to verify that the default behaviour of a client reset is DiscardLocalChanges.
          */
-        [Test]
+        [Test, Ignore("This relies on ProtocolError::user_mismatch being a client reset error. We're waiting on core to implement this change.")]
         public void Session_ClientReset_DefaultsTo_DiscardLocalHandler()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -436,7 +436,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Ignore("This relies on ProtocolError::bad_changeset being a client reset error. We're waiting on core to implement this change.")]
         public void Session_DiscardLocalReset_TriggersNotifications()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
