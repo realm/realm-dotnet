@@ -39,6 +39,8 @@ namespace Realms
 {
     internal class RealmAccessor : IRealmObjectAccessor
     {
+        private bool _isEmbedded;
+
         private Lazy<int> _hashCode;
 
         private Realm _realm;
@@ -47,8 +49,11 @@ namespace Realms
 
         private RealmObjectBase.Metadata _metadata;
 
-        public RealmAccessor(Realm realm, ObjectHandle objectHandle, RealmObjectBase.Metadata metadata)
+        private NotificationTokenHandle _notificationToken;
+
+        public RealmAccessor(Realm realm, ObjectHandle objectHandle, RealmObjectBase.Metadata metadata, bool isEmbedded)
         {
+            _isEmbedded = isEmbedded;
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
@@ -75,6 +80,18 @@ namespace Realms
         public Lazy<int> HashCode => _hashCode;
 
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+
+        public RealmObjectBase FreezeImpl()
+        {
+            if (!IsManaged)
+            {
+                throw new RealmException("Unmanaged objects cannot be frozen.");
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = ObjectHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return frozenRealm.MakeObject(ObjectMetadata, frozenHandle);
+        }
 
         public RealmValue GetValue(string propertyName)
         {
@@ -155,7 +172,57 @@ namespace Realms
 
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
+
+        public void SubscribeForNotifications()
+        {
+            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
+
+            if (IsFrozen)
+            {
+                throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
+            }
+
+            Realm.ExecuteOutsideTransaction(() =>
+            {
+                if (ObjectHandle.IsValid)
+                {
+                    var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle));
+                }
+            });
+        }
+
+        public void UnsubscribeFromNotifications()
+        {
+            _notificationToken?.Dispose();
+            _notificationToken = null;
+        }
+
+        public string GetStringDescription()
+        {
+            var typeString = GetType().Name;
+
+            if (!IsManaged)  //TODO This can be removed
+            {
+                return $"{typeString} (unmanaged)";
+            }
+
+            if (!IsValid)
+            {
+                return $"{typeString} (removed)";
+            }
+
+            //if (!_isEmbedded && ObjectMetadata.Helper.TryGetPrimaryKeyValue(ro, out var pkValue))  //TODO We need to remove the helper from here
+            //{
+            //    var pkProperty = ObjectMetadata.Schema.PrimaryKeyProperty;
+            //    return $"{typeString} ({pkProperty.Value.Name} = {pkValue})";
+            //}
+
+            return typeString;
+        }
     }
+
+    //TODO This needs to remain public because we need an accessor in the fields of the generated class
 
     public interface IRealmObjectAccessor
     {
@@ -173,6 +240,8 @@ namespace Realms
 
         int BacklinksCount { get; }
 
+        public RealmObjectBase FreezeImpl();
+
         RealmValue GetValue(string propertyName);
 
         void SetValue(string propertyName, RealmValue val);
@@ -186,6 +255,12 @@ namespace Realms
         IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
 
         IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObjectBase;
+
+        void SubscribeForNotifications();
+
+        void UnsubscribeFromNotifications();
+
+        string GetStringDescription();
     }
 
     public class UnmanagedAccessor : IRealmObjectAccessor
@@ -206,8 +281,15 @@ namespace Realms
 
         public int BacklinksCount => 0;
 
+        public RealmObjectBase FreezeImpl()
+        {
+            //TODO Probably this should be a different kind of exception
+            throw new Exception("Object is not managed, but managed access was attempted");
+        }
+
         public IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObjectBase
         {
+            //TODO Probably this should be a different kind of exception
             throw new Exception("Object is not managed, but managed access was attempted");
         }
 
@@ -231,6 +313,11 @@ namespace Realms
             return (IList<T>)_container[propertyName];
         }
 
+        public ThreadSafeReference GetSafeReference()
+        {
+            throw new NotImplementedException();
+        }
+
         public ISet<T> GetSetValue<T>(string propertyName)
         {
             if (!_container.ContainsKey(propertyName))
@@ -239,6 +326,11 @@ namespace Realms
             }
 
             return (ISet<T>)_container[propertyName];
+        }
+
+        public string GetStringDescription()
+        {
+            throw new NotImplementedException();
         }
 
         public RealmValue GetValue(string propertyName)
@@ -255,6 +347,16 @@ namespace Realms
         {
             _container[propertyName] = val;
         }
+
+        public void SubscribeForNotifications()
+        {
+            throw new NotImplementedException();  //TODO Need to change
+        }
+
+        public void UnsubscribeFromNotifications()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -268,8 +370,6 @@ namespace Realms
           IReflectableType
     {
         private IRealmObjectAccessor _accessor = new UnmanagedAccessor();
-
-        private NotificationTokenHandle _notificationToken;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
@@ -301,8 +401,10 @@ namespace Realms
             }
         }
 
-        internal ObjectHandle ObjectHandle => (_accessor as RealmAccessor).ObjectHandle;
+        //TODO we can't really have this here, because in the generate class we don't have access to the ObjectHandle class
+        //Need to move all the methods that use internal api (classes) to the accessor
 
+        internal ObjectHandle ObjectHandle => (_accessor as RealmAccessor).ObjectHandle;
         internal Metadata ObjectMetadata => (_accessor as RealmAccessor).ObjectMetadata;
 
         /// <summary>
@@ -375,19 +477,9 @@ namespace Realms
         [IgnoreDataMember]
         public int BacklinksCount => _accessor.BacklinksCount;
 
-        internal RealmObjectBase FreezeImpl()
-        {
-            if (!IsManaged)
-            {
-                throw new RealmException("Unmanaged objects cannot be frozen.");
-            }
+        internal RealmObjectBase FreezeImpl() => _accessor.FreezeImpl();
 
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = ObjectHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return frozenRealm.MakeObject(ObjectMetadata, frozenHandle);
-        }
-
-        /// <inheritdoc/>
+        /// <inheritdoc/>  //TODO Testing
         Metadata IMetadataObject.Metadata => ObjectMetadata;
 
         /// <inheritdoc/>
@@ -405,9 +497,11 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
+
+        //TODO This also should be hidden...
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
-            _accessor = new RealmAccessor(realm, objectHandle, metadata);
+            _accessor = new RealmAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
 
             if (_propertyChanged != null)
             {
@@ -468,6 +562,7 @@ namespace Realms
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
+            //TODO This can be moved to accessor
             // If parameter is null, return false.
             if (obj is null)
             {
@@ -523,25 +618,7 @@ namespace Realms
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            var typeString = GetType().Name;
-
-            if (!IsManaged)
-            {
-                return $"{typeString} (unmanaged)";
-            }
-
-            if (!IsValid)
-            {
-                return $"{typeString} (removed)";
-            }
-
-            if (this is RealmObject ro && ObjectMetadata.Helper.TryGetPrimaryKeyValue(ro, out var pkValue))
-            {
-                var pkProperty = ObjectMetadata.Schema.PrimaryKeyProperty;
-                return $"{typeString} ({pkProperty.Value.Name} = {pkValue})";
-            }
-
-            return typeString;
+            return _accessor.GetStringDescription();
         }
 
         /// <summary>
@@ -599,27 +676,12 @@ namespace Realms
 
         private void SubscribeForNotifications()
         {
-            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
-
-            if (IsFrozen)
-            {
-                throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
-            }
-
-            Realm.ExecuteOutsideTransaction(() =>
-            {
-                if (ObjectHandle.IsValid)
-                {
-                    var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle));
-                }
-            });
+            _accessor.SubscribeForNotifications();
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _notificationToken?.Dispose();
-            _notificationToken = null;
+            _accessor.UnsubscribeFromNotifications();
         }
 
         /// <inheritdoc/>
