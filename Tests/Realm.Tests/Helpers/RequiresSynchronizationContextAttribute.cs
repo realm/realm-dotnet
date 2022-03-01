@@ -101,7 +101,13 @@ namespace Realms.Tests
                 var isShutDown = _context == null || NUnitSynchronizationContext_Status.GetValue(_context).ToString() == "ShutDown";
                 if (!isShutDown)
                 {
-                    base.Post(function_ptr);
+                    try
+                    {
+                        base.Post(function_ptr);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
                 }
             }
         }
