@@ -275,35 +275,20 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
                 var session = realm.SyncSession;
-                var stateChanged = 0;
-                var completionTCS = new TaskCompletionSource<bool>();
 
                 var internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Null);
 
-                // to avoid possible "Connecting state"
-                await Task.Delay(500);
                 session.PropertyChanged += NotificationChanged;
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Not.Null);
-
-                session.Stop();
-                await completionTCS.Task;
 
                 session.PropertyChanged -= NotificationChanged;
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Null);
 
-                Assert.That(stateChanged, Is.EqualTo(1));
-
                 void NotificationChanged(object sender, PropertyChangedEventArgs e)
                 {
-                    Assert.That(sender is Session, Is.True);
-                    Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
-                    Assert.That(stateChanged, Is.EqualTo(0));
-                    Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
-                    stateChanged++;
-                    completionTCS.TrySetResult(true);
                 }
 
                 IDisposable GetNotificationToken(Session session)

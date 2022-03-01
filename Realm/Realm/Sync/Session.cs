@@ -96,7 +96,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the session’s current connection state.
         /// </summary>
-        /// <remarks>This field respects the <see href="https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.inotifypropertychanged?view=net-6.0">INotifyPropertyChanged</see> interface.</remarks>
+        /// <remarks>This field notifies clients that its value has changed according to the <see href="https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.inotifypropertychanged?view=net-6.0">INotifyPropertyChanged</see> interface.</remarks>
         /// <value>An enum value indicating the connection state of the session.</value>
         public SessionConnectionState ConnectionState => Handle.GetConnectionState();
 
@@ -238,9 +238,9 @@ namespace Realms.Sync
             var callbackHandle = GCHandle.Alloc(cb);
             var nativeToken = Handle.RegisterConnectionChangeCallback(GCHandle.ToIntPtr(callbackHandle));
 
-            _connectionChangeNotificationToken = NotificationToken.Create(callbackHandle, (gcHandle) =>
+            _connectionChangeNotificationToken = NotificationToken.Create(nativeToken, (cbToken) =>
             {
-                Handle.UnRegisterConnectionStateChangeCallback(nativeToken);
+                Handle.UnRegisterConnectionStateChangeCallback(cbToken);
             });
         }
 

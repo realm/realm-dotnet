@@ -25,7 +25,6 @@
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include "sync_session_cs.hpp"
-#include <realm/sync/client_base.hpp>
 
 using namespace realm;
 using namespace realm::binding;

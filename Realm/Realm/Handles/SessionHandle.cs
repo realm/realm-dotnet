@@ -108,14 +108,14 @@ namespace Realms.Sync
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
             NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
-            NativeMethods.SessionConnectionChangeCallback connectionState = HandleSessionConnectionChangeCallback;
+            NativeMethods.SessionConnectionChangeCallback connectionChange = HandleSessionConnectionChangeCallback;
 
             GCHandle.Alloc(error);
             GCHandle.Alloc(progress);
             GCHandle.Alloc(wait);
-            GCHandle.Alloc(connectionState);
+            GCHandle.Alloc(connectionChange);
 
-            NativeMethods.install_syncsession_callbacks(error, progress, wait, connectionState);
+            NativeMethods.install_syncsession_callbacks(error, progress, wait, connectionChange);
         }
 
         public bool TryGetUser(out SyncUserHandle userHandle)
