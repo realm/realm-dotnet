@@ -68,6 +68,8 @@ struct Configuration
     
     bool enable_cache;
     uint64_t max_number_of_active_versions;
+
+    bool use_legacy_guid_representation;
 };
 
 struct SyncConfiguration

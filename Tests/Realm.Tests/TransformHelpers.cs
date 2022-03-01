@@ -47,7 +47,7 @@ namespace Realms.Tests
             }
 
             var assembly = typeof(TransformHelpers).Assembly;
-            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(filename));
+            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith("." + filename));
             if (resourceName == null)
             {
                 throw new Exception($"Couldn't find embedded resource '{filename}' in the RealmTests assembly");
