@@ -59,7 +59,7 @@ namespace Realms.Tests
                 }
 
                 var timeout = TestExecutionContext.CurrentContext.TestCaseTimeout;
-                timeout = Math.Min(timeout, 10_000);
+                timeout = Math.Max(timeout, 10_000);
                 var syncContext = (SynchronizationContext)Activator.CreateInstance(NUnitSynchronizationContext, TimeSpan.FromMilliseconds(timeout));
                 SynchronizationContext.SetSynchronizationContext(syncContext);
             }
