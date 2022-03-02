@@ -181,7 +181,7 @@ namespace Realms
         public class Object<T> : ThreadSafeReference
             where T : RealmObjectBase
         {
-            internal Object(T value) : base(value, Type.Object)
+            internal Object(T value) : base(value.RealmAccessor(), Type.Object)
             {
             }
         }

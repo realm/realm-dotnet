@@ -37,7 +37,26 @@ using Realms.Weaving;
 
 namespace Realms
 {
-    internal class RealmAccessor : IRealmObjectAccessor
+    internal static class RealmObjectExtensions
+    {
+        internal static RealmObjectBase.Metadata ObjectMetadata(this RealmObjectBase ro)
+        {
+            return ro.RealmAccessor().Metadata;
+        }
+
+        internal static ObjectHandle ObjectHandle(this RealmObjectBase ro)
+        {
+            return ro.RealmAccessor().ObjectHandle;
+        }
+
+        internal static ManagedAccessor RealmAccessor(this RealmObjectBase ro)
+        {
+            return ro.Accessor as ManagedAccessor;
+        }
+    }
+
+
+    internal class ManagedAccessor : IRealmAccessor, IThreadConfined
     {
         private bool _isEmbedded;
 
@@ -51,23 +70,11 @@ namespace Realms
 
         private NotificationTokenHandle _notificationToken;
 
-        public RealmAccessor(Realm realm, ObjectHandle objectHandle, RealmObjectBase.Metadata metadata, bool isEmbedded)
-        {
-            _isEmbedded = isEmbedded;
-            _realm = realm;
-            _objectHandle = objectHandle;
-            _metadata = metadata;
-            _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
-        }
-
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
-
         internal ObjectHandle ObjectHandle => _objectHandle;
 
         internal RealmObjectBase.Metadata ObjectMetadata => _metadata;
 
-        public bool IsManaged => _realm != null;  //TODO Should just be true...
+        public bool IsManaged => true;
 
         public bool IsValid => _objectHandle?.IsValid != false;
 
@@ -80,6 +87,22 @@ namespace Realms
         public Lazy<int> HashCode => _hashCode;
 
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+
+        public IThreadConfinedHandle Handle => _objectHandle;
+
+        public RealmObjectBase.Metadata Metadata => _metadata;
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        public ManagedAccessor(Realm realm, ObjectHandle objectHandle, RealmObjectBase.Metadata metadata, bool isEmbedded)
+        {
+            _isEmbedded = isEmbedded;
+            _realm = realm;
+            _objectHandle = objectHandle;
+            _metadata = metadata;
+            _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
+        }
 
         public RealmObjectBase FreezeImpl()
         {
@@ -222,9 +245,7 @@ namespace Realms
         }
     }
 
-    //TODO This needs to remain public because we need an accessor in the fields of the generated class
-
-    public interface IRealmObjectAccessor
+    public interface IRealmAccessor
     {
         bool IsManaged { get; }
 
@@ -263,7 +284,7 @@ namespace Realms
         string GetStringDescription();
     }
 
-    public class UnmanagedAccessor : IRealmObjectAccessor
+    public class UnmanagedAccessor : IRealmAccessor
     {
         private Dictionary<string, object> _container = new();
 
@@ -359,18 +380,21 @@ namespace Realms
         }
     }
 
+    public interface IRealmObject
+    {
+        IRealmAccessor Accessor { get; }
+    }
+
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
-        : INotifyPropertyChanged,
-          IThreadConfined,
+        : IRealmObject,
+          INotifyPropertyChanged,
           INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IReflectableType
     {
-        private IRealmObjectAccessor _accessor = new UnmanagedAccessor();
-
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
@@ -401,11 +425,7 @@ namespace Realms
             }
         }
 
-        //TODO we can't really have this here, because in the generate class we don't have access to the ObjectHandle class
-        //Need to move all the methods that use internal api (classes) to the accessor
-
-        internal ObjectHandle ObjectHandle => (_accessor as RealmAccessor).ObjectHandle;
-        internal Metadata ObjectMetadata => (_accessor as RealmAccessor).ObjectMetadata;
+        public IRealmAccessor Accessor { get; private set; } = new UnmanagedAccessor();
 
         /// <summary>
         /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
@@ -413,7 +433,7 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
         [IgnoreDataMember]
-        public bool IsManaged => _accessor.IsManaged;
+        public bool IsManaged => Accessor.IsManaged;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
@@ -441,7 +461,7 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
         [IgnoreDataMember]
-        public bool IsValid => _accessor.IsValid;
+        public bool IsValid => Accessor.IsValid;
 
         /// <summary>
         /// Gets a value indicating whether this object is frozen. Frozen objects are immutable
@@ -451,21 +471,21 @@ namespace Realms
         /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         [IgnoreDataMember]
-        public bool IsFrozen => _accessor.IsFrozen;
+        public bool IsFrozen => Accessor.IsFrozen;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
         [IgnoreDataMember]
-        public Realm Realm => _accessor.Realm;
+        public Realm Realm => Accessor.Realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         /// <summary>
         /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
@@ -475,15 +495,9 @@ namespace Realms
         /// </remarks>
         /// <value>The number of objects referring to this one.</value>
         [IgnoreDataMember]
-        public int BacklinksCount => _accessor.BacklinksCount;
+        public int BacklinksCount => Accessor.BacklinksCount;
 
-        internal RealmObjectBase FreezeImpl() => _accessor.FreezeImpl();
-
-        /// <inheritdoc/>  //TODO Testing
-        Metadata IMetadataObject.Metadata => ObjectMetadata;
-
-        /// <inheritdoc/>
-        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
+        internal RealmObjectBase FreezeImpl() => Accessor.FreezeImpl();
 
         internal RealmObjectBase()
         {
@@ -497,11 +511,10 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-
         //TODO This also should be hidden...
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
-            _accessor = new RealmAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
+            Accessor = new ManagedAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
 
             if (_propertyChanged != null)
             {
@@ -513,39 +526,39 @@ namespace Realms
 
         protected RealmValue GetValue(string propertyName)
         {
-            return _accessor.GetValue(propertyName);
+            return Accessor.GetValue(propertyName);
         }
 
         protected void SetValue(string propertyName, RealmValue val)
         {
-            _accessor.SetValue(propertyName, val);
+            Accessor.SetValue(propertyName, val);
         }
 
         protected void SetValueUnique(string propertyName, RealmValue val)
         {
-            _accessor.SetValueUnique(propertyName, val);
+            Accessor.SetValueUnique(propertyName, val);
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
         {
-            return _accessor.GetListValue<T>(propertyName);
+            return Accessor.GetListValue<T>(propertyName);
         }
 
         protected internal ISet<T> GetSetValue<T>(string propertyName)
         {
-            return _accessor.GetSetValue<T>(propertyName);
+            return Accessor.GetSetValue<T>(propertyName);
         }
 
         protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            return _accessor.GetDictionaryValue<TValue>(propertyName);
+            return Accessor.GetDictionaryValue<TValue>(propertyName);
 
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase
         {
-            return _accessor.GetBacklinks<T>(propertyName);
+            return Accessor.GetBacklinks<T>(propertyName);
         }
 
 #pragma warning restore SA1600 // Elements should be documented
@@ -562,7 +575,7 @@ namespace Realms
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            //TODO This can be moved to accessor
+            //TODO Move it to accessor?
             // If parameter is null, return false.
             if (obj is null)
             {
@@ -601,15 +614,16 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.ObjEquals(robj.ObjectHandle);
+            return this.ObjectHandle().ObjEquals(robj.ObjectHandle());
         }
 
         /// <inheritdoc/>
         public override int GetHashCode()
         {
+            //TODO Cannot be moved completely to accessor... Need to decide how to do it 
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
-            return _accessor.HashCode?.Value ?? base.GetHashCode();
+            return Accessor.HashCode?.Value ?? base.GetHashCode();
         }
 
         /// <summary>
@@ -618,7 +632,7 @@ namespace Realms
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return _accessor.GetStringDescription();
+            return Accessor.GetStringDescription();
         }
 
         /// <summary>
@@ -676,12 +690,12 @@ namespace Realms
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications();
+            Accessor.SubscribeForNotifications();
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         /// <inheritdoc/>
@@ -864,7 +878,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
-                var resultsHandle = _realmObject.ObjectHandle.GetBacklinks(propertyName, _realmObject.ObjectMetadata);
+                var resultsHandle = _realmObject.ObjectHandle().GetBacklinks(propertyName, _realmObject.ObjectMetadata());
 
                 var relatedMeta = _realmObject.Realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
@@ -888,7 +902,7 @@ namespace Realms
             {
                 Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 
-                var resultsHandle = _realmObject.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
+                var resultsHandle = _realmObject.ObjectHandle().GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
                 if (relatedMeta.Schema.IsEmbedded)
                 {
                     return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
@@ -914,7 +928,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
 
-                var result = _realmObject.ObjectHandle.GetList<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
+                var result = _realmObject.ObjectHandle().GetList<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata(), property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -936,7 +950,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
 
-                var result = _realmObject.ObjectHandle.GetSet<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
+                var result = _realmObject.ObjectHandle().GetSet<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata(), property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -958,7 +972,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
 
-                var result = _realmObject.ObjectHandle.GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
+                var result = _realmObject.ObjectHandle().GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata(), property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
