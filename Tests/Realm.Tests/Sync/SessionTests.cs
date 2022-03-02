@@ -229,7 +229,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(clientEx.Message, Is.EqualTo(errorMsg));
                 Assert.That(clientEx.InnerException, Is.Null);
-
                 await TryInitiateClientReset(clientEx, (int)ErrorCode.DivergingHistories, config);
             });
         }
@@ -1102,7 +1101,7 @@ namespace Realms.Tests.Sync
             Assert.That(File.Exists(config.DatabasePath), Is.True);
 
             var didReset = false;
-            for (var i = 0; i < 100 || didReset; i++)
+            for (var i = 0; i < 100 && !didReset; i++)
             {
                 await Task.Delay(50);
                 didReset = ex.InitiateClientReset();
