@@ -812,14 +812,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      with:
-        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: .NET Framework
+    - run: echo 'not cleaning up on purpose'
   baas-uwp-managed:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for UWP Managed
@@ -909,14 +902,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      with:
-        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: UWP Managed
+    - run: echo 'not cleaning up on purpose'
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: Test .NET
@@ -1060,14 +1046,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      with:
-        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: Xamarin.macOS
+    - run: echo 'not cleaning up on purpose'
   baas-xamarinios:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.iOS
@@ -1152,14 +1131,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      with:
-        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: Xamarin.iOS
+    - run: echo 'not cleaning up on purpose'
   baas-xamarinandroid:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for Xamarin.Android
@@ -1281,14 +1253,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      with:
-        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: Xamarin.Android
+    - run: echo 'not cleaning up on purpose'
   run-tests-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
@@ -1507,14 +1472,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      with:
-        projectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-        realmUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-        atlasUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-        apiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-        privateApiKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-        differentiator: Code Coverage
+    - run: echo 'not cleaning up on purpose'
   run-cleanup:
     runs-on: ubuntu-latest
     name: Workflow cleanup

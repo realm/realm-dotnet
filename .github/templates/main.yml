@@ -102,14 +102,7 @@ with:
   timeout-minutes: #@ cleanupTimeout
   steps:
     - #@ template.replace(checkoutCode(False, False))
-    - uses: #@ actionCleanupBaaS
-      with:
-        projectId: #@ secret_AtlasProjectId
-        realmUrl: #@ secret_BaseUrl
-        atlasUrl: #@ secret_AtlasBaseUrl
-        apiKey: #@ secret_AtlasPublicKey
-        privateApiKey: #@ secret_AtlasPrivateKey
-        differentiator: #@ name
+    - run: echo 'not cleaning up on purpose'
 #@ end
 
 #@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
