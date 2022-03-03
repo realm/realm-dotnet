@@ -203,7 +203,7 @@ namespace Realms.Sync
         {
             try
             {
-                using var handle = new SessionHandle(null, sessionHandlePtr);
+                var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
 
@@ -224,7 +224,18 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                Session.RaiseError(session, exception);
+                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    try
+                    {
+                        Session.RaiseError(session, exception);
+                    }
+                    catch { }
+                    finally
+                    {
+                        handle.Dispose();
+                    }
+                });
             }
             catch (Exception ex)
             {
