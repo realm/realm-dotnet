@@ -1,0 +1,5 @@
+{
+    "omnisharp.defaultLaunchSolution": "Realm.sln",
+    "omnisharp.enableRoslynAnalyzers": true,
+    "cmake.sourceDirectory": "${workspaceFolder}/wrappers"
+}
