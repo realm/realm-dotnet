@@ -47,7 +47,7 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_scheduler_callbacks", CallingConvention = CallingConvention.Cdecl)]
         private static extern void install_scheduler_callbacks(get_context get, post_on_context post, release_context release, is_on_context is_on);
 
-        private static ConditionalWeakTable<SynchronizationContext, Scheduler> _schedulers = new ConditionalWeakTable<SynchronizationContext, Scheduler>();
+        private static readonly ConditionalWeakTable<SynchronizationContext, Scheduler> _schedulers = new ConditionalWeakTable<SynchronizationContext, Scheduler>();
 
         internal class Scheduler : IDisposable
         {
