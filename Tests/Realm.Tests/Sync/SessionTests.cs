@@ -506,27 +506,26 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new DiscardLocalResetHandler
                 {
-                    OnBeforeReset = GetOnBeforeHandler(tcs, beforeFrozen =>
+                    OnBeforeReset = beforeFrozen =>
                     {
                         Assert.That(onBeforeTriggered, Is.False);
                         Assert.That(onAfterResetTriggered, Is.False);
                         Assert.That(manualFallbackTriggered, Is.False);
                         onBeforeTriggered = true;
                         throw new Exception("Exception thrown in OnBeforeReset");
-                    }),
+                    },
                     OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
                     {
                         onAfterResetTriggered = true;
                     }),
-                    ManualResetFallback = (err) =>
+                    ManualResetFallback = GetClientResetHandler(tcs, (ex) =>
                     {
-                        Assert.That(err, Is.InstanceOf<ClientResetException>());
+                        Assert.That(ex, Is.InstanceOf<ClientResetException>());
                         Assert.That(onBeforeTriggered, Is.True);
                         Assert.That(onAfterResetTriggered, Is.False);
                         Assert.That(manualFallbackTriggered, Is.False);
                         manualFallbackTriggered = true;
-                        tcs.TrySetResult(true);
-                    }
+                    })
                 };
 
                 using var realm = await GetRealmAsync(config);
@@ -568,15 +567,14 @@ namespace Realms.Tests.Sync
                         onAfterResetTriggered = true;
                         throw new Exception("Exception thrown in OnAfterReset");
                     },
-                    ManualResetFallback = (err) =>
+                    ManualResetFallback = GetClientResetHandler(tcs, (ex) =>
                     {
-                        Assert.That(err, Is.InstanceOf<ClientResetException>());
+                        Assert.That(ex, Is.InstanceOf<ClientResetException>());
                         Assert.That(onBeforeTriggered, Is.True);
                         Assert.That(onAfterResetTriggered, Is.True);
                         Assert.That(manualFallbackTriggered, Is.False);
                         manualFallbackTriggered = true;
-                        tcs.TrySetResult(null);
-                    }
+                    })
                 };
 
                 using var realm = await GetRealmAsync(config);
@@ -1167,6 +1165,22 @@ namespace Realms.Tests.Sync
                 try
                 {
                     assertions(frozen);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            });
+        }
+
+        private static ClientResetHandlerBase.ClientResetCallback GetClientResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
+        {
+            return new ClientResetHandlerBase.ClientResetCallback(clientResetException =>
+            {
+                try
+                {
+                    assertions(clientResetException);
+                    tcs.TrySetResult(null);
                 }
                 catch (Exception ex)
                 {
