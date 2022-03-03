@@ -121,7 +121,6 @@ namespace Realms.Tests.Sync
                     {
                         tcs.TrySetException(ex);
                     }
-
                 }
             });
         }
@@ -152,7 +151,14 @@ namespace Realms.Tests.Sync
                     })
                 };
 
+                config.OnSessionError = (session, err) =>
+                {
+                    tcs.TrySetException(err);
+                };
+
                 using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
 
                 GetSession(realm).SimulateClientReset("simulated client reset");
 
@@ -270,10 +276,11 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_ClientReset_Access_Realm_OnBeforeReset()
         {
+            const string validValue = "this will sync";
+            const string invalidValue = "this will be deleted";
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var intIdSynced = TestHelpers.Random.Next();
-                var intIdUnSynced = TestHelpers.Random.Next();
                 var tcs = new TaskCompletionSource<object>();
                 var onBeforeTriggered = false;
                 var config = await GetIntegrationConfigAsync();
@@ -283,41 +290,51 @@ namespace Realms.Tests.Sync
                     {
                         Assert.That(onBeforeTriggered, Is.False);
 
-                        var frozenObjs = beforeFrozen.All<PrimaryKeyInt32Object>().ToArray();
+                        var frozenObjs = beforeFrozen.All<ObjectWithPartitionValue>().ToArray();
                         Assert.That(frozenObjs.Length, Is.EqualTo(2));
-                        Assert.That(frozenObjs[0].Id, Is.EqualTo(intIdSynced));
-                        Assert.That(frozenObjs[1].Id, Is.EqualTo(intIdUnSynced));
+                        Assert.That(frozenObjs.Select(o => o.Value), Is.EquivalentTo(new[] { validValue, invalidValue }));
 
                         onBeforeTriggered = true;
                         tcs.TrySetResult(null);
                     })
                 };
-                config.Schema = new[] { typeof(PrimaryKeyInt32Object) };
+                config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
+
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyInt32Object { Id = intIdSynced });
+                    realm.Add(new ObjectWithPartitionValue
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Value = validValue
+                    });
                 });
+
                 await WaitForUploadAsync(realm);
 
-                var session = GetSession(realm);
-                session.Stop();
-
                 realm.Write(() =>
                 {
-                    realm.Add(new PrimaryKeyInt32Object { Id = intIdUnSynced });
+                    realm.Add(new ObjectWithPartitionValue
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Value = invalidValue,
+                        Partition = "nonexistent"
+                    });
                 });
-                var objs = realm.All<PrimaryKeyInt32Object>().ToArray();
-                Assert.That(objs.Length, Is.EqualTo(2));
-                Assert.That(objs[0].Id, Is.EqualTo(intIdSynced));
-                Assert.That(objs[1].Id, Is.EqualTo(intIdUnSynced));
 
-                session.SimulateClientReset("simulated client reset failure");
-                session.Start();
+                var objs = realm.All<ObjectWithPartitionValue>();
+                Assert.That(objs.Count(), Is.EqualTo(2));
+                Assert.That(objs.ToArray().Select(o => o.Value), Is.EquivalentTo(new[] { validValue, invalidValue }));
 
                 await tcs.Task;
                 Assert.That(onBeforeTriggered, Is.True);
+
+                await TestHelpers.WaitForConditionAsync(() => objs.Count() == 1);
+
+                Assert.That(objs.Single().Value, Is.EqualTo(validValue));
             });
         }
 
@@ -352,6 +369,8 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
 
                 realm.Write(() =>
                 {
@@ -388,59 +407,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        /* INTEGRATION TEST: By opening the same realm with different users
-         * this test triggers a client reset to verify that the default behaviour of a client reset is DiscardLocalChanges.
-         */
+        // [Ignore("This relies on ProtocolError::bad_changeset being a client reset error. We're waiting on core to implement this change.")]
         [Test]
-        //[Ignore("This relies on ProtocolError::user_mismatch being a client reset error. We're waiting on core to implement this change.")]
-        public void Session_ClientReset_DefaultsTo_DiscardLocalHandler()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var pkSync = Guid.NewGuid().ToString();
-                var pkNoSync = Guid.NewGuid().ToString();
-                var objValueSync = "mon amour";
-                var objValueNoSync = "it's the love";
-                var partition = Guid.NewGuid().ToString();
-                var configA = await GetIntegrationConfigAsync(partition);
-                var configB = await GetIntegrationConfigAsync(partition, optionalPath: configA.DatabasePath);
-
-                using (var realmA = await GetRealmAsync(configA))
-                {
-                    var objToAddSync = new PrimaryKeyStringObject { Id = pkSync, Value = objValueSync };
-                    var objToAddNoSync = new PrimaryKeyStringObject { Id = pkNoSync, Value = objValueNoSync };
-                    realmA.Write(() =>
-                    {
-                        realmA.Add(objToAddSync);
-                    });
-
-                    await WaitForUploadAsync(realmA);
-
-                    GetSession(realmA).Stop();
-
-                    realmA.Write(() =>
-                    {
-                        realmA.Add(objToAddNoSync);
-                    });
-
-                    var allObjsA = realmA.All<PrimaryKeyStringObject>().ToArray();
-                    Assert.That(allObjsA.Length, Is.EqualTo(2));
-                    Assert.That(allObjsA[0], Is.EqualTo(objToAddSync));
-                    Assert.That(allObjsA[1], Is.EqualTo(objToAddNoSync));
-                }
-
-                using var realmB = await GetRealmAsync(configB);
-                await WaitForDownloadAsync(realmB);
-
-                var allObjsB = realmB.All<PrimaryKeyStringObject>().ToArray();
-                Assert.That(allObjsB.Length, Is.EqualTo(1));
-                Assert.That(allObjsB[0].Id, Is.EqualTo(pkSync));
-                Assert.That(allObjsB[0].Value, Is.EqualTo(objValueSync));
-            });
-        }
-
-        [Test]
-        //[Ignore("This relies on ProtocolError::bad_changeset being a client reset error. We're waiting on core to implement this change.")]
         public void Session_DiscardLocalReset_TriggersNotifications()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -450,6 +418,8 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
 
                 realm.Write(() =>
                 {
@@ -508,10 +478,18 @@ namespace Realms.Tests.Sync
                 {
                     OnBeforeReset = beforeFrozen =>
                     {
-                        Assert.That(onBeforeTriggered, Is.False);
-                        Assert.That(onAfterResetTriggered, Is.False);
-                        Assert.That(manualFallbackTriggered, Is.False);
-                        onBeforeTriggered = true;
+                        try
+                        {
+                            Assert.That(onBeforeTriggered, Is.False);
+                            Assert.That(onAfterResetTriggered, Is.False);
+                            Assert.That(manualFallbackTriggered, Is.False);
+                            onBeforeTriggered = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.TrySetException(ex);
+                        }
+
                         throw new Exception("Exception thrown in OnBeforeReset");
                     },
                     OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
@@ -578,6 +556,8 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
 
                 GetSession(realm).SimulateClientReset("simulated client reset");
 
@@ -668,7 +648,7 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
-                    tcs.TrySetResult(true);
+                    tcs.TrySetResult(null);
                 }
             });
         }
@@ -1206,6 +1186,13 @@ namespace Realms.Tests.Sync
             Assert.That(session.State, Is.EqualTo(SessionState.Inactive));
 
             return session;
+        }
+
+        private static async Task WorkaroundREALMC12062()
+        {
+            // This is a hack for REALMC-12062 that delays writing to a Realm until
+            // the initial schema instructions have been synthesized by the server
+            await Task.Delay(2000);
         }
 
         [Explicit]
