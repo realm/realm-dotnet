@@ -34,7 +34,7 @@ namespace PerformanceTests
         private string _temp;
         private RealmObject _tempObj;
 
-        [Params(20, 100, 1000)]
+        [Params(20)]
         public int StringSize { get; set; }
 
         protected override void SeedData()
@@ -182,7 +182,7 @@ namespace PerformanceTests
             _robject.Value31 = _newPropertyValues[31];
         }
 
-        [Benchmark(OperationsPerInvoke = 32, Description = "Time to lookup an object with a String PK")]
+        //[Benchmark(OperationsPerInvoke = 32, Description = "Time to lookup an object with a String PK")]  //TODO Testing
         public RealmObject LookupByPK()
         {
             _tempObj = _realm.Find<StringClass>(_primaryKeys[0]);
