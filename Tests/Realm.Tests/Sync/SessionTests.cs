@@ -462,13 +462,6 @@ namespace Realms.Tests.Sync
 
                 await WaitForUploadAsync(realm);
 
-                var objects = realm.All<ObjectWithPartitionValue>().AsRealmCollection();
-                Assert.That(objects.Count, Is.EqualTo(1));
-
-                var tcs = new TaskCompletionSource<NotifyCollectionChangedEventArgs>();
-                var onCollectionChangedCounter = 0;
-                objects.CollectionChanged += onCollectionChanged;
-
                 // We're adding an object with the same Id in a different partition - Sync should reject this.
                 realm.Write(() =>
                 {
@@ -480,7 +473,11 @@ namespace Realms.Tests.Sync
                     });
                 });
 
+                var objects = realm.All<ObjectWithPartitionValue>().AsRealmCollection();
                 Assert.That(objects.Count, Is.EqualTo(2));
+
+                var tcs = new TaskCompletionSource<NotifyCollectionChangedEventArgs>();
+                objects.CollectionChanged += onCollectionChanged;
 
                 var args = await tcs.Task;
 
@@ -492,25 +489,7 @@ namespace Realms.Tests.Sync
 
                 void onCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
                 {
-                    try
-                    {
-                        if (args.Action == NotifyCollectionChangedAction.Remove)
-                        {
-                            Assert.That(onCollectionChangedCounter, Is.EqualTo(1));
-                            onCollectionChangedCounter++;
-                            tcs.TrySetResult(args);
-                        }
-                        else
-                        {
-                            Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-                            Assert.That(onCollectionChangedCounter, Is.EqualTo(0));
-                            onCollectionChangedCounter++;
-                        }
-                    }
-                    catch(Exception e)
-                    {
-                        tcs.TrySetException(e);
-                    }
+                    tcs.TrySetResult(args);
                 }
             }, timeout: 120_000);
         }
