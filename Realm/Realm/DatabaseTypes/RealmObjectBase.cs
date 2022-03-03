@@ -55,7 +55,6 @@ namespace Realms
         }
     }
 
-
     internal class ManagedAccessor : IRealmAccessor, IThreadConfined
     {
         private bool _isEmbedded;
@@ -106,11 +105,6 @@ namespace Realms
 
         public RealmObjectBase FreezeImpl()
         {
-            if (!IsManaged)
-            {
-                throw new RealmException("Unmanaged objects cannot be frozen.");
-            }
-
             var frozenRealm = Realm.Freeze();
             var frozenHandle = ObjectHandle.Freeze(frozenRealm.SharedRealmHandle);
             return frozenRealm.MakeObject(ObjectMetadata, frozenHandle);
@@ -118,23 +112,16 @@ namespace Realms
 
         public RealmValue GetValue(string propertyName)
         {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
             return _objectHandle.GetValue(propertyName, _metadata, _realm);
         }
 
         public void SetValue(string propertyName, RealmValue val)
         {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
             _objectHandle.SetValue(propertyName, _metadata, val, _realm);
         }
 
         public void SetValueUnique(string propertyName, RealmValue val)
         {
-            //TODO Probably we can remove all of those asserts and move them to the UnmanagedAccessors
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
             if (_realm.IsInMigration)
             {
                 _objectHandle.SetValue(propertyName, _metadata, val, _realm);
@@ -147,33 +134,18 @@ namespace Realms
 
         public IList<T> GetListValue<T>(string propertyName)
         {
-            if (!IsManaged)
-            {
-                return new List<T>();
-            }
-
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetList<T>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         public ISet<T> GetSetValue<T>(string propertyName)
         {
-            if (!IsManaged)
-            {
-                return new HashSet<T>(RealmSet<T>.Comparer);
-            }
-
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetSet<T>(_realm, propertyName, _metadata, property.ObjectType);
         }
 
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            if (!IsManaged)  //TODO Maybe we can remove them
-            {
-                return new Dictionary<string, TValue>();
-            }
-
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetDictionary<TValue>(_realm, propertyName, _metadata, property.ObjectType);
         }
@@ -181,8 +153,6 @@ namespace Realms
         public IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase
         {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
             var resultsHandle = _objectHandle.GetBacklinks(propertyName, _metadata);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
@@ -223,7 +193,7 @@ namespace Realms
 
         public string GetStringDescription()
         {
-            var typeString = GetType().Name;
+            var typeString = GetType().Name;  //TODO THIS IS WRONG...
 
             if (!IsManaged)  //TODO This can be removed
             {
@@ -304,14 +274,14 @@ namespace Realms
 
         public RealmObjectBase FreezeImpl()
         {
-            //TODO Probably this should be a different kind of exception
-            throw new Exception("Object is not managed, but managed access was attempted");
+            throw new RealmException("Unmanaged objects cannot be frozen.");
         }
 
         public IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObjectBase
         {
-            //TODO Probably this should be a different kind of exception
-            throw new Exception("Object is not managed, but managed access was attempted");
+            Debug.Assert(false, "Object is not managed, but managed access was attempted");
+
+            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
         }
 
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
@@ -336,7 +306,9 @@ namespace Realms
 
         public ThreadSafeReference GetSafeReference()
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Object is not managed, but managed access was attempted");
+
+            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
         }
 
         public ISet<T> GetSetValue<T>(string propertyName)
@@ -351,7 +323,9 @@ namespace Realms
 
         public string GetStringDescription()
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Object is not managed, but managed access was attempted");
+
+            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
         }
 
         public RealmValue GetValue(string propertyName)
@@ -371,12 +345,12 @@ namespace Realms
 
         public void SubscribeForNotifications()
         {
-            throw new NotImplementedException();  //TODO Need to change
+            Debug.Assert(false, "Object is not managed, but managed access was attempted");
         }
 
         public void UnsubscribeFromNotifications()
         {
-            throw new NotImplementedException();
+            Debug.Assert(false, "Object is not managed, but managed access was attempted");
         }
     }
 
