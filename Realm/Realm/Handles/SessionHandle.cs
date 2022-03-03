@@ -224,17 +224,29 @@ namespace Realms.Sync
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
-                SessionException exception;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-                var isUsingNewErrorHandling = syncConfig.ClientResetHandler?.ManualClientReset != null || syncConfig.OnSessionError != null;
 
                 if (isClientReset)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
+                    var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
+
+                    if (syncConfig.ClientResetHandler is DiscardLocalResetHandler ||
+                        syncConfig.ClientResetHandler?.ManualClientReset != null)
+                    {
+                        syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
+                    }
+                    else
+                    {
+                        Session.RaiseError(session, clientResetEx);
+                    }
+
+                    return;
                 }
-                else if (errorCode == ErrorCode.PermissionDenied)
+
+                SessionException exception;
+                if (errorCode == ErrorCode.PermissionDenied)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
@@ -244,16 +256,9 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                if (isUsingNewErrorHandling)
+                if (syncConfig.OnSessionError != null)
                 {
-                    if (isClientReset)
-                    {
-                        syncConfig.ClientResetHandler.ManualClientReset?.Invoke((ClientResetException)exception);
-                    }
-                    else
-                    {
-                        syncConfig.OnSessionError?.Invoke(session, exception);
-                    }
+                    syncConfig.OnSessionError?.Invoke(session, exception);
                 }
                 else
                 {

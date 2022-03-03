@@ -36,6 +36,8 @@ namespace Realms.Sync
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
+        private ClientResetHandlerBase _clientResetHandler = new DiscardLocalResetHandler();
+
         /// <summary>
         /// Callback triggered when an error occurs in a session.
         /// </summary>
@@ -62,7 +64,11 @@ namespace Realms.Sync
         /// The default <see cref="DiscardLocalResetHandler"/> will have no custom actions set for the before and after callbacks.
         /// </remarks>
         /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
-        public virtual ClientResetHandlerBase ClientResetHandler { get; set; }
+        public virtual ClientResetHandlerBase ClientResetHandler
+        {
+            get => _clientResetHandler;
+            set => _clientResetHandler = Argument.ValidateNotNull(value, nameof(value));
+        }
 
         /// <summary>
         /// Gets or sets a callback that will be invoked whenever a <see cref="SessionException"/> occurs for the synchronized Realm.
