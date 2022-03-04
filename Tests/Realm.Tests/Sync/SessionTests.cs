@@ -293,7 +293,7 @@ namespace Realms.Tests.Sync
 
                 IDisposable GetNotificationToken(Session session)
                 {
-                    return (IDisposable)typeof(Session).GetField("_connectionChangeNotificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+                    return (IDisposable)typeof(Session).GetField("_propertyChangedNotificationTokens", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
                 }
             });
         }

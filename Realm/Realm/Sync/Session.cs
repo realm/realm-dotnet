@@ -42,7 +42,7 @@ namespace Realms.Sync
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
-        private IDisposable _connectionChangeNotificationToken;
+        private IDisposable _propertyChangedNotificationTokens;
 
         private SessionHandle Handle
         {
@@ -68,7 +68,7 @@ namespace Realms.Sync
         {
             add
             {
-                if (_connectionChangeNotificationToken == null)
+                if (_propertyChangedNotificationTokens == null)
                 {
                     SubscribeNotifications();
                 }
@@ -234,20 +234,20 @@ namespace Realms.Sync
 
         private void SubscribeNotifications()
         {
-            var cb = new Action(() => NotifyPropertyChanged(nameof(ConnectionState)));
+            var cb = new Action<string>((propertyName) => NotifyPropertyChanged(propertyName));
             var callbackHandle = GCHandle.Alloc(cb);
-            var nativeToken = Handle.RegisterConnectionChangeCallback(GCHandle.ToIntPtr(callbackHandle));
+            var nativeTokens = Handle.RegisterPropertyChangedCallbacks(GCHandle.ToIntPtr(callbackHandle));
 
-            _connectionChangeNotificationToken = NotificationToken.Create(nativeToken, (cbToken) =>
+            _propertyChangedNotificationTokens = NotificationToken.Create(callbackHandle, (callbackHandle) =>
             {
-                Handle.UnRegisterConnectionStateChangeCallback(cbToken);
+                Handle.UnregisterPropertyChangedCallbacks(nativeTokens, callbackHandle);
             });
         }
 
         private void UnsubscribeNotifications()
         {
-            _connectionChangeNotificationToken?.Dispose();
-            _connectionChangeNotificationToken = null;
+            _propertyChangedNotificationTokens?.Dispose();
+            _propertyChangedNotificationTokens = null;
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

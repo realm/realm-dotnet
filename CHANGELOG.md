@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChange` so that you can listen for changes on the `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
+* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
 
 ### Fixed
 * None
@@ -91,7 +91,6 @@ This method returns a token which must be kept alive until changes in the `Sessi
   // once done, don't forget
   token.Dispose();
   ```
-* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Because of this addition `Session` now implements `INotifyPropertyChange` thanks to which you can listen for changes on the `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
 * [Unity] The Realm menu item in the Unity Editor was moved to `Tools/Realm` to reduce clutter and align with other 3rd party editor plugins. (Issue [#2807](https://github.com/realm/realm-dotnet/issues/2807))
 
 ### Fixed

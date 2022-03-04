@@ -26,6 +26,8 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include "sync_session_cs.hpp"
 
+enum class NotifiableProperties : uint8_t;
+
 using namespace realm;
 using namespace realm::binding;
 
@@ -34,14 +36,14 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset);
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
-using ConnectionChangeCallbackT = void(void* connection_change_callback_handle);
+using PropertyChangedCallbackT = void(void* managed_property_changed_callback_handle, NotifiableProperties propertyName);
 
 namespace realm {
 namespace binding {
     std::function<ErrorCallbackT> s_session_error_callback;
     std::function<ProgressCallbackT> s_progress_callback;
     std::function<WaitCallbackT> s_wait_callback;
-    std::function<ConnectionChangeCallbackT> s_connection_change_callback;
+    std::function<PropertyChangedCallbackT> s_property_changed_callback;
 
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
     {
@@ -108,12 +110,12 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, ConnectionChangeCallbackT* connection_change_callback)
+REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, PropertyChangedCallbackT* property_changed_callback)
 {
     s_session_error_callback = wrap_managed_callback(session_error_callback);
     s_progress_callback = wrap_managed_callback(progress_callback);
     s_wait_callback = wrap_managed_callback(wait_callback);
-    s_connection_change_callback = wrap_managed_callback(connection_change_callback);
+    s_property_changed_callback = wrap_managed_callback(property_changed_callback);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -143,19 +145,30 @@ REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyn
     });
 }
 
-REALM_EXPORT uint64_t realm_syncsession_register_connection_change_callback(const SharedSyncSession& session, void* connection_change_callback_handle, NativeException::Marshallable& ex)
+typedef struct PropertyChangedNotificationTokens {
+    uint64_t connection_state;
+} PropertyChangedNotificationTokens;
+
+enum class NotifiableProperties : uint8_t {
+    ConnectionState = 0,
+};
+
+REALM_EXPORT PropertyChangedNotificationTokens realm_syncsession_register_property_changed_callbacks(const SharedSyncSession& session, void* managed_property_changed_callback_handle, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return session->register_connection_change_callback([connection_change_callback_handle](realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state) {
-            s_connection_change_callback(connection_change_callback_handle);
+        auto connection_state_token = session->register_connection_change_callback([managed_property_changed_callback_handle](realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state) {
+            s_property_changed_callback(managed_property_changed_callback_handle, NotifiableProperties::ConnectionState);
         });
+
+        PropertyChangedNotificationTokens tokens { connection_state_token };
+        return tokens;
     });
 }
 
-REALM_EXPORT void realm_syncsession_unregister_connection_change_callback(const SharedSyncSession& session, uint64_t token, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncsession_unregister_property_changed_callbacks(const SharedSyncSession& session, PropertyChangedNotificationTokens tokens, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        session->unregister_connection_change_callback(token);
+        session->unregister_connection_change_callback(tokens.connection_state);
     });
 }
 
