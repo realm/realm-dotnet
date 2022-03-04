@@ -201,46 +201,38 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset)
         {
-            try
+            var handle = new SessionHandle(null, sessionHandlePtr);
+            var session = new Session(handle);
+            var messageString = message.AsString();
+
+            SessionException exception;
+
+            if (isClientReset)
             {
-                var handle = new SessionHandle(null, sessionHandlePtr);
-                var session = new Session(handle);
-                var messageString = message.AsString();
-
-                SessionException exception;
-
-                if (isClientReset)
-                {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    exception = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
-                }
-                else if (errorCode == ErrorCode.PermissionDenied)
-                {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
-                }
-                else
-                {
-                    exception = new SessionException(messageString, errorCode);
-                }
-
-                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
-                {
-                    try
-                    {
-                        Session.RaiseError(session, exception);
-                    }
-                    catch { }
-                    finally
-                    {
-                        handle.Dispose();
-                    }
-                });
+                var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+                exception = new ClientResetException(session.User.App, handle, messageString, errorCode, userInfo);
             }
-            catch (Exception ex)
+            else if (errorCode == ErrorCode.PermissionDenied)
             {
-                Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
+                var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+                exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
             }
+            else
+            {
+                exception = new SessionException(messageString, errorCode);
+            }
+
+            System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    Session.RaiseError(session, exception);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
+                }
+            });
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]

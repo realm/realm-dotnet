@@ -28,6 +28,7 @@ namespace Realms.Sync.Exceptions
     {
         private readonly string _originalFilePath;
         private readonly App _app;
+        private readonly SessionHandle _sessionHandle;
 
         /// <summary>
         /// Gets the path where the backup copy of the realm will be placed once the client reset process is complete.
@@ -35,12 +36,13 @@ namespace Realms.Sync.Exceptions
         /// <value>The path to the backup realm.</value>
         public string BackupFilePath { get; }
 
-        internal ClientResetException(App app, string message, ErrorCode errorCode, IDictionary<string, string> userInfo)
+        internal ClientResetException(App app, SessionHandle sessionHandle, string message, ErrorCode errorCode, IDictionary<string, string> userInfo)
             : base(message, errorCode)
         {
             // Using Path.GetFullPath to normalize path separators on Windows
             _originalFilePath = Path.GetFullPath(userInfo[OriginalFilePathKey]);
             _app = app;
+            _sessionHandle = sessionHandle;
             BackupFilePath = Path.GetFullPath(userInfo[BackupFilePathKey]);
             HelpLink = "https://docs.mongodb.com/realm/dotnet/client-reset/";
         }
@@ -52,9 +54,12 @@ namespace Realms.Sync.Exceptions
         /// <remarks>
         /// On Windows, all Realm instances for that path must be disposed before this method is called or an
         /// Exception will be thrown.
+        /// After this metod is called it will not be possible anymore to use the session that raised the ClientResetException, as it is disposed.
+        /// For instance, when adding your event handler to <see cref="Session.Error"/>, the sender will be a session, that will be unusable after this call.
         /// </remarks>
         public bool InitiateClientReset()
         {
+            _sessionHandle.Dispose();
             return _app.Handle.ImmediatelyRunFileActions(_originalFilePath);
         }
     }
