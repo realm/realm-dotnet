@@ -89,12 +89,13 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var config = GetFakeConfig();
-                using var realm = GetRealm(config);
-                var session = GetSession(realm);
-
+                Session session = null;
                 var tcs = new TaskCompletionSource<object>();
                 Session.Error += onSessionError;
+
+                var config = GetFakeConfig();
+                using var realm = GetRealm(config);
+                session = GetSession(realm);
 
                 const ErrorCode code = (ErrorCode)102;
                 const string message = "Some fake error has occurred";
@@ -149,11 +150,6 @@ namespace Realms.Tests.Sync
                         Assert.That(onAfterTriggered, Is.False);
                         onAfterTriggered = true;
                     })
-                };
-
-                config.OnSessionError = (session, err) =>
-                {
-                    tcs.TrySetException(err);
                 };
 
                 using var realm = await GetRealmAsync(config);
@@ -626,11 +622,13 @@ namespace Realms.Tests.Sync
                     })
                 };
 
+                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                Session.Error += onSessionError;
+
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += onSessionError;
+                await WorkaroundREALMC12062();
 
                 session.SimulateClientReset("simulated client reset");
 
@@ -789,11 +787,13 @@ namespace Realms.Tests.Sync
                 config.ClientResetHandler = new ManualRecoveryHandler();
                 var errorMsg = "simulated sync issue";
 
-                using var realm = await GetRealmAsync(config);
-                var session = GetSession(realm);
-
                 Session.Error += onSessionError;
 
+                using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
+
+                var session = GetSession(realm);
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
                 await tcs.Task;
@@ -832,6 +832,9 @@ namespace Realms.Tests.Sync
                 });
 
                 using var realm = await GetRealmAsync(config);
+
+                await WorkaroundREALMC12062();
+
                 var session = GetSession(realm);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
@@ -1192,7 +1195,7 @@ namespace Realms.Tests.Sync
         {
             // This is a hack for REALMC-12062 that delays writing to a Realm until
             // the initial schema instructions have been synthesized by the server
-            await Task.Delay(2000);
+            await Task.Delay(5000);
         }
 
         [Explicit]
