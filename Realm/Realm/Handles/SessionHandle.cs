@@ -175,11 +175,10 @@ namespace Realms.Sync
             return tokens;
         }
 
-        public void UnregisterPropertyChangedCallbacks(PropertyChangedNotificationTokens tokens, GCHandle notifyPropertyChangedCallbackHandle)
+        public void UnregisterPropertyChangedCallbacks(PropertyChangedNotificationTokens tokens)
         {
             NativeMethods.unregister_property_changed_callbacks(this, tokens, out var ex);
             ex.ThrowIfNecessary();
-            notifyPropertyChangedCallbackHandle.Free();
         }
 
         public async Task WaitAsync(ProgressDirection direction)

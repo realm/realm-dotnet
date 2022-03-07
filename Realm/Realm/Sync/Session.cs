@@ -235,12 +235,12 @@ namespace Realms.Sync
         private void SubscribeNotifications()
         {
             var cb = new Action<string>((propertyName) => NotifyPropertyChanged(propertyName));
-            var callbackHandle = GCHandle.Alloc(cb);
+            var callbackHandle = GCHandle.Alloc(cb, GCHandleType.Weak);
             var nativeTokens = Handle.RegisterPropertyChangedCallbacks(GCHandle.ToIntPtr(callbackHandle));
 
-            _propertyChangedNotificationTokens = NotificationToken.Create(callbackHandle, (callbackHandle) =>
+            _propertyChangedNotificationTokens = NotificationToken.Create(nativeTokens, (tokens) =>
             {
-                Handle.UnregisterPropertyChangedCallbacks(nativeTokens, callbackHandle);
+                Handle.UnregisterPropertyChangedCallbacks(tokens);
             });
         }
 
