@@ -231,7 +231,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 using var realm = GetRealm(config);
                 var stateChanged = 0;
-                var completionTCS = new TaskCompletionSource<bool>();
+                var completionTCS = new TaskCompletionSource<object>();
 
                 var session = realm.SyncSession;
                 session.Stop();
@@ -254,7 +254,7 @@ namespace Realms.Tests.Sync
                     else if (stateChanged == 3)
                     {
                         Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
-                        completionTCS.TrySetResult(true);
+                        completionTCS.TrySetResult(null);
                     }
                 };
 
