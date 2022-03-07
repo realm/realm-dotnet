@@ -76,6 +76,7 @@ namespace RealmWeaver
             {
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
                 WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
+                WeaverAssemblyResolver.ApplicationDataPath = Application.dataPath;
                 WeaveAssembliesOnEditorLaunch();
             };
 
