@@ -62,7 +62,6 @@ If for some reason, you want to opt out of the fixed behavior, you can temporari
   }
   ```
 * [Unity] The Realm menu item in the Unity Editor was moved to `Tools/Realm` to reduce clutter and align with other 3rd party editor plugins. (Issue [#2807](https://github.com/realm/realm-dotnet/issues/2807))
-* [Unity] The Realm menu item in the Unity Editor was moved to `Tools/Realm` to reduce clutter and align with other 3rd party editor plugins. (Issue [#2807](https://github.com/realm/realm-dotnet/issues/2807))
 
 ### Fixed
 * Fixed an issue with xUnit tests that would cause `System.Runtime.InteropServices.SEHException` to be thrown whenever Realm was accessed in a non-async test. (Issue [#1865](https://github.com/realm/realm-dotnet/issues/1865))
