@@ -68,5 +68,8 @@ namespace Realms.Native
         internal bool enable_cache;
 
         internal ulong max_number_of_active_versions;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool use_legacy_guid_representation;
     }
 }

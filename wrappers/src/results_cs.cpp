@@ -173,4 +173,11 @@ REALM_EXPORT Results* results_freeze(Results& results, const SharedRealm& realm,
     });
 }
 
+REALM_EXPORT size_t results_get_description(Results& results, uint16_t* buffer, size_t buffer_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return stringdata_to_csharpstringbuffer(results.get_query().get_description(), buffer, buffer_len);
+    });
+}
+
 }   // extern "C"

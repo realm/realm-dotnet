@@ -25,13 +25,6 @@ if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
     set(REALM_ENABLE_SYNC ON)
 
     add_subdirectory(realm-core EXCLUDE_FROM_ALL)
-
-    # force Object Store to use the generic Scheduler implementation
-    target_compile_definitions(ObjectStore PUBLIC
-      REALM_USE_CF=0
-      REALM_USE_ALOOPER=0
-      REALM_USE_UV=0
-    )
 endif()
 
 # Build as a .framework instead of .dylib

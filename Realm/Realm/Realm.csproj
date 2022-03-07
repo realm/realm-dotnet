@@ -48,7 +48,7 @@
     <!-- macOS -->
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Pack>true</Pack>
-      <PackagePath>runtimes\osx-x64\native</PackagePath>
+      <PackagePath>runtimes\osx\native</PackagePath>
       <Link>wrappers\Darwin\%(Filename)%(Extension)</Link>
     </None>
     <!-- Linux -->
