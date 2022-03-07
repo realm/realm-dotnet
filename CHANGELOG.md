@@ -62,35 +62,6 @@ If for some reason, you want to opt out of the fixed behavior, you can temporari
   }
   ```
 * [Unity] The Realm menu item in the Unity Editor was moved to `Tools/Realm` to reduce clutter and align with other 3rd party editor plugins. (Issue [#2807](https://github.com/realm/realm-dotnet/issues/2807))
-* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session.SubscribeForConnectionStateChanges` now allows to listen for changes in the `Session.ConnectionState`.
-This method returns a token which must be kept alive until changes in the `Session.ConnectionState` are of interest.
-
-  A minimal example would look like this:
-  ```csharp
-  var config = new PartitionSyncConfiguration(partition, user, optionalPath);
-  var realm = Realm.GetInstance(config);
-  var token = realm.SyncSession.SubscribeForConnectionStateChanges((oldState, newState) =>
-  {
-    if (newState == SessionConnectionState.Disconnected)
-    {
-      // user's code
-    }
-    else if (newState == SessionConnectionState.Connected)
-    {
-      // user's code
-    }
-
-    if (oldState == SessionConnectionState.Connecting)
-    {
-      // user's code
-    }
-
-    // etc...
-  });
-
-  // once done, don't forget
-  token.Dispose();
-  ```
 * [Unity] The Realm menu item in the Unity Editor was moved to `Tools/Realm` to reduce clutter and align with other 3rd party editor plugins. (Issue [#2807](https://github.com/realm/realm-dotnet/issues/2807))
 
 ### Fixed
