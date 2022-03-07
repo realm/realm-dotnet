@@ -477,16 +477,11 @@ namespace Realms
 
             internal Enumerator(RealmCollectionBase<T> parent)
             {
-                if (!parent.IsValid)
-                {
-                    throw new RealmInvalidObjectException("Can't enumerate the collection because it was deleted or the Realm it is contained in has been closed.");
-                }
-
                 _index = -1;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
                 // parent collection after iterating it. Only collections of objects support snapshotting.
-                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                _shouldDisposeHandle = parent.IsValid && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
                 _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 

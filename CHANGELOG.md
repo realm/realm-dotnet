@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
