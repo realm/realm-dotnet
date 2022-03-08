@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Realm now supports running on Windows ARM64.
 
 ### Fixed
 * None
@@ -10,7 +10,7 @@
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.10.0.
+* Using Core 11.11.0.
 
 ## 10.10.0 (2022-02-28)
 
