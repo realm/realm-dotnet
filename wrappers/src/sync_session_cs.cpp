@@ -26,7 +26,9 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include "sync_session_cs.hpp"
 
-enum class NotifiableProperties : uint8_t;
+enum class NotifiableProperty : uint8_t {
+    ConnectionState = 0,
+};
 
 using namespace realm;
 using namespace realm::binding;
@@ -36,7 +38,7 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(std::shared_ptr<SyncSession>* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset);
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
-using PropertyChangedCallbackT = void(void* managed_property_changed_callback_handle, NotifiableProperties propertyName);
+using PropertyChangedCallbackT = void(void* managed_session_handle, NotifiableProperty propertyName);
 
 namespace realm {
 namespace binding {
@@ -149,15 +151,11 @@ typedef struct PropertyChangedNotificationTokens {
     uint64_t connection_state;
 } PropertyChangedNotificationTokens;
 
-enum class NotifiableProperties : uint8_t {
-    ConnectionState = 0,
-};
-
-REALM_EXPORT PropertyChangedNotificationTokens realm_syncsession_register_property_changed_callbacks(const SharedSyncSession& session, void* managed_property_changed_callback_handle, NativeException::Marshallable& ex)
+REALM_EXPORT PropertyChangedNotificationTokens realm_syncsession_register_property_changed_callbacks(const SharedSyncSession& session, void* managed_session_handle, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        auto connection_state_token = session->register_connection_change_callback([managed_property_changed_callback_handle](realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state) {
-            s_property_changed_callback(managed_property_changed_callback_handle, NotifiableProperties::ConnectionState);
+        auto connection_state_token = session->register_connection_change_callback([managed_session_handle](realm::SyncSession::ConnectionState old_state, realm::SyncSession::ConnectionState new_state) {
+            s_property_changed_callback(managed_session_handle, NotifiableProperty::ConnectionState);
         });
 
         PropertyChangedNotificationTokens tokens { connection_state_token };

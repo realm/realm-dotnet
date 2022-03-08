@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Native
+namespace Realms.Sync.Native
 {
-    internal struct PropertyChangedNotificationTokens
+    internal struct SessionNotificationToken
     {
         internal ulong connection_state;
     }

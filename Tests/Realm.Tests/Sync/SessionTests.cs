@@ -238,23 +238,30 @@ namespace Realms.Tests.Sync
 
                 session.PropertyChanged += (sender, e) =>
                 {
-                    Assert.That(sender is Session, Is.True);
-                    Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
+                    try
+                    {
+                        Assert.That(sender is Session, Is.True);
+                        Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
 
-                    stateChanged++;
+                        stateChanged++;
 
-                    if (stateChanged == 1)
-                    {
-                        Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+                        if (stateChanged == 1)
+                        {
+                            Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+                        }
+                        else if (stateChanged == 2)
+                        {
+                            Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                        }
+                        else if (stateChanged == 3)
+                        {
+                            Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                            completionTCS.TrySetResult(null);
+                        }
                     }
-                    else if (stateChanged == 2)
+                    catch (Exception ex)
                     {
-                        Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
-                    }
-                    else if (stateChanged == 3)
-                    {
-                        Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
-                        completionTCS.TrySetResult(null);
+                        completionTCS.TrySetException(ex);
                     }
                 };
 
@@ -293,7 +300,7 @@ namespace Realms.Tests.Sync
 
                 IDisposable GetNotificationToken(Session session)
                 {
-                    return (IDisposable)typeof(Session).GetField("_propertyChangedNotificationTokens", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+                    return (IDisposable)typeof(Session).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
                 }
             });
         }

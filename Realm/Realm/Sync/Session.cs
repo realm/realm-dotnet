@@ -42,7 +42,7 @@ namespace Realms.Sync
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
-        private IDisposable _propertyChangedNotificationTokens;
+        private IDisposable _notificationToken;
 
         private SessionHandle Handle
         {
@@ -68,7 +68,7 @@ namespace Realms.Sync
         {
             add
             {
-                if (_propertyChangedNotificationTokens == null)
+                if (_propertyChanged == null)
                 {
                     SubscribeNotifications();
                 }
@@ -96,7 +96,6 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the session’s current connection state.
         /// </summary>
-        /// <remarks>This field notifies clients that its value has changed according to the <see href="https://docs.microsoft.com/en-us/dotnet/api/system.componentmodel.inotifypropertychanged?view=net-6.0">INotifyPropertyChanged</see> interface.</remarks>
         /// <value>An enum value indicating the connection state of the session.</value>
         public SessionConnectionState ConnectionState => Handle.GetConnectionState();
 
@@ -220,6 +219,9 @@ namespace Realms.Sync
                     _handle.ShutdownAndWait();
                 }
 
+                _propertyChanged = null;
+                UnsubscribeNotifications();
+
                 _handle.Close();
             }
         }
@@ -234,11 +236,10 @@ namespace Realms.Sync
 
         private void SubscribeNotifications()
         {
-            var cb = new Action<string>((propertyName) => NotifyPropertyChanged(propertyName));
-            var callbackHandle = GCHandle.Alloc(cb, GCHandleType.Weak);
-            var nativeTokens = Handle.RegisterPropertyChangedCallbacks(GCHandle.ToIntPtr(callbackHandle));
+            var managedSessionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+            var nativeTokens = Handle.RegisterPropertyChangedCallbacks(GCHandle.ToIntPtr(managedSessionHandle));
 
-            _propertyChangedNotificationTokens = NotificationToken.Create(nativeTokens, (tokens) =>
+            _notificationToken = NotificationToken.Create(nativeTokens, (tokens) =>
             {
                 Handle.UnregisterPropertyChangedCallbacks(tokens);
             });
@@ -246,11 +247,11 @@ namespace Realms.Sync
 
         private void UnsubscribeNotifications()
         {
-            _propertyChangedNotificationTokens?.Dispose();
-            _propertyChangedNotificationTokens = null;
+            _notificationToken?.Dispose();
+            _notificationToken = null;
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        internal void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
