@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Realm now supports running on Windows ARM64.
+* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps.
 
 ### Fixed
 * None

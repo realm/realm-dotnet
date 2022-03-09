@@ -101,7 +101,6 @@ namespace Realms
                 {
                     Architecture.X86 => "x86",
                     Architecture.X64 => isUnityTarget ? "x86_64" : "x64",
-                    Architecture.Arm => "arm",
                     Architecture.Arm64 => "arm64",
                     _ => throw new NotSupportedException($"Unknown architecture: {RuntimeInformation.ProcessArchitecture}"),
                 };
