@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps.
+* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
 
 ### Fixed
 * None
