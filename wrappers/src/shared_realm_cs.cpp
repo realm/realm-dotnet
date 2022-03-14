@@ -112,7 +112,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         std::string partition(Utf16StringAccessor(sync_configuration.partition, sync_configuration.partition_len));
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, partition);
     }
-    
+
     auto sync_configuration_handle = std::make_shared<GCHandleHolder>(sync_configuration.managed_sync_config);
 
     config.sync_config->error_handler = [sync_configuration_handle](SharedSyncSession session, SyncError error) {
@@ -183,9 +183,9 @@ extern "C" {
 typedef uint32_t realm_table_key;
 
 REALM_EXPORT void shared_realm_install_callbacks(
-    RealmChangedT* realm_changed, 
-    GetNativeSchemaT* get_schema, 
-    OpenRealmCallbackT* open_callback, 
+    RealmChangedT* realm_changed,
+    GetNativeSchemaT* get_schema,
+    OpenRealmCallbackT* open_callback,
     ReleaseGCHandleT* release_gchandle_callback,
     LogMessageT* log_message,
     ObjectNotificationCallbackT* notify_object,
@@ -225,7 +225,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::Immutable;
         } else if (configuration.delete_if_migration_needed) {
-            config.schema_mode = SchemaMode::ResetFile;
+            config.schema_mode = SchemaMode::SoftResetFile;
         }
 
         if (objects_length > 0) {
@@ -600,7 +600,7 @@ REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm,
         }
 
         const TableRef table = get_table(realm, table_key);
-        const ObjectSchema& object_schema = *realm->schema().find(table_key); 
+        const ObjectSchema& object_schema = *realm->schema().find(table_key);
         if (object_schema.primary_key.empty()) {
             const std::string name(ObjectStore::object_type_for_table_name(table->get_name()));
             throw MissingPrimaryKeyException(name);
