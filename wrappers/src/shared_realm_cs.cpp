@@ -225,7 +225,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::Immutable;
         } else if (configuration.delete_if_migration_needed) {
-            config.schema_mode = SchemaMode::SoftResetFile;
+            config.schema_mode = SchemaMode::ResetFile;
         }
 
         if (objects_length > 0) {
