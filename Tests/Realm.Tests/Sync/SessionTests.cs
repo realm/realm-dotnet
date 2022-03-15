@@ -236,7 +236,17 @@ namespace Realms.Tests.Sync
                 var session = realm.SyncSession;
                 session.Stop();
 
-                session.PropertyChanged += (sender, e) =>
+                session.PropertyChanged += NotificationChanged;
+
+                session.Start();
+                await Task.Delay(1000);
+                session.Stop();
+                await completionTCS.Task;
+                Assert.That(stateChanged, Is.EqualTo(3));
+                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                session.PropertyChanged -= NotificationChanged;
+
+                void NotificationChanged(object sender, PropertyChangedEventArgs e)
                 {
                     try
                     {
@@ -263,14 +273,7 @@ namespace Realms.Tests.Sync
                     {
                         completionTCS.TrySetException(ex);
                     }
-                };
-
-                session.Start();
-                await Task.Delay(1000);
-                session.Stop();
-                await completionTCS.Task;
-                Assert.That(stateChanged, Is.EqualTo(3));
-                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                }
             });
         }
 
@@ -301,6 +304,86 @@ namespace Realms.Tests.Sync
                 IDisposable GetNotificationToken(Session session)
                 {
                     return (IDisposable)typeof(Session).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+                }
+            });
+        }
+
+        [Test]
+        public void Session_Free_Instance_Even_With_PropertyChanged_Subscribers()
+        {
+            WeakReference weakSessionRef = null;
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
+                weakSessionRef = new WeakReference(session);
+                Assert.That(weakSessionRef.IsAlive, Is.True);
+                session.PropertyChanged += (sender, e) => { };
+            });
+
+            GC.Collect();
+            Assert.That(weakSessionRef.IsAlive, Is.False);
+        }
+
+        [Test]
+        public void Session_ConnectionState_Propageted_Within_Multiple_Sessions()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realmA = GetRealm(config);
+                using var realmB = GetRealm(config);
+                var stateChanged = 0;
+                var completionTCS = new TaskCompletionSource<object>();
+
+                var sessionA = realmA.SyncSession;
+                var sessionB = realmB.SyncSession;
+                sessionA.Stop();
+                sessionB.PropertyChanged += NotificationChanged;
+
+                sessionA.Start();
+                await Task.Delay(1000);
+                sessionA.Stop();
+                await completionTCS.Task;
+
+                Assert.That(stateChanged, Is.EqualTo(3));
+                Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+
+                sessionB.PropertyChanged -= NotificationChanged;
+
+                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                {
+                    try
+                    {
+                        Assert.That(sender is Session, Is.True);
+                        Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
+
+                        stateChanged++;
+
+                        if (stateChanged == 1)
+                        {
+                            Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+                            Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+                        }
+                        else if (stateChanged == 2)
+                        {
+                            Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                            Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                        }
+                        else if (stateChanged == 3)
+                        {
+                            Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                            Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                            completionTCS.TrySetResult(null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        completionTCS.TrySetException(ex);
+                    }
                 }
             });
         }
