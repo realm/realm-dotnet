@@ -6,6 +6,11 @@ name: CodeQL
   pull_request:
     branches:
     - main
+    paths:
+    - '**.cs'
+    - '**.cpp'
+    - '**.hpp'
+    - '**.csproj'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
