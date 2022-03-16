@@ -2,7 +2,7 @@
 <xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:attribute name="DisableAnalytics" type="xs:boolean">
     <xs:annotation>
-      <xs:documentation>Disables anonymized usage information from being sent on build. Read more about what data is being collected and why here: https://github.com/realm/realm-dotnet/blob/main/Realm/Realm.Fody/Common/Analytics.cs</xs:documentation>
+      <xs:documentation>Disables anonymized usage information from being sent on build. Read more about what data is being collected and why here: https://github.com/realm/realm-dotnet/blob/main/Realm/Realm.Weaver/Analytics.cs</xs:documentation>
     </xs:annotation>
   </xs:attribute>
 </xs:complexType>
