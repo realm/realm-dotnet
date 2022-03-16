@@ -344,6 +344,56 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Results_ReplacingItems_ShouldReplace()
+        {
+            var obj0 = new OrderedObject { Order = 0 };
+            var obj1 = new OrderedObject { Order = 1 };
+            var obj2 = new OrderedObject { Order = 2 };
+
+            var container = new OrderedContainer();
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj0);
+                _realm.Add(obj1);
+                _realm.Add(obj2);
+                _realm.Add(container);
+
+                container.Items.Add(obj0);
+                container.Items.Add(obj1);
+            });
+
+            Exception error = null;
+            _realm.Error += (sender, e) =>
+            {
+                error = e.Exception;
+            };
+
+            var items = container.Items.AsRealmCollection();
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            items.CollectionChanged += (sender, e) => eventArgs.Add(e);
+
+            var propertyEventArgs = new List<string>();
+            items.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+
+            Assert.That(error, Is.Null);
+
+            _realm.Write(() =>
+            {
+                container.Items[1] = obj2;
+            });
+
+            _realm.Refresh();
+
+            Assert.That(error, Is.Null);
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Replace));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+        }
+
+        [Test]
         public void List_WhenUnsubscribed_ShouldStopReceivingNotifications()
         {
             var container = new OrderedContainer();
