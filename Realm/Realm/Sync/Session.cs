@@ -42,8 +42,6 @@ namespace Realms.Sync
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
-        private IDisposable _notificationToken;
-
         private SessionHandle Handle
         {
             get
@@ -70,7 +68,7 @@ namespace Realms.Sync
             {
                 if (_propertyChanged == null)
                 {
-                    SubscribeNotifications();
+                    Handle.SubscribeNotifications(this);
                 }
 
                 _propertyChanged += value;
@@ -82,7 +80,7 @@ namespace Realms.Sync
 
                 if (_propertyChanged == null)
                 {
-                    UnsubscribeNotifications();
+                    Handle.UnsubscribeNotifications();
                 }
             }
         }
@@ -204,11 +202,6 @@ namespace Realms.Sync
             _handle = handle;
         }
 
-        ~Session()
-        {
-            UnsubscribeNotifications();
-        }
-
         internal void CloseHandle(bool waitForShutdown = false)
         {
             GC.SuppressFinalize(this);
@@ -220,8 +213,6 @@ namespace Realms.Sync
                 }
 
                 _propertyChanged = null;
-                UnsubscribeNotifications();
-
                 _handle.Close();
             }
         }
@@ -232,23 +223,6 @@ namespace Realms.Sync
         {
             var args = new ErrorEventArgs(error);
             Error?.Invoke(session, args);
-        }
-
-        private void SubscribeNotifications()
-        {
-            var managedSessionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            var nativeTokens = Handle.RegisterPropertyChangedCallback(managedSessionHandle);
-
-            _notificationToken = NotificationToken.Create(nativeTokens, (tokens) =>
-            {
-                Handle.UnregisterPropertyChangedCallback(tokens);
-            });
-        }
-
-        private void UnsubscribeNotifications()
-        {
-            _notificationToken?.Dispose();
-            _notificationToken = null;
         }
 
         internal void RaisePropertyChanged([CallerMemberName] string propertyName = "")

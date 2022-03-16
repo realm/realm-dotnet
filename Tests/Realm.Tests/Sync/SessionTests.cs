@@ -300,11 +300,6 @@ namespace Realms.Tests.Sync
                 void NotificationChanged(object sender, PropertyChangedEventArgs e)
                 {
                 }
-
-                IDisposable GetNotificationToken(Session session)
-                {
-                    return (IDisposable)typeof(Session).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
-                }
             });
         }
 
@@ -323,8 +318,40 @@ namespace Realms.Tests.Sync
                 session.PropertyChanged += (sender, e) => { };
             });
 
+            TearDown();
             GC.Collect();
             Assert.That(weakSessionRef.IsAlive, Is.False);
+        }
+
+        [Test]
+        public void Session_NotificationToken_Freed_When_Close_Realm()
+        {
+            WeakReference weakNotificationTokenRef = null;
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                IDisposable internalNotificationToken = null;
+                var realm = GetRealm(config);
+                var session = realm.SyncSession;
+
+                internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Null);
+
+                session.PropertyChanged += NotificationChanged;
+                internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Not.Null);
+                weakNotificationTokenRef = new WeakReference(internalNotificationToken);
+                Assert.That(weakNotificationTokenRef.IsAlive, Is.True);
+
+                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                {
+                }
+            });
+
+            TearDown();
+            GC.Collect();
+            Assert.That(weakNotificationTokenRef.IsAlive, Is.False);
         }
 
         [Test]
@@ -488,6 +515,12 @@ namespace Realms.Tests.Sync
             Assert.That(session.State, Is.EqualTo(SessionState.Inactive));
 
             return session;
+        }
+
+        private static IDisposable GetNotificationToken(Session session)
+        {
+            var sessionHandle = (IDisposable)typeof(Session).GetProperty("Handle", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+            return (IDisposable)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sessionHandle);
         }
     }
 }

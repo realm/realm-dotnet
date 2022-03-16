@@ -96,6 +96,8 @@ namespace Realms.Sync
             public static extern void start(SessionHandle session, out NativeException ex);
         }
 
+        private IDisposable _notificationToken;
+
         public override bool ForceRootOwnership => true;
 
         [Preserve]
@@ -116,6 +118,11 @@ namespace Realms.Sync
             GCHandle.Alloc(propertyChanged);
 
             NativeMethods.install_syncsession_callbacks(error, progress, wait, propertyChanged);
+        }
+
+        ~SessionHandle()
+        {
+            UnsubscribeNotifications();
         }
 
         public bool TryGetUser(out SyncUserHandle userHandle)
@@ -168,15 +175,31 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public SessionNotificationToken RegisterPropertyChangedCallback(GCHandle managedSession)
+        private SessionNotificationToken RegisterPropertyChangedCallback(IntPtr sessionPointer)
         {
-            var sessionPointer = GCHandle.ToIntPtr(managedSession);
-            var token = NativeMethods.register_property_changed_callback(this, sessionPointer, out var ex);
+            var nativeToken = NativeMethods.register_property_changed_callback(this, sessionPointer, out var ex);
             ex.ThrowIfNecessary();
-            return token;
+            return nativeToken;
         }
 
-        public void UnregisterPropertyChangedCallback(SessionNotificationToken token)
+        public void SubscribeNotifications(Session session)
+        {
+            var managedSessionHandle = GCHandle.Alloc(session, GCHandleType.Weak);
+            var sessionPointer = GCHandle.ToIntPtr(managedSessionHandle);
+            var nativeToken = RegisterPropertyChangedCallback(sessionPointer);
+            _notificationToken = NotificationToken.Create(nativeToken, (token) =>
+            {
+                UnregisterPropertyChangedCallback(token);
+            });
+        }
+
+        public void UnsubscribeNotifications()
+        {
+            _notificationToken?.Dispose();
+            _notificationToken = null;
+        }
+
+        private void UnregisterPropertyChangedCallback(SessionNotificationToken token)
         {
             NativeMethods.unregister_property_changed_callback(this, token, out var ex);
             ex.ThrowIfNecessary();
