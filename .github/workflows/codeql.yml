@@ -58,12 +58,12 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Realm.Fody
-      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm
-      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
