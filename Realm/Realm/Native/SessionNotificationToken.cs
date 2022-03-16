@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.InteropServices;
+
 namespace Realms.Sync.Native
 {
+    [StructLayout(LayoutKind.Sequential)]
     internal struct SessionNotificationToken
     {
         internal ulong connection_state;

@@ -243,7 +243,7 @@ namespace Realms.Tests.Sync
                 session.Stop();
                 await completionTCS.Task;
                 Assert.That(stateChanged, Is.EqualTo(3));
-                Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                 session.PropertyChanged -= NotificationChanged;
 
                 void NotificationChanged(object sender, PropertyChangedEventArgs e)
@@ -257,15 +257,15 @@ namespace Realms.Tests.Sync
 
                         if (stateChanged == 1)
                         {
-                            Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+                            Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
                         }
                         else if (stateChanged == 2)
                         {
-                            Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                            Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Connected));
                         }
                         else if (stateChanged == 3)
                         {
-                            Assert.That(session.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                            Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                             completionTCS.TrySetResult(null);
                         }
                     }
@@ -349,8 +349,8 @@ namespace Realms.Tests.Sync
                 await completionTCS.Task;
 
                 Assert.That(stateChanged, Is.EqualTo(3));
-                Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
-                Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
+                Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
 
                 sessionB.PropertyChanged -= NotificationChanged;
 
@@ -365,18 +365,18 @@ namespace Realms.Tests.Sync
 
                         if (stateChanged == 1)
                         {
-                            Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
-                            Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Connecting));
+                            Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
+                            Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connecting));
                         }
                         else if (stateChanged == 2)
                         {
-                            Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
-                            Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Connected));
+                            Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Connected));
+                            Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Connected));
                         }
                         else if (stateChanged == 3)
                         {
-                            Assert.That(sessionA.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
-                            Assert.That(sessionB.ConnectionState, Is.EqualTo(SessionConnectionState.Disconnected));
+                            Assert.That(sessionA.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
+                            Assert.That(sessionB.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                             completionTCS.TrySetResult(null);
                         }
                     }

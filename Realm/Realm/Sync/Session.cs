@@ -97,7 +97,7 @@ namespace Realms.Sync
         /// Gets the session’s current connection state.
         /// </summary>
         /// <value>An enum value indicating the connection state of the session.</value>
-        public SessionConnectionState ConnectionState => Handle.GetConnectionState();
+        public ConnectionState ConnectionState => Handle.GetConnectionState();
 
         /// <summary>
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to MongoDB Realm.
@@ -237,11 +237,11 @@ namespace Realms.Sync
         private void SubscribeNotifications()
         {
             var managedSessionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            var nativeTokens = Handle.RegisterPropertyChangedCallbacks(GCHandle.ToIntPtr(managedSessionHandle));
+            var nativeTokens = Handle.RegisterPropertyChangedCallback(managedSessionHandle);
 
             _notificationToken = NotificationToken.Create(nativeTokens, (tokens) =>
             {
-                Handle.UnregisterPropertyChangedCallbacks(tokens);
+                Handle.UnregisterPropertyChangedCallback(tokens);
             });
         }
 

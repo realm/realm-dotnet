@@ -21,7 +21,7 @@ namespace Realms.Sync
     /// <summary>
     /// The current connection state of a sync session object.
     /// </summary>
-    public enum SessionConnectionState : byte
+    public enum ConnectionState : byte
     {
         /// <summary>
         /// The session is disconnected from the MongoDB Realm server.
