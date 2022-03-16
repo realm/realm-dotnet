@@ -335,9 +335,6 @@ namespace Realms.Tests.Sync
                 var realm = GetRealm(config);
                 var session = realm.SyncSession;
 
-                internalNotificationToken = GetNotificationToken(session);
-                Assert.That(internalNotificationToken, Is.Null);
-
                 session.PropertyChanged += NotificationChanged;
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Not.Null);
