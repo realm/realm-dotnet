@@ -9,6 +9,7 @@ name: main
     - '**.cpp'
     - '**.hpp'
     - '**.csproj'
+    - '*CMakeLists.txt'
     - '**.ps1'
     - '**.sh'
     - '**.props'
