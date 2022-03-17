@@ -23,7 +23,7 @@ jobs:
   baas-net-framework:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      name: Xamarin.macOS
+      name: .NET Framework
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -33,7 +33,7 @@ jobs:
   baas-uwp-managed:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      name: Xamarin.macOS
+      name: UWP Managed
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -53,7 +53,7 @@ jobs:
   baas-xamarinios:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      name: Xamarin.macOS
+      name: Xamarin.iOS
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -63,7 +63,7 @@ jobs:
   baas-xamarinandroid:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      name: Xamarin.macOS
+      name: Xamarin.Android
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -73,7 +73,7 @@ jobs:
   baas-code-coverage:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      name: Xamarin.macOS
+      name: Code Coverage
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}

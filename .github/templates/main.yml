@@ -26,7 +26,7 @@
 (@= baasJobName @):
   uses: ./.github/workflows/deploy-baas.yml
   with:
-    name: Xamarin.macOS
+    name: #@ name
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
