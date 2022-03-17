@@ -651,26 +651,6 @@ jobs:
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
   _: #@ template.replace(testJob("Code Coverage", "ubuntu-latest", codeCoverageTestSteps(), False))
-  run-cleanup:
-    runs-on: ubuntu-latest
-    name: Workflow cleanup
-    needs:
-      - test-code-coverage
-    if: always()
-    timeout-minutes: #@ cleanupTimeout
-    steps:
-#@ for platform in getWrapperBinaryNames():
-      - name: #@ "Delete artifacts for " + platform
-        uses: #@ actionDeleteArtifact
-        with:
-          name: #@ "wrappers-" + platform
-#@ end
-#@ for platform in iOSArchs:
-      - name: #@ "Delete artifacts for iOS " + platform
-        uses: #@ actionDeleteArtifact
-        with:
-          name: #@ "wrappers-ios-" + platform
-#@ end
   setup-unity-tests:
     runs-on: windows-latest
     name: Setup Unity Tests
