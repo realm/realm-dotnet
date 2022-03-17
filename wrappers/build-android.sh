@@ -28,7 +28,7 @@ function build() {
 
 export REALM_CMAKE_CONFIGURATION
 if [[ "$REALM_CMAKE_CONFIGURATION" = "Release" ]]; then
-  export REALM_CMAKE_INSTALL_TARGET="install/strip"
+  export REALM_CMAKE_CONFIGURATION="RelWithDebInfo"
 fi
 
 if [[ "$ARCH" ]]; then

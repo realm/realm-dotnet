@@ -11,6 +11,8 @@
     <PackageReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</PackageReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <DisableFody>true</DisableFody>
+    <_AndroidConfiguration>$(Configuration)</_AndroidConfiguration>
+    <_AndroidConfiguration Condition="'$(Configuration)' == 'Release'">RelWithDebInfo</_AndroidConfiguration>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />
@@ -58,22 +60,22 @@
       <Link>wrappers\Linux\%(Filename)%(Extension)</Link>
     </None>
     <!-- Android -->
-    <None Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Android\$(_AndroidConfiguration)-armeabi-v7a\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\armeabi-v7a</PackagePath>
       <Link>wrappers\Android\armeabi-v7a\%(Filename)%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Android\$(_AndroidConfiguration)-arm64-v8a\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\arm64-v8a</PackagePath>
       <Link>wrappers\Android\arm64-v8a\%(Filename)%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Android\$(Configuration)-x86\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Android\$(_AndroidConfiguration)-x86\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\x86</PackagePath>
       <Link>wrappers\Android\x86\%(Filename)%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Android\$(Configuration)-x86_64\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Android\$(_AndroidConfiguration)-x86_64\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\x86_64</PackagePath>
       <Link>wrappers\Android\x86_64\%(Filename)%(Extension)</Link>

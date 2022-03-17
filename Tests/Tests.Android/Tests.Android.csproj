@@ -21,6 +21,8 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <DisableFody>true</DisableFody>
+    <_AndroidConfiguration>$(Configuration)</_AndroidConfiguration>
+    <_AndroidConfiguration Condition="'$(Configuration)' == 'Release'">RelWithDebInfo</_AndroidConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -79,19 +81,19 @@
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
     </ProjectReference>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(_AndroidConfiguration)-x86\librealm-wrappers.so">
       <Link>lib\x86\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-x86_64\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(_AndroidConfiguration)-x86_64\librealm-wrappers.so">
       <Link>lib\x86_64\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(_AndroidConfiguration)-arm64-v8a\librealm-wrappers.so">
       <Link>lib\arm64-v8a\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(_AndroidConfiguration)-armeabi-v7a\librealm-wrappers.so">
       <Link>lib\armeabi-v7a\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
