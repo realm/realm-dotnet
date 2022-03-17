@@ -2,6 +2,7 @@
 
 ### Enhancements
 * Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
+* Realm collections now raise `CollectionChanged` event with action `Reset` instead of `Remove` when all the elements are removed from it. (Issue [#2856](https://github.com/realm/realm-dotnet/issues/2856))
 
 ### Fixed
 * [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
