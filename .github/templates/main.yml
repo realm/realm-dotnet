@@ -413,6 +413,16 @@ name: main
     branches:
       - main
   pull_request:
+    paths:
+      - '**.cs'
+      - '**.cpp'
+      - '**.hpp'
+      - '**.csproj'
+      - '*CMakeLists.txt'
+      - '**.ps1'
+      - '**.sh'
+      - '**.props'
+      - 'wrappers/realm-core'
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true

@@ -32,9 +32,16 @@
 name: "CodeQL"
 "on":
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - '**.cs'
+      - '**.cpp'
+      - '**.hpp'
+      - '**.csproj'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
