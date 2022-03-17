@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupDotnet", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries", "msbuild", "dotnetPublish")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupDotnet", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries", "msBuildMultiple", "dotnetPublish")
 #@ load("test.lib.yml", "publishTestsResults")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
@@ -140,6 +140,14 @@ with:
     run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/" + executeCommand
 #@ end
 
+#@ def mainPackagePaths():
+#@ result = []
+#@ for pkg in nugetPackages:
+#@   result.append("Realm/" + pkg)
+#@ end
+#@ return result
+#@ end
+
 ---
 name: main
 "on":
@@ -198,9 +206,7 @@ jobs:
           }
           echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
-      #@ for pkgName in nugetPackages:
-      - #@ template.replace(msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
-      #@ end
+      - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
       - #@ template.replace(readVersionFromPackage())
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())

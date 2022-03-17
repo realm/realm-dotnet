@@ -36,6 +36,14 @@
 #@ mainBranch = "main"
 ---
 #@ def msbuild(projectPath, **properties):
+#@ return msBuildMultiple([projectPath], **properties)
+#@ end
+
+#@ def msBuildMultiple(projectPaths, **properties):
+#@ globs = []
+#@ for projectPath in projectPaths:
+#@ globs.append("'" + projectPath + "/*.csproj'")
+#@ end
 #@ parsedProps = ""
 #@ target = ""
 #@ for prop in properties.keys():
@@ -49,8 +57,16 @@
 - name: Add msbuild to PATH
   uses: #@ actionSetupMSBuild
   if: ${{ runner.os == 'Windows' }}
+- uses: actions/cache@v2
+  with:
+    path: ~/.nuget/packages
+    key: #@ "${{ runner.os }}-nuget-${{ hashFiles(" + ", ".join(globs) + ") }}"
+    restore-keys: |
+      ${{ runner.os }}-nuget
+#@ for projectPath in projectPaths:
 - name: #@ "Build " + projectPath
   run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
+#@ end
 #@ end
 ---
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
