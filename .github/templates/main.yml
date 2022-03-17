@@ -27,11 +27,12 @@
   uses: ./.github/workflows/deploy-baas.yml
   with:
     name: Xamarin.macOS
+  secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
     AtlasBaseUrl: #@ secret_AtlasBaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasProjectId
+    AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
 
 #@ def testJob(name, os, intermediateSteps, usePackage = True):
