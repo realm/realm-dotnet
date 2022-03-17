@@ -1,4 +1,4 @@
-name: test-netframework
+name: test-net-framework
 "on":
   workflow_call:
     inputs:

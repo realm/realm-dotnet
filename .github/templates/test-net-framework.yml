@@ -14,7 +14,7 @@
 #@ baasTestArgs = " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}"
 
 ---
-name: test-netframework
+name: test-net-framework
 "on":
   workflow_call:
     inputs:
