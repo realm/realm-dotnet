@@ -49,7 +49,7 @@
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
 
-#@ def runTests(name):
+#@ def runTests(name, *additionalSecrets):
 #@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
 #@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
 #@yaml/text-templated-strings
@@ -67,6 +67,10 @@
     BaseUrl: #@ secret_BaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    #@ for secret in additionalSecrets:
+    #@yaml/text-templated-strings
+    (@= secret @): #@ "${{ secrets." + secret + " }}"
+    #@ end
 #@ end
 
 #@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
@@ -223,7 +227,7 @@ jobs:
     - #@ template.replace(fetchPackageArtifacts())
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(runTests(".NET Framework"))
-  _: #@ template.replace(runTests("UWP Managed"))
+  _: #@ template.replace(runTests("UWP Managed", "Pfx_Password", "Base64_Encoded_Pfx"))
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: "Test .NET"

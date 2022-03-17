@@ -26,7 +26,7 @@ with:
   fail-on-error: false
 #@ end
 ---
-#@ def testDefinition():
+#@ def testDefinition(*additionalSecrets):
 "on":
   workflow_call:
     inputs:
@@ -45,6 +45,11 @@ with:
         required: false
       AtlasPrivateKey:
         required: false
+      #@ for secret in additionalSecrets:
+      #@yaml/text-templated-strings
+      (@= secret @):
+        required: true
+      #@ end
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true

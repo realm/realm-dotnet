@@ -17,6 +17,10 @@ name: test-uwp-managed
         required: false
       AtlasPrivateKey:
         required: false
+      Base64_Encoded_Pfx:
+        required: true
+      Pfx_Password:
+        required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
