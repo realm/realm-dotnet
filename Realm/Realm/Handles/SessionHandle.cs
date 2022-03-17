@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -75,10 +76,10 @@ namespace Realms.Sync
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_register_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern SessionNotificationToken register_property_changed_callback(SessionHandle session, IntPtr managed_session_handle, out NativeException ex);
+            public static extern SessionNotificationToken register_property_changed_callback(IntPtr session, IntPtr managed_session_handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void unregister_property_changed_callback(SessionHandle session, SessionNotificationToken token, out NativeException ex);
+            public static extern void unregister_property_changed_callback(IntPtr session, SessionNotificationToken token, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
@@ -96,7 +97,7 @@ namespace Realms.Sync
             public static extern void start(SessionHandle session, out NativeException ex);
         }
 
-        private IDisposable _notificationToken;
+        private SessionNotificationToken? _notificationToken;
 
         public override bool ForceRootOwnership => true;
 
@@ -118,11 +119,6 @@ namespace Realms.Sync
             GCHandle.Alloc(propertyChanged);
 
             NativeMethods.install_syncsession_callbacks(error, progress, wait, propertyChanged);
-        }
-
-        ~SessionHandle()
-        {
-            UnsubscribeNotifications();
         }
 
         public bool TryGetUser(out SyncUserHandle userHandle)
@@ -175,34 +171,24 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        private SessionNotificationToken RegisterPropertyChangedCallback(IntPtr sessionPointer)
-        {
-            var nativeToken = NativeMethods.register_property_changed_callback(this, sessionPointer, out var ex);
-            ex.ThrowIfNecessary();
-            return nativeToken;
-        }
-
         public void SubscribeNotifications(Session session)
         {
+            Debug.Assert(!_notificationToken.HasValue, $"{nameof(_notificationToken)} must be null before subscribing.");
+
             var managedSessionHandle = GCHandle.Alloc(session, GCHandleType.Weak);
             var sessionPointer = GCHandle.ToIntPtr(managedSessionHandle);
-            var nativeToken = RegisterPropertyChangedCallback(sessionPointer);
-            _notificationToken = NotificationToken.Create(nativeToken, (token) =>
-            {
-                UnregisterPropertyChangedCallback(token);
-            });
+            _notificationToken = NativeMethods.register_property_changed_callback(handle, sessionPointer, out var ex);
+            ex.ThrowIfNecessary();
         }
 
         public void UnsubscribeNotifications()
         {
-            _notificationToken?.Dispose();
-            _notificationToken = null;
-        }
-
-        private void UnregisterPropertyChangedCallback(SessionNotificationToken token)
-        {
-            NativeMethods.unregister_property_changed_callback(this, token, out var ex);
-            ex.ThrowIfNecessary();
+            if (_notificationToken.HasValue)
+            {
+                NativeMethods.unregister_property_changed_callback(handle, _notificationToken.Value, out var ex);
+                _notificationToken = null;
+                ex.ThrowIfNecessary();
+            }
         }
 
         public async Task WaitAsync(ProgressDirection direction)
@@ -254,7 +240,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public override void Unbind() => NativeMethods.destroy(handle);
+        public override void Unbind()
+        {
+            UnsubscribeNotifications();
+            NativeMethods.destroy(handle);
+        }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset)

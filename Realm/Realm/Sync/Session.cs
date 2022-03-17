@@ -225,7 +225,7 @@ namespace Realms.Sync
             Error?.Invoke(session, args);
         }
 
-        internal void RaisePropertyChanged([CallerMemberName] string propertyName = "")
+        internal void RaisePropertyChanged(string propertyName)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

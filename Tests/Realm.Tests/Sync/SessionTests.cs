@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 
 namespace Realms.Tests.Sync
 {
@@ -278,7 +279,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_ConnectionState_FreedNotificationToken()
+        public void Session_PropertyChanged_FreedNotificationToken()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -297,8 +298,62 @@ namespace Realms.Tests.Sync
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Null);
 
+                // repeated to make sure that re-subscribing is fine
+                session.PropertyChanged += NotificationChanged;
+                internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Not.Null);
+
+                session.PropertyChanged -= NotificationChanged;
+                internalNotificationToken = GetNotificationToken(session);
+                Assert.That(internalNotificationToken, Is.Null);
+
                 void NotificationChanged(object sender, PropertyChangedEventArgs e)
                 {
+                }
+            });
+        }
+
+        [Test]
+        public void Session_PropertyChanged_MultipleSubscribers()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+                using var realm = GetRealm(config);
+                var session = realm.SyncSession;
+                var subscriberATriggered = false;
+                var subscriberBTriggered = false;
+                var completionTCSA = new TaskCompletionSource<object>();
+                var completionTCSB = new TaskCompletionSource<object>();
+
+                // wait for connecting and connected to be done
+                await Task.Delay(500);
+
+                session.PropertyChanged += NotificationChangedA;
+                session.PropertyChanged += NotificationChangedB;
+
+                session.Stop();
+
+                await completionTCSA.Task;
+                await completionTCSB.Task;
+                Assert.That(subscriberATriggered, Is.True);
+                Assert.That(subscriberBTriggered, Is.True);
+
+                session.PropertyChanged -= NotificationChangedA;
+                session.PropertyChanged -= NotificationChangedB;
+
+                void NotificationChangedA(object sender, PropertyChangedEventArgs e)
+                {
+                    Assert.That(subscriberATriggered, Is.False);
+                    subscriberATriggered = true;
+                    completionTCSA.TrySetResult(null);
+                }
+
+                void NotificationChangedB(object sender, PropertyChangedEventArgs e)
+                {
+                    Assert.That(subscriberBTriggered, Is.False);
+                    subscriberBTriggered = true;
+                    completionTCSB.TrySetResult(null);
                 }
             });
         }
@@ -318,7 +373,6 @@ namespace Realms.Tests.Sync
                 session.PropertyChanged += (sender, e) => { };
             });
 
-            TearDown();
             GC.Collect();
             Assert.That(weakSessionRef.IsAlive, Is.False);
         }
@@ -331,12 +385,11 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync();
-                IDisposable internalNotificationToken = null;
                 var realm = GetRealm(config);
                 var session = realm.SyncSession;
 
                 session.PropertyChanged += NotificationChanged;
-                internalNotificationToken = GetNotificationToken(session);
+                var internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Not.Null);
                 weakNotificationTokenRef = new WeakReference(internalNotificationToken);
                 Assert.That(weakNotificationTokenRef.IsAlive, Is.True);
@@ -346,7 +399,6 @@ namespace Realms.Tests.Sync
                 }
             });
 
-            TearDown();
             GC.Collect();
             Assert.That(weakNotificationTokenRef.IsAlive, Is.False);
         }
@@ -514,10 +566,12 @@ namespace Realms.Tests.Sync
             return session;
         }
 
-        private static IDisposable GetNotificationToken(Session session)
+        private static SessionNotificationToken? GetNotificationToken(Session session)
         {
-            var sessionHandle = (IDisposable)typeof(Session).GetProperty("Handle", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
-            return (IDisposable)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sessionHandle);
+            var sessionHandle = (SessionHandle)typeof(Session).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+            return sessionHandle != null ?
+                (SessionNotificationToken?)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sessionHandle) :
+                null;
         }
     }
 }
