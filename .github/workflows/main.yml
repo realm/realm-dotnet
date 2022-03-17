@@ -316,7 +316,7 @@ jobs:
         path: ./wrappers/cmake/**/realm-wrappers.framework
         key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
       uses: actions/upload-artifact@v2

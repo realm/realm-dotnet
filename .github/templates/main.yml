@@ -453,7 +453,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", enableLto = False, artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
