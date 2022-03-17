@@ -20,6 +20,20 @@
 #@ wrappersTimeout = 90
 #@ baasTestArgs = " --baasurl=" + secret_BaseUrl + " --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId
 
+#@ def deployBaas(name):
+#@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
+#@yaml/text-templated-strings
+(@= baasJobName @):
+  uses: ./.github/workflows/deploy-baas.yml
+  with:
+    name: Xamarin.macOS
+    AtlasProjectId: #@ secret_AtlasProjectId
+    BaseUrl: #@ secret_BaseUrl
+    AtlasBaseUrl: #@ secret_AtlasBaseUrl
+    AtlasPublicKey: #@ secret_AtlasPublicKey
+    AtlasPrivateKey: #@ secret_AtlasProjectId
+#@ end
+
 #@ def testJob(name, os, intermediateSteps, usePackage = True):
 #@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
 #@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
@@ -331,30 +345,12 @@ env:
 jobs:
   build-wrappers:
     uses: ./.github/workflows/build-wrappers.yml
-  baas-xamarinmacos:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      name: Xamarin.macOS
-  baas-xamarinios:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      name: Xamarin.iOS
-  baas-xamarinandroid:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      name: Xamarin.Android
-  baas-code-coverage:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      name: Code Coverage
-  baas-net-framework:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      name: NET Framework
-  baas-uwp-managed:
-    uses: ./.github/workflows/deploy-baas.yml
-    with:
-      name: UWP Managed
+  _: #@ template.replace(deployBaas(".NET Framework"))
+  _: #@ template.replace(deployBaas("UWP Managed"))
+  _: #@ template.replace(deployBaas("Xamarin.macOS"))
+  _: #@ template.replace(deployBaas("Xamarin.iOS"))
+  _: #@ template.replace(deployBaas("Xamarin.Android"))
+  _: #@ template.replace(deployBaas("Code Coverage"))
   build-packages:
     runs-on: windows-latest
     name: Package

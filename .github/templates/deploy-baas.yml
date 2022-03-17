@@ -1,6 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "checkoutCode", "actionDeployBaaS", "secret_AtlasProjectId", "secret_BaseUrl", "secret_AtlasBaseUrl", "secret_AtlasPublicKey", "secret_AtlasPrivateKey")
+#@ load("common.lib.yml", "checkoutCode", "actionDeployBaaS")
 
 ---
 name: deploy-baas
@@ -13,6 +12,17 @@ name: deploy-baas
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
+    secrets:
+      AtlasProjectId:
+        required: true
+      BaseUrl:
+        required: true
+      AtlasBaseUrl:
+        required: true
+      AtlasPublicKey:
+        required: true
+      AtlasPrivateKey:
+        required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -28,9 +38,9 @@ jobs:
       - uses: #@ actionDeployBaaS
         id: deploy-mdb-apps
         with:
-          projectId: #@ secret_AtlasProjectId
-          realmUrl: #@ secret_BaseUrl
-          atlasUrl: #@ secret_AtlasBaseUrl
-          apiKey: #@ secret_AtlasPublicKey
-          privateApiKey: #@ secret_AtlasPrivateKey
-          differentiator: "${{ inputs.name }}"
+          projectId: ${{ secrets.AtlasProjectId}}
+          realmUrl: ${{ secrets.BaseUrl }}
+          atlasUrl: ${{ secrets.AtlasBaseUrl}}
+          apiKey: ${{ secrets.AtlasPublicKey}}
+          privateApiKey: ${{ secrets.AtlasPrivateKey }}
+          differentiator: ${{ inputs.name }}
