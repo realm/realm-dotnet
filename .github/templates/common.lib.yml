@@ -34,7 +34,39 @@
 #@ actionMergePR = "juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d" #! 1.0.6
 
 #@ mainBranch = "main"
-
+---
+#@ def publishTestsResults(files, test_title):
+name: Publish Unit Test Results
+uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
+if: always()
+with:
+  name: #@ "Results " + test_title
+  path: #@ files
+  reporter: java-junit
+  list-suites: failed
+  list-tests: failed
+  path-replace-backslashes: true
+  fail-on-error: false
+#@ end
+---
+#@ def msbuild(projectPath, **properties):
+#@ parsedProps = ""
+#@ target = ""
+#@ for prop in properties.keys():
+#@  if prop == "target":
+#@    target = " -t:" + properties[prop]
+#@  else:
+#@    parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  end
+#@ end
+#@
+- name: Add msbuild to PATH
+  uses: #@ actionSetupMSBuild
+  if: ${{ runner.os == 'Windows' }}
+- name: #@ "Build " + projectPath
+  run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
+#@ end
+---
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
   - name: Checkout code
     uses: #@ actionCheckout

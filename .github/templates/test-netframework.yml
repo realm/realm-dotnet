@@ -1,0 +1,49 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "publishTestsResults", "actionDownloadArtifact", "msbuild")
+
+#@ def fetchPackageArtifacts():
+#@ for pkg in [ "Realm", "Realm.Fody" ]:
+  - name: #@ "Fetch " + pkg
+    uses: #@ actionDownloadArtifact
+    with:
+      name: #@ pkg + ".${{ inputs.version }}"
+      path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end
+
+#@ baasTestArgs = " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}"
+
+---
+name: test-netframework
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+    secrets:
+      AtlasProjectId:
+        required: false
+      BaseUrl:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  runs-on: windows-latest
+  name: Test .NET Framework
+  timeout-minutes: 45
+  steps:
+    - #@ template.replace(checkoutCode())
+    - #@ template.replace(fetchPackageArtifacts())
+    - #@ template.replace(msbuild("Tests/Realm.Tests", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ inputs.version }}", TargetFramework="net461"))
+    - name: Run the tests
+      run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After" + baasTestArgs
+    - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")

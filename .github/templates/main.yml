@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionCoveralls", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupDotnet", "actionRuniOSSimulator", "actionCoveralls", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries", "publishTestsResults", "msbuild")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
@@ -15,9 +15,6 @@
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
 #@ testTimeout = 45
-#@ cleanupTimeout = 10
-#@ baasTimeout = 20
-#@ wrappersTimeout = 90
 #@ baasTestArgs = " --baasurl=" + secret_BaseUrl + " --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId
 
 #@ def deployBaas(name):
@@ -49,6 +46,25 @@
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
     AtlasBaseUrl: #@ secret_AtlasBaseUrl
+    AtlasPublicKey: #@ secret_AtlasPublicKey
+    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+#@ end
+
+#@ def runTests(name):
+#@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
+#@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
+#@yaml/text-templated-strings
+(@= testJobName @):
+  uses: #@ "./.github/workflows/" + testJobName + ".yml"
+  needs:
+    - build-packages
+    - #@ baasJobName
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+    clusterName: #@ "${{ needs." + baasJobName + ".outputs.clusterName }}"
+  secrets:
+    AtlasProjectId: #@ secret_AtlasProjectId
+    BaseUrl: #@ secret_BaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
@@ -89,35 +105,13 @@ with:
   retention-days: #@ retentionDays
 #@ end
 
-#@ def buildWrappers(): #! delme
-steps:
-#@ end
-
-#@ def buildPackages():
-#@ for pkgName in nugetPackages:
-  - #@ msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}")
-#@ end
-#@ end
-
-#@ def msbuildOnWin(projectPath, **properties):
-  - name: Add msbuild to PATH
-    uses: #@ actionSetupMSBuild
-  - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
-#@ end
-
+---
 #@ def buildUnityPackage():
 #@ finalPkgName = "io.realm.unity-${{ steps.get-version.outputs.version }}.tgz"
   - name: Build Unity
     run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
   - #@ uploadArtifacts(finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
   - #@ uploadArtifacts("AssetStorePublisher-${{ steps.get-version.outputs.version }}", "Tools/AssetStorePublisher", "${{ (github.event_name != 'pull_request' || contains(github.head_ref, 'release')) && 30 || 1 }}")
-#@ end
-
-#@ def netFrameworkTestSteps():
-  - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
-  - name: Run the tests
-    run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After" + baasTestArgs
-  - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
 #@ end
 
 #@ def uwpTestSteps():
@@ -128,7 +122,7 @@ steps:
       [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
       certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
     shell: powershell
-  - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
+  - #@ template.replace(msbuild("Tests/Tests.UWP", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
   - name: Run the tests
     run: #@ "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '" + baasTestArgs + "'"
     shell: powershell
@@ -136,14 +130,14 @@ steps:
 #@ end
 
 #@ def xamarinMacTestSteps():
-  - #@ msbuild("Tests/Tests.XamarinMac", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - #@ template.replace(msbuild("Tests/Tests.XamarinMac", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}"))
   - name: Run the tests
     run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All" + baasTestArgs
   - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
 #@ end
 
 #@ def xamariniOSTestSteps():
-  - #@ msbuild("Tests/Tests.iOS", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - #@ template.replace(msbuild("Tests/Tests.iOS", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}"))
   - name: Run the tests
     uses: #@ actionRuniOSSimulator
     with:
@@ -155,7 +149,7 @@ steps:
 #@ end
 
 #@ def xamarinAndroidTestSteps():
-  - #@ msbuild("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="x86_64", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
+  - #@ template.replace(msbuild("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="x86_64", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}"))
   - name: AVD cache
     uses: actions/cache@v2
     id: avd-cache
@@ -292,36 +286,6 @@ steps:
     id: dotnet-publish
     run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + dotnetRuntime + "'"
 #@ end
-
-#@ def publishTestsResults(files, test_title):
-name: Publish Unit Test Results
-uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
-if: always()
-with:
-  name: #@ "Results " + test_title
-  path: #@ files
-  reporter: java-junit
-  list-suites: failed
-  list-tests: failed
-  path-replace-backslashes: true
-  fail-on-error: false
-#@ end
-
-#@ def msbuild(projectPath, **properties):
-#@ parsedProps = ""
-#@ target = ""
-#@ for prop in properties.keys():
-#@  if prop == "target":
-#@    target = " -t:" + properties[prop]
-#@  else:
-#@    parsedProps += " -p:" + prop + "=" + properties[prop]
-#@  end
-#@ end
-#@
-name: #@ "Build " + projectPath
-run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
-#@ end
-
 ---
 name: main
 "on":
@@ -359,10 +323,8 @@ jobs:
     if: #@ ignoreSkippedJobsCondition
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
-    timeout-minutes: #@ wrappersTimeout
+    timeout-minutes: 30
     steps:
-      - name: Add msbuild to PATH
-        uses: #@ actionSetupMSBuild
       - #@ template.replace(checkoutCode())
       - name: Set version suffix
         id: set-version-suffix
@@ -382,7 +344,9 @@ jobs:
           }
           echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
-      - #@ template.replace(buildPackages())
+      #@ for pkgName in nugetPackages:
+      - #@ template.replace(msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
+      #@ end
       - #@ template.replace(readVersionFromPackage())
       - #@ template.replace(buildDocs())
       - #@ template.replace(uploadPackageArtifacts())
@@ -398,7 +362,7 @@ jobs:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
-  _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
+  _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(testJob("UWP Managed", "windows-2019", uwpTestSteps()))
   run-tests-netcore:
     runs-on: ${{ matrix.os}}

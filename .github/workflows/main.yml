@@ -88,10 +88,8 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -187,12 +185,24 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm.Fody
       run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm
       run: msbuild Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm.UnityUtils
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
@@ -299,52 +309,18 @@ jobs:
     - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   test-net-framework:
-    runs-on: windows-latest
-    name: Test .NET Framework
+    uses: ./.github/workflows/test-net-framework.yml
     needs:
     - build-packages
     - baas-net-framework
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    env:
-      CLUSTER_NAME: ${{ needs.baas-net-framework.outputs.clusterName }}
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-    - name: Build Tests/Realm.Tests
-      run: msbuild Tests/Realm.Tests -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:TargetFramework=net461
-    - name: Run the tests
-      run: ./Tests/Realm.Tests/bin/Release/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results .NET Framework
-        path: TestResults.Windows.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.baas-net-framework.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   test-uwp-managed:
     runs-on: windows-2019
     name: Test UWP Managed
@@ -384,6 +360,7 @@ jobs:
       shell: powershell
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
@@ -494,6 +471,9 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
@@ -539,6 +519,9 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: Run the tests
@@ -589,6 +572,9 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.Android
       run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:AndroidSupportedAbis=x86_64 -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
     - name: AVD cache
