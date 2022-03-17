@@ -269,17 +269,13 @@ namespace Realms
             }
             else if (change != null)
             {
-                if (change.NewModifiedIndices.Length > 0)
+                if (Count == 0)
                 {
-                    var modifiedIndices = change.ModifiedIndices.Except(change.DeletedIndices).Except(change.InsertedIndices).ToList();
-                    if (modifiedIndices.Count > 0)
-                    {
-                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, addedItems, addedStartIndex));
-                        RaisePropertyChanged();
-                    }
+                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    RaisePropertyChanged();
+                    return;
                 }
 
-                //TODO Ask: What is the case in which the first condition is true and any of the following two is not?
                 if (change.Moves.Length > 0 &&
                     change.Moves.Length == change.InsertedIndices.Length &&
                     change.Moves.Length == change.DeletedIndices.Length)
