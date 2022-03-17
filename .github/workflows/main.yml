@@ -20,7 +20,7 @@ env:
 jobs:
   build-wrappers:
     name: Build Wrappers
-    uses: ./.github/workflows/build-wrappers
+    uses: ./.github/workflows/build-wrappers.yml
   build-packages:
     runs-on: windows-latest
     name: Package
