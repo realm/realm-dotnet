@@ -70,7 +70,7 @@ steps:
 #@ end
 
 ---
-name: main
+name: build-wrappers
 "on":
   workflow_call:
 env:

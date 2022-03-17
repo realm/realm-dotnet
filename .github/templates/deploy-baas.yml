@@ -1,0 +1,35 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+#@ load("common.lib.yml", "configuration", "checkoutCode", "actionDeployBaaS", "secret_AtlasProjectId", "secret_BaseUrl", "secret_AtlasBaseUrl", "secret_AtlasPublicKey", "secret_AtlasPrivateKey")
+
+---
+name: deploy-baas
+"on":
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+    outputs:
+      clusterName: ${{ jobs.deploy-baas.outputs.clusterName }}
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  deploy-baas:
+    runs-on: ubuntu-latest
+    name: Deploy MDB Realm for ${{ inputs.name }}
+    outputs:
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
+    timeout-minutes: 20
+    steps:
+      - #@ template.replace(checkoutCode(False, False))
+      - uses: #@ actionDeployBaaS
+        id: deploy-mdb-apps
+        with:
+          projectId: #@ secret_AtlasProjectId
+          realmUrl: #@ secret_BaseUrl
+          atlasUrl: #@ secret_AtlasBaseUrl
+          apiKey: #@ secret_AtlasPublicKey
+          privateApiKey: #@ secret_AtlasPrivateKey
+          differentiator: "${{ inputs.name }}"

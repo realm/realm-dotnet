@@ -25,24 +25,6 @@
 #@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
 #@ cleanupJobName = "cleanup-" + name.replace(".", "").replace(" ", "-").lower()
 #@yaml/text-templated-strings
-(@= baasJobName @):
-  runs-on: ubuntu-latest
-  name: #@ "Deploy MDB Realm for " + name
-  outputs:
-    clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
-  timeout-minutes: #@ baasTimeout
-  steps:
-    - #@ template.replace(checkoutCode(False, False))
-    - uses: #@ actionDeployBaaS
-      id: deploy-mdb-apps
-      with:
-        projectId: #@ secret_AtlasProjectId
-        realmUrl: #@ secret_BaseUrl
-        atlasUrl: #@ secret_AtlasBaseUrl
-        apiKey: #@ secret_AtlasPublicKey
-        privateApiKey: #@ secret_AtlasPrivateKey
-        differentiator: #@ name
-#@yaml/text-templated-strings
 (@= testJobName @):
   runs-on: #@ os
   name: #@ "Test " + name
@@ -348,8 +330,31 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   build-wrappers:
-    name: Build Wrappers
     uses: ./.github/workflows/build-wrappers.yml
+  baas-xamarinmacos:
+    uses: ./.github/workflows/deploy-baas.yml
+    with:
+      name: Xamarin.macOS
+  baas-xamarinios:
+    uses: ./.github/workflows/deploy-baas.yml
+    with:
+      name: Xamarin.iOS
+  baas-xamarinandroid:
+    uses: ./.github/workflows/deploy-baas.yml
+    with:
+      name: Xamarin.Android
+  baas-code-coverage:
+    uses: ./.github/workflows/deploy-baas.yml
+    with:
+      name: Code Coverage
+  baas-net-framework:
+    uses: ./.github/workflows/deploy-baas.yml
+    with:
+      name: NET Framework
+  baas-uwp-managed:
+    uses: ./.github/workflows/deploy-baas.yml
+    with:
+      name: UWP Managed
   build-packages:
     runs-on: windows-latest
     name: Package

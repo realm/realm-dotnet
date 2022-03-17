@@ -1,4 +1,4 @@
-name: main
+name: build-wrappers
 "on":
   workflow_call: null
 env:
