@@ -1,0 +1,55 @@
+#@ load("common.lib.yml", "actionDownloadArtifact", "msbuild")
+
+#@ def fetchPackageArtifacts(versionExpression = "inputs.version"):
+#@ for pkg in [ "Realm", "Realm.Fody" ]:
+  - name: #@ "Fetch " + pkg
+    uses: #@ actionDownloadArtifact
+    with:
+      name: #@ pkg + ".${{ " + versionExpression + " }}"
+      path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end
+
+#@ baasTestArgs = " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}"
+---
+#@ def publishTestsResults(files, test_title):
+name: Publish Unit Test Results
+uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
+if: always()
+with:
+  name: #@ "Results " + test_title
+  path: #@ files
+  reporter: java-junit
+  list-suites: failed
+  list-tests: failed
+  path-replace-backslashes: true
+  fail-on-error: false
+#@ end
+---
+#@ def testDefinition():
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+    secrets:
+      AtlasProjectId:
+        required: false
+      BaseUrl:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+#@ end
+---
+#@ def buildTests(projectPath, **properties):
+#@ return msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ inputs.version }}", **properties)
+#@ end

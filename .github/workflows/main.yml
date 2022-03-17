@@ -310,6 +310,7 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   test-net-framework:
     uses: ./.github/workflows/test-net-framework.yml
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
     - baas-net-framework
@@ -322,61 +323,19 @@ jobs:
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   test-uwp-managed:
-    runs-on: windows-2019
-    name: Test UWP Managed
+    uses: ./.github/workflows/test-uwp-managed.yml
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
     - baas-uwp-managed
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    env:
-      CLUSTER_NAME: ${{ needs.baas-uwp-managed.outputs.clusterName }}
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Import test certificate
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $currentDirectory = Get-Location
-        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-        certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-      shell: powershell
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      if: ${{ runner.os == 'Windows' }}
-    - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword=${{ secrets.Pfx_Password }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
-    - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}'
-      shell: powershell
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results UWP Managed
-        path: ${{ env.TEST_RESULTS }}
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.baas-uwp-managed.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   run-tests-netcore:
     runs-on: ${{ matrix.os}}
     name: Test .NET
@@ -442,196 +401,47 @@ jobs:
         path-replace-backslashes: true
         fail-on-error: false
   test-xamarinmacos:
-    runs-on: macos-latest
-    name: Test Xamarin.macOS
+    uses: ./.github/workflows/test-xamarinmacos.yml
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
     - baas-xamarinmacos
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    env:
-      CLUSTER_NAME: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      if: ${{ runner.os == 'Windows' }}
-    - name: Build Tests/Tests.XamarinMac
-      run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results Xamarin.macOS
-        path: TestResults.macOS.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   test-xamarinios:
-    runs-on: macos-latest
-    name: Test Xamarin.iOS
+    uses: ./.github/workflows/test-xamarinios.yml
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
     - baas-xamarinios
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    env:
-      CLUSTER_NAME: ${{ needs.baas-xamarinios.outputs.clusterName }}
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      if: ${{ runner.os == 'Windows' }}
-    - name: Build Tests/Tests.iOS
-      run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:Platform=iPhoneSimulator -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@v1
-      with:
-        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
-        bundleId: io.realm.dotnettests
-        iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results Xamarin.iOS
-        path: TestResults.iOS.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.baas-xamarinios.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   test-xamarinandroid:
-    runs-on: macos-latest
-    name: Test Xamarin.Android
+    uses: ./.github/workflows/test-xamarinandroid.yml
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
     - baas-xamarinandroid
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    env:
-      CLUSTER_NAME: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
-      with:
-        name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      if: ${{ runner.os == 'Windows' }}
-    - name: Build Tests/Tests.Android
-      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:AndroidSupportedAbis=x86_64 -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }}
-    - name: AVD cache
-      uses: actions/cache@v2
-      id: avd-cache
-      with:
-        path: |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key: android-avd
-    - name: Create AVD for caching
-      if: steps.avd-cache.outputs.cache-hit != 'true'
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        arch: x86_64
-        force-avd-creation: false
-        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        disable-animations: false
-        script: echo "Generated AVD snapshot for caching."
-    - name: Run the tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        arch: x86_64
-        force-avd-creation: false
-        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-        disable-animations: true
-        script: |
-          adb devices
-          adb logcat -c
-          adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
-
-          adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
-          adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
-          adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
-
-          echo "--baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}" > ${{ github.workspace }}/testargs.txt
-          adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
-
-          adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-          adb pull /storage/emulated/0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
-          adb shell rm /sdcard/Realmtests/TestResults.Android.xml
-    - name: Output logcat
-      if: always()
-      run: cat logcat.txt
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results Xamarin.Android
-        path: TestResults.Android.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   run-tests-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
@@ -702,130 +512,19 @@ jobs:
         path-replace-backslashes: true
         fail-on-error: false
   test-code-coverage:
-    runs-on: ubuntu-latest
-    name: Test Code Coverage
+    uses: ./.github/workflows/test-code-coverage.yml
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
     - baas-code-coverage
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    env:
-      CLUSTER_NAME: ${{ needs.baas-code-coverage.outputs.clusterName }}
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch artifacts for macos
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-macos
-        path: wrappers/build
-    - name: Fetch artifacts for ios
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-ios
-        path: wrappers/build
-    - name: Fetch artifacts for linux
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-linux
-        path: wrappers/build
-    - name: Fetch artifacts for android-armeabi-v7a
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-android-armeabi-v7a
-        path: wrappers/build
-    - name: Fetch artifacts for android-arm64-v8a
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-android-arm64-v8a
-        path: wrappers/build
-    - name: Fetch artifacts for android-x86
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-android-x86
-        path: wrappers/build
-    - name: Fetch artifacts for android-x86_64
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-android-x86_64
-        path: wrappers/build
-    - name: Fetch artifacts for windows-Win32
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-Win32
-        path: wrappers/build
-    - name: Fetch artifacts for windows-x64
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-x64
-        path: wrappers/build
-    - name: Fetch artifacts for windows-ARM64
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-ARM64
-        path: wrappers/build
-    - name: Fetch artifacts for windows-uwp-Win32
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-uwp-Win32
-        path: wrappers/build
-    - name: Fetch artifacts for windows-uwp-x64
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-uwp-x64
-        path: wrappers/build
-    - name: Fetch artifacts for windows-uwp-ARM
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-uwp-ARM
-        path: wrappers/build
-    - name: Fetch artifacts for windows-uwp-ARM64
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-windows-uwp-ARM64
-        path: wrappers/build
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Setup Coverlet & Report Generator
-      run: |
-        dotnet tool install coverlet.console --tool-path tools
-        dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
-        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-    - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 --no-self-contained
-    - name: Output executable path
-      id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
-    - name: Run the tests
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
-    - name: Publish Coverage
-      id: publish-coveralls
-      uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./report.lcov
-        git-commit: ${{ github.event.pull_request.head.sha }}
-    - name: Output Coveralls response
-      run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results Code Coverage
-        path: TestResults.Linux.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.baas-code-coverage.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
+      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
+      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   setup-unity-tests:
     runs-on: windows-latest
     name: Setup Unity Tests

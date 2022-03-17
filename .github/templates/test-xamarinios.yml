@@ -1,0 +1,25 @@
+#@ load("@ytt:template", "template")
+#@ load("@ytt:overlay", "overlay")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+
+---
+name: test-xamarinios
+_: #@ template.replace(testDefinition())
+jobs:
+  run-tests:
+    runs-on: macos-latest
+    name: Test Xamarin.iOS
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(buildTests("Tests/Tests.iOS", Platform="iPhoneSimulator"))
+      - name: Run the tests
+        uses: #@ actionRuniOSSimulator
+        with:
+          appPath: #@ "Tests/Tests.iOS/bin/iPhoneSimulator/" + configuration + "/Tests.iOS.app"
+          bundleId: 'io.realm.dotnettests'
+          iphoneToSimulate: 'iPhone-8'
+          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml" + baasTestArgs
+      - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")

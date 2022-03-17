@@ -1,0 +1,65 @@
+name: test-xamarinmacos
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+    secrets:
+      AtlasProjectId:
+        required: false
+      BaseUrl:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  run-tests:
+    runs-on: macos-latest
+    name: Test Xamarin.macOS
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
+    - name: Build Tests/Tests.XamarinMac
+      run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+    - name: Run the tests
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      if: always()
+      with:
+        name: Results Xamarin.macOS
+        path: TestResults.macOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false

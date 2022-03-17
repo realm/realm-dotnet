@@ -35,20 +35,6 @@
 
 #@ mainBranch = "main"
 ---
-#@ def publishTestsResults(files, test_title):
-name: Publish Unit Test Results
-uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
-if: always()
-with:
-  name: #@ "Results " + test_title
-  path: #@ files
-  reporter: java-junit
-  list-suites: failed
-  list-tests: failed
-  path-replace-backslashes: true
-  fail-on-error: false
-#@ end
----
 #@ def msbuild(projectPath, **properties):
 #@ parsedProps = ""
 #@ target = ""
@@ -65,6 +51,20 @@ with:
   if: ${{ runner.os == 'Windows' }}
 - name: #@ "Build " + projectPath
   run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
+#@ end
+---
+#@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
+
+#@ def dotnetPublish(projectPath, framework, properties = {}):
+#@ propsArg = ""
+#@ for prop in properties.keys():
+#@   propsArg += " -p:" + prop + "=" + properties[prop]
+#@ end
+  - name: #@ "Publish " + projectPath
+    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + dotnetRuntime + propsArg + " --no-self-contained"
+  - name: Output executable path
+    id: dotnet-publish
+    run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + dotnetRuntime + "'"
 #@ end
 ---
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
