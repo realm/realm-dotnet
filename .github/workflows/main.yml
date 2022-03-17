@@ -9,6 +9,9 @@ name: main
     - '**.cpp'
     - '**.hpp'
     - '**.csproj'
+    - '**.ps1'
+    - '**.sh'
+    - '**.props'
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
