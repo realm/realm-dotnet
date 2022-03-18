@@ -1,7 +1,7 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "actionDownloadArtifact", "actionSetupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish")
 #@ load("test.lib.yml", "publishTestsResults", "dotnetBuildTests")
-#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "fetchPackageArtifacts", "ignoreSkippedJobsCondition")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "fetchPackageArtifacts", "buildUnityTests")
 ---
 name: PR Build
 "on":
@@ -30,6 +30,7 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
+  _: #@ template.replace(buildUnityTests())
   _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))
   _: #@ template.replace(runTests("UWP Managed", runSyncTests = False, additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
   _: #@ template.replace(runNetCoreTests("[\"macos-latest\", \"windows-latest\", \"ubuntu-latest\", \"win81\"]", "[\"net6.0\"]"))
@@ -39,9 +40,4 @@ jobs:
   run-tests-weaver:
     uses: ./.github/workflows/test-weaver.yml
   _: #@ template.replace(runTests("Code Coverage"))
-  setup-unity-tests:
-    uses: ./.github/workflows/build-unity-tests.yml
-    needs:
-    - build-packages
-    if: #@ ignoreSkippedJobsCondition
   _: #@ template.replace(cleanupBaas("Code Coverage"))
