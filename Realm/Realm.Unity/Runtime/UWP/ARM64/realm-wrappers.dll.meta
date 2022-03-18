@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 96dbcf538510e4a19a10014df7386e5a
+guid: 959784e25f36445f4b4b9f3e09bcc148
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -12,64 +12,64 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
-      Android: Android
+      Any: 
     second:
       enabled: 0
       settings:
-        CPU: ARMv7
-  - first:
-      Any:
-    second:
-      enabled: 0
-      settings:
-        Exclude Android: 1
-        Exclude Editor: 0
+        Exclude Editor: 1
         Exclude Linux64: 1
-        Exclude OSXUniversal: 0
+        Exclude OSXUniversal: 1
+        Exclude WebGL: 1
         Exclude Win: 1
         Exclude Win64: 1
-        Exclude iOS: 1
+        Exclude WindowsStoreApps: 0
   - first:
       Editor: Editor
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
-        OS: OSX
+        OS: AnyOS
   - first:
       Standalone: Linux64
     second:
       enabled: 0
       settings:
-        CPU: AnyCPU
+        CPU: None
   - first:
       Standalone: OSXUniversal
     second:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: AnyCPU
+        CPU: None
   - first:
       Standalone: Win
     second:
       enabled: 0
       settings:
-        CPU: x86
+        CPU: None
   - first:
       Standalone: Win64
     second:
       enabled: 0
       settings:
-        CPU: x86_64
+        CPU: None
   - first:
-      iPhone: iOS
+      WebGL: WebGL
     second:
       enabled: 0
+      settings: {}
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
+      enabled: 1
       settings:
-        AddToEmbeddedBinaries: false
-        CPU: AnyCPU
-        CompileFlags:
-        FrameworkDependencies:
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+        CPU: ARM64
+        DontProcess: false
+        PlaceholderPath: 
+        SDK: UWP
+        ScriptingBackend: AnyScriptingBackend
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

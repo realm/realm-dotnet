@@ -34,7 +34,7 @@ namespace Realms.Tests.Sync
     public class SynchronizedInstanceTests : SyncTestBase
     {
         private const int OneMegabyte = 1024 * 1024;
-        private const int NumberOfObjects = 20;
+        private const int NumberOfObjects = 4;
 
         [Test]
         public void Compact_ShouldReduceSize([Values(true, false)] bool encrypt, [Values(true, false)] bool populate)
@@ -137,7 +137,7 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
 
-                await PopulateData(config, 4);
+                await PopulateData(config);
 
                 var callbacksInvoked = 0;
 
@@ -154,7 +154,7 @@ namespace Realms.Tests.Sync
 
                 using var realm = await realmTask;
 
-                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
 
                 // We can't validate exact values because there's a reasonable chance that
@@ -171,7 +171,7 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
 
-                await PopulateData(config, 4);
+                await PopulateData(config);
 
                 var logger = new Logger.InMemoryLogger();
                 Logger.Default = logger;
@@ -187,7 +187,7 @@ namespace Realms.Tests.Sync
 
                 using var realm = await realmTask;
 
-                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(4));
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
 
                 // Notifications are delivered async, so let's wait a little
                 await TestHelpers.WaitForConditionAsync(() => logger.GetLog().Contains("Exception in OnProgress"));

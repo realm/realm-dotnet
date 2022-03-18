@@ -148,6 +148,10 @@ inline SharedRealm* new_realm(SharedRealm realm)
 
     return new SharedRealm(realm);
 }
+
+extern void apply_guid_representation_fix(SharedRealm&, bool& found_non_v4_uuid, bool& found_guid_columns);
+
+extern bool requires_guid_representation_fix(SharedRealm&);
 }
 
 extern "C" {
@@ -181,7 +185,6 @@ REALM_EXPORT void shared_realm_install_callbacks(
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-
         Realm::Config config;
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
@@ -198,7 +201,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::Immutable;
         } else if (configuration.delete_if_migration_needed) {
-            config.schema_mode = SchemaMode::ResetFile;
+            config.schema_mode = SchemaMode::SoftResetFile;
         }
 
         if (objects_length > 0) {
@@ -237,8 +240,33 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         }
 
         config.cache = configuration.enable_cache;
-
-        return new_realm(Realm::get_shared_realm(std::move(config)));
+        auto realm = Realm::get_shared_realm(std::move(config));
+        if (!configuration.use_legacy_guid_representation && requires_guid_representation_fix(realm)) {
+            if (configuration.read_only) {
+                static constexpr char message_format[] = "Realm at path %1 may contain legacy guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
+                log_message(
+                    util::format(message_format, realm->config().path),
+                    realm::util::Logger::Level::warn);
+            }
+            else {
+                bool found_non_v4_uuid = false;
+                bool found_guid_columns = false;
+                apply_guid_representation_fix(realm, found_non_v4_uuid, found_guid_columns);
+                if (found_non_v4_uuid) {
+                    static constexpr char message_format[] = "Realm at path %1 was found to contain Guid values in little-endian format and was automatically migrated to store them in big-endian format.";
+                    log_message(
+                        util::format(message_format, realm->config().path),
+                        realm::util::Logger::Level::info);
+                }
+                else if (found_guid_columns) {
+                    static constexpr char message_format[] = "Realm at path %1 was not marked as having migrated its Guid values, but none of the values appeared to be in little-endian format. The Realm was marked as migrated, but the values have not been modified.";
+                    log_message(
+                        util::format(message_format, realm->config().path),
+                        realm::util::Logger::Level::warn);
+                }
+            }
+        }
+        return new_realm(std::move(realm));
     });
 }
 

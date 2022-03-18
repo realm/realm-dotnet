@@ -48,6 +48,29 @@ namespace Realms
         #region static
 
         /// <summary>
+        /// Gets or sets a value indicating whether to use the legacy representation when storing Guid values in the database.
+        /// </summary>
+        /// <remarks>
+        /// In versions prior to 10.10.0, the .NET SDK had a bug where it would store Guid values with architecture-specific byte ordering
+        /// (little-endian for most modern CPUs) while the database query engine and Sync would always treat them as big-endian. This manifests
+        /// as different string representations between the SDK and the database - e.g. "f2952191-a847-41c3-8362-497f92cb7d24" instead of
+        /// "912195f2-47a8-c341-8362-497f92cb7d24" (notice the swapped bytes in the first 3 components). Starting with 10.10.0, big-endian
+        /// representation is the default one and a seamless one-time migraiton is provided for local (non-sync) Realms. The first time a
+        /// Realm is opened, all properties holding a Guid value will be updated from little-endian to big-endian format and the .NET SDK
+        /// will treat them as such. There should be no noticable change when reading/writing data from the SDK, but you should see consistent
+        /// values when accessing the Realm file from Realm Studio or other SDKs.
+        /// <br/>
+        /// For synchronized Realms, such a migration is impossible due to the distributed nature of the data. Therefore, the assumption
+        /// is that the Guid representation in Atlas if authoritative and the SDK values should be updated to match it. THIS MEANS THAT THE
+        /// SDK WILL START REPORTING A DIFFERENT STRING REPRESENTATION OF EXISTING GUID DATA COMPARED TO pre-10.10.0. If you are querying
+        /// 3rd party systems from the SDK, you might see unexpected results. To preserve the existing behavior (little-endian in the SDK,
+        /// big-endian in Atlas), set this value to <c>true</c> and reach out to the Realm support team (https://support.mongodb.com) for
+        /// help with migrating your data to the new format.
+        /// </remarks>
+        [Obsolete("It is strongly advised to migrate to the new Guid representation as soon as possible to avoid data inconsistency.")]
+        public static bool UseLegacyGuidRepresentation { get; set; }
+
+        /// <summary>
         /// Factory for obtaining a <see cref="Realm"/> instance for this thread.
         /// </summary>
         /// <param name="databasePath">

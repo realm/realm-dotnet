@@ -19,6 +19,7 @@ set(SOURCES
     sync_session_cs.cpp
     sync_user_cs.cpp
     transport_cs.cpp
+    guid_representation_migration.cpp
 )
 
 set(HEADERS
