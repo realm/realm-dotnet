@@ -45,8 +45,6 @@ uses: actions/cache@v2
 with:
   path: ~/.nuget/packages
   key: #@ "${{ runner.os }}-nuget-${{ hashFiles(" + ", ".join(globs) + ") }}"
-  restore-keys: |
-    ${{ runner.os }}-nuget
 #@ end
 ---
 #@ def msbuild(projectPath, **properties):
