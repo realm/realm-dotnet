@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: fromJson(inputs.os)
-        framework: fromJson(inputs.framework)
+        os: ${{ fromJson(inputs.os) }}
+        framework: ${{ fromJson(inputs.framework) }}
     steps:
       - name: Cleanup Workspace
         run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
