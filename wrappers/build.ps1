@@ -15,14 +15,12 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
 
-    [ValidateSet('Win32', 'x64', 'ARM')]
+    [ValidateSet('Win32', 'x64', 'ARM', 'ARM64')]
     [string[]]$Platforms = ('Win32'),
 
     [ValidateSet('Windows', 'WindowsStore')]
     [Parameter(Position=0)]
     [string]$Target = 'Windows',
-
-    [string]$Toolchain = 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake',
 
     [Switch]$Incremental,
 
@@ -44,13 +42,15 @@ $vs = Get-VSSetupInstance | Select-VSSetupInstance -Product * -Latest -Require M
 $Env:path += ";$($vs.InstallationPath)\MSBuild\Current\Bin"
 
 $cmake = Join-Path $vs.InstallationPath -ChildPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", "-DCMAKE_BUILD_TYPE=$Configuration", "-DCMAKE_SYSTEM_NAME=$Target", "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", "-DCMAKE_TOOLCHAIN_FILE=$Toolchain"
-
-if ($Target -eq 'WindowsStore') {
-    $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
-} else {
-    $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='8.1'", "-DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION='8.1'"
-}
+$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", 
+             "-DCMAKE_BUILD_TYPE=$Configuration", 
+             "-DCMAKE_SYSTEM_NAME=$Target", 
+             "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", 
+             "-DCMAKE_TOOLCHAIN_FILE=$PSScriptRoot\realm-core\tools\vcpkg\ports\scripts\buildsystems\vcpkg.cmake",
+             "-DVCPKG_MANIFEST_DIR=$PSScriptRoot\realm-core\tools\vcpkg",
+             "-DVCPKG_OVERLAY_TRIPLETS=$PSScriptRoot\realm-core\tools\vcpkg\triplets",
+             "-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$PSScriptRoot\cmake\vcpkg",
+             "-DCMAKE_SYSTEM_VERSION=10.0"
 
 if ($EnableLTO) {
     $cmakeArgs += "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"

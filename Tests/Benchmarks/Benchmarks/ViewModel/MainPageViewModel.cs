@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,21 +28,34 @@ using BenchmarkDotNet.Analysers;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Filters;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using Benchmarks.Model;
+using Realms;
 using Xamarin.Forms;
 
 namespace Benchmarks.ViewModel
 {
     public class MainPageViewModel : BaseViewModel
     {
+        private const string DryRunJob = "Dry run";
+        private const string ShortJob = "Short job";
+        private const string DefaultJob = "Default job";
+
+        private static readonly string ResultsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "benchmarks-ios");
+
         private readonly string[] _args;
+
+        private bool _isRunning;
+        private string _resultsLocation;
 
         public ObservableCollection<BenchmarkResult> BenchmarkResults { get; private set; }
 
-        private bool _isRunning;
+        public IList<string> JobTypes { get; } = new[] { DefaultJob, ShortJob, DryRunJob };
+
+        public BenchmarkConfig Config { get; }
 
         public bool IsRunning
         {
@@ -50,8 +65,30 @@ namespace Benchmarks.ViewModel
 
         public ICommand RunBenchmarksCommand { get; }
 
+        public string ResultsLocation
+        {
+            get => _resultsLocation;
+            private set => SetProperty(ref _resultsLocation, value);
+        }
+
         public MainPageViewModel(string[] args)
         {
+            Directory.CreateDirectory(ResultsFolder);
+
+            var config = new RealmConfiguration(Path.Combine(ResultsFolder, "config.realm"))
+            {
+                Schema = new[] { typeof(BenchmarkConfig) }
+            };
+
+            var realm = Realm.GetInstance(config);
+            Config = realm.Write(() =>
+            {
+                return realm.All<BenchmarkConfig>().SingleOrDefault() ?? realm.Add(new BenchmarkConfig
+                {
+                    SelectedJob = DefaultJob
+                });
+            });
+
             _args = args;
             RunBenchmarksCommand = new Command(async () => await RunBenchmarks());
             BenchmarkResults = new ObservableCollection<BenchmarkResult>();
@@ -98,13 +135,24 @@ namespace Benchmarks.ViewModel
         {
             var config = PerformanceTests.Program.GetCustomConfig();
 
-            config = config.WithOption(ConfigOptions.JoinSummary, join);
+            var job = headless ? Job.Default : Config.SelectedJob switch
+            {
+                DryRunJob => Job.Dry,
+                ShortJob => Job.ShortRun,
+                DefaultJob => Job.Default,
+                _ => throw new NotSupportedException($"Invalid job: {Config.SelectedJob}")
+            };
 
+            config = config.WithOption(ConfigOptions.JoinSummary, join)
+                           .AddJob(job);
+
+            artifactsPath ??= Path.Combine(ResultsFolder, DateTimeOffset.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss"));
             if (!string.IsNullOrEmpty(artifactsPath))
             {
                 config = config.WithArtifactsPath(artifactsPath);
             }
 
+            filterPatterns ??= Config.Filters.Split(";");
             if (filterPatterns?.Any() == true)
             {
                 config = config.AddFilter(new GlobFilter(filterPatterns));
@@ -120,6 +168,8 @@ namespace Benchmarks.ViewModel
             });
 
             IsRunning = false;
+
+            ResultsLocation = artifactsPath;
 
             if (!headless)
             {

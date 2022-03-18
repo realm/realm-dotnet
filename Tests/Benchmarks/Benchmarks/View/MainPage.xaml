@@ -3,14 +3,49 @@
              xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              ios:Page.UseSafeArea="true">
     <ScrollView>
-        <StackLayout>
-            <Frame BackgroundColor="#2196F3" Padding="24" CornerRadius="0">
-                <Label Text="Benchmarks" HorizontalTextAlignment="Center" TextColor="White" FontSize="36"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Frame BackgroundColor="#2196F3" Padding="12" CornerRadius="0" Grid.ColumnSpan="2">
+                <Label Text="Benchmarks" HorizontalTextAlignment="Center" TextColor="White" FontSize="24"/>
             </Frame>
+
+            <Entry Placeholder="Filters, use ';' to separate expressions"
+                   Text="{Binding Config.Filters, Mode=TwoWay}"
+                   Grid.Row="1" Grid.ColumnSpan="2"
+                   HorizontalOptions="FillAndExpand"
+                   Margin="10"/>
+
+            <Picker ItemsSource="{Binding JobTypes}"
+                    SelectedItem="{Binding Config.SelectedJob}"
+                    Grid.Row="2" Grid.Column="0"
+                    VerticalOptions="Center" HorizontalOptions="FillAndExpand" Margin="10"/>
+
             <Button Text="Run Benchmarks"
-                Command="{Binding RunBenchmarksCommand}" />
-            <ActivityIndicator IsRunning="{Binding IsRunning}"/>
-            <StackLayout BindableLayout.ItemsSource="{Binding BenchmarkResults}">
+                    Command="{Binding RunBenchmarksCommand}"
+                    Grid.Row="2" Grid.Column="1"
+                    HorizontalOptions="Center" VerticalOptions="Center"/>
+
+            <ActivityIndicator IsRunning="{Binding IsRunning}" Margin="20"
+                               Grid.Row="3" Grid.ColumnSpan="2"/>
+
+            <Label Text="{Binding ResultsLocation}"
+                   Grid.Row="4" Grid.ColumnSpan="2"
+                   Margin="10" HorizontalOptions="FillAndExpand" />
+
+            <StackLayout BindableLayout.ItemsSource="{Binding BenchmarkResults}"
+                         Grid.Row="5" Grid.ColumnSpan="2">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate>
                         <StackLayout Orientation="Vertical">
@@ -22,6 +57,6 @@
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </StackLayout>
-        </StackLayout>
+        </Grid>
     </ScrollView>
 </ContentPage>
