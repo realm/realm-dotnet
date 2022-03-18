@@ -232,6 +232,10 @@ namespace Realms.Sync
                 {
                     Logger.Default.Log(LogLevel.Warn, $"An error has occurred while handling a session error: {ex}");
                 }
+                finally
+                {
+                    handle.Dispose();
+                }
             });
         }
 
