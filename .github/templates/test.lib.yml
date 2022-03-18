@@ -40,6 +40,7 @@ with:
       #@yaml/text-templated-strings
       (@= input @):
         required: true
+        type: string
       #@ end
     secrets:
       AtlasProjectId:

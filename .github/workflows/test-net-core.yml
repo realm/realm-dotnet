@@ -10,8 +10,10 @@ name: test-net-framework
         type: string
       os:
         required: true
+        type: string
       framework:
         required: true
+        type: string
     secrets:
       AtlasProjectId:
         required: false
