@@ -16,10 +16,13 @@
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ testTimeout = 45
 
+#@ def getJobName(prefix, name):
+#@ return prefix + "-" + name.replace(".", "").replace(" ", "-").lower()
+#@ end
+
 #@ def deployBaas(name):
-#@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
 #@yaml/text-templated-strings
-(@= baasJobName @):
+(@= getJobName("baas", name) @):
   uses: ./.github/workflows/deploy-baas.yml
   with:
     name: #@ name
@@ -32,13 +35,11 @@
 #@ end
 
 #@ def cleanupBaas(name):
-#@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
-#@ cleanupJobName = "cleanup-" + name.replace(".", "").replace(" ", "-").lower()
 #@yaml/text-templated-strings
-(@= cleanupJobName @):
+(@= getJobName("cleanup", name) @):
   uses: ./.github/workflows/cleanup-baas.yml
   needs:
-    - #@ testJobName
+    - #@ getJobName("test", name)
   with:
     name: #@ name
   secrets:
@@ -49,28 +50,47 @@
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
 
-#@ def runTests(name, *additionalSecrets):
-#@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
-#@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
+#@ def runTests(name, runSyncTests = True, additionalSecrets = []):
 #@yaml/text-templated-strings
-(@= testJobName @):
-  uses: #@ "./.github/workflows/" + testJobName + ".yml"
+(@= getJobName("test", name) @):
+  uses: #@ "./.github/workflows/" + getJobName("test", name) + ".yml"
   if: #@ ignoreSkippedJobsCondition
   needs:
     - build-packages
-    - #@ baasJobName
+    #@ if runSyncTests:
+    - #@ getJobName("baas", name)
+    #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    clusterName: #@ "${{ needs." + baasJobName + ".outputs.clusterName }}"
+    clusterName: #@ "${{ needs." + getJobName("baas", name) + ".outputs.clusterName }}"
   secrets:
+    #@ if runSyncTests:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    #@ end
     #@ for secret in additionalSecrets:
     #@yaml/text-templated-strings
     (@= secret @): #@ "${{ secrets." + secret + " }}"
     #@ end
+#@ end
+
+#@ def runNetCoreTests(frameworks = [], os = []):
+test-net-core:
+  if: #@ ignoreSkippedJobsCondition
+  strategy:
+    fail-fast: false
+    matrix:
+      os: #@ os
+      framework: #@ frameworks
+  needs:
+    - build-packages
+  uses: #@ "./.github/workflows/test-net-core.yml"
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+    os: ${{ matrix.os }}
+    framework: ${{ matrix.framework }}
 #@ end
 
 #@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
@@ -227,31 +247,8 @@ jobs:
     - #@ template.replace(fetchPackageArtifacts())
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(runTests(".NET Framework"))
-  _: #@ template.replace(runTests("UWP Managed", "Pfx_Password", "Base64_Encoded_Pfx"))
-  run-tests-netcore:
-    runs-on: ${{ matrix.os}}
-    name: "Test .NET"
-    needs:
-    - build-packages
-    if: #@ ignoreSkippedJobsCondition
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest, win81 ]
-        targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
-    timeout-minutes: #@ testTimeout
-    steps:
-      - name: Cleanup Workspace
-        run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-        if: matrix.os == 'win81'
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - uses: #@ actionSetupDotnet
-        if: matrix.targetFramework == 'net6.0'
-        with:
-          dotnet-version: '6.0.x'
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
+  _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
+  _: #@ template.replace(runNetCoreTests([ "macos-latest", "windows-latest", "ubuntu-latest", "win81" ], [ "netcoreapp3.1", "net5.0", "net6.0" ]))
   _: #@ template.replace(runTests("Xamarin.macOS"))
   _: #@ template.replace(runTests("Xamarin.iOS"))
   _: #@ template.replace(runTests("Xamarin.Android"))

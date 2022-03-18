@@ -105,9 +105,6 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
     - name: Setup Coverlet & Report Generator
       run: |
         dotnet tool install coverlet.console --tool-path tools

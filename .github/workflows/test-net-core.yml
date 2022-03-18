@@ -1,0 +1,72 @@
+name: test-net-framework
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+      os:
+        required: true
+      framework:
+        required: true
+    secrets:
+      AtlasProjectId:
+        required: false
+      BaseUrl:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  run-tests:
+    runs-on: ${{ inputs.os }}
+    name: Test ${{ inputs.framework }} on ${{ inputs.os }}
+    timeout-minutes: 45
+    steps:
+    - name: Cleanup Workspace
+      run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
+      if: inputs.os == 'win81'
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ inputs.framework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ inputs.framework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ inputs.framework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      if: always()
+      with:
+        name: Results .NET (${{ matrix.os }}, ${{ matrix.targetFramework }})
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false

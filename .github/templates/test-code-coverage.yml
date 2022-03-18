@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "fetchWrapperBinaries", "actionSetupDotnet", "dotnetPublish", "actionCoveralls")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
 
 ---
@@ -14,9 +14,6 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchWrapperBinaries())
-      - uses: #@ actionSetupDotnet
-        with:
-          dotnet-version: '5.0.x'
       - name: Setup Coverlet & Report Generator
         run: |
           dotnet tool install coverlet.console --tool-path tools
