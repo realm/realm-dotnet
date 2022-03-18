@@ -31,11 +31,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Test .NET Core
     timeout-minutes: 45
-    strategy: null
-    fail-fast: false
-    matrix:
-      os: fromJson(inputs.os)
-      framework: fromJson(inputs.framework)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: fromJson(inputs.os)
+        framework: fromJson(inputs.framework)
     steps:
     - name: Cleanup Workspace
       run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
