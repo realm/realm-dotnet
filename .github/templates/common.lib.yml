@@ -181,3 +181,12 @@
       path: wrappers/build
 #@ end
 #@ end
+---
+#@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
+name: #@ "Store artifacts for " + artifactName
+uses: #@ actionUploadArtifact
+with:
+  name: #@ artifactName
+  path: #@ "${{ github.workspace }}/" + relPath
+  retention-days: #@ retentionDays
+#@ end

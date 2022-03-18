@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupDotnet", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries", "msBuildMultiple", "dotnetPublish")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "uploadArtifacts", "actionDownloadArtifact", "actionSetupDotnet", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries", "msBuildMultiple", "dotnetPublish")
 #@ load("test.lib.yml", "publishTestsResults")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
@@ -93,54 +93,7 @@ test-net-core:
     framework: ${{ matrix.framework }}
 #@ end
 
-#@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
-name: #@ "Store artifacts for " + artifactName
-uses: #@ actionUploadArtifact
-with:
-  name: #@ artifactName
-  path: #@ "${{ github.workspace }}/" + relPath
-  retention-days: #@ retentionDays
-#@ end
-
 ---
-#@ def buildUnityPackage():
-#@ finalPkgName = "io.realm.unity-${{ steps.get-version.outputs.version }}.tgz"
-  - name: Build Unity
-    run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
-  - #@ uploadArtifacts(finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
-  - #@ uploadArtifacts("AssetStorePublisher-${{ steps.get-version.outputs.version }}", "Tools/AssetStorePublisher", "${{ (github.event_name != 'pull_request' || contains(github.head_ref, 'release')) && 30 || 1 }}")
-#@ end
-
-#@ def buildDocs():
-#@ docsCondition = "${{ " + isRelease + " }}"
-  - name: Check Docfx cache
-    id: check-docfx-cache
-    if: #@ docsCondition
-    uses: #@ actionCache
-    with:
-      path: 'C:\docfx'
-      key: docfx
-  - name: Download docfx
-    if: #@ "steps.check-docfx-cache.outputs.cache-hit != 'true' && " + isRelease
-    run: |
-      Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
-      Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
-    shell: powershell
-  - name: Build docs
-    if: #@ docsCondition
-    run: |
-      C:\docfx\docfx Docs/docfx.json
-      Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
-  - _: #@ template.replace(uploadArtifacts("Docs.zip", "Realm/packages/Docs.zip"))
-    if: #@ docsCondition
-#@ end
-
-#@ def uploadPackageArtifacts():
-#@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
-#@  finalPkgName = pkgName + ".${{ steps.get-version.outputs.version }}"
-  - #@ uploadArtifacts(finalPkgName, "Realm/packages/" + finalPkgName + ".*nupkg")
-#@ end
-#@ end
 
 #@ def fetchPackageArtifacts():
 #@ for pkg in [ "Realm", "Realm.Fody" ]:
@@ -162,14 +115,6 @@ with:
   - #@ template.replace(dotnetPublish(projectPath, framework, properties))
   - name: Run the tests
     run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/" + executeCommand
-#@ end
-
-#@ def mainPackagePaths():
-#@ result = []
-#@ for pkg in nugetPackages:
-#@   result.append("Realm/" + pkg)
-#@ end
-#@ return result
 #@ end
 
 ---
@@ -202,40 +147,9 @@ jobs:
   _: #@ template.replace(deployBaas("Xamarin.Android"))
   _: #@ template.replace(deployBaas("Code Coverage"))
   build-packages:
-    runs-on: windows-latest
-    name: Package
-    needs:
-      - build-wrappers
-    if: #@ ignoreSkippedJobsCondition
-    outputs:
-      package_version: ${{ steps.get-version.outputs.version }}
-    timeout-minutes: 30
-    steps:
-      - #@ template.replace(checkoutCode())
-      - name: Set version suffix
-        id: set-version-suffix
-        #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
-        run: |
-          $suffix = ""
-          if ($env:GITHUB_EVENT_NAME -eq "pull_request")
-          {
-            if (-Not "${{ github.head_ref }}".Contains("release"))
-            {
-              $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
-            }
-          }
-          else
-          {
-            $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
-          }
-          echo "::set-output name=build_suffix::$suffix"
-      - #@ template.replace(fetchWrapperBinaries())
-      - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
-      - #@ template.replace(readVersionFromPackage())
-      - #@ template.replace(buildDocs())
-      - #@ template.replace(uploadPackageArtifacts())
-      - #@ template.replace(buildUnityPackage())
-      - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+    uses: ./.github/workflows/build-packages.yml
+    with:
+      build-docs: contains(github.head_ref, 'release')
   publish-packages-to-sleet:
     runs-on: ubuntu-latest
     name: Publish package to S3
