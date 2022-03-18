@@ -144,7 +144,7 @@ jobs:
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     with:
-      build-docs: contains(github.head_ref, 'release')
+      build-docs: ${{ contains(github.head_ref, 'release') }}
   publish-packages-to-sleet:
     runs-on: ubuntu-latest
     name: Publish package to S3
