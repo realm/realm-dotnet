@@ -82,6 +82,8 @@ jobs:
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
+    needs:
+    - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
   publish-packages-to-sleet:

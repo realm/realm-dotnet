@@ -143,6 +143,8 @@ jobs:
   _: #@ template.replace(deployBaas("Code Coverage"))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
+    needs:
+    - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
   publish-packages-to-sleet:
