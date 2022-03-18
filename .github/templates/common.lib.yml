@@ -35,15 +35,25 @@
 
 #@ mainBranch = "main"
 ---
+
+#@ def setupNugetCache(projectPaths = []):
+#@ globs = []
+#@ for projectPath in projectPaths:
+#@   globs.append("'" + projectPath + "/*.csproj'")
+#@ end
+uses: actions/cache@v2
+with:
+  path: ~/.nuget/packages
+  key: #@ "${{ runner.os }}-nuget-${{ hashFiles(" + ", ".join(globs) + ") }}"
+  restore-keys: |
+    ${{ runner.os }}-nuget
+#@ end
+---
 #@ def msbuild(projectPath, **properties):
 #@ return msBuildMultiple([projectPath], **properties)
 #@ end
 
 #@ def msBuildMultiple(projectPaths, **properties):
-#@ globs = []
-#@ for projectPath in projectPaths:
-#@ globs.append("'" + projectPath + "/*.csproj'")
-#@ end
 #@ parsedProps = ""
 #@ target = ""
 #@ for prop in properties.keys():
@@ -57,12 +67,7 @@
 - name: Add msbuild to PATH
   uses: #@ actionSetupMSBuild
   if: ${{ runner.os == 'Windows' }}
-- uses: actions/cache@v2
-  with:
-    path: ~/.nuget/packages
-    key: #@ "${{ runner.os }}-nuget-${{ hashFiles(" + ", ".join(globs) + ") }}"
-    restore-keys: |
-      ${{ runner.os }}-nuget
+- #@ setupNugetCache(projectPaths)
 #@ for projectPath in projectPaths:
 - name: #@ "Build " + projectPath
   run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
@@ -76,6 +81,7 @@
 #@ for prop in properties.keys():
 #@   propsArg += " -p:" + prop + "=" + properties[prop]
 #@ end
+  - #@ setupNugetCache([ projectPath ])
   - name: #@ "Publish " + projectPath
     run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + dotnetRuntime + propsArg + " --no-self-contained"
   - name: Output executable path

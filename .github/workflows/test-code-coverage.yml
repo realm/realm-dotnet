@@ -110,6 +110,12 @@ jobs:
         dotnet tool install coverlet.console --tool-path tools
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Realm.Tests/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 --no-self-contained
     - name: Output executable path
