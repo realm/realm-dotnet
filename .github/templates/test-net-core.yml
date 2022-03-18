@@ -8,16 +8,22 @@ name: test-net-framework
 _: #@ template.replace(testDefinition(additionalInputs = [ "os", "framework"]))
 jobs:
   run-tests:
-    runs-on: ${{ inputs.os }}
-    name: Test ${{ inputs.framework }} on ${{ inputs.os }}
+    runs-on: ${{ matrix.os }}
+    name: Test .NET Core
     timeout-minutes: 45
+    strategy:
+    fail-fast: false
+    matrix:
+      os: fromJson(inputs.os)
+      framework: fromJson(inputs.framework)
+
     steps:
       - name: Cleanup Workspace
         run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-        if: inputs.os == 'win81'
+        if: matrix.os == 'win81'
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ inputs.framework }}"))
+      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
+      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.framework }})")
