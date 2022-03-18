@@ -399,8 +399,21 @@ namespace Realms
             }
         }
 
-        public IRealmAccessor Accessor { get; private set; } = new UnmanagedAccessor();
+        public IRealmAccessor Accessor
+        {
+            get
+            {
+                if (managedAccessor == null)
+                {
+                    return unmanagedAccessor;
+                }
 
+                return managedAccessor;
+            }
+        }
+
+        private UnmanagedAccessor unmanagedAccessor = new UnmanagedAccessor();
+        private ManagedAccessor managedAccessor; //Set up later
         /// <summary>
         /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
         /// <see cref="Realm.Add{T}(T, bool)"/>.
@@ -488,7 +501,7 @@ namespace Realms
         //TODO This also should be hidden...
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
-            Accessor = new ManagedAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
+            managedAccessor = new ManagedAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
 
             if (_propertyChanged != null)
             {
