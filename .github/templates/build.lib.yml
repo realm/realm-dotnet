@@ -1,0 +1,93 @@
+#@ load("common.lib.yml", "actionDownloadArtifact")
+
+#@ isRelease = "contains(github.head_ref, 'release')"
+
+#@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
+
+#@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
+#@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
+#@ secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
+#@ secret_AtlasPrivateKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}"
+#@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
+
+#@ def getJobName(prefix, name):
+#@ return prefix + "-" + name.replace(".", "").replace(" ", "-").lower()
+#@ end
+
+#@ def deployBaas(name):
+#@yaml/text-templated-strings
+(@= getJobName("baas", name) @):
+  uses: ./.github/workflows/deploy-baas.yml
+  with:
+    name: #@ name
+  secrets:
+    AtlasProjectId: #@ secret_AtlasProjectId
+    BaseUrl: #@ secret_BaseUrl
+    AtlasBaseUrl: #@ secret_AtlasBaseUrl
+    AtlasPublicKey: #@ secret_AtlasPublicKey
+    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+#@ end
+
+#@ def cleanupBaas(name):
+#@yaml/text-templated-strings
+(@= getJobName("cleanup", name) @):
+  uses: ./.github/workflows/cleanup-baas.yml
+  needs:
+    - #@ getJobName("test", name)
+  with:
+    name: #@ name
+  secrets:
+    AtlasProjectId: #@ secret_AtlasProjectId
+    BaseUrl: #@ secret_BaseUrl
+    AtlasBaseUrl: #@ secret_AtlasBaseUrl
+    AtlasPublicKey: #@ secret_AtlasPublicKey
+    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+#@ end
+
+#@ def runTests(name, runSyncTests = True, additionalSecrets = []):
+#@yaml/text-templated-strings
+(@= getJobName("test", name) @):
+  uses: #@ "./.github/workflows/" + getJobName("test", name) + ".yml"
+  if: #@ ignoreSkippedJobsCondition
+  needs:
+    - build-packages
+    #@ if runSyncTests:
+    - #@ getJobName("baas", name)
+    #@ end
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+    clusterName: #@ "${{ needs." + getJobName("baas", name) + ".outputs.clusterName }}"
+  secrets:
+    #@ if runSyncTests:
+    AtlasProjectId: #@ secret_AtlasProjectId
+    BaseUrl: #@ secret_BaseUrl
+    AtlasPublicKey: #@ secret_AtlasPublicKey
+    AtlasPrivateKey: #@ secret_AtlasPrivateKey
+    #@ end
+    #@ for secret in additionalSecrets:
+    #@yaml/text-templated-strings
+    (@= secret @): #@ "${{ secrets." + secret + " }}"
+    #@ end
+#@ end
+
+#@ def runNetCoreTests(os, framework):
+test-net-core:
+  if: #@ ignoreSkippedJobsCondition
+  needs:
+    - build-packages
+  uses: "./.github/workflows/test-net-core.yml"
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+    os: #@ os
+    framework: #@ framework
+#@ end
+---
+#@ def fetchPackageArtifacts():
+#@ for pkg in [ "Realm", "Realm.Fody" ]:
+  - name: #@ "Fetch " + pkg
+    uses: #@ actionDownloadArtifact
+    with:
+      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
+      path: ${{ github.workspace }}/Realm/packages/
+#@ end
+#@ end

@@ -1,0 +1,37 @@
+name: build-packages
+"on":
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  setup-unity-tests:
+    runs-on: windows-latest
+    name: Setup Unity Tests
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Unity package
+      uses: actions/download-artifact@v2
+      with:
+        name: io.realm.unity-${{ inputs.version }}.tgz
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Build Tests
+      run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/packages/io.realm.unity-${{ inputs.version }}.tgz
+    - name: Store artifacts for UnityTests
+      uses: actions/upload-artifact@v2
+      with:
+        name: UnityTests
+        path: ${{ github.workspace }}/Tests/Tests.Unity
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}

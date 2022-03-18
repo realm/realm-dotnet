@@ -1,135 +1,23 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCache", "uploadArtifacts", "actionDownloadArtifact", "actionSetupDotnet", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace", "fetchWrapperBinaries", "msBuildMultiple", "dotnetPublish")
-#@ load("test.lib.yml", "publishTestsResults")
-
-#@ isRelease = "contains(github.head_ref, 'release')"
-
-#@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
-
-#@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
-#@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
-#@ secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
-#@ secret_AtlasPrivateKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}"
-#@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
-
-#@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
-#@ testTimeout = 45
-
-#@ def getJobName(prefix, name):
-#@ return prefix + "-" + name.replace(".", "").replace(" ", "-").lower()
-#@ end
-
-#@ def deployBaas(name):
-#@yaml/text-templated-strings
-(@= getJobName("baas", name) @):
-  uses: ./.github/workflows/deploy-baas.yml
-  with:
-    name: #@ name
-  secrets:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
-    AtlasBaseUrl: #@ secret_AtlasBaseUrl
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
-#@ end
-
-#@ def cleanupBaas(name):
-#@yaml/text-templated-strings
-(@= getJobName("cleanup", name) @):
-  uses: ./.github/workflows/cleanup-baas.yml
-  needs:
-    - #@ getJobName("test", name)
-  with:
-    name: #@ name
-  secrets:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
-    AtlasBaseUrl: #@ secret_AtlasBaseUrl
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
-#@ end
-
-#@ def runTests(name, runSyncTests = True, additionalSecrets = []):
-#@yaml/text-templated-strings
-(@= getJobName("test", name) @):
-  uses: #@ "./.github/workflows/" + getJobName("test", name) + ".yml"
-  if: #@ ignoreSkippedJobsCondition
-  needs:
-    - build-packages
-    #@ if runSyncTests:
-    - #@ getJobName("baas", name)
-    #@ end
-  with:
-    version: ${{ needs.build-packages.outputs.package_version }}
-    clusterName: #@ "${{ needs." + getJobName("baas", name) + ".outputs.clusterName }}"
-  secrets:
-    #@ if runSyncTests:
-    AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
-    AtlasPublicKey: #@ secret_AtlasPublicKey
-    AtlasPrivateKey: #@ secret_AtlasPrivateKey
-    #@ end
-    #@ for secret in additionalSecrets:
-    #@yaml/text-templated-strings
-    (@= secret @): #@ "${{ secrets." + secret + " }}"
-    #@ end
-#@ end
-
-#@ def runNetCoreTests(os, framework):
-test-net-core:
-  if: #@ ignoreSkippedJobsCondition
-  needs:
-    - build-packages
-  uses: #@ "./.github/workflows/test-net-core.yml"
-  with:
-    version: ${{ needs.build-packages.outputs.package_version }}
-    os: #@ os
-    framework: #@ framework
-#@ end
-
----
-
-#@ def fetchPackageArtifacts():
-#@ for pkg in [ "Realm", "Realm.Fody" ]:
-  - name: #@ "Fetch " + pkg
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
-      path: ${{ github.workspace }}/Realm/packages/
-#@ end
-#@ end
-
-#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand):
-#@ properties = {
-#@   "AdditionalFrameworks": framework,
-#@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
-#@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
-#@ }
-#@
-  - #@ template.replace(dotnetPublish(projectPath, framework, properties))
-  - name: Run the tests
-    run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/" + executeCommand
-#@ end
-
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "actionSetupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish")
+#@ load("test.lib.yml", "dotnetBuildTests")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "fetchPackageArtifacts", "ignoreSkippedJobsCondition")
 ---
 name: main
 "on":
   push:
     branches:
       - main
-  pull_request:
-    paths:
-      - '**.cs'
-      - '**.cpp'
-      - '**.hpp'
-      - '**.csproj'
-      - '**CMakeLists.txt'
-      - '**.ps1'
-      - '**.sh'
-      - '**.props'
-      - 'wrappers/realm-core'
-      - '.github/workflows/main.yml'
+  workflow_dispatch:
+    inputs:
+      publish-prerelease:
+        description: Indicates whether to publish the package to Sleet/npm
+        required: false
+        type: boolean
+      run-benchmark:
+        description: Indicates whether to run the benchmark tests
+        required: false
+        type: boolean
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -146,14 +34,12 @@ jobs:
     uses: ./.github/workflows/build-packages.yml
     needs:
     - build-wrappers
-    with:
-      build-docs: ${{ contains(github.head_ref, 'release') }}
   publish-packages-to-sleet:
     runs-on: ubuntu-latest
     name: Publish package to S3
     needs:
     - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
+    if: #@ ignoreSkippedJobsCondition + " && (github.event == 'push' || github.event.inputs.publish-prerelease)"
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
@@ -167,10 +53,10 @@ jobs:
   run-tests-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
-    timeout-minutes: #@ testTimeout
+    timeout-minutes: 10
     needs:
     - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
+    if: #@ ignoreSkippedJobsCondition
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -181,43 +67,26 @@ jobs:
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   run-tests-weaver:
-    runs-on: windows-latest
-    name: Test Weaver
-    timeout-minutes: #@ testTimeout
-    steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1"))
-      - name: Run Tests
-        run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
-      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
+    uses: ./.github/workflows/test-weaver.yml
   _: #@ template.replace(runTests("Code Coverage"))
   setup-unity-tests:
-    runs-on: windows-latest
-    name: Setup Unity Tests
+    uses: ./.github/workflows/build-unity-tests.yml
     needs:
     - build-packages
     if: #@ ignoreSkippedJobsCondition
-    steps:
-      - #@ template.replace(checkoutCode())
-      - name: Fetch Unity package
-        uses: #@ actionDownloadArtifact
-        with:
-          name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
-          path: ${{ github.workspace }}/Realm/packages/
-      - name: Build Tests
-        run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
-      - #@ uploadArtifacts("UnityTests", "Tests/Tests.Unity")
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
-    timeout-minutes: #@ testTimeout
+    if: #@ ignoreSkippedJobsCondition + " && (github.event == 'push' || github.event.inputs.run-benchmark)"
+    timeout-minutes: 60
     steps:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
+      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net5.0"))
+      - name: Run the tests
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
       - name: Find Results file
         id: find-results-file
         run: |

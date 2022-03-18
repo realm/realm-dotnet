@@ -3,18 +3,16 @@ name: main
   push:
     branches:
     - main
-  pull_request:
-    paths:
-    - '**.cs'
-    - '**.cpp'
-    - '**.hpp'
-    - '**.csproj'
-    - '**CMakeLists.txt'
-    - '**.ps1'
-    - '**.sh'
-    - '**.props'
-    - wrappers/realm-core
-    - .github/workflows/main.yml
+  workflow_dispatch:
+    inputs:
+      publish-prerelease:
+        description: Indicates whether to publish the package to Sleet/npm
+        required: false
+        type: boolean
+      run-benchmark:
+        description: Indicates whether to run the benchmark tests
+        required: false
+        type: boolean
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -85,14 +83,12 @@ jobs:
     uses: ./.github/workflows/build-packages.yml
     needs:
     - build-wrappers
-    with:
-      build-docs: ${{ contains(github.head_ref, 'release') }}
   publish-packages-to-sleet:
     runs-on: ubuntu-latest
     name: Publish package to S3
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event == 'push' || github.event.inputs.publish-prerelease)
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -210,10 +206,10 @@ jobs:
   run-tests-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
-    timeout-minutes: 45
+    timeout-minutes: 10
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -249,41 +245,7 @@ jobs:
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   run-tests-weaver:
-    runs-on: windows-latest
-    name: Test Weaver
-    timeout-minutes: 45
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Weaver/Realm.Fody.Tests/*.csproj') }}
-    - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} --no-self-contained
-    - name: Output executable path
-      id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
-    - name: Run Tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
-    - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
-      if: always()
-      with:
-        name: Results Weaver
-        path: TestResults.Weaver.xml
-        reporter: java-junit
-        list-suites: failed
-        list-tests: failed
-        path-replace-backslashes: true
-        fail-on-error: false
+    uses: ./.github/workflows/test-weaver.yml
   test-code-coverage:
     uses: ./.github/workflows/test-code-coverage.yml
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
@@ -299,40 +261,16 @@ jobs:
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   setup-unity-tests:
-    runs-on: windows-latest
-    name: Setup Unity Tests
+    uses: ./.github/workflows/build-unity-tests.yml
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Unity package
-      uses: actions/download-artifact@v2
-      with:
-        name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Build Tests
-      run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
-    - name: Store artifacts for UnityTests
-      uses: actions/upload-artifact@v2
-      with:
-        name: UnityTests
-        path: ${{ github.workspace }}/Tests/Tests.Unity
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.event_name != 'pull_request'
-    timeout-minutes: 45
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event == 'push' || github.event.inputs.run-benchmark)
+    timeout-minutes: 60
     steps:
     - name: Cleanup Workspace
       run: rm -rf "${{ github.workspace }}/*"
@@ -360,7 +298,7 @@ jobs:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Benchmarks/PerformanceTests/*.csproj') }}
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net5.0 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=net5.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Benchmarks/PerformanceTests/bin/Release/net5.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
