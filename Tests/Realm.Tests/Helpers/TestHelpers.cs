@@ -18,20 +18,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 #if NETCOREAPP || NETFRAMEWORK
 using System.Runtime.InteropServices;
 #endif
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-#if __ANDROID__
-using Application = Android.App.Application;
-#endif
 
 namespace Realms.Tests
 {
@@ -334,14 +332,6 @@ namespace Realms.Tests
             return value;
         }
 
-        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000, Task errorTask = null)
-        {
-            AsyncContext.Run(async () =>
-            {
-                await testFunc().Timeout(timeout, errorTask);
-            });
-        }
-
         public static async Task<T> AssertThrows<T>(Func<Task> function)
             where T : Exception
         {
@@ -431,6 +421,34 @@ namespace Realms.Tests
         public static string GetResultsPath(string[] args)
             => args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty) ??
                 throw new Exception("You must provide path to store test results with --result path/to/results.xml");
+
+        // When running on Xamarin with Mono, NUnit doesn't recognize Task as an awaitable type because of what appears to be a bug in Mono.
+        // We work around this by teaching NUnit how to await a Task.
+        // See https://github.com/nunit/nunit/blob/master/src/NUnitFramework/framework/Internal/CSharpPatternBasedAwaitAdapter.cs
+        // and https://github.com/nunit/nunit/blob/master/src/NUnitFramework/framework/Internal/CSharpPatternBasedAwaitAdapter.AwaitShapeInfo.cs
+        public static void EnsureNUnitCanAwaitTasks()
+        {
+#pragma warning disable SA1312 // Variable names should begin with lower-case letter
+            var CSharpPatternBasedAwaitAdapter = typeof(Assert).Assembly.GetType("NUnit.Framework.Internal.CSharpPatternBasedAwaitAdapter");
+            var ShapeInfoByType_Field = CSharpPatternBasedAwaitAdapter.GetField("ShapeInfoByType", BindingFlags.Static | BindingFlags.NonPublic);
+            var ShapeInfoByType = ShapeInfoByType_Field.GetValue(null) as System.Collections.IDictionary; // ConcurrentDictionary<Type, AwaitShapeInfo>
+            var AwaitShapeInfo = CSharpPatternBasedAwaitAdapter.GetNestedType("AwaitShapeInfo", BindingFlags.NonPublic);
+            var AwaitShapeInfo_new = AwaitShapeInfo.GetConstructor(new[] { typeof(MethodInfo), typeof(MethodInfo), typeof(MethodInfo), typeof(MethodInfo) });
+            var AwaitShapeInfo_TryCreate = AwaitShapeInfo.GetMethod("TryCreate", BindingFlags.Static | BindingFlags.Public);
+#pragma warning restore SA1312 // Variable names should begin with lower-case letter
+
+            if (AwaitShapeInfo_TryCreate.Invoke(null, new[] { typeof(Task) }) == null)
+            {
+                var taskShapeInfo = AwaitShapeInfo_new.Invoke(new[]
+                {
+                    typeof(Task).GetMethod(nameof(Task.GetAwaiter)),
+                    typeof(TaskAwaiter).GetProperty(nameof(TaskAwaiter.IsCompleted)).GetGetMethod(),
+                    typeof(TaskAwaiter).GetMethod(nameof(TaskAwaiter.UnsafeOnCompleted)),
+                    typeof(TaskAwaiter).GetMethod(nameof(TaskAwaiter.GetResult))
+                });
+                ShapeInfoByType[typeof(Task)] = taskShapeInfo;
+            }
+        }
 
         private class FunctionObserver<T> : IObserver<T>
         {

@@ -47,7 +47,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_scheduler_callbacks", CallingConvention = CallingConvention.Cdecl)]
         private static extern void install_scheduler_callbacks(get_context get, post_on_context post, release_context release, is_on_context is_on);
 
-        private class Scheduler
+        private static readonly ConditionalWeakTable<SynchronizationContext, Scheduler> _schedulers = new ConditionalWeakTable<SynchronizationContext, Scheduler>();
+
+        internal class Scheduler : IDisposable
         {
             private static readonly Lazy<FieldInfo> XunitInnerContext = new Lazy<FieldInfo>(() =>
             {
@@ -65,7 +67,7 @@ namespace Realms
             private readonly int _threadId;
 
             private volatile bool _isReleased;
-            private SynchronizationContext _context;
+            protected SynchronizationContext _context;
 
             internal Scheduler(SynchronizationContext context)
             {
@@ -75,7 +77,7 @@ namespace Realms
                 _threadId = Environment.CurrentManagedThreadId;
             }
 
-            internal void Post(IntPtr function_ptr)
+            internal virtual void Post(IntPtr function_ptr)
             {
                 _context?.Post(f_ptr =>
                 {
@@ -121,7 +123,7 @@ namespace Realms
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal void Invalidate()
+            public void Dispose()
             {
                 _isReleased = true;
                 _context = null;
@@ -137,7 +139,8 @@ namespace Realms
                 return IntPtr.Zero;
             }
 
-            return GCHandle.ToIntPtr(GCHandle.Alloc(new Scheduler(context)));
+            var scheduler = _schedulers.GetValue(context, ctx => new Scheduler(ctx));
+            return GCHandle.ToIntPtr(GCHandle.Alloc(scheduler));
         }
 
         [MonoPInvokeCallback(typeof(post_on_context))]
@@ -156,7 +159,7 @@ namespace Realms
             if (context != IntPtr.Zero)
             {
                 var gcHandle = GCHandle.FromIntPtr(context);
-                ((Scheduler)gcHandle.Target).Invalidate();
+                ((Scheduler)gcHandle.Target).Dispose();
                 gcHandle.Free();
             }
         }
@@ -193,6 +196,18 @@ namespace Realms
             GCHandle.Alloc(is_on);
 
             install_scheduler_callbacks(get, post, release, is_on);
+        }
+
+        internal static void EmplaceScheduler(SynchronizationContext context, Scheduler scheduler)
+        {
+            Argument.NotNull(context, nameof(context));
+
+            if (_schedulers.TryGetValue(context, out var _))
+            {
+                throw new InvalidOperationException("Cannot emplace a custom scheduler for a context that already has one.");
+            }
+
+            _schedulers.Add(context, scheduler);
         }
     }
 }

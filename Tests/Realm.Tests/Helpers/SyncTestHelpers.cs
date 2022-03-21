@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -30,11 +29,11 @@ namespace Realms.Tests.Sync
 {
     public static class AppConfigType
     {
-        public const string Default = "integration-tests";
-        public const string IntPartitionKey = "int-partition-key";
-        public const string ObjectIdPartitionKey = "objectid-partition-key";
+        public const string Default = "string-part-key";
+        public const string IntPartitionKey = "int-part-key";
+        public const string ObjectIdPartitionKey = "oid-part-key";
         public const string UUIDPartitionKey = "uuid-part-key";
-        public const string FlexibleSync = "flexible-sync";
+        public const string FlexibleSync = "flx-sync";
     }
 
     public static partial class SyncTestHelpers
@@ -68,41 +67,7 @@ namespace Realms.Tests.Sync
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
         };
 
-        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
-        {
-            if (_baseUri == null)
-            {
-                Assert.Ignore("MongoDB Realm is not setup.");
-            }
-
-            AsyncContext.Run(async () =>
-            {
-                await CreateBaasAppsAsync();
-            });
-
-            if (ensureNoSessionErrors)
-            {
-                var tcs = new TaskCompletionSource<object>();
-                Session.Error += HandleSessionError;
-                try
-                {
-                    TestHelpers.RunAsyncTest(testFunc, timeout, tcs.Task);
-                }
-                finally
-                {
-                    Session.Error -= HandleSessionError;
-                }
-
-                void HandleSessionError(object _, ErrorEventArgs errorArgs)
-                {
-                    tcs.TrySetException(errorArgs.Exception);
-                }
-            }
-            else
-            {
-                TestHelpers.RunAsyncTest(testFunc, timeout);
-            }
-        }
+        public static bool HasBaas => _baseUri != null;
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
@@ -150,15 +115,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        public static string[] ExtractBaasSettings(string[] args)
-        {
-            return AsyncContext.Run(async () =>
-            {
-                return await ExtractBaasSettingsAsync(args);
-            });
-        }
-
-        private static async Task CreateBaasAppsAsync(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
+        public static async Task CreateBaasAppsAsync(string cluster = null, string apiKey = null, string privateApiKey = null, string groupId = null)
         {
             if (_appIds[AppConfigType.Default] != DummyAppId || _baseUri == null)
             {

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -25,69 +26,60 @@ namespace Realms.Tests.Database
     public class LifetimeTests : RealmTest
     {
         [Test]
-        public void RealmObjectsShouldKeepRealmAlive()
+        public async Task RealmObjectsShouldKeepRealmAlive()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
             {
-                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
+                var realm = Realm.GetInstance();
+                var person = realm.Write(() =>
                 {
-                    var realm = Realm.GetInstance();
-                    var person = realm.Write(() =>
-                    {
-                        return realm.Add(new Person());
-                    });
-                    var realmReference = new WeakReference(realm);
-
-                    return (person, realmReference);
-                }, x =>
-                {
-                    Assert.That(x.Reference.IsAlive);
-                    Assert.That(((Realm)x.Reference.Target).IsClosed, Is.False);
-                    Assert.That(x.Preserver.IsValid);
+                    return realm.Add(new Person());
                 });
+                var realmReference = new WeakReference(realm);
+
+                return (person, realmReference);
+            }, x =>
+            {
+                Assert.That(x.Reference.IsAlive);
+                Assert.That(((Realm)x.Reference.Target).IsClosed, Is.False);
+                Assert.That(x.Preserver.IsValid);
             });
         }
 
         [Test]
-        public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
+        public async Task FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
+
+            Person person = null;
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
+                var secondRealm = Realm.GetInstance(realm.Config);
 
-                Person person = null;
-                await TestHelpers.EnsureObjectsAreCollected(() =>
+                // Create a person in the first Realm instance and let the second one get garbage collected.
+                // We expect this not to close the first one or invalidate the person instance.
+                realm.Write(() =>
                 {
-                    var secondRealm = Realm.GetInstance(realm.Config);
-
-                    // Create a person in the first Realm instance and let the second one get garbage collected.
-                    // We expect this not to close the first one or invalidate the person instance.
-                    realm.Write(() =>
-                    {
-                        person = realm.Add(new Person());
-                    });
-
-                    return new[] { secondRealm };
+                    person = realm.Add(new Person());
                 });
 
-                // Assert
-                Assert.That(person.IsValid);
+                return new[] { secondRealm };
             });
+
+            // Assert
+            Assert.That(person.IsValid);
         }
 
         [Test]
-        public void TransactionShouldHoldStrongReferenceToRealm()
+        public async Task TransactionShouldHoldStrongReferenceToRealm()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
             {
-                await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
-                {
-                    var realm = Realm.GetInstance();
-                    var transaction = realm.BeginWrite();
-                    var realmReference = new WeakReference(realm);
+                var realm = Realm.GetInstance();
+                var transaction = realm.BeginWrite();
+                var realmReference = new WeakReference(realm);
 
-                    return (transaction, realmReference);
-                });
+                return (transaction, realmReference);
             });
         }
     }

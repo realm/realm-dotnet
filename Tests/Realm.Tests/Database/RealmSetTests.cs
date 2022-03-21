@@ -83,17 +83,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Bool_Notifications()
+        public async Task RealmSet_WhenManaged_Bool_Notifications()
         {
             var testData = new TestCaseData<bool>(true);
-            RunManagedNotificationsTests(o => o.BooleanSet, testData, newValue: false);
+            await RunManagedNotificationsTestsAsync(o => o.BooleanSet, testData, newValue: false);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableBool_Notifications()
+        public async Task RealmSet_WhenManaged_NullableBool_Notifications()
         {
             var testData = new TestCaseData<bool?>(true);
-            RunManagedNotificationsTests(o => o.NullableBooleanSet, testData, newValue: null);
+            await RunManagedNotificationsTestsAsync(o => o.NullableBooleanSet, testData, newValue: null);
         }
 
         #endregion
@@ -154,17 +154,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Byte_Notifications()
+        public async Task RealmSet_WhenManaged_Byte_Notifications()
         {
             var testData = new TestCaseData<byte>(123, 99);
-            RunManagedNotificationsTests(o => o.ByteSet, testData, newValue: (byte)111);
+            await RunManagedNotificationsTestsAsync(o => o.ByteSet, testData, newValue: (byte)111);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableByte_Notifications()
+        public async Task RealmSet_WhenManaged_NullableByte_Notifications()
         {
             var testData = new TestCaseData<byte?>(123, null, 99);
-            RunManagedNotificationsTests(o => o.NullableByteSet, testData, newValue: (byte)111);
+            await RunManagedNotificationsTestsAsync(o => o.NullableByteSet, testData, newValue: (byte)111);
         }
 
         #endregion
@@ -225,17 +225,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Int16_Notifications()
+        public async Task RealmSet_WhenManaged_Int16_Notifications()
         {
             var testData = new TestCaseData<short>(999, 99);
-            RunManagedNotificationsTests(o => o.Int16Set, testData, newValue: (short)111);
+            await RunManagedNotificationsTestsAsync(o => o.Int16Set, testData, newValue: (short)111);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableInt16_Notifications()
+        public async Task RealmSet_WhenManaged_NullableInt16_Notifications()
         {
             var testData = new TestCaseData<short?>(999, null, 99);
-            RunManagedNotificationsTests(o => o.NullableInt16Set, testData, newValue: (short)111);
+            await RunManagedNotificationsTestsAsync(o => o.NullableInt16Set, testData, newValue: (short)111);
         }
 
         #endregion
@@ -296,17 +296,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Int32_Notifications()
+        public async Task RealmSet_WhenManaged_Int32_Notifications()
         {
             var testData = new TestCaseData<int>(123456789, 99);
-            RunManagedNotificationsTests(o => o.Int32Set, testData, newValue: int.MinValue);
+            await RunManagedNotificationsTestsAsync(o => o.Int32Set, testData, newValue: int.MinValue);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableInt32_Notifications()
+        public async Task RealmSet_WhenManaged_NullableInt32_Notifications()
         {
             var testData = new TestCaseData<int?>(123, null, 99);
-            RunManagedNotificationsTests(o => o.NullableInt32Set, testData, newValue: int.MaxValue);
+            await RunManagedNotificationsTestsAsync(o => o.NullableInt32Set, testData, newValue: int.MaxValue);
         }
 
         #endregion
@@ -367,17 +367,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Int64_Notifications()
+        public async Task RealmSet_WhenManaged_Int64_Notifications()
         {
             var testData = new TestCaseData<long>(123, 99);
-            RunManagedNotificationsTests(o => o.Int64Set, testData, newValue: long.MinValue);
+            await RunManagedNotificationsTestsAsync(o => o.Int64Set, testData, newValue: long.MinValue);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableInt64_Notifications()
+        public async Task RealmSet_WhenManaged_NullableInt64_Notifications()
         {
             var testData = new TestCaseData<long?>(123, null, 99);
-            RunManagedNotificationsTests(o => o.NullableInt64Set, testData, newValue: long.MaxValue);
+            await RunManagedNotificationsTestsAsync(o => o.NullableInt64Set, testData, newValue: long.MaxValue);
         }
 
         #endregion
@@ -438,17 +438,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Float_Notifications()
+        public async Task RealmSet_WhenManaged_Float_Notifications()
         {
             var testData = new TestCaseData<float>(123.456f, 99);
-            RunManagedNotificationsTests(o => o.SingleSet, testData, newValue: float.MinValue);
+            await RunManagedNotificationsTestsAsync(o => o.SingleSet, testData, newValue: float.MinValue);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableFloat_Notifications()
+        public async Task RealmSet_WhenManaged_NullableFloat_Notifications()
         {
             var testData = new TestCaseData<float?>(123.567f, null, 99);
-            RunManagedNotificationsTests(o => o.NullableSingleSet, testData, newValue: float.MaxValue);
+            await RunManagedNotificationsTestsAsync(o => o.NullableSingleSet, testData, newValue: float.MaxValue);
         }
 
         #endregion
@@ -509,17 +509,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Double_Notifications()
+        public async Task RealmSet_WhenManaged_Double_Notifications()
         {
             var testData = new TestCaseData<double>(123.9999, 99);
-            RunManagedNotificationsTests(o => o.DoubleSet, testData, newValue: double.MinValue);
+            await RunManagedNotificationsTestsAsync(o => o.DoubleSet, testData, newValue: double.MinValue);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableDouble_Notifications()
+        public async Task RealmSet_WhenManaged_NullableDouble_Notifications()
         {
             var testData = new TestCaseData<double?>(123.1111, null, 99);
-            RunManagedNotificationsTests(o => o.NullableDoubleSet, testData, newValue: double.MaxValue);
+            await RunManagedNotificationsTestsAsync(o => o.NullableDoubleSet, testData, newValue: double.MaxValue);
         }
 
         #endregion
@@ -584,17 +584,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Decimal_Notifications()
+        public async Task RealmSet_WhenManaged_Decimal_Notifications()
         {
             var testData = new TestCaseData<decimal>(123.7777777m, 99);
-            RunManagedNotificationsTests(o => o.DecimalSet, testData, newValue: decimal.MinValue);
+            await RunManagedNotificationsTestsAsync(o => o.DecimalSet, testData, newValue: decimal.MinValue);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableDecimal_Notifications()
+        public async Task RealmSet_WhenManaged_NullableDecimal_Notifications()
         {
             var testData = new TestCaseData<decimal?>(123.999999999m, null, 99);
-            RunManagedNotificationsTests(o => o.NullableDecimalSet, testData, newValue: long.MaxValue);
+            await RunManagedNotificationsTestsAsync(o => o.NullableDecimalSet, testData, newValue: long.MaxValue);
         }
 
         #endregion
@@ -670,17 +670,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Decimal128_Notifications()
+        public async Task RealmSet_WhenManaged_Decimal128_Notifications()
         {
             var testData = new TestCaseData<Decimal128>(123.9999999999m, 99);
-            RunManagedNotificationsTests(o => o.Decimal128Set, testData, newValue: Decimal128.MinValue);
+            await RunManagedNotificationsTestsAsync(o => o.Decimal128Set, testData, newValue: Decimal128.MinValue);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableDecimal128_Notifications()
+        public async Task RealmSet_WhenManaged_NullableDecimal128_Notifications()
         {
             var testData = new TestCaseData<Decimal128?>(123, null, 99.123456789m);
-            RunManagedNotificationsTests(o => o.NullableDecimal128Set, testData, newValue: Decimal128.MaxValue);
+            await RunManagedNotificationsTestsAsync(o => o.NullableDecimal128Set, testData, newValue: Decimal128.MaxValue);
         }
 
         #endregion
@@ -750,17 +750,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_ObjectId_Notifications()
+        public async Task RealmSet_WhenManaged_ObjectId_Notifications()
         {
             var testData = new TestCaseData<ObjectId>(TestHelpers.GenerateRepetitiveObjectId(1), TestHelpers.GenerateRepetitiveObjectId(2));
-            RunManagedNotificationsTests(o => o.ObjectIdSet, testData, newValue: TestHelpers.GenerateRepetitiveObjectId(255));
+            await RunManagedNotificationsTestsAsync(o => o.ObjectIdSet, testData, newValue: TestHelpers.GenerateRepetitiveObjectId(255));
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableObjectId_Notifications()
+        public async Task RealmSet_WhenManaged_NullableObjectId_Notifications()
         {
             var testData = new TestCaseData<ObjectId?>(TestHelpers.GenerateRepetitiveObjectId(1), TestHelpers.GenerateRepetitiveObjectId(2));
-            RunManagedNotificationsTests(o => o.NullableObjectIdSet, testData, newValue: null);
+            await RunManagedNotificationsTestsAsync(o => o.NullableObjectIdSet, testData, newValue: null);
         }
 
         #endregion
@@ -831,17 +831,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_DateTimeOffset_Notifications()
+        public async Task RealmSet_WhenManaged_DateTimeOffset_Notifications()
         {
             var testData = new TestCaseData<DateTimeOffset>(Date0, Date1);
-            RunManagedNotificationsTests(o => o.DateTimeOffsetSet, testData, newValue: Date5);
+            await RunManagedNotificationsTestsAsync(o => o.DateTimeOffsetSet, testData, newValue: Date5);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableDateTimeOffset_Notifications()
+        public async Task RealmSet_WhenManaged_NullableDateTimeOffset_Notifications()
         {
             var testData = new TestCaseData<DateTimeOffset?>(Date0, null, Date2);
-            RunManagedNotificationsTests(o => o.NullableDateTimeOffsetSet, testData, newValue: Date6);
+            await RunManagedNotificationsTestsAsync(o => o.NullableDateTimeOffsetSet, testData, newValue: Date6);
         }
 
         #endregion
@@ -902,17 +902,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_String_Notifications()
+        public async Task RealmSet_WhenManaged_String_Notifications()
         {
             var testData = new TestCaseData<string>("abc", "cde");
-            RunManagedNotificationsTests(o => o.StringSet, testData, newValue: string.Empty);
+            await RunManagedNotificationsTestsAsync(o => o.StringSet, testData, newValue: string.Empty);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableString_Notifications()
+        public async Task RealmSet_WhenManaged_NullableString_Notifications()
         {
             var testData = new TestCaseData<string>("fge", null, "zzzz");
-            RunManagedNotificationsTests(o => o.NullableStringSet, testData, newValue: "new string");
+            await RunManagedNotificationsTestsAsync(o => o.NullableStringSet, testData, newValue: "new string");
         }
 
         #endregion
@@ -989,17 +989,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Binary_Notifications()
+        public async Task RealmSet_WhenManaged_Binary_Notifications()
         {
             var testData = new TestCaseData<byte[]>(Binary0, Binary1);
-            RunManagedNotificationsTests(o => o.ByteArraySet, testData, newValue: BinaryMax);
+            await RunManagedNotificationsTestsAsync(o => o.ByteArraySet, testData, newValue: BinaryMax);
         }
 
         [Test]
-        public void RealmSet_WhenManaged_NullableBinary_Notifications()
+        public async Task RealmSet_WhenManaged_NullableBinary_Notifications()
         {
             var testData = new TestCaseData<byte[]>(Binary1, null, Binary5);
-            RunManagedNotificationsTests(o => o.NullableByteArraySet, testData, newValue: Binary2);
+            await RunManagedNotificationsTestsAsync(o => o.NullableByteArraySet, testData, newValue: Binary2);
         }
 
         #endregion
@@ -1060,10 +1060,10 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_Object_Notifications()
+        public async Task RealmSet_WhenManaged_Object_Notifications()
         {
             var testData = new TestCaseData<IntPropertyObject>(GenerateObjects(1, 2, 3));
-            RunManagedNotificationsTests(o => o.ObjectSet, testData, newValue: GenerateObjects(5).Single());
+            await RunManagedNotificationsTestsAsync(o => o.ObjectSet, testData, newValue: GenerateObjects(5).Single());
         }
 
         #endregion
@@ -1133,7 +1133,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmSet_WhenManaged_RealmValue_Notifications()
+        public async Task RealmSet_WhenManaged_RealmValue_Notifications()
         {
             var testData = new TestCaseData<RealmValue>(new RealmValue[]
             {
@@ -1151,7 +1151,7 @@ namespace Realms.Tests.Database
                 RealmValue.Create(new IntPropertyObject { Int = 10 }, RealmValueType.Object)
             });
 
-            RunManagedNotificationsTests(o => o.RealmValueSet, testData, newValue: "newValue");
+            await RunManagedNotificationsTestsAsync(o => o.RealmValueSet, testData, newValue: "newValue");
         }
 
         #endregion
@@ -1297,26 +1297,23 @@ namespace Realms.Tests.Database
             testData.AssertUnionWith(managedSet, otherResults);
         }
 
-        private void RunManagedNotificationsTests<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData, T newValue)
+        private async Task RunManagedNotificationsTestsAsync<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData, T newValue)
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var testObject = new CollectionsObject();
+            var set = accessor(testObject);
+
+            testData.Seed(set);
+
+            _realm.Write(() =>
             {
-                var testObject = new CollectionsObject();
-                var set = accessor(testObject);
-
-                testData.Seed(set);
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(testObject);
-                });
-
-                var managedSet = accessor(testObject);
-                Assert.That(set, Is.Not.SameAs(managedSet));
-
-                await testData.AssertNotifications_Realm(managedSet, newValue);
-                await testData.AssertNotifications_CollectionChanged(managedSet, newValue);
+                _realm.Add(testObject);
             });
+
+            var managedSet = accessor(testObject);
+            Assert.That(set, Is.Not.SameAs(managedSet));
+
+            await testData.AssertNotifications_Realm(managedSet, newValue);
+            await testData.AssertNotifications_CollectionChanged(managedSet, newValue);
         }
 
         public class TestCaseData<T>

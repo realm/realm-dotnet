@@ -29,72 +29,60 @@ namespace Realms.Tests.Database
     public class ThreadHandoverTests : RealmInstanceTest
     {
         [Test]
-        public void ObjectReference_ShouldWork()
+        public async Task ObjectReference_ShouldWork()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var objReference = SetupObjectReference();
+
+            await Task.Run(() =>
             {
-                var objReference = SetupObjectReference();
+                using var otherRealm = GetRealm(_realm.Config);
+                var otherObj = otherRealm.ResolveReference(objReference);
 
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    var otherObj = otherRealm.ResolveReference(objReference);
-
-                    Assert.That(otherObj.IsManaged);
-                    Assert.That(otherObj.IsValid);
-                    Assert.That(otherObj.Int, Is.EqualTo(12));
-                });
+                Assert.That(otherObj.IsManaged);
+                Assert.That(otherObj.IsValid);
+                Assert.That(otherObj.Int, Is.EqualTo(12));
             });
         }
 
         [Test]
-        public void ListReference_ShouldWork()
+        public async Task ListReference_ShouldWork()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var obj = new Owner();
+            obj.ListOfDogs.Add(new Dog { Name = "1" });
+            obj.ListOfDogs.Add(new Dog { Name = "2" });
+
+            _realm.Write(() => _realm.Add(obj));
+
+            var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
+
+            await Task.Run(() =>
             {
-                var obj = new Owner();
-                obj.ListOfDogs.Add(new Dog { Name = "1" });
-                obj.ListOfDogs.Add(new Dog { Name = "2" });
+                using var otherRealm = GetRealm(_realm.Config);
+                var otherList = otherRealm.ResolveReference(listReference);
 
-                _realm.Write(() => _realm.Add(obj));
-
-                var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
-
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    var otherList = otherRealm.ResolveReference(listReference);
-
-                    Assert.That(otherList, Is.InstanceOf(typeof(RealmList<Dog>)));
-                    var dogNames = otherList.Select(d => d.Name);
-                    Assert.That(dogNames, Is.EqualTo(new[] { "1", "2" }));
-                });
+                Assert.That(otherList, Is.InstanceOf(typeof(RealmList<Dog>)));
+                var dogNames = otherList.Select(d => d.Name);
+                Assert.That(dogNames, Is.EqualTo(new[] { "1", "2" }));
             });
         }
 
         [Test]
-        public void QueryReference_WhenNoQueryApplied_ShouldWork()
+        public async Task QueryReference_WhenNoQueryApplied_ShouldWork()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var queryReference = SetupQueryReference(q => q);
-                await AssertQueryReferenceAsync(queryReference, new[] { 1, 2, 3, 4 });
-            });
+            var queryReference = SetupQueryReference(q => q);
+            await AssertQueryReferenceAsync(queryReference, new[] { 1, 2, 3, 4 });
         }
 
         [Test]
-        public void ThreadSafeReference_CanOnlyBeConsumedOnce()
+        public async Task ThreadSafeReference_CanOnlyBeConsumedOnce()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var objReference = SetupObjectReference();
+            var objReference = SetupObjectReference();
 
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    otherRealm.ResolveReference(objReference);
-                    Assert.That(() => otherRealm.ResolveReference(objReference), Throws.InstanceOf<RealmException>().And.Message.Contains("Can only resolve a thread safe reference once."));
-                });
+            await Task.Run(() =>
+            {
+                using var otherRealm = GetRealm(_realm.Config);
+                otherRealm.ResolveReference(objReference);
+                Assert.That(() => otherRealm.ResolveReference(objReference), Throws.InstanceOf<RealmException>().And.Message.Contains("Can only resolve a thread safe reference once."));
             });
         }
 
@@ -197,152 +185,128 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ThreadReference_WhenResolvedWithDifferentConfiguration_ShouldReturnNull()
+        public async Task ThreadReference_WhenResolvedWithDifferentConfiguration_ShouldReturnNull()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var objReference = SetupObjectReference();
+            var objReference = SetupObjectReference();
 
-                await Task.Run(() =>
+            await Task.Run(() =>
+            {
+                var config = new RealmConfiguration(Guid.NewGuid().ToString());
+                using var otherRealm = GetRealm(config);
+                var otherObj = otherRealm.ResolveReference(objReference);
+                Assert.That(otherObj, Is.Null);
+            });
+        }
+
+        [Test]
+        public async Task ThreadSafeReference_WhenTargetRealmInTransaction_ShouldSucceed()
+        {
+            var objReference = SetupObjectReference();
+
+            await Task.Run(() =>
+            {
+                using var otherRealm = GetRealm(_realm.Config);
+                otherRealm.Write(() =>
                 {
-                    var config = new RealmConfiguration(Guid.NewGuid().ToString());
-                    using var otherRealm = GetRealm(config);
                     var otherObj = otherRealm.ResolveReference(objReference);
-                    Assert.That(otherObj, Is.Null);
-                });
-            });
-        }
-
-        [Test]
-        public void ThreadSafeReference_WhenTargetRealmInTransaction_ShouldSucceed()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var objReference = SetupObjectReference();
-
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    otherRealm.Write(() =>
-                    {
-                        var otherObj = otherRealm.ResolveReference(objReference);
-
-                        Assert.That(otherObj.IsManaged);
-                        Assert.That(otherObj.IsValid);
-                        Assert.That(otherObj.Int, Is.EqualTo(12));
-                    });
-                });
-            });
-        }
-
-        [Test]
-        public void ObjectReference_WhenSourceRealmInTransaction_ShouldSucceed()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                ThreadSafeReference.Object<IntPropertyObject> objRef = null;
-
-                _realm.Write(() =>
-                {
-                    var obj = _realm.Add(new IntPropertyObject { Int = 123 });
-                    objRef = ThreadSafeReference.Create(obj);
-                });
-
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    var otherObj = otherRealm.ResolveReference(objRef);
 
                     Assert.That(otherObj.IsManaged);
                     Assert.That(otherObj.IsValid);
-                    Assert.That(otherObj.Int, Is.EqualTo(123));
+                    Assert.That(otherObj.Int, Is.EqualTo(12));
                 });
             });
         }
 
         [Test]
-        public void ObjectReference_ResolveDeletedObject_ShouldReturnNull()
+        public async Task ObjectReference_WhenSourceRealmInTransaction_ShouldSucceed()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            ThreadSafeReference.Object<IntPropertyObject> objRef = null;
+
+            _realm.Write(() =>
             {
-                var obj = new IntPropertyObject { Int = 12 };
-                _realm.Write(() => _realm.Add(obj));
+                var obj = _realm.Add(new IntPropertyObject { Int = 123 });
+                objRef = ThreadSafeReference.Create(obj);
+            });
 
-                var objReference = ThreadSafeReference.Create(obj);
+            await Task.Run(() =>
+            {
+                using var otherRealm = GetRealm(_realm.Config);
+                var otherObj = otherRealm.ResolveReference(objRef);
 
-                _realm.Write(() => _realm.Remove(obj));
-
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    var otherObj = otherRealm.ResolveReference(objReference);
-                    Assert.That(otherObj, Is.Null);
-                });
+                Assert.That(otherObj.IsManaged);
+                Assert.That(otherObj.IsValid);
+                Assert.That(otherObj.Int, Is.EqualTo(123));
             });
         }
 
         [Test]
-        public void ListReference_ResolveDeletedParentObject_ShouldReturnNull()
+        public async Task ObjectReference_ResolveDeletedObject_ShouldReturnNull()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var obj = new IntPropertyObject { Int = 12 };
+            _realm.Write(() => _realm.Add(obj));
+
+            var objReference = ThreadSafeReference.Create(obj);
+
+            _realm.Write(() => _realm.Remove(obj));
+
+            await Task.Run(() =>
             {
-                var obj = new Owner();
-                obj.ListOfDogs.Add(new Dog { Name = "1" });
-                obj.ListOfDogs.Add(new Dog { Name = "2" });
-
-                _realm.Write(() => _realm.Add(obj));
-
-                var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
-
-                _realm.Write(() => _realm.Remove(obj));
-
-                await Task.Run(() =>
-                {
-                    using var otherRealm = GetRealm(_realm.Config);
-                    var otherList = otherRealm.ResolveReference(listReference);
-
-                    Assert.That(otherList, Is.Null);
-                });
+                using var otherRealm = GetRealm(_realm.Config);
+                var otherObj = otherRealm.ResolveReference(objReference);
+                Assert.That(otherObj, Is.Null);
             });
         }
 
         [Test]
-        public void QueryReference_WhenFilterApplied_ShouldWork()
+        public async Task ListReference_ResolveDeletedParentObject_ShouldReturnNull()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                _realm.Write(() =>
-                {
-                    _realm.Add(new IntPropertyObject { Int = 1 });
-                    _realm.Add(new IntPropertyObject { Int = 2 });
-                    _realm.Add(new IntPropertyObject { Int = 3 });
-                    _realm.Add(new IntPropertyObject { Int = 4 });
-                });
+            var obj = new Owner();
+            obj.ListOfDogs.Add(new Dog { Name = "1" });
+            obj.ListOfDogs.Add(new Dog { Name = "2" });
 
-                var query = _realm.All<IntPropertyObject>().Where(o => o.Int != 2);
-                var queryReference = ThreadSafeReference.Create(query);
-                await AssertQueryReferenceAsync(queryReference, new[] { 1, 3, 4 });
+            _realm.Write(() => _realm.Add(obj));
+
+            var listReference = ThreadSafeReference.Create(obj.ListOfDogs);
+
+            _realm.Write(() => _realm.Remove(obj));
+
+            await Task.Run(() =>
+            {
+                using var otherRealm = GetRealm(_realm.Config);
+                var otherList = otherRealm.ResolveReference(listReference);
+
+                Assert.That(otherList, Is.Null);
             });
         }
 
         [Test]
-        public void QueryReference_WhenSortApplied_ShouldWork()
+        public async Task QueryReference_WhenFilterApplied_ShouldWork()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            _realm.Write(() =>
             {
-                var queryReference = SetupQueryReference(q => q.OrderByDescending(o => o.Int));
-                await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 2, 1 });
+                _realm.Add(new IntPropertyObject { Int = 1 });
+                _realm.Add(new IntPropertyObject { Int = 2 });
+                _realm.Add(new IntPropertyObject { Int = 3 });
+                _realm.Add(new IntPropertyObject { Int = 4 });
             });
+
+            var query = _realm.All<IntPropertyObject>().Where(o => o.Int != 2);
+            var queryReference = ThreadSafeReference.Create(query);
+            await AssertQueryReferenceAsync(queryReference, new[] { 1, 3, 4 });
         }
 
         [Test]
-        public void QueryReference_WhenSortAndFilterApplied_ShouldWork()
+        public async Task QueryReference_WhenSortApplied_ShouldWork()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var queryReference = SetupQueryReference(q => q.Where(o => o.Int != 2).OrderByDescending(o => o.Int));
-                await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 1 });
-            });
+            var queryReference = SetupQueryReference(q => q.OrderByDescending(o => o.Int));
+            await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 2, 1 });
+        }
+
+        [Test]
+        public async Task QueryReference_WhenSortAndFilterApplied_ShouldWork()
+        {
+            var queryReference = SetupQueryReference(q => q.Where(o => o.Int != 2).OrderByDescending(o => o.Int));
+            await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 1 });
         }
 
         private ThreadSafeReference.Query<IntPropertyObject> SetupQueryReference(Func<IQueryable<IntPropertyObject>, IQueryable<IntPropertyObject>> queryFunc)

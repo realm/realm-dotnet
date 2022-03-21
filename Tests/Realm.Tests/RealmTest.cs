@@ -27,6 +27,7 @@ using Realms.Logging;
 namespace Realms.Tests
 {
     [Preserve(AllMembers = true)]
+    [RequiresSynchronizationContext]
     public abstract class RealmTest
     {
         private readonly Queue<Realm> _realms = new Queue<Realm>();

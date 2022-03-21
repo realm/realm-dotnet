@@ -243,20 +243,17 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Configuration_WhenCreatedFromMultipleThreads_DoesntThrow()
+        public async Task Configuration_WhenCreatedFromMultipleThreads_DoesntThrow()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
             {
-                var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
+                return new RealmConfiguration
                 {
-                    return new RealmConfiguration
-                    {
-                        Schema = new[] { typeof(Person), typeof(AllTypesObject), typeof(ListsObject), typeof(CollectionsObject) }
-                    };
-                }));
+                    Schema = new[] { typeof(Person), typeof(AllTypesObject), typeof(ListsObject), typeof(CollectionsObject) }
+                };
+            }));
 
-                await Task.WhenAll(tasks);
-            });
+            await Task.WhenAll(tasks);
         }
     }
 }

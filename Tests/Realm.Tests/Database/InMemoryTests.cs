@@ -61,45 +61,42 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void InMemoryRealm_ReceivesNotifications()
+        public async Task InMemoryRealm_ReceivesNotifications()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var tcs = new TaskCompletionSource<ChangeSet>();
+
+            using var realm = GetRealm(_config);
+
+            var query = realm.All<IntPropertyObject>();
+            using var token = query.SubscribeForNotifications((sender, changes, error) =>
             {
-                var tcs = new TaskCompletionSource<ChangeSet>();
-
-                using var realm = GetRealm(_config);
-
-                var query = realm.All<IntPropertyObject>();
-                using var token = query.SubscribeForNotifications((sender, changes, error) =>
+                if (changes != null)
                 {
-                    if (changes != null)
-                    {
-                        tcs.TrySetResult(changes);
-                    }
-                    else if (error != null)
-                    {
-                        tcs.TrySetException(error);
-                    }
-                });
-
-                await Task.Delay(100);
-
-                await Task.Run(() =>
+                    tcs.TrySetResult(changes);
+                }
+                else if (error != null)
                 {
-                    using var otherRealm = GetRealm(_config);
-                    otherRealm.Write(() => otherRealm.Add(new IntPropertyObject
-                    {
-                        Int = 42
-                    }));
-                });
-
-                var backgroundChanges = await tcs.Task;
-
-                Assert.That(backgroundChanges.InsertedIndices, Is.Not.Empty);
-                Assert.That(backgroundChanges.DeletedIndices, Is.Empty);
-                Assert.That(backgroundChanges.ModifiedIndices, Is.Empty);
-                Assert.That(backgroundChanges.InsertedIndices[0], Is.EqualTo(0));
+                    tcs.TrySetException(error);
+                }
             });
+
+            await Task.Delay(100);
+
+            await Task.Run(() =>
+            {
+                using var otherRealm = GetRealm(_config);
+                otherRealm.Write(() => otherRealm.Add(new IntPropertyObject
+                {
+                    Int = 42
+                }));
+            });
+
+            var backgroundChanges = await tcs.Task;
+
+            Assert.That(backgroundChanges.InsertedIndices, Is.Not.Empty);
+            Assert.That(backgroundChanges.DeletedIndices, Is.Empty);
+            Assert.That(backgroundChanges.ModifiedIndices, Is.Empty);
+            Assert.That(backgroundChanges.InsertedIndices[0], Is.EqualTo(0));
         }
 
         [Test]
@@ -127,29 +124,26 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void InMemoryRealm_WhenGarbageCollected_DeletesData()
+        public async Task InMemoryRealm_WhenGarbageCollected_DeletesData()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            await TestHelpers.EnsureObjectsAreCollected(() =>
             {
-                await TestHelpers.EnsureObjectsAreCollected(() =>
+                var realm = Realm.GetInstance(_config);
+                realm.Write(() => realm.Add(new IntPropertyObject
                 {
-                    var realm = Realm.GetInstance(_config);
-                    realm.Write(() => realm.Add(new IntPropertyObject
-                    {
-                        Int = 42
-                    }));
+                    Int = 42
+                }));
 
-                    return new[] { realm };
-                });
-
-                // Sometimes it takes a little while for the file to be deleted
-                await Task.Delay(200);
-
-                Assert.That(File.Exists(_config.DatabasePath), Is.False);
-
-                using var realm2 = GetRealm(_config);
-                Assert.That(realm2.All<IntPropertyObject>(), Is.Empty);
+                return new[] { realm };
             });
+
+            // Sometimes it takes a little while for the file to be deleted
+            await Task.Delay(200);
+
+            Assert.That(File.Exists(_config.DatabasePath), Is.False);
+
+            using var realm2 = GetRealm(_config);
+            Assert.That(realm2.All<IntPropertyObject>(), Is.Empty);
         }
 
         [Test]

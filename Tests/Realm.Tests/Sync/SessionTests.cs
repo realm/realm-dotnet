@@ -79,107 +79,103 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_Error_ShouldPassCorrectSession()
+        public async Task Session_Error_ShouldPassCorrectSession()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var config = GetFakeConfig();
+            using var realm = GetRealm(config);
+            var session = GetSession(realm);
+
+            const ErrorCode code = (ErrorCode)102;
+            const string message = "Some fake error has occurred";
+
+            var error = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message, errorSession =>
             {
-                var config = GetFakeConfig();
-                using var realm = GetRealm(config);
-                var session = GetSession(realm);
-
-                const ErrorCode code = (ErrorCode)102;
-                const string message = "Some fake error has occurred";
-
-                var error = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message, errorSession =>
-                {
-                    Assert.That(errorSession, Is.EqualTo(session));
-                });
-
-                Assert.That(error.Message, Is.EqualTo(message));
-                Assert.That(error.ErrorCode, Is.EqualTo(code));
+                Assert.That(errorSession, Is.EqualTo(session));
             });
+
+            Assert.That(error.Message, Is.EqualTo(message));
+            Assert.That(error.ErrorCode, Is.EqualTo(code));
         }
 
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
-        public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
+        [RequiresBaas, Timeout(120_000)]
+        public async Task Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
             const int ObjectSize = 1_000_000;
             const int ObjectsToRecord = 2;
-            SyncTestHelpers.RunBaasTestAsync(async () =>
+
+            var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+            using var realm = GetRealm(config);
+
+            var completionTCS = new TaskCompletionSource<ulong>();
+            var callbacksInvoked = 0;
+
+            var session = GetSession(realm);
+
+            var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
+
+            for (var i = 0; i < ObjectsToRecord; i++)
             {
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = GetRealm(config);
-
-                var completionTCS = new TaskCompletionSource<ulong>();
-                var callbacksInvoked = 0;
-
-                var session = GetSession(realm);
-
-                var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
-
-                for (var i = 0; i < ObjectsToRecord; i++)
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new HugeSyncObject(ObjectSize));
-                    });
-                }
-
-                using var token = observable.Subscribe(p =>
-                {
-                    try
-                    {
-                        callbacksInvoked++;
-
-                        if (p.TransferredBytes > p.TransferableBytes)
-                        {
-                            // TODO https://github.com/realm/realm-dotnet/issues/2360: this seems to be a regression in Sync.
-                            // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
-                        }
-
-                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
-                        {
-                            if (p.TransferableBytes <= ObjectSize ||
-                                p.TransferableBytes >= (ObjectsToRecord + 2) * ObjectSize)
-                            {
-                                throw new Exception($"Expected: {p.TransferableBytes} to be in the ({ObjectSize}, {(ObjectsToRecord + 1) * ObjectSize}) range.");
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        completionTCS.TrySetException(e);
-                    }
-
-                    if (p.TransferredBytes >= p.TransferableBytes)
-                    {
-                        completionTCS.TrySetResult(p.TransferredBytes);
-                    }
-                });
-
                 realm.Write(() =>
                 {
                     realm.Add(new HugeSyncObject(ObjectSize));
                 });
+            }
 
-                var totalTransferred = await completionTCS.Task;
-
-                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+            using var token = observable.Subscribe(p =>
+            {
+                try
                 {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+                    callbacksInvoked++;
 
-                    // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
-                    // so in the fixed mode, we should not get updates for it.
-                    Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 5) * ObjectSize));
+                    if (p.TransferredBytes > p.TransferableBytes)
+                    {
+                        // TODO https://github.com/realm/realm-dotnet/issues/2360: this seems to be a regression in Sync.
+                        // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
+                    }
+
+                    if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                    {
+                        if (p.TransferableBytes <= ObjectSize ||
+                            p.TransferableBytes >= (ObjectsToRecord + 2) * ObjectSize)
+                        {
+                            throw new Exception($"Expected: {p.TransferableBytes} to be in the ({ObjectSize}, {(ObjectsToRecord + 1) * ObjectSize}) range.");
+                        }
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
+                    completionTCS.TrySetException(e);
                 }
 
-                Assert.That(callbacksInvoked, Is.GreaterThan(1));
-            }, timeout: 120_000);
+                if (p.TransferredBytes >= p.TransferableBytes)
+                {
+                    completionTCS.TrySetResult(p.TransferredBytes);
+                }
+            });
+
+            realm.Write(() =>
+            {
+                realm.Add(new HugeSyncObject(ObjectSize));
+            });
+
+            var totalTransferred = await completionTCS.Task;
+
+            if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+            {
+                Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+
+                // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
+                // so in the fixed mode, we should not get updates for it.
+                Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 5) * ObjectSize));
+            }
+            else
+            {
+                Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
+            }
+
+            Assert.That(callbacksInvoked, Is.GreaterThan(1));
         }
 
         [Test]

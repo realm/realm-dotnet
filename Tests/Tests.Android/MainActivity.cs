@@ -41,7 +41,12 @@ namespace Realms.Tests.Android
         {
             base.OnCreate(savedInstanceState);
 
+            TestHelpers.EnsureNUnitCanAwaitTasks();
+
             Forms.Init(this, savedInstanceState);
+
+            var arguments = TestHelpers.SplitArguments(Intent.GetStringExtra("args") ?? string.Empty);
+            arguments = Task.Run(() => SyncTestHelpers.ExtractBaasSettingsAsync(arguments)).Result;
 
             var nunit = new App();
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
@@ -49,9 +54,6 @@ namespace Realms.Tests.Android
             {
                 LogToOutput = true,
             };
-
-            var arguments = TestHelpers.SplitArguments(Intent.GetStringExtra("args") ?? string.Empty);
-            arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {

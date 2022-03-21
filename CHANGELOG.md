@@ -12,6 +12,7 @@
 
 ### Internal
 * Using Core 11.11.0.
+* Refactored async and baas tests to use custom NUnit attributes instead of `TestHelpers.RunAsyncTest` and `SyncTestHelpers.RunBaasTestAsync` calls.
 * Enabled running Benchmarks on iOS devices by turning on the interpreter for some windows assemblies.
 
 ## 10.10.0 (2022-02-28)

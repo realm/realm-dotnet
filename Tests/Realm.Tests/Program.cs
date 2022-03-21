@@ -18,16 +18,17 @@
 
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using NUnitLite;
 
 namespace Realms.Tests
 {
     public sealed class Program
     {
-        public static int Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            var arguments = Sync.SyncTestHelpers.ExtractBaasSettings(args);
+            var arguments = await Sync.SyncTestHelpers.ExtractBaasSettingsAsync(args);
 
             autorun.Execute(arguments);
 
@@ -36,8 +37,6 @@ namespace Realms.Tests
             {
                 TestHelpers.TransformTestResults(resultPath);
             }
-
-            return 0;
         }
     }
 }

@@ -291,178 +291,120 @@ namespace Realms.Tests.Database
         #region Managed Tests
 
         [TestCaseSource(nameof(BooleanTestValues))]
-        public void Test_ManagedBooleanList(bool[] values)
-        {
-            RunManagedTests(obj => obj.BooleanList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedBooleanList(bool[] values) => RunManagedTestsAsync(obj => obj.BooleanList, values);
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Test_ManagedByteList(byte[] values)
-        {
-            RunManagedTests(obj => obj.ByteList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedByteList(byte[] values) => RunManagedTestsAsync(obj => obj.ByteList, values);
 
         [TestCaseSource(nameof(CharTestValues))]
-        public void Test_ManagedCharList(char[] values)
-        {
-            RunManagedTests(obj => obj.CharList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedCharList(char[] values) => RunManagedTestsAsync(obj => obj.CharList, values);
 
         [TestCaseSource(nameof(DoubleTestValues))]
-        public void Test_ManagedDoubleList(double[] values)
-        {
-            RunManagedTests(obj => obj.DoubleList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedDoubleList(double[] values) => RunManagedTestsAsync(obj => obj.DoubleList, values);
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Test_ManagedInt16List(short[] values)
-        {
-            RunManagedTests(obj => obj.Int16List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedInt16List(short[] values) => RunManagedTestsAsync(obj => obj.Int16List, values);
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Test_ManagedInt32List(int[] values)
-        {
-            RunManagedTests(obj => obj.Int32List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedInt32List(int[] values) => RunManagedTestsAsync(obj => obj.Int32List, values);
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void Test_ManagedInt64List(long[] values)
-        {
-            RunManagedTests(obj => obj.Int64List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedInt64List(long[] values) => RunManagedTestsAsync(obj => obj.Int64List, values);
 
         [TestCaseSource(nameof(DecimalTestValues))]
-        public void Test_ManagedDecimalList(decimal[] values)
-        {
-            RunManagedTests(obj => obj.DecimalList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedDecimalList(decimal[] values) => RunManagedTestsAsync(obj => obj.DecimalList, values);
 
         [TestCaseSource(nameof(Decimal128TestValues))]
-        public void Test_ManagedDecimal128List(Decimal128[] values)
-        {
-            RunManagedTests(obj => obj.Decimal128List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedDecimal128List(Decimal128[] values) => RunManagedTestsAsync(obj => obj.Decimal128List, values);
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
-        public void Test_ManagedObjectIdList(ObjectId[] values)
-        {
-            RunManagedTests(obj => obj.ObjectIdList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedObjectIdList(ObjectId[] values) => RunManagedTestsAsync(obj => obj.ObjectIdList, values);
 
         [TestCaseSource(nameof(GuidTestValues))]
-        public void Test_ManagedGuidList(Guid[] values)
-        {
-            RunManagedTests(obj => obj.GuidList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedGuidList(Guid[] values) => RunManagedTestsAsync(obj => obj.GuidList, values);
 
         [TestCaseSource(nameof(DateTestValues))]
-        public void Test_ManagedDateTimeOffsetList(DateTimeOffset[] values)
-        {
-            RunManagedTests(obj => obj.DateTimeOffsetList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedDateTimeOffsetList(DateTimeOffset[] values) => RunManagedTestsAsync(obj => obj.DateTimeOffsetList, values);
 
         [TestCaseSource(nameof(StringTestValues))]
-        public void Test_ManagedStringList(string[] values)
-        {
-            RunManagedTests(obj => obj.StringList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedStringList(string[] values) => RunManagedTestsAsync(obj => obj.StringList, values);
 
         [TestCaseSource(nameof(ByteArrayTestValues))]
-        public void Test_ManagedByteArrayList(byte[][] values)
-        {
-            RunManagedTests(obj => obj.ByteArrayList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedByteArrayList(byte[][] values) => RunManagedTestsAsync(obj => obj.ByteArrayList, values);
 
         [TestCaseSource(nameof(NullableBooleanTestValues))]
-        public void Test_ManagedNullableBooleanList(bool?[] values)
-        {
-            RunManagedTests(obj => obj.NullableBooleanList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableBooleanList(bool?[] values) => RunManagedTestsAsync(obj => obj.NullableBooleanList, values);
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void Test_ManagedNullableByteList(byte?[] values)
-        {
-            RunManagedTests(obj => obj.NullableByteList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableByteList(byte?[] values) => RunManagedTestsAsync(obj => obj.NullableByteList, values);
 
         [TestCaseSource(nameof(NullableCharTestValues))]
-        public void Test_ManagedNullableCharList(char?[] values)
-        {
-            RunManagedTests(obj => obj.NullableCharList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableCharList(char?[] values) => RunManagedTestsAsync(obj => obj.NullableCharList, values);
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
-        public void Test_ManagedNullableDoubleList(double?[] values)
-        {
-            RunManagedTests(obj => obj.NullableDoubleList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableDoubleList(double?[] values) => RunManagedTestsAsync(obj => obj.NullableDoubleList, values);
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void Test_ManagedNullableInt16List(short?[] values)
-        {
-            RunManagedTests(obj => obj.NullableInt16List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableInt16List(short?[] values) => RunManagedTestsAsync(obj => obj.NullableInt16List, values);
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void Test_ManagedNullableInt32List(int?[] values)
-        {
-            RunManagedTests(obj => obj.NullableInt32List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableInt32List(int?[] values) => RunManagedTestsAsync(obj => obj.NullableInt32List, values);
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void Test_ManagedNullableInt64List(long?[] values)
-        {
-            RunManagedTests(obj => obj.NullableInt64List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableInt64List(long?[] values) => RunManagedTestsAsync(obj => obj.NullableInt64List, values);
 
         [TestCaseSource(nameof(NullableDecimalTestValues))]
-        public void Test_ManagedNullableDecimalList(decimal?[] values)
-        {
-            RunManagedTests(obj => obj.NullableDecimalList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableDecimalList(decimal?[] values) => RunManagedTestsAsync(obj => obj.NullableDecimalList, values);
 
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
-        public void Test_ManagedNullableDecimal128List(Decimal128?[] values)
-        {
-            RunManagedTests(obj => obj.NullableDecimal128List, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableDecimal128List(Decimal128?[] values) => RunManagedTestsAsync(obj => obj.NullableDecimal128List, values);
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
-        public void Test_ManagedNullableObjectIdList(ObjectId?[] values)
-        {
-            RunManagedTests(obj => obj.NullableObjectIdList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableObjectIdList(ObjectId?[] values) => RunManagedTestsAsync(obj => obj.NullableObjectIdList, values);
 
         [TestCaseSource(nameof(NullableGuidTestValues))]
-        public void Test_ManagedNullableGuidList(Guid?[] values)
-        {
-            RunManagedTests(obj => obj.NullableGuidList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableGuidList(Guid?[] values) => RunManagedTestsAsync(obj => obj.NullableGuidList, values);
 
         [TestCaseSource(nameof(NullableDateTestValues))]
-        public void Test_ManagedNullableDateTimeOffsetList(DateTimeOffset?[] values)
-        {
-            RunManagedTests(obj => obj.NullableDateTimeOffsetList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableDateTimeOffsetList(DateTimeOffset?[] values) => RunManagedTestsAsync(obj => obj.NullableDateTimeOffsetList, values);
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void Test_ManagedNullableStringList(string[] values)
-        {
-            RunManagedTests(obj => obj.NullableStringList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableStringList(string[] values) => RunManagedTestsAsync(obj => obj.NullableStringList, values);
 
         [TestCaseSource(nameof(NullableByteArrayTestValues))]
-        public void Test_ManagedNullableByteArrayList(byte[][] values)
-        {
-            RunManagedTests(obj => obj.NullableByteArrayList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedNullableByteArrayList(byte[][] values) => RunManagedTestsAsync(obj => obj.NullableByteArrayList, values);
 
         [TestCaseSource(nameof(RealmValueTestValues))]
-        public void Test_ManagedRealmValueList(RealmValue[] values)
-        {
-            RunManagedTests(obj => obj.RealmValueList, values);
-        }
+        [Timeout(10_000)]
+        public Task Test_ManagedRealmValueList(RealmValue[] values) => RunManagedTestsAsync(obj => obj.RealmValueList, values);
 
         [TestCase]
         public void RequiredStringList_CanAddEmptyString()
@@ -681,27 +623,24 @@ namespace Realms.Tests.Database
 
         #region Utils
 
-        private void RunManagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
+        private async Task RunManagedTestsAsync<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var listObject = new ListsObject();
-                var list = listGetter(listObject);
+            var listObject = new ListsObject();
+            var list = listGetter(listObject);
 
-                var testData = new ListTestCaseData<T>(testList);
-                testData.Seed(list);
+            var testData = new ListTestCaseData<T>(testList);
+            testData.Seed(list);
 
-                _realm.Write(() => _realm.Add(listObject));
+            _realm.Write(() => _realm.Add(listObject));
 
-                var managedList = listGetter(listObject);
+            var managedList = listGetter(listObject);
 
-                Assert.That(list, Is.Not.SameAs(managedList));
+            Assert.That(list, Is.Not.SameAs(managedList));
 
-                RunTestsCore(testData, managedList);
+            RunTestsCore(testData, managedList);
 
-                await testData.AssertThreadSafeReference(managedList);
-                testData.AssertNotifications(managedList);
-            }, timeout: 100000);
+            await testData.AssertThreadSafeReference(managedList);
+            testData.AssertNotifications(managedList);
         }
 
         private static void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> listGetter, T[] testList)

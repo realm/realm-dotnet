@@ -436,27 +436,24 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void GetByPrimaryKeyDifferentThreads()
+        public async Task GetByPrimaryKeyDifferentThreads()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            _realm.Write(() =>
             {
-                _realm.Write(() =>
-                {
-                    _realm.Add(new PrimaryKeyInt64Object { Id = 42000042 });
-                });
-
-                long foundValue = 0;
-
-                // Act
-                await Task.Run(() =>
-                {
-                    using var realm2 = GetRealm(_configuration);
-                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
-                    foundValue = foundObj.Id;
-                });
-
-                Assert.That(foundValue, Is.EqualTo(42000042));
+                _realm.Add(new PrimaryKeyInt64Object { Id = 42000042 });
             });
+
+            long foundValue = 0;
+
+            // Act
+            await Task.Run(() =>
+            {
+                using var realm2 = GetRealm(_configuration);
+                var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
+                foundValue = foundObj.Id;
+            });
+
+            Assert.That(foundValue, Is.EqualTo(42000042));
         }
 
         [Test]

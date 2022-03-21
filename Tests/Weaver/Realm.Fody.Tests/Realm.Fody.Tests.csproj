@@ -13,7 +13,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
 
-    <Compile Include="..\..\Realm.Tests\TransformHelpers.cs" Link="TransformHelpers.cs" />
+    <Compile Include="..\..\Realm.Tests\Helpers\TransformHelpers.cs" Link="TransformHelpers.cs" />
   </ItemGroup>
 
   <PropertyGroup>

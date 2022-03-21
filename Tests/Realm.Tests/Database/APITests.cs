@@ -90,19 +90,16 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void TestTaskTimeout()
+        public async Task TestTaskTimeout()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            try
             {
-                try
-                {
-                    await Task.Delay(100).Timeout(10);
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.TypeOf<TimeoutException>());
-                }
-            });
+                await Task.Delay(100).Timeout(10);
+            }
+            catch (Exception ex)
+            {
+                Assert.That(ex, Is.TypeOf<TimeoutException>());
+            }
         }
     }
 }

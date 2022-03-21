@@ -53,40 +53,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(BoolTestValues))]
-        public void Bool_Unmanaged(TestCaseData<bool> testData)
-        {
-            RunUnmanagedTests(o => o.BooleanDictionary, testData);
-        }
+        public Task Bool_Unmanaged(TestCaseData<bool> testData) => RunUnmanagedTestsAsync(o => o.BooleanDictionary, testData);
 
         [TestCaseSource(nameof(NullableBoolTestValues))]
-        public void NullableBool_Unmanaged(TestCaseData<bool?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableBooleanDictionary, testData);
-        }
+        public Task NullableBool_Unmanaged(TestCaseData<bool?> testData) => RunUnmanagedTestsAsync(o => o.NullableBooleanDictionary, testData);
 
         [TestCaseSource(nameof(BoolTestValues))]
-        public void Bool_Managed(TestCaseData<bool> testData)
-        {
-            RunManagedTests(o => o.BooleanDictionary, testData);
-        }
+        public Task Bool_Managed(TestCaseData<bool> testData) => RunManagedTestsAsync(o => o.BooleanDictionary, testData);
 
         [TestCaseSource(nameof(NullableBoolTestValues))]
-        public void NullableBool_Managed(TestCaseData<bool?> testData)
-        {
-            RunManagedTests(o => o.NullableBooleanDictionary, testData);
-        }
+        public Task NullableBool_Managed(TestCaseData<bool?> testData) => RunManagedTestsAsync(o => o.NullableBooleanDictionary, testData);
 
         [Test]
-        public void Bool_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.BooleanDictionary, BoolTestValues().Last());
-        }
+        public Task Bool_Notifications() => RunManagedNotificationsTestsAsync(o => o.BooleanDictionary, BoolTestValues().Last());
 
         [Test]
-        public void NullableBool_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableBooleanDictionary, NullableBoolTestValues().Last());
-        }
+        public Task NullableBool_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableBooleanDictionary, NullableBoolTestValues().Last());
 
         #endregion
 
@@ -114,40 +96,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Byte_Unmanaged(TestCaseData<byte> testData)
-        {
-            RunUnmanagedTests(o => o.ByteDictionary, testData);
-        }
+        public Task Byte_Unmanaged(TestCaseData<byte> testData) => RunUnmanagedTestsAsync(o => o.ByteDictionary, testData);
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void NullableByte_Unmanaged(TestCaseData<byte?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableByteDictionary, testData);
-        }
+        public Task NullableByte_Unmanaged(TestCaseData<byte?> testData) => RunUnmanagedTestsAsync(o => o.NullableByteDictionary, testData);
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Byte_Managed(TestCaseData<byte> testData)
-        {
-            RunManagedTests(o => o.ByteDictionary, testData);
-        }
+        public Task Byte_Managed(TestCaseData<byte> testData) => RunManagedTestsAsync(o => o.ByteDictionary, testData);
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void NullableByte_Managed(TestCaseData<byte?> testData)
-        {
-            RunManagedTests(o => o.NullableByteDictionary, testData);
-        }
+        public Task NullableByte_Managed(TestCaseData<byte?> testData) => RunManagedTestsAsync(o => o.NullableByteDictionary, testData);
 
         [Test]
-        public void Byte_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.ByteDictionary, ByteTestValues().Last());
-        }
+        public Task Byte_Notifications() => RunManagedNotificationsTestsAsync(o => o.ByteDictionary, ByteTestValues().Last());
 
         [Test]
-        public void NullableByte_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableByteDictionary, NullableByteTestValues().Last());
-        }
+        public Task NullableByte_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableByteDictionary, NullableByteTestValues().Last());
 
         #endregion
 
@@ -177,40 +141,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Int16_Unmanaged(TestCaseData<short> testData)
-        {
-            RunUnmanagedTests(o => o.Int16Dictionary, testData);
-        }
+        public Task Int16_Unmanaged(TestCaseData<short> testData) => RunUnmanagedTestsAsync(o => o.Int16Dictionary, testData);
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void NullableInt16_Unmanaged(TestCaseData<short?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt16Dictionary, testData);
-        }
+        public Task NullableInt16_Unmanaged(TestCaseData<short?> testData) => RunUnmanagedTestsAsync(o => o.NullableInt16Dictionary, testData);
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Int16_Managed(TestCaseData<short> testData)
-        {
-            RunManagedTests(o => o.Int16Dictionary, testData);
-        }
+        public Task Int16_Managed(TestCaseData<short> testData) => RunManagedTestsAsync(o => o.Int16Dictionary, testData);
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void NullableInt16_Managed(TestCaseData<short?> testData)
-        {
-            RunManagedTests(o => o.NullableInt16Dictionary, testData);
-        }
+        public Task NullableInt16_Managed(TestCaseData<short?> testData) => RunManagedTestsAsync(o => o.NullableInt16Dictionary, testData);
 
         [Test]
-        public void Int16_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int16Dictionary, Int16TestValues().Last());
-        }
+        public Task Int16_Notifications() => RunManagedNotificationsTestsAsync(o => o.Int16Dictionary, Int16TestValues().Last());
 
         [Test]
-        public void NullableInt16_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt16Dictionary, NullableInt16TestValues().Last());
-        }
+        public Task NullableInt16_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableInt16Dictionary, NullableInt16TestValues().Last());
 
         #endregion
 
@@ -240,40 +186,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Int32_Unmanaged(TestCaseData<int> testData)
-        {
-            RunUnmanagedTests(o => o.Int32Dictionary, testData);
-        }
+        public Task Int32_Unmanaged(TestCaseData<int> testData) => RunUnmanagedTestsAsync(o => o.Int32Dictionary, testData);
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void NullableInt32_Unmanaged(TestCaseData<int?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt32Dictionary, testData);
-        }
+        public Task NullableInt32_Unmanaged(TestCaseData<int?> testData) => RunUnmanagedTestsAsync(o => o.NullableInt32Dictionary, testData);
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Int32_Managed(TestCaseData<int> testData)
-        {
-            RunManagedTests(o => o.Int32Dictionary, testData);
-        }
+        public Task Int32_Managed(TestCaseData<int> testData) => RunManagedTestsAsync(o => o.Int32Dictionary, testData);
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void NullableInt32_Managed(TestCaseData<int?> testData)
-        {
-            RunManagedTests(o => o.NullableInt32Dictionary, testData);
-        }
+        public Task NullableInt32_Managed(TestCaseData<int?> testData) => RunManagedTestsAsync(o => o.NullableInt32Dictionary, testData);
 
         [Test]
-        public void Int32_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int32Dictionary, Int32TestValues().Last());
-        }
+        public Task Int32_Notifications() => RunManagedNotificationsTestsAsync(o => o.Int32Dictionary, Int32TestValues().Last());
 
         [Test]
-        public void NullableInt32_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt32Dictionary, NullableInt32TestValues().Last());
-        }
+        public Task NullableInt32_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableInt32Dictionary, NullableInt32TestValues().Last());
 
         #endregion
 
@@ -303,40 +231,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void Int64_Unmanaged(TestCaseData<long> testData)
-        {
-            RunUnmanagedTests(o => o.Int64Dictionary, testData);
-        }
+        public Task Int64_Unmanaged(TestCaseData<long> testData) => RunUnmanagedTestsAsync(o => o.Int64Dictionary, testData);
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void NullableInt64_Unmanaged(TestCaseData<long?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableInt64Dictionary, testData);
-        }
+        public Task NullableInt64_Unmanaged(TestCaseData<long?> testData) => RunUnmanagedTestsAsync(o => o.NullableInt64Dictionary, testData);
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void Int64_Managed(TestCaseData<long> testData)
-        {
-            RunManagedTests(o => o.Int64Dictionary, testData);
-        }
+        public Task Int64_Managed(TestCaseData<long> testData) => RunManagedTestsAsync(o => o.Int64Dictionary, testData);
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void NullableInt64_Managed(TestCaseData<long?> testData)
-        {
-            RunManagedTests(o => o.NullableInt64Dictionary, testData);
-        }
+        public Task NullableInt64_Managed(TestCaseData<long?> testData) => RunManagedTestsAsync(o => o.NullableInt64Dictionary, testData);
 
         [Test]
-        public void Int64_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Int64Dictionary, Int64TestValues().Last());
-        }
+        public Task Int64_Notifications() => RunManagedNotificationsTestsAsync(o => o.Int64Dictionary, Int64TestValues().Last());
 
         [Test]
-        public void NullableInt64_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableInt64Dictionary, NullableInt64TestValues().Last());
-        }
+        public Task NullableInt64_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableInt64Dictionary, NullableInt64TestValues().Last());
         #endregion
 
         #region Float
@@ -365,40 +275,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(FloatTestValues))]
-        public void Float_Unmanaged(TestCaseData<float> testData)
-        {
-            RunUnmanagedTests(o => o.SingleDictionary, testData);
-        }
+        public Task Float_Unmanaged(TestCaseData<float> testData) => RunUnmanagedTestsAsync(o => o.SingleDictionary, testData);
 
         [TestCaseSource(nameof(NullableFloatTestValues))]
-        public void NullableFloat_Unmanaged(TestCaseData<float?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableSingleDictionary, testData);
-        }
+        public Task NullableFloat_Unmanaged(TestCaseData<float?> testData) => RunUnmanagedTestsAsync(o => o.NullableSingleDictionary, testData);
 
         [TestCaseSource(nameof(FloatTestValues))]
-        public void Float_Managed(TestCaseData<float> testData)
-        {
-            RunManagedTests(o => o.SingleDictionary, testData);
-        }
+        public Task Float_Managed(TestCaseData<float> testData) => RunManagedTestsAsync(o => o.SingleDictionary, testData);
 
         [TestCaseSource(nameof(NullableFloatTestValues))]
-        public void NullableFloat_Managed(TestCaseData<float?> testData)
-        {
-            RunManagedTests(o => o.NullableSingleDictionary, testData);
-        }
+        public Task NullableFloat_Managed(TestCaseData<float?> testData) => RunManagedTestsAsync(o => o.NullableSingleDictionary, testData);
 
         [Test]
-        public void Float_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.SingleDictionary, FloatTestValues().Last());
-        }
+        public Task Float_Notifications() => RunManagedNotificationsTestsAsync(o => o.SingleDictionary, FloatTestValues().Last());
 
         [Test]
-        public void NullableFloat_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableSingleDictionary, NullableFloatTestValues().Last());
-        }
+        public Task NullableFloat_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableSingleDictionary, NullableFloatTestValues().Last());
 
         #endregion
 
@@ -430,40 +322,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(DoubleTestValues))]
-        public void Double_Unmanaged(TestCaseData<double> testData)
-        {
-            RunUnmanagedTests(o => o.DoubleDictionary, testData);
-        }
+        public Task Double_Unmanaged(TestCaseData<double> testData) => RunUnmanagedTestsAsync(o => o.DoubleDictionary, testData);
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
-        public void NullableDouble_Unmanaged(TestCaseData<double?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableDoubleDictionary, testData);
-        }
+        public Task NullableDouble_Unmanaged(TestCaseData<double?> testData) => RunUnmanagedTestsAsync(o => o.NullableDoubleDictionary, testData);
 
         [TestCaseSource(nameof(DoubleTestValues))]
-        public void Double_Managed(TestCaseData<double> testData)
-        {
-            RunManagedTests(o => o.DoubleDictionary, testData);
-        }
+        public Task Double_Managed(TestCaseData<double> testData) => RunManagedTestsAsync(o => o.DoubleDictionary, testData);
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
-        public void NullableDouble_Managed(TestCaseData<double?> testData)
-        {
-            RunManagedTests(o => o.NullableDoubleDictionary, testData);
-        }
+        public Task NullableDouble_Managed(TestCaseData<double?> testData) => RunManagedTestsAsync(o => o.NullableDoubleDictionary, testData);
 
         [Test]
-        public void Double_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.DoubleDictionary, DoubleTestValues().Last());
-        }
+        public Task Double_Notifications() => RunManagedNotificationsTestsAsync(o => o.DoubleDictionary, DoubleTestValues().Last());
 
         [Test]
-        public void NullableDouble_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableDoubleDictionary, NullableDoubleTestValues().Last());
-        }
+        public Task NullableDouble_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableDoubleDictionary, NullableDoubleTestValues().Last());
 
         #endregion
 
@@ -495,40 +369,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(DecimalTestValues))]
-        public void Decimal_Unmanaged(TestCaseData<decimal> testData)
-        {
-            RunUnmanagedTests(o => o.DecimalDictionary, testData);
-        }
+        public Task Decimal_Unmanaged(TestCaseData<decimal> testData) => RunUnmanagedTestsAsync(o => o.DecimalDictionary, testData);
 
         [TestCaseSource(nameof(NullableDecimalTestValues))]
-        public void NullableDecimal_Unmanaged(TestCaseData<decimal?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableDecimalDictionary, testData);
-        }
+        public Task NullableDecimal_Unmanaged(TestCaseData<decimal?> testData) => RunUnmanagedTestsAsync(o => o.NullableDecimalDictionary, testData);
 
         [TestCaseSource(nameof(DecimalTestValues))]
-        public void Decimal_Managed(TestCaseData<decimal> testData)
-        {
-            RunManagedTests(o => o.DecimalDictionary, testData);
-        }
+        public Task Decimal_Managed(TestCaseData<decimal> testData) => RunManagedTestsAsync(o => o.DecimalDictionary, testData);
 
         [TestCaseSource(nameof(NullableDecimalTestValues))]
-        public void NullableDecimal_Managed(TestCaseData<decimal?> testData)
-        {
-            RunManagedTests(o => o.NullableDecimalDictionary, testData);
-        }
+        public Task NullableDecimal_Managed(TestCaseData<decimal?> testData) => RunManagedTestsAsync(o => o.NullableDecimalDictionary, testData);
 
         [Test]
-        public void Decimal_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.DecimalDictionary, DecimalTestValues().Last());
-        }
+        public Task Decimal_Notifications() => RunManagedNotificationsTestsAsync(o => o.DecimalDictionary, DecimalTestValues().Last());
 
         [Test]
-        public void NullableDecimal_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableDecimalDictionary, NullableDecimalTestValues().Last());
-        }
+        public Task NullableDecimal_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableDecimalDictionary, NullableDecimalTestValues().Last());
 
         #endregion
 
@@ -560,40 +416,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(Decimal128TestValues))]
-        public void Decimal128_Unmanaged(TestCaseData<Decimal128> testData)
-        {
-            RunUnmanagedTests(o => o.Decimal128Dictionary, testData);
-        }
+        public Task Decimal128_Unmanaged(TestCaseData<Decimal128> testData) => RunUnmanagedTestsAsync(o => o.Decimal128Dictionary, testData);
 
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
-        public void NullableDecimal128_Unmanaged(TestCaseData<Decimal128?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableDecimal128Dictionary, testData);
-        }
+        public Task NullableDecimal128_Unmanaged(TestCaseData<Decimal128?> testData) => RunUnmanagedTestsAsync(o => o.NullableDecimal128Dictionary, testData);
 
         [TestCaseSource(nameof(Decimal128TestValues))]
-        public void Decimal128_Managed(TestCaseData<Decimal128> testData)
-        {
-            RunManagedTests(o => o.Decimal128Dictionary, testData);
-        }
+        public Task Decimal128_Managed(TestCaseData<Decimal128> testData) => RunManagedTestsAsync(o => o.Decimal128Dictionary, testData);
 
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
-        public void NullableDecimal128_Managed(TestCaseData<Decimal128?> testData)
-        {
-            RunManagedTests(o => o.NullableDecimal128Dictionary, testData);
-        }
+        public Task NullableDecimal128_Managed(TestCaseData<Decimal128?> testData) => RunManagedTestsAsync(o => o.NullableDecimal128Dictionary, testData);
 
         [Test]
-        public void Decimal128_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.Decimal128Dictionary, Decimal128TestValues().Last());
-        }
+        public Task Decimal128_Notifications() => RunManagedNotificationsTestsAsync(o => o.Decimal128Dictionary, Decimal128TestValues().Last());
 
         [Test]
-        public void NullableDecimal128_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableDecimal128Dictionary, NullableDecimal128TestValues().Last());
-        }
+        public Task NullableDecimal128_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableDecimal128Dictionary, NullableDecimal128TestValues().Last());
 
         #endregion
 
@@ -629,40 +467,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
-        public void ObjectId_Unmanaged(TestCaseData<ObjectId> testData)
-        {
-            RunUnmanagedTests(o => o.ObjectIdDictionary, testData);
-        }
+        public Task ObjectId_Unmanaged(TestCaseData<ObjectId> testData) => RunUnmanagedTestsAsync(o => o.ObjectIdDictionary, testData);
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
-        public void NullableObjectId_Unmanaged(TestCaseData<ObjectId?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableObjectIdDictionary, testData);
-        }
+        public Task NullableObjectId_Unmanaged(TestCaseData<ObjectId?> testData) => RunUnmanagedTestsAsync(o => o.NullableObjectIdDictionary, testData);
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
-        public void ObjectId_Managed(TestCaseData<ObjectId> testData)
-        {
-            RunManagedTests(o => o.ObjectIdDictionary, testData);
-        }
+        public Task ObjectId_Managed(TestCaseData<ObjectId> testData) => RunManagedTestsAsync(o => o.ObjectIdDictionary, testData);
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
-        public void NullableObjectId_Managed(TestCaseData<ObjectId?> testData)
-        {
-            RunManagedTests(o => o.NullableObjectIdDictionary, testData);
-        }
+        public Task NullableObjectId_Managed(TestCaseData<ObjectId?> testData) => RunManagedTestsAsync(o => o.NullableObjectIdDictionary, testData);
 
         [Test]
-        public void ObjectId_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.ObjectIdDictionary, ObjectIdTestValues().Last());
-        }
+        public Task ObjectId_Notifications() => RunManagedNotificationsTestsAsync(o => o.ObjectIdDictionary, ObjectIdTestValues().Last());
 
         [Test]
-        public void NullableObjectId_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableObjectIdDictionary, NullableObjectIdTestValues().Last());
-        }
+        public Task NullableObjectId_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableObjectIdDictionary, NullableObjectIdTestValues().Last());
 
         #endregion
 
@@ -697,40 +517,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
-        public void DateTimeOffset_Unmanaged(TestCaseData<DateTimeOffset> testData)
-        {
-            RunUnmanagedTests(o => o.DateTimeOffsetDictionary, testData);
-        }
+        public Task DateTimeOffset_Unmanaged(TestCaseData<DateTimeOffset> testData) => RunUnmanagedTestsAsync(o => o.DateTimeOffsetDictionary, testData);
 
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
-        public void NullableDateTimeOffset_Unmanaged(TestCaseData<DateTimeOffset?> testData)
-        {
-            RunUnmanagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
-        }
+        public Task NullableDateTimeOffset_Unmanaged(TestCaseData<DateTimeOffset?> testData) => RunUnmanagedTestsAsync(o => o.NullableDateTimeOffsetDictionary, testData);
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
-        public void DateTimeOffset_Managed(TestCaseData<DateTimeOffset> testData)
-        {
-            RunManagedTests(o => o.DateTimeOffsetDictionary, testData);
-        }
+        public Task DateTimeOffset_Managed(TestCaseData<DateTimeOffset> testData) => RunManagedTestsAsync(o => o.DateTimeOffsetDictionary, testData);
 
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
-        public void NullableDateTimeOffset_Managed(TestCaseData<DateTimeOffset?> testData)
-        {
-            RunManagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
-        }
+        public Task NullableDateTimeOffset_Managed(TestCaseData<DateTimeOffset?> testData) => RunManagedTestsAsync(o => o.NullableDateTimeOffsetDictionary, testData);
 
         [Test]
-        public void DateTimeOffset_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.DateTimeOffsetDictionary, DateTimeOffsetTestValues().Last());
-        }
+        public Task DateTimeOffset_Notifications() => RunManagedNotificationsTestsAsync(o => o.DateTimeOffsetDictionary, DateTimeOffsetTestValues().Last());
 
         [Test]
-        public void NullableDateTimeOffset_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableDateTimeOffsetDictionary, NullableDateTimeOffsetTestValues().Last());
-        }
+        public Task NullableDateTimeOffset_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableDateTimeOffsetDictionary, NullableDateTimeOffsetTestValues().Last());
 
         #endregion
 
@@ -761,40 +563,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(StringTestValues))]
-        public void String_Unmanaged(TestCaseData<string> testData)
-        {
-            RunUnmanagedTests(o => o.StringDictionary, testData);
-        }
+        public Task String_Unmanaged(TestCaseData<string> testData) => RunUnmanagedTestsAsync(o => o.StringDictionary, testData);
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void NullableString_Unmanaged(TestCaseData<string> testData)
-        {
-            RunUnmanagedTests(o => o.NullableStringDictionary, testData);
-        }
+        public Task NullableString_Unmanaged(TestCaseData<string> testData) => RunUnmanagedTestsAsync(o => o.NullableStringDictionary, testData);
 
         [TestCaseSource(nameof(StringTestValues))]
-        public void String_Managed(TestCaseData<string> testData)
-        {
-            RunManagedTests(o => o.StringDictionary, testData);
-        }
+        public Task String_Managed(TestCaseData<string> testData) => RunManagedTestsAsync(o => o.StringDictionary, testData);
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void NullableString_Managed(TestCaseData<string> testData)
-        {
-            RunManagedTests(o => o.NullableStringDictionary, testData);
-        }
+        public Task NullableString_Managed(TestCaseData<string> testData) => RunManagedTestsAsync(o => o.NullableStringDictionary, testData);
 
         [Test]
-        public void String_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.StringDictionary, StringTestValues().Last());
-        }
+        public Task String_Notifications() => RunManagedNotificationsTestsAsync(o => o.StringDictionary, StringTestValues().Last());
 
         [Test]
-        public void NullableString_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableStringDictionary, NullableStringTestValues().Last());
-        }
+        public Task NullableString_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableStringDictionary, NullableStringTestValues().Last());
 
         #endregion
 
@@ -825,40 +609,22 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(BinaryTestValues))]
-        public void Binary_Unmanaged(TestCaseData<byte[]> testData)
-        {
-            RunUnmanagedTests(o => o.BinaryDictionary, testData);
-        }
+        public Task Binary_Unmanaged(TestCaseData<byte[]> testData) => RunUnmanagedTestsAsync(o => o.BinaryDictionary, testData);
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void NullableBinary_Unmanaged(TestCaseData<byte[]> testData)
-        {
-            RunUnmanagedTests(o => o.NullableBinaryDictionary, testData);
-        }
+        public Task NullableBinary_Unmanaged(TestCaseData<byte[]> testData) => RunUnmanagedTestsAsync(o => o.NullableBinaryDictionary, testData);
 
         [TestCaseSource(nameof(BinaryTestValues))]
-        public void Binary_Managed(TestCaseData<byte[]> testData)
-        {
-            RunManagedTests(o => o.BinaryDictionary, testData);
-        }
+        public Task Binary_Managed(TestCaseData<byte[]> testData) => RunManagedTestsAsync(o => o.BinaryDictionary, testData);
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void NullableBinary_Managed(TestCaseData<byte[]> testData)
-        {
-            RunManagedTests(o => o.NullableBinaryDictionary, testData);
-        }
+        public Task NullableBinary_Managed(TestCaseData<byte[]> testData) => RunManagedTestsAsync(o => o.NullableBinaryDictionary, testData);
 
         [Test]
-        public void Binary_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.BinaryDictionary, BinaryTestValues().Last());
-        }
+        public Task Binary_Notifications() => RunManagedNotificationsTestsAsync(o => o.BinaryDictionary, BinaryTestValues().Last());
 
         [Test]
-        public void NullableBinary_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.NullableBinaryDictionary, NullableBinaryTestValues().Last());
-        }
+        public Task NullableBinary_Notifications() => RunManagedNotificationsTestsAsync(o => o.NullableBinaryDictionary, NullableBinaryTestValues().Last());
 
         #endregion
 
@@ -877,22 +643,13 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(ObjectTestValues))]
-        public void Object_Unmanaged(TestCaseData<IntPropertyObject> testData)
-        {
-            RunUnmanagedTests(o => o.ObjectDictionary, testData);
-        }
+        public Task Object_Unmanaged(TestCaseData<IntPropertyObject> testData) => RunUnmanagedTestsAsync(o => o.ObjectDictionary, testData);
 
         [TestCaseSource(nameof(ObjectTestValues))]
-        public void Object_Managed(TestCaseData<IntPropertyObject> testData)
-        {
-            RunManagedTests(o => o.ObjectDictionary, testData);
-        }
+        public Task Object_Managed(TestCaseData<IntPropertyObject> testData) => RunManagedTestsAsync(o => o.ObjectDictionary, testData);
 
         [Test]
-        public void Object_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.ObjectDictionary, ObjectTestValues().Last());
-        }
+        public Task Object_Notifications() => RunManagedNotificationsTestsAsync(o => o.ObjectDictionary, ObjectTestValues().Last());
 
         #endregion
 
@@ -909,22 +666,13 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(EmbeddedObjectTestValues))]
-        public void EmbeddedObject_Unmanaged(TestCaseData<EmbeddedIntPropertyObject> testData)
-        {
-            RunUnmanagedTests(o => o.EmbeddedObjectDictionary, testData);
-        }
+        public Task EmbeddedObject_Unmanaged(TestCaseData<EmbeddedIntPropertyObject> testData) => RunUnmanagedTestsAsync(o => o.EmbeddedObjectDictionary, testData);
 
         [TestCaseSource(nameof(EmbeddedObjectTestValues))]
-        public void EmbeddedObject_Managed(TestCaseData<EmbeddedIntPropertyObject> testData)
-        {
-            RunManagedTests(o => o.EmbeddedObjectDictionary, testData);
-        }
+        public Task EmbeddedObject_Managed(TestCaseData<EmbeddedIntPropertyObject> testData) => RunManagedTestsAsync(o => o.EmbeddedObjectDictionary, testData);
 
         [Test]
-        public void EmbeddedObject_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.EmbeddedObjectDictionary, EmbeddedObjectTestValues().Last());
-        }
+        public Task EmbeddedObject_Notifications() => RunManagedNotificationsTestsAsync(o => o.EmbeddedObjectDictionary, EmbeddedObjectTestValues().Last());
 
         #endregion
 
@@ -949,22 +697,13 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(RealmValueTestValues))]
-        public void RealmValue_Unmanaged(TestCaseData<RealmValue> testData)
-        {
-            RunUnmanagedTests(o => o.RealmValueDictionary, testData);
-        }
+        public Task RealmValue_Unmanaged(TestCaseData<RealmValue> testData) => RunUnmanagedTestsAsync(o => o.RealmValueDictionary, testData);
 
         [TestCaseSource(nameof(RealmValueTestValues))]
-        public void RealmValue_Managed(TestCaseData<RealmValue> testData)
-        {
-            RunManagedTests(o => o.RealmValueDictionary, testData);
-        }
+        public Task RealmValue_Managed(TestCaseData<RealmValue> testData) => RunManagedTestsAsync(o => o.RealmValueDictionary, testData);
 
         [Test]
-        public void RealmValue_Notifications()
-        {
-            RunManagedNotificationsTests(o => o.RealmValueDictionary, RealmValueTestValues().Last());
-        }
+        public Task RealmValue_Notifications() => RunManagedNotificationsTestsAsync(o => o.RealmValueDictionary, RealmValueTestValues().Last());
 
         #endregion
 
@@ -1073,64 +812,55 @@ namespace Realms.Tests.Database
             Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectDictionary["foo"] = embeddedItem), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
-        private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
+        private static async Task RunUnmanagedTestsAsync<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var testObject = new DictionariesObject();
-                var dictionary = accessor(testObject);
+            var testObject = new DictionariesObject();
+            var dictionary = accessor(testObject);
 
-                testData.Seed(dictionary);
+            testData.Seed(dictionary);
 
-                await RunTestsCore(testData, dictionary);
-            });
+            await RunTestsCore(testData, dictionary);
         }
 
-        private void RunManagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
+        private async Task RunManagedTestsAsync<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var testObject = new DictionariesObject();
+            var dictionary = accessor(testObject);
+
+            testData.Seed(dictionary);
+
+            _realm.Write(() =>
             {
-                var testObject = new DictionariesObject();
-                var dictionary = accessor(testObject);
-
-                testData.Seed(dictionary);
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(testObject);
-                });
-
-                var managedDictionary = accessor(testObject);
-                Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
-
-                await RunTestsCore(testData, managedDictionary);
-                await testData.AssertThreadSafeReference(managedDictionary);
-
-                testData.AssertNullKeys(managedDictionary);
+                _realm.Add(testObject);
             });
+
+            var managedDictionary = accessor(testObject);
+            Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
+
+            await RunTestsCore(testData, managedDictionary);
+            await testData.AssertThreadSafeReference(managedDictionary);
+
+            testData.AssertNullKeys(managedDictionary);
         }
 
-        private void RunManagedNotificationsTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
+        private async Task RunManagedNotificationsTestsAsync<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var testObject = new DictionariesObject();
+            var dictionary = accessor(testObject);
+
+            testData.Seed(dictionary);
+
+            _realm.Write(() =>
             {
-                var testObject = new DictionariesObject();
-                var dictionary = accessor(testObject);
-
-                testData.Seed(dictionary);
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(testObject);
-                });
-
-                var managedDictionary = accessor(testObject);
-                Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
-
-                await testData.AssertNotifications_Realm(managedDictionary);
-                await testData.AssertNotifications_CollectionChanged(managedDictionary);
-                await testData.AssertKeyNotifications(managedDictionary);
+                _realm.Add(testObject);
             });
+
+            var managedDictionary = accessor(testObject);
+            Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
+
+            await testData.AssertNotifications_Realm(managedDictionary);
+            await testData.AssertNotifications_CollectionChanged(managedDictionary);
+            await testData.AssertKeyNotifications(managedDictionary);
         }
 
         private static async Task RunTestsCore<T>(TestCaseData<T> testData, IDictionary<string, T> dictionary)
