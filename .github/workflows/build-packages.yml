@@ -130,6 +130,13 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Read version
+      id: get-version
+      run: |
+        cd Realm/packages
+        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+        echo "::set-output name=version::$pkgVersion"
+      shell: bash
     - name: Store artifacts for Realm.Fody.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v2
       with:
@@ -154,13 +161,12 @@ jobs:
         name: Realm.UnityWeaver.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-    - name: Read version
-      id: get-version
-      run: |
-        cd Realm/packages
-        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-        echo "::set-output name=version::$pkgVersion"
-      shell: bash
+    - name: Store artifacts for ExtractedChangelog
+      uses: actions/upload-artifact@v2
+      with:
+        name: ExtractedChangelog
+        path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Check Docfx cache
       id: check-docfx-cache
       if: inputs.build-docs
@@ -186,9 +192,3 @@ jobs:
         path: ${{ github.workspace }}/Realm/packages/Docs.zip
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
       if: inputs.build-docs
-    - name: Store artifacts for ExtractedChangelog
-      uses: actions/upload-artifact@v2
-      with:
-        name: ExtractedChangelog
-        path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}

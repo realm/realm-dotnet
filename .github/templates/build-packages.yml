@@ -82,8 +82,8 @@ jobs:
           echo "::set-output name=build_suffix::$suffix"
       - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
-      - #@ template.replace(uploadPackageArtifacts())
       - #@ template.replace(readVersionFromPackage())
-      - #@ template.replace(buildDocs())
+      - #@ template.replace(uploadPackageArtifacts())
       - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+      - #@ template.replace(buildDocs())
 
