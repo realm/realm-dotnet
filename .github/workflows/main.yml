@@ -88,7 +88,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event == 'push' || github.event.inputs.publish-prerelease)
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.publish-prerelease)
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -271,7 +271,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event == 'push' || github.event.inputs.run-benchmark)
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.run-benchmark)
     timeout-minutes: 60
     steps:
     - name: Cleanup Workspace

@@ -39,7 +39,7 @@ jobs:
     name: Publish package to S3
     needs:
     - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && (github.event == 'push' || github.event.inputs.publish-prerelease)"
+    if: #@ ignoreSkippedJobsCondition + " && (github.event_name == 'push' || github.event.inputs.publish-prerelease)"
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
@@ -74,7 +74,7 @@ jobs:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: #@ ignoreSkippedJobsCondition + " && (github.event == 'push' || github.event.inputs.run-benchmark)"
+    if: #@ ignoreSkippedJobsCondition + " && (github.event_name == 'push' || github.event.inputs.run-benchmark)"
     timeout-minutes: 60
     steps:
       - #@ template.replace(cleanupWorkspace())
