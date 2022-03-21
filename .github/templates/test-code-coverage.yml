@@ -1,7 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition")
 
 ---
 name: test-code-coverage

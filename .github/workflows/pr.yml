@@ -34,8 +34,8 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
-  build-unity-tests:
-    uses: ./.github/workflows/build-unity-tests.yml
+  build-unity:
+    uses: ./.github/workflows/build-unity.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
     needs:

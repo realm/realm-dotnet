@@ -1,5 +1,3 @@
-#@ load("common.lib.yml", "actionDownloadArtifact")
-
 #@ isRelease = "contains(github.head_ref, 'release')"
 
 #@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
@@ -82,22 +80,12 @@ test-net-core:
     framework: #@ framework
 #@ end
 
-#@ def buildUnityTests():
-build-unity-tests:
-  uses: ./.github/workflows/build-unity-tests.yml
+#@ def buildUnity():
+build-unity:
+  uses: ./.github/workflows/build-unity.yml
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
   needs:
   - build-packages
   if: #@ ignoreSkippedJobsCondition
-#@ end
----
-#@ def fetchPackageArtifacts():
-#@ for pkg in [ "Realm", "Realm.Fody" ]:
-  - name: #@ "Fetch " + pkg
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
-      path: ${{ github.workspace }}/Realm/packages/
-#@ end
 #@ end

@@ -1,5 +1,4 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
 #@ load("common.lib.yml", "checkoutCode", "configuration")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
 

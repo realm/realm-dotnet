@@ -1,6 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "dotnetPublish", "actionSetupDotnet")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
