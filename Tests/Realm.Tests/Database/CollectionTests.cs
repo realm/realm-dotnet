@@ -278,6 +278,44 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Collection_GetEnumerator_WhenCollectionDeleted_ReturnsEmpty()
+        {
+            var container = new ContainerObject
+            {
+                Items =
+                {
+                    new IntPropertyObject()
+                }
+            };
+
+            _realm.Write(() => _realm.Add(container));
+
+            var collection = (RealmList<IntPropertyObject>)container.Items;
+
+            Assert.That(collection.IsValid);
+
+            var counter = 0;
+            foreach (var value in collection)
+            {
+                counter++;
+            }
+
+            Assert.That(counter, Is.EqualTo(1));
+
+            _realm.Write(() => _realm.Remove(container));
+
+            Assert.That(collection.IsValid, Is.False);
+
+            counter = 0;
+            foreach (var value in collection)
+            {
+                counter++;
+            }
+
+            Assert.That(counter, Is.EqualTo(0));
+        }
+
+        [Test]
         public void ListAsRealmQueryable_RaisesNotifications()
         {
             var joe = new Owner

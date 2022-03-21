@@ -39,4 +39,4 @@ while ($attempt++ -lt 200) {
     Write-Output "Cluster state is $state after $($attempt * 5) seconds. Waiting 5 seconds for IDLE"
 }
 
-Write-Output "Command line string: --baasurl=https://realm-dev.mongodb.com --baascluster=$ClusterName --baasapikey=$ApiKey --baasprivateapikey=$PrivateApiKey --baasprojectid=$ProjectId"
+Write-Output "Command line: --baasurl=https://realm-dev.mongodb.com --baascluster=$ClusterName --baasapikey=$ApiKey --baasprivateapikey=$PrivateApiKey --baasprojectid=$ProjectId"

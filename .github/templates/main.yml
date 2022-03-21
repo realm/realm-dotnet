@@ -13,8 +13,8 @@
 #@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
-#@ windowsArchs = [ 'Win32', 'x64' ]
-#@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM' ]
+#@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
+#@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM', 'ARM64' ]
 #@ iOSArchs = [ 'Simulator', 'Device' ]
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
 #@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
@@ -139,16 +139,6 @@ steps:
     run: #@ getWrapperBuildCommand(cmd, enableLto)
     if: #@ wrappersCacheCondition
   - #@ uploadArtifacts(outputVar, artifactsPath, 1)
-#@ end
-
-#@ def setupWin81SDK():
-  - name: Install Win8.1 SDK
-    run: |
-      md C:\win81sdk
-      Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=323507 -OutFile C:\win81sdk\sdksetup.exe -UseBasicParsing
-      Start-Process -Wait C:\win81sdk\sdksetup.exe -ArgumentList "/q", "/norestart", "/features", "OptionId.WindowsDesktopSoftwareDevelopmentKit", "OptionId.NetFxSoftwareDevelopmentKit"
-    shell: powershell
-    if: #@ wrappersCacheCondition
 #@ end
 
 #@ def buildPackages():
@@ -423,6 +413,17 @@ name: main
     branches:
       - main
   pull_request:
+    paths:
+      - '**.cs'
+      - '**.cpp'
+      - '**.hpp'
+      - '**.csproj'
+      - '**CMakeLists.txt'
+      - '**.ps1'
+      - '**.sh'
+      - '**.props'
+      - 'wrappers/realm-core'
+      - '.github/workflows/main.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -463,7 +464,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", enableLto = False, artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
   build-wrappers-ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
@@ -530,7 +531,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition), setupWin81SDK() ], cacheVariable = "wrappers-windows"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg("windows-${{ matrix.arch }}") ], cacheVariable = "wrappers-windows"))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   build-wrappers-windows-uwp:
@@ -539,7 +540,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg(wrappersCacheCondition) ], cacheVariable = "wrappers-uwp"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg("uwp-${{ matrix.arch }}") ], cacheVariable = "wrappers-uwp"))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])
   build-packages:

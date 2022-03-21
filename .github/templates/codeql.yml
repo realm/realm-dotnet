@@ -32,9 +32,19 @@
 name: "CodeQL"
 "on":
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - '**.cs'
+      - '**.cpp'
+      - '**.hpp'
+      - '**.csproj'
+      - '**CMakeLists.txt'
+      - 'wrappers/build.ps1'
+      - '.github/workflows/codeql.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
@@ -47,7 +57,7 @@ jobs:
       security-events: write
     steps:
     - #@ template.replace(checkoutCode("recursive", False))
-    - #@ template.replace(runCodeQL("cpp", [setupVcpkg(), buildWrappers()]))
+    - #@ template.replace(runCodeQL("cpp", [setupVcpkg("windows-x64"), buildWrappers()]))
   analyze-csharp:
     name: Analyze C#
     runs-on: windows-2019

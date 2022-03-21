@@ -27,11 +27,8 @@ mkdir -p "$CMAKE_INSTALL_PREFIX"
 function build() {
   cd $CMAKE_BINARY_DIR
   cmake "$SCRIPT_DIRECTORY" -DCMAKE_INSTALL_PREFIX="$CMAKE_INSTALL_PREFIX" -DCMAKE_BUILD_TYPE=$REALM_CMAKE_CONFIGURATION -GXcode $EXTRA_CMAKE_ARGS \
-    -DCMAKE_SYSTEM_NAME=iOS \
-    -DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=NO \
     -DCMAKE_XCODE_ATTRIBUTE_DYLIB_INSTALL_NAME_BASE="@rpath" \
-    -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-    -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/realm-core/tools/cmake/ios.toolchain.cmake"
+    -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/realm-core/tools/cmake/xcode.toolchain.cmake"
 
   xcodebuild -scheme realm-wrappers -configuration $REALM_CMAKE_CONFIGURATION -destination "generic/platform=iOS Simulator" -destination generic/platform=iOS
 
