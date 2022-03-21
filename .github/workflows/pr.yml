@@ -34,6 +34,8 @@ jobs:
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: 30
+    needs:
+    - build-wrappers
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -60,6 +62,7 @@ jobs:
           $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
         }
         echo "::set-output name=build_suffix::$suffix"
+      shell: powershell
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v2
       with:
