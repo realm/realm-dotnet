@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1"))
+      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "win-x64"))
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")

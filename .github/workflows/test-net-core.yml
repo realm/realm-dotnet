@@ -1,4 +1,4 @@
-name: test-net-framework
+name: test-net-core
 "on":
   workflow_call:
     inputs:
@@ -7,9 +7,6 @@ name: test-net-framework
         type: string
       clusterName:
         required: false
-        type: string
-      os:
-        required: true
         type: string
       framework:
         required: true
@@ -28,18 +25,28 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   run-tests:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.framework }}, ${{ matrix.os }}
+    runs-on: ${{ matrix.os.runner }}
+    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJson(inputs.os) }}
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-latest
+          runtime: osx-x64
+        - runner: win81
+          runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
+        include:
+        - framework: net6.0
+          os:
+            runner: macos-arm
+            runtime: osx-arm64
     steps:
-    - name: Cleanup Workspace
-      run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-      if: matrix.os == 'win81'
     - name: Checkout code
       uses: actions/checkout@v2
       with:
@@ -49,8 +56,10 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
     - uses: actions/setup-dotnet@v1
-      if: matrix.framework == 'net6.0'
+      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
       with:
         dotnet-version: 6.0.x
     - name: Fetch Realm
@@ -68,17 +77,17 @@ jobs:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Realm.Tests/*.csproj') }}
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} -p:AdditionalFrameworks=${{ matrix.framework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:AdditionalFrameworks=${{ matrix.framework }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}'
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}
+      run: ${{ (matrix.os.runner == 'macos-arm' && 'arch -arm64 ') || '' }}${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        name: Results .NET (${{ matrix.os }}, ${{ matrix.framework }})
+        name: Results .NET (${{ matrix.os.runner }}, ${{ matrix.framework }})
         path: TestResults.xml
         reporter: java-junit
         list-suites: failed
