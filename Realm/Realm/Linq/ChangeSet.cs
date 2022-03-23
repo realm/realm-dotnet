@@ -61,13 +61,17 @@ namespace Realms
         /// <value>An array of <see cref="Move"/> structs, indicating the source and the destination index of the moved row.</value>
         public Move[] Moves { get; }
 
-        internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] newModifiedIndices, int[] deletedIndices, Move[] moves)
+        //TODO ADD DOCS
+        public bool Cleared { get; }
+
+        internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] newModifiedIndices, int[] deletedIndices, Move[] moves, bool cleared)
         {
             InsertedIndices = insertedIndices;
             ModifiedIndices = modifiedIndices;
             NewModifiedIndices = newModifiedIndices;
             DeletedIndices = deletedIndices;
             Moves = moves;
+            Cleared = cleared;
         }
 
         /// <summary>
