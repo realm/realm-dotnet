@@ -9,7 +9,7 @@ jobs:
   run-tests:
     runs-on: macos-latest
     name: Xamarin.Android
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
