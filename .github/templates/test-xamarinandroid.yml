@@ -41,7 +41,6 @@ jobs:
                 commands:
                   - adb -s $DEVICEFARM_DEVICE_UDID shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
                   - adb -s $DEVICEFARM_DEVICE_UDID shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
-            adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
               test:
                 commands:
                   - echo "(@= baasTestArgs @)" > testargs.txt
