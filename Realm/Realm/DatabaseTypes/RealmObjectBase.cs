@@ -42,7 +42,6 @@ namespace Realms
         : IRealmObject,
           IThreadConfined,  //TODO Need to be removed later
           INotifyPropertyChanged,
-          INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IReflectableType
     {
         private Realm _realm;  //TODO These 3 fields need to be removed later (here to continue supporting the metadataRealmObject)
@@ -81,9 +80,9 @@ namespace Realms
             }
         }
 
-        internal ObjectHandle ObjectHandle => (Accessor as ManagedAccessor).ObjectHandle;
+        internal ObjectHandle ObjectHandle => (Accessor as ManagedAccessor)?.ObjectHandle;
 
-        internal Metadata ObjectMetadata => (Accessor as ManagedAccessor).Metadata;
+        internal Metadata ObjectMetadata => (Accessor as ManagedAccessor)?.Metadata;
 
         /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => ObjectMetadata;
@@ -174,6 +173,7 @@ namespace Realms
         /// </summary>
         ~RealmObjectBase()
         {
+            //TODO Probably we can dispose the Accessor here
             UnsubscribeFromNotifications();
         }
 
@@ -182,7 +182,7 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;  //TODO needs to be removed later
-            Accessor = new ManagedAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
+            Accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject);
 
             if (_propertyChanged != null)
             {
@@ -370,52 +370,6 @@ namespace Realms
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
-        }
-
-        /// <inheritdoc/>
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
-        {
-            var managedException = exception?.Convert();
-
-            if (managedException != null)
-            {
-                Realm.NotifyError(managedException);
-            }
-            else if (changes.HasValue)
-            {
-                foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
-                {
-                    // Due to a yet another Mono compiler bug, using LINQ fails here :/
-                    var i = 0;
-                    foreach (var property in ObjectSchema)
-                    {
-                        // Backlinks should be ignored. See Realm.CreateRealmObjectMetadata
-                        if (property.Type.IsComputed())
-                        {
-                            continue;
-                        }
-
-                        if (i == propertyIndex)
-                        {
-                            RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
-                            break;
-                        }
-
-                        ++i;
-                    }
-                }
-
-                if (changes.Value.Deletions.AsEnumerable().Any())
-                {
-                    RaisePropertyChanged(nameof(IsValid));
-
-                    if (!IsValid)
-                    {
-                        // We can proactively unsubscribe because the object has been deleted
-                        UnsubscribeFromNotifications();
-                    }
-                }
-            }
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]

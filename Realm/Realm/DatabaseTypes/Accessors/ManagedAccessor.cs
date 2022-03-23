@@ -28,7 +28,7 @@ using Realms.Schema;
 
 namespace Realms
 {
-    internal class ManagedAccessor : IRealmAccessor, IThreadConfined
+    internal class ManagedAccessor : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
         private bool _isEmbedded;  //TODO Eventually remove
 
@@ -41,6 +41,8 @@ namespace Realms
         private RealmObjectBase.Metadata _metadata;
 
         private NotificationTokenHandle _notificationToken;
+
+        private Action<string> _onNotifyPropertyChanged;
 
         internal ObjectHandle ObjectHandle => _objectHandle;
 
@@ -64,15 +66,17 @@ namespace Realms
 
         public RealmObjectBase.Metadata Metadata => _metadata;
 
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
-
-        public ManagedAccessor(Realm realm, ObjectHandle objectHandle, RealmObjectBase.Metadata metadata, bool isEmbedded)
+        public ManagedAccessor(Realm realm,
+            ObjectHandle objectHandle,
+            RealmObjectBase.Metadata metadata,
+            Action<string> notifyPropertyChangedDelegate,
+            bool isEmbedded)
         {
             _isEmbedded = isEmbedded;
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
+            _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
         }
 
@@ -185,6 +189,57 @@ namespace Realms
             //}
 
             return typeString;
+        }
+
+        /// <inheritdoc/>
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        {
+            var managedException = exception?.Convert();
+
+            if (managedException != null)
+            {
+                Realm.NotifyError(managedException);
+            }
+            else if (changes.HasValue)
+            {
+                foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
+                {
+                    // Due to a yet another Mono compiler bug, using LINQ fails here :/
+                    var i = 0;
+                    foreach (var property in ObjectSchema)
+                    {
+                        // Backlinks should be ignored. See Realm.CreateRealmObjectMetadata
+                        if (property.Type.IsComputed())
+                        {
+                            continue;
+                        }
+
+                        if (i == propertyIndex)
+                        {
+                            RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                            break;
+                        }
+
+                        ++i;
+                    }
+                }
+
+                if (changes.Value.Deletions.AsEnumerable().Any())
+                {
+                    RaisePropertyChanged(nameof(IsValid));
+
+                    if (!IsValid)
+                    {
+                        // We can proactively unsubscribe because the object has been deleted
+                        UnsubscribeFromNotifications();
+                    }
+                }
+            }
+        }
+
+        private void RaisePropertyChanged(string propertyName = null)
+        {
+            _onNotifyPropertyChanged(propertyName);
         }
     }
 }
