@@ -18,6 +18,7 @@ env:
 jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
+    name: Wrappers
   baas-code-coverage:
     uses: ./.github/workflows/deploy-baas.yml
     with:
@@ -30,12 +31,14 @@ jobs:
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
+    name: Package
     needs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
   build-unity:
     uses: ./.github/workflows/build-unity.yml
+    name: Package Unity
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
     needs:
@@ -43,6 +46,7 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
   test-net-framework:
     uses: ./.github/workflows/test-net-framework.yml
+    name: Test .NET Framework
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
@@ -52,6 +56,7 @@ jobs:
     secrets: {}
   test-uwp-managed:
     uses: ./.github/workflows/test-uwp-managed.yml
+    name: Test UWP Managed
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
@@ -63,6 +68,7 @@ jobs:
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
   test-net-core:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test .NET Core
     needs:
     - build-packages
     uses: ./.github/workflows/test-net-core.yml
@@ -72,6 +78,7 @@ jobs:
       framework: '["net6.0"]'
   test-xamarinmacos:
     uses: ./.github/workflows/test-xamarinmacos.yml
+    name: Test Xamarin.macOS
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
@@ -81,6 +88,7 @@ jobs:
     secrets: {}
   test-xamarinios:
     uses: ./.github/workflows/test-xamarinios.yml
+    name: Test Xamarin.iOS
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
@@ -90,6 +98,7 @@ jobs:
     secrets: {}
   test-xamarinandroid:
     uses: ./.github/workflows/test-xamarinandroid.yml
+    name: Test Xamarin.Android
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
@@ -101,6 +110,7 @@ jobs:
     uses: ./.github/workflows/test-weaver.yml
   test-code-coverage:
     uses: ./.github/workflows/test-code-coverage.yml
+    name: Test Code Coverage
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages

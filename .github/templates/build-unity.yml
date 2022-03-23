@@ -5,7 +5,7 @@
 #@ unityPkgName = "io.realm.unity-${{ inputs.version }}.tgz"
 
 ---
-name: build-packages
+name: build-unity
 "on":
   workflow_call:
     inputs:
@@ -16,7 +16,7 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  build-packages:
+  build-unity:
     runs-on: windows-latest
     name: Package Unity
     timeout-minutes: 30

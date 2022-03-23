@@ -46,6 +46,7 @@
 #@yaml/text-templated-strings
 (@= getJobName("test", name) @):
   uses: #@ "./.github/workflows/" + getJobName("test", name) + ".yml"
+  name: #@ "Test " + name
   if: #@ ignoreSkippedJobsCondition
   needs:
     - build-packages
@@ -71,6 +72,7 @@
 #@ def runNetCoreTests(os, framework):
 test-net-core:
   if: #@ ignoreSkippedJobsCondition
+  name: Test .NET Core
   needs:
     - build-packages
   uses: "./.github/workflows/test-net-core.yml"
@@ -83,6 +85,7 @@ test-net-core:
 #@ def buildUnity():
 build-unity:
   uses: ./.github/workflows/build-unity.yml
+  name: Package Unity
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
   needs:

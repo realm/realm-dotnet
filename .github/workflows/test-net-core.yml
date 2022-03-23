@@ -29,7 +29,7 @@ env:
 jobs:
   run-tests:
     runs-on: ${{ matrix.os }}
-    name: Test .NET Core
+    name: ${{ matrix.framework }}, ${{ matrix.os }}
     timeout-minutes: 45
     strategy:
       fail-fast: false

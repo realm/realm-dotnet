@@ -34,6 +34,7 @@ env:
 jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
+    name: Wrappers
   _: #@ template.replace(deployBaas(".NET Framework"))
   _: #@ template.replace(deployBaas("UWP Managed"))
   _: #@ template.replace(deployBaas("Xamarin.macOS"))
@@ -42,6 +43,7 @@ jobs:
   _: #@ template.replace(deployBaas("Code Coverage"))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
+    name: Package
     needs:
     - build-wrappers
   publish-packages-to-sleet:
