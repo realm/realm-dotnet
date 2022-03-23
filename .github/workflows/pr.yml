@@ -97,7 +97,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
     secrets: {}
-  run-tests-weaver:
+  test-weaver:
     uses: ./.github/workflows/test-weaver.yml
   test-code-coverage:
     uses: ./.github/workflows/test-code-coverage.yml

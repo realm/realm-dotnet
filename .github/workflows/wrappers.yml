@@ -1,11 +1,11 @@
-name: build-wrappers
+name: wrappers
 "on":
   workflow_call: null
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  check-wrappers-cache:
+  check-cache:
     strategy:
       matrix:
         os:
@@ -260,13 +260,13 @@ jobs:
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
-  build-wrappers-macos:
+  macos:
     runs-on: macos-latest
     name: Wrappers macOS
     timeout-minutes: 90
     needs:
-    - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.wrappers-macos != 'true'
+    - check-cache
+    if: needs.check-cache.outputs.wrappers-macos != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -288,7 +288,7 @@ jobs:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-  build-wrappers-ios-frameworks:
+  ios-frameworks:
     runs-on: macos-latest
     name: Wrappers iOS frameworks
     strategy:
@@ -298,8 +298,8 @@ jobs:
         - Device
     timeout-minutes: 90
     needs:
-    - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
+    - check-cache
+    if: needs.check-cache.outputs.wrappers-ios != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -321,13 +321,13 @@ jobs:
         name: wrappers-ios-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/cmake/**/realm-wrappers.framework
         retention-days: 1
-  build-wrappers-ios:
+  ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
-    - check-wrappers-cache
-    - build-wrappers-ios-frameworks
-    if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
+    - check-cache
+    - ios-frameworks
+    if: needs.check-cache.outputs.wrappers-ios != 'true'
     timeout-minutes: 90
     steps:
     - name: Checkout code
@@ -367,13 +367,13 @@ jobs:
         name: wrappers-ios
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-  build-wrappers-linux:
+  linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
     timeout-minutes: 90
     needs:
-    - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
+    - check-cache
+    if: needs.check-cache.outputs.wrappers-linux != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -414,7 +414,7 @@ jobs:
         name: wrappers-linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-  build-wrappers-android:
+  android:
     runs-on: ubuntu-20.04
     name: Wrappers Android
     strategy:
@@ -426,7 +426,7 @@ jobs:
         - x86_64
     timeout-minutes: 90
     needs:
-    - check-wrappers-cache
+    - check-cache
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -448,8 +448,8 @@ jobs:
         name: wrappers-android-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-wrappers-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-wrappers-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-wrappers-cache.outputs.wrappers-android-x86 != 'true' || needs.check-wrappers-cache.outputs.wrappers-android-x86_64 != 'true'
-  build-wrappers-windows:
+    if: needs.check-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-cache.outputs.wrappers-android-x86 != 'true' || needs.check-cache.outputs.wrappers-android-x86_64 != 'true'
+  windows:
     runs-on: windows-latest
     name: Wrappers Windows
     strategy:
@@ -460,7 +460,7 @@ jobs:
         - ARM64
     timeout-minutes: 90
     needs:
-    - check-wrappers-cache
+    - check-cache
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -488,8 +488,8 @@ jobs:
         name: wrappers-windows-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-wrappers-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-ARM64 != 'true'
-  build-wrappers-windows-uwp:
+    if: needs.check-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-ARM64 != 'true'
+  uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
@@ -501,7 +501,7 @@ jobs:
         - ARM64
     timeout-minutes: 90
     needs:
-    - check-wrappers-cache
+    - check-cache
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -529,4 +529,4 @@ jobs:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-    if: needs.check-wrappers-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-wrappers-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'
+    if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'

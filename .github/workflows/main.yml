@@ -210,7 +210,7 @@ jobs:
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-  run-tests-xunit:
+  test-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
     timeout-minutes: 10
@@ -251,7 +251,7 @@ jobs:
       run: echo '::set-output name=executable-path::./Tests/Tests.XUnit/bin/Release/net6.0/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
-  run-tests-weaver:
+  test-weaver:
     uses: ./.github/workflows/test-weaver.yml
   test-code-coverage:
     uses: ./.github/workflows/test-code-coverage.yml

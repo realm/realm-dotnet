@@ -34,8 +34,8 @@ with:
 #@ end
 timeout-minutes: #@ wrappersTimeout
 needs:
-  - check-wrappers-cache
-if: #@ "needs.check-wrappers-cache.outputs." + cacheVariable + " != 'true'"
+  - check-cache
+if: #@ "needs.check-cache.outputs." + cacheVariable + " != 'true'"
 steps:
   - #@ template.replace(checkoutCode("recursive", False))
   - #@ checkCache(outputVar, artifactsPath)
@@ -60,14 +60,14 @@ steps:
 #@ end
 
 ---
-name: build-wrappers
+name: wrappers
 "on":
   workflow_call:
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  check-wrappers-cache:
+  check-cache:
     strategy:
       matrix:
         os:
@@ -93,24 +93,24 @@ jobs:
         - run: git clean -fdx
           if: #@ condition
       #@ end
-  build-wrappers-macos:
+  macos:
     runs-on: macos-latest
     name: Wrappers macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-  build-wrappers-ios-frameworks:
+  ios-frameworks:
     runs-on: macos-latest
     name: Wrappers iOS frameworks
     strategy:
       matrix:
         arch: #@ iOSArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", enableLto = False, artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
-  build-wrappers-ios:
+  ios:
     runs-on: macos-latest
     name: Wrappers iOS XCframework
     needs:
-      - check-wrappers-cache
-      - build-wrappers-ios-frameworks
-    if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
+      - check-cache
+      - ios-frameworks
+    if: needs.check-cache.outputs.wrappers-ios != 'true'
     timeout-minutes: #@ wrappersTimeout
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
@@ -126,13 +126,13 @@ jobs:
         shell: powershell
         if: #@ wrappersCacheCondition
       - #@ uploadArtifacts("wrappers-ios", "wrappers/build/**", 1)
-  build-wrappers-linux:
+  linux:
     runs-on: ubuntu-latest
     name: Wrappers Linux
     timeout-minutes: #@ wrappersTimeout
     needs:
-      - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
+      - check-cache
+    if: needs.check-cache.outputs.wrappers-linux != 'true'
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux")
@@ -155,7 +155,7 @@ jobs:
           run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
         if: #@ wrappersCacheCondition
       - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
-  build-wrappers-android:
+  android:
     runs-on: ubuntu-20.04
     name: Wrappers Android
     strategy:
@@ -163,8 +163,8 @@ jobs:
         arch: #@ androidABIs
     _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", enableLto = False, cacheVariable = "wrappers-android"))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
-  build-wrappers-windows:
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
+  windows:
     runs-on: windows-latest
     name: Wrappers Windows
     strategy:
@@ -172,8 +172,8 @@ jobs:
         arch: #@ windowsArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg("windows-${{ matrix.arch }}") ], cacheVariable = "wrappers-windows"))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
-  build-wrappers-windows-uwp:
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
+  uwp:
     runs-on: windows-latest
     name: Wrappers UWP
     strategy:
@@ -181,4 +181,4 @@ jobs:
         arch: #@ windowsUWPArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg("uwp-${{ matrix.arch }}") ], cacheVariable = "wrappers-uwp"))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])

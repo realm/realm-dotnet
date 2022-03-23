@@ -61,7 +61,7 @@ jobs:
   _: #@ template.replace(runTests("Xamarin.macOS"))
   _: #@ template.replace(runTests("Xamarin.iOS"))
   _: #@ template.replace(runTests("Xamarin.Android"))
-  run-tests-xunit:
+  test-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
     timeout-minutes: 10
@@ -77,7 +77,7 @@ jobs:
       - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
-  run-tests-weaver:
+  test-weaver:
     uses: ./.github/workflows/test-weaver.yml
   _: #@ template.replace(runTests("Code Coverage"))
   benchmark-linux:
