@@ -3,17 +3,6 @@ cmake_minimum_required(VERSION 3.15.0)
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "")
 project(RealmDotNet)
 
-# Load dependency info from dependencies.list into REALM_FOO_VERSION variables.
-set(DEPENDENCIES_FILE "dependencies.list" CACHE STRING "path to dependencies list")
-file(STRINGS ${DEPENDENCIES_FILE} DEPENDENCIES)
-message("Dependencies: ${DEPENDENCIES}")
-foreach(DEPENDENCY IN LISTS DEPENDENCIES)
-    string(REGEX MATCHALL "([^=]+)" COMPONENT_AND_VERSION ${DEPENDENCY})
-    list(GET COMPONENT_AND_VERSION 0 COMPONENT)
-    list(GET COMPONENT_AND_VERSION 1 VERSION)
-    set(${COMPONENT} ${VERSION})
-endforeach()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

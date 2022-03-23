@@ -1,0 +1,22 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "dotnetPublish")
+#@ load("test.lib.yml", "publishTestsResults")
+
+---
+name: test-weaver
+"on":
+  workflow_call:
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  run-tests-weaver:
+    runs-on: windows-latest
+    name: Weaver
+    timeout-minutes: 15
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1"))
+      - name: Run Tests
+        run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
+      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")

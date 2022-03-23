@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
@@ -32,9 +31,6 @@ namespace Realms.Tests.Database
     {
         private RealmConfiguration _configuration;
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "_realm_flip_guid_for_testing", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void flip_guid_for_testing([In, Out] byte[] guid_bytes);
-
         [Test]
         public void Migration_FlipGuid_ShouldProduceCorrectRepresentation()
         {
@@ -43,7 +39,7 @@ namespace Realms.Tests.Database
             var actual = guid.ToByteArray();
 
             NativeCommon.Initialize(); // ensure we can find the wrappers binary
-            flip_guid_for_testing(actual);
+            NativeCommon.flip_guid_for_testing(actual);
 
             Assert.AreEqual(expected, actual);
         }

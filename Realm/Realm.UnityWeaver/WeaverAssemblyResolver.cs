@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
-using UnityEngine;
 
 namespace RealmWeaver
 {
@@ -63,6 +62,8 @@ namespace RealmWeaver
     public class WeaverAssemblyResolver : BaseAssemblyResolver
     {
         private readonly IDictionary<string, AssemblyDefinition> _cache = new Dictionary<string, AssemblyDefinition>();
+
+        public static string ApplicationDataPath { get; set; }
 
         private WeaverAssemblyResolver(IEnumerable<string> references)
         {
@@ -116,7 +117,7 @@ namespace RealmWeaver
                 return assemblyPath;
             }
 
-            return Path.Combine(Application.dataPath, "..", assemblyPath);
+            return Path.Combine(ApplicationDataPath, "..", assemblyPath);
         }
 
         public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
