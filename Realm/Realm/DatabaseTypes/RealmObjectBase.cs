@@ -40,11 +40,17 @@ namespace Realms
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
         : IRealmObject,
-          IThreadConfined,
+          IThreadConfined,  //TODO Need to be removed later
           INotifyPropertyChanged,
           INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IReflectableType
     {
+        private Realm _realm;  //TODO These 3 fields need to be removed later (here to continue supporting the metadataRealmObject)
+
+        private ObjectHandle _objectHandle;
+
+        private Metadata _metadata;
+
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
@@ -173,6 +179,9 @@ namespace Realms
 
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
+            _realm = realm;
+            _objectHandle = objectHandle;
+            _metadata = metadata;  //TODO needs to be removed later
             Accessor = new ManagedAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
 
             if (_propertyChanged != null)

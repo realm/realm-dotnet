@@ -116,12 +116,10 @@ namespace Realms
 
         public void SubscribeForNotifications()
         {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
         }
 
         public void UnsubscribeFromNotifications()
         {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
         }
     }
 }
