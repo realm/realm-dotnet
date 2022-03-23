@@ -56,7 +56,7 @@ namespace Realms.Dynamic
             : base(expression, BindingRestrictions.Empty, value)
         {
             _realm = value.Realm;
-            _metadata = value.ObjectMetadata();
+            _metadata = value.ObjectMetadata;
         }
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)

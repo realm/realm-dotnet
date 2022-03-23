@@ -40,6 +40,7 @@ namespace Realms
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
         : IRealmObject,
+          IThreadConfined,
           INotifyPropertyChanged,
           INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IReflectableType
@@ -73,6 +74,16 @@ namespace Realms
                 }
             }
         }
+
+        internal ObjectHandle ObjectHandle => (Accessor as ManagedAccessor).ObjectHandle;
+
+        internal Metadata ObjectMetadata => (Accessor as ManagedAccessor).Metadata;
+
+        /// <inheritdoc/>
+        Metadata IMetadataObject.Metadata => ObjectMetadata;
+
+        /// <inheritdoc/>
+        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
         public IRealmAccessor Accessor { get; private set; } = new UnmanagedAccessor();
 
@@ -160,7 +171,6 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        //TODO This also should be hidden...
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
             Accessor = new ManagedAccessor(realm, objectHandle, metadata, this is EmbeddedObject);
@@ -270,13 +280,12 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return this.ObjectHandle().ObjEquals(robj.ObjectHandle());
+            return ObjectHandle.ObjEquals(robj.ObjectHandle);
         }
 
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            //TODO Cannot be moved completely to accessor... Need to decide how to do it 
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
             return Accessor.HashCode?.Value ?? base.GetHashCode();
@@ -534,7 +543,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
-                var resultsHandle = _realmObject.ObjectHandle().GetBacklinks(propertyName, _realmObject.ObjectMetadata());
+                var resultsHandle = _realmObject.ObjectHandle.GetBacklinks(propertyName, _realmObject.ObjectMetadata);
 
                 var relatedMeta = _realmObject.Realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
@@ -558,7 +567,7 @@ namespace Realms
             {
                 Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 
-                var resultsHandle = _realmObject.ObjectHandle().GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
+                var resultsHandle = _realmObject.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
                 if (relatedMeta.Schema.IsEmbedded)
                 {
                     return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
@@ -584,7 +593,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
 
-                var result = _realmObject.ObjectHandle().GetList<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata(), property.ObjectType);
+                var result = _realmObject.ObjectHandle.GetList<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -606,7 +615,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
 
-                var result = _realmObject.ObjectHandle().GetSet<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata(), property.ObjectType);
+                var result = _realmObject.ObjectHandle.GetSet<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -628,7 +637,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
 
-                var result = _realmObject.ObjectHandle().GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata(), property.ObjectType);
+                var result = _realmObject.ObjectHandle.GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }

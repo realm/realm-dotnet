@@ -197,7 +197,7 @@ namespace Realms
                         throw new InvalidOperationException("Can't convert unmanaged object to native");
                     }
 
-                    return (PrimitiveValue.Object(_objectValue?.ObjectHandle()), null);
+                    return (PrimitiveValue.Object(_objectValue?.ObjectHandle), null);
                 default:
                     return (_primitiveValue, null);
             }

@@ -1332,7 +1332,7 @@ namespace Realms
             Argument.NotNull(obj, nameof(obj));
             Argument.Ensure(obj.IsManaged, "Object is not managed by Realm, so it cannot be removed.", nameof(obj));
 
-            obj.ObjectHandle().RemoveFromRealm(SharedRealmHandle);
+            obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
         }
 
         /// <summary>
@@ -1649,12 +1649,12 @@ namespace Realms
                 Argument.NotNull(parent, nameof(parent));
                 Argument.Ensure(parent.IsManaged && parent.IsValid, "The object passed as parent must be managed and valid to create an embedded object.", nameof(parent));
                 Argument.Ensure(parent.Realm.IsSameInstance(_realm), "The object passed as parent is managed by a different Realm", nameof(parent));
-                Argument.Ensure(parent.ObjectMetadata().Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
+                Argument.Ensure(parent.ObjectMetadata.Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
                 Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
                 Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
-                var handle = parent.ObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.ObjectMetadata());
+                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(propertyName, parent.ObjectMetadata);
 
                 obj.SetOwner(_realm, handle, metadata);
                 obj.OnManaged();
