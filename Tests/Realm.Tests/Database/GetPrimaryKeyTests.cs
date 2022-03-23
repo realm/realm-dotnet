@@ -103,7 +103,7 @@ namespace Realms.Tests.Database
 
         private static IRealmObjectHelper GetHelper(RealmObjectBase obj)
         {
-            return obj.ObjectMetadata().Helper;
+            return obj.ObjectMetadata.Helper;
         }
 
         private IRealmObjectHelper GetHelper(Type type)
