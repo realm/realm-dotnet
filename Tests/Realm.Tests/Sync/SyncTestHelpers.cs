@@ -128,7 +128,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            if (baseUrl != null)
+            if (!string.IsNullOrEmpty(baseUrl))
             {
                 _baseUri = new Uri(baseUrl);
             }
