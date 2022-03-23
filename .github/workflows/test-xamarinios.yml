@@ -23,7 +23,7 @@ env:
 jobs:
   run-tests:
     runs-on: macos-latest
-    name: Run
+    name: Xamarin.iOS
     timeout-minutes: 45
     steps:
     - name: Checkout code

@@ -23,7 +23,7 @@ env:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    name: Run
+    name: Code Coverage
     timeout-minutes: 45
     steps:
     - name: Checkout code

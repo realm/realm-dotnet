@@ -15,7 +15,7 @@ env:
 jobs:
   build-packages:
     runs-on: windows-latest
-    name: Package
+    name: NuGet
     outputs:
       package_version: ${{ steps.get-version.outputs.version }}
     timeout-minutes: 30

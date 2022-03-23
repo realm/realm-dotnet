@@ -27,7 +27,7 @@ env:
 jobs:
   run-tests:
     runs-on: windows-2019
-    name: Run
+    name: UWP
     timeout-minutes: 45
     steps:
     - name: Checkout code

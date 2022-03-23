@@ -23,7 +23,7 @@ env:
 jobs:
   run-tests:
     runs-on: windows-latest
-    name: Run
+    name: .NET Framework
     timeout-minutes: 45
     steps:
     - name: Checkout code
