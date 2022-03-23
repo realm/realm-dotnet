@@ -33,7 +33,7 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   build-wrappers:
-    uses: ./.github/workflows/build-wrappers.yml
+    uses: ./.github/workflows/wrappers.yml
   _: #@ template.replace(deployBaas(".NET Framework"))
   _: #@ template.replace(deployBaas("UWP Managed"))
   _: #@ template.replace(deployBaas("Xamarin.macOS"))

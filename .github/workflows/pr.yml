@@ -17,7 +17,7 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   build-wrappers:
-    uses: ./.github/workflows/build-wrappers.yml
+    uses: ./.github/workflows/wrappers.yml
   baas-code-coverage:
     uses: ./.github/workflows/deploy-baas.yml
     with:
