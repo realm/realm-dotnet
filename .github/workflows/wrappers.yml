@@ -12,7 +12,7 @@ jobs:
         - ubuntu
         - windows
     runs-on: ${{ matrix.os }}-latest
-    name: Check wrapper cache
+    name: Check cache
     env:
       CACHE_SKIP_SAVE: true
     outputs:
@@ -262,7 +262,7 @@ jobs:
       if: matrix.os == 'windows'
   macos:
     runs-on: macos-latest
-    name: Wrappers macOS
+    name: macOS
     timeout-minutes: 90
     needs:
     - check-cache
@@ -290,7 +290,7 @@ jobs:
         retention-days: 1
   ios-frameworks:
     runs-on: macos-latest
-    name: Wrappers iOS frameworks
+    name: iOS frameworks
     strategy:
       matrix:
         arch:
@@ -323,7 +323,7 @@ jobs:
         retention-days: 1
   ios:
     runs-on: macos-latest
-    name: Wrappers iOS XCframework
+    name: iOS XCframework
     needs:
     - check-cache
     - ios-frameworks
@@ -369,7 +369,7 @@ jobs:
         retention-days: 1
   linux:
     runs-on: ubuntu-latest
-    name: Wrappers Linux
+    name: Linux
     timeout-minutes: 90
     needs:
     - check-cache
@@ -416,7 +416,7 @@ jobs:
         retention-days: 1
   android:
     runs-on: ubuntu-20.04
-    name: Wrappers Android
+    name: Android
     strategy:
       matrix:
         arch:
@@ -451,7 +451,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-cache.outputs.wrappers-android-x86 != 'true' || needs.check-cache.outputs.wrappers-android-x86_64 != 'true'
   windows:
     runs-on: windows-latest
-    name: Wrappers Windows
+    name: Windows
     strategy:
       matrix:
         arch:
@@ -491,7 +491,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-ARM64 != 'true'
   uwp:
     runs-on: windows-latest
-    name: Wrappers UWP
+    name: UWP
     strategy:
       matrix:
         arch:

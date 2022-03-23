@@ -22,7 +22,7 @@ env:
 jobs:
   cleanup-baas:
     runs-on: ubuntu-latest
-    name: Cleanup MDB Realm for ${{ inputs.name }}
+    name: ${{ inputs.name }}
     timeout-minutes: 5
     steps:
     - name: Checkout code

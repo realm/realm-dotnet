@@ -74,7 +74,7 @@ jobs:
         - ubuntu
         - windows
     runs-on: ${{ matrix.os }}-latest
-    name: Check wrapper cache
+    name: Check cache
     env:
       CACHE_SKIP_SAVE: true
     outputs:
@@ -95,18 +95,18 @@ jobs:
       #@ end
   macos:
     runs-on: macos-latest
-    name: Wrappers macOS
+    name: macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
   ios-frameworks:
     runs-on: macos-latest
-    name: Wrappers iOS frameworks
+    name: iOS frameworks
     strategy:
       matrix:
         arch: #@ iOSArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", enableLto = False, artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
   ios:
     runs-on: macos-latest
-    name: Wrappers iOS XCframework
+    name: iOS XCframework
     needs:
       - check-cache
       - ios-frameworks
@@ -128,7 +128,7 @@ jobs:
       - #@ uploadArtifacts("wrappers-ios", "wrappers/build/**", 1)
   linux:
     runs-on: ubuntu-latest
-    name: Wrappers Linux
+    name: Linux
     timeout-minutes: #@ wrappersTimeout
     needs:
       - check-cache
@@ -157,7 +157,7 @@ jobs:
       - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
   android:
     runs-on: ubuntu-20.04
-    name: Wrappers Android
+    name: Android
     strategy:
       matrix:
         arch: #@ androidABIs
@@ -166,7 +166,7 @@ jobs:
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
   windows:
     runs-on: windows-latest
-    name: Wrappers Windows
+    name: Windows
     strategy:
       matrix:
         arch: #@ windowsArchs
@@ -175,7 +175,7 @@ jobs:
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   uwp:
     runs-on: windows-latest
-    name: Wrappers UWP
+    name: UWP
     strategy:
       matrix:
         arch: #@ windowsUWPArchs

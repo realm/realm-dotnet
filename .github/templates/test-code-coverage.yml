@@ -8,7 +8,7 @@ _: #@ template.replace(testDefinition())
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    name: Test Code Coverage
+    name: Run
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())

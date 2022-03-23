@@ -41,5 +41,6 @@ jobs:
   _: #@ template.replace(runTests("Xamarin.Android", runSyncTests = False))
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
+    name: Test Weaver
   _: #@ template.replace(runTests("Code Coverage"))
   _: #@ template.replace(cleanupBaas("Code Coverage"))

@@ -29,7 +29,7 @@ env:
 jobs:
   deploy-baas:
     runs-on: ubuntu-latest
-    name: Deploy MDB Realm for ${{ inputs.name }}
+    name: ${{ inputs.name }}
     outputs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20

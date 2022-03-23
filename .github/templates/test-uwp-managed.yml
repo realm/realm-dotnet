@@ -8,7 +8,7 @@ _: #@ template.replace(testDefinition(["Base64_Encoded_Pfx", "Pfx_Password"]))
 jobs:
   run-tests:
     runs-on: windows-2019
-    name: Test UWP Managed
+    name: Run
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())

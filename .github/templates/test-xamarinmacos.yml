@@ -8,7 +8,7 @@ _: #@ template.replace(testDefinition())
 jobs:
   run-tests:
     runs-on: macos-latest
-    name: Test Xamarin.macOS
+    name: Run
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())

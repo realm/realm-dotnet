@@ -21,6 +21,7 @@ jobs:
     name: Wrappers
   baas-code-coverage:
     uses: ./.github/workflows/deploy-baas.yml
+    name: Deploy BaaS
     with:
       name: Code Coverage
     secrets:
@@ -108,6 +109,7 @@ jobs:
     secrets: {}
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
+    name: Test Weaver
   test-code-coverage:
     uses: ./.github/workflows/test-code-coverage.yml
     name: Test Code Coverage
@@ -125,6 +127,7 @@ jobs:
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
   cleanup-code-coverage:
     uses: ./.github/workflows/cleanup-baas.yml
+    name: Cleanup BaaS
     needs:
     - test-code-coverage
     with:
