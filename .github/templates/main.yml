@@ -81,7 +81,7 @@ jobs:
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
-    name: Test Weaver
+    name: Test
   _: #@ template.replace(runTests("Code Coverage"))
   benchmark-linux:
     name: Benchmark Linux

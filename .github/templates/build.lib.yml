@@ -16,7 +16,7 @@
 #@yaml/text-templated-strings
 (@= getJobName("baas", name) @):
   uses: ./.github/workflows/deploy-baas.yml
-  name: Deploy BaaS
+  name: BaaS
   with:
     name: #@ name
   secrets:
@@ -31,7 +31,7 @@
 #@yaml/text-templated-strings
 (@= getJobName("cleanup", name) @):
   uses: ./.github/workflows/cleanup-baas.yml
-  name: Cleanup BaaS
+  name: Cleanup
   needs:
     - #@ getJobName("test", name)
   with:
