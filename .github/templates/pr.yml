@@ -40,7 +40,7 @@ jobs:
   _: #@ template.replace(runNetCoreTests("[\"macos-latest\", \"windows-latest\", \"ubuntu-latest\", \"win81\"]", "[\"net6.0\"]"))
   _: #@ template.replace(runTests("Xamarin.macOS", runSyncTests = False))
   _: #@ template.replace(runTests("Xamarin.iOS", runSyncTests = False))
-  _: #@ template.replace(runTests("Xamarin.Android", runSyncTests = False))
+  _: #@ template.replace(runTests("Xamarin.Android", runSyncTests = False, additionalSecrets=["DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test

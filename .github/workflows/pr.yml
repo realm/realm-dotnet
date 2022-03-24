@@ -108,7 +108,9 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
-    secrets: {}
+    secrets:
+      DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+      DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
