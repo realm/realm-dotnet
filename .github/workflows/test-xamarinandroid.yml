@@ -58,9 +58,6 @@ jobs:
       uses: realm/aws-devicefarm/test-application@master
       id: run_tests
       with:
-        file_artifacts: |
-          Customer Artifacts.zip
-          Logcat.logcat
         project_arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
         device_pool_arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
         app_file: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
@@ -70,6 +67,7 @@ jobs:
         test_package_type: APPIUM_PYTHON_TEST_PACKAGE
         test_spec_file: test_spec.yaml
         test_spec_type: APPIUM_PYTHON_TEST_SPEC
+        remote_src: true
         test_spec: |
           version: 0.1
           phases:
@@ -90,7 +88,9 @@ jobs:
                 - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml $DEVICEFARM_LOG_DIR/TestResults.Android.xml
           artifacts:
             - $DEVICEFARM_LOG_DIR
-        remote_src: true
+        file_artifacts: |
+          Customer Artifacts.zip
+          Logcat.logcat
     - run: |
         dir
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
