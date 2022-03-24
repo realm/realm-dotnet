@@ -22,7 +22,7 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   run-tests:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     name: Xamarin.Android
     timeout-minutes: 60
     steps:
