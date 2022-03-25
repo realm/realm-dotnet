@@ -109,5 +109,7 @@ namespace Realms.Sync.Native
         internal LogLevel log_level;
 
         internal IntPtr managed_logger;
+
+        internal IntPtr managed_http_client;
     }
 }

@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Net.Http;
 using System.Text;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {
@@ -128,6 +130,65 @@ namespace Realms.Tests.Sync
 
                 Assert.That(log, Does.Contain($"{logLevel}:"));
                 Assert.That(log, Does.Not.Contain($"{logLevel - 1}:"));
+            });
+        }
+
+        [Test]
+        public void RealmConfiguration_WithCustomHttpClientHandler_CleanedUpAfterAppDestroyed()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                App app = null;
+                var gcTask = TestHelpers.EnsureObjectsAreCollected(() =>
+                {
+                    var handler = new HttpClientHandler();
+
+                    app = App.Create(new AppConfiguration("abc")
+                    {
+                        HttpClientHandler = handler
+                    });
+
+                    return new[] { handler };
+                });
+
+                // Since apps are cached, we need to clear the cache to destroy the app
+                // and trigger the chain that will eventually free the HttpClient holding
+                // the HttpClientHandler
+                AppHandle.ForceCloseHandles(clearNativeCache: true);
+
+                await gcTask;
+            });
+        }
+
+        [Test]
+        public void RealmConfiguration_WithCustomHttpClientHandler_UsedWhenMakingCalls()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var validationInvoked = false;
+                var handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, certificate, chain, policyErrors) =>
+                    {
+                        validationInvoked = true;
+                        return false;
+                    }
+                };
+
+                var app = App.Create(new AppConfiguration("abc")
+                {
+                    HttpClientHandler = handler
+                });
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => app.LogInAsync(Credentials.Anonymous()));
+
+                // Http error
+                Assert.That(ex.Message, Does.Contain("code: 998"));
+
+                // We rejected the SSL connection, so there should be no response from the server
+                Assert.That(ex.StatusCode, Is.Null);
+
+                Assert.That(validationInvoked, Is.True);
             });
         }
     }
