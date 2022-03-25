@@ -92,11 +92,9 @@ namespace Realms
             return (ISet<T>)_container[propertyName];
         }
 
-        public string GetStringDescription()
+        public string GetStringDescription(string typeName)
         {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
-
-            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
+            return $"{typeName} (unmanaged)";
         }
 
         public RealmValue GetValue(string propertyName)

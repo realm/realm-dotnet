@@ -18,9 +18,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
@@ -30,7 +28,7 @@ namespace Realms
 {
     internal class ManagedAccessor : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
-        private bool _isEmbedded;  //TODO Eventually remove
+        private bool _isEmbedded;
 
         private Lazy<int> _hashCode;
 
@@ -43,6 +41,8 @@ namespace Realms
         private NotificationTokenHandle _notificationToken;
 
         private Action<string> _onNotifyPropertyChanged;
+
+        private RealmObjectBase _ro; //TODO This will be removed
 
         internal ObjectHandle ObjectHandle => _objectHandle;
 
@@ -70,7 +70,8 @@ namespace Realms
             ObjectHandle objectHandle,
             RealmObjectBase.Metadata metadata,
             Action<string> notifyPropertyChangedDelegate,
-            bool isEmbedded)
+            bool isEmbedded,
+            RealmObjectBase ro)
         {
             _isEmbedded = isEmbedded;
             _realm = realm;
@@ -78,6 +79,7 @@ namespace Realms
             _metadata = metadata;
             _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
+            _ro = ro;
         }
 
         public RealmObjectBase FreezeImpl()
@@ -168,27 +170,20 @@ namespace Realms
             _notificationToken = null;
         }
 
-        public string GetStringDescription()
+        public string GetStringDescription(string typeName)
         {
-            var typeString = GetType().Name;  //TODO THIS IS WRONG...
-
-            if (!IsManaged)  //TODO This can be removed
-            {
-                return $"{typeString} (unmanaged)";
-            }
-
             if (!IsValid)
             {
-                return $"{typeString} (removed)";
+                return $"{typeName} (removed)";
             }
 
-            //if (!_isEmbedded && ObjectMetadata.Helper.TryGetPrimaryKeyValue(ro, out var pkValue))  //TODO We need to remove the helper from here
-            //{
-            //    var pkProperty = ObjectMetadata.Schema.PrimaryKeyProperty;
-            //    return $"{typeString} ({pkProperty.Value.Name} = {pkValue})";
-            //}
+            if (!_isEmbedded && ObjectMetadata.Helper.TryGetPrimaryKeyValue((RealmObject)_ro, out var pkValue))
+            {
+                var pkProperty = ObjectMetadata.Schema.PrimaryKeyProperty;
+                return $"{typeName} ({pkProperty.Value.Name} = {pkValue})";
+            }
 
-            return typeString;
+            return typeName;
         }
 
         /// <inheritdoc/>

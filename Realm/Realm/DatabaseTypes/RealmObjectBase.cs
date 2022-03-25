@@ -50,6 +50,8 @@ namespace Realms
 
         private Metadata _metadata;
 
+        private IRealmAccessor _accessor;
+
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
@@ -90,7 +92,9 @@ namespace Realms
         /// <inheritdoc/>
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
-        public IRealmAccessor Accessor { get; private set; } = new UnmanagedAccessor();
+        //TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
+        [IgnoreDataMember, XmlIgnore]
+        public IRealmAccessor Accessor => _accessor;
 
         /// <summary>
         /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
@@ -166,6 +170,7 @@ namespace Realms
 
         internal RealmObjectBase()
         {
+            _accessor = new UnmanagedAccessor();
         }
 
         /// <summary>
@@ -182,7 +187,8 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;  //TODO needs to be removed later
-            Accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject);
+            _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
+            //Accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
 
             if (_propertyChanged != null)
             {
@@ -306,7 +312,7 @@ namespace Realms
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return Accessor.GetStringDescription();
+            return Accessor.GetStringDescription(GetType().Name);
         }
 
         /// <summary>

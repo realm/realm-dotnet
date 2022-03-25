@@ -59,6 +59,6 @@ namespace Realms
 
         void UnsubscribeFromNotifications();
 
-        string GetStringDescription();
+        string GetStringDescription(string typeName);
     }
 }
