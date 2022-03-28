@@ -40,7 +40,6 @@ namespace Realms
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
         : IRealmObject,
-          IThreadConfined,  //TODO Need to be removed later
           INotifyPropertyChanged,
           IReflectableType
     {
@@ -85,12 +84,6 @@ namespace Realms
         internal ObjectHandle ObjectHandle => (Accessor as ManagedAccessor)?.ObjectHandle;
 
         internal Metadata ObjectMetadata => (Accessor as ManagedAccessor)?.Metadata;
-
-        /// <inheritdoc/>
-        Metadata IMetadataObject.Metadata => ObjectMetadata;
-
-        /// <inheritdoc/>
-        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
         //TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
         [IgnoreDataMember, XmlIgnore]

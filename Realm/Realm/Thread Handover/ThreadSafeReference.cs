@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Helpers;
 
 namespace Realms
@@ -179,9 +180,9 @@ namespace Realms
         [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "A nested class with generic argument is unlikely to be confused with System.Object.")]
         [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is intentional as ThreadSafeReference.Object represents an object.")]
         public class Object<T> : ThreadSafeReference
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
-            internal Object(T value) : base(value, Type.Object)
+            internal Object(T value) : base(value.AsIThreadConfined(), Type.Object)
             {
             }
         }

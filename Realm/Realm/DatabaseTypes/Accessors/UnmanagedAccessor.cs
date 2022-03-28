@@ -25,7 +25,7 @@ using Realms.Schema;
 
 namespace Realms
 {
-    public class UnmanagedAccessor : IRealmAccessor
+    internal class UnmanagedAccessor : IRealmAccessor, IThreadConfined
     {
         private Dictionary<string, object> _container = new();
 
@@ -43,12 +43,17 @@ namespace Realms
 
         public int BacklinksCount => 0;
 
+        public IThreadConfinedHandle Handle => null;
+
+        public RealmObjectBase.Metadata Metadata => null;
+
         public RealmObjectBase FreezeImpl()
         {
             throw new RealmException("Unmanaged objects cannot be frozen.");
         }
 
-        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObjectBase
+        public IQueryable<T> GetBacklinks<T>(string propertyName)
+            where T : RealmObjectBase
         {
             Debug.Assert(false, "Object is not managed, but managed access was attempted");
 
