@@ -183,13 +183,27 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => app.LogInAsync(Credentials.Anonymous()));
 
                 // Http error
-                Assert.That(ex.Message, Does.Contain("code: 998"));
+                Assert.That(ex.Message, Does.Contain("code 998"));
 
                 // We rejected the SSL connection, so there should be no response from the server
                 Assert.That(ex.StatusCode, Is.Null);
 
                 Assert.That(validationInvoked, Is.True);
             });
+        }
+
+        [Test]
+        public void RealmConfiguration_HttpClientHandler_IsSet()
+        {
+            var config = new AppConfiguration("abc");
+            Assert.That(config.HttpClientHandler, Is.Not.Null);
+        }
+
+        [Test]
+        public void RealmConfiguration_HttpClientHandler_MustNotBeNull()
+        {
+            var config = new AppConfiguration("abc");
+            Assert.Throws<ArgumentNullException>(() => config.HttpClientHandler = null);
         }
     }
 }

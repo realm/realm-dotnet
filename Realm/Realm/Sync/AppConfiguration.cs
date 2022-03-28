@@ -30,6 +30,7 @@ namespace Realms.Sync
     public class AppConfiguration
     {
         private byte[] _metadataEncryptionKey;
+        private HttpMessageHandler _httpClientHandler = new HttpClientHandler();
 
         /// <summary>
         /// Gets the unique app id that identifies the Realm application.
@@ -138,7 +139,7 @@ namespace Realms.Sync
         public TimeSpan? DefaultRequestTimeout { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="System.Net.Http.HttpClientHandler"/> that will be used
+        /// Gets or sets the <see cref="HttpMessageHandler"/> that will be used
         /// for the http requests to MongoDB Realm.
         /// </summary>
         /// <value>The http client handler that configures things like certificates and proxy settings.</value>
@@ -148,7 +149,15 @@ namespace Realms.Sync
         /// normal circumstances, they can be useful if client devices are behind corporate firewall or use
         /// a more complex networking setup.
         /// </remarks>
-        public HttpClientHandler HttpClientHandler { get; set; }
+        public HttpMessageHandler HttpClientHandler
+        {
+            get => _httpClientHandler;
+            set
+            {
+                Argument.NotNull(value, nameof(value));
+                _httpClientHandler = value;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.
