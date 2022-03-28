@@ -188,7 +188,6 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;  //TODO needs to be removed later
             _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
-            //Accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
 
             if (_propertyChanged != null)
             {
@@ -235,7 +234,6 @@ namespace Realms
             return Accessor.GetBacklinks<T>(propertyName);
         }
 
-        //TODO: This is still here because it's used by the Dynamic API. The Dynamic API will be a huge PITA
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
             where T : RealmObjectBase
         {
@@ -256,7 +254,6 @@ namespace Realms
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            //TODO Move it to accessor?
             // If parameter is null, return false.
             if (obj is null)
             {
