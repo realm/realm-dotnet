@@ -8,12 +8,14 @@
 ### Fixed
 * [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
 * Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
+* Query parser would not accept "in" as a property name (Core Issue [#5312](https://github.com/realm/realm-core/issues/5312))
+* Application would sometimes crash with exceptions like 'KeyNotFound' or assertion "has_refs()". Other issues indicating file corruption may also be fixed by this. The one mentioned here is the one that lead to solving the problem. (Core Issue [#5283](https://github.com/realm/realm-core/issues/5283))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.11.0.
+* Using Core 11.12.0.
 * Enabled running Benchmarks on iOS devices by turning on the interpreter for some windows assemblies.
 
 ## 10.10.0 (2022-02-28)
