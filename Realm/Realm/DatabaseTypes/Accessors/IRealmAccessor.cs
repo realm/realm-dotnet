@@ -35,7 +35,7 @@ namespace Realms
 
         ObjectSchema ObjectSchema { get; }
 
-        Lazy<int> HashCode { get; }  //TODO Should this be here? 
+        Lazy<int> HashCode { get; }
 
         int BacklinksCount { get; }
 
@@ -53,7 +53,8 @@ namespace Realms
 
         IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
 
-        IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObjectBase;
+        IQueryable<T> GetBacklinks<T>(string propertyName)
+            where T : RealmObjectBase;
 
         void SubscribeForNotifications();
 
