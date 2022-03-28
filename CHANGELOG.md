@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.11.0 (2022-03-28)
 
 ### Enhancements
 * Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
