@@ -56,9 +56,9 @@ jobs:
       - run: |
           dir
           Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
-          dir artifacts
+          dir artifacts/Host_Machine_Files
           echo "::group::Logcat"
-          cat artifacts/Logcat.logcat
+          cat Logcat.logcat
           echo "::endgroup::"
         name: Fetch test artifacts
       - run: |
@@ -66,6 +66,6 @@ jobs:
           echo (ConvertFrom-Json '${{ steps.run_tests.outputs.data }}' | ConvertTo-Json)
           echo "::endgroup::"
           exit 1
-        if: steps.run_tests.outputs.data.run.result != 'PASSED'
+        #! if: steps.run_tests.outputs.data.run.result != 'PASSED'
         name: Failed run
       - #@ publishTestsResults("TestResults.Android.xml", "Xamarin.Android")
