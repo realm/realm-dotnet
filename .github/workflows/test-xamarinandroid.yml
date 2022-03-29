@@ -99,30 +99,32 @@ jobs:
                 - adb -s $DEVICEFARM_DEVICE_UDID shell am instrument -w -r io.realm.xamarintests/.TestRunner
             post_test:
               commands:
-                - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml TestResults.Android.xml
+                - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml $DEVICEFARM_LOG_DIR/TestResults.Android.xml
           artifacts:
-            - TestResults.Android.xml
+            - $DEVICEFARM_LOG_DIR
         file_artifacts: |
           Customer Artifacts.zip
           Logcat.logcat
     - run: |
+        dir
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
+        dir artifacts/Host_Machine_Files
         echo "::group::Logcat"
         cat Logcat.logcat
         echo "::endgroup::"
       name: Fetch test artifacts
     - run: |
-        echo "::group::Run"
+        echo "::group::Data"
         echo (ConvertFrom-Json '${{ steps.run_tests.outputs.data }}' | ConvertTo-Json)
         echo "::endgroup::"
-      if: always()
-      name: Device Farm Run JSON Output
+        exit 1
+      name: Failed run
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
         name: Results Xamarin.Android
-        path: artifacts/Host_Machine_Files/TestResults.Android.xml
+        path: TestResults.Android.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed

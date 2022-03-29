@@ -20,8 +20,7 @@ jobs:
         id: run_tests
         with:
           project_arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
-          device_pool_arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
-          app_file: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+          device_pool_arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}          app_file: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
           app_type: ANDROID_APP
           test_type: APPIUM_PYTHON
           test_package_file: https://github.com/realm/aws-devicefarm-sample-data/releases/download/0.3/sample_env_python3.zip
@@ -47,22 +46,25 @@ jobs:
                   - adb -s $DEVICEFARM_DEVICE_UDID shell am instrument -w -r io.realm.xamarintests/.TestRunner
               post_test:
                 commands:
-                  - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml TestResults.Android.xml
+                  - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml $DEVICEFARM_LOG_DIR/TestResults.Android.xml
             artifacts:
-              - TestResults.Android.xml
+              - $DEVICEFARM_LOG_DIR
           file_artifacts: |
             Customer Artifacts.zip
             Logcat.logcat
       - run: |
+          dir
           Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
+          dir artifacts/Host_Machine_Files
           echo "::group::Logcat"
           cat Logcat.logcat
           echo "::endgroup::"
         name: Fetch test artifacts
       - run: |
-          echo "::group::Run"
+          echo "::group::Data"
           echo (ConvertFrom-Json '${{ steps.run_tests.outputs.data }}' | ConvertTo-Json)
           echo "::endgroup::"
-        if: always()
-        name: Device Farm Run JSON Output
-      - #@ publishTestsResults("artifacts/Host_Machine_Files/TestResults.Android.xml", "Xamarin.Android")
+          exit 1
+        #! if: steps.run_tests.outputs.data.run.result != 'PASSED'
+        name: Failed run
+      - #@ publishTestsResults("TestResults.Android.xml", "Xamarin.Android")
