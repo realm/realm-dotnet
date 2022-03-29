@@ -69,7 +69,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
     - name: Run the tests
-      uses: realm/aws-devicefarm/test-application@master
+      uses: realm/aws-devicefarm/test-application@d94e739490340474f8464f74289a0f48706dd3a3
       id: run_tests
       with:
         project_arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
@@ -106,9 +106,7 @@ jobs:
           Customer Artifacts.zip
           Logcat.logcat
     - run: |
-        dir
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
-        dir artifacts/Host_Machine_Files
         echo "::group::Logcat"
         cat Logcat.logcat
         echo "::endgroup::"
@@ -124,7 +122,7 @@ jobs:
       if: always()
       with:
         name: Results Xamarin.Android
-        path: TestResults.Android.xml
+        path: artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed

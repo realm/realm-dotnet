@@ -16,11 +16,12 @@ jobs:
       - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="armeabi-v7a", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
       - name: Run the tests
-        uses: realm/aws-devicefarm/test-application@master
+        uses: realm/aws-devicefarm/test-application@d94e739490340474f8464f74289a0f48706dd3a3
         id: run_tests
         with:
           project_arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
-          device_pool_arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}          app_file: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+          device_pool_arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+          app_file: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
           app_type: ANDROID_APP
           test_type: APPIUM_PYTHON
           test_package_file: https://github.com/realm/aws-devicefarm-sample-data/releases/download/0.3/sample_env_python3.zip
@@ -53,9 +54,7 @@ jobs:
             Customer Artifacts.zip
             Logcat.logcat
       - run: |
-          dir
           Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
-          dir artifacts/Host_Machine_Files
           echo "::group::Logcat"
           cat Logcat.logcat
           echo "::endgroup::"
@@ -67,4 +66,4 @@ jobs:
           exit 1
         #! if: steps.run_tests.outputs.data.run.result != 'PASSED'
         name: Failed run
-      - #@ publishTestsResults("TestResults.Android.xml", "Xamarin.Android")
+      - #@ publishTestsResults("artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml", "Xamarin.Android")
