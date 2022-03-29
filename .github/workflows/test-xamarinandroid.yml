@@ -17,6 +17,10 @@ name: test-xamarinandroid
         required: false
       AtlasPrivateKey:
         required: false
+      AWS_DEVICEFARM_ACCESS_KEY_ID:
+        required: true
+      AWS_DEVICEFARM_SECRET_ACCESS_KEY:
+        required: true
       DEVICEFARM_PROJECT_ARN:
         required: true
       DEVICEFARM_ANDROID_POOL_ARN:
@@ -58,6 +62,12 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.Android/*.csproj') }}
     - name: Build Tests/Tests.Android
       run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AndroidSupportedAbis=x86_64 -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
     - name: Run the tests
       uses: realm/aws-devicefarm/test-application@master
       id: run_tests

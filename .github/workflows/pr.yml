@@ -109,6 +109,8 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
     secrets:
+      AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+      AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
       DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
       DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
   test-weaver:
