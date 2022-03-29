@@ -15,10 +15,6 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="x86_64", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Tests.Android.apk
-          path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
       - name: Run the tests
         uses: realm/aws-devicefarm/test-application@master
         id: run_tests

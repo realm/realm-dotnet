@@ -68,10 +68,6 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
-    - uses: actions/upload-artifact@v2
-      with:
-        name: Tests.Android.apk
-        path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
     - name: Run the tests
       uses: realm/aws-devicefarm/test-application@master
       id: run_tests
