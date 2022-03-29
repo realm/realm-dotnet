@@ -49,7 +49,7 @@ jobs:
                 commands:
                   - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml $WORKING_DIRECTORY/TestResults.Android.xml
             artifacts:
-              - $WORKING_DIRECTORY/TestResults.Android.xml
+              - $WORKING_DIRECTORY
           file_artifacts: |
             Customer Artifacts.zip
       - run: |
