@@ -47,9 +47,9 @@ jobs:
                   - adb -s $DEVICEFARM_DEVICE_UDID shell am instrument -w -r io.realm.xamarintests/.TestRunner
               post_test:
                 commands:
-                  - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml $WORKING_DIRECTORY/TestResults.Android.xml
+                  - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/RealmTests/TestResults.Android.xml $DEVICEFARM_LOG_DIR/TestResults.Android.xml
             artifacts:
-              - $WORKING_DIRECTORY
+              - $DEVICEFARM_LOG_DIR
           file_artifacts: |
             Customer Artifacts.zip
       - run: |
@@ -68,4 +68,4 @@ jobs:
           echo "::endgroup::"
         if: always()
         name: Device Farm Raw JSON Output
-      - #@ publishTestsResults("artifacts/Host_Machine_Files/$WORKING_DIRECTORY/TestResults.Android.xml", "Xamarin.Android")
+      - #@ publishTestsResults("artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml", "Xamarin.Android")
