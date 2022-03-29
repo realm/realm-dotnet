@@ -56,7 +56,8 @@ jobs:
           Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
           Import-Module AWSPowerShell
           $jobs = Get-DFJobList -Arn ${{ steps.run_tests.outputs.arn }}
-          $artifacts = Get-DFArtifactList -Arn $jobs[0].Arn | Where-Object { $_.Name -EQ "Logcat" }
+          $suites = Get-DFSuiteList -Arn $jobs[0].Arn
+          $artifacts = Get-DFArtifactList -Arn $suites[1].Arn -Type File | Where-Object { $_.Name -EQ "Logcat" }
           echo "::group::Logcat"
           Invoke-WebRequest -Uri $artifacts[0].Url | Select-Object -Expand RawContent
           echo "::endgroup::"
