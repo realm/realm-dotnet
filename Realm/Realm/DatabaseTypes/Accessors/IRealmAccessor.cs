@@ -61,5 +61,7 @@ namespace Realms
         void UnsubscribeFromNotifications();
 
         string GetStringDescription(string typeName);
+
+        bool ObjectEquals(object obj);
     }
 }

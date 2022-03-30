@@ -107,6 +107,11 @@ namespace Realms
             return (RealmValue)_container[propertyName];
         }
 
+        public bool ObjectEquals(object obj)
+        {
+            return false;
+        }
+
         public void SetValue(string propertyName, RealmValue val)
         {
             _container[propertyName] = val;

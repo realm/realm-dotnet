@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Schema;
 
 namespace Realms
@@ -235,6 +236,37 @@ namespace Realms
         private void RaisePropertyChanged(string propertyName = null)
         {
             _onNotifyPropertyChanged(propertyName);
+        }
+
+        public bool ObjectEquals(object obj)
+        {
+            // Special case to cover possible bugs similar to WPF (#1903)
+            if (obj is InvalidObject)
+            {
+                return !IsValid;
+            }
+
+            // If run-time types are not exactly the same, return false.
+            if (obj is not IRealmObject iro)
+            {
+                return false;
+            }
+
+            // standalone objects cannot participate in the same store check
+            if (!iro.Accessor.IsManaged)
+            {
+                return false;
+            }
+
+            if (ObjectSchema.Name != iro.Accessor.ObjectSchema.Name)
+            {
+                return false;
+            }
+
+            // Return true if the fields match.
+            // Note that the base class is not invoked because it is
+            // System.Object, which defines Equals as reference equality.
+            return ObjectHandle.ObjEquals(iro.ManagedAccessor().ObjectHandle);
         }
     }
 }
