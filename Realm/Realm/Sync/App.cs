@@ -153,7 +153,7 @@ namespace Realms.Sync
                 }
             }
 
-            var httpClient = new HttpClient(config.HttpClientHandler);
+            var httpClient = config.HttpClientHandler == null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
             var clientHandle = GCHandle.Alloc(httpClient);
             var nativeConfig = new Native.AppConfiguration
             {
