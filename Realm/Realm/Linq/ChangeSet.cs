@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections;
+
 namespace Realms
 {
     /// <summary>
@@ -61,7 +63,11 @@ namespace Realms
         /// <value>An array of <see cref="Move"/> structs, indicating the source and the destination index of the moved row.</value>
         public Move[] Moves { get; }
 
-        //TODO ADD DOCS
+        /// <summary>
+        /// Gets a value indicating whether the collection has been cleared.
+        /// The collection is cleared after calling methods such as <see cref="IList.Clear"/>.
+        /// </summary>
+        /// <value><c>true</c> if the collection has been cleared; <c>false</c> otherwise.</value>
         public bool Cleared { get; }
 
         internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] newModifiedIndices, int[] deletedIndices, Move[] moves, bool cleared)
