@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,14 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Sync
+using System.Runtime.InteropServices;
+
+namespace Realms.Sync.Native
 {
-    /// <summary>
-    /// To see details of each mode check its mirroring definition in core.
-    /// </summary>
-    internal enum SchemaMode : byte
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SessionNotificationToken
     {
-        AdditiveDiscovered = 5,
-        AdditiveExplicit = 6
+        internal ulong connection_state;
     }
 }

@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
 * Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
 * Realm collections now raise `CollectionChanged` event with action `Reset` instead of `Remove` when all the elements are removed from it. (Issue [#2856](https://github.com/realm/realm-dotnet/issues/2856))
 
@@ -13,6 +14,7 @@
 
 ### Internal
 * Using Core 11.11.0.
+* Enabled running Benchmarks on iOS devices by turning on the interpreter for some windows assemblies.
 
 ## 10.10.0 (2022-02-28)
 

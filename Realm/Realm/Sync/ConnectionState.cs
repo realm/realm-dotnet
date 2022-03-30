@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,23 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// To see details of each mode check its mirroring definition in core.
+    /// The current connection state of a sync session object.
     /// </summary>
-    internal enum SchemaMode : byte
+    public enum ConnectionState : byte
     {
-        AdditiveDiscovered = 5,
-        AdditiveExplicit = 6
+        /// <summary>
+        /// The session is disconnected from the MongoDB Realm server.
+        /// </summary>
+        Disconnected = 0,
+
+        /// <summary>
+        /// The session is connecting to the MongoDB Realm server.
+        /// </summary>
+        Connecting = 1,
+
+        /// <summary>
+        /// The session is connected to the MongoDB Realm server.
+        /// </summary>
+        Connected = 2
     }
 }

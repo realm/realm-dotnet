@@ -62,8 +62,9 @@
     <MtouchArch>ARM64</MtouchArch>
     <CodesignKey>iPhone Developer</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
-    <MtouchExtraArgs>--nosymbolstrip --nolinkaway</MtouchExtraArgs>
-    <MtouchLink>Full</MtouchLink>
+    <MtouchExtraArgs>--nosymbolstrip --nolinkaway --interpreter=Microsoft.Diagnostics.Tracing.TraceEvent --interpreter=Microsoft.Win32.Registry</MtouchExtraArgs>
+    <MtouchLink>None</MtouchLink>
+    <MtouchInterpreter>-all</MtouchInterpreter>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />

@@ -1,0 +1,111 @@
+name: test-xamarinandroid
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+    secrets:
+      AtlasProjectId:
+        required: false
+      BaseUrl:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  run-tests:
+    runs-on: macos-latest
+    name: Xamarin.Android
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: ${{ runner.os == 'Windows' }}
+    - uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.Android/*.csproj') }}
+    - name: Build Tests/Tests.Android
+      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AndroidSupportedAbis=x86_64 -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
+    - name: AVD cache
+      uses: actions/cache@v2
+      id: avd-cache
+      with:
+        path: |
+          ~/.android/avd/*
+          ~/.android/adb*
+        key: android-avd
+    - name: Create AVD for caching
+      if: steps.avd-cache.outputs.cache-hit != 'true'
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        arch: x86_64
+        force-avd-creation: false
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: false
+        script: echo "Generated AVD snapshot for caching."
+    - name: Run the tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        arch: x86_64
+        force-avd-creation: false
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: true
+        script: |
+          adb devices
+          adb logcat -c
+          adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
+
+          adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+          adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
+          adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
+
+          echo " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}" > ${{ github.workspace }}/testargs.txt
+          adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
+
+          adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
+          adb pull /storage/emulated/0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
+          adb shell rm /sdcard/Realmtests/TestResults.Android.xml
+    - name: Output logcat
+      if: always()
+      run: cat logcat.txt
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      if: always()
+      with:
+        name: Results Xamarin.Android
+        path: TestResults.Android.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
