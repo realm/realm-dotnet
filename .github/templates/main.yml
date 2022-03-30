@@ -62,7 +62,7 @@ jobs:
   _: #@ template.replace(runNetCoreTests("[\"macos-latest\", \"windows-latest\", \"ubuntu-latest\", \"win81\"]", "[\"netcoreapp3.1\", \"net5.0\", \"net6.0\"]"))
   _: #@ template.replace(runTests("Xamarin.macOS"))
   _: #@ template.replace(runTests("Xamarin.iOS"))
-  _: #@ template.replace(runTests("Xamarin.Android"))
+  _: #@ template.replace(runTests("Xamarin.Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
   test-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
