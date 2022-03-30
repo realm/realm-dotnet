@@ -650,6 +650,10 @@ namespace Realms.Tests.Database
                         _realm.All<OrderedObject>().Single(o => o.Order == value).IsPartOfResults = false;
                     }
                 }
+                else if (action == NotifyCollectionChangedAction.Reset)
+                {
+                    _realm.RemoveAll<OrderedObject>();
+                }
             });
 
             _realm.Refresh();
@@ -663,13 +667,21 @@ namespace Realms.Tests.Database
             }
             else
             {
-                Assert.That(arg.Action == action);
+                if (action == NotifyCollectionChangedAction.Reset)
+                {
+                    Assert.That(arg.Action == NotifyCollectionChangedAction.Remove);
+                }
+                else
+                {
+                    Assert.That(arg.Action == action);
+                }
+
                 if (action == NotifyCollectionChangedAction.Add)
                 {
                     Assert.That(arg.NewStartingIndex, Is.EqualTo(startIndex));
                     Assert.That(arg.NewItems.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
                 }
-                else if (action == NotifyCollectionChangedAction.Remove)
+                else if (action == NotifyCollectionChangedAction.Remove || action == NotifyCollectionChangedAction.Reset)
                 {
                     Assert.That(arg.OldStartingIndex, Is.EqualTo(startIndex));
                     Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
@@ -840,7 +852,7 @@ namespace Realms.Tests.Database
             new object[] { new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Add, new int[] { 4 }, 3 },
             new object[] { new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Add, new int[] { 4, 5 }, 3 },
             new object[] { new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 3, 4 }, 2 },
-            new object[] { new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Reset, null, -1 },
+            new object[] { new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Reset, new int[] { 1, 2, 3}, 0 },
 
             // When we have non-consecutive adds/removes, we should raise Reset, indicated by -1 here.
             new object[] { new int[] { 1, 3, 5 }, NotifyCollectionChangedAction.Add, new int[] { 2, 4 }, -1 },

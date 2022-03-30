@@ -43,6 +43,8 @@ namespace realm {
             size_t count;
         } moves;
         
+        bool cleared;
+
         MarshallableIndexSet properties;
     };
 
@@ -136,6 +138,7 @@ namespace realm {
                 { modifications.data(), modifications.size() },
                 { modifications_new.data(), modifications_new.size() },
                 { changes.moves.data(), changes.moves.size() },
+                { changes.collection_was_cleared },
                 { properties.data(), properties.size() }
             };
             
