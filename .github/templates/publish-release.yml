@@ -56,7 +56,7 @@
       $versions = "${{ steps.get-version.outputs.version }}", "latest"
       Foreach ($ver in $versions)
       {
-        aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/realm-sdks/dotnet/$ver/
+        aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
       }
 #@ end
 
