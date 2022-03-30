@@ -83,6 +83,8 @@ namespace realm {
             util::Logger::Level log_level;
 
             void* managed_logger;
+
+            void* managed_http_client;
         };
 
         class SyncLogger : public util::RootLogger {
@@ -132,7 +134,7 @@ extern "C" {
             config.platform = s_platform;
             config.platform_version = s_platform_version;
             config.sdk_version = s_sdk_version;
-            config.transport = realm::binding::s_transport;
+            config.transport = std::make_shared<HttpClientTransport>(app_config.managed_http_client);
 
             if (app_config.base_url != nullptr) {
                 config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
@@ -370,6 +372,13 @@ extern "C" {
 
             auto args = static_cast<bson::BsonArray>(bson::parse(serialized_args.to_string()));
             app->provider_client<App::UsernamePasswordProviderClient>().call_reset_password_function(std::move(username), std::move(password), std::move(args), get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_clear_cached_apps(NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            app::App::clear_cached_apps();
         });
     }
 
