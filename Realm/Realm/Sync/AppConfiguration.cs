@@ -30,7 +30,6 @@ namespace Realms.Sync
     public class AppConfiguration
     {
         private byte[] _metadataEncryptionKey;
-        private HttpMessageHandler _httpClientHandler = new HttpClientHandler();
 
         /// <summary>
         /// Gets the unique app id that identifies the Realm application.
@@ -149,15 +148,7 @@ namespace Realms.Sync
         /// normal circumstances, they can be useful if client devices are behind corporate firewall or use
         /// a more complex networking setup.
         /// </remarks>
-        public HttpMessageHandler HttpClientHandler
-        {
-            get => _httpClientHandler;
-            set
-            {
-                Argument.NotNull(value, nameof(value));
-                _httpClientHandler = value;
-            }
-        }
+        public HttpMessageHandler HttpClientHandler { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.
