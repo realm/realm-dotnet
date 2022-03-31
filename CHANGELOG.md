@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue that would cause the managed HttpClientHandler to be used in Xamarin applications, even if the project is configured to use the native one. (Issue [#2892](https://github.com/realm/realm-dotnet/issues/2892))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
