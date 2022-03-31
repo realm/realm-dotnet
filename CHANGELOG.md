@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
+## 10.11.1 (2022-03-31)
 
 ### Fixed
 * Fixed an issue that would cause the managed HttpClientHandler to be used in Xamarin applications, even if the project is configured to use the native one. (Issue [#2892](https://github.com/realm/realm-dotnet/issues/2892))
