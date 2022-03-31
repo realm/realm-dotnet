@@ -16,10 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Linq;
+using Realms.Schema;
+
 namespace Realms
 {
     public interface IRealmObject
     {
         IRealmAccessor Accessor { get; }
+
+        bool IsManaged { get; }
+
+        bool IsValid { get; }
+
+        bool IsFrozen { get; }
+
+        Realm Realm { get; }
+
+        ObjectSchema ObjectSchema { get; }
+
+        int BacklinksCount { get; }
+
+        RealmObjectBase.Dynamic DynamicApi { get; }
+
+        IQueryable<dynamic> GetBacklinks(string objectType, string property);
     }
 }

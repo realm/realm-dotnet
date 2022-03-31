@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Schema;
 
 namespace Realms.Dynamic
@@ -56,7 +57,7 @@ namespace Realms.Dynamic
             : base(expression, BindingRestrictions.Empty, value)
         {
             _realm = value.Realm;
-            _metadata = value.ObjectMetadata;
+            _metadata = value.GetObjectMetadata();
         }
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)

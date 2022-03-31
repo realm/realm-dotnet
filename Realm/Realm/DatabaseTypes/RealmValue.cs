@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
+using Realms.Extensions;
 using Realms.Helpers;
 using Realms.Native;
 
@@ -197,7 +198,7 @@ namespace Realms
                         throw new InvalidOperationException("Can't convert unmanaged object to native");
                     }
 
-                    return (PrimitiveValue.Object(_objectValue?.ObjectHandle), null);
+                    return (PrimitiveValue.Object(_objectValue?.GetObjectHandle()), null);
                 default:
                     return (_primitiveValue, null);
             }

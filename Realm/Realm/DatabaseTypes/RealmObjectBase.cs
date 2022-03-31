@@ -27,6 +27,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Realms.DataBinding;
+using Realms.Extensions;
 using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
@@ -81,10 +82,6 @@ namespace Realms
             }
         }
 
-        internal ObjectHandle ObjectHandle => (Accessor as ManagedAccessor)?.ObjectHandle;
-
-        internal Metadata ObjectMetadata => (Accessor as ManagedAccessor)?.Metadata;
-
         //TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
         [IgnoreDataMember, XmlIgnore]
         public IRealmAccessor Accessor => _accessor;
@@ -102,18 +99,7 @@ namespace Realms
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
         [IgnoreDataMember]
-        public Dynamic DynamicApi
-        {
-            get
-            {
-                if (!IsManaged)
-                {
-                    throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
-                }
-
-                return new Dynamic(this);
-            }
-        }
+        public Dynamic DynamicApi => Accessor.DynamicApi;
 
         /// <summary>
         /// Gets a value indicating whether this object is managed and represents a row in the database.
@@ -218,7 +204,6 @@ namespace Realms
         protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             return Accessor.GetDictionaryValue<TValue>(propertyName);
-
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -349,6 +334,7 @@ namespace Realms
             return TypeInfoHelper.GetInfo(this);
         }
 
+        //TODO Should probably move it out of this class, to its own file and rename to RealmObjectMetadata
         internal class Metadata
         {
             internal readonly TableKey TableKey;
@@ -368,14 +354,15 @@ namespace Realms
             }
         }
 
+        //TODO Should probably move out of this class, to its own file
         /// <summary>
         /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
         /// </summary>
         public struct Dynamic
         {
-            private readonly RealmObjectBase _realmObject;
+            private readonly IRealmObject _realmObject;
 
-            internal Dynamic(RealmObjectBase ro)
+            internal Dynamic(IRealmObject ro)
             {
                 _realmObject = ro;
             }
@@ -418,7 +405,7 @@ namespace Realms
                         $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
                 }
 
-                return _realmObject.GetValue(propertyName).As<T>();
+                return _realmObject.Accessor.GetValue(propertyName).As<T>();
             }
 
             /// <summary>
@@ -455,11 +442,11 @@ namespace Realms
 
                 if (property.IsPrimaryKey)
                 {
-                    _realmObject.SetValueUnique(propertyName, value);
+                    _realmObject.Accessor.SetValueUnique(propertyName, value);
                 }
                 else
                 {
-                    _realmObject.SetValue(propertyName, value);
+                    _realmObject.Accessor.SetValue(propertyName, value);
                 }
             }
 
@@ -476,7 +463,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
-                var resultsHandle = _realmObject.ObjectHandle.GetBacklinks(propertyName, _realmObject.ObjectMetadata);
+                var resultsHandle = _realmObject.GetObjectHandle().GetBacklinks(propertyName, _realmObject.GetObjectMetadata());
 
                 var relatedMeta = _realmObject.Realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
@@ -500,7 +487,7 @@ namespace Realms
             {
                 Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 
-                var resultsHandle = _realmObject.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
+                var resultsHandle = _realmObject.GetObjectHandle().GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
                 if (relatedMeta.Schema.IsEmbedded)
                 {
                     return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
@@ -526,7 +513,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
 
-                var result = _realmObject.ObjectHandle.GetList<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
+                var result = _realmObject.GetObjectHandle().GetList<T>(_realmObject.Realm, propertyName, _realmObject.GetObjectMetadata(), property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -548,7 +535,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
 
-                var result = _realmObject.ObjectHandle.GetSet<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
+                var result = _realmObject.GetObjectHandle().GetSet<T>(_realmObject.Realm, propertyName, _realmObject.GetObjectMetadata(), property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -570,7 +557,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
 
-                var result = _realmObject.ObjectHandle.GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.ObjectMetadata, property.ObjectType);
+                var result = _realmObject.GetObjectHandle().GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.GetObjectMetadata(), property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }

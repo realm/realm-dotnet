@@ -20,14 +20,24 @@ namespace Realms.Extensions
 {
     internal static class RealmObjectExtensions
     {
-        public static ManagedAccessor ManagedAccessor(this IRealmObject iro)
+        public static ManagedAccessor GetManagedAccessor(this IRealmObject iro)
         {
-            return (ManagedAccessor)iro.Accessor;
+            return iro.Accessor as ManagedAccessor;
         }
 
         public static IThreadConfined AsIThreadConfined(this IRealmObject iro)
         {
-            return (IThreadConfined)iro.Accessor;
+            return iro.Accessor as IThreadConfined;
+        }
+
+        public static ObjectHandle GetObjectHandle(this IRealmObject iro)
+        {
+            return iro.GetManagedAccessor()?.ObjectHandle;
+        }
+
+        public static RealmObjectBase.Metadata GetObjectMetadata(this IRealmObject iro)
+        {
+            return iro.GetManagedAccessor()?.ObjectMetadata;
         }
     }
 }

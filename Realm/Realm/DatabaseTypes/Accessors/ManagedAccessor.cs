@@ -43,7 +43,7 @@ namespace Realms
 
         private Action<string> _onNotifyPropertyChanged;
 
-        private RealmObjectBase _ro; //TODO This will be removed
+        private RealmObjectBase _ro; // TODO This will be removed
 
         internal ObjectHandle ObjectHandle => _objectHandle;
 
@@ -66,6 +66,8 @@ namespace Realms
         public IThreadConfinedHandle Handle => _objectHandle;
 
         public RealmObjectBase.Metadata Metadata => _metadata;
+
+        public RealmObjectBase.Dynamic DynamicApi => new(_ro);
 
         public ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
@@ -266,7 +268,9 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.ObjEquals(iro.ManagedAccessor().ObjectHandle);
+            return ObjectHandle.ObjEquals(iro.GetManagedAccessor().ObjectHandle);
         }
+
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
     }
 }
