@@ -269,7 +269,7 @@ namespace Realms
             }
             else if (change != null)
             {
-                if (change.Cleared)
+                if (change.IsCleared)
                 {
                     RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     RaisePropertyChanged();

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections;
+using System.Collections.Generic;
 
 namespace Realms
 {
@@ -67,8 +68,11 @@ namespace Realms
         /// Gets a value indicating whether the collection has been cleared.
         /// The collection is cleared after calling methods such as <see cref="IList.Clear"/>.
         /// </summary>
+        /// <remarks>
+        /// Note that this will work only with collection properties, such as <see cref="IList{T}"/> and <see cref="ISet{T}"/>.
+        /// </remarks>
         /// <value><c>true</c> if the collection has been cleared; <c>false</c> otherwise.</value>
-        public bool Cleared { get; }
+        public bool IsCleared { get; }
 
         internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] newModifiedIndices, int[] deletedIndices, Move[] moves, bool cleared)
         {
@@ -77,7 +81,7 @@ namespace Realms
             NewModifiedIndices = newModifiedIndices;
             DeletedIndices = deletedIndices;
             Moves = moves;
-            Cleared = cleared;
+            IsCleared = cleared;
         }
 
         /// <summary>
