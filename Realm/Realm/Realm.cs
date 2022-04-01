@@ -1629,7 +1629,7 @@ namespace Realms
                     : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
                 result.SetOwner(_realm, objectHandle, metadata);
-                result.OnManaged();
+                result.GetManagedAccessor().OnManaged();
                 return result;
             }
 
@@ -1658,7 +1658,7 @@ namespace Realms
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
                 obj.SetOwner(_realm, handle, metadata);
-                obj.OnManaged();
+                obj.GetManagedAccessor().OnManaged();
 
                 return obj;
             }

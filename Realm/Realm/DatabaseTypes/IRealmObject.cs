@@ -25,6 +25,8 @@ namespace Realms
     {
         IRealmAccessor Accessor { get; }
 
+        void SetManagedAccessor(IRealmAccessor acccessor);  //TODO Need to change name
+
         bool IsManaged { get; }
 
         bool IsValid { get; }

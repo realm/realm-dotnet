@@ -272,5 +272,10 @@ namespace Realms
         }
 
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
+
+        public void OnManaged()
+        {
+            _ro.OnManaged();
+        }
     }
 }

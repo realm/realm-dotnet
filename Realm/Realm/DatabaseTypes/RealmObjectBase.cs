@@ -175,6 +175,19 @@ namespace Realms
             }
         }
 
+        void IRealmObject.SetManagedAccessor(IRealmAccessor accessor)
+        {
+            //TODO This method needs to be changed. This will be the new "SetOwner", but we need a way to partially build the Accessor from outside and pass it here
+            _accessor = accessor;
+
+            if (_propertyChanged != null)
+            {
+                SubscribeForNotifications();
+            }
+
+            OnManaged();
+        }
+
 #pragma warning disable SA1600 // Elements should be documented
 
         protected RealmValue GetValue(string propertyName)
