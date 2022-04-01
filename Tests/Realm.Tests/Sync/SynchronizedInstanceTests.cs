@@ -397,6 +397,89 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void WriteCopy_LocalToSync([Values(true, false)] bool originalEncrypted,
+                                          [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+                {
+                    Schema = new[] { typeof(ObjectIdPrimaryKeyWithValueObject) }
+                };
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(23);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                originalRealm.WriteCopy(copyConfig);
+
+                using var copiedRealm = GetRealm(copyConfig);
+
+                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+
+                var fromCopy = copiedRealm.Write(() =>
+                {
+                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "Added from copy"
+                    });
+                });
+
+                // We cannot re-sync like we do it in `WriteCopy_CanSynchronizeData` since the `originalRealm` is not synced but instead
+                // at least try to upload and download the data in the `copiedRealm`.
+                await WaitForUploadAsync(copiedRealm);
+                await WaitForDownloadAsync(copiedRealm);
+            });
+        }
+
+        [Test]
+        public void WriteCopy_SyncToLocal([Values(true, false)] bool originalEncrypted,
+                                          [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = new RealmConfiguration(Guid.NewGuid().ToString());
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(23);
+                }
+
+                File.Delete(copyConfig.DatabasePath);
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                originalRealm.WriteCopy(copyConfig);
+
+                using var copiedRealm = GetRealm(copyConfig);
+
+                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+            });
+        }
+
+        [Test]
         public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
                                                         [Values(true, false)] bool copyEncrypted)
         {

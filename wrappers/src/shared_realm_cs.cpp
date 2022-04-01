@@ -460,13 +460,44 @@ REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReference* reference)
     delete reference;
 }
 
-REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, size_t path_len, char* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT void shared_realm_export_to_local(SharedRealm* realm, Configuration configuration, uint8_t* encryption_key, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        Realm::Config config;
+        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        if (encryption_key) {
+            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+            config.encryption_key = std::vector<char>(key.begin(), key.end());
+        }
+
+        realm->get()->export_to(std::move(config));
+    });
+}
+
+REALM_EXPORT void shared_realm_export_to_sync(SharedRealm* realm, Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
+
+        realm->get()->export_to(std::move(config));
+    });
+}
+
+REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, size_t path_len, char* encryption_key, bool copy_is_sync, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor pathStr(path, path_len);
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        realm->get()->write_copy(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0));
+        if (copy_is_sync)
+        {
+            realm->get()->write_copy(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0));
+        }
+        else
+        {
+            Group& group = realm->get()->read_group();
+            group.write(pathStr, encryption_key);
+        }
     });
 }
 
