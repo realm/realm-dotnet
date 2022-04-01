@@ -93,7 +93,7 @@ namespace Realms
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Object{T})"/> on a different thread.</returns>
         public static Object<T> Create<T>(T value)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             return new Object<T>(value);
         }

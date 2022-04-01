@@ -145,7 +145,7 @@ namespace Realms
         [IgnoreDataMember]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        internal RealmObjectBase FreezeImpl() => Accessor.FreezeImpl();
+        internal RealmObjectBase FreezeImpl() => (RealmObjectBase)Accessor.FreezeImpl();
 
         internal RealmObjectBase()
         {

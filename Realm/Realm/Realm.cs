@@ -522,7 +522,7 @@ namespace Realms
             return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
         }
 
-        internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
+        internal IRealmObject MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
             ret.SetOwner(this, objectHandle, metadata);
@@ -670,7 +670,7 @@ namespace Realms
             obj.OnManaged();
         }
 
-        private bool ShouldAddNewObject(RealmObjectBase obj)
+        private bool ShouldAddNewObject(IRealmObject obj)
         {
             Argument.NotNull(obj, nameof(obj));
 
@@ -876,7 +876,7 @@ namespace Realms
             {
                 using var realm = GetInstance(Config);
                 var writeAction = realm.Write(() => function(realm));
-                if (writeAction is RealmObjectBase rob && rob.IsManaged && rob.IsValid)
+                if (writeAction is IRealmObject rob && rob.IsManaged && rob.IsValid)
                 {
                     return (object)ThreadSafeReference.Create(rob);
                 }
@@ -886,7 +886,7 @@ namespace Realms
 
             await RefreshAsync();
 
-            if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
+            if (result is ThreadSafeReference.Object<IRealmObject> tsr)
             {
                 return (T)(object)ResolveReference(tsr);
             }
@@ -1202,7 +1202,7 @@ namespace Realms
         /// if the object has been deleted after the reference was created.
         /// </returns>
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1212,7 +1212,7 @@ namespace Realms
             if (!objectHandle.IsValid)
             {
                 objectHandle.Dispose();
-                return null;
+                return default(T);
             }
 
             if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
@@ -1326,7 +1326,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>obj</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If you pass a standalone object.</exception>
-        public void Remove(RealmObjectBase obj)
+        public void Remove(IRealmObject obj)
         {
             ThrowIfDisposed();
 
@@ -1643,7 +1643,7 @@ namespace Realms
             /// </param>
             /// <param name="propertyName">The property to which the newly created embedded object will be assigned.</param>
             /// <returns>A dynamically-accessed embedded object.</returns>
-            public dynamic CreateEmbeddedObjectForProperty(RealmObjectBase parent, string propertyName)
+            public dynamic CreateEmbeddedObjectForProperty(IRealmObject parent, string propertyName)
             {
                 _realm.ThrowIfDisposed();
 

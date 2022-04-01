@@ -58,7 +58,7 @@ namespace Realms
         private readonly PrimitiveValue _primitiveValue;
         private readonly string _stringValue;
         private readonly byte[] _dataValue;
-        private readonly RealmObjectBase _objectValue;
+        private readonly IRealmObject _objectValue;
 
         private readonly ObjectHandle _objectHandle;
         private readonly IntPtr _propertyIndex;
@@ -112,7 +112,7 @@ namespace Realms
             _stringValue = value;
         }
 
-        private RealmValue(RealmObjectBase obj) : this()
+        private RealmValue(IRealmObject obj) : this()
         {
             Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
             _objectValue = obj;
@@ -144,7 +144,7 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
-        private static RealmValue Object(RealmObjectBase value) => new RealmValue(value);
+        private static RealmValue Object(IRealmObject value) => new RealmValue(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -898,6 +898,7 @@ namespace Realms
 
         public static implicit operator RealmValue(string val) => String(val);
 
+        //TODO This cannot take an interface as input. For SG classes we probably need to generate operators directly on the class
         public static implicit operator RealmValue(RealmObjectBase val) => Object(val);
 
         private void EnsureType(string target, RealmValueType type)

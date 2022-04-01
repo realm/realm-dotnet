@@ -85,7 +85,7 @@ namespace Realms
             _ro = ro;
         }
 
-        public RealmObjectBase FreezeImpl()
+        public IRealmObject FreezeImpl()
         {
             var frozenRealm = Realm.Freeze();
             var frozenHandle = ObjectHandle.Freeze(frozenRealm.SharedRealmHandle);

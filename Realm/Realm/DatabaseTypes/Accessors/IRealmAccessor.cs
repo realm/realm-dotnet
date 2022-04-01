@@ -41,7 +41,7 @@ namespace Realms
 
         RealmObjectBase.Dynamic DynamicApi { get; }
 
-        public RealmObjectBase FreezeImpl();
+        public IRealmObject FreezeImpl();
 
         RealmValue GetValue(string propertyName);
 

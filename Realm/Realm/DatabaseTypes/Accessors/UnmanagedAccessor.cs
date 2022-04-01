@@ -49,7 +49,7 @@ namespace Realms
 
         public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
-        public RealmObjectBase FreezeImpl()
+        public IRealmObject FreezeImpl()
         {
             throw new RealmException("Unmanaged objects cannot be frozen.");
         }

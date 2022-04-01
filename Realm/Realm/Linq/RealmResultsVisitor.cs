@@ -563,7 +563,7 @@ namespace Realms
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression.\nUnable to process '{node.Right}'.");
                 }
 
-                if (rightValue is RealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
+                if (rightValue is IRealmObject obj && (!obj.IsManaged || !obj.IsValid))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase.\nUnable to process '{node.Right}'.");
                 }
