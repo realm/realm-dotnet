@@ -161,6 +161,7 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
+        //TODO This method needs to be different. For SG class this should probably assign an IRelmAccessor that comes as input
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
             _realm = realm;

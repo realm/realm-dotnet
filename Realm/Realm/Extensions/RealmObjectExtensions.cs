@@ -22,22 +22,22 @@ namespace Realms.Extensions
     {
         public static ManagedAccessor GetManagedAccessor(this IRealmObject iro)
         {
-            return iro.Accessor as ManagedAccessor;
+            return (ManagedAccessor)iro.Accessor;
         }
 
         public static IThreadConfined AsIThreadConfined(this IRealmObject iro)
         {
-            return iro.Accessor as IThreadConfined;
+            return (IThreadConfined)iro.Accessor;
         }
 
         public static ObjectHandle GetObjectHandle(this IRealmObject iro)
         {
-            return iro.GetManagedAccessor()?.ObjectHandle;
+            return (iro.Accessor as ManagedAccessor)?.ObjectHandle;
         }
 
         public static RealmObjectBase.Metadata GetObjectMetadata(this IRealmObject iro)
         {
-            return iro.GetManagedAccessor()?.ObjectMetadata;
+            return (iro.Accessor as ManagedAccessor)?.ObjectMetadata;
         }
     }
 }
