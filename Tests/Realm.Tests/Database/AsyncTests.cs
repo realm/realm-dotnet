@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -28,7 +29,7 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AsyncTests : RealmInstanceTest
     {
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -49,7 +50,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void AsyncWrite_WhenOnBackgroundThread_ShouldExecuteOnSameThread()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -76,7 +77,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void AsyncWrite_UpdateViaPrimaryKey()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -153,6 +154,145 @@ namespace Realms.Tests.Database
                     sw.Stop();
                     return sw.ElapsedTicks;
                 }
+            });
+        }
+
+        [Test]
+        public void AsyncWrite_Action()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var peopleQuery = _realm.All<Person>();
+                var personName = "Jonh Wickie";
+                Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                await _realm.WriteAsync(() =>
+                {
+                    var person = new Person { FullName = personName };
+                    _realm.Add(person);
+                });
+                Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                Assert.That(peopleQuery.First().FullName, Is.EqualTo(personName));
+            });
+        }
+
+        [Test]
+        public void AsyncBeginWriteAndCommit()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var peopleQuery = _realm.All<Person>();
+                var personName = "Jonh Wickie";
+                Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                var transaction = await _realm.BeginWriteAsync();
+                var person = new Person { FullName = personName };
+                _realm.Add(person);
+                await transaction.CommitAsync();
+
+                Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                Assert.That(peopleQuery.First().FullName, Is.EqualTo(personName));
+            });
+        }
+
+        // I have a hard time testing an async rollback since it just cancels
+        // the callback that will notify the SDK that the fsync has completed. It won't cancel the effective commit/fsync call
+        // in core.
+        // This test does not really test much. It just checks that no fsync is executed,
+        // which is not what a rollback on an async transaction cares to do.
+        [Test]
+        public void AsyncBeginWriteAndCancel()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var dbPath = _realm.Config.DatabasePath;
+                var peopleQuery = _realm.All<Person>();
+                var personName = "Jonh Wickie";
+                Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                using (var transaction = await _realm.BeginWriteAsync())
+                {
+                    var person = new Person { FullName = personName };
+                    _realm.Add(person);
+                    transaction.Rollback();
+                }
+
+                Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                _realm.Dispose();
+                using var realm = Realm.GetInstance(dbPath);
+                Assert.That(realm.All<Person>().Count(), Is.EqualTo(0));
+            });
+        }
+
+        [Test]
+        public void AsyncWrite_Func_RealmObj()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var peopleQuery = _realm.All<Person>();
+                var personName = "Jonh Wickie";
+                Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                var person = await _realm.WriteAsync(() =>
+                {
+                    var person = new Person { FullName = personName };
+                    _realm.Add(person);
+                    return person;
+                });
+
+                Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                Assert.That(peopleQuery.First().FullName, Is.EqualTo(personName));
+                Assert.That(person, Is.Not.Null);
+                Assert.That(person.FullName, Is.EqualTo(personName));
+            });
+        }
+
+        [Test]
+        public void AsyncWrite_Func_List()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var peopleQuery = _realm.All<Person>();
+                var personName = "Jonh Wickie";
+                Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                var list = await _realm.WriteAsync(() =>
+                {
+                    var list = new List<Person> { new Person { FullName = personName } };
+                    _realm.Add(list);
+                    return list;
+                });
+
+                Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                Assert.That(peopleQuery.First().FullName, Is.EqualTo(personName));
+                Assert.That(list, Is.Not.Null);
+                Assert.That(list.Count, Is.EqualTo(1));
+                Assert.That(list.First().FullName, Is.EqualTo(personName));
+            });
+        }
+
+        //TODO andrea: Probably this adds nothing to the one already existing for lists
+        [Test]
+        public void AsyncWrite_Func_Queryable()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var peopleQuery = _realm.All<Person>();
+                var personName = "Jonh Wickie";
+                Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                var queryable = await _realm.WriteAsync(() =>
+                {
+                    var queryable = new List<Person> { new Person { FullName = personName } }.AsQueryable();
+                    _realm.Add(queryable);
+                    return queryable;
+                });
+
+                Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                Assert.That(peopleQuery.First().FullName, Is.EqualTo(personName));
+                Assert.That(queryable, Is.Not.Null);
+                Assert.That(queryable.Count, Is.EqualTo(1));
+                Assert.That(queryable.First().FullName, Is.EqualTo(personName));
             });
         }
     }

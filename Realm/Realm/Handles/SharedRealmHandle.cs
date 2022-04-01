@@ -18,9 +18,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Exceptions;
@@ -67,6 +67,9 @@ namespace Realms
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, NativeException ex);
 
             // migrationSchema is a special schema that is used only in the context of a migration block.
             // It is a pointer because we need to be able to modify this schema in some migration methods directly in core.
@@ -118,6 +121,19 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_all_realms", CallingConvention = CallingConvention.Cdecl)]
             public static extern void close_all_realms(out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction_async", CallingConvention = CallingConvention.Cdecl)]
+            public static extern UInt32 begin_transaction_async(SharedRealmHandle sharedRealm, IntPtr tcsPtr, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_commit_transaction_async", CallingConvention = CallingConvention.Cdecl)]
+            public static extern UInt32 commit_transaction_async(SharedRealmHandle sharedRealm, IntPtr tcsPtr, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_async_transaction", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void cancel_async_transaction(SharedRealmHandle sharedRealm, UInt32 async_transaction_native_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_async_transaction", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool is_in_async_transaction(SharedRealmHandle sharedRealm);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
@@ -129,7 +145,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_transaction", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
+            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -179,7 +195,8 @@ namespace Realms
                 NotifiableObjectHandleBase.NotificationCallback notify_object,
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
                 MigrationCallback migration_callback,
-                ShouldCompactCallback should_compact_callback);
+                ShouldCompactCallback should_compact_callback,
+                HandleTaskCompletionCallback handle_write_commit_async);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -238,6 +255,7 @@ namespace Realms
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
             NativeMethods.MigrationCallback onMigration = OnMigration;
             NativeMethods.ShouldCompactCallback shouldCompact = ShouldCompactOnLaunchCallback;
+            NativeMethods.HandleTaskCompletionCallback handleWriteCommitAsync = HandleWriteCommitAsyncCallback;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
@@ -248,8 +266,9 @@ namespace Realms
             GCHandle.Alloc(notifyDictionary);
             GCHandle.Alloc(onMigration);
             GCHandle.Alloc(shouldCompact);
+            GCHandle.Alloc(handleWriteCommitAsync);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleWriteCommitAsync);
         }
 
         [Preserve]
@@ -454,10 +473,44 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public async Task<uint> BeginTransactionAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var tcsHandle = GCHandle.Alloc(tcs);
+            try
+            {
+                var transactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                nativeException.ThrowIfNecessary();
+                await tcs.Task;
+                return transactionHandle;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
+        }
+
         public void CommitTransaction()
         {
             NativeMethods.commit_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
+        }
+
+        public async Task<uint> CommitTransactionAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var tcsHandle = GCHandle.Alloc(tcs);
+            try
+            {
+                var transactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                nativeException.ThrowIfNecessary();
+                await tcs.Task;
+                return transactionHandle;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public void CancelTransaction()
@@ -466,10 +519,21 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public void CancelAsyncTransaction(uint asyncTransactionHandle)
+        {
+            NativeMethods.cancel_async_transaction(this, asyncTransactionHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
         public bool IsInTransaction()
         {
-            var result = NativeMethods.is_in_transaction(this, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            var result = NativeMethods.is_in_transaction(this);
+            return result;
+        }
+
+        public bool IsInAsyncTransaction()
+        {
+            var result = NativeMethods.is_in_async_transaction(this);
             return result;
         }
 
@@ -664,22 +728,9 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The task awaiter will own the ThreadSafeReference handle.")]
         private static void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
-            var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
-
-            if (ex.type == RealmExceptionCodes.NoError)
-            {
-                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference));
-            }
-            else
-            {
-                var inner = ex.Convert();
-                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details.";
-                tcs.TrySetException(new RealmException(OuterMessage, inner));
-            }
+            HandleTaskCompletion(taskCompletionSource, () => new ThreadSafeReferenceHandle(realm_reference), ex);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.DisposeGCHandleCallback))]
@@ -726,6 +777,32 @@ namespace Realms
             var handle = GCHandle.FromIntPtr(delegatePtr);
             var compactDelegate = (ShouldCompactDelegate)handle.Target;
             return compactDelegate(totalSize, dataSize);
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.HandleTaskCompletionCallback))]
+        private static void HandleWriteCommitAsyncCallback(IntPtr tcs_ptr, NativeException ex)
+        {
+            SynchronizationContext.Current.Post(_ =>
+            {
+                HandleTaskCompletion(tcs_ptr, () => (object)true, ex);
+            }, null);
+        }
+
+        private static void HandleTaskCompletion<T>(IntPtr tcsPtr, Func<T> resultBuilder, NativeException ex)
+        {
+            var handle = GCHandle.FromIntPtr(tcsPtr);
+            var tcs = (TaskCompletionSource<T>)handle.Target;
+
+            if (ex.type == RealmExceptionCodes.NoError)
+            {
+                tcs.TrySetResult(resultBuilder());
+            }
+            else
+            {
+                var inner = ex.Convert();
+                const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
+                tcs.TrySetException(new RealmException(outerMessage, inner));
+            }
         }
 
         public class SchemaMarshaler

@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Realms
 {
@@ -29,11 +32,23 @@ namespace Realms
     public class Transaction : IDisposable
     {
         private Realm _realm;
+        private uint? _asyncTransactionHandle;
 
-        internal Transaction(Realm realm)
+        private Transaction(Realm realm)
         {
             _realm = realm;
+        }
+
+        internal static async Task<Transaction> BeginTransactionAsync(Realm realm)
+        {
+            var asyncHandle = await realm.SharedRealmHandle.BeginTransactionAsync();
+            return new Transaction(realm) { _asyncTransactionHandle = asyncHandle };
+        }
+
+        internal static Transaction BeginTransaction(Realm realm)
+        {
             realm.SharedRealmHandle.BeginTransaction();
+            return new Transaction(realm);
         }
 
         /// <summary>
@@ -55,14 +70,18 @@ namespace Realms
         /// </summary>
         public void Rollback()
         {
-            if (_realm == null)
+            EnsureActionFeasibility();
+
+            if (!IsAsync())
             {
-                throw new Exception("Transaction was already closed. Cannot roll back");
+                _realm.SharedRealmHandle.CancelTransaction();
+            }
+            else
+            {
+                _realm.SharedRealmHandle.CancelAsyncTransaction(_asyncTransactionHandle.Value);
             }
 
-            _realm.SharedRealmHandle.CancelTransaction();
-            _realm.DrainTransactionQueue();
-            _realm = null;
+            FinishTransaction();
         }
 
         /// <summary>
@@ -71,12 +90,58 @@ namespace Realms
         /// </summary>
         public void Commit()
         {
+            EnsureActionFeasibility();
+            _realm.SharedRealmHandle.CommitTransaction();
+            FinishTransaction();
+        }
+
+        public async Task CommitAsync()
+        {
+            EnsureActionFeasibility();
+            _asyncTransactionHandle = await _realm.SharedRealmHandle.CommitTransactionAsync();
+            FinishTransaction();
+        }
+
+
+        // TODO andrea: check usefulness of this method
+        private bool IsAsync()
+        {
+            EnsureActionFeasibility();
+
+            Debug.Assert((_realm.SharedRealmHandle.IsInAsyncTransaction() && _asyncTransactionHandle != null) ||
+                (!_realm.SharedRealmHandle.IsInAsyncTransaction() && _asyncTransactionHandle == null),
+                @$"Either this transaction has an _asyncTransactionHandle but the realm its not in an async transaction
+or the other way around. Neither of the two can happen.
+_asyncTransactionHandle = {_asyncTransactionHandle }
+_realm.SharedRealmHandle.IsInTransactionAsync() = {_realm.SharedRealmHandle.IsInAsyncTransaction()}.");
+
+            return _asyncTransactionHandle != null;
+        }
+
+        private void EnsureActionFeasibility([CallerMemberName] string executingAction = "")
+        {
             if (_realm == null)
             {
-                throw new Exception("Transaction was already closed. Cannot commit");
-            }
+                var action = "unknown action";
+                if (executingAction.Contains("commit"))
+                {
+                    action = "commit";
+                }
+                else if (executingAction.Contains("rollback"))
+                {
+                    action = "roll back";
+                }
+                else if(executingAction.Contains("IsAsync"))
+                {
+                    action = "check if async";
+                }
 
-            _realm.SharedRealmHandle.CommitTransaction();
+                throw new Exception($"Transaction was already closed. Cannot {action}");
+            }
+        }
+
+        private void FinishTransaction()
+        {
             _realm.DrainTransactionQueue();
             _realm = null;
         }

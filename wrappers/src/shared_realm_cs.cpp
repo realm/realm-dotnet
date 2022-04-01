@@ -51,6 +51,8 @@ using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
+using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
+
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
     std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
@@ -63,6 +65,7 @@ namespace binding {
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
+    std::function<HandleTaskCompletionCallbackT> s_handle_write_commit_async;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -160,7 +163,8 @@ REALM_EXPORT void shared_realm_install_callbacks(
     ObjectNotificationCallbackT* notify_object,
     DictionaryNotificationCallbackT* notify_dictionary,
     MigrationCallbackT* on_migration,
-    ShouldCompactCallbackT* should_compact)
+    ShouldCompactCallbackT* should_compact,
+    HandleTaskCompletionCallbackT* handle_write_commit_async)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
@@ -171,6 +175,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
     s_on_migration = wrap_managed_callback(on_migration);
     s_should_compact = wrap_managed_callback(should_compact);
+    s_handle_write_commit_async = wrap_managed_callback(handle_write_commit_async);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -369,6 +374,41 @@ REALM_EXPORT uint64_t shared_realm_get_schema_version(SharedRealm& realm, Native
     });
 }
 
+REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, void* tcs_ptr, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return realm->async_begin_transaction([tcs_ptr, ex]()
+        {
+            s_handle_write_commit_async(tcs_ptr, ex);
+        }, true);
+    });
+}
+
+REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, void* tcs_ptr, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return realm->async_commit_transaction([tcs_ptr](std::exception_ptr err) {
+            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
+            if (err) {
+                nativeEx = convert_exception(err).for_marshalling();
+            }
+            s_handle_write_commit_async(tcs_ptr, nativeEx);
+        }, false);
+    });
+}
+
+REALM_EXPORT void shared_realm_cancel_async_transaction(SharedRealm& realm, uint32_t async_transaction_native_handle, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        realm->async_cancel_transaction(async_transaction_native_handle);
+    });
+}
+
+REALM_EXPORT bool shared_realm_is_in_async_transaction(SharedRealm& realm)
+{
+    return realm->is_in_async_transaction();
+}
+
 REALM_EXPORT void shared_realm_begin_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -390,11 +430,9 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm& realm, NativeExce
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm)
 {
-    return handle_errors(ex, [&]() {
-        return realm->is_in_transaction();
-    });
+    return realm->is_in_transaction();
 }
 
 REALM_EXPORT bool shared_realm_is_same_instance(SharedRealm& lhs, SharedRealm& rhs, NativeException::Marshallable& ex)

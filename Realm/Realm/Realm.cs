@@ -199,7 +199,7 @@ namespace Realms
             {
                 ThrowIfDisposed();
 
-                return SharedRealmHandle.IsInTransaction();
+                return SharedRealmHandle.IsInTransaction() || SharedRealmHandle.IsInAsyncTransaction();
             }
         }
 
@@ -708,7 +708,7 @@ namespace Realms
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
-            return new Transaction(this);
+            return Transaction.BeginTransaction(this);
         }
 
         /// <summary>
@@ -785,6 +785,16 @@ namespace Realms
             return result;
         }
 
+        public async Task<Transaction> BeginWriteAsync()
+        {
+            ThrowIfDisposed();
+            ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
+
+            var transaction = await Transaction.BeginTransactionAsync(this);
+
+            return transaction;
+        }
+
         /// <summary>
         /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
@@ -819,6 +829,7 @@ namespace Realms
         /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Action action) instead.")]
         public Task WriteAsync(Action<Realm> action)
         {
             Argument.NotNull(action, nameof(action));
@@ -826,6 +837,15 @@ namespace Realms
             return WriteAsync(tempRealm =>
             {
                 action(tempRealm);
+                return true;
+            });
+        }
+
+        public Task WriteAsync(Action action)
+        {
+            return WriteAsync(() =>
+            {
+                action();
                 return true;
             });
         }
@@ -858,6 +878,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<T> WriteAsync<T>(Func<Realm, T> function)
         {
             ThrowIfDisposed();
@@ -891,6 +912,23 @@ namespace Realms
             }
 
             return (T)result;
+        }
+
+        public async Task<T> WriteAsync<T>(Func<T> function)
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(function, nameof(function));
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
+            {
+                return Write(function);
+            }
+
+            using var transaction = await BeginWriteAsync();
+            var result = function();
+            await transaction.CommitAsync();
+            return result;
         }
 
         /// <summary>
@@ -928,6 +966,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
             where T : RealmObjectBase
         {
@@ -1001,6 +1040,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
         {
             ThrowIfDisposed();
