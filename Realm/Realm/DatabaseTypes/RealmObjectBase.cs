@@ -228,7 +228,7 @@ namespace Realms
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => Accessor.GetBacklinks(objectType, property);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
