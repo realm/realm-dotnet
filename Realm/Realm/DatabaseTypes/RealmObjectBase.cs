@@ -44,7 +44,7 @@ namespace Realms
           INotifyPropertyChanged,
           IReflectableType
     {
-        private Realm _realm;  //TODO These 3 fields need to be removed later (here to continue supporting the metadataRealmObject)
+        private Realm _realm;  // TODO These 3 fields need to be removed later (here to continue supporting the metadataRealmObject)
 
         private ObjectHandle _objectHandle;
 
@@ -82,7 +82,7 @@ namespace Realms
             }
         }
 
-        //TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
+        // TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
         [IgnoreDataMember, XmlIgnore]
         public IRealmAccessor Accessor => _accessor;
 
@@ -157,16 +157,16 @@ namespace Realms
         /// </summary>
         ~RealmObjectBase()
         {
-            //TODO Probably we can dispose the Accessor here
+            // TODO Probably we can dispose the Accessor here
             UnsubscribeFromNotifications();
         }
 
-        //TODO This method needs to be different. For SG class this should probably assign an IRelmAccessor that comes as input
+        // TODO This method needs to be different. For SG class this should probably assign an IRelmAccessor that comes as input
         internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
             _realm = realm;
             _objectHandle = objectHandle;
-            _metadata = metadata;  //TODO needs to be removed later
+            _metadata = metadata;  // TODO needs to be removed later
             _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
 
             if (_propertyChanged != null)
@@ -177,7 +177,7 @@ namespace Realms
 
         void IRealmObject.SetManagedAccessor(IRealmAccessor accessor)
         {
-            //TODO This method needs to be changed. This will be the new "SetOwner", but we need a way to partially build the Accessor from outside and pass it here
+            // TODO This method needs to be changed. This will be the new "SetOwner", but we need a way to partially build the Accessor from outside and pass it here
             _accessor = accessor;
 
             if (_propertyChanged != null)
@@ -348,7 +348,7 @@ namespace Realms
             return TypeInfoHelper.GetInfo(this);
         }
 
-        //TODO Should probably move it out of this class, to its own file and rename to RealmObjectMetadata
+        // TODO Should probably move it out of this class, to its own file and rename to RealmObjectMetadata
         internal class Metadata
         {
             internal readonly TableKey TableKey;
@@ -368,7 +368,8 @@ namespace Realms
             }
         }
 
-        //TODO Should probably move out of this class, to its own file
+        // TODO Should probably move out of this class, to its own file
+
         /// <summary>
         /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
         /// </summary>

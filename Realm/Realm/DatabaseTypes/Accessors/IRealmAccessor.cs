@@ -55,8 +55,8 @@ namespace Realms
 
         IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
 
-        IQueryable<dynamic> GetBacklinks(string objectType, string property);
-        
+        IQueryable<dynamic> GetBacklinks(string objectType, string propertyName);
+
         IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase;
 

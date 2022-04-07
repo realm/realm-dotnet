@@ -84,7 +84,7 @@ namespace Realms
             return (IList<T>)_container[propertyName];
         }
 
-        public ThreadSafeReference GetSafeReference()
+        public static ThreadSafeReference GetSafeReference()
         {
             Debug.Assert(false, "Object is not managed, but managed access was attempted");
 

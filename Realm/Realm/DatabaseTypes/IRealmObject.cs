@@ -25,7 +25,7 @@ namespace Realms
     {
         IRealmAccessor Accessor { get; }
 
-        void SetManagedAccessor(IRealmAccessor acccessor);  //TODO Need to change name
+        void SetManagedAccessor(IRealmAccessor acccessor);  // TODO Need to change name
 
         bool IsManaged { get; }
 
@@ -41,6 +41,6 @@ namespace Realms
 
         RealmObjectBase.Dynamic DynamicApi { get; }
 
-        IQueryable<dynamic> GetBacklinks(string objectType, string property);
+        IQueryable<dynamic> GetBacklinks(string objectType, string propertyName);
     }
 }

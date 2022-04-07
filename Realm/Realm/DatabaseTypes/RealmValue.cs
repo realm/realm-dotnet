@@ -898,7 +898,7 @@ namespace Realms
 
         public static implicit operator RealmValue(string val) => String(val);
 
-        //TODO This cannot take an interface as input. For SG classes we probably need to generate operators directly on the class
+        // TODO This cannot take an interface as input. For SG classes we probably need to generate operators directly on the class
         public static implicit operator RealmValue(RealmObjectBase val) => Object(val);
 
         private void EnsureType(string target, RealmValueType type)
