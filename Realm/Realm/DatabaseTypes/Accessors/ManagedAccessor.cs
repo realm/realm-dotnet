@@ -27,7 +27,8 @@ using Realms.Schema;
 
 namespace Realms
 {
-    internal class ManagedAccessor : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
+    internal class ManagedAccessor
+        : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
         private bool _isEmbedded;
 

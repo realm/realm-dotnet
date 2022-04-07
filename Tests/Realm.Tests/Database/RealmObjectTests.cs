@@ -381,6 +381,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_Freeze_WhenObjectIsUnmanaged_Throws()
         {
+            // TODO This fails, need to decide what to do with it
             var owner = new Owner();
             Assert.Throws<RealmException>(() => Freeze(owner), "Unmanaged objects cannot be frozen.");
         }

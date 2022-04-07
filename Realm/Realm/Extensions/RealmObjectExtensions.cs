@@ -30,6 +30,11 @@ namespace Realms.Extensions
             return (IThreadConfined)iro.Accessor;
         }
 
+        public static IRealmObject FreezeImpl(this IRealmObject iro)
+        {
+            return (iro.Accessor as ManagedAccessor)?.FreezeImpl();
+        }
+
         public static ObjectHandle GetObjectHandle(this IRealmObject iro)
         {
             return (iro.Accessor as ManagedAccessor)?.ObjectHandle;

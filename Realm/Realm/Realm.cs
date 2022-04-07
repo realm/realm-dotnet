@@ -634,11 +634,18 @@ namespace Realms
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
             obj.SetOwner(this, handle, metadata);
+            //Don't create unmanaged accessor on constructor but lazily ( so there is a backing field)
+            //In set managed accessor ( that subs setOwner), we can check if the field is set. If yes, we copy to Realm.
 
+            //TODO In source generator OnManaged can be a partial void method (the other partial implemented by users)
             // If an object is newly created, we don't need to invoke setters of properties with default values.
             metadata.Helper.CopyToRealm(obj, update: false, skipDefaults: true);
             obj.OnManaged();
         }
+
+        //TODO Specific accessors for SG classes (hidden as nested classes)
+        //TODO For now it's ok to keep the UnmnanagedAccessor with dictionary, but we need to clean it before GA
+
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
@@ -1657,8 +1664,8 @@ namespace Realms
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
-                obj.SetOwner(_realm, handle, metadata);
-                obj.GetManagedAccessor().OnManaged();
+                obj.SetOwner(_realm, handle, metadata);  //TODO Will become set accessor
+                obj.GetManagedAccessor().OnManaged(); // Within set accessor
 
                 return obj;
             }

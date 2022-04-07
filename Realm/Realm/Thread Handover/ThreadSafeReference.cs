@@ -185,6 +185,8 @@ namespace Realms
             internal Object(T value) : base(value.AsIThreadConfined(), Type.Object)
             {
             }
+
+            //TODO Generate GetThreadConfined(IRealmObject) that throws if unmanaged. Remove IThreadConfined from unmanaged accessor
         }
 
         /// <summary>

@@ -35,13 +35,11 @@ namespace Realms
 
         ObjectSchema ObjectSchema { get; }
 
-        Lazy<int> HashCode { get; }
+        Lazy<int> HashCode { get; } //TODO Only int
 
         int BacklinksCount { get; }
 
         RealmObjectBase.Dynamic DynamicApi { get; }
-
-        public IRealmObject FreezeImpl();
 
         RealmValue GetValue(string propertyName);
 

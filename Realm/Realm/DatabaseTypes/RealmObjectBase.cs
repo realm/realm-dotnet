@@ -145,8 +145,6 @@ namespace Realms
         [IgnoreDataMember]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        internal RealmObjectBase FreezeImpl() => (RealmObjectBase)Accessor.FreezeImpl();
-
         internal RealmObjectBase()
         {
             _accessor = new UnmanagedAccessor();
@@ -226,6 +224,7 @@ namespace Realms
             return Accessor.GetBacklinks<T>(propertyName);
         }
 
+        // TODO This is still like this because it's used by dynamic API
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
             where T : RealmObjectBase
         {
