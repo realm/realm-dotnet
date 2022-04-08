@@ -39,6 +39,8 @@ namespace Realms
 
         int BacklinksCount { get; }
 
+        RealmObjectBase.Dynamic DynamicApi { get; }
+
         RealmValue GetValue(string propertyName);
 
         void SetValue(string propertyName, RealmValue val);
@@ -50,6 +52,8 @@ namespace Realms
         ISet<T> GetSetValue<T>(string propertyName);
 
         IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
+
+        IQueryable<dynamic> GetBacklinks(string objectType, string propertyName);
 
         IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase;

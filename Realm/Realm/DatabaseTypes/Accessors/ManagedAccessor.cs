@@ -22,7 +22,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
-using Realms.Extensions;
 using Realms.Schema;
 
 namespace Realms
@@ -41,8 +40,6 @@ namespace Realms
         private NotificationTokenHandle _notificationToken;
 
         private Action<string> _onNotifyPropertyChanged;
-
-        private RealmObjectBase _ro; // TODO This will be removed
 
         public ObjectHandle ObjectHandle => _objectHandle;
 
@@ -66,18 +63,18 @@ namespace Realms
 
         public RealmObjectBase.Metadata Metadata => _metadata;
 
+        public RealmObjectBase.Dynamic DynamicApi => new(this);
+
         public ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
             RealmObjectBase.Metadata metadata,
-            Action<string> notifyPropertyChangedDelegate,
-            RealmObjectBase ro)
+            Action<string> notifyPropertyChangedDelegate)
         {
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
             _onNotifyPropertyChanged = notifyPropertyChangedDelegate; //TODO Pass it through subscribteToNotifications()
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
-            _ro = ro;
         }
 
         // TODO Unmanaged accessor will be generated so we can use fields. Managed one we can decide what do do if generated or not.
@@ -262,5 +259,6 @@ namespace Realms
             // System.Object, which defines Equals as reference equality.
             return ObjectHandle.ObjEquals(((IManagedAccessor)iro.Accessor).ObjectHandle);
         }
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
     }
 }

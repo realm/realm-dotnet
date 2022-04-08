@@ -99,18 +99,7 @@ namespace Realms
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
         [IgnoreDataMember]
-        public Dynamic DynamicApi
-        {
-            get
-            {
-                if (!IsManaged)
-                {
-                    throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
-                }
-
-                return new Dynamic(this);
-            }
-        }
+        public Dynamic DynamicApi => Accessor.DynamicApi;
 
         /// <summary>
         /// Gets a value indicating whether this object is managed and represents a row in the database.
@@ -176,7 +165,7 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;  // TODO needs to be removed later
 
-            _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this);
+            _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged);
 
             // This means that the object was unmanaged before, and we need to copy its properties to the realm
             // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
@@ -253,7 +242,7 @@ namespace Realms
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => Accessor.GetBacklinks(objectType, property);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -385,11 +374,11 @@ namespace Realms
         /// </summary>
         public struct Dynamic
         {
-            private readonly IRealmObject _realmObject;
+            private readonly IManagedAccessor _managedAccessor;
 
-            internal Dynamic(IRealmObject ro)
+            internal Dynamic(IManagedAccessor managedAccessor)
             {
-                _realmObject = ro;
+                _managedAccessor = managedAccessor;
             }
 
             /// <summary>
@@ -413,7 +402,7 @@ namespace Realms
                 if (property.Type.IsComputed())
                 {
                     throw new NotSupportedException(
-                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {nameof(GetBacklinks)} instead.");
                 }
 
                 if (property.Type.IsCollection(out var collectionType))
@@ -427,10 +416,10 @@ namespace Realms
                     };
 
                     throw new NotSupportedException(
-                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} and can't be accessed using {nameof(Dynamic)}.{nameof(Get)}. Use {collectionMethodName} instead.");
                 }
 
-                return _realmObject.Accessor.GetValue(propertyName).As<T>();
+                return _managedAccessor.GetValue(propertyName).As<T>();
             }
 
             /// <summary>
@@ -446,32 +435,32 @@ namespace Realms
                 if (property.Type.IsComputed())
                 {
                     throw new NotSupportedException(
-                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (backlinks collection) and can't be set directly");
                 }
 
                 if (property.Type.IsCollection(out _))
                 {
                     throw new NotSupportedException(
-                        $"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
+                        $"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} (collection) and can't be set directly.");
                 }
 
                 if (!property.Type.IsNullable() && value.Type == RealmValueType.Null)
                 {
-                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
+                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which is not nullable, but the supplied value is <null>.");
                 }
 
                 if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
                 {
-                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
+                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
                 }
 
                 if (property.IsPrimaryKey)
                 {
-                    _realmObject.Accessor.SetValueUnique(propertyName, value);
+                    _managedAccessor.SetValueUnique(propertyName, value);
                 }
                 else
                 {
-                    _realmObject.Accessor.SetValue(propertyName, value);
+                    _managedAccessor.SetValue(propertyName, value);
                 }
             }
 
@@ -488,15 +477,15 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
-                var resultsHandle = _realmObject.GetObjectHandle().GetBacklinks(propertyName, _realmObject.GetObjectMetadata());
+                var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.ObjectMetadata);
 
-                var relatedMeta = _realmObject.Realm.Metadata[property.ObjectType];
+                var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
                 {
-                    return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+                    return new RealmResults<EmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
                 }
 
-                return new RealmResults<RealmObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+                return new RealmResults<RealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
 
             /// <summary>
@@ -510,15 +499,15 @@ namespace Realms
             /// </returns>
             public IQueryable<RealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName)
             {
-                Argument.Ensure(_realmObject.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
+                Argument.Ensure(_managedAccessor.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 
-                var resultsHandle = _realmObject.GetObjectHandle().GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
+                var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
                 if (relatedMeta.Schema.IsEmbedded)
                 {
-                    return new RealmResults<EmbeddedObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+                    return new RealmResults<EmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
                 }
 
-                return new RealmResults<RealmObject>(_realmObject.Realm, resultsHandle, relatedMeta);
+                return new RealmResults<RealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
 
             /// <summary>
@@ -538,7 +527,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
 
-                var result = _realmObject.GetObjectHandle().GetList<T>(_realmObject.Realm, propertyName, _realmObject.GetObjectMetadata(), property.ObjectType);
+                var result = _managedAccessor.ObjectHandle.GetList<T>(_managedAccessor.Realm, propertyName, _managedAccessor.ObjectMetadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -560,7 +549,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
 
-                var result = _realmObject.GetObjectHandle().GetSet<T>(_realmObject.Realm, propertyName, _realmObject.GetObjectMetadata(), property.ObjectType);
+                var result = _managedAccessor.ObjectHandle.GetSet<T>(_managedAccessor.Realm, propertyName, _managedAccessor.ObjectMetadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -582,7 +571,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
 
-                var result = _realmObject.GetObjectHandle().GetDictionary<T>(_realmObject.Realm, propertyName, _realmObject.GetObjectMetadata(), property.ObjectType);
+                var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.ObjectMetadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -590,9 +579,9 @@ namespace Realms
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private Property GetProperty(string propertyName)
             {
-                if (!_realmObject.ObjectSchema.TryFindProperty(propertyName, out var property))
+                if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
                 {
-                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_realmObject.ObjectSchema.Name}", propertyName);
+                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_managedAccessor.ObjectSchema.Name}", propertyName);
                 }
 
                 return property;
@@ -603,14 +592,14 @@ namespace Realms
             {
                 Argument.NotNull(propertyName, nameof(propertyName));
 
-                if (!_realmObject.ObjectSchema.TryFindProperty(propertyName, out var property))
+                if (!_managedAccessor.ObjectSchema.TryFindProperty(propertyName, out var property))
                 {
-                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_realmObject.ObjectSchema.Name}", propertyName);
+                    throw new MissingMemberException($"Property {propertyName} does not exist on RealmObject of type {_managedAccessor.ObjectSchema.Name}", propertyName);
                 }
 
                 if (!typeCheck(property.Type))
                 {
-                    throw new ArgumentException($"{_realmObject.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which can't be accessed using {methodName}.");
+                    throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} which can't be accessed using {methodName}.");
                 }
 
                 return property;
