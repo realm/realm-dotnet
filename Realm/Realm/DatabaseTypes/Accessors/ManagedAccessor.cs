@@ -265,7 +265,7 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.ObjEquals(((IManagedAccessor)iro).ObjectHandle);
+            return ObjectHandle.ObjEquals(((IManagedAccessor)iro.Accessor).ObjectHandle);
         }
 
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
