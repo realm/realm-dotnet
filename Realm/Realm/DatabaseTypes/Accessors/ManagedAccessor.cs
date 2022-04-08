@@ -30,8 +30,6 @@ namespace Realms
     internal class ManagedAccessor
         : IManagedAccessor
     {
-        private bool _isEmbedded;
-
         private Lazy<int> _hashCode;
 
         private Realm _realm;
@@ -68,16 +66,12 @@ namespace Realms
 
         public RealmObjectBase.Metadata Metadata => _metadata;
 
-        public RealmObjectBase.Dynamic DynamicApi => new(_ro);
-
         public ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
             RealmObjectBase.Metadata metadata,
             Action<string> notifyPropertyChangedDelegate,
-            bool isEmbedded,
             RealmObjectBase ro)
         {
-            _isEmbedded = isEmbedded;
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
@@ -177,10 +171,11 @@ namespace Realms
                 return $"{typeName} (removed)";
             }
 
-            if (!_isEmbedded && ObjectMetadata.Helper.TryGetPrimaryKeyValue((RealmObject)_ro, out var pkValue))
+            if (ObjectSchema.PrimaryKeyProperty is Property pkProperty)
             {
-                var pkProperty = ObjectMetadata.Schema.PrimaryKeyProperty;
-                return $"{typeName} ({pkProperty.Value.Name} = {pkValue})";
+                var pkName = pkProperty.Name;
+                var pkValue = GetValue(pkName);
+                return $"{typeName} ({pkName} = {pkValue})";
             }
 
             return typeName;
@@ -266,13 +261,6 @@ namespace Realms
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
             return ObjectHandle.ObjEquals(((IManagedAccessor)iro.Accessor).ObjectHandle);
-        }
-
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
-
-        public void OnManaged()
-        {
-            _ro.OnManaged();
         }
     }
 }

@@ -99,7 +99,18 @@ namespace Realms
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
         [IgnoreDataMember]
-        public Dynamic DynamicApi => Accessor.DynamicApi;
+        public Dynamic DynamicApi
+        {
+            get
+            {
+                if (!IsManaged)
+                {
+                    throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
+                }
+
+                return new Dynamic(this);
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this object is managed and represents a row in the database.
@@ -165,7 +176,7 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;  // TODO needs to be removed later
 
-            _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
+            _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this);
 
             // This means that the object was unmanaged before, and we need to copy its properties to the realm
             // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
@@ -242,7 +253,7 @@ namespace Realms
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => Accessor.GetBacklinks(objectType, property);
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -368,8 +379,6 @@ namespace Realms
                 Schema = schema;
             }
         }
-
-        // TODO Should probably move out of this class, to its own file
 
         /// <summary>
         /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.

@@ -40,11 +40,9 @@ namespace Realms
 
         public ObjectSchema ObjectSchema => null;
 
-        public Lazy<int> HashCode => null;
+        public int? HashCode => null;
 
         public int BacklinksCount => 0;
-
-        public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 

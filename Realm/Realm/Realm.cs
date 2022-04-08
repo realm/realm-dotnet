@@ -637,8 +637,6 @@ namespace Realms
             //TODO For now it's ok to keep the UnmnanagedAccessor with dictionary, but we need to clean it before GA
 
             obj.SetOwner(this, handle, metadata, true, false, true);
-            //metadata.Helper.CopyToRealm(obj, update: false, skipDefaults: true);
-
         }
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
@@ -665,7 +663,6 @@ namespace Realms
             }
 
             obj.SetOwner(this, objectHandle, metadata, true, update, isNew);
-            //metadata.Helper.CopyToRealm(obj, update, isNew);
         }
 
         private bool ShouldAddNewObject(IRealmObject obj)
