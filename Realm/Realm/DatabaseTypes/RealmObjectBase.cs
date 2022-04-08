@@ -159,24 +159,21 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        // TODO This method needs to be different. For SG class this should probably assign an IRelmAccessor that comes as input
-        internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
+        internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata, bool needAddToRealm = false, bool update = false, bool skipDefaults = false)
         {
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;  // TODO needs to be removed later
+
             _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged, this is EmbeddedObject, this);
 
-            if (_propertyChanged != null)
+            // This means that the object was unmanaged before, and we need to copy its properties to the realm
+            // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
+            // also I'm not sure why we can't put this before setting the ManagedAccessor
+            if (needAddToRealm)
             {
-                SubscribeForNotifications();
+                metadata.Helper.CopyToRealm(this, update, skipDefaults);
             }
-        }
-
-        void IRealmObject.SetManagedAccessor(IRealmAccessor accessor)
-        {
-            // TODO This method needs to be changed. This will be the new "SetOwner", but we need a way to partially build the Accessor from outside and pass it here
-            _accessor = accessor;
 
             if (_propertyChanged != null)
             {
@@ -184,6 +181,11 @@ namespace Realms
             }
 
             OnManaged();
+        }
+
+        // TODO This will be the new SetOwner
+        void IRealmObject.SetManagedAccessor(IRealmAccessor accessor)
+        {
         }
 
 #pragma warning disable SA1600 // Elements should be documented

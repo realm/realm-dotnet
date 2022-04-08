@@ -526,7 +526,6 @@ namespace Realms
         {
             var ret = metadata.Helper.CreateInstance();
             ret.SetOwner(this, objectHandle, metadata);
-            ret.OnManaged();
             return ret;
         }
 
@@ -633,19 +632,14 @@ namespace Realms
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            obj.SetOwner(this, handle, metadata);
-            //Don't create unmanaged accessor on constructor but lazily ( so there is a backing field)
-            //In set managed accessor ( that subs setOwner), we can check if the field is set. If yes, we copy to Realm.
-
             //TODO In source generator OnManaged can be a partial void method (the other partial implemented by users)
-            // If an object is newly created, we don't need to invoke setters of properties with default values.
-            metadata.Helper.CopyToRealm(obj, update: false, skipDefaults: true);
-            obj.OnManaged();
+            //TODO Specific accessors for SG classes (hidden as nested classes)
+            //TODO For now it's ok to keep the UnmnanagedAccessor with dictionary, but we need to clean it before GA
+
+            obj.SetOwner(this, handle, metadata, true, false, true);
+            //metadata.Helper.CopyToRealm(obj, update: false, skipDefaults: true);
+
         }
-
-        //TODO Specific accessors for SG classes (hidden as nested classes)
-        //TODO For now it's ok to keep the UnmnanagedAccessor with dictionary, but we need to clean it before GA
-
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
@@ -670,11 +664,8 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
-            obj.SetOwner(this, objectHandle, metadata);
-
-            // If an object is newly created, we don't need to invoke setters of properties with default values.
-            metadata.Helper.CopyToRealm(obj, update, isNew);
-            obj.OnManaged();
+            obj.SetOwner(this, objectHandle, metadata, true, update, isNew);
+            //metadata.Helper.CopyToRealm(obj, update, isNew);
         }
 
         private bool ShouldAddNewObject(IRealmObject obj)
@@ -1636,7 +1627,6 @@ namespace Realms
                     : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
                 result.SetOwner(_realm, objectHandle, metadata);
-                result.GetManagedAccessor().OnManaged();
                 return result;
             }
 
@@ -1664,8 +1654,7 @@ namespace Realms
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
-                obj.SetOwner(_realm, handle, metadata);  //TODO Will become set accessor
-                obj.GetManagedAccessor().OnManaged(); // Within set accessor
+                obj.SetOwner(_realm, handle, metadata);
 
                 return obj;
             }
@@ -1892,7 +1881,6 @@ namespace Realms
                 var obj = (EmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
-                obj.OnManaged();
 
                 return obj;
             }
@@ -1911,7 +1899,6 @@ namespace Realms
                 var obj = (EmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
                 obj.SetOwner(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata);
-                obj.OnManaged();
 
                 return obj;
             }
