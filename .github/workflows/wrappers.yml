@@ -41,7 +41,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
@@ -57,7 +57,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-ios
       uses: actions/upload-artifact@v2
@@ -73,7 +73,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
@@ -89,7 +89,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-armeabi-v7a-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-armeabi-v7a-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-armeabi-v7a
       uses: actions/upload-artifact@v2
@@ -105,7 +105,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-arm64-v8a-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-arm64-v8a-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-arm64-v8a
       uses: actions/upload-artifact@v2
@@ -121,7 +121,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-x86-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-x86
       uses: actions/upload-artifact@v2
@@ -137,7 +137,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-x86_64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-x86_64-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-x86_64
       uses: actions/upload-artifact@v2
@@ -153,7 +153,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-Win32-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-Win32-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-Win32
       uses: actions/upload-artifact@v2
@@ -169,7 +169,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-x64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-x64-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-x64
       uses: actions/upload-artifact@v2
@@ -185,7 +185,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-ARM64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-ARM64-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-ARM64
       uses: actions/upload-artifact@v2
@@ -201,7 +201,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-Win32-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-Win32
       uses: actions/upload-artifact@v2
@@ -217,7 +217,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-x64-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-x64
       uses: actions/upload-artifact@v2
@@ -233,7 +233,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-ARM-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-ARM
       uses: actions/upload-artifact@v2
@@ -249,7 +249,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-ARM64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-ARM64-Debug-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-ARM64
       uses: actions/upload-artifact@v2
@@ -278,9 +278,9 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-macos-Debug-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
+      run: ./wrappers/build-macos.sh --configuration=Debug -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-macos
       uses: actions/upload-artifact@v2
@@ -311,9 +311,9 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/cmake/**/realm-wrappers.framework
-        key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework -Configuration Release
+      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework -Configuration Debug
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -340,7 +340,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-ios-Debug-${{hashFiles('./wrappers/**')}}
     - name: Fetch Framework for Simulator
       uses: actions/download-artifact@v2
       with:
@@ -357,8 +357,8 @@ jobs:
       run: |
         $build_directory = "${{ github.workspace }}/wrappers/cmake/iOS"
         $install_prefix = "${{ github.workspace }}/wrappers/build"
-        $xcframework_path = "$install_prefix/iOS/Release/realm-wrappers.xcframework"
-        xcodebuild -create-xcframework -framework $build_directory/src/Release-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/Release-iphoneos/realm-wrappers.framework -output "$xcframework_path"
+        $xcframework_path = "$install_prefix/iOS/Debug/realm-wrappers.xcframework"
+        xcodebuild -create-xcframework -framework $build_directory/src/Debug-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/Debug-iphoneos/realm-wrappers.framework -output "$xcframework_path"
       shell: powershell
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios
@@ -389,7 +389,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-Debug-${{hashFiles('./wrappers/**')}}
     - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97
       continue-on-error: true
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -406,7 +406,7 @@ jobs:
         image: wrappers-centos:latest
         shell: bash
         options: -v ${{ github.workspace }}:/work
-        run: /work/wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
+        run: /work/wrappers/build.sh --configuration=Debug -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-linux
       uses: actions/upload-artifact@v2
@@ -438,9 +438,9 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-android-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-android-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Build wrappers
-      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release
+      run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Debug
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-android-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -472,7 +472,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
@@ -480,7 +480,7 @@ jobs:
         cache-key: vcpkg-windows-${{ matrix.arch }}
         cache-restore-keys: vcpkg-windows-${{ matrix.arch }}
     - name: Build wrappers
-      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Debug -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
@@ -513,7 +513,7 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-windows-uwp-${{ matrix.arch }}-Debug-${{hashFiles('./wrappers/**')}}
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
@@ -521,7 +521,7 @@ jobs:
         cache-key: vcpkg-uwp-${{ matrix.arch }}
         cache-restore-keys: vcpkg-uwp-${{ matrix.arch }}
     - name: Build wrappers
-      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Debug -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
