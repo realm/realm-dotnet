@@ -35,7 +35,7 @@ namespace Realms
 
         ObjectSchema ObjectSchema { get; }
 
-        Lazy<int> HashCode { get; } //TODO Only int
+        int? HashCode { get; }
 
         int BacklinksCount { get; }
 
@@ -65,7 +65,5 @@ namespace Realms
         string GetStringDescription(string typeName);
 
         bool ObjectEquals(object obj);
-
-
     }
 }

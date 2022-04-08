@@ -267,7 +267,7 @@ namespace Realms
         {
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
-            return Accessor.HashCode?.Value ?? base.GetHashCode();
+            return Accessor.HashCode ?? base.GetHashCode();
         }
 
         /// <summary>

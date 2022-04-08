@@ -60,7 +60,7 @@ namespace Realms
 
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
-        public Lazy<int> HashCode => _hashCode;
+        public int? HashCode => _hashCode.Value;
 
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
