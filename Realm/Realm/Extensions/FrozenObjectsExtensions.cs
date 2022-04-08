@@ -57,7 +57,9 @@ namespace Realms
                 return realmObj;
             }
 
-            return (T)realmObj.FreezeImpl();
+            var frozenRealm = realmObj.Realm.Freeze();
+            var frozenHandle = realmObj.GetObjectHandle().Freeze(frozenRealm.SharedRealmHandle);
+            return (T)frozenRealm.MakeObject(realmObj.GetObjectMetadata(), frozenHandle);
         }
 
         /// <summary>

@@ -28,7 +28,7 @@ using Realms.Schema;
 namespace Realms
 {
     internal class ManagedAccessor
-        : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
+        : IManagedAccessor
     {
         private bool _isEmbedded;
 
@@ -46,9 +46,9 @@ namespace Realms
 
         private RealmObjectBase _ro; // TODO This will be removed
 
-        internal ObjectHandle ObjectHandle => _objectHandle;
+        public ObjectHandle ObjectHandle => _objectHandle;
 
-        internal RealmObjectBase.Metadata ObjectMetadata => _metadata;
+        public RealmObjectBase.Metadata ObjectMetadata => _metadata;
 
         public bool IsManaged => true;
 
@@ -81,17 +81,13 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
-            _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
+            _onNotifyPropertyChanged = notifyPropertyChangedDelegate; //TODO Pass it through subscribteToNotifications()
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
             _ro = ro;
         }
 
-        public IRealmObject FreezeImpl()
-        {
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = ObjectHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return frozenRealm.MakeObject(ObjectMetadata, frozenHandle);
-        }
+        // TODO Unmanaged accessor will be generated so we can use fields. Managed one we can decide what do do if generated or not.
+        // Specialized managed accessor could come or not, so we can't hardcode 
 
         public RealmValue GetValue(string propertyName)
         {
@@ -269,7 +265,7 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.ObjEquals(iro.GetManagedAccessor().ObjectHandle);
+            return ObjectHandle.ObjEquals(((IManagedAccessor)iro).ObjectHandle);
         }
 
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);

@@ -26,7 +26,7 @@ using Realms.Schema;
 namespace Realms
 {
     internal class UnmanagedAccessor
-        : IRealmAccessor, IThreadConfined
+        : IRealmAccessor
     {
         private Dictionary<string, object> _container = new();
 
@@ -43,10 +43,6 @@ namespace Realms
         public Lazy<int> HashCode => null;
 
         public int BacklinksCount => 0;
-
-        public IThreadConfinedHandle Handle => null;
-
-        public RealmObjectBase.Metadata Metadata => null;
 
         public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 

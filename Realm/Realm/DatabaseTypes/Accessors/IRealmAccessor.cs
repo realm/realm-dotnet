@@ -65,5 +65,7 @@ namespace Realms
         string GetStringDescription(string typeName);
 
         bool ObjectEquals(object obj);
+
+
     }
 }

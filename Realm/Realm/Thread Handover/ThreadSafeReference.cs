@@ -182,11 +182,19 @@ namespace Realms
         public class Object<T> : ThreadSafeReference
             where T : IRealmObject
         {
-            internal Object(T value) : base(value.AsIThreadConfined(), Type.Object)
+            internal Object(T value) : base(GetThreadConfined(value), Type.Object)
             {
             }
 
-            //TODO Generate GetThreadConfined(IRealmObject) that throws if unmanaged. Remove IThreadConfined from unmanaged accessor
+            private static IThreadConfined GetThreadConfined(IRealmObject ro)
+            {
+                if (!ro.IsManaged)
+                {
+                    throw new RealmException("Cannot construct reference to unmanaged object, which can be passed across threads directly.");
+                }
+
+                return (IManagedAccessor)ro.Accessor;
+            }
         }
 
         /// <summary>
