@@ -196,7 +196,7 @@ namespace Realms
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
                 MigrationCallback migration_callback,
                 ShouldCompactCallback should_compact_callback,
-                HandleTaskCompletionCallback handle_write_commit_async);
+                HandleTaskCompletionCallback handle_task_completion);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -255,7 +255,7 @@ namespace Realms
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
             NativeMethods.MigrationCallback onMigration = OnMigration;
             NativeMethods.ShouldCompactCallback shouldCompact = ShouldCompactOnLaunchCallback;
-            NativeMethods.HandleTaskCompletionCallback handleWriteCommitAsync = HandleWriteCommitAsyncCallback;
+            NativeMethods.HandleTaskCompletionCallback handleTaskCompletion = HandleTaskCompletionCallback;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
@@ -266,9 +266,9 @@ namespace Realms
             GCHandle.Alloc(notifyDictionary);
             GCHandle.Alloc(onMigration);
             GCHandle.Alloc(shouldCompact);
-            GCHandle.Alloc(handleWriteCommitAsync);
+            GCHandle.Alloc(handleTaskCompletion);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleWriteCommitAsync);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion);
         }
 
         [Preserve]
@@ -525,17 +525,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public bool IsInTransaction()
-        {
-            var result = NativeMethods.is_in_transaction(this);
-            return result;
-        }
-
-        public bool IsInAsyncTransaction()
-        {
-            var result = NativeMethods.is_in_async_transaction(this);
-            return result;
-        }
+        public bool IsInTransaction() => NativeMethods.is_in_transaction(this) || NativeMethods.is_in_async_transaction(this);
 
         public bool Refresh()
         {
@@ -780,7 +770,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.HandleTaskCompletionCallback))]
-        private static void HandleWriteCommitAsyncCallback(IntPtr tcs_ptr, NativeException ex)
+        private static void HandleTaskCompletionCallback(IntPtr tcs_ptr, NativeException ex)
         {
             SynchronizationContext.Current.Post(_ =>
             {

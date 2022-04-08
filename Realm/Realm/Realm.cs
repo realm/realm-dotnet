@@ -199,7 +199,7 @@ namespace Realms
             {
                 ThrowIfDisposed();
 
-                return SharedRealmHandle.IsInTransaction() || SharedRealmHandle.IsInAsyncTransaction();
+                return SharedRealmHandle.IsInTransaction();
             }
         }
 
@@ -790,9 +790,7 @@ namespace Realms
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
-            var transaction = await Transaction.BeginTransactionAsync(this);
-
-            return transaction;
+            return await Transaction.BeginTransactionAsync(this);
         }
 
         /// <summary>

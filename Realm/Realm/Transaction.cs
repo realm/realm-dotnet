@@ -42,7 +42,10 @@ namespace Realms
         internal static async Task<Transaction> BeginTransactionAsync(Realm realm)
         {
             var asyncHandle = await realm.SharedRealmHandle.BeginTransactionAsync();
-            return new Transaction(realm) { _asyncTransactionHandle = asyncHandle };
+            return new Transaction(realm)
+            {
+                _asyncTransactionHandle = asyncHandle
+            };
         }
 
         internal static Transaction BeginTransaction(Realm realm)
@@ -70,9 +73,9 @@ namespace Realms
         /// </summary>
         public void Rollback()
         {
-            EnsureActionFeasibility();
+            EnsureActionFeasibility("roll back");
 
-            if (!IsAsync())
+            if (_asyncTransactionHandle == null)
             {
                 _realm.SharedRealmHandle.CancelTransaction();
             }
@@ -90,53 +93,23 @@ namespace Realms
         /// </summary>
         public void Commit()
         {
-            EnsureActionFeasibility();
+            EnsureActionFeasibility("commit");
             _realm.SharedRealmHandle.CommitTransaction();
             FinishTransaction();
         }
 
         public async Task CommitAsync()
         {
-            EnsureActionFeasibility();
+            EnsureActionFeasibility("commit");
             _asyncTransactionHandle = await _realm.SharedRealmHandle.CommitTransactionAsync();
             FinishTransaction();
         }
 
-
-        // TODO andrea: check usefulness of this method
-        private bool IsAsync()
-        {
-            EnsureActionFeasibility();
-
-            Debug.Assert((_realm.SharedRealmHandle.IsInAsyncTransaction() && _asyncTransactionHandle != null) ||
-                (!_realm.SharedRealmHandle.IsInAsyncTransaction() && _asyncTransactionHandle == null),
-                @$"Either this transaction has an _asyncTransactionHandle but the realm its not in an async transaction
-or the other way around. Neither of the two can happen.
-_asyncTransactionHandle = {_asyncTransactionHandle }
-_realm.SharedRealmHandle.IsInTransactionAsync() = {_realm.SharedRealmHandle.IsInAsyncTransaction()}.");
-
-            return _asyncTransactionHandle != null;
-        }
-
-        private void EnsureActionFeasibility([CallerMemberName] string executingAction = "")
+        private void EnsureActionFeasibility(string executingAction)
         {
             if (_realm == null)
             {
-                var action = "unknown action";
-                if (executingAction.Contains("commit"))
-                {
-                    action = "commit";
-                }
-                else if (executingAction.Contains("rollback"))
-                {
-                    action = "roll back";
-                }
-                else if(executingAction.Contains("IsAsync"))
-                {
-                    action = "check if async";
-                }
-
-                throw new Exception($"Transaction was already closed. Cannot {action}");
+                throw new Exception($"Transaction was already closed. Cannot {executingAction}");
             }
         }
 

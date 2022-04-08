@@ -65,7 +65,7 @@ namespace binding {
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
-    std::function<HandleTaskCompletionCallbackT> s_handle_write_commit_async;
+    std::function<HandleTaskCompletionCallbackT> s_handle_task_completion;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -164,7 +164,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     DictionaryNotificationCallbackT* notify_dictionary,
     MigrationCallbackT* on_migration,
     ShouldCompactCallbackT* should_compact,
-    HandleTaskCompletionCallbackT* handle_write_commit_async)
+    HandleTaskCompletionCallbackT* handle_task_completion)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
@@ -175,7 +175,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
     s_on_migration = wrap_managed_callback(on_migration);
     s_should_compact = wrap_managed_callback(should_compact);
-    s_handle_write_commit_async = wrap_managed_callback(handle_write_commit_async);
+    s_handle_task_completion = wrap_managed_callback(handle_task_completion);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -377,10 +377,13 @@ REALM_EXPORT uint64_t shared_realm_get_schema_version(SharedRealm& realm, Native
 REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, void* tcs_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        
+        // notify_only is always set to true since we implement WriteAsync in terms of BeginWriteAsync and CommitAsync.
+        // Because of this. we never end the delegate passed to WriteAsync with the commit call  
         return realm->async_begin_transaction([tcs_ptr, ex]()
         {
-            s_handle_write_commit_async(tcs_ptr, ex);
-        }, true);
+            s_handle_task_completion(tcs_ptr, ex);
+        }, /* notify_only */ true);
     });
 }
 
@@ -392,8 +395,8 @@ REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, 
             if (err) {
                 nativeEx = convert_exception(err).for_marshalling();
             }
-            s_handle_write_commit_async(tcs_ptr, nativeEx);
-        }, false);
+            s_handle_task_completion(tcs_ptr, nativeEx);
+        }, /* allow_grouping */ false);
     });
 }
 
