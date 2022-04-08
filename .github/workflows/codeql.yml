@@ -6,6 +6,11 @@ name: CodeQL
   pull_request:
     branches:
     - main
+    paths:
+    - '**.cs'
+    - '**.cpp'
+    - '**.hpp'
+    - '**.csproj'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
@@ -58,12 +63,12 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Build Realm.Fody
-      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Debug
+      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm
-      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Debug
+      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Debug
+      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Debug
+      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
