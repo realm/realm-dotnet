@@ -166,7 +166,7 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;  // TODO needs to be removed later
 
-            _accessor = new ManagedAccessor(realm, objectHandle, metadata);
+            _accessor = ManagedAccessor.Create(realm, objectHandle, metadata);
 
             // This means that the object was unmanaged before, and we need to copy its properties to the realm
             // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call

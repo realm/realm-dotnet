@@ -33,7 +33,5 @@ namespace Realms
         ObjectHandle ObjectHandle { get; }
 
         RealmObjectBase.Metadata ObjectMetadata { get; }
-
-
     }
 }

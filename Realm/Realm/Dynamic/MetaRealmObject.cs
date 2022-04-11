@@ -36,7 +36,7 @@ namespace Realms.Dynamic
         private readonly Realm _realm;
         private readonly RealmObjectBase.Metadata _metadata;
 
-        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObjectBase).GetField("_realm", PrivateBindingFlags);
+        private static readonly PropertyInfo RealmObjectRealmField = typeof(RealmObjectBase).GetProperty("Realm", PrivateBindingFlags);
         private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObjectBase).GetField("_objectHandle", PrivateBindingFlags);
         private static readonly FieldInfo RealmObjectMetadataField = typeof(RealmObjectBase).GetField("_metadata", PrivateBindingFlags);
         private static readonly FieldInfo ObjectMetadataSchemaField = typeof(RealmObjectBase.Metadata).GetField(nameof(RealmObjectBase.Metadata.Schema), PrivateBindingFlags);
@@ -78,7 +78,7 @@ namespace Realms.Dynamic
             }
             else if (property.Type.IsList())
             {
-                arguments.Add(Expression.Field(self, RealmObjectRealmField));
+                arguments.Add(Expression.Property(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(property.Name));
                 arguments.Add(Expression.Constant(_metadata));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
@@ -100,7 +100,7 @@ namespace Realms.Dynamic
             }
             else if (property.Type.IsSet())
             {
-                arguments.Add(Expression.Field(self, RealmObjectRealmField));
+                arguments.Add(Expression.Property(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(property.Name));
                 arguments.Add(Expression.Constant(_metadata));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
@@ -122,7 +122,7 @@ namespace Realms.Dynamic
             }
             else if (property.Type.IsDictionary())
             {
-                arguments.Add(Expression.Field(self, RealmObjectRealmField));
+                arguments.Add(Expression.Property(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(property.Name));
                 arguments.Add(Expression.Constant(_metadata));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
@@ -221,7 +221,7 @@ namespace Realms.Dynamic
         private BindingRestrictions GetBindingRestrictions(Expression self)
         {
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, _metadata.Schema.IsEmbedded ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject));
-            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(self, RealmObjectRealmField), _realm);
+            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Property(self, RealmObjectRealmField), _realm);
             var argumentShouldBeTheSameType = BindingRestrictions.GetExpressionRestriction(
                 Expression.Equal(
                     Expression.Constant(_metadata.Schema.Name),

@@ -66,7 +66,7 @@ namespace Realms
 
         public RealmObjectBase.Dynamic DynamicApi => new(this);
 
-        public ManagedAccessor(Realm realm,
+        private ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
             RealmObjectBase.Metadata metadata)
         {
@@ -74,6 +74,13 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
+        }
+
+        public static ManagedAccessor Create(Realm realm,
+            ObjectHandle objectHandle,
+            RealmObjectBase.Metadata metadata)
+        {
+            return new ManagedAccessor(realm, objectHandle, metadata);
         }
 
         public RealmValue GetValue(string propertyName)
