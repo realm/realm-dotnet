@@ -52,6 +52,11 @@ namespace Realms
         {
             Argument.NotNull(realmObj, nameof(realmObj));
 
+            if (!realmObj.IsManaged)
+            {
+                throw new RealmException("Unmanaged objects cannot be frozen.");
+            }
+
             if (realmObj.IsFrozen)
             {
                 return realmObj;

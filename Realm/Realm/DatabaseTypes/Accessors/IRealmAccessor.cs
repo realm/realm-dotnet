@@ -58,7 +58,7 @@ namespace Realms
         IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase;
 
-        void SubscribeForNotifications();
+        void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate);
 
         void UnsubscribeFromNotifications();
 

@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Schema;
 
 namespace Realms
@@ -67,18 +68,13 @@ namespace Realms
 
         public ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
-            RealmObjectBase.Metadata metadata,
-            Action<string> notifyPropertyChangedDelegate)
+            RealmObjectBase.Metadata metadata)
         {
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
-            _onNotifyPropertyChanged = notifyPropertyChangedDelegate; //TODO Pass it through subscribteToNotifications()
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
         }
-
-        // TODO Unmanaged accessor will be generated so we can use fields. Managed one we can decide what do do if generated or not.
-        // Specialized managed accessor could come or not, so we can't hardcode 
 
         public RealmValue GetValue(string propertyName)
         {
@@ -136,9 +132,11 @@ namespace Realms
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
-        public void SubscribeForNotifications()
+        public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
+
+            _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
 
             if (IsFrozen)
             {
@@ -257,8 +255,9 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.ObjEquals(((IManagedAccessor)iro.Accessor).ObjectHandle);
+            return ObjectHandle.ObjEquals(iro.GetObjectHandle());
         }
+
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
     }
 }

@@ -118,7 +118,7 @@ namespace Realms
             _container[propertyName] = val;
         }
 
-        public void SubscribeForNotifications()
+        public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
         }
 

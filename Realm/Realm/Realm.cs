@@ -632,10 +632,6 @@ namespace Realms
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            //TODO In source generator OnManaged can be a partial void method (the other partial implemented by users)
-            //TODO Specific accessors for SG classes (hidden as nested classes)
-            //TODO For now it's ok to keep the UnmnanagedAccessor with dictionary, but we need to clean it before GA
-
             obj.SetOwner(this, handle, metadata, true, false, true);
         }
 

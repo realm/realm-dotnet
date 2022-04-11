@@ -41,6 +41,7 @@ namespace Realms
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
         : IRealmObject,
+          IRealmAccessible,
           INotifyPropertyChanged,
           IReflectableType
     {
@@ -84,7 +85,7 @@ namespace Realms
 
         // TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
         [IgnoreDataMember, XmlIgnore]
-        public IRealmAccessor Accessor => _accessor;
+        IRealmAccessor IRealmObject.Accessor => _accessor;
 
         /// <summary>
         /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
@@ -92,14 +93,14 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
         [IgnoreDataMember]
-        public bool IsManaged => Accessor.IsManaged;
+        public bool IsManaged => _accessor.IsManaged;
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
         [IgnoreDataMember]
-        public Dynamic DynamicApi => Accessor.DynamicApi;
+        public Dynamic DynamicApi => _accessor.DynamicApi;
 
         /// <summary>
         /// Gets a value indicating whether this object is managed and represents a row in the database.
@@ -109,7 +110,7 @@ namespace Realms
         /// </summary>
         /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
         [IgnoreDataMember]
-        public bool IsValid => Accessor.IsValid;
+        public bool IsValid => _accessor.IsValid;
 
         /// <summary>
         /// Gets a value indicating whether this object is frozen. Frozen objects are immutable
@@ -119,21 +120,21 @@ namespace Realms
         /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         [IgnoreDataMember]
-        public bool IsFrozen => Accessor.IsFrozen;
+        public bool IsFrozen => _accessor.IsFrozen;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
         [IgnoreDataMember]
-        public Realm Realm => Accessor.Realm;
+        public Realm Realm => _accessor.Realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
         /// <summary>
         /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
@@ -143,7 +144,7 @@ namespace Realms
         /// </remarks>
         /// <value>The number of objects referring to this one.</value>
         [IgnoreDataMember]
-        public int BacklinksCount => Accessor.BacklinksCount;
+        public int BacklinksCount => _accessor.BacklinksCount;
 
         internal RealmObjectBase()
         {
@@ -165,7 +166,7 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;  // TODO needs to be removed later
 
-            _accessor = new ManagedAccessor(realm, objectHandle, metadata, RaisePropertyChanged);
+            _accessor = new ManagedAccessor(realm, objectHandle, metadata);
 
             // This means that the object was unmanaged before, and we need to copy its properties to the realm
             // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
@@ -184,7 +185,7 @@ namespace Realms
         }
 
         // TODO This will be the new SetOwner
-        void IRealmObject.SetManagedAccessor(IRealmAccessor accessor)
+        void IRealmAccessible.SetManagedAccessor(IRealmAccessor accessor)
         {
         }
 
@@ -192,45 +193,45 @@ namespace Realms
 
         protected RealmValue GetValue(string propertyName)
         {
-            return Accessor.GetValue(propertyName);
+            return _accessor.GetValue(propertyName);
         }
 
         protected void SetValue(string propertyName, RealmValue val)
         {
-            Accessor.SetValue(propertyName, val);
+            _accessor.SetValue(propertyName, val);
         }
 
         protected void SetValueUnique(string propertyName, RealmValue val)
         {
-            Accessor.SetValueUnique(propertyName, val);
+            _accessor.SetValueUnique(propertyName, val);
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
         {
-            return Accessor.GetListValue<T>(propertyName);
+            return _accessor.GetListValue<T>(propertyName);
         }
 
         protected internal ISet<T> GetSetValue<T>(string propertyName)
         {
-            return Accessor.GetSetValue<T>(propertyName);
+            return _accessor.GetSetValue<T>(propertyName);
         }
 
         protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            return Accessor.GetDictionaryValue<TValue>(propertyName);
+            return _accessor.GetDictionaryValue<TValue>(propertyName);
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase
         {
-            return Accessor.GetBacklinks<T>(propertyName);
+            return _accessor.GetBacklinks<T>(propertyName);
         }
 
         // TODO This is still like this because it's used by dynamic API
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
             where T : RealmObjectBase
         {
-            return (Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
+            return (_accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
 #pragma warning restore SA1600 // Elements should be documented
@@ -242,7 +243,7 @@ namespace Realms
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => Accessor.GetBacklinks(objectType, property);
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => _accessor.GetBacklinks(objectType, property);
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -259,7 +260,7 @@ namespace Realms
                 return true;
             }
 
-            return Accessor.ObjectEquals(obj);
+            return _accessor.ObjectEquals(obj);
         }
 
         /// <inheritdoc/>
@@ -267,7 +268,7 @@ namespace Realms
         {
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
-            return Accessor.HashCode ?? base.GetHashCode();
+            return _accessor.HashCode ?? base.GetHashCode();
         }
 
         /// <summary>
@@ -276,7 +277,7 @@ namespace Realms
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return Accessor.GetStringDescription(GetType().Name);
+            return _accessor.GetStringDescription(GetType().Name);
         }
 
         /// <summary>
@@ -334,12 +335,12 @@ namespace Realms
 
         private void SubscribeForNotifications()
         {
-            Accessor.SubscribeForNotifications();
+            _accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            Accessor.UnsubscribeFromNotifications();
+            _accessor.UnsubscribeFromNotifications();
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
@@ -349,7 +350,7 @@ namespace Realms
             return TypeInfoHelper.GetInfo(this);
         }
 
-        // TODO Should probably move it out of this class, to its own file and rename to RealmObjectMetadata
+        // TODO Move it out of this class, to its own file and rename to RealmObjectMetadata
         internal class Metadata
         {
             internal readonly TableKey TableKey;
