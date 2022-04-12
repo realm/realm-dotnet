@@ -42,9 +42,6 @@ name: "CodeQL"
       - '**.cpp'
       - '**.hpp'
       - '**.csproj'
-      - '**CMakeLists.txt'
-      - 'wrappers/build.ps1'
-      - '.github/workflows/codeql.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:

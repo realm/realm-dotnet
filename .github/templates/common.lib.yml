@@ -17,6 +17,11 @@
 #@ actionDeployBaaS = "realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7"
 #@ actionCleanupBaaS = "realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7"
 
+#@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
+#@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
+#@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM', 'ARM64' ]
+#@ iOSArchs = [ 'Simulator', 'Device' ]
+
 #@ actionDockerLayerCaching = "satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97" #! 0.0.11
 #@ actionDockerBuild = "docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b" #! 2.7.0
 #@ actionDockerRun = "addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609" #! v3
@@ -29,7 +34,59 @@
 #@ actionMergePR = "juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d" #! 1.0.6
 
 #@ mainBranch = "main"
+---
 
+#@ def setupNugetCache(projectPaths = []):
+#@ globs = []
+#@ for projectPath in projectPaths:
+#@   globs.append("'" + projectPath + "/*.csproj'")
+#@ end
+uses: actions/cache@v2
+with:
+  path: ~/.nuget/packages
+  key: #@ "${{ runner.os }}-nuget-${{ hashFiles(" + ", ".join(globs) + ") }}"
+#@ end
+---
+#@ def msbuild(projectPath, **properties):
+#@ return msBuildMultiple([projectPath], **properties)
+#@ end
+
+#@ def msBuildMultiple(projectPaths, **properties):
+#@ parsedProps = ""
+#@ target = ""
+#@ for prop in properties.keys():
+#@  if prop == "target":
+#@    target = " -t:" + properties[prop]
+#@  else:
+#@    parsedProps += " -p:" + prop + "=" + properties[prop]
+#@  end
+#@ end
+#@
+- name: Add msbuild to PATH
+  uses: #@ actionSetupMSBuild
+  if: ${{ runner.os == 'Windows' }}
+- #@ setupNugetCache(projectPaths)
+#@ for projectPath in projectPaths:
+- name: #@ "Build " + projectPath
+  run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
+#@ end
+#@ end
+---
+#@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
+
+#@ def dotnetPublish(projectPath, framework, properties = {}):
+#@ propsArg = ""
+#@ for prop in properties.keys():
+#@   propsArg += " -p:" + prop + "=" + properties[prop]
+#@ end
+  - #@ setupNugetCache([ projectPath ])
+  - name: #@ "Publish " + projectPath
+    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + dotnetRuntime + propsArg + " --no-self-contained"
+  - name: Output executable path
+    id: dotnet-publish
+    run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + dotnetRuntime + "'"
+#@ end
+---
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
   - name: Checkout code
     uses: #@ actionCheckout
@@ -57,7 +114,7 @@
   - name: Download all artifacts
     uses: #@ actionDownloadAllArtifacts
     with:
-      workflow: main.yml
+      workflow: pr.yml
       commit: ${{ github.sha }}
       path: ${{ github.workspace }}/Realm/packages/
       workflow_conclusion: #@ conclusion
@@ -73,7 +130,7 @@
     shell: bash
 #@ end
 
-#@ def configureS3Credentials(accessKey, secretKey, region = "us-east-1"):
+#@ def configureAWSCredentials(accessKey, secretKey, region = "us-east-1"):
   - name: Configure AWS Credentials
     uses: #@ actionAWSConfigureCredentials
     with:
@@ -90,7 +147,7 @@
       include-prerelease: true
   - name: Install sleet
     run: dotnet tool install -g sleet
-  - #@ template.replace(configureS3Credentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY"))
+  - #@ template.replace(configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY"))
 #@ for pkg in [ "Realm.Fody", "Realm" ]:
 #@ pkg = pkg + ".${{ " + versionExpression + " }}"
 #@ pkgPath = "" if expectShortPath else pkg + "/"
@@ -102,4 +159,38 @@
 #@ def cleanupWorkspace():
   - name: Cleanup Workspace
     run: rm -rf "${{ github.workspace }}/*"
+#@ end
+
+#@ def getWrapperBinaryNames():
+#@ wrapperPlatforms = [ 'macos', 'ios', 'linux' ]
+#@ for androidABI in androidABIs:
+#@   wrapperPlatforms.append("android-" + androidABI)
+#@ end
+#@ for windowsArch in windowsArchs:
+#@   wrapperPlatforms.append("windows-" + windowsArch)
+#@ end
+#@ for uwpArch in windowsUWPArchs:
+#@   wrapperPlatforms.append("windows-uwp-" + uwpArch)
+#@ end
+#@
+#@ return wrapperPlatforms
+#@ end
+
+#@ def fetchWrapperBinaries():
+#@ for platform in getWrapperBinaryNames():
+  - name: #@ "Fetch artifacts for " + platform
+    uses: #@ actionDownloadArtifact
+    with:
+      name: #@ "wrappers-" + platform
+      path: wrappers/build
+#@ end
+#@ end
+---
+#@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
+name: #@ "Store artifacts for " + artifactName
+uses: #@ actionUploadArtifact
+with:
+  name: #@ artifactName
+  path: #@ "${{ github.workspace }}/" + relPath
+  retention-days: #@ retentionDays
 #@ end
