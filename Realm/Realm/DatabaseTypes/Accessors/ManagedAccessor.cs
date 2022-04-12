@@ -36,7 +36,7 @@ namespace Realms
 
         private ObjectHandle _objectHandle;
 
-        private RealmObjectBase.Metadata _metadata;
+        private Metadata _metadata;
 
         private NotificationTokenHandle _notificationToken;
 
@@ -44,7 +44,7 @@ namespace Realms
 
         public ObjectHandle ObjectHandle => _objectHandle;
 
-        public RealmObjectBase.Metadata ObjectMetadata => _metadata;
+        public Metadata ObjectMetadata => _metadata;
 
         public bool IsManaged => true;
 
@@ -62,13 +62,13 @@ namespace Realms
 
         public IThreadConfinedHandle Handle => _objectHandle;
 
-        public RealmObjectBase.Metadata Metadata => _metadata;
+        public Metadata Metadata => _metadata;  //TODO Why we have two metadata in this class??
 
         public RealmObjectBase.Dynamic DynamicApi => new(this);
 
         private ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
-            RealmObjectBase.Metadata metadata)
+            Metadata metadata)
         {
             _realm = realm;
             _objectHandle = objectHandle;
@@ -78,7 +78,7 @@ namespace Realms
 
         public static ManagedAccessor Create(Realm realm,
             ObjectHandle objectHandle,
-            RealmObjectBase.Metadata metadata)
+            Metadata metadata)
         {
             return new ManagedAccessor(realm, objectHandle, metadata);
         }

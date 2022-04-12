@@ -51,7 +51,7 @@ namespace Realms
 
         internal readonly Lazy<CollectionHandleBase> Handle;
 
-        internal readonly RealmObjectBase.Metadata Metadata;
+        internal readonly Metadata Metadata;
 
         internal bool IsDynamic;
 
@@ -112,7 +112,7 @@ namespace Realms
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
-        RealmObjectBase.Metadata IMetadataObject.Metadata => Metadata;
+        Metadata IMetadataObject.Metadata => Metadata;
 
         [IgnoreDataMember]
         public bool IsManaged => Realm != null;
@@ -141,7 +141,7 @@ namespace Realms
             }
         }
 
-        internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
+        internal RealmCollectionBase(Realm realm, Metadata metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);

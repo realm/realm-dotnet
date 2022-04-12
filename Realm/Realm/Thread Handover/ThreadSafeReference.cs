@@ -46,7 +46,7 @@ namespace Realms
     {
         internal readonly ThreadSafeReferenceHandle Handle;
 
-        internal readonly RealmObjectBase.Metadata Metadata;
+        internal readonly Metadata Metadata;
 
         internal readonly Type ReferenceType;
 

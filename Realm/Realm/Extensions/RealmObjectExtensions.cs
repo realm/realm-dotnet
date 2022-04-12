@@ -27,7 +27,7 @@ namespace Realms.Extensions
             return (iro.Accessor as IManagedAccessor)?.ObjectHandle;
         }
 
-        public static RealmObjectBase.Metadata GetObjectMetadata(this IRealmObject iro)
+        public static Metadata GetObjectMetadata(this IRealmObject iro)
         {
             return (iro.Accessor as IManagedAccessor)?.ObjectMetadata;
         }

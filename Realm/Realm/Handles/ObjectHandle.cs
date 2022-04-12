@@ -136,7 +136,7 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        public RealmValue GetValue(string propertyName, RealmObjectBase.Metadata metadata, Realm realm)
+        public RealmValue GetValue(string propertyName, Metadata metadata, Realm realm)
         {
             EnsureIsOpen();
 
@@ -168,7 +168,7 @@ namespace Realms
             return result;
         }
 
-        public void SetValue(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value, Realm realm)
+        public void SetValue(string propertyName, Metadata metadata, in RealmValue value, Realm realm)
         {
             EnsureIsOpen();
 
@@ -209,7 +209,7 @@ namespace Realms
             return result;
         }
 
-        public void SetValueUnique(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value)
+        public void SetValueUnique(string propertyName, Metadata metadata, in RealmValue value)
         {
             EnsureIsOpen();
 
@@ -235,7 +235,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public RealmList<T> GetList<T>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
+        public RealmList<T> GetList<T>(Realm realm, string propertyName, Metadata metadata, string objectType)
         {
             EnsureIsOpen();
 
@@ -248,7 +248,7 @@ namespace Realms
             return new RealmList<T>(realm, listHandle, objectMetadata);
         }
 
-        public RealmSet<T> GetSet<T>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
+        public RealmSet<T> GetSet<T>(Realm realm, string propertyName, Metadata metadata, string objectType)
         {
             EnsureIsOpen();
 
@@ -261,7 +261,7 @@ namespace Realms
             return new RealmSet<T>(realm, setHandle, objectMetadata);
         }
 
-        public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, string propertyName, RealmObjectBase.Metadata metadata, string objectType)
+        public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, string propertyName, Metadata metadata, string objectType)
         {
             EnsureIsOpen();
 
@@ -274,7 +274,7 @@ namespace Realms
             return new RealmDictionary<TValue>(realm, dictionaryHandle, objectMetadata);
         }
 
-        public ObjectHandle CreateEmbeddedObjectForProperty(string propertyName, RealmObjectBase.Metadata metadata)
+        public ObjectHandle CreateEmbeddedObjectForProperty(string propertyName, Metadata metadata)
         {
             EnsureIsOpen();
 
@@ -284,7 +284,7 @@ namespace Realms
             return new ObjectHandle(Root, objPtr);
         }
 
-        public ResultsHandle GetBacklinks(string propertyName, RealmObjectBase.Metadata metadata)
+        public ResultsHandle GetBacklinks(string propertyName, Metadata metadata)
         {
             EnsureIsOpen();
 
@@ -295,7 +295,7 @@ namespace Realms
             return new ResultsHandle(Root, resultsPtr);
         }
 
-        public ResultsHandle GetBacklinksForType(TableKey tableKey, string propertyName, RealmObjectBase.Metadata metadata)
+        public ResultsHandle GetBacklinksForType(TableKey tableKey, string propertyName, Metadata metadata)
         {
             EnsureIsOpen();
 
@@ -343,7 +343,7 @@ namespace Realms
             return new ObjectHandle(frozenRealmHandle, result);
         }
 
-        private static IntPtr GetPropertyIndex(string propertyName, RealmObjectBase.Metadata metadata)
+        private static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
         {
             if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
             {

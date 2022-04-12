@@ -34,10 +34,10 @@ namespace Realms.Dynamic
         private const BindingFlags PrivateBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
         private readonly Realm _realm;
-        private readonly RealmObjectBase.Metadata _metadata;
+        private readonly Metadata _metadata;
 
         private static readonly PropertyInfo RealmObjectRealmProperty = typeof(RealmObjectBase).GetProperty(nameof(RealmObjectBase.Realm), PrivateBindingFlags);
-        private static readonly FieldInfo ObjectMetadataSchemaField = typeof(RealmObjectBase.Metadata).GetField(nameof(RealmObjectBase.Metadata.Schema), PrivateBindingFlags);
+        private static readonly FieldInfo ObjectMetadataSchemaField = typeof(Metadata).GetField(nameof(Metadata.Schema), PrivateBindingFlags);
         private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags).GetMethod;
 
         private static readonly MethodInfo RealmObjectGetBacklinksForHandle_RealmObject = typeof(DynamicRealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
@@ -265,22 +265,22 @@ namespace Realms.Dynamic
         }
 
         // GetBacklinks(propertyIndex)
-        private static MethodInfo GetGetMethod<TResult>(Func<string, RealmObjectBase.Metadata, TResult> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetGetMethod<TResult>(Func<string, Metadata, TResult> @delegate) => @delegate.GetMethodInfo();
 
         // GetValue(propertyName, metadata)
-        private static MethodInfo GetGetMethod<TResult>(Func<string, RealmObjectBase.Metadata, Realm, TResult> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetGetMethod<TResult>(Func<string, Metadata, Realm, TResult> @delegate) => @delegate.GetMethodInfo();
 
         // GetList(realm, propertyName, metadata, objectType)
         // GetSet(realm, propertyName, metadata, objectType)
         // GetDictionary(realm, propertyName, metadata, objectType)
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, string, RealmObjectBase.Metadata, string, TResult> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, string, Metadata, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private delegate void SetUniqueDelegate(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value);
+        private delegate void SetUniqueDelegate(string propertyName, Metadata metadata, in RealmValue value);
 
         // SetValueUnique(propertyName, metadata)
         private static MethodInfo GetSetMethod<TValue>(SetUniqueDelegate @delegate) => @delegate.GetMethodInfo();
 
-        private delegate void SetValueDelegate(string propertyName, RealmObjectBase.Metadata metadata, in RealmValue value, Realm realm);
+        private delegate void SetValueDelegate(string propertyName, Metadata metadata, in RealmValue value, Realm realm);
 
         // SetValue
         private static MethodInfo GetSetMethod<TValue>(SetValueDelegate @delegate) => @delegate.GetMethodInfo();

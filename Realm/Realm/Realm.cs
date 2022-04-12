@@ -329,7 +329,7 @@ namespace Realms
             DynamicApi = new Dynamic(this);
         }
 
-        private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
+        private Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
             var tableKey = SharedRealmHandle.GetTableKey(schema.Name);
             Weaving.IRealmObjectHelper helper;
@@ -361,7 +361,7 @@ namespace Realms
                 initPropertyMap[prop.Name] = (IntPtr)index;
             }
 
-            return new RealmObjectBase.Metadata(tableKey, helper, initPropertyMap, schema);
+            return new Metadata(tableKey, helper, initPropertyMap, schema);
         }
 
         /// <summary>
@@ -522,7 +522,7 @@ namespace Realms
             return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
         }
 
-        internal IRealmObject MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
+        internal IRealmObject MakeObject(Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
             ret.SetManagedAccessor(ManagedAccessor.Create(this, objectHandle, metadata));
@@ -1437,30 +1437,30 @@ namespace Realms
 
         internal class RealmMetadata
         {
-            private readonly Dictionary<string, RealmObjectBase.Metadata> stringToRealmObjectMetadataDict;
-            private readonly Dictionary<TableKey, RealmObjectBase.Metadata> tableKeyToRealmObjectMetadataDict;
+            private readonly Dictionary<string, Metadata> stringToRealmObjectMetadataDict;
+            private readonly Dictionary<TableKey, Metadata> tableKeyToRealmObjectMetadataDict;
 
-            public IEnumerable<RealmObjectBase.Metadata> Values => stringToRealmObjectMetadataDict.Values;
+            public IEnumerable<Metadata> Values => stringToRealmObjectMetadataDict.Values;
 
-            public RealmMetadata(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            public RealmMetadata(IEnumerable<Metadata> objectsMetadata)
             {
-                stringToRealmObjectMetadataDict = new Dictionary<string, RealmObjectBase.Metadata>();
-                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, RealmObjectBase.Metadata>();
+                stringToRealmObjectMetadataDict = new Dictionary<string, Metadata>();
+                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, Metadata>();
 
                 Add(objectsMetadata);
             }
 
-            public bool TryGetValue(string objectType, out RealmObjectBase.Metadata metadata) =>
+            public bool TryGetValue(string objectType, out Metadata metadata) =>
                 stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata);
 
-            public bool TryGetValue(TableKey tablekey, out RealmObjectBase.Metadata metadata) =>
+            public bool TryGetValue(TableKey tablekey, out Metadata metadata) =>
                 tableKeyToRealmObjectMetadataDict.TryGetValue(tablekey, out metadata);
 
-            public RealmObjectBase.Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
+            public Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
 
-            public RealmObjectBase.Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
+            public Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
 
-            public void Add(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            public void Add(IEnumerable<Metadata> objectsMetadata)
             {
                 foreach (var objectMetadata in objectsMetadata)
                 {

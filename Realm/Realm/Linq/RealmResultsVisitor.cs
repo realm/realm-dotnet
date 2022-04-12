@@ -33,7 +33,7 @@ namespace Realms
     internal class RealmResultsVisitor : ExpressionVisitor
     {
         private readonly Realm _realm;
-        private readonly RealmObjectBase.Metadata _metadata;
+        private readonly Metadata _metadata;
 
         private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         private SortDescriptorHandle _sortDescriptor;
@@ -80,7 +80,7 @@ namespace Realms
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, RealmObjectBase.Metadata metadata)
+        internal RealmResultsVisitor(Realm realm, Metadata metadata)
         {
             _realm = realm;
             _metadata = metadata;

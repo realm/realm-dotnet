@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -29,9 +28,7 @@ using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Extensions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
-using Realms.Weaving;
 
 namespace Realms
 {
@@ -39,7 +36,7 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true)]
-    public abstract class RealmObjectBase
+    public abstract partial class RealmObjectBase
         : IRealmObject,
           IRealmAccessible,
           INotifyPropertyChanged,
@@ -150,7 +147,6 @@ namespace Realms
         /// </summary>
         ~RealmObjectBase()
         {
-            // TODO Probably we can dispose the Accessor here
             UnsubscribeFromNotifications();
         }
 
@@ -327,26 +323,6 @@ namespace Realms
         public TypeInfo GetTypeInfo()
         {
             return TypeInfoHelper.GetInfo(this);
-        }
-
-        // TODO Move it out of this class, to its own file and rename to RealmObjectMetadata
-        internal class Metadata
-        {
-            internal readonly TableKey TableKey;
-
-            internal readonly IRealmObjectHelper Helper;
-
-            internal readonly IReadOnlyDictionary<string, IntPtr> PropertyIndices;
-
-            internal readonly ObjectSchema Schema;
-
-            public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
-            {
-                TableKey = tableKey;
-                Helper = helper;
-                PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
-                Schema = schema;
-            }
         }
 
         /// <summary>

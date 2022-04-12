@@ -16,17 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Realms.Native;
+using Realms.Schema;
+using Realms.Weaving;
+
 namespace Realms
 {
-    internal interface IManagedAccessor
-        : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
+    internal class Metadata
     {
-        IThreadConfinedHandle Handle { get; }
+        internal readonly TableKey TableKey;
 
-        Metadata Metadata { get; }
+        internal readonly IRealmObjectHelper Helper;
 
-        ObjectHandle ObjectHandle { get; }
+        internal readonly IReadOnlyDictionary<string, IntPtr> PropertyIndices;
 
-        Metadata ObjectMetadata { get; }
+        internal readonly ObjectSchema Schema;
+
+        public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
+        {
+            TableKey = tableKey;
+            Helper = helper;
+            PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
+            Schema = schema;
+        }
     }
 }
