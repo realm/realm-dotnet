@@ -1414,22 +1414,7 @@ namespace Realms
                 throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
             }
 
-            if (SyncSession == null)
-            {
-                if (config is SyncConfigurationBase syncConfig)
-                {
-                    SharedRealmHandle.ExortTo(syncConfig.CreateNativeConfiguration(), syncConfig.EncryptionKey, syncConfig.CreateNativeSyncConfiguration(), syncConfig.GetSchema());
-                }
-                else
-                {
-                    SharedRealmHandle.ExortTo(config.CreateNativeConfiguration(), config.EncryptionKey, null, null);
-                }
-            }
-            else
-            {
-                var copyIsSync = config is SyncConfigurationBase;
-                SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey, copyIsSync);
-            }
+            SharedRealmHandle.WriteCopy(config);
         }
 
         #region Transactions

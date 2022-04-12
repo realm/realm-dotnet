@@ -155,18 +155,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_realm_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_export_to_local", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void export_to_local(SharedRealmHandle sharedRealm, Configuration configuration, byte[] encryptionKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_export_to_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void export_to_sync(SharedRealmHandle sharedRealm, Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
-            [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
-            [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
-            byte[] encryptionKey,
-            out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, bool copyIsSync, out NativeException ex);
+            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, IntPtr sync_configuration, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
@@ -533,24 +523,21 @@ namespace Realms
             return result;
         }
 
-        public void ExortTo(Configuration configuration, byte[] encryptionKey, Sync.Native.SyncConfiguration? syncConfiguration = null, RealmSchema schema = null)
+        public void WriteCopy(RealmConfigurationBase config)
         {
-            if (syncConfiguration is Sync.Native.SyncConfiguration syncConfg && schema != null)
+            var syncConfiguration = IntPtr.Zero;
+            if (config is SyncConfigurationBase syncConfig)
             {
-                var marshaledSchema = new SchemaMarshaler(schema);
-                NativeMethods.export_to_sync(this, configuration, syncConfg, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
-                nativeException.ThrowIfNecessary();
+                var configHandle = GCHandle.Alloc(syncConfig.CreateNativeSyncConfiguration());
+                syncConfiguration = GCHandle.ToIntPtr(configHandle);
             }
             else
             {
-                NativeMethods.export_to_local(this, configuration, encryptionKey, out var nativeException);
-                nativeException.ThrowIfNecessary();
+                syncConfiguration = IntPtr.Zero;
             }
-        }
 
-        public void WriteCopy(string path, byte[] encryptionKey, bool copyIsSync)
-        {
-            NativeMethods.write_copy(this, path, (IntPtr)path.Length, encryptionKey, copyIsSync, out var nativeException);
+
+            NativeMethods.write_copy(this, config.CreateNativeConfiguration(), syncConfiguration, config.EncryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
