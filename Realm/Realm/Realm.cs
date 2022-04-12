@@ -525,7 +525,7 @@ namespace Realms
         internal IRealmObject MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret.SetOwner(this, objectHandle, metadata);
+            ret.SetManagedAccessor(ManagedAccessor.Create(this, objectHandle, metadata));
             return ret;
         }
 

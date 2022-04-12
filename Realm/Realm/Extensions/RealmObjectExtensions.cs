@@ -16,6 +16,8 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Extensions
 {
     internal static class RealmObjectExtensions
@@ -28,6 +30,12 @@ namespace Realms.Extensions
         public static RealmObjectBase.Metadata GetObjectMetadata(this IRealmObject iro)
         {
             return (iro.Accessor as IManagedAccessor)?.ObjectMetadata;
+        }
+
+        //TODO Later, when we move everything to RealmObjectBase, this can be removed
+        public static void SetManagedAccessor(this IRealmObject iro, IRealmAccessor accessor, Action copyToRealmAction = null)
+        {
+            ((IRealmAccessible)iro).SetManagedAccessor(accessor, copyToRealmAction);
         }
     }
 }

@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Linq;
+using System;
 using Realms.Schema;
 
 namespace Realms
 {
-    public interface IRealmObject: IRealmAccessible
+    public interface IRealmObject : IRealmAccessible
     {
-        IRealmAccessor Accessor { get; } //Implemented explicitly for RealmObjectBase
+        IRealmAccessor Accessor { get; }
 
         bool IsManaged { get; }
 
@@ -38,6 +38,6 @@ namespace Realms
 
     public interface IRealmAccessible  // TODO Suggestions for name?
     {
-        void SetManagedAccessor(IRealmAccessor acccessor);
+        void SetManagedAccessor(IRealmAccessor acccessor, Action copyToRealmAction = null);
     }
 }

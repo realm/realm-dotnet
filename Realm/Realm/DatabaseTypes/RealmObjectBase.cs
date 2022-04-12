@@ -45,12 +45,6 @@ namespace Realms
           INotifyPropertyChanged,
           IReflectableType
     {
-        private Realm _realm;  // TODO These 3 fields need to be removed later (here to continue supporting the metadataRealmObject)
-
-        private ObjectHandle _objectHandle;
-
-        private Metadata _metadata;
-
         private IRealmAccessor _accessor;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
@@ -160,21 +154,31 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata, bool needAddToRealm = false, bool update = false, bool skipDefaults = false)
+        //internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata, bool needAddToRealm = false, bool update = false, bool skipDefaults = false)
+        //{
+        //    _accessor = ManagedAccessor.Create(realm, objectHandle, metadata);
+
+        //    // This means that the object was unmanaged before, and we need to copy its properties to the realm
+        //    // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
+        //    // also I'm not sure why we can't put this before setting the ManagedAccessor
+        //    if (needAddToRealm)
+        //    {
+        //        metadata.Helper.CopyToRealm(this, update, skipDefaults);
+        //    }
+
+        //    if (_propertyChanged != null)
+        //    {
+        //        SubscribeForNotifications();
+        //    }
+
+        //    OnManaged();
+        //}
+
+        void IRealmAccessible.SetManagedAccessor(IRealmAccessor accessor, Action copyToRealmAction)
         {
-            _realm = realm;
-            _objectHandle = objectHandle;
-            _metadata = metadata;  // TODO needs to be removed later
+            _accessor = accessor;
 
-            _accessor = ManagedAccessor.Create(realm, objectHandle, metadata);
-
-            // This means that the object was unmanaged before, and we need to copy its properties to the realm
-            // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
-            // also I'm not sure why we can't put this before setting the ManagedAccessor
-            if (needAddToRealm)
-            {
-                metadata.Helper.CopyToRealm(this, update, skipDefaults);
-            }
+            copyToRealmAction?.Invoke();
 
             if (_propertyChanged != null)
             {
@@ -182,11 +186,6 @@ namespace Realms
             }
 
             OnManaged();
-        }
-
-        // TODO This will be the new SetOwner
-        void IRealmAccessible.SetManagedAccessor(IRealmAccessor accessor)
-        {
         }
 
 #pragma warning disable SA1600 // Elements should be documented
