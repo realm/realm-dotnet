@@ -4,13 +4,13 @@
 * None
 
 ### Fixed
-* None
+* Fixed corruption bugs when encryption is used. (Core Issue [#5360](https://github.com/realm/realm-core/issues/5360))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.14.0.
 
 ## 10.11.1 (2022-03-31)
 
