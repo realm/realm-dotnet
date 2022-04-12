@@ -154,26 +154,6 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        //internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata, bool needAddToRealm = false, bool update = false, bool skipDefaults = false)
-        //{
-        //    _accessor = ManagedAccessor.Create(realm, objectHandle, metadata);
-
-        //    // This means that the object was unmanaged before, and we need to copy its properties to the realm
-        //    // TODO Can't just check if _accessor is set or not because even if initialized lazily, it gets initialized before this method call
-        //    // also I'm not sure why we can't put this before setting the ManagedAccessor
-        //    if (needAddToRealm)
-        //    {
-        //        metadata.Helper.CopyToRealm(this, update, skipDefaults);
-        //    }
-
-        //    if (_propertyChanged != null)
-        //    {
-        //        SubscribeForNotifications();
-        //    }
-
-        //    OnManaged();
-        //}
-
         void IRealmAccessible.SetManagedAccessor(IRealmAccessor accessor, Action copyToRealmAction)
         {
             _accessor = accessor;
