@@ -162,7 +162,10 @@ with:
 #@ end
 
 #@ def getWrapperBinaryNames():
-#@ wrapperPlatforms = [ 'macos', 'ios', 'linux' ]
+#@ wrapperPlatforms = [ 'macos', 'linux' ]
+#@ for iOSArch in iOSArchs:
+#@   wrapperPlatforms.append("ios-" + iOSArch)
+#@ end
 #@ for androidABI in androidABIs:
 #@   wrapperPlatforms.append("android-" + androidABI)
 #@ end

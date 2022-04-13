@@ -17,8 +17,9 @@ jobs:
       CACHE_SKIP_SAVE: true
     outputs:
       wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
-      wrappers-ios: ${{ steps.check-cache-ios.outputs.cache-hit }}
       wrappers-linux: ${{ steps.check-cache-linux.outputs.cache-hit }}
+      wrappers-ios-Simulator: ${{ steps.check-cache-ios-Simulator.outputs.cache-hit }}
+      wrappers-ios-Device: ${{ steps.check-cache-ios-Device.outputs.cache-hit }}
       wrappers-android-armeabi-v7a: ${{ steps.check-cache-android-armeabi-v7a.outputs.cache-hit }}
       wrappers-android-arm64-v8a: ${{ steps.check-cache-android-arm64-v8a.outputs.cache-hit }}
       wrappers-android-x86: ${{ steps.check-cache-android-x86.outputs.cache-hit }}
@@ -52,22 +53,6 @@ jobs:
       if: matrix.os == 'ubuntu' && steps.check-cache-macos.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for ios
-      id: check-cache-ios
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
-      with:
-        path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
-      if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-ios
-      uses: actions/upload-artifact@v2
-      with:
-        name: wrappers-ios
-        path: ${{ github.workspace }}/wrappers/build/**
-        retention-days: 1
-      if: matrix.os == 'ubuntu' && steps.check-cache-ios.outputs.cache-hit == 'true'
-    - run: git clean -fdx
-      if: matrix.os == 'ubuntu'
     - name: Check cache for linux
       id: check-cache-linux
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
@@ -82,6 +67,38 @@ jobs:
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
       if: matrix.os == 'ubuntu' && steps.check-cache-linux.outputs.cache-hit == 'true'
+    - run: git clean -fdx
+      if: matrix.os == 'ubuntu'
+    - name: Check cache for ios-Simulator
+      id: check-cache-ios-Simulator
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Simulator-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == 'ubuntu'
+    - name: Store artifacts for wrappers-ios-Simulator
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-ios-Simulator
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: matrix.os == 'ubuntu' && steps.check-cache-ios-Simulator.outputs.cache-hit == 'true'
+    - run: git clean -fdx
+      if: matrix.os == 'ubuntu'
+    - name: Check cache for ios-Device
+      id: check-cache-ios-Device
+      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-ios-Device-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == 'ubuntu'
+    - name: Store artifacts for wrappers-ios-Device
+      uses: actions/upload-artifact@v2
+      with:
+        name: wrappers-ios-Device
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+      if: matrix.os == 'ubuntu' && steps.check-cache-ios-Device.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for android-armeabi-v7a
@@ -288,9 +305,9 @@ jobs:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
-  ios-frameworks:
+  ios:
     runs-on: macos-latest
-    name: iOS frameworks
+    name: iOS
     strategy:
       matrix:
         arch:
@@ -299,36 +316,7 @@ jobs:
     timeout-minutes: 90
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-ios != 'true'
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Check cache
-      id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
-      with:
-        path: ./wrappers/cmake/**/realm-wrappers.framework
-        key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
-    - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework -Configuration Release
-      if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: wrappers-ios-${{ matrix.arch }}
-        path: ${{ github.workspace }}/wrappers/cmake/**/realm-wrappers.framework
-        retention-days: 1
-  ios:
-    runs-on: macos-latest
-    name: iOS XCframework
-    needs:
-    - check-cache
-    - ios-frameworks
-    if: needs.check-cache.outputs.wrappers-ios != 'true'
-    timeout-minutes: 90
+    if: needs.check-cache.outputs.wrappers-ios-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -340,31 +328,14 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Release-${{hashFiles('./wrappers/**')}}
-    - name: Fetch Framework for Simulator
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-ios-Simulator
-        path: wrappers/cmake
+        key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Fetch Framework for Device
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-ios-Device
-        path: wrappers/cmake
-      if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Create xcframework
-      run: |
-        $build_directory = "${{ github.workspace }}/wrappers/cmake/iOS"
-        $install_prefix = "${{ github.workspace }}/wrappers/build"
-        $xcframework_path = "$install_prefix/iOS/Release/realm-wrappers.xcframework"
-        xcodebuild -create-xcframework -framework $build_directory/src/Release-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/Release-iphoneos/realm-wrappers.framework -output "$xcframework_path"
-      shell: powershell
-      if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts for wrappers-ios
+    - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
       uses: actions/upload-artifact@v2
       with:
-        name: wrappers-ios
+        name: wrappers-ios-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
   linux:
