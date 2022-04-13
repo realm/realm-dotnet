@@ -40,11 +40,11 @@ namespace Realms.Dynamic
         private static readonly FieldInfo ObjectMetadataSchemaField = typeof(Metadata).GetField(nameof(Metadata.Schema), PrivateBindingFlags);
         private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags).GetMethod;
 
-        private static readonly MethodInfo RealmObjectGetBacklinksForHandle_RealmObject = typeof(DynamicRealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
-                                                                                            .MakeGenericMethod(typeof(DynamicRealmObject));
+        private static readonly MethodInfo RealmObjectGetBacklinksForHandle_RealmObject = typeof(RealmObjectExtensions)
+            .GetMethod(nameof(RealmObjectExtensions.GetBacklinksForHandle), BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(DynamicRealmObject));
 
-        private static readonly MethodInfo RealmObjectGetBacklinksForHandle_EmbeddedObject = typeof(DynamicRealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
-                                                                                              .MakeGenericMethod(typeof(DynamicEmbeddedObject));
+        private static readonly MethodInfo RealmObjectGetBacklinksForHandle_EmbeddedObject = typeof(RealmObjectExtensions)
+           .GetMethod(nameof(RealmObjectExtensions.GetBacklinksForHandle), BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(DynamicEmbeddedObject));
 
         private static readonly MethodInfo RealmValueGetMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.As), BindingFlags.Public | BindingFlags.Instance);
         private static readonly MethodInfo CreateRealmValueMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.Create), BindingFlags.NonPublic | BindingFlags.Static);
@@ -161,8 +161,8 @@ namespace Realms.Dynamic
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
                 expression = IsTargetEmbedded(property)
-                    ? Expression.Call(self, RealmObjectGetBacklinksForHandle_EmbeddedObject, Expression.Constant(binder.Name), expression)
-                    : Expression.Call(self, RealmObjectGetBacklinksForHandle_RealmObject, Expression.Constant(binder.Name), expression);
+                    ? Expression.Call(RealmObjectGetBacklinksForHandle_EmbeddedObject, self, Expression.Constant(binder.Name), expression)
+                    : Expression.Call(RealmObjectGetBacklinksForHandle_RealmObject, self, Expression.Constant(binder.Name), expression);
             }
 
             if (expression.Type == typeof(RealmValue))

@@ -202,13 +202,6 @@ namespace Realms
             return _accessor.GetBacklinks<T>(propertyName);
         }
 
-        // TODO This is still like this because it's used by dynamic API
-        internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
-            where T : RealmObjectBase
-        {
-            return (_accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
-        }
-
 #pragma warning restore SA1600 // Elements should be documented
 
         /// <summary>

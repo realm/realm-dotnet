@@ -32,10 +32,17 @@ namespace Realms.Extensions
             return (iro.Accessor as IManagedAccessor)?.ObjectMetadata;
         }
 
-        //TODO Later, when we move everything to RealmObjectBase, this can be removed
+        //TODO Later, when we move everything to IRealmObject, this can be removed
         public static void SetManagedAccessor(this IRealmObject iro, IRealmAccessor accessor, Action copyToRealmAction = null)
         {
             ((IRealmAccessible)iro).SetManagedAccessor(accessor, copyToRealmAction);
+        }
+
+        //TODO Check if this will work even with T: IRealmObject
+        public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObject iro, string propertyName, ResultsHandle resultsHandle)
+            where T : RealmObjectBase
+        {
+            return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
     }
 }
