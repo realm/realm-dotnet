@@ -18,7 +18,6 @@
 
 
 #include "error_handling.hpp"
-#include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "shared_realm_cs.hpp"
 #include "notifications_cs.hpp"
@@ -48,7 +47,7 @@ using namespace realm::sync;
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
-using OnBindingContextDestructedT = void(void* managed_handle);
+using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
@@ -60,24 +59,18 @@ namespace binding {
     std::function<OpenRealmCallbackT> s_open_realm_callback;
     std::function<RealmChangedT> s_realm_changed;
     std::function<GetNativeSchemaT> s_get_native_schema;
-    std::function<OnBindingContextDestructedT> s_on_binding_context_destructed;
+    std::function<ReleaseGCHandleT> s_release_gchandle;
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
 
     std::atomic<bool> s_can_call_managed;
 
-    CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
+    CSharpBindingContext::CSharpBindingContext(GCHandleHolder managed_state_handle) : m_managed_state_handle(std::move(managed_state_handle)) {}
 
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
     {
-        s_realm_changed(m_managed_state_handle);
-    }
-
-    CSharpBindingContext::~CSharpBindingContext()
-    {
-        s_on_binding_context_destructed(m_managed_state_handle);
-        m_realm_schema = realm::Schema();
+        s_realm_changed(m_managed_state_handle.handle());
     }
 
     void log_message(std::string message, util::Logger::Level level)
@@ -148,6 +141,10 @@ inline SharedRealm* new_realm(SharedRealm realm)
 
     return new SharedRealm(realm);
 }
+
+extern void apply_guid_representation_fix(SharedRealm&, bool& found_non_v4_uuid, bool& found_guid_columns);
+
+extern bool requires_guid_representation_fix(SharedRealm&);
 }
 
 extern "C" {
@@ -158,7 +155,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     RealmChangedT* realm_changed, 
     GetNativeSchemaT* get_schema, 
     OpenRealmCallbackT* open_callback, 
-    OnBindingContextDestructedT* on_binding_context_destructed,
+    ReleaseGCHandleT* release_gchandle_callback,
     LogMessageT* log_message,
     ObjectNotificationCallbackT* notify_object,
     DictionaryNotificationCallbackT* notify_dictionary,
@@ -168,7 +165,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
     s_open_realm_callback = wrap_managed_callback(open_callback);
-    s_on_binding_context_destructed = wrap_managed_callback(on_binding_context_destructed);
+    s_release_gchandle = wrap_managed_callback(release_gchandle_callback);
     s_log_message = wrap_managed_callback(log_message);
     realm::s_object_notification_callback = wrap_managed_callback(notify_object);
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
@@ -181,7 +178,6 @@ REALM_EXPORT void shared_realm_install_callbacks(
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-
         Realm::Config config;
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
@@ -198,7 +194,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::Immutable;
         } else if (configuration.delete_if_migration_needed) {
-            config.schema_mode = SchemaMode::ResetFile;
+            config.schema_mode = SchemaMode::SoftResetFile;
         }
 
         if (objects_length > 0) {
@@ -237,8 +233,33 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         }
 
         config.cache = configuration.enable_cache;
-
-        return new_realm(Realm::get_shared_realm(std::move(config)));
+        auto realm = Realm::get_shared_realm(std::move(config));
+        if (!configuration.use_legacy_guid_representation && requires_guid_representation_fix(realm)) {
+            if (configuration.read_only) {
+                static constexpr char message_format[] = "Realm at path %1 may contain legacy guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
+                log_message(
+                    util::format(message_format, realm->config().path),
+                    realm::util::Logger::Level::warn);
+            }
+            else {
+                bool found_non_v4_uuid = false;
+                bool found_guid_columns = false;
+                apply_guid_representation_fix(realm, found_non_v4_uuid, found_guid_columns);
+                if (found_non_v4_uuid) {
+                    static constexpr char message_format[] = "Realm at path %1 was found to contain Guid values in little-endian format and was automatically migrated to store them in big-endian format.";
+                    log_message(
+                        util::format(message_format, realm->config().path),
+                        realm::util::Logger::Level::info);
+                }
+                else if (found_guid_columns) {
+                    static constexpr char message_format[] = "Realm at path %1 was not marked as having migrated its Guid values, but none of the values appeared to be in little-endian format. The Realm was marked as migrated, but the values have not been modified.";
+                    log_message(
+                        util::format(message_format, realm->config().path),
+                        realm::util::Logger::Level::warn);
+                }
+            }
+        }
+        return new_realm(std::move(realm));
     });
 }
 

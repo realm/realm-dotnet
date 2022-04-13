@@ -53,7 +53,7 @@
     <!-- macOS -->
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Pack>true</Pack>
-      <PackagePath>runtimes\osx-x64\native</PackagePath>
+      <PackagePath>runtimes\osx\native</PackagePath>
       <Link>wrappers\Darwin\%(Filename)%(Extension)</Link>
     </None>
     <!-- Linux -->
@@ -94,6 +94,11 @@
       <PackagePath>runtimes\win-x64\native</PackagePath>
       <Link>wrappers\Windows\x64\%(Filename)%(Extension)</Link>
     </None>
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-ARM64\realm-wrappers.dll">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-arm64\native</PackagePath>
+      <Link>wrappers\Windows\ARM64\%(Filename)%(Extension)</Link>
+    </None>
     <!-- WindowsStore -->
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
@@ -109,6 +114,11 @@
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-arm\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\ARM\%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM64\realm-wrappers.dll">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win10-arm64\nativeassets\uap10.0</PackagePath>
+      <Link>wrappers\WindowsStore\ARM64\%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
   <ItemGroup>

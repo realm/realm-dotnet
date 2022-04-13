@@ -1,6 +1,82 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* Fixed corruption bugs when encryption is used. (Core Issue [#5360](https://github.com/realm/realm-core/issues/5360))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
+## 10.11.1 (2022-03-31)
+
+### Fixed
+* Fixed an issue that would cause the managed HttpClientHandler to be used in Xamarin applications, even if the project is configured to use the native one. (Issue [#2892](https://github.com/realm/realm-dotnet/issues/2892))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
+
+## 10.11.0 (2022-03-28)
+
+### Enhancements
+* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
+* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
+* Added a property `AppConfiguration.HttpClientHandler` that allows you to override the default http client handler used by the Realm .NET SDK to make http calls. Note that this only affects the behavior of http calls, such as user login, function calls, and remote mongodb calls. The sync client uses a native websocket implementation and will not use the provided message handler. (Issue [#2865](https://github.com/realm/realm-dotnet/issues/2865))
+
+### Fixed
+* [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
+* Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
+* Query parser would not accept "in" as a property name (Core Issue [#5312](https://github.com/realm/realm-core/issues/5312))
+* Application would sometimes crash with exceptions like 'KeyNotFound' or assertion "has_refs()". Other issues indicating file corruption may also be fixed by this. The one mentioned here is the one that lead to solving the problem. (Core Issue [#5283](https://github.com/realm/realm-core/issues/5283))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
+* Enabled running Benchmarks on iOS devices by turning on the interpreter for some windows assemblies.
+
+## 10.10.0 (2022-02-28)
+
+### Guid representation issue
+
+This release fixes a major bug in the way Guid values are stored in the database. It provides an automatic migration for local (non-synchronized) databases, but extra caution is needed when upgrading an app that uses Sync.
+
+#### **Context**
+
+A Guid is represented by 4 components - `int`, `short`, `short`, and a `byte[8]`. Microsoft's Guids diverge from the UUID spec in that they encode the first three components with the endianness of the system (little-endian for all modern CPUs), while UUIDs encode their components as big-endian. The end result is that the same bytes have a different string representations when interpreted as a `Guid` by the .NET SDK vs when interpreted as a `UUID` by the Realm Database - e.g. `f2952191-a847-41c3-8362-497f92cb7d24` vs `912195f2-47a8-c341-8362-497f92cb7d24` (note the swapping of bytes in the first three components). You can see the issue by opening a database created by the .NET SDK in Realm Studio and inspecting the values for Guid properties.
+
+#### **Fix**
+
+The fix we're providing is to adjust the behavior of the .NET SDK to read/write Guids to the database with big-endian representation. This means that the SDK and the database will consistently display the same values. This has some implications which are described in the Local- and Synchronized Realms sections.
+
+#### **Local Realms**
+
+For local Realms, we're executing a one-time migration the first time the Realm is opened with the new SDK. During this migration, we'll update all Guid fields to big-endian format. This means that their string representation will remain the same, but the value in the database will change to match it. This means that the upgrade process should be seamless, but if you decide to downgrade to an older version of the SDK, you'll see the byte order get flipped. The migration will not execute multiple times, even if you downgrade.
+
+#### **Synchronized Realms**
+
+There's no client migration provided for synchronized Realms. This is because the distributed nature of the system would mean that there will inevitably be a period of inconsistent state. Instead, the values of the `Guid` properties are read as they're already stored in the database, meaning the string representation will be flipped compared to previous versions of the SDK but it will now match the representation in Atlas/Compass/Realm Studio. There are three general groups your app will fall under:
+* If you don't care about the string values of Guid properties on the client, then you don't need to do anything. The values will still be unique and valid Guids.
+* If you do use the string guid values from the client app - e.g. to correlate user ids with a CMS, but have complete control over your client devices - e.g. because this an internal company app, then it's advised that you execute a one-time migration of the data in Atlas and force all users to upgrade to the latest version of the app.
+* If you can't force all users to update at the same time, you can do a live migration by adding an extra property for each Guid property that you have and write a trigger function that will migrate the data between the two. The old version of the app will write to the original property, while the new version will write to the new property and the trigger will convert between the two.
+
+If you are using sync and need to update to the latest version of the SDK but are not ready to migrate your data yet, see the `Opting out` section.
+
+#### **Opting out**
+
+If for some reason, you want to opt out of the fixed behavior, you can temporarily opt out of it by setting the `Realm.UseLegacyGuidRepresentation` property to `true`. This is not recommended but can be used when you need more time to test out the migration while still getting bugfixes and other improvements. Setting it to `true` does two things:
+1. It brings back the pre-10.10.0 behavior of reading/writing Guid values with little-endian representation.
+1. It disables the migration code for local Realms. Note that it will not revert the migration if you already opened the Realm file when `UseLegacyGuidRepresentation` was set to `false`.
+
+### Enhancements
 * Lifted a limitation that would prevent you from changing the primary key of objects during a migration. It is now possible to do it with both the dynamic and the strongly-typed API:
   ```csharp
   var config = new RealmConfiguration
@@ -23,12 +99,13 @@
 * Fixed a bug that would lead to unnecessary metadata allocation when freezing a realm. (Issue [#2789](https://github.com/realm/realm-dotnet/issues/2789))
 * Fixed an issue that would cause Realm-managed objects (e.g. `RealmObject`, list, results, and so on) allocated during a migration block to keep the Realm open until they are garbage collected. This had subtle implications, such as being unable to delete the Realm shortly after a migration or being unable to open the Realm with a different configuration. (PR [#2795](https://github.com/realm/realm-dotnet/pull/2795))
 * Fixed an issue that prevented Unity3D's IL2CPP compiler to correctly process one of Realm's dependencies. (Issue [#2666](https://github.com/realm/realm-dotnet/issues/2666))
+* Fixed the osx runtime path in the Realm NuGet package to also apply to Apple Silicon (universal) architectures (Issue [#2732](https://github.com/realm/realm-dotnet/issues/2732))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.8.0
+* Using Core 11.10.0
 
 ## 10.9.0 (2022-01-21)
 

@@ -34,6 +34,7 @@ namespace Realms.Native
         private enum CustomErrorCode
         {
             NoError = 0,
+            HttpClientDisposed = 997,
             UnknownHttp = 998,
             Unknown = 999,
             Timeout = 1000,
@@ -64,9 +65,25 @@ namespace Realms.Native
 
             private PrimitiveValue body;
 
+            private IntPtr managed_http_client;
+
             public string Url => url.AsString();
 
             public string Body => body.AsString();
+
+            public HttpClient HttpClient
+            {
+                get
+                {
+                    if (managed_http_client != IntPtr.Zero &&
+                        GCHandle.FromIntPtr(managed_http_client).Target is HttpClient client)
+                    {
+                        return client;
+                    }
+
+                    throw new ObjectDisposedException("HttpClient has been disposed, most likely because the app has been closed.");
+                }
+            }
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -104,8 +121,6 @@ namespace Realms.Native
 
 #pragma warning restore SA1300 // Element should begin with upper-case letter
 
-        private static readonly HttpClient _httpClient = new HttpClient();
-
         internal static void Initialize()
         {
             execute_request execute = ExecuteRequest;
@@ -122,6 +137,8 @@ namespace Realms.Native
             {
                 try
                 {
+                    var httpClient = request.HttpClient;
+
                     using var message = new HttpRequestMessage(request.method.ToHttpMethod(), request.Url);
                     foreach (var header in StringStringPair.UnmarshalDictionary(request.headers, request.headers_len.ToInt32()))
                     {
@@ -135,7 +152,7 @@ namespace Realms.Native
 
                     using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
-                    var response = await _httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
+                    var response = await httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
                     var headers = new List<StringStringPair>(response.Headers.Count());
                     foreach (var header in response.Headers)
                     {
@@ -190,6 +207,16 @@ namespace Realms.Native
                     {
                         custom_status_code = CustomErrorCode.Timeout,
                         Body = $"Operation failed to complete within {request.timeout_ms} ms.",
+                    };
+
+                    respond(nativeResponse, null, 0, callback);
+                }
+                catch (ObjectDisposedException ode)
+                {
+                    var nativeResponse = new HttpClientResponse
+                    {
+                        custom_status_code = CustomErrorCode.HttpClientDisposed,
+                        Body = ode.Message,
                     };
 
                     respond(nativeResponse, null, 0, callback);

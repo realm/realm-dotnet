@@ -962,6 +962,12 @@ namespace Realms.Tests.Database
         [Test]
         public void Realm_HittingMaxNumberOfVersions_Throws()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Use legacy representation to avoid writing to the Realm when opening it as that
+            // would already hit the max version limit.
+            Realm.UseLegacyGuidRepresentation = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 MaxNumberOfActiveVersions = 1

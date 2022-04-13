@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -40,14 +41,20 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, PrimitiveValue message);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void SessionPropertyChangedCallback(IntPtr managed_session, NotifiableProperty property);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
+            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, SessionPropertyChangedCallback property_changed_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user(SessionHandle session);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern SessionState get_state(SessionHandle session, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_connection_state", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ConnectionState get_connection_state(SessionHandle session, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_path", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path(SessionHandle session, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
@@ -68,6 +75,12 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_register_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern SessionNotificationToken register_property_changed_callback(IntPtr session, IntPtr managed_session_handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_property_changed_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unregister_property_changed_callback(IntPtr session, SessionNotificationToken token, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
@@ -84,6 +97,8 @@ namespace Realms.Sync
             public static extern void start(SessionHandle session, out NativeException ex);
         }
 
+        private SessionNotificationToken? _notificationToken;
+
         public override bool ForceRootOwnership => true;
 
         [Preserve]
@@ -96,12 +111,14 @@ namespace Realms.Sync
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
             NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
+            NativeMethods.SessionPropertyChangedCallback propertyChanged = HandleSessionPropertyChangedCallback;
 
             GCHandle.Alloc(error);
             GCHandle.Alloc(progress);
             GCHandle.Alloc(wait);
+            GCHandle.Alloc(propertyChanged);
 
-            NativeMethods.install_syncsession_callbacks(error, progress, wait);
+            NativeMethods.install_syncsession_callbacks(error, progress, wait, propertyChanged);
         }
 
         public bool TryGetUser(out SyncUserHandle userHandle)
@@ -122,6 +139,13 @@ namespace Realms.Sync
             var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
+        }
+
+        public ConnectionState GetConnectionState()
+        {
+            var connectionState = NativeMethods.get_connection_state(this, out var ex);
+            ex.ThrowIfNecessary();
+            return connectionState;
         }
 
         public string GetPath()
@@ -145,6 +169,26 @@ namespace Realms.Sync
         {
             NativeMethods.unregister_progress_notifier(this, token, out var ex);
             ex.ThrowIfNecessary();
+        }
+
+        public void SubscribeNotifications(Session session)
+        {
+            Debug.Assert(!_notificationToken.HasValue, $"{nameof(_notificationToken)} must be null before subscribing.");
+
+            var managedSessionHandle = GCHandle.Alloc(session, GCHandleType.Weak);
+            var sessionPointer = GCHandle.ToIntPtr(managedSessionHandle);
+            _notificationToken = NativeMethods.register_property_changed_callback(handle, sessionPointer, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public void UnsubscribeNotifications()
+        {
+            if (_notificationToken.HasValue)
+            {
+                NativeMethods.unregister_property_changed_callback(handle, _notificationToken.Value, out var ex);
+                _notificationToken = null;
+                ex.ThrowIfNecessary();
+            }
         }
 
         public async Task WaitAsync(ProgressDirection direction)
@@ -196,7 +240,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public override void Unbind() => NativeMethods.destroy(handle);
+        public override void Unbind()
+        {
+            UnsubscribeNotifications();
+            NativeMethods.destroy(handle);
+        }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset)
@@ -255,6 +303,39 @@ namespace Realms.Sync
                 const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
                 tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.SessionPropertyChangedCallback))]
+        private static void HandleSessionPropertyChangedCallback(IntPtr managedSessionHandle, NotifiableProperty property)
+        {
+            try
+            {
+                if (managedSessionHandle == null)
+                {
+                    return;
+                }
+
+                var propertyName = property switch
+                {
+                    NotifiableProperty.ConnectionState => nameof(Session.ConnectionState),
+                    _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
+                };
+                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target;
+
+                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    session.RaisePropertyChanged(propertyName);
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while raising a property changed event: {ex}");
+            }
+        }
+
+        private enum NotifiableProperty : byte
+        {
+            ConnectionState = 0,
         }
     }
 }

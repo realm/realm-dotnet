@@ -23,7 +23,7 @@ namespace Realms.Sync
     /// </summary>
     internal enum SchemaMode : byte
     {
-        AdditiveDiscovered = 4,
-        AdditiveExplicit = 5
+        AdditiveDiscovered = 5,
+        AdditiveExplicit = 6
     }
 }

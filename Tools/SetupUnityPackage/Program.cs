@@ -344,12 +344,14 @@ namespace SetupUnityPackage
                 arguments = command;
             }
 
+#pragma warning disable CA1416
             var runner = Process.Start(new ProcessStartInfo
             {
                 FileName = fileName,
                 WorkingDirectory = packageBasePath,
                 Arguments = arguments,
             });
+#pragma warning restore CA1416
 
             runner.WaitForExit();
         }

@@ -20,12 +20,19 @@
 #define TRANSPORT_CS_HPP
 
 #include <realm/object-store/sync/generic_network_transport.hpp>
+#include "shared_realm_cs.hpp"
 
 using namespace realm::app;
 
 namespace realm {
 namespace binding {
-    extern std::shared_ptr<GenericNetworkTransport> s_transport;
+struct HttpClientTransport: public GenericNetworkTransport {
+public:
+    HttpClientTransport(GCHandleHolder managed_http_client);
+    void send_request_to_server(Request&& request, util::UniqueFunction<void(const Response&)>&& completionBlock) override;
+private:
+    GCHandleHolder m_managed_http_client;
+};
 }
 }
 

@@ -24,9 +24,8 @@ Push-Location $build_directory
 if (-Not $Incremental) {
     Remove-Item * -Recurse -Force -ErrorAction Ignore > $null
     cmake "$PSScriptRoot" -DCMAKE_BUILD_TYPE=$Configuration -GXcode `
-        -DCMAKE_SYSTEM_NAME=iOS `
         -DCMAKE_XCODE_ATTRIBUTE_DYLIB_INSTALL_NAME_BASE='@rpath' `
-        -DCMAKE_TOOLCHAIN_FILE="$PSScriptRoot"'/realm-core/tools/cmake/ios.toolchain.cmake' `
+        -DCMAKE_TOOLCHAIN_FILE="$PSScriptRoot"'/realm-core/tools/cmake/xcode.toolchain.cmake' `
         -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$PSScriptRoot"'/build/$(PLATFORM_NAME)/$<CONFIG>' `
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="$EnableLTO"
     if ($LASTEXITCODE -ne 0) {

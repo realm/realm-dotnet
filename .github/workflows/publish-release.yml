@@ -13,7 +13,7 @@ jobs:
     - name: Download all artifacts
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
-        workflow: main.yml
+        workflow: pr.yml
         commit: ${{ github.sha }}
         path: ${{ github.workspace }}/Realm/packages/
         workflow_conclusion: completed
@@ -36,7 +36,7 @@ jobs:
         $versions = "${{ steps.get-version.outputs.version }}", "latest"
         Foreach ($ver in $versions)
         {
-          aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/realm-sdks/dotnet/$ver/
+          aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
         }
     - name: NuGet Publish Realm.Fody.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

@@ -33,6 +33,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "_realm_flip_guid_for_testing", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void flip_guid_for_testing([In, Out] byte[] guid_bytes);
+
         private static int _isInitialized;
 
         internal static void Initialize()
@@ -95,22 +98,22 @@ namespace Realms
             {
                 var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location);
 
-                var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, getArchitecture()));
+                // Unity doesn't support arm/arm64 builds for windows - only through UWP, so we're not
+                // special-casing the naming there.
+                var architecture = RuntimeInformation.ProcessArchitecture switch
+                {
+                    Architecture.X86 => "x86",
+                    Architecture.X64 => isUnityTarget ? "x86_64" : "x64",
+                    Architecture.Arm64 => "arm64",
+                    _ => throw new NotSupportedException($"Unknown architecture: {RuntimeInformation.ProcessArchitecture}"),
+                };
+
+                var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, architecture));
                 var path = expectedFilePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
                 Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.Process);
             }
             catch
             {
-            }
-
-            string getArchitecture()
-            {
-                if (!Environment.Is64BitProcess)
-                {
-                    return "x86";
-                }
-
-                return isUnityTarget ? "x86_64" : "x64";
             }
         }
     }
