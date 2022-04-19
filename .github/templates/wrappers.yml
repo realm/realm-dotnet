@@ -93,6 +93,8 @@ jobs:
       matrix:
         arch: #@ iOSArchs
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }}", "wrappers-ios-${{ matrix.arch }}", enableLto = False))
+    #@yaml/map-key-override
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-ios-" + x + " != 'true'" for x in iOSArchs ])
   linux:
     runs-on: ubuntu-latest
     name: Linux

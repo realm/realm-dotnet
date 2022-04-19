@@ -316,7 +316,6 @@ jobs:
     timeout-minutes: 90
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-ios-${{ matrix.arch }} != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -338,6 +337,7 @@ jobs:
         name: wrappers-ios-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+    if: needs.check-cache.outputs.wrappers-ios-Simulator != 'true' || needs.check-cache.outputs.wrappers-ios-Device != 'true'
   linux:
     runs-on: ubuntu-latest
     name: Linux
