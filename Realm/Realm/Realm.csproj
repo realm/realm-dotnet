@@ -39,19 +39,19 @@
     </None>
     <!-- iOS -->
     <None Update="ios-dllmap.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
-    <Content Include="wrappers-props\xamarinios\wrappers.props" Pack="true" PackagePath="build\xamarinios\wrappers.props" />
+    <Content Include="wrappers-props\xamarinios\wrappers.props" Pack="true" PackagePath="build\xamarinios\Realm.props" />
     <None Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework\**">
       <Pack>true</Pack>
-      <PackagePath>runtimes\ios\native</PackagePath>
+      <PackagePath>runtimes\ios\native\realm-wrappers.framework</PackagePath>
       <Link>wrappers\iphoneos\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
     <None Include="..\..\wrappers\build\iphonesimulator\$(Configuration)\realm-wrappers.framework\**">
       <Pack>true</Pack>
-      <PackagePath>runtimes\iossimulator\native</PackagePath>
+      <PackagePath>runtimes\iossimulator\native\realm-wrappers.framework</PackagePath>
       <Link>wrappers\iphonesimulator\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
     <!-- macOS -->
-    <Content Include="wrappers-props\xamarinmac\wrappers.props" Pack="true" PackagePath="build\xamarinmac\wrappers.props" />
+    <Content Include="wrappers-props\xamarinmac\wrappers.props" Pack="true" PackagePath="build\xamarinmac\Realm.props" />
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Pack>true</Pack>
       <PackagePath>runtimes\osx\native</PackagePath>
@@ -64,7 +64,7 @@
       <Link>wrappers\Linux\%(Filename)%(Extension)</Link>
     </None>
     <!-- Android -->
-    <Content Include="wrappers-props\monoandroid\wrappers.props" Pack="true" PackagePath="build\monoandroid\wrappers.props" />
+    <Content Include="wrappers-props\monoandroid\wrappers.props" Pack="true" PackagePath="build\monoandroid\Realm.props" />
     <None Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\android-arm\native</PackagePath>
@@ -86,7 +86,7 @@
       <Link>wrappers\Android\x86_64\%(Filename)%(Extension)</Link>
     </None>
     <!-- Windows -->
-    <Content Include="wrappers-props\net46\wrappers.props" Pack="true" PackagePath="build\net46\wrappers.props" />
+    <Content Include="wrappers-props\net46\wrappers.props" Pack="true" PackagePath="build\net46\Realm.props" />
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win-x86\native</PackagePath>
