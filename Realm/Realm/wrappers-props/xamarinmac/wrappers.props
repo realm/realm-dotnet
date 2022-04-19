@@ -3,7 +3,7 @@
     <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
   </PropertyGroup>
   <ItemGroup>
-    <NativeReference Include="$(_RealmNugetRuntimesPath)osx-x64\native\librealm-wrappers.dylib">
+    <NativeReference Include="$(_RealmNugetRuntimesPath)osx\native\librealm-wrappers.dylib">
       <Kind>Dynamic</Kind>
     </NativeReference>
   </ItemGroup>
