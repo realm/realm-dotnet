@@ -169,7 +169,7 @@ catch (Exception ex)
 
   <Target Name="ExtractChangelogToPack" BeforeTargets="GenerateNuspec" Condition="'$(CI)' == 'true'">
     <Message Text="Extracting release note" />
-    <ExtractChangelog FilePath="$(ProjectDir)\..\..\CHANGELOG.md">
+    <ExtractChangelog FilePath="..\..\CHANGELOG.md">
       <Output TaskParameter="ExtractedText" PropertyName="PackageReleaseNotes" />
     </ExtractChangelog>
   </Target>
