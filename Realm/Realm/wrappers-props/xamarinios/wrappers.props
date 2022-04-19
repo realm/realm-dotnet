@@ -3,11 +3,11 @@
     <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
   </PropertyGroup>
   <ItemGroup>
-    <NativeReference Include="$(_RealmNugetRuntimesPath)ios\native\realm-wrappers.xcframework" Condition=" '$(Platform)' == 'iPhone' ">
+    <NativeReference Include="$(_RealmNugetRuntimesPath)ios\native\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhone' ">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
-    <NativeReference Include="$(_RealmNugetRuntimesPath)iossimulator\native\realm-wrappers.xcframework" Condition=" '$(Platform)' == 'iPhoneSimulator' ">
+    <NativeReference Include="$(_RealmNugetRuntimesPath)iossimulator\native\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhoneSimulator' ">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

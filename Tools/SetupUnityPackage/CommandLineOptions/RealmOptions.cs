@@ -68,7 +68,7 @@ namespace SetupUnityPackage
                 { "runtimes/iossimulator/native/realm-wrappers.framework/Info.plist", "Runtime/iOS/Simulator/realm-wrappers.framework/Info.plist" },
                 { "runtimes/iossimulator/native/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/Simulator/realm-wrappers.framework/realm-wrappers" },
                 { "runtimes/iossimulator/native/realm-wrappers.framework/_CodeSignature/CodeResources", "Runtime/iOS/Simulator/realm-wrappers.framework/_CodeSignature/CodeResources" },
-                { "runtimes/osx-x64/native/librealm-wrappers.dylib", "Runtime/macOS/librealm-wrappers.dylib" },
+                { "runtimes/osx/native/librealm-wrappers.dylib", "Runtime/macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Runtime/Linux/librealm-wrappers.so" },
                 { "runtimes/android-arm/native/librealm-wrappers.so", "Runtime/Android/armeabi-v7a/librealm-wrappers.so" },
                 { "runtimes/android-arm64/native/librealm-wrappers.so", "Runtime/Android/arm64-v8a/librealm-wrappers.so" },
