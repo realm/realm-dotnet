@@ -790,6 +790,11 @@ namespace Realms
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
+            if (!AsyncHelper.HasValidContext)
+            {
+                return BeginWrite();
+            }
+
             return await Transaction.BeginTransactionAsync(this);
         }
 

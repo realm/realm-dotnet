@@ -295,5 +295,142 @@ namespace Realms.Tests.Database
                 Assert.That(queryable.First().FullName, Is.EqualTo(personName));
             });
         }
+
+        [Test]
+        public void AsyncBeginWrite_StackReferencedNativeException_Does_Not_Throw()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                using var tokenSource2 = new CancellationTokenSource();
+                CancellationToken ct = tokenSource2.Token;
+                var t = Task.Run(async () =>
+                {
+                    var realm = GetRealm();
+                    var transaction = await realm.BeginWriteAsync();
+                    while (true)
+                    {
+                        await Task.Delay(1000);
+                    }
+                }, ct);
+
+                // give time for the lock to be acquired from the other task
+                await Task.Delay(2000);
+
+                Exception ex = null;
+
+                try
+                {
+                    await _realm.BeginWriteAsync();
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                Assert.That(ex, Is.Null);
+                tokenSource2.Cancel();
+            });
+        }
+
+        [Test]
+        public void AsyncBeginWrite_Throws_User_Exception()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                InvalidCastException ex = null;
+                try
+                {
+                    await _realm.WriteAsync(() =>
+                    {
+                        char ch = Convert.ToChar(true);
+                    });
+                }
+                catch(InvalidCastException e)
+                {
+                    ex = e;
+                }
+
+                Assert.That(ex, Is.InstanceOf<InvalidCastException>().And.Message.EqualTo("Invalid cast from 'Boolean' to 'Char'."));
+
+            });
+        }
+
+        // FIXME: tasks will not be executed in the order they are written,
+        // so make sure all run to the end and the order was recorded
+        [Test]
+        public void AsyncWrite_Fifo_Order_Respected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var pA = new Person { FirstName = "Anderson" };
+                var pB = new Person { FirstName = "Banderson" };
+                var pC = new Person { FirstName = "Canderson" };
+                var pD = new Person { FirstName = "Danderson" };
+                var pE = new Person { FirstName = "Enderson" };
+
+                var realm = GetRealm();
+
+                await realm.WriteAsync(() =>
+                {
+                    realm.Add(pA);
+                });
+
+                var t1 = Task.Run(async () =>
+                {
+                    var realm = GetRealm();
+                    await realm.WriteAsync(() =>
+                    {
+                        realm.Add(pB);
+                    });
+                });
+
+                var t2 = Task.Run(async () =>
+                {
+                    var realm = GetRealm();
+                    await realm.WriteAsync(() =>
+                    {
+                        realm.Add(pC);
+                    });
+                });
+
+                var t3 = Task.Run(async () =>
+                {
+                    var realm = GetRealm();
+                    await realm.WriteAsync(() =>
+                    {
+                        realm.Add(pD);
+                    });
+                });
+
+                var t4 = Task.Run(async () =>
+                {
+                    var realm = GetRealm();
+                    await realm.WriteAsync(() =>
+                    {
+                        realm.Add(pE);
+                    });
+                    var allPeople = realm.All<Person>().ToArray();
+
+                    Assert.That(allPeople.Length, Is.EqualTo(5));
+                    Assert.That(allPeople[0].FirstName, Is.EqualTo("Anderson"));
+                    Assert.That(allPeople[1].FirstName, Is.EqualTo("Banderson"));
+                    Assert.That(allPeople[2].FirstName, Is.EqualTo("Canderson"));
+                    Assert.That(allPeople[3].FirstName, Is.EqualTo("Danderson"));
+                });
+
+                t1.Wait();
+                t2.Wait();
+                t3.Wait();
+                t4.Wait();
+
+                var allPeople = realm.All<Person>().ToArray();
+                Assert.That(allPeople.Length, Is.EqualTo(5));
+                Assert.That(allPeople[0].FirstName, Is.EqualTo("Anderson"));
+                Assert.That(allPeople[1].FirstName, Is.EqualTo("Banderson"));
+                Assert.That(allPeople[2].FirstName, Is.EqualTo("Canderson"));
+                Assert.That(allPeople[3].FirstName, Is.EqualTo("Danderson"));
+                Assert.That(allPeople[4].FirstName, Is.EqualTo("Enderson"));
+            });
+        }
     }
 }
