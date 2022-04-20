@@ -40,17 +40,47 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
       });
   ```
 * None
-* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
+* None
 
 ### Fixed
-* [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
-* Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
+* Fixed corruption bugs when encryption is used. (Core Issue [#5360](https://github.com/realm/realm-core/issues/5360))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.11.0.
+* Using Core 11.14.0.
+
+## 10.11.1 (2022-03-31)
+
+### Fixed
+* Fixed an issue that would cause the managed HttpClientHandler to be used in Xamarin applications, even if the project is configured to use the native one. (Issue [#2892](https://github.com/realm/realm-dotnet/issues/2892))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
+
+## 10.11.0 (2022-03-28)
+
+### Enhancements
+* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
+* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
+* Added a property `AppConfiguration.HttpClientHandler` that allows you to override the default http client handler used by the Realm .NET SDK to make http calls. Note that this only affects the behavior of http calls, such as user login, function calls, and remote mongodb calls. The sync client uses a native websocket implementation and will not use the provided message handler. (Issue [#2865](https://github.com/realm/realm-dotnet/issues/2865))
+
+### Fixed
+* [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
+* Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
+* Query parser would not accept "in" as a property name (Core Issue [#5312](https://github.com/realm/realm-core/issues/5312))
+* Application would sometimes crash with exceptions like 'KeyNotFound' or assertion "has_refs()". Other issues indicating file corruption may also be fixed by this. The one mentioned here is the one that lead to solving the problem. (Core Issue [#5283](https://github.com/realm/realm-core/issues/5283))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
+* Enabled running Benchmarks on iOS devices by turning on the interpreter for some windows assemblies.
 
 ## 10.10.0 (2022-02-28)
 

@@ -96,7 +96,7 @@ inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)
 
 namespace realm {
 namespace binding {
-
+    
 extern std::function<void(void*)> s_release_gchandle;
 
 struct GCHandleHolder {
@@ -118,6 +118,7 @@ public:
     {
         if (m_handle != nullptr) {
             s_release_gchandle(m_handle);
+            m_handle = nullptr;
         }
     }
 
@@ -128,7 +129,7 @@ public:
 private:
     void* m_handle;
 };
-    
+
 class CSharpBindingContext: public BindingContext {
 public:
     CSharpBindingContext(GCHandleHolder managed_state_handle);

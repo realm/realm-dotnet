@@ -1,311 +1,7 @@
 #@ load("@ytt:template", "template")
-#@ load("@ytt:overlay", "overlay")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCache", "actionUploadArtifact", "actionDownloadArtifact", "actionSetupMSBuild", "actionSetupDotnet", "actionRuniOSSimulator", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "actionCoveralls", "actionDeleteArtifact", "actionDeployBaaS", "actionCleanupBaaS", "readVersionFromPackage", "uploadPackagesToSleet", "cleanupWorkspace")
-
-#@ isRelease = "contains(github.head_ref, 'release')"
-
-#@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
-
-#@ secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
-#@ secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
-#@ secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
-#@ secret_AtlasPrivateKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}"
-#@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
-
-#@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
-#@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
-#@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM', 'ARM64' ]
-#@ iOSArchs = [ 'Simulator', 'Device' ]
-#@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
-#@ dotnetRuntime = "${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}"
-#@ testTimeout = 45
-#@ cleanupTimeout = 10
-#@ baasTimeout = 20
-#@ wrappersTimeout = 90
-#@ baasTestArgs = " --baasurl=" + secret_BaseUrl + " --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId
-
-#@ def getWrapperBuildCommand(cmd, enableLto = True):
-#@ defaultParams =  " --configuration=" + configuration
-#@ if enableLto:
-#@   defaultParams = defaultParams + " -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'"
-#@ end
-#@ if cmd.startswith("pwsh"):
-#@   defaultParams = " -Configuration " + configuration
-#@   if enableLto:
-#@     defaultParams = defaultParams + " -EnableLTO"
-#@   end
-#@ end
-#@ return cmd + defaultParams
-#@ end
-
-#@ def checkCache(outputVar, path = "wrappers/build/**", id = "check-cache", name = "Check cache"):
-#@ key = outputVar + "-" + configuration + "-${{hashFiles('./wrappers/**')}}"
-name: #@ name
-id: #@ id
-uses: #@ actionCache
-with:
-  path: #@ "./" + path
-  key: #@ key
-#@ end
-
-#@ def testJob(name, os, intermediateSteps, usePackage = True):
-#@ baasJobName = "baas-" + name.replace(".", "").replace(" ", "-").lower()
-#@ testJobName = "test-" + name.replace(".", "").replace(" ", "-").lower()
-#@ cleanupJobName = "cleanup-" + name.replace(".", "").replace(" ", "-").lower()
-#@yaml/text-templated-strings
-(@= baasJobName @):
-  runs-on: ubuntu-latest
-  name: #@ "Deploy MDB Realm for " + name
-  outputs:
-    clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
-  timeout-minutes: #@ baasTimeout
-  steps:
-    - #@ template.replace(checkoutCode(False, False))
-    - uses: #@ actionDeployBaaS
-      id: deploy-mdb-apps
-      with:
-        projectId: #@ secret_AtlasProjectId
-        realmUrl: #@ secret_BaseUrl
-        atlasUrl: #@ secret_AtlasBaseUrl
-        apiKey: #@ secret_AtlasPublicKey
-        privateApiKey: #@ secret_AtlasPrivateKey
-        differentiator: #@ name
-#@yaml/text-templated-strings
-(@= testJobName @):
-  runs-on: #@ os
-  name: #@ "Test " + name
-  needs:
-  - build-packages
-  - #@ baasJobName
-  if: #@ ignoreSkippedJobsCondition
-  env:
-    CLUSTER_NAME: #@ "${{ needs.baas-" + name.replace(".", "").replace(" ", "-").lower() + ".outputs.clusterName }}"
-  timeout-minutes: #@ testTimeout
-  steps:
-    - #@ template.replace(checkoutCode())
-    #@ if usePackage:
-    - #@ template.replace(fetchPackageArtifacts())
-    #@ else:
-    - #@ template.replace(fetchWrapperBinaries())
-    #@ end
-
-    #@ for step in intermediateSteps:
-    - #@ step
-    #@ end
-#@yaml/text-templated-strings
-(@= cleanupJobName @):
-  runs-on: ubuntu-latest
-  name: #@ "Cleanup " + name
-  needs:
-    - #@ testJobName
-  if: always()
-  timeout-minutes: #@ cleanupTimeout
-  steps:
-    - #@ template.replace(checkoutCode(False, False))
-    - uses: #@ actionCleanupBaaS
-      with:
-        projectId: #@ secret_AtlasProjectId
-        realmUrl: #@ secret_BaseUrl
-        atlasUrl: #@ secret_AtlasBaseUrl
-        apiKey: #@ secret_AtlasPublicKey
-        privateApiKey: #@ secret_AtlasPrivateKey
-        differentiator: #@ name
-#@ end
-
-#@ def uploadArtifacts(artifactName, relPath, retentionDays = "${{ github.event_name != 'pull_request' && 30 || 1 }}"):
-name: #@ "Store artifacts for " + artifactName
-uses: #@ actionUploadArtifact
-with:
-  name: #@ artifactName
-  path: #@ "${{ github.workspace }}/" + relPath
-  retention-days: #@ retentionDays
-#@ end
-
-#@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**", cacheVariable = ""):
-#@ if cacheVariable == "":
-#@   cacheVariable = outputVar
-#@ end
-timeout-minutes: #@ wrappersTimeout
-needs:
-  - check-wrappers-cache
-if: #@ "needs.check-wrappers-cache.outputs." + cacheVariable + " != 'true'"
-steps:
-  - #@ template.replace(checkoutCode("recursive", False))
-  - #@ checkCache(outputVar, artifactsPath)
-  #@ for step in intermediateSteps:
-  - #@ template.replace(step)
-  #@ end
-  - name: Build wrappers
-    run: #@ getWrapperBuildCommand(cmd, enableLto)
-    if: #@ wrappersCacheCondition
-  - #@ uploadArtifacts(outputVar, artifactsPath, 1)
-#@ end
-
-#@ def buildPackages():
-#@ for pkgName in nugetPackages:
-  - #@ msbuild("Realm/" + pkgName, target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}")
-#@ end
-#@ end
-
-#@ def msbuildOnWin(projectPath, **properties):
-  - name: Add msbuild to PATH
-    uses: #@ actionSetupMSBuild
-  - #@ msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}", **properties)
-#@ end
-
-#@ def buildUnityPackage():
-#@ finalPkgName = "io.realm.unity-${{ steps.get-version.outputs.version }}.tgz"
-  - name: Build Unity
-    run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
-  - #@ uploadArtifacts(finalPkgName, "Realm/Realm.Unity/" + finalPkgName)
-  - #@ uploadArtifacts("AssetStorePublisher-${{ steps.get-version.outputs.version }}", "Tools/AssetStorePublisher", "${{ (github.event_name != 'pull_request' || contains(github.head_ref, 'release')) && 30 || 1 }}")
-#@ end
-
-#@ def netFrameworkTestSteps():
-  - #@ template.replace(msbuildOnWin("Tests/Realm.Tests", TargetFramework="net461"))
-  - name: Run the tests
-    run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After" + baasTestArgs
-  - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")
-#@ end
-
-#@ def uwpTestSteps():
-  - name: Import test certificate
-    run: |
-      $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-      $currentDirectory = Get-Location
-      [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-      certutil -f -p ${{ secrets.Pfx_Password }} -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-    shell: powershell
-  - #@ template.replace(msbuildOnWin("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword="${{ secrets.Pfx_Password }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
-  - name: Run the tests
-    run: #@ "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '" + baasTestArgs + "'"
-    shell: powershell
-  - #@ publishTestsResults("${{ env.TEST_RESULTS }}", "UWP Managed")
-#@ end
-
-#@ def xamarinMacTestSteps():
-  - #@ msbuild("Tests/Tests.XamarinMac", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
-  - name: Run the tests
-    run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All" + baasTestArgs
-  - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")
-#@ end
-
-#@ def xamariniOSTestSteps():
-  - #@ msbuild("Tests/Tests.iOS", Platform="iPhoneSimulator", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
-  - name: Run the tests
-    uses: #@ actionRuniOSSimulator
-    with:
-      appPath: 'Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app'
-      bundleId: 'io.realm.dotnettests'
-      iphoneToSimulate: 'iPhone-8'
-      arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml" + baasTestArgs
-  - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
-#@ end
-
-#@ def xamarinAndroidTestSteps():
-  - #@ msbuild("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="x86_64", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True", RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ needs.build-packages.outputs.package_version }}")
-  - name: AVD cache
-    uses: actions/cache@v2
-    id: avd-cache
-    with:
-      path: |
-        ~/.android/avd/*
-        ~/.android/adb*
-      key: android-avd
-  - name: Create AVD for caching
-    if: steps.avd-cache.outputs.cache-hit != 'true'
-    uses: reactivecircus/android-emulator-runner@v2
-    with:
-      api-level: 29
-      arch: x86_64
-      force-avd-creation: false
-      emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-      disable-animations: false
-      script: echo "Generated AVD snapshot for caching."
-  - name: Run the tests
-    uses: reactivecircus/android-emulator-runner@v2
-    with:
-      api-level: 29
-      arch: x86_64
-      force-avd-creation: false
-      emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-      disable-animations: true
-      #@yaml/text-templated-strings
-      script: |
-        adb devices
-        adb logcat -c
-        adb logcat -v time > "${{ github.workspace }}/logcat.txt" &
-
-        adb install ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
-        adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
-        adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
-
-        echo "--baasurl=(@= secret_BaseUrl @) --baascluster=${{ env.CLUSTER_NAME }} --baasapikey=(@= secret_AtlasPublicKey @) --baasprivateapikey=(@= secret_AtlasPrivateKey @) --baasprojectid=(@= secret_AtlasProjectId @)" > ${{ github.workspace }}/testargs.txt
-        adb push ${{ github.workspace }}/testargs.txt /storage/emulated/0/RealmTests/testargs.txt
-
-        adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-        adb pull /storage/emulated/0/RealmTests/TestResults.Android.xml ${{ github.workspace }}/TestResults.Android.xml
-        adb shell rm /sdcard/Realmtests/TestResults.Android.xml
-  - name: Output logcat
-    if: always()
-    run: cat logcat.txt
-  - #@ publishTestsResults("TestResults.Android.xml", "Xamarin.Android")
-#@ end
-
-#@ def codeCoverageTestSteps():
-  - uses: #@ actionSetupDotnet
-    with:
-      dotnet-version: '5.0.x'
-  - name: Setup Coverlet & Report Generator
-    run: |
-      dotnet tool install coverlet.console --tool-path tools
-      dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
-      echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-  - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net5.0", { "AdditionalFrameworks": "net5.0" }))
-  - name: Run the tests
-    run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
-  - name: Publish Coverage
-    id: publish-coveralls
-    uses: #@ actionCoveralls
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
-      path-to-lcov: ./report.lcov
-      git-commit: ${{ github.event.pull_request.head.sha }}
-  - name: Output Coveralls response
-    run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
-  - #@ publishTestsResults("TestResults.Linux.xml", "Code Coverage")
-#@ end
-
-#@ def buildDocs():
-#@ docsCondition = "${{ " + isRelease + " }}"
-  - name: Check Docfx cache
-    id: check-docfx-cache
-    if: #@ docsCondition
-    uses: #@ actionCache
-    with:
-      path: 'C:\docfx'
-      key: docfx
-  - name: Download docfx
-    if: #@ "steps.check-docfx-cache.outputs.cache-hit != 'true' && " + isRelease
-    run: |
-      Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
-      Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
-    shell: powershell
-  - name: Build docs
-    if: #@ docsCondition
-    run: |
-      C:\docfx\docfx Docs/docfx.json
-      Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
-  - _: #@ template.replace(uploadArtifacts("Docs.zip", "Realm/packages/Docs.zip"))
-    if: #@ docsCondition
-#@ end
-
-#@ def uploadPackageArtifacts():
-#@ for pkgName in [ 'Realm.Fody', 'Realm' ]:
-#@  finalPkgName = pkgName + ".${{ steps.get-version.outputs.version }}"
-  - #@ uploadArtifacts(finalPkgName, "Realm/packages/" + finalPkgName + ".*nupkg")
-#@ end
-#@ end
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "actionSetupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact")
+#@ load("test.lib.yml", "dotnetBuildTests")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "ignoreSkippedJobsCondition", "buildUnity")
 
 #@ def fetchPackageArtifacts():
 #@ for pkg in [ "Realm", "Realm.Fody" ]:
@@ -316,310 +12,64 @@ steps:
       path: ${{ github.workspace }}/Realm/packages/
 #@ end
 #@ end
-
-#@ def getWrapperBinaryNames():
-#@ wrapperPlatforms = [ 'macos', 'ios', 'linux' ]
-#@ for androidABI in androidABIs:
-#@   wrapperPlatforms.append("android-" + androidABI)
-#@ end
-#@ for windowsArch in windowsArchs:
-#@   wrapperPlatforms.append("windows-" + windowsArch)
-#@ end
-#@ for uwpArch in windowsUWPArchs:
-#@   wrapperPlatforms.append("windows-uwp-" + uwpArch)
-#@ end
-#@
-#@ return wrapperPlatforms
-#@ end
-
-#@ def fetchWrapperBinaries():
-#@ for platform in getWrapperBinaryNames():
-  - name: #@ "Fetch artifacts for " + platform
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ "wrappers-" + platform
-      path: wrappers/build
-#@ end
-#@ end
-
-#@ def fetchiOSFrameworks():
-#@ for platform in iOSArchs:
-  - name: #@ "Fetch Framework for " + platform
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ "wrappers-ios-" + platform
-      path: wrappers/cmake
-    if: #@ wrappersCacheCondition
-#@ end
-#@ end
-
-#@ def dotnetPublishAndRunTests(projectPath, framework, executeCommand):
-#@ properties = {
-#@   "AdditionalFrameworks": framework,
-#@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
-#@   "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}"
-#@ }
-#@
-  - #@ template.replace(dotnetPublish(projectPath, framework, properties))
-  - name: Run the tests
-    run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/" + executeCommand
-#@ end
-
-#@ def dotnetPublish(projectPath, framework, properties = {}):
-#@ propsArg = ""
-#@ for prop in properties.keys():
-#@   propsArg += " -p:" + prop + "=" + properties[prop]
-#@ end
-  - name: #@ "Publish " + projectPath
-    run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + dotnetRuntime + propsArg + " --no-self-contained"
-  - name: Output executable path
-    id: dotnet-publish
-    run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + dotnetRuntime + "'"
-#@ end
-
-#@ def publishTestsResults(files, test_title):
-name: Publish Unit Test Results
-uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15 #! v1.5.1
-if: always()
-with:
-  name: #@ "Results " + test_title
-  path: #@ files
-  reporter: java-junit
-  list-suites: failed
-  list-tests: failed
-  path-replace-backslashes: true
-  fail-on-error: false
-#@ end
-
-#@ def msbuild(projectPath, **properties):
-#@ parsedProps = ""
-#@ target = ""
-#@ for prop in properties.keys():
-#@  if prop == "target":
-#@    target = " -t:" + properties[prop]
-#@  else:
-#@    parsedProps += " -p:" + prop + "=" + properties[prop]
-#@  end
-#@ end
-#@
-name: #@ "Build " + projectPath
-run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
-#@ end
-
 ---
 name: main
 "on":
   push:
     branches:
       - main
-  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish-prerelease:
+        description: Indicates whether to publish the package to Sleet/npm
+        required: false
+        type: boolean
+      run-benchmark:
+        description: Indicates whether to run the benchmark tests
+        required: false
+        type: boolean
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  check-wrappers-cache:
-    strategy:
-      matrix:
-        os:
-        - ubuntu
-        - windows
-    runs-on: ${{ matrix.os }}-latest
-    name: Check wrapper cache
-    env:
-      CACHE_SKIP_SAVE: true
-    outputs:
-      #@ for platform in getWrapperBinaryNames():
-      #@yaml/text-templated-strings
-      (@= "wrappers-" + platform @): #@ "${{ steps.check-cache-" + platform + ".outputs.cache-hit }}"
-      #@ end
-    steps:
-        - #@ template.replace(checkoutCode("recursive", False))
-      #@ for platform in getWrapperBinaryNames():
-        #@ condition = "matrix.os == " + ("'windows'" if platform.find("windows") > -1 else "'ubuntu'")
-        - _: #@ template.replace(checkCache("wrappers-" + platform, id = "check-cache-" + platform, name = "Check cache for " + platform))
-          if: #@ condition
-        - _: #@ template.replace(uploadArtifacts("wrappers-" + platform, "wrappers/build/**", 1))
-          if: #@ condition + " && steps.check-cache-" + platform + ".outputs.cache-hit == 'true'"
-        - run: git clean -fdx
-          if: #@ condition
-      #@ end
-  build-wrappers-macos:
-    runs-on: macos-latest
-    name: Wrappers macOS
-    _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-  build-wrappers-ios-frameworks:
-    runs-on: macos-latest
-    name: Wrappers iOS frameworks
-    strategy:
-      matrix:
-        arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
-  build-wrappers-ios:
-    runs-on: macos-latest
-    name: Wrappers iOS XCframework
-    needs:
-      - check-wrappers-cache
-      - build-wrappers-ios-frameworks
-    if: needs.check-wrappers-cache.outputs.wrappers-ios != 'true'
-    timeout-minutes: #@ wrappersTimeout
-    steps:
-      - #@ template.replace(checkoutCode("recursive", False))
-      - #@ checkCache("wrappers-ios")
-      - #@ template.replace(fetchiOSFrameworks())
-      - name: Create xcframework
-        #@yaml/text-templated-strings
-        run: |
-          $build_directory = "${{ github.workspace }}/wrappers/cmake/iOS"
-          $install_prefix = "${{ github.workspace }}/wrappers/build"
-          $xcframework_path = "$install_prefix/iOS/(@= configuration @)/realm-wrappers.xcframework"
-          xcodebuild -create-xcframework -framework $build_directory/src/(@= configuration @)-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/(@= configuration @)-iphoneos/realm-wrappers.framework -output "$xcframework_path"
-        shell: powershell
-        if: #@ wrappersCacheCondition
-      - #@ uploadArtifacts("wrappers-ios", "wrappers/build/**", 1)
-  build-wrappers-linux:
-    runs-on: ubuntu-latest
-    name: Wrappers Linux
-    timeout-minutes: #@ wrappersTimeout
-    needs:
-      - check-wrappers-cache
-    if: needs.check-wrappers-cache.outputs.wrappers-linux != 'true'
-    steps:
-      - #@ template.replace(checkoutCode("recursive"))
-      - #@ checkCache("wrappers-linux")
-      - uses: #@ actionDockerLayerCaching
-        continue-on-error: true
-        if: #@ wrappersCacheCondition
-      - name: Build CentOS image
-        uses: #@ actionDockerBuild
-        with:
-          tags: wrappers-centos:latest
-          file: ./wrappers/centos.Dockerfile
-          push: false
-        if: #@ wrappersCacheCondition
-      - name: Build wrappers
-        uses: #@ actionDockerRun
-        with:
-          image: wrappers-centos:latest
-          shell: bash
-          options: -v ${{ github.workspace }}:/work
-          run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
-        if: #@ wrappersCacheCondition
-      - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
-  build-wrappers-android:
-    runs-on: ubuntu-20.04
-    name: Wrappers Android
-    strategy:
-      matrix:
-        arch: #@ androidABIs
-    _: #@ template.replace(buildWrappers("./wrappers/build-android.sh --ARCH=${{ matrix.arch }}", "wrappers-android-${{ matrix.arch }}", enableLto = False, cacheVariable = "wrappers-android"))
-    #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-android-" + x + " != 'true'" for x in androidABIs ])
-  build-wrappers-windows:
-    runs-on: windows-latest
-    name: Wrappers Windows
-    strategy:
-      matrix:
-        arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg("windows-${{ matrix.arch }}") ], cacheVariable = "wrappers-windows"))
-    #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
-  build-wrappers-windows-uwp:
-    runs-on: windows-latest
-    name: Wrappers UWP
-    strategy:
-      matrix:
-        arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg("uwp-${{ matrix.arch }}") ], cacheVariable = "wrappers-uwp"))
-    #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-wrappers-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])
+  build-wrappers:
+    uses: ./.github/workflows/wrappers.yml
+    name: Wrappers
+  _: #@ template.replace(deployBaas(".NET Framework"))
+  _: #@ template.replace(deployBaas("UWP Managed"))
+  _: #@ template.replace(deployBaas("Xamarin.macOS"))
+  _: #@ template.replace(deployBaas("Xamarin.iOS"))
+  _: #@ template.replace(deployBaas("Xamarin.Android"))
+  _: #@ template.replace(deployBaas("Code Coverage"))
   build-packages:
-    runs-on: windows-latest
+    uses: ./.github/workflows/build-packages.yml
     name: Package
     needs:
-      - build-wrappers-windows
-      - build-wrappers-macos
-      - build-wrappers-ios
-      - build-wrappers-android
-      - build-wrappers-linux
-      - build-wrappers-windows-uwp
-    if: #@ ignoreSkippedJobsCondition
-    outputs:
-      package_version: ${{ steps.get-version.outputs.version }}
-    timeout-minutes: #@ wrappersTimeout
-    steps:
-      - name: Add msbuild to PATH
-        uses: #@ actionSetupMSBuild
-      - #@ template.replace(checkoutCode())
-      - name: Set version suffix
-        id: set-version-suffix
-        #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
-        run: |
-          $suffix = ""
-          if ($env:GITHUB_EVENT_NAME -eq "pull_request")
-          {
-            if (-Not "${{ github.head_ref }}".Contains("release"))
-            {
-              $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
-            }
-          }
-          else
-          {
-            $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
-          }
-          echo "::set-output name=build_suffix::$suffix"
-      - #@ template.replace(fetchWrapperBinaries())
-      - #@ template.replace(buildPackages())
-      - #@ template.replace(readVersionFromPackage())
-      - #@ template.replace(buildDocs())
-      - #@ template.replace(uploadPackageArtifacts())
-      - #@ template.replace(buildUnityPackage())
-      - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+    - build-wrappers
   publish-packages-to-sleet:
     runs-on: ubuntu-latest
     name: Publish package to S3
     needs:
     - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
+    if: #@ ignoreSkippedJobsCondition + " && (github.event_name == 'push' || github.event.inputs.publish-prerelease)"
     steps:
     - #@ template.replace(checkoutCode(False, False))
     - #@ template.replace(fetchPackageArtifacts())
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
-  _: #@ template.replace(testJob(".NET Framework", "windows-latest", netFrameworkTestSteps()))
-  _: #@ template.replace(testJob("UWP Managed", "windows-2019", uwpTestSteps()))
-  run-tests-netcore:
-    runs-on: ${{ matrix.os}}
-    name: "Test .NET"
+  _: #@ template.replace(buildUnity())
+  _: #@ template.replace(runTests(".NET Framework"))
+  _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
+  _: #@ template.replace(runNetCoreTests("[\"macos-latest\", \"windows-latest\", \"ubuntu-latest\", \"win81\"]", "[\"netcoreapp3.1\", \"net5.0\", \"net6.0\"]"))
+  _: #@ template.replace(runTests("Xamarin.macOS"))
+  _: #@ template.replace(runTests("Xamarin.iOS"))
+  _: #@ template.replace(runTests("Xamarin.Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
+  test-xunit:
+    runs-on: windows-latest
+    name: Test xUnit Compatibility
+    timeout-minutes: 10
     needs:
     - build-packages
     if: #@ ignoreSkippedJobsCondition
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest, win81 ]
-        targetFramework: [ netcoreapp3.1, net5.0, net6.0 ]
-    timeout-minutes: #@ testTimeout
-    steps:
-      - name: Cleanup Workspace
-        run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-        if: matrix.os == 'win81'
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - uses: #@ actionSetupDotnet
-        if: matrix.targetFramework == 'net6.0'
-        with:
-          dotnet-version: '6.0.x'
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Realm.Tests", "${{ matrix.targetFramework }}", "Realm.Tests --result=TestResults.xml --labels=After"))
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.targetFramework }})")
-  _: #@ template.replace(testJob("Xamarin.macOS", "macos-latest", xamarinMacTestSteps()))
-  _: #@ template.replace(testJob("Xamarin.iOS", "macos-latest", xamariniOSTestSteps()))
-  _: #@ template.replace(testJob("Xamarin.Android", "macos-latest", xamarinAndroidTestSteps()))
-  run-tests-xunit:
-    runs-on: windows-latest
-    name: Test xUnit Compatibility
-    timeout-minutes: #@ testTimeout
-    needs:
-    - build-packages
-    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
@@ -629,64 +79,23 @@ jobs:
       - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
-  run-tests-weaver:
-    runs-on: windows-latest
-    name: Test Weaver
-    timeout-minutes: #@ testTimeout
-    steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1"))
-      - name: Run Tests
-        run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
-      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
-  _: #@ template.replace(testJob("Code Coverage", "ubuntu-latest", codeCoverageTestSteps(), False))
-  run-cleanup:
-    runs-on: ubuntu-latest
-    name: Workflow cleanup
-    needs:
-      - test-code-coverage
-    if: always()
-    timeout-minutes: #@ cleanupTimeout
-    steps:
-#@ for platform in getWrapperBinaryNames():
-      - name: #@ "Delete artifacts for " + platform
-        uses: #@ actionDeleteArtifact
-        with:
-          name: #@ "wrappers-" + platform
-#@ end
-#@ for platform in iOSArchs:
-      - name: #@ "Delete artifacts for iOS " + platform
-        uses: #@ actionDeleteArtifact
-        with:
-          name: #@ "wrappers-ios-" + platform
-#@ end
-  setup-unity-tests:
-    runs-on: windows-latest
-    name: Setup Unity Tests
-    needs:
-    - build-packages
-    if: #@ ignoreSkippedJobsCondition
-    steps:
-      - #@ template.replace(checkoutCode())
-      - name: Fetch Unity package
-        uses: #@ actionDownloadArtifact
-        with:
-          name: io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
-          path: ${{ github.workspace }}/Realm/packages/
-      - name: Build Tests
-        run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/packages/io.realm.unity-${{ needs.build-packages.outputs.package_version }}.tgz
-      - #@ uploadArtifacts("UnityTests", "Tests/Tests.Unity")
+  test-weaver:
+    uses: ./.github/workflows/test-weaver.yml
+    name: Test
+  _: #@ template.replace(runTests("Code Coverage"))
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
     runs-on: performance-tests
-    if: #@ ignoreSkippedJobsCondition + " && github.event_name != 'pull_request'"
-    timeout-minutes: #@ testTimeout
+    if: #@ ignoreSkippedJobsCondition + " && (github.event_name == 'push' || github.event.inputs.run-benchmark)"
+    timeout-minutes: 60
     steps:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetPublishAndRunTests("Tests/Benchmarks/PerformanceTests", "net5.0", "PerformanceTests -f \"*\" --join"))
+      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net5.0"))
+      - name: Run the tests
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
       - name: Find Results file
         id: find-results-file
         run: |
@@ -701,3 +110,9 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
+  _: #@ template.replace(cleanupBaas(".NET Framework"))
+  _: #@ template.replace(cleanupBaas("UWP Managed"))
+  _: #@ template.replace(cleanupBaas("Xamarin.macOS"))
+  _: #@ template.replace(cleanupBaas("Xamarin.iOS"))
+  _: #@ template.replace(cleanupBaas("Xamarin.Android"))
+  _: #@ template.replace(cleanupBaas("Code Coverage"))

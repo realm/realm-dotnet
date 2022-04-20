@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Net.Http;
 using Realms.Helpers;
 using Realms.Logging;
 
@@ -135,6 +136,19 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The default HTTP request timeout.</value>
         public TimeSpan? DefaultRequestTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="HttpMessageHandler"/> that will be used
+        /// for the http requests to MongoDB Realm.
+        /// </summary>
+        /// <value>The http client handler that configures things like certificates and proxy settings.</value>
+        /// <remarks>
+        /// You can use this to override the default http client handler and configure settings like proxies,
+        /// client certificates, and cookies. While these are not required to connect to MongoDB Realm under
+        /// normal circumstances, they can be useful if client devices are behind corporate firewall or use
+        /// a more complex networking setup.
+        /// </remarks>
+        public HttpMessageHandler HttpClientHandler { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.

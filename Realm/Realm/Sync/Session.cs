@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Realms.Exceptions.Sync;
@@ -28,7 +29,7 @@ namespace Realms.Sync
     /// and the server (and a remote Realm served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
     /// out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
     /// </summary>
-    public class Session
+    public class Session : INotifyPropertyChanged
     {
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
@@ -36,13 +37,65 @@ namespace Realms.Sync
         [Obsolete("Use SyncConfigurationBase.OnSessionError in conjunction with SyncConfigurationBase.ClientResetHandler instead.")]
         public static event EventHandler<ErrorEventArgs> Error;
 
+        private readonly SessionHandle _handle;
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        private SessionHandle Handle
+        {
+            get
+            {
+                if (_handle.IsClosed)
+                {
+                    throw new ObjectDisposedException(
+                        nameof(Session),
+                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
+                }
+
+                return _handle;
+            }
+        }
+
         internal bool IsClosed => _handle.IsClosed;
+
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (_propertyChanged == null)
+                {
+                    Handle.SubscribeNotifications(this);
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (_propertyChanged == null)
+                {
+                    Handle.UnsubscribeNotifications();
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
         /// <value>An enum value indicating the state of the session.</value>
         public SessionState State => Handle.GetState();
+
+        /// <summary>
+        /// Gets the session’s current connection state.
+        /// </summary>
+        /// <value>An enum value indicating the connection state of the session.</value>
+        public ConnectionState ConnectionState => Handle.GetConnectionState();
 
         /// <summary>
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to MongoDB Realm.
@@ -136,35 +189,6 @@ namespace Realms.Sync
         /// </remarks>
         public void Start() => Handle.Start();
 
-        private readonly SessionHandle _handle;
-
-        private SessionHandle Handle
-        {
-            get
-            {
-                if (_handle.IsClosed)
-                {
-                    throw new ObjectDisposedException(
-                        nameof(Session),
-                        "This Session instance is invalid. This typically means that Sync has closed or otherwise invalidated the native session. You can get a new valid instance by calling realm.GetSession().");
-                }
-
-                return _handle;
-            }
-        }
-
-        internal Session(SessionHandle handle)
-        {
-            _handle = handle;
-        }
-
-        /// after deprecation: this needs to go when <see cref="Error"/> is fully deprecated
-        internal static void RaiseError(Session session, Exception error)
-        {
-            var args = new ErrorEventArgs(error);
-            Error?.Invoke(session, args);
-        }
-
         /// <inheritdoc/>
         public override bool Equals(object obj)
             => obj is Session other &&
@@ -172,6 +196,11 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         public override int GetHashCode() => Handle.GetRawPointer().GetHashCode();
+
+        internal Session(SessionHandle handle)
+        {
+            _handle = handle;
+        }
 
         internal void CloseHandle(bool waitForShutdown = false)
         {
@@ -183,10 +212,22 @@ namespace Realms.Sync
                     _handle.ShutdownAndWait();
                 }
 
+                _propertyChanged = null;
                 _handle.Close();
             }
         }
 
         internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal);
+
+        internal static void RaiseError(Session session, Exception error)
+        {
+            var args = new ErrorEventArgs(error);
+            Error?.Invoke(session, args);
+        }
+
+        internal void RaisePropertyChanged(string propertyName)
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

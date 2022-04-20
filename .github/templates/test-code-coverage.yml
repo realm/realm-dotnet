@@ -1,0 +1,33 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition")
+
+---
+name: test-code-coverage
+_: #@ template.replace(testDefinition())
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    name: Code Coverage
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchWrapperBinaries())
+      - name: Setup Coverlet & Report Generator
+        run: |
+          dotnet tool install coverlet.console --tool-path tools
+          dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
+          echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net5.0", { "AdditionalFrameworks": "net5.0" }))
+      - name: Run the tests
+        run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
+      - name: Publish Coverage
+        id: publish-coveralls
+        uses: #@ actionCoveralls
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./report.lcov
+          git-commit: ${{ github.event.pull_request.head.sha }}
+      - name: Output Coveralls response
+        run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
+      - #@ publishTestsResults("TestResults.Linux.xml", "Code Coverage")
