@@ -384,7 +384,7 @@ REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, v
         {
             // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
             // However, in this specific case, async_begin_transaction never throws, hence the need for a nativeEx.
-            NativeException::Marshallable nativeEx{ RealmErrorType::NoError };
+            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
             s_handle_task_completion(tcs_ptr, nativeEx);
         }, /* notify_only */ true);
     });

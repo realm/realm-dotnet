@@ -17,11 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -195,13 +197,8 @@ namespace Realms.Tests.Database
             });
         }
 
-        // I have a hard time testing an async rollback since it just cancels
-        // the callback that will notify the SDK that the fsync has completed. It won't cancel the effective commit/fsync call
-        // in core.
-        // This test does not really test much. It just checks that no fsync is executed,
-        // which is not what a rollback on an async transaction cares to do.
         [Test]
-        public void AsyncBeginWriteAndCancel()
+        public void AsyncBeginWriteAndRollBack_DoesNot_PersistData()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
@@ -219,7 +216,38 @@ namespace Realms.Tests.Database
 
                 Assert.That(peopleQuery.Count(), Is.EqualTo(1));
                 _realm.Dispose();
-                using var realm = Realm.GetInstance(dbPath);
+                using var realm = GetRealm(dbPath);
+                Assert.That(realm.All<Person>().Count(), Is.EqualTo(0));
+            });
+        }
+
+        [Test]
+        public void AsyncBeginWriteAndClose_DoesNot_PersistData()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var dbPath = string.Empty;
+                IQueryable<Person> peopleQuery = null;
+
+                using (var innerRealm = GetRealm())
+                {
+                    dbPath = innerRealm.Config.DatabasePath;
+                    peopleQuery = innerRealm.All<Person>();
+                    Assert.That(innerRealm.All<Person>().Count(), Is.EqualTo(0));
+
+                    var personName = "Jonh Wickie";
+                    Assert.That(peopleQuery.Count(), Is.EqualTo(0));
+
+                    using (var transaction = await innerRealm.BeginWriteAsync())
+                    {
+                        var person = new Person { FullName = personName };
+                        innerRealm.Add(person);
+                    }
+
+                    Assert.That(peopleQuery.Count(), Is.EqualTo(1));
+                }
+
+                using var realm = GetRealm(dbPath);
                 Assert.That(realm.All<Person>().Count(), Is.EqualTo(0));
             });
         }
@@ -271,7 +299,6 @@ namespace Realms.Tests.Database
             });
         }
 
-        //TODO andrea: Probably this adds nothing to the one already existing for lists
         [Test]
         public void AsyncWrite_Func_Queryable()
         {
@@ -362,74 +389,56 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var pA = new Person { FirstName = "Anderson" };
-                var pB = new Person { FirstName = "Banderson" };
-                var pC = new Person { FirstName = "Canderson" };
-                var pD = new Person { FirstName = "Danderson" };
-                var pE = new Person { FirstName = "Enderson" };
-
-                var realm = GetRealm();
-
-                await realm.WriteAsync(() =>
+                Person[] people = new[]
                 {
-                    realm.Add(pA);
+                    new Person { FirstName = "Anderson" },
+                    new Person { FirstName = "Banderson" },
+                    new Person { FirstName = "Canderson" },
+                    new Person { FirstName = "Danderson" }
+                };
+
+                ConcurrentQueue<Person> markers = new();
+                Queue<Person> actualWriters = new();
+                Task[] tasks = new Task[people.Length];
+                using var realm = GetRealm();
+                realm.Write(() =>
+                {
+                    realm.RemoveAll<Person>();
                 });
 
-                var t1 = Task.Run(async () =>
+                var thread = new AsyncContextThread();
+                Parallel.For(0, people.Length, index =>
                 {
-                    var realm = GetRealm();
-                    await realm.WriteAsync(() =>
+                    //AsyncContext.Run(async () =>
+                    //{
+                    //    using var realm = GetRealm();
+                    //    markers.Enqueue(people[i]);
+                    //    await realm.WriteAsync(() =>
+                    //    {
+                    //        actualWriters.Enqueue(people[i]);
+                    //    });
+                    //});
+                    //var index = i;
+
+                    tasks[index] = thread.Factory.Run(async () =>
                     {
-                        realm.Add(pB);
+                        using var realm = GetRealm();
+                        markers.Enqueue(people[index]);
+                        await realm.WriteAsync(() =>
+                        {
+                            actualWriters.Enqueue(people[index]);
+                        });
                     });
                 });
 
-                var t2 = Task.Run(async () =>
+                await Task.WhenAll(tasks);
+
+                for (int i = 0; i < people.Length; i++)
                 {
-                    var realm = GetRealm();
-                    await realm.WriteAsync(() =>
-                    {
-                        realm.Add(pC);
-                    });
-                });
-
-                var t3 = Task.Run(async () =>
-                {
-                    var realm = GetRealm();
-                    await realm.WriteAsync(() =>
-                    {
-                        realm.Add(pD);
-                    });
-                });
-
-                var t4 = Task.Run(async () =>
-                {
-                    var realm = GetRealm();
-                    await realm.WriteAsync(() =>
-                    {
-                        realm.Add(pE);
-                    });
-                    var allPeople = realm.All<Person>().ToArray();
-
-                    Assert.That(allPeople.Length, Is.EqualTo(5));
-                    Assert.That(allPeople[0].FirstName, Is.EqualTo("Anderson"));
-                    Assert.That(allPeople[1].FirstName, Is.EqualTo("Banderson"));
-                    Assert.That(allPeople[2].FirstName, Is.EqualTo("Canderson"));
-                    Assert.That(allPeople[3].FirstName, Is.EqualTo("Danderson"));
-                });
-
-                t1.Wait();
-                t2.Wait();
-                t3.Wait();
-                t4.Wait();
-
-                var allPeople = realm.All<Person>().ToArray();
-                Assert.That(allPeople.Length, Is.EqualTo(5));
-                Assert.That(allPeople[0].FirstName, Is.EqualTo("Anderson"));
-                Assert.That(allPeople[1].FirstName, Is.EqualTo("Banderson"));
-                Assert.That(allPeople[2].FirstName, Is.EqualTo("Canderson"));
-                Assert.That(allPeople[3].FirstName, Is.EqualTo("Danderson"));
-                Assert.That(allPeople[4].FirstName, Is.EqualTo("Enderson"));
+                    var marker = markers.ElementAt(i);
+                    var writer = actualWriters.ElementAt(i);
+                    Assert.That(marker.FirstName, Is.EqualTo(writer.FirstName));
+                }
             });
         }
     }
