@@ -214,6 +214,7 @@ namespace Realms.Tests.Database
                     transaction.Rollback();
                 }
 
+                // TODO ask andrea: Shouldn't a rollback just not record down the change?
                 Assert.That(peopleQuery.Count(), Is.EqualTo(1));
                 _realm.Dispose();
                 using var realm = GetRealm(dbPath);
@@ -372,7 +373,7 @@ namespace Realms.Tests.Database
                         char ch = Convert.ToChar(true);
                     });
                 }
-                catch(InvalidCastException e)
+                catch (InvalidCastException e)
                 {
                     ex = e;
                 }
@@ -382,8 +383,6 @@ namespace Realms.Tests.Database
             });
         }
 
-        // FIXME: tasks will not be executed in the order they are written,
-        // so make sure all run to the end and the order was recorded
         [Test]
         public void AsyncWrite_Fifo_Order_Respected()
         {
@@ -439,6 +438,87 @@ namespace Realms.Tests.Database
                     var writer = actualWriters.ElementAt(i);
                     Assert.That(marker.FirstName, Is.EqualTo(writer.FirstName));
                 }
+            });
+        }
+
+        [Test]
+        public void Async_And_Sync_Write_Mixed_No_Deadlock()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                Person[] people = new[]
+                {
+                    new Person { FirstName = "Anderson" },
+                    new Person { FirstName = "Banderson" },
+                    new Person { FirstName = "Canderson" },
+                    new Person { FirstName = "Danderson" }
+                };
+
+                Task[] tasks = new Task[people.Length];
+                using var realm = GetRealm();
+                realm.Write(() =>
+                {
+                    realm.RemoveAll<Person>();
+                });
+
+                var thread = new AsyncContextThread();
+                Parallel.For(0, people.Length, index =>
+                {
+                    if (index % 2 == 0)
+                    {
+                        tasks[index] = thread.Factory.Run(async () =>
+                        {
+                            using var realm = GetRealm();
+                            await realm.WriteAsync(() =>
+                            {
+                                realm.Add(people[index]);
+                            });
+                        });
+                    }
+                    else
+                    {
+                        tasks[index] = thread.Factory.Run(() =>
+                        {
+                            using var realm = GetRealm();
+                            realm.Write(() =>
+                            {
+                                realm.Add(people[index]);
+                            });
+                        });
+                    }
+                });
+
+                await Task.WhenAll(tasks);
+
+                Assert.That(realm.All<Person>().Count, Is.EqualTo(4));
+            });
+        }
+
+        [Test]
+        public void AsyncWriteLock_SyncCommit_Mixed()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var person = new Person { FirstName = "Anderson" };
+                var transaction = await _realm.BeginWriteAsync();
+                _realm.Add(person);
+                transaction.Commit();
+
+                Assert.That(_realm.All<Person>().Single, Is.EqualTo(person));
+            });
+        }
+
+        [Test]
+        public void SyncWriteLock_AsyncCommit_Mixed()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var person = new Person { FirstName = "Anderson" };
+                var transaction = _realm.BeginWrite();
+                _realm.Add(person);
+                await transaction.CommitAsync();
+
+                Assert.That(_realm.All<Person>().Single, Is.EqualTo(person));
             });
         }
     }
