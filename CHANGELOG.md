@@ -1,7 +1,51 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added a stroger write and commit async API. This deprecates `Realm.WriteAsync(Action<Realm> action)`, `Real.WriteAsync<T>(Func<Realm, IQueryable<T>> function)`, `Realm.WriteAsync<T>(Func<Realm, IList<T>> function)` and `Realm.WriteAsync<T>(Func<Realm, T> function)`. The new API is made of `Realm.WriteAsync<T>(Func<T> function)`, `Realm.WriteAsync(Action action)`, `Realm.BeginWriteAsync()` and `Transaction.CommitAsync()`. While the `Transaction.Rollback()` stays unchanged as it does not need an async version. Importantly, the async calls are executed in the FIFO order. And additionally you can mix and match async and sync calls, albeit only the async calls are guaranteed to be executed in the FIFO order. As an example, the following is fully legal code:
+  ```csharp
+  using Nito.AsyncEx;
+  using Realms;
+
+  // on the UI thread
+  var realm = GetRealm();
+
+  // 1.a) transaction started asynchronously
+  var transaction = realm.BeginWriteAsync();
+
+  try
+  {
+    realm.Add(new Person
+    {
+      FirstName = "Marco"
+    });
+
+    AsyncContext.Run(async () =>
+    {
+      // on a thread with a Synchronization Context
+      using var realm = GetRealm();
+
+      // if 1.a) manages to start before this, then this task will asynchronously be executed only after
+      // 1.a) `transaction` is commited ( 1.b) ). If instead this is executed first, then 1.a) will have to
+      // asyncrhnously be executed after the following write completes
+      await realm.WriteAsync(() =>
+      {
+        realm.Add(new Person
+        {
+          FirstName = "Giovanni"
+        });
+      });
+    });
+
+    // 1.b) but closed synchronously
+    transaction.Commit();
+  }
+  catch (Exception ex)
+  {
+    // Something went wrong; roll back the transaction
+    transaction.Dispose();
+  }
+  ```
+  (PR [#2899](https://github.com/realm/realm-dotnet/pull/2899))
 
 ### Fixed
 * None
