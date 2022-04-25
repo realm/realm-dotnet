@@ -193,17 +193,19 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void RealmConfiguration_HttpClientHandler_IsSet()
+        public void RealmConfiguration_HttpClientHandler_IsNotSet()
         {
             var config = new AppConfiguration("abc");
-            Assert.That(config.HttpClientHandler, Is.Not.Null);
+            Assert.That(config.HttpClientHandler, Is.Null);
         }
 
         [Test]
-        public void RealmConfiguration_HttpClientHandler_MustNotBeNull()
+        public void RealmConfiguration_HttpClientHandler_MayBeNull()
         {
             var config = new AppConfiguration("abc");
-            Assert.Throws<ArgumentNullException>(() => config.HttpClientHandler = null);
+            config.HttpClientHandler = null;
+            config.HttpClientHandler = new HttpClientHandler();
+            config.HttpClientHandler = null;
         }
     }
 }

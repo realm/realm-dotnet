@@ -1,6 +1,42 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.11.2 (2022-04-12)
+
+### Fixed
+* Fixed corruption bugs when encryption is used. (Core Issue [#5360](https://github.com/realm/realm-core/issues/5360))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
+## 10.11.1 (2022-03-31)
+
+### Fixed
+* Fixed an issue that would cause the managed HttpClientHandler to be used in Xamarin applications, even if the project is configured to use the native one. (Issue [#2892](https://github.com/realm/realm-dotnet/issues/2892))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
+
+## 10.11.0 (2022-03-28)
+
+### Enhancements
 * Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
 * Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
 * Added a property `AppConfiguration.HttpClientHandler` that allows you to override the default http client handler used by the Realm .NET SDK to make http calls. Note that this only affects the behavior of http calls, such as user login, function calls, and remote mongodb calls. The sync client uses a native websocket implementation and will not use the provided message handler. (Issue [#2865](https://github.com/realm/realm-dotnet/issues/2865))

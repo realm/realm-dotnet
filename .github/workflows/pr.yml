@@ -11,7 +11,9 @@ name: PR Build
     - '**.sh'
     - '**.props'
     - wrappers/realm-core
-    - .github/workflows/pr.yml
+    - .github/workflows/*.yml
+    - '!.github/workflows/main.yml'
+    - '!.github/workflows/publish-*.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -106,7 +108,11 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
-    secrets: {}
+    secrets:
+      AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+      AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+      DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+      DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
