@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Linq;
 using NUnit.Framework;
 
@@ -102,7 +103,7 @@ namespace Realms.Tests.Database
             Assert.That(queried, Is.EqualTo(dogs));
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnPrimitive()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -115,7 +116,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnRealmObject()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -134,7 +135,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnUnmanagedRealmObject()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -154,7 +155,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnQueryable()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -181,7 +182,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnUnmanagedQueryable()
         {
             var pko1 = new IntPrimaryKeyWithValueObject
@@ -209,7 +210,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnCollection()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -239,7 +240,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_ShouldReturnUnmanagedCollection()
         {
             var owner = new Owner
@@ -268,7 +269,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void WriteAsync_WhenReturningManagedObjectIndirectly_ShouldThrow()
         {
             TestHelpers.RunAsyncTest(async () =>

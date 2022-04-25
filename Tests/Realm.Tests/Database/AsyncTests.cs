@@ -101,7 +101,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void AsyncWrite_ShouldRethrowExceptions()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -379,7 +379,6 @@ namespace Realms.Tests.Database
                 }
 
                 Assert.That(ex, Is.InstanceOf<InvalidCastException>().And.Message.EqualTo("Invalid cast from 'Boolean' to 'Char'."));
-
             });
         }
 
@@ -408,17 +407,6 @@ namespace Realms.Tests.Database
                 var thread = new AsyncContextThread();
                 Parallel.For(0, people.Length, index =>
                 {
-                    //AsyncContext.Run(async () =>
-                    //{
-                    //    using var realm = GetRealm();
-                    //    markers.Enqueue(people[i]);
-                    //    await realm.WriteAsync(() =>
-                    //    {
-                    //        actualWriters.Enqueue(people[i]);
-                    //    });
-                    //});
-                    //var index = i;
-
                     tasks[index] = thread.Factory.Run(async () =>
                     {
                         using var realm = GetRealm();

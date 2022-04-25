@@ -785,6 +785,25 @@ namespace Realms
             return result;
         }
 
+        /// <summary>
+        /// Factory for a write <see cref="Transaction"/>. Essential object to create scope for updates.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// using (var trans = await realm.BeginWriteAsync())
+        /// {
+        ///     realm.Add(new Dog
+        ///     {
+        ///         Name = "Rex"
+        ///     });
+        ///     await trans.CommitAsync();
+        ///     // or just
+        ///     // trans.Commit();
+        /// }
+        /// </code>
+        /// </example>
+        /// <returns>An awaitable <see cref="Task"/> that returns a transaction in write mode.
+        /// A transaction is required for any creation, deletion or modification of objects persisted in a <see cref="Realm"/>.</returns>
         public async Task<Transaction> BeginWriteAsync()
         {
             ThrowIfDisposed();
@@ -844,6 +863,25 @@ namespace Realms
             });
         }
 
+        /// <summary>
+        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> will be committed.
+        /// <b>If</b> the method is not called from a thread with a <see cref="SynchronizationContext"/> (like the UI thread), it behaves synchronously.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// await realm.WriteAsync(() =&gt;
+        /// {
+        ///     realm.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        /// });
+        /// </code>
+        /// </example>
+        /// <param name="action">
+        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action action)
         {
             return WriteAsync(() =>
@@ -917,6 +955,26 @@ namespace Realms
             return (T)result;
         }
 
+        /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> will be committed.
+        /// <b>If</b> the method is not called from a thread with a <see cref="SynchronizationContext"/> (like the UI thread), it behaves synchronously.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var dog = await realm.WriteAsync(() =&gt;
+        /// {
+        ///     return realm.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        /// });
+        /// </code>
+        /// </example>
+        /// <param name="function">
+        /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <typeparam name="T">The type returned by the input delegate.</typeparam>
+        /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
         public async Task<T> WriteAsync<T>(Func<T> function)
         {
             ThrowIfDisposed();

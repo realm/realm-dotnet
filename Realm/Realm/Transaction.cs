@@ -89,7 +89,7 @@ namespace Realms
 
         /// <summary>
         /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
-        /// must be used before the end of that block.
+        /// it must be used before the end of that block.
         /// </summary>
         public void Commit()
         {
@@ -98,6 +98,11 @@ namespace Realms
             FinishTransaction();
         }
 
+        /// <summary>
+        /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
+        /// it must be used before the end of that block.
+        /// </summary>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
         public async Task CommitAsync()
         {
             EnsureActionFeasibility("commit");
