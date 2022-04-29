@@ -362,7 +362,7 @@ namespace Realms.Tests.Sync
 
                 using var copiedRealm = GetRealm(copyConfig);
 
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count()));
 
                 var fromCopy = copiedRealm.Write(() =>
                 {
@@ -427,7 +427,7 @@ namespace Realms.Tests.Sync
 
                 using var copiedRealm = GetRealm(copyConfig);
 
-                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count()));
             });
         }
 
@@ -462,7 +462,7 @@ namespace Realms.Tests.Sync
 
                 using var copiedRealm = GetRealm(copyConfig);
 
-                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count()));
             });
         }
 
