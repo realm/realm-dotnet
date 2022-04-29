@@ -476,7 +476,7 @@ REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuratio
             }
         }
 
-        realm->export_to(std::move(config));        
+        realm->convert(std::move(config));
     });
 }
 

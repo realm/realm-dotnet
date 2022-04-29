@@ -525,7 +525,7 @@ namespace Realms
 
         public void WriteCopy(RealmConfigurationBase config)
         {
-            var syncConfiguration = IntPtr.Zero;
+            IntPtr syncConfiguration;
             if (config is SyncConfigurationBase syncConfig)
             {
                 var configHandle = GCHandle.Alloc(syncConfig.CreateNativeSyncConfiguration());
@@ -535,7 +535,6 @@ namespace Realms
             {
                 syncConfiguration = IntPtr.Zero;
             }
-
 
             NativeMethods.write_copy(this, config.CreateNativeConfiguration(), syncConfiguration, config.EncryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
