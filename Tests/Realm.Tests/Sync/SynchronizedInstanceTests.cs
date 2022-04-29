@@ -428,19 +428,6 @@ namespace Realms.Tests.Sync
                 using var copiedRealm = GetRealm(copyConfig);
 
                 Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
-
-                var fromCopy = copiedRealm.Write(() =>
-                {
-                    return copiedRealm.Add(new ObjectIdPrimaryKeyWithValueObject
-                    {
-                        StringValue = "Added from copy"
-                    });
-                });
-
-                // We cannot re-sync like we do it in `WriteCopy_CanSynchronizeData` since the `originalRealm` is not synced but instead
-                // at least try to upload and download the data in the `copiedRealm`.
-                await WaitForUploadAsync(copiedRealm);
-                await WaitForDownloadAsync(copiedRealm);
             });
         }
 
@@ -475,7 +462,7 @@ namespace Realms.Tests.Sync
 
                 using var copiedRealm = GetRealm(copyConfig);
 
-                //Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
             });
         }
 
