@@ -44,8 +44,6 @@ namespace Realms
 
         public ObjectHandle ObjectHandle => _objectHandle;
 
-        public Metadata ObjectMetadata => _metadata;
-
         public bool IsManaged => true;
 
         public bool IsValid => _objectHandle?.IsValid != false;
@@ -62,7 +60,7 @@ namespace Realms
 
         public IThreadConfinedHandle Handle => _objectHandle;
 
-        public Metadata Metadata => _metadata;  //TODO Why we have two metadata in this class??
+        public Metadata Metadata => _metadata;
 
         public RealmObjectBase.Dynamic DynamicApi => new(this);
 

@@ -29,7 +29,7 @@ namespace Realms.Extensions
 
         public static Metadata GetObjectMetadata(this IRealmObject iro)
         {
-            return (iro.Accessor as IManagedAccessor)?.ObjectMetadata;
+            return (iro.Accessor as IManagedAccessor)?.Metadata;
         }
 
         //TODO Later, when we move everything to IRealmObject, this can be removed

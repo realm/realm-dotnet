@@ -26,7 +26,5 @@ namespace Realms
         Metadata Metadata { get; }
 
         ObjectHandle ObjectHandle { get; }
-
-        Metadata ObjectMetadata { get; }
     }
 }

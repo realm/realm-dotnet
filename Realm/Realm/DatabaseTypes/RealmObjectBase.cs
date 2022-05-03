@@ -426,7 +426,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
-                var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.ObjectMetadata);
+                var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
 
                 var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
@@ -476,7 +476,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsList);
 
-                var result = _managedAccessor.ObjectHandle.GetList<T>(_managedAccessor.Realm, propertyName, _managedAccessor.ObjectMetadata, property.ObjectType);
+                var result = _managedAccessor.ObjectHandle.GetList<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -498,7 +498,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsSet);
 
-                var result = _managedAccessor.ObjectHandle.GetSet<T>(_managedAccessor.Realm, propertyName, _managedAccessor.ObjectMetadata, property.ObjectType);
+                var result = _managedAccessor.ObjectHandle.GetSet<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
@@ -520,7 +520,7 @@ namespace Realms
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsDictionary);
 
-                var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.ObjectMetadata, property.ObjectType);
+                var result = _managedAccessor.ObjectHandle.GetDictionary<T>(_managedAccessor.Realm, propertyName, _managedAccessor.Metadata, property.ObjectType);
                 result.IsDynamic = true;
                 return result;
             }
