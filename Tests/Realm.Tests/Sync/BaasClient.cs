@@ -452,7 +452,7 @@ namespace Realms.Tests.Sync
             {
                 database = "my-db",
                 collection = collectionName,
-                data_source = serviceName
+                data_source = "BackingDB"
             };
 
             private static object GenericBaasRule(string collectionName) => new
