@@ -357,8 +357,8 @@ namespace Realms.Tests.Sync
             var rulesEndpoint = $"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules";
             var schemaEndpoint = $"groups/{_groupId}/apps/{app}/schemas";
 
-            var schemaResponse = await PostAsync<BsonDocument>(schemaEndpoint, schema);
-            var ruleResponse = await PostAsync<BsonDocument>(rulesEndpoint, rule);
+            await PostAsync<BsonDocument>(schemaEndpoint, schema);
+            await PostAsync<BsonDocument>(rulesEndpoint, rule);
 
             return;
         }
