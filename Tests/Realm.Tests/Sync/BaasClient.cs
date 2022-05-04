@@ -131,9 +131,13 @@ namespace Realms.Tests.Sync
 
             if (setupCollections)
             {
-                await CreateSchema(app, mongoServiceId, Schemas.Sales(partitionKeyType, mongoServiceId), Schemas.GenericBaasRule("sales"));
-                await CreateSchema(app, mongoServiceId, Schemas.Users(partitionKeyType, mongoServiceId), Schemas.GenericBaasRule("users"));
-                await CreateSchema(app, mongoServiceId, Schemas.Foos(partitionKeyType, mongoServiceId), Schemas.GenericBaasRule("foos"));
+                (var salesSchema, var salesRules) = Schemas.Sales(partitionKeyType);
+                (var usersSchema, var usersRules) = Schemas.Users(partitionKeyType);
+                (var foosSchema, var foosRules) = Schemas.Foos(partitionKeyType);
+
+                await CreateSchema(app, mongoServiceId, salesSchema, salesRules);
+                await CreateSchema(app, mongoServiceId, usersSchema, usersRules);
+                await CreateSchema(app, mongoServiceId, foosSchema, foosRules);
 
                 await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/custom_user_data", new
                 {
@@ -346,7 +350,7 @@ namespace Realms.Tests.Sync
             return mongoServiceId;
         }
 
-        private async Task<string> CreateSchema(BaasApp app, string mongoServiceId, object schema, object rule)
+        private async Task CreateSchema(BaasApp app, string mongoServiceId, object schema, object rule)
         {
             TestHelpers.Output.WriteLine($"Creating schema for {app.Name}...");
 
@@ -356,7 +360,7 @@ namespace Realms.Tests.Sync
             var schemaResponse = await PostAsync<BsonDocument>(schemaEndpoint, schema);
             var ruleResponse = await PostAsync<BsonDocument>(rulesEndpoint, rule);
 
-            return ruleResponse["_id"].AsString;
+            return;
         }
 
         private Task<T> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
@@ -444,23 +448,24 @@ namespace Realms.Tests.Sync
                 additional_fields = new { }
             };
 
-            private static object Metadata(string collectionName, string serviceName) => new
+            private static object Metadata(string collectionName) => new
             {
                 database = "my-db",
                 collection = collectionName,
                 data_source = serviceName
             };
 
-            public static object GenericBaasRule(string collectionName) => new
+            private static object GenericBaasRule(string collectionName) => new
             {
                 collection = collectionName,
                 database = "my-db",
                 roles = new[] { _defaultRoles }
             };
 
-            public static object Sales(string partitionKeyType, string serviceName) => new
+            public static (object Schema, object Rules) Sales(string partitionKeyType) =>
+            (new
             {
-                metadata = Metadata("sales", serviceName),
+                metadata = Metadata("sales"),
                 schema = new
                 {
                     title = "Sale",
@@ -476,11 +481,13 @@ namespace Realms.Tests.Sync
                     },
                     required = new[] { "_id" },
                 },
-            };
+            },
+            GenericBaasRule("sales"));
 
-            public static object Users(string partitionKeyType, string serviceName) => new
+            public static (object Schema, object Rules) Users(string partitionKeyType) =>
+            (new
             {
-                metadata = Metadata("users", serviceName),
+                metadata = Metadata("users"),
                 schema = new
                 {
                     title = "User",
@@ -493,11 +500,13 @@ namespace Realms.Tests.Sync
                     },
                     required = new[] { "_id" },
                 }
-            };
+            },
+            GenericBaasRule("users"));
 
-            public static object Foos(string partitionKeyType, string serviceName) => new
+            public static (object Schema, object Rules) Foos(string partitionKeyType) =>
+            (new
             {
-                metadata = Metadata("foos", serviceName),
+                metadata = Metadata("foos"),
                 schema = new
                 {
                     title = "Foo",
@@ -511,7 +520,8 @@ namespace Realms.Tests.Sync
                     },
                     required = new[] { "_id" },
                 }
-            };
+            },
+            GenericBaasRule("foos"));
         }
     }
 }
