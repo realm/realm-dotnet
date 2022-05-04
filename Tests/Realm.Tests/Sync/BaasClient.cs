@@ -354,11 +354,8 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.Output.WriteLine($"Creating schema for {app.Name}...");
 
-            var rulesEndpoint = $"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules";
-            var schemaEndpoint = $"groups/{_groupId}/apps/{app}/schemas";
-
-            await PostAsync<BsonDocument>(schemaEndpoint, schema);
-            await PostAsync<BsonDocument>(rulesEndpoint, rule);
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
 
             return;
         }
@@ -368,8 +365,6 @@ namespace Realms.Tests.Sync
         private Task<T> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
 
         private Task<T> PutAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Put, relativePath, obj);
-
-        private Task<T> DeleteAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Delete, relativePath);
 
         private Task<T> PatchAsync<T>(string relativePath, object obj) => SendAsync<T>(new HttpMethod("PATCH"), relativePath, obj);
 
