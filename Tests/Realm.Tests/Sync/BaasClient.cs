@@ -440,6 +440,7 @@ namespace Realms.Tests.Sync
 
             public static object Sales(string partitionKeyType) => new
             {
+
                 collection = "sales",
                 database = "my-db",
                 roles = new[] { _defaultRoles },
