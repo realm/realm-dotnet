@@ -771,7 +771,7 @@ Analytics payload
 
             helperType.Interfaces.Add(new InterfaceImplementation(_references.IRealmObjectHelper));
 
-            var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObjectBase);
+            var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.IRealmObject);
             {
                 var il = createInstance.Body.GetILProcessor();
                 il.Emit(OpCodes.Newobj, objectConstructor);
@@ -830,7 +830,7 @@ Analytics payload
                     }
                 */
 
-                var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObjectBase);
+                var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.IRealmObject);
                 copyToRealm.Parameters.Add(instanceParameter);
 
                 var updateParameter = new ParameterDefinition("update", ParameterAttributes.None, _moduleDefinition.TypeSystem.Boolean);
@@ -1012,7 +1012,7 @@ Analytics payload
 
             var getPrimaryKeyValue = new MethodDefinition("TryGetPrimaryKeyValue", DefaultMethodAttributes, _moduleDefinition.TypeSystem.Boolean);
             {
-                var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObject);
+                var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.IRealmObject);
                 getPrimaryKeyValue.Parameters.Add(instanceParameter);
 
                 var valueParameter = new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(_moduleDefinition.TypeSystem.Object))
