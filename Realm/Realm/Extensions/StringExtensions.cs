@@ -29,6 +29,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class StringExtensions
     {
+#if !NETCOREAPP2_1_OR_GREATER
         /// <summary>
         /// Returns a value indicating whether a specified substring occurs within this string.
         /// </summary>
@@ -47,6 +48,7 @@ namespace Realms
 
             return str.IndexOf(value, comparisonType) >= 0;
         }
+#endif
 
         /// <summary>
         /// Performs a 'like' comparison between the specified string and pattern.
