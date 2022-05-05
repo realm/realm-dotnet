@@ -921,7 +921,7 @@ namespace Realms
         /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
         public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 
@@ -1297,7 +1297,7 @@ namespace Realms
         /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
         /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1340,7 +1340,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
         public void RemoveRange<T>(IQueryable<T> range)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 

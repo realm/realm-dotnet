@@ -32,10 +32,9 @@ namespace Realms.Extensions
             return (iro.Accessor as IManagedAccessor)?.Metadata;
         }
 
-        //TODO Later, when we move everything to IRealmObject, this can be removed
         public static void SetManagedAccessor(this IRealmObject iro, IRealmAccessor accessor, Action copyToRealmAction = null)
         {
-            ((IRealmAccessible)iro).SetManagedAccessor(accessor, copyToRealmAction);
+            iro.SetManagedAccessor(accessor, copyToRealmAction);
         }
 
         //TODO Check if this will work even with T: IRealmObject

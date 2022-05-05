@@ -114,7 +114,7 @@ namespace Realms
         /// <typeparam name="T">The type of the elements in the query.</typeparam>
         /// <returns>A frozen copy of this query.</returns>
         public static IQueryable<T> Freeze<T>(this IQueryable<T> query)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(query, nameof(query));
 

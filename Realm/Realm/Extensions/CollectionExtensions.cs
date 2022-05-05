@@ -41,7 +41,7 @@ namespace Realms
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> query)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(query, nameof(query));
 
@@ -60,7 +60,7 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
@@ -136,7 +136,7 @@ namespace Realms
         /// </example>
         /// <exception cref="ArgumentException">Thrown if the list is not managed by Realm.</exception>
         public static IQueryable<T> AsRealmQueryable<T>(this IList<T> list)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(list, nameof(list));
 
@@ -172,7 +172,7 @@ namespace Realms
         /// </example>
         /// <exception cref="ArgumentException">Thrown if the list is not managed by Realm.</exception>
         public static IQueryable<T> AsRealmQueryable<T>(this ISet<T> set)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(set, nameof(set));
 
@@ -370,7 +370,7 @@ namespace Realms
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params RealmValue[] arguments)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
@@ -407,7 +407,7 @@ namespace Realms
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params RealmValue[] arguments)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
