@@ -317,8 +317,8 @@ namespace RealmWeaver
             const string ErrorMessage = "Failed to find the native Realm framework at '{0}'. " +
                 "Please double check that you have imported Realm correctly and that the file exists. " +
                 "Typically, it should be located at Packages/io.realm.unity/Runtime/iOS";
-            const string SimulatorPath = "ios-arm64_i386_x86_64-simulator";
-            const string DevicePath = "ios-arm64_armv7";
+            const string SimulatorPath = "Simulator";
+            const string DevicePath = "Device";
 
             var importers = PluginImporter.GetAllImporters();
 
@@ -327,7 +327,7 @@ namespace RealmWeaver
 
             void UpdateiOSFramework(string path, bool enabled)
             {
-                path = $"realm-wrappers.xcframework/{path}/realm-wrappers.framework";
+                path = $"iOS/{path}/realm-wrappers.framework";
                 var frameworkImporter = importers.SingleOrDefault(i => i.assetPath.Contains(path));
                 if (frameworkImporter == null)
                 {

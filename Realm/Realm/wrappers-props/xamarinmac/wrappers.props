@@ -1,0 +1,10 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <NativeReference Include="$(_RealmNugetRuntimesPath)osx\native\librealm-wrappers.dylib">
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+  </ItemGroup>
+</Project>

@@ -131,9 +131,13 @@ namespace Realms.Tests.Sync
 
             if (setupCollections)
             {
-                await CreateSchema(app, mongoServiceId, Schemas.Sales(partitionKeyType));
-                await CreateSchema(app, mongoServiceId, Schemas.Users(partitionKeyType));
-                await CreateSchema(app, mongoServiceId, Schemas.Foos(partitionKeyType));
+                (var salesSchema, var salesRules) = Schemas.Sales(partitionKeyType);
+                (var usersSchema, var usersRules) = Schemas.Users(partitionKeyType);
+                (var foosSchema, var foosRules) = Schemas.Foos(partitionKeyType);
+
+                await CreateSchema(app, mongoServiceId, salesSchema, salesRules);
+                await CreateSchema(app, mongoServiceId, usersSchema, usersRules);
+                await CreateSchema(app, mongoServiceId, foosSchema, foosRules);
 
                 await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/custom_user_data", new
                 {
@@ -346,13 +350,14 @@ namespace Realms.Tests.Sync
             return mongoServiceId;
         }
 
-        private async Task<string> CreateSchema(BaasApp app, string mongoServiceId, object schema)
+        private async Task CreateSchema(BaasApp app, string mongoServiceId, object schema, object rule)
         {
             TestHelpers.Output.WriteLine($"Creating schema for {app.Name}...");
 
-            var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", schema);
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
 
-            return response["_id"].AsString;
+            return;
         }
 
         private Task<T> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
@@ -438,11 +443,24 @@ namespace Realms.Tests.Sync
                 additional_fields = new { }
             };
 
-            public static object Sales(string partitionKeyType) => new
+            private static object Metadata(string collectionName) => new
             {
-                collection = "sales",
                 database = "my-db",
-                roles = new[] { _defaultRoles },
+                collection = collectionName,
+                data_source = "BackingDB"
+            };
+
+            private static object GenericBaasRule(string collectionName) => new
+            {
+                collection = collectionName,
+                database = "my-db",
+                roles = new[] { _defaultRoles }
+            };
+
+            public static (object Schema, object Rules) Sales(string partitionKeyType) =>
+            (new
+            {
+                metadata = Metadata("sales"),
                 schema = new
                 {
                     title = "Sale",
@@ -457,14 +475,14 @@ namespace Realms.Tests.Sync
                         realm_id = new { bsonType = partitionKeyType }
                     },
                     required = new[] { "_id" },
-                }
-            };
+                },
+            },
+            GenericBaasRule("sales"));
 
-            public static object Users(string partitionKeyType) => new
+            public static (object Schema, object Rules) Users(string partitionKeyType) =>
+            (new
             {
-                collection = "users",
-                database = "my-db",
-                roles = new[] { _defaultRoles },
+                metadata = Metadata("users"),
                 schema = new
                 {
                     title = "User",
@@ -477,13 +495,13 @@ namespace Realms.Tests.Sync
                     },
                     required = new[] { "_id" },
                 }
-            };
+            },
+            GenericBaasRule("users"));
 
-            public static object Foos(string partitionKeyType) => new
+            public static (object Schema, object Rules) Foos(string partitionKeyType) =>
+            (new
             {
-                collection = "foos",
-                database = "my-db",
-                roles = new[] { _defaultRoles },
+                metadata = Metadata("foos"),
                 schema = new
                 {
                     title = "Foo",
@@ -497,7 +515,8 @@ namespace Realms.Tests.Sync
                     },
                     required = new[] { "_id" },
                 }
-            };
+            },
+            GenericBaasRule("foos"));
         }
     }
 }

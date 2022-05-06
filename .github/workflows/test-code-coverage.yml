@@ -40,15 +40,20 @@ jobs:
       with:
         name: wrappers-macos
         path: wrappers/build
-    - name: Fetch artifacts for ios
-      uses: actions/download-artifact@v2
-      with:
-        name: wrappers-ios
-        path: wrappers/build
     - name: Fetch artifacts for linux
       uses: actions/download-artifact@v2
       with:
         name: wrappers-linux
+        path: wrappers/build
+    - name: Fetch artifacts for ios-Simulator
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-ios-Simulator
+        path: wrappers/build
+    - name: Fetch artifacts for ios-Device
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-ios-Device
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
       uses: actions/download-artifact@v2

@@ -434,12 +434,14 @@ namespace Realms
 
         private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
         {
+#if !NETCOREAPP2_1_OR_GREATER
             if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
             {
                 // This is an extension method, so the string to compare against is at position 1.
                 stringArgumentIndex = 1;
                 return true;
             }
+#endif
 
             // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
             // string.Contains overload that accepts comparison.
