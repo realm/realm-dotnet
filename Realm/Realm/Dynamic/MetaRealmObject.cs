@@ -36,7 +36,7 @@ namespace Realms.Dynamic
         private readonly Realm _realm;
         private readonly Metadata _metadata;
 
-        private static readonly PropertyInfo RealmObjectRealmProperty = typeof(RealmObjectBase).GetProperty(nameof(RealmObjectBase.Realm), PrivateBindingFlags);
+        private static readonly PropertyInfo RealmObjectRealmProperty = typeof(IRealmObject).GetProperty(nameof(IRealmObject.Realm), PrivateBindingFlags);
         private static readonly FieldInfo ObjectMetadataSchemaField = typeof(Metadata).GetField(nameof(Metadata.Schema), PrivateBindingFlags);
         private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags).GetMethod;
 

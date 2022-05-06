@@ -133,7 +133,7 @@ namespace Realms.Schema
                 PropertyType.Date => typeof(DateTimeOffset),
                 PropertyType.Float => typeof(float),
                 PropertyType.Double => typeof(double),
-                PropertyType.Object => typeof(RealmObjectBase),
+                PropertyType.Object => typeof(IRealmObject),  //TODO Should we?
                 PropertyType.ObjectId => typeof(ObjectId),
                 PropertyType.Decimal => typeof(Decimal128),
                 PropertyType.Guid => typeof(Guid),
