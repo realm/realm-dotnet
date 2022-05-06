@@ -197,7 +197,7 @@ namespace Realms
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             return _accessor.GetBacklinks<T>(propertyName);
         }

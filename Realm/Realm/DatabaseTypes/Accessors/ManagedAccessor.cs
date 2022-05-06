@@ -122,14 +122,14 @@ namespace Realms
         }
 
         public IQueryable<T> GetBacklinks<T>(string propertyName)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             var resultsHandle = _objectHandle.GetBacklinks(propertyName, _metadata);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
