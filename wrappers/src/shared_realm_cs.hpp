@@ -34,9 +34,9 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using namespace realm;
 using namespace realm::binding;
 
-class ManagedExceptionDuringMigration : public std::runtime_error {
+class ManagedExceptionDuringCallback : public std::runtime_error {
 public:
-    ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
+    ManagedExceptionDuringCallback(std::string message) : std::runtime_error(message) {
     }
 };
 
@@ -70,6 +70,8 @@ struct Configuration
     uint64_t max_number_of_active_versions;
 
     bool use_legacy_guid_representation;
+
+    void* managed_initialization_delegate;
 };
 
 struct SyncConfiguration

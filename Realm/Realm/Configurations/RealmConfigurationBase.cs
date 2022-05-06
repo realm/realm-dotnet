@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
@@ -33,6 +36,8 @@ namespace Realms
     /// </remarks>
     public abstract class RealmConfigurationBase
     {
+        internal delegate void InitialDataDelegate(Realm realm);
+
         /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
@@ -186,6 +191,8 @@ namespace Realms
         /// <seealso cref="Realm.Freeze"/>
         public ulong MaxNumberOfActiveVersions { get; set; } = ulong.MaxValue;
 
+        internal InitialDataDelegate InitialDataCallback { get; set; }
+
         internal RealmConfigurationBase()
         {
         }
@@ -200,13 +207,54 @@ namespace Realms
             return (RealmConfigurationBase)MemberwiseClone();
         }
 
-        internal abstract Realm CreateRealm();
-
-        internal abstract Task<Realm> CreateRealmAsync(CancellationToken cancellationToken);
-
-        internal Native.Configuration CreateNativeConfiguration()
+        internal Realm CreateRealm()
         {
-            return new Native.Configuration
+            var schema = GetSchema();
+            var (configuration, wrappers, gcHandles) = CreateNativeConfiguration();
+
+            try
+            {
+                var sharedRealmHandle = CreateHandle(configuration, schema);
+                return GetRealm(sharedRealmHandle, schema);
+            }
+            catch (ManagedExceptionDuringCallbackException ex)
+            {
+                var managedEx = wrappers.FirstOrDefault(w => w.ManagedException != null)?.ManagedException;
+                throw new AggregateException($"{ex.Message} See inner exception for more details.", managedEx);
+            }
+            finally
+            {
+                gcHandles.Free();
+            }
+        }
+
+        internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        {
+            var schema = GetSchema();
+            var (configuration, wrappers, gcHandles) = CreateNativeConfiguration();
+
+            try
+            {
+                var sharedRealmHandle = await CreateHandleAsync(configuration, schema, cancellationToken);
+                return GetRealm(sharedRealmHandle, schema);
+            }
+            catch (ManagedExceptionDuringCallbackException ex)
+            {
+                var managedEx = wrappers.FirstOrDefault(w => w.ManagedException != null)?.ManagedException;
+                throw new AggregateException($"{ex.Message} See inner exception for more details.", managedEx);
+            }
+            finally
+            {
+                gcHandles.Free();
+            }
+        }
+
+        internal virtual (Native.Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
+        {
+            var handles = new List<GCHandle>();
+            var wrappers = new List<CallbackWrapper>();
+
+            var config = new Native.Configuration
             {
                 Path = DatabasePath,
                 FallbackPipePath = FallbackPipePath,
@@ -217,10 +265,23 @@ namespace Realms
                 use_legacy_guid_representation = Realm.UseLegacyGuidRepresentation,
 #pragma warning restore CS0618 // Type or member is obsolete
             };
+
+            if (InitialDataCallback != null)
+            {
+                var wrapper = CallbackWrapper.Create(this);
+                config.managed_initial_data_delegate = handles.AddHandleTo(wrapper);
+            }
+
+            return (config, wrappers, handles);
         }
 
-        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema)
+        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema = null)
         {
+            if (schema == null)
+            {
+                schema = GetSchema();
+            }
+
             if (IsDynamic && !schema.Any())
             {
                 try
@@ -255,5 +316,9 @@ namespace Realms
 
             return RealmSchema.Default;
         }
+
+        internal abstract SharedRealmHandle CreateHandle(Native.Configuration config, RealmSchema schema);
+
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(Native.Configuration config, RealmSchema schema, CancellationToken cancellationToken);
     }
 }

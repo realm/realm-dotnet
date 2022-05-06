@@ -50,10 +50,11 @@ using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback
 using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
-using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
+using ShouldCompactCallbackT = bool(void* managed_delegate, uint64_t total_size, uint64_t data_size);
+using DataInitializationCallbackT = bool(void* managed_delegate, realm::SharedRealm* realm);
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -68,6 +69,8 @@ namespace binding {
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
     std::function<HandleTaskCompletionCallbackT> s_handle_task_completion;
+    std::function<DataInitializationCallbackT> s_initialize_data;
+
     extern std::function<ErrorCallbackT> s_session_error_callback;
 
     std::atomic<bool> s_can_call_managed;
@@ -145,6 +148,14 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         };
     }
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+    
+    if (configuration.managed_initialization_delegate) {
+        config.initialization_function = [&configuration](SharedRealm realm) {
+            if (!s_initialize_data(configuration.managed_initialization_delegate, &realm)) {
+                throw ManagedExceptionDuringCallback("Exception occurred in a Realm data initialization callback.");
+            }
+        };
+    }
 
     if (configuration.fallback_path) {
         config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
@@ -194,7 +205,8 @@ REALM_EXPORT void shared_realm_install_callbacks(
     DictionaryNotificationCallbackT* notify_dictionary,
     MigrationCallbackT* on_migration,
     ShouldCompactCallbackT* should_compact,
-    HandleTaskCompletionCallbackT* handle_task_completion)
+    HandleTaskCompletionCallbackT* handle_task_completion,
+    DataInitializationCallbackT* initialize_data)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
@@ -206,6 +218,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     s_on_migration = wrap_managed_callback(on_migration);
     s_should_compact = wrap_managed_callback(should_compact);
     s_handle_task_completion = wrap_managed_callback(handle_task_completion);
+    s_initialize_data = wrap_managed_callback(initialize_data);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -256,7 +269,15 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 };
 
                 if (!s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
-                    throw ManagedExceptionDuringMigration();
+                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm migration callback.");
+                }
+            };
+        }
+
+        if (configuration.managed_initialization_delegate) {
+            config.initialization_function = [&configuration](SharedRealm realm) {
+                if (!s_initialize_data(configuration.managed_initialization_delegate, &realm)) {
+                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm data initialization callback.");
                 }
             };
         }

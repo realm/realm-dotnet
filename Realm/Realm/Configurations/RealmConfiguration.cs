@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -140,46 +140,34 @@ namespace Realms
             return ret;
         }
 
-        internal override Realm CreateRealm()
+        internal override SharedRealmHandle CreateHandle(Configuration config, RealmSchema schema)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
-            configuration.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
-            configuration.read_only = IsReadOnly;
-
-            Migration migration = null;
-            if (MigrationCallback != null)
-            {
-                migration = new Migration(this, schema);
-                configuration.managed_migration_handle = GCHandle.ToIntPtr(migration.MigrationHandle);
-            }
-
-            GCHandle? shouldCompactHandle = null;
-            if (ShouldCompactOnLaunch != null)
-            {
-                shouldCompactHandle = GCHandle.Alloc(ShouldCompactOnLaunch);
-                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(shouldCompactHandle.Value);
-            }
-
-            SharedRealmHandle sharedRealmHandle;
-            try
-            {
-                sharedRealmHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
-            }
-            catch (ManagedExceptionDuringMigrationException)
-            {
-                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
-            }
-            finally
-            {
-                migration?.ReleaseHandle();
-                shouldCompactHandle?.Free();
-            }
-
-            return GetRealm(sharedRealmHandle, schema);
+            return SharedRealmHandle.Open(config, schema, EncryptionKey);
         }
 
-        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        internal override (Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
+        {
+            var result = base.CreateNativeConfiguration();
+
+            result.Config.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
+            result.Config.read_only = IsReadOnly;
+
+            if (MigrationCallback != null)
+            {
+                var migration = result.Wrappers.AddWrapperTo(new Migration(this, GetSchema()));
+                result.Config.managed_migration_handle = result.HandlesToFree.AddHandleTo(migration);
+            }
+
+            if (ShouldCompactOnLaunch != null)
+            {
+                var shouldCompact = result.Wrappers.AddWrapperTo(ShouldCompactOnLaunch);
+                result.Config.managed_should_compact_delegate = result.HandlesToFree.AddHandleTo(shouldCompact);
+            }
+
+            return result;
+        }
+
+        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
@@ -187,13 +175,13 @@ namespace Realms
             {
                 return Task.Run(() =>
                 {
-                    using (CreateRealm())
+                    using (CreateHandle(config, schema))
                     {
                     }
-                }, cancellationToken).ContinueWith(_ => CreateRealm(), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateHandle(config, schema), scheduler);
             }
 
-            return Task.FromResult(CreateRealm());
+            return Task.FromResult(CreateHandle(config, schema));
         }
     }
 }

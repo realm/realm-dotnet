@@ -17,8 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -58,19 +62,21 @@ namespace Realms
             Identifier = identifier;
         }
 
-        internal override Realm CreateRealm()
+        internal override SharedRealmHandle CreateHandle(Configuration config, Schema.RealmSchema schema)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
-            configuration.in_memory = true;
-
-            var srHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
-            return new Realm(srHandle, this, schema);
+            return SharedRealmHandle.Open(config, schema, EncryptionKey);
         }
 
-        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        internal override (Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
         {
-            return Task.FromResult(CreateRealm());
+            var result = base.CreateNativeConfiguration();
+            result.Config.in_memory = true;
+            return result;
+        }
+
+        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(CreateHandle(config, schema));
         }
     }
 }

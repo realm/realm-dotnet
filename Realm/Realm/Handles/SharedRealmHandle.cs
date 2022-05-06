@@ -79,7 +79,11 @@ namespace Realms
 
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool ShouldCompactCallback(IntPtr config, ulong totalSize, ulong dataSize);
+            internal delegate bool ShouldCompactCallback(IntPtr managedDelegate, ulong totalSize, ulong dataSize);
+
+            [return: MarshalAs(UnmanagedType.U1)]
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            internal delegate bool InitializationCallback(IntPtr managedInitializationDelegate, IntPtr realm);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open(Configuration configuration,
@@ -189,7 +193,8 @@ namespace Realms
                 DictionaryHandle.KeyNotificationCallback notify_dictionary,
                 MigrationCallback migration_callback,
                 ShouldCompactCallback should_compact_callback,
-                HandleTaskCompletionCallback handle_task_completion);
+                HandleTaskCompletionCallback handle_task_completion,
+                InitializationCallback initialization_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -249,6 +254,7 @@ namespace Realms
             NativeMethods.MigrationCallback onMigration = OnMigration;
             NativeMethods.ShouldCompactCallback shouldCompact = ShouldCompactOnLaunchCallback;
             NativeMethods.HandleTaskCompletionCallback handleTaskCompletion = HandleTaskCompletionCallback;
+            NativeMethods.InitializationCallback onInitialization = OnDataInitialization;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
@@ -260,8 +266,9 @@ namespace Realms
             GCHandle.Alloc(onMigration);
             GCHandle.Alloc(shouldCompact);
             GCHandle.Alloc(handleTaskCompletion);
+            GCHandle.Alloc(onInitialization);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
 
         [Preserve]
@@ -400,10 +407,10 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, IntPtr tcsHandle)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
-            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, tcsHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new AsyncOpenTaskHandle(asyncTaskPtr);
         }
@@ -565,8 +572,22 @@ namespace Realms
         {
             var useSync = config is SyncConfigurationBase;
 
-            NativeMethods.write_copy(this, config.CreateNativeConfiguration(), useSync, config.EncryptionKey, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            var (nativeConfig, wrappers, gcHandles) = config.CreateNativeConfiguration();
+
+            try
+            {
+                NativeMethods.write_copy(this, nativeConfig, useSync, config.EncryptionKey, out var nativeException);
+                nativeException.ThrowIfNecessary();
+            }
+            catch (ManagedExceptionDuringCallbackException ex)
+            {
+                var managedEx = wrappers.FirstOrDefault(w => w.ManagedException != null)?.ManagedException;
+                throw new AggregateException($"{ex.Message} See inner exception for more details.", managedEx);
+            }
+            finally
+            {
+                gcHandles.Free();
+            }
         }
 
         public RealmSchema GetSchema()
@@ -728,23 +749,30 @@ namespace Realms
         private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
-            var migration = (Migration)migrationHandle.Target;
+            var migration = (CallbackWrapper<Migration>)migrationHandle.Target;
 
             var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
-            var oldConfiguration = new RealmConfiguration(migration.Configuration.DatabasePath)
+            var oldConfiguration = new RealmConfiguration(migration.Value.Configuration.DatabasePath)
             {
                 SchemaVersion = schemaVersion,
                 IsReadOnly = true,
                 EnableCache = false
             };
-            var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
+            using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
             var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-            var newRealm = new Realm(newRealmHandle, migration.Configuration, migration.Schema, isInMigration: true);
+            using var newRealm = new Realm(newRealmHandle, migration.Value.Configuration, migration.Value.Schema, isInMigration: true);
 
-            var result = migration.Execute(oldRealm, newRealm, migrationSchema);
-
-            return result;
+            try
+            {
+                migration.Value.Execute(oldRealm, newRealm, migrationSchema);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                migration.ManagedException = ex;
+                return false;
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.ShouldCompactCallback))]
@@ -779,6 +807,25 @@ namespace Realms
                 var inner = ex.Convert();
                 const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
                 tcs.TrySetException(new RealmException(outerMessage, inner));
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.InitializationCallback))]
+        private static bool OnDataInitialization(IntPtr delegatePtr, IntPtr realmPtr)
+        {
+            var wrapperHandle = GCHandle.FromIntPtr(delegatePtr);
+            var wrapper = (CallbackWrapper<RealmConfigurationBase>)wrapperHandle.Target;
+            try
+            {
+                var realmHandle = new UnownedRealmHandle(realmPtr);
+                using var realm = wrapper.Value.GetRealm(realmHandle);
+                wrapper.Value.InitialDataCallback.Invoke(realm);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                wrapper.ManagedException = ex;
+                return false;
             }
         }
 

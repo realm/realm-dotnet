@@ -21,6 +21,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
@@ -94,20 +95,14 @@ namespace Realms.Sync
             User = user;
         }
 
-        internal override Realm CreateRealm()
+        internal override SharedRealmHandle CreateHandle(Configuration config, Schema.RealmSchema schema)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
-
-            var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            return GetRealm(srHandle, schema);
+            return SharedRealmHandle.OpenWithSync(config, syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, CancellationToken cancellationToken)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
@@ -115,7 +110,7 @@ namespace Realms.Sync
             IDisposable progressToken = null;
             try
             {
-                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, syncConfiguration, schema, EncryptionKey, tcsHandle);
+                using var handle = SharedRealmHandle.OpenWithSyncAsync(config, syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
                 cancellationToken.Register(() =>
                 {
                     if (!handle.IsClosed)
@@ -128,8 +123,7 @@ namespace Realms.Sync
                 progressToken = OnBeforeRealmOpen(handle);
 
                 using var realmReference = await tcs.Task;
-                var sharedRealmHandle = SharedRealmHandle.ResolveFromReference(realmReference);
-                return GetRealm(sharedRealmHandle, schema);
+                return SharedRealmHandle.ResolveFromReference(realmReference);
             }
             finally
             {

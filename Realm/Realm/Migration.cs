@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -34,10 +33,7 @@ namespace Realms
     /// <seealso href="https://docs.mongodb.com/realm/dotnet/migrations">See more in the migrations section in the documentation.</seealso>
     public class Migration
     {
-        private GCHandle? _handle;
         private IntPtr _migrationSchema;
-
-        internal GCHandle MigrationHandle => _handle ?? throw new ObjectDisposedException(nameof(Migration));
 
         internal RealmConfiguration Configuration { get; }
 
@@ -55,16 +51,13 @@ namespace Realms
         /// <value>The <see cref="Realm"/> that will be saved after the migration.</value>
         public Realm NewRealm { get; private set; }
 
-        internal Exception MigrationException;
-
         internal Migration(RealmConfiguration configuration, RealmSchema schema)
         {
             Configuration = configuration;
             Schema = schema;
-            _handle = GCHandle.Alloc(this);
         }
 
-        internal bool Execute(Realm oldRealm, Realm newRealm, IntPtr migrationSchema)
+        internal void Execute(Realm oldRealm, Realm newRealm, IntPtr migrationSchema)
         {
             OldRealm = oldRealm;
             NewRealm = newRealm;
@@ -74,23 +67,13 @@ namespace Realms
             {
                 Configuration.MigrationCallback(this, oldRealm.Config.SchemaVersion);
             }
-            catch (Exception e)
-            {
-                MigrationException = e;
-                return false;
-            }
             finally
             {
-                OldRealm.Dispose();
                 OldRealm = null;
-
-                NewRealm.Dispose();
                 NewRealm = null;
 
                 _migrationSchema = IntPtr.Zero;
             }
-
-            return true;
         }
 
         /// <summary>
@@ -146,12 +129,6 @@ namespace Realms
             Argument.NotNullOrEmpty(newPropertyName, nameof(newPropertyName));
 
             NewRealm.SharedRealmHandle.RenameProperty(typeName, oldPropertyName, newPropertyName, _migrationSchema);
-        }
-
-        internal void ReleaseHandle()
-        {
-            _handle?.Free();
-            _handle = null;
         }
     }
 }

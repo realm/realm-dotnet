@@ -18,6 +18,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
@@ -32,6 +34,12 @@ namespace Realms.Sync
     public class FlexibleSyncConfiguration : SyncConfigurationBase
     {
         /// <summary>
+        /// A delegate invoked when a flexible sync Realm is first opened.
+        /// </summary>
+        /// <param name="realm">The realm that has just been opened.</param>
+        public delegate void InitialSubscriptionsDelegate(Realm realm);
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="FlexibleSyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">
@@ -45,6 +53,42 @@ namespace Realms.Sync
             : base(user)
         {
             DatabasePath = GetPathToRealm(optionalPath ?? user.App.Handle.GetRealmPath(User));
+        }
+
+        /// <summary>
+        /// Gets or sets a callback that will be invoked the first time a Realm is opened.
+        /// </summary>
+        /// <remarks>
+        /// This callback allows you to populate an initial set of subscriptions, which will
+        /// then be awaited when <see cref="Realm.GetInstance(RealmConfigurationBase)"/> is invoked.
+        /// </remarks>
+        /// <value>
+        /// The <see cref="InitialSubscriptionsDelegate"/> that will be invoked the first time
+        /// a Realm is opened.
+        /// </value>
+        public InitialSubscriptionsDelegate PopulateInitialSubscriptions { get; set; }
+
+        internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        {
+            var didPopulate = false;
+            if (PopulateInitialSubscriptions != null)
+            {
+                var oldDataCallback = InitialDataCallback;
+                InitialDataCallback = (realm) =>
+                {
+                    oldDataCallback?.Invoke(realm);
+                    PopulateInitialSubscriptions(realm);
+                    didPopulate = true;
+                };
+            }
+
+            var result = await base.CreateRealmAsync(cancellationToken);
+            if (didPopulate)
+            {
+                await result.Subscriptions.WaitForSynchronizationAsync();
+            }
+
+            return result;
         }
 
         internal override Native.SyncConfiguration CreateNativeSyncConfiguration()

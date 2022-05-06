@@ -71,5 +71,7 @@ namespace Realms.Native
 
         [MarshalAs(UnmanagedType.U1)]
         internal bool use_legacy_guid_representation;
+
+        internal IntPtr managed_initial_data_delegate;
     }
 }
