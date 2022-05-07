@@ -79,7 +79,7 @@ namespace Realms
 
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool ShouldCompactCallback(IntPtr managedDelegate, ulong totalSize, ulong dataSize);
+            internal delegate bool ShouldCompactCallback(IntPtr managedDelegate, ulong totalSize, ulong dataSize, [MarshalAs(UnmanagedType.U1)] ref bool should_compact);
 
             [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -776,11 +776,20 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.ShouldCompactCallback))]
-        private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
+        private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize, ref bool shouldCompact)
         {
             var handle = GCHandle.FromIntPtr(delegatePtr);
-            var compactDelegate = (ShouldCompactDelegate)handle.Target;
-            return compactDelegate(totalSize, dataSize);
+            var compactDelegate = (CallbackWrapper<ShouldCompactDelegate>)handle.Target;
+            try
+            {
+                shouldCompact = compactDelegate.Value(totalSize, dataSize);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                compactDelegate.ManagedException = ex;
+                return false;
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.HandleTaskCompletionCallback))]

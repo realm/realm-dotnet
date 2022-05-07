@@ -53,7 +53,7 @@ using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedReal
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
-using ShouldCompactCallbackT = bool(void* managed_delegate, uint64_t total_size, uint64_t data_size);
+using ShouldCompactCallbackT = bool(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
 using DataInitializationCallbackT = bool(void* managed_delegate, realm::SharedRealm* realm);
 
 namespace realm {
@@ -284,7 +284,12 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         if (configuration.managed_should_compact_delegate) {
             config.should_compact_on_launch_function = [&configuration](uint64_t total_bytes, uint64_t used_bytes) {
-                return s_should_compact(configuration.managed_should_compact_delegate, total_bytes, used_bytes);
+                bool result;
+                if (!s_should_compact(configuration.managed_should_compact_delegate, total_bytes, used_bytes, &result)) {
+                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm ShouldCompact callback.");
+                }
+
+                return result;
             };
         }
 
