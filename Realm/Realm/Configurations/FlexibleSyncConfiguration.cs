@@ -76,8 +76,8 @@ namespace Realms.Sync
                 var oldDataCallback = InitialDataCallback;
                 InitialDataCallback = (realm) =>
                 {
-                    oldDataCallback?.Invoke(realm);
                     PopulateInitialSubscriptions(realm);
+                    oldDataCallback?.Invoke(realm);
                     didPopulate = true;
                 };
             }

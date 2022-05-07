@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,35 +102,25 @@ namespace Realms.Sync
             return SharedRealmHandle.OpenWithSync(config, syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, CancellationToken cancellationToken)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, CancellationToken cancellationToken, IList<GCHandle> gcHandles)
         {
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
-            var tcsHandle = GCHandle.Alloc(tcs);
-            IDisposable progressToken = null;
-            try
+            using var handle = SharedRealmHandle.OpenWithSyncAsync(config, syncConfiguration, schema, EncryptionKey, gcHandles.AddHandleTo(tcs));
+            cancellationToken.Register(() =>
             {
-                using var handle = SharedRealmHandle.OpenWithSyncAsync(config, syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
-                cancellationToken.Register(() =>
+                if (!handle.IsClosed)
                 {
-                    if (!handle.IsClosed)
-                    {
-                        handle.Cancel();
-                        tcs.TrySetCanceled();
-                    }
-                });
+                    handle.Cancel();
+                    tcs.TrySetCanceled();
+                }
+            });
 
-                progressToken = OnBeforeRealmOpen(handle);
+            using var progressToken = OnBeforeRealmOpen(handle);
 
-                using var realmReference = await tcs.Task;
-                return SharedRealmHandle.ResolveFromReference(realmReference);
-            }
-            finally
-            {
-                tcsHandle.Free();
-                progressToken?.Dispose();
-            }
+            using var realmReference = await tcs.Task;
+            return SharedRealmHandle.ResolveFromReference(realmReference);
         }
 
         internal virtual IDisposable OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
