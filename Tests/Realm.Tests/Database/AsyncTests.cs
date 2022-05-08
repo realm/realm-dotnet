@@ -474,7 +474,12 @@ namespace Realms.Tests.Database
         [Test]
         public void Async_And_Sync_Write_Mixed_No_Deadlock()
         {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            // RunAsyncTest needs a Func<Task> and Task.WaitAll returns isn't awaitable as it's synchronous.
+            // But we still need to run with an SyncronizationContext and a timer on the tests,
+            // which is exactly what RunAsyncTest supplies.
             TestHelpers.RunAsyncTest(async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 Person[] people = new[]
                 {
@@ -521,8 +526,6 @@ namespace Realms.Tests.Database
 
                 Task.WaitAll(tasks);
                 realm.Refresh();
-                var peopleQuery = realm.All<Person>();
-                var list = peopleQuery.ToList();
                 Assert.That(realm.All<Person>().Count, Is.EqualTo(4));
                 realm.Dispose();
             });
