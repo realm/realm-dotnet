@@ -854,6 +854,8 @@ namespace Realms
         [Obsolete("Use Realm.WriteAsync(Action action) instead.")]
         public Task WriteAsync(Action<Realm> action)
         {
+            ThrowIfDisposed();
+
             Argument.NotNull(action, nameof(action));
 
             return WriteAsync(tempRealm =>
@@ -884,6 +886,10 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action action)
         {
+            ThrowIfDisposed();
+
+            Argument.NotNull(action, nameof(action));
+
             return WriteAsync(() =>
             {
                 action();
