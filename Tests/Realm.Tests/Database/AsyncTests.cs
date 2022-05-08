@@ -475,7 +475,7 @@ namespace Realms.Tests.Database
         public void Async_And_Sync_Write_Mixed_No_Deadlock()
         {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            // RunAsyncTest needs a Func<Task> and Task.WaitAll returns isn't awaitable as it's synchronous.
+            // RunAsyncTest needs a Func<Task> and Task.WaitAll isn't awaitable as it's synchronous.
             // But we still need to run with an SyncronizationContext and a timer on the tests,
             // which is exactly what RunAsyncTest supplies.
             TestHelpers.RunAsyncTest(async () =>
