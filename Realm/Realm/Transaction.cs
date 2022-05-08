@@ -30,7 +30,6 @@ namespace Realms
     public class Transaction : IDisposable
     {
         private Realm _realm;
-        private uint? _asyncTransactionHandle;
 
         private Transaction(Realm realm)
         {
@@ -39,11 +38,8 @@ namespace Realms
 
         internal static async Task<Transaction> BeginTransactionAsync(Realm realm)
         {
-            var asyncHandle = await realm.SharedRealmHandle.BeginTransactionAsync();
-            return new Transaction(realm)
-            {
-                _asyncTransactionHandle = asyncHandle
-            };
+            await realm.SharedRealmHandle.BeginTransactionAsync();
+            return new Transaction(realm);
         }
 
         internal static Transaction BeginTransaction(Realm realm)
@@ -72,16 +68,7 @@ namespace Realms
         public void Rollback()
         {
             EnsureActionFeasibility("roll back");
-
-            if (_asyncTransactionHandle == null)
-            {
-                _realm.SharedRealmHandle.CancelTransaction();
-            }
-            else
-            {
-                _realm.SharedRealmHandle.CancelAsyncTransaction(_asyncTransactionHandle.Value);
-            }
-
+            _realm.SharedRealmHandle.CancelTransaction();
             FinishTransaction();
         }
 
@@ -104,7 +91,7 @@ namespace Realms
         public async Task CommitAsync()
         {
             EnsureActionFeasibility("commit");
-            _asyncTransactionHandle = await _realm.SharedRealmHandle.CommitTransactionAsync();
+            await _realm.SharedRealmHandle.CommitTransactionAsync();
             FinishTransaction();
         }
 
