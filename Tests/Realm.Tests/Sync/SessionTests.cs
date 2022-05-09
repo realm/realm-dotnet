@@ -29,8 +29,8 @@ using Realms.Exceptions.Sync;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
-using Realms.Sync.Testing;
 using Realms.Sync.Native;
+using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
@@ -156,8 +156,6 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realm = await GetRealmAsync(config);
-
-                await WorkaroundREALMC12062();
 
                 GetSession(realm).SimulateClientReset("simulated client reset");
 
@@ -301,8 +299,6 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
 
-                await WorkaroundREALMC12062();
-
                 realm.Write(() =>
                 {
                     realm.Add(new ObjectWithPartitionValue
@@ -369,8 +365,6 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
 
-                await WorkaroundREALMC12062();
-
                 realm.Write(() =>
                 {
                     realm.Add(new ObjectWithPartitionValue
@@ -417,8 +411,6 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config);
-
-                await WorkaroundREALMC12062();
 
                 realm.Write(() =>
                 {
@@ -556,8 +548,6 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
 
-                await WorkaroundREALMC12062();
-
                 GetSession(realm).SimulateClientReset("simulated client reset");
 
                 await tcs.Task;
@@ -636,8 +626,6 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
-
-                await WorkaroundREALMC12062();
 
                 session.SimulateClientReset("simulated client reset");
 
@@ -798,8 +786,6 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
 
-                await WorkaroundREALMC12062();
-
                 var session = GetSession(realm);
                 session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
 
@@ -825,8 +811,6 @@ namespace Realms.Tests.Sync
                 });
 
                 using var realm = await GetRealmAsync(config);
-
-                await WorkaroundREALMC12062();
 
                 var session = GetSession(realm);
 
@@ -1464,13 +1448,6 @@ namespace Realms.Tests.Sync
         private void CleanupOnTearDown(EventHandler<ErrorEventArgs> handler)
         {
             _sessionErrorHandlers.Enqueue(handler);
-        }
-
-        private static async Task WorkaroundREALMC12062()
-        {
-            // This is a hack for REALMC-12062 that delays writing to a Realm until
-            // the initial schema instructions have been synthesized by the server
-            await Task.Delay(5000);
         }
 
         [Explicit]
