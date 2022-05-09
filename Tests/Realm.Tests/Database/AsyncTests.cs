@@ -372,10 +372,6 @@ namespace Realms.Tests.Database
                 var actualWriters = new Queue<Person>();
                 var tasks = new Task[people.Length];
 
-                // opening realm here avoids that in the following for loop multiple threads
-                // try to add Person to the schema at the same time
-                var realm = GetRealm(_realm.Config);
-
                 var thread = new AsyncContextThread();
                 Parallel.For(0, people.Length, index =>
                 {
