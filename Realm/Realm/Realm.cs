@@ -688,7 +688,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Factory for a write <see cref="Transaction"/>. Essential object to create scope for updates.
+        /// Begins a write transaction for this Realm.
         /// </summary>
         /// <example>
         /// <code>
@@ -708,7 +708,8 @@ namespace Realms
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
-            return Transaction.BeginTransaction(this);
+            SharedRealmHandle.BeginTransaction();
+            return new Transaction(this);
         }
 
         /// <summary>
@@ -786,8 +787,16 @@ namespace Realms
         }
 
         /// <summary>
-        /// Factory for a write <see cref="Transaction"/>. Essential object to create scope for updates.
+        /// Asynchronously begins a write transaction for this Realm.
         /// </summary>
+        /// <remarks>
+        /// This method asynchronously acquires the write lock and then dispatches the continuation on the original
+        /// thread the Realm was opened on. The transaction can then be committed either asynchronously or
+        /// synchronously.
+        /// <br/>
+        /// When invoked on a thread without SynchronizationContext (i.e. typically background threads), this method
+        /// calls <see cref="BeginWrite"/> and executes synchronously.
+        /// </remarks>
         /// <example>
         /// <code>
         /// using (var trans = await realm.BeginWriteAsync())
@@ -814,7 +823,8 @@ namespace Realms
                 return BeginWrite();
             }
 
-            return await Transaction.BeginTransactionAsync(this);
+            await SharedRealmHandle.BeginTransactionAsync();
+            return new Transaction(this);
         }
 
         /// <summary>

@@ -48,8 +48,6 @@ namespace Realms
         // it is important that children always have a reference path to their root for this to work
         private bool _noMoreUserThread;
 
-        private uint? _asyncTransactionHandle;
-
         private static class NativeMethods
         {
 #pragma warning disable IDE0049 // Use built-in type alias
@@ -128,13 +126,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_commit_transaction_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern UInt32 commit_transaction_async(SharedRealmHandle sharedRealm, IntPtr tcsPtr, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_async_transaction", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void cancel_async_transaction(SharedRealmHandle sharedRealm, UInt32 async_transaction_native_handle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_async_transaction", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool is_in_async_transaction(SharedRealmHandle sharedRealm);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -480,15 +471,12 @@ namespace Realms
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
-                _asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                _ = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
                 await tcs.Task;
             }
             finally
             {
-                // The _asyncTransactionHandle is only relevant until the async call is not completed, hence queued.
-                // After it's useless and transactions should just be deleted with the normal NativeMethods.cancel_transaction.
-                _asyncTransactionHandle = null;
                 tcsHandle.Free();
             }
         }
@@ -505,43 +493,23 @@ namespace Realms
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
-                _asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                _ = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
                 await tcs.Task;
             }
             finally
             {
-                // The _asyncTransactionHandle is only relevant until the async call is not completed, hence queued.
-                // After it's useless and transactions should just be deleted with the normal NativeMethods.cancel_transaction.
-                _asyncTransactionHandle = null;
                 tcsHandle.Free();
             }
         }
 
         public void CancelTransaction()
         {
-            var nativeException = new NativeException
-            {
-                type = RealmExceptionCodes.NoError
-            };
-
-            if (!IsInTransaction() && _asyncTransactionHandle != null)
-            {
-                NativeMethods.cancel_async_transaction(this, _asyncTransactionHandle.Value, out nativeException);
-            }
-            else
-            {
-                // core may have had a chance to start the transaction while we were waiting to hear from
-                // their callback of write lock successfully acquired. So just clear the handle.
-                _asyncTransactionHandle = null;
-
-                NativeMethods.cancel_transaction(this, out nativeException);
-            }
-
+            NativeMethods.cancel_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public bool IsInTransaction() => NativeMethods.is_in_transaction(this) || NativeMethods.is_in_async_transaction(this);
+        public bool IsInTransaction() => NativeMethods.is_in_transaction(this);
 
         public bool Refresh()
         {
@@ -789,7 +757,7 @@ namespace Realms
         private static void HandleTaskCompletionCallback(IntPtr tcs_ptr, NativeException ex)
         {
             // The task awaiting on this tcs should only be unblocked once the native call has finished.
-            // If not scheduled for later execution, Realm::run_writed, the caller of this callback, losing control
+            // If not scheduled for later execution, Realm::run_writes, the caller of this callback, losing control
             // of the flow which is given back to the managed task that was awaiting.
             SynchronizationContext.Current.Post(_ =>
             {

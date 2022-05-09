@@ -31,21 +31,9 @@ namespace Realms
     {
         private Realm _realm;
 
-        private Transaction(Realm realm)
+        internal Transaction(Realm realm)
         {
             _realm = realm;
-        }
-
-        internal static async Task<Transaction> BeginTransactionAsync(Realm realm)
-        {
-            await realm.SharedRealmHandle.BeginTransactionAsync();
-            return new Transaction(realm);
-        }
-
-        internal static Transaction BeginTransaction(Realm realm)
-        {
-            realm.SharedRealmHandle.BeginTransaction();
-            return new Transaction(realm);
         }
 
         /// <summary>
