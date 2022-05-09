@@ -57,7 +57,7 @@ namespace Realms.Dynamic
 
         private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
-        public MetaRealmObject(Expression expression, RealmObjectBase value)
+        public MetaRealmObject(Expression expression, IRealmObject value)
             : base(expression, BindingRestrictions.Empty, value)
         {
             _realm = value.Realm;

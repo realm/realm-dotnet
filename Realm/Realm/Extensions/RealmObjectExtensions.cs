@@ -37,9 +37,8 @@ namespace Realms.Extensions
             iro.SetManagedAccessor(accessor, copyToRealmAction);
         }
 
-        //TODO Check if this will work even with T: IRealmObject
         public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObject iro, string propertyName, ResultsHandle resultsHandle)
-            where T : RealmObjectBase
+            where T : IRealmObject
         {
             return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
