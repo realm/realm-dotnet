@@ -42,9 +42,21 @@ namespace Realms
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
-                var platform = Environment.OSVersion.Platform;
+#if NET5_0_OR_GREATER
+                if (OperatingSystem.IsIOS())
+                {
+                    NativeLibrary.SetDllImportResolver(typeof(NativeCommon).Assembly, (libraryName, assembly, searchPath) =>
+                    {
+                        if (libraryName == InteropConfig.DLL_NAME)
+                        {
+                            libraryName = "@rpath/realm-wrappers.framework/realm-wrappers";
+                        }
 
-                if (platform == PlatformID.Win32NT)
+                        return NativeLibrary.Load(libraryName, assembly, searchPath);
+                    });
+                }
+#else
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 {
                     // This is the path for regular windows apps using NuGet.
                     AddWindowsWrappersToPath("lib\\win32");
@@ -55,6 +67,7 @@ namespace Realms
                     // This is the path in the Unity package - it is what the Editor uses.
                     AddWindowsWrappersToPath("Windows", isUnityTarget: true);
                 }
+#endif
 
                 SynchronizationContextScheduler.Initialize();
                 SharedRealmHandle.Initialize();

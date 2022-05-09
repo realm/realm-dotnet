@@ -28,6 +28,7 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class StringExtensionsTests
     {
+#if !NETCOREAPP2_1_OR_GREATER
         public static object[] ContainsTestValues =
         {
             new object[] { "text", "x", StringComparison.Ordinal, true },
@@ -69,8 +70,9 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(InvalidContainsTestCases))]
         public void Contains_TestInvalidArgumentCases(string original, string value, StringComparison comparisonType, Type exceptionType)
         {
-            Assert.That(() => original.Contains(value, comparisonType), Throws.TypeOf(exceptionType));
+            Assert.That(() => StringExtensions.Contains(original, value, comparisonType), Throws.TypeOf(exceptionType));
         }
+#endif
 
         [TestCaseSource(nameof(LikeTestValues))]
         public void LikeTests(string str, string value, bool caseSensitive, bool expected)
