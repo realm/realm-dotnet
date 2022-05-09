@@ -522,7 +522,7 @@ namespace Realms
             return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
         }
 
-        internal IRealmObject MakeObject(Metadata metadata, ObjectHandle objectHandle)
+        internal IRealmObjectBase MakeObject(Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
             ret.SetManagedAccessor(ManagedAccessor.Create(this, objectHandle, metadata));
@@ -661,7 +661,7 @@ namespace Realms
             obj.SetManagedAccessor(ManagedAccessor.Create(this, objectHandle, metadata), () => { metadata.Helper.CopyToRealm(obj, update, isNew); });
         }
 
-        private bool ShouldAddNewObject(IRealmObject obj)
+        private bool ShouldAddNewObject(IRealmObjectBase obj)
         {
             Argument.NotNull(obj, nameof(obj));
 
@@ -867,7 +867,7 @@ namespace Realms
             {
                 using var realm = GetInstance(Config);
                 var writeAction = realm.Write(() => function(realm));
-                if (writeAction is IRealmObject rob && rob.IsManaged && rob.IsValid)
+                if (writeAction is IRealmObjectBase rob && rob.IsManaged && rob.IsValid)
                 {
                     return (object)ThreadSafeReference.Create(rob);
                 }
@@ -877,7 +877,7 @@ namespace Realms
 
             await RefreshAsync();
 
-            if (result is ThreadSafeReference.Object<IRealmObject> tsr)
+            if (result is ThreadSafeReference.Object<IRealmObjectBase> tsr)
             {
                 return (T)(object)ResolveReference(tsr);
             }
@@ -921,7 +921,7 @@ namespace Realms
         /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
         public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             ThrowIfDisposed();
 
@@ -1193,7 +1193,7 @@ namespace Realms
         /// if the object has been deleted after the reference was created.
         /// </returns>
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1297,7 +1297,7 @@ namespace Realms
         /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
         /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1317,7 +1317,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>obj</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If you pass a standalone object.</exception>
-        public void Remove(IRealmObject obj)
+        public void Remove(IRealmObjectBase obj)
         {
             ThrowIfDisposed();
 
@@ -1340,7 +1340,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
         public void RemoveRange<T>(IQueryable<T> range)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             ThrowIfDisposed();
 
@@ -1634,7 +1634,7 @@ namespace Realms
             /// </param>
             /// <param name="propertyName">The property to which the newly created embedded object will be assigned.</param>
             /// <returns>A dynamically-accessed embedded object.</returns>
-            public dynamic CreateEmbeddedObjectForProperty(IRealmObject parent, string propertyName)
+            public dynamic CreateEmbeddedObjectForProperty(IRealmObjectBase parent, string propertyName)
             {
                 _realm.ThrowIfDisposed();
 

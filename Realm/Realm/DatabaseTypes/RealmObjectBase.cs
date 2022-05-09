@@ -36,7 +36,7 @@ namespace Realms
     /// </summary>
     [Preserve(AllMembers = true)]
     public abstract partial class RealmObjectBase
-        : IRealmObject,
+        : IRealmObjectBase,
           IRealmAccessible,
           INotifyPropertyChanged,
           IReflectableType
@@ -75,7 +75,7 @@ namespace Realms
 
         // TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
         [IgnoreDataMember, XmlIgnore]
-        IRealmAccessor IRealmObject.Accessor => _accessor;
+        IRealmAccessor IRealmObjectBase.Accessor => _accessor;
 
         /// <summary>
         /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
@@ -196,7 +196,7 @@ namespace Realms
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             return _accessor.GetBacklinks<T>(propertyName);
         }

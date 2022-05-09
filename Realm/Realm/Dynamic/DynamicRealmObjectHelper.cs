@@ -35,12 +35,12 @@ namespace Realms.Dynamic
             _embedded = embedded;
         }
 
-        public void CopyToRealm(IRealmObject instance, bool update, bool setPrimaryKey)
+        public void CopyToRealm(IRealmObjectBase instance, bool update, bool setPrimaryKey)
         {
             throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
         }
 
-        public IRealmObject CreateInstance()
+        public IRealmObjectBase CreateInstance()
         {
             if (_embedded)
             {
@@ -50,7 +50,7 @@ namespace Realms.Dynamic
             return new DynamicRealmObject();
         }
 
-        public bool TryGetPrimaryKeyValue(IRealmObject instance, out object value)
+        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
             if (!instance.ObjectSchema.PrimaryKeyProperty.HasValue)
             {

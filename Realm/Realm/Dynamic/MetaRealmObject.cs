@@ -36,7 +36,7 @@ namespace Realms.Dynamic
         private readonly Realm _realm;
         private readonly Metadata _metadata;
 
-        private static readonly PropertyInfo RealmObjectRealmProperty = typeof(IRealmObject).GetProperty(nameof(IRealmObject.Realm), PrivateBindingFlags);
+        private static readonly PropertyInfo RealmObjectRealmProperty = typeof(IRealmObjectBase).GetProperty(nameof(IRealmObjectBase.Realm), PrivateBindingFlags);
         private static readonly FieldInfo ObjectMetadataSchemaField = typeof(Metadata).GetField(nameof(Metadata.Schema), PrivateBindingFlags);
         private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags).GetMethod;
 
@@ -57,7 +57,7 @@ namespace Realms.Dynamic
 
         private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
-        public MetaRealmObject(Expression expression, IRealmObject value)
+        public MetaRealmObject(Expression expression, IRealmObjectBase value)
             : base(expression, BindingRestrictions.Empty, value)
         {
             _realm = value.Realm;

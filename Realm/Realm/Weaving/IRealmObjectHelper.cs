@@ -27,7 +27,7 @@ namespace Realms.Weaving
         /// Creates an instance of a RealmObjectBase.
         /// </summary>
         /// <returns>The RealmObjectBase.</returns>
-        IRealmObject CreateInstance();
+        IRealmObjectBase CreateInstance();
 
         /// <summary>
         /// A strongly typed, optimized method to add a RealmObjectBase to the realm.
@@ -38,7 +38,7 @@ namespace Realms.Weaving
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
         /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
         /// </param>
-        void CopyToRealm(IRealmObject instance, bool update, bool skipDefaults);
+        void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults);
 
         /// <summary>
         /// Tries to get the primary key value from a RealmObjectBase.
@@ -46,6 +46,6 @@ namespace Realms.Weaving
         /// <returns><c>true</c>, if the class has primary key, <c>false</c> otherwise.</returns>
         /// <param name="instance">The RealmObjectBase instance.</param>
         /// <param name="value">The value of the primary key.</param>
-        bool TryGetPrimaryKeyValue(IRealmObject instance, out object value);
+        bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value);
     }
 }

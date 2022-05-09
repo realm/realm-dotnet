@@ -93,7 +93,7 @@ namespace Realms
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Object{T})"/> on a different thread.</returns>
         public static Object<T> Create<T>(T value)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             return new Object<T>(value);
         }
@@ -180,13 +180,13 @@ namespace Realms
         [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "A nested class with generic argument is unlikely to be confused with System.Object.")]
         [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is intentional as ThreadSafeReference.Object represents an object.")]
         public class Object<T> : ThreadSafeReference
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             internal Object(T value) : base(GetThreadConfined(value), Type.Object)
             {
             }
 
-            private static IThreadConfined GetThreadConfined(IRealmObject ro)
+            private static IThreadConfined GetThreadConfined(IRealmObjectBase ro)
             {
                 if (!ro.IsManaged)
                 {

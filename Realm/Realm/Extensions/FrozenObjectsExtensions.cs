@@ -48,7 +48,7 @@ namespace Realms
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A new frozen instance of the passed in object or the object itself if it was already frozen.</returns>
         public static T Freeze<T>(this T realmObj)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             Argument.NotNull(realmObj, nameof(realmObj));
 
@@ -114,7 +114,7 @@ namespace Realms
         /// <typeparam name="T">The type of the elements in the query.</typeparam>
         /// <returns>A frozen copy of this query.</returns>
         public static IQueryable<T> Freeze<T>(this IQueryable<T> query)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             Argument.NotNull(query, nameof(query));
 

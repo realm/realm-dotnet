@@ -21,7 +21,7 @@ using Realms.Schema;
 
 namespace Realms
 {
-    public interface IRealmObject : IRealmAccessible
+    public interface IRealmObjectBase : IRealmAccessible
     {
         IRealmAccessor Accessor { get; }
 

@@ -22,23 +22,23 @@ namespace Realms.Extensions
 {
     internal static class RealmObjectExtensions
     {
-        public static ObjectHandle GetObjectHandle(this IRealmObject iro)
+        public static ObjectHandle GetObjectHandle(this IRealmObjectBase iro)
         {
             return (iro.Accessor as IManagedAccessor)?.ObjectHandle;
         }
 
-        public static Metadata GetObjectMetadata(this IRealmObject iro)
+        public static Metadata GetObjectMetadata(this IRealmObjectBase iro)
         {
             return (iro.Accessor as IManagedAccessor)?.Metadata;
         }
 
-        public static void SetManagedAccessor(this IRealmObject iro, IRealmAccessor accessor, Action copyToRealmAction = null)
+        public static void SetManagedAccessor(this IRealmObjectBase iro, IRealmAccessor accessor, Action copyToRealmAction = null)
         {
             iro.SetManagedAccessor(accessor, copyToRealmAction);
         }
 
-        public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObject iro, string propertyName, ResultsHandle resultsHandle)
-            where T : IRealmObject
+        public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObjectBase iro, string propertyName, ResultsHandle resultsHandle)
+            where T : IRealmObjectBase
         {
             return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }

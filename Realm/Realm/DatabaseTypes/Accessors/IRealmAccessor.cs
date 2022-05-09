@@ -56,7 +56,7 @@ namespace Realms
         IQueryable<dynamic> GetBacklinks(string objectType, string propertyName);
 
         IQueryable<T> GetBacklinks<T>(string propertyName)
-            where T : IRealmObject;
+            where T : IRealmObjectBase;
 
         void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate);
 

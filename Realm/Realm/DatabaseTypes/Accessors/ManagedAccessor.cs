@@ -122,14 +122,14 @@ namespace Realms
         }
 
         public IQueryable<T> GetBacklinks<T>(string propertyName)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             var resultsHandle = _objectHandle.GetBacklinks(propertyName, _metadata);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
-            where T : IRealmObject
+            where T : IRealmObjectBase
         {
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
@@ -241,7 +241,7 @@ namespace Realms
             }
 
             // If run-time types are not exactly the same, return false.
-            if (obj is not IRealmObject iro)
+            if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
