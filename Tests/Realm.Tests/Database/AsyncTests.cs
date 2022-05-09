@@ -305,7 +305,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var t = Task.Run(() => AsyncContext.Run (async () =>
+                var t = Task.Run(() => AsyncContext.Run(async () =>
                 {
                     var realm = GetRealm();
                     var transaction = await realm.BeginWriteAsync();
@@ -371,10 +371,10 @@ namespace Realms.Tests.Database
                 var markers = new ConcurrentQueue<Person>();
                 var actualWriters = new Queue<Person>();
                 var tasks = new Task[people.Length];
-                _realm.Write(() =>
-                {
-                    _realm.RemoveAll<Person>();
-                });
+
+                // opening realm here avoids that in the following for loop multiple threads
+                // try to add Person to the schema at the same time
+                var realm = GetRealm(_realm.Config);
 
                 var thread = new AsyncContextThread();
                 Parallel.For(0, people.Length, index =>
@@ -402,7 +402,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Async_And_Sync_Write_Mixed_No_Deadlock()
+        public void AsyncWriteSyncWrite_Mixed_NoDeadlock()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
@@ -416,7 +416,7 @@ namespace Realms.Tests.Database
 
                 var tasks = new Task[people.Length];
 
-                // opening realm here avoids that in the following ror loop multiple threads
+                // opening realm here avoids that in the following for loop multiple threads
                 // try to add Person to the schema at the same time
                 var realm = GetRealm(_realm.Config);
 
