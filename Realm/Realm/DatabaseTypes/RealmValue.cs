@@ -603,6 +603,8 @@ namespace Realms
         /// </returns>
         public RealmObjectBase AsRealmObject() => AsRealmObject<RealmObjectBase>();
 
+        public IRealmObjectBase AsIRealmObject() => AsRealmObject<IRealmObjectBase>();
+
         /// <summary>
         /// Returns the stored value as a <typeparamref name="T"/> which inherits from <see cref="RealmObjectBase"/>.
         /// </summary>
@@ -614,11 +616,11 @@ namespace Realms
         /// A <see cref="RealmObjectBase"/> instance representing the value stored in the database. It will be <c>null</c> if <see cref="Type"/> is <see cref="RealmValueType.Null"/>.
         /// </returns>
         public T AsRealmObject<T>()
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             if (Type == RealmValueType.Null)
             {
-                return null;
+                return default(T);
             }
 
             EnsureType("object", RealmValueType.Object);

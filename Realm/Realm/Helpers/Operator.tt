@@ -72,6 +72,8 @@ namespace Realms.Helpers
 <#
             }
 #>
+            [(typeof(RealmValue), typeof(IRealmObjectBase))] = new RealmValueIRealmObjectBaseConverter(),
+            [(typeof(IRealmObjectBase), typeof(RealmValue))] = new IRealmObjectBaseRealmValueConverter(),
         };
 
         /// <summary>
@@ -322,6 +324,11 @@ namespace Realms.Helpers
 <#
             }
 #>
+
+        private class IRealmObjectBaseRealmValueConverter : SpecializedConverterBase<IRealmObjectBase, RealmValue>
+        {
+            public override RealmValue Convert(IRealmObjectBase value) => RealmValue.Create(value, RealmValueType.Object);
+        }
         #endregion ToRealmValue Converters
 
         #region FromRealmValue Converters
@@ -337,6 +344,11 @@ namespace Realms.Helpers
 <#
             }
 #>
+
+        private class RealmValueIRealmObjectBaseConverter : SpecializedConverterBase<RealmValue, IRealmObjectBase>
+        {
+            public override IRealmObjectBase Convert(RealmValue value) => value.AsIRealmObject();
+        }
         #endregion FromRealmValue Converters
 
         #region Integral Converters

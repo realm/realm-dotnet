@@ -36,7 +36,16 @@ namespace Realms
         ObjectSchema ObjectSchema { get; }
     }
 
-    public interface IRealmAccessible  // TODO Suggestions for name?
+    public interface IRealmObject: IRealmObjectBase
+    {
+    }
+
+    public interface IEmbeddedObject: IRealmObjectBase
+    {
+        IRealmObject Parent { get; }
+    }
+
+    public interface IRealmAccessible  // TODO Need a better name
     {
         void SetManagedAccessor(IRealmAccessor acccessor, Action copyToRealmAction = null);
     }

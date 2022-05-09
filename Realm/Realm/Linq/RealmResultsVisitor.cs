@@ -812,9 +812,9 @@ namespace Realms
             {
                 action(realm, propertyIndex, Operator.Convert<DateTimeOffset>(value));
             }
-            else if (typeof(RealmObjectBase).IsAssignableFrom(columnType))
+            else if (typeof(IRealmObjectBase).IsAssignableFrom(columnType))
             {
-                action(realm, propertyIndex, Operator.Convert<RealmObjectBase>(value));
+                action(realm, propertyIndex, RealmValue.Create(Operator.Convert<IRealmObjectBase>(value), RealmValueType.Object));  //TODO Maybe we can do better
             }
             else if (columnType == typeof(RealmValue))
             {
