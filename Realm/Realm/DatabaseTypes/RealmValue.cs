@@ -165,7 +165,7 @@ namespace Realms
                 RealmValueType.Decimal128 => Decimal(Operator.Convert<T, Decimal128>(value)),
                 RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
                 RealmValueType.Guid => Guid(Operator.Convert<T, Guid>(value)),
-                RealmValueType.Object => Object(Operator.Convert<T, RealmObjectBase>(value)),
+                RealmValueType.Object => Object(Operator.Convert<T, IRealmObjectBase>(value)),
                 _ => throw new NotSupportedException($"RealmValueType {type} is not supported."),
             };
         }
@@ -654,7 +654,7 @@ namespace Realms
                 RealmValueType.Decimal128 => Operator.Convert<Decimal128, T>(AsDecimal128()),
                 RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(AsObjectId()),
                 RealmValueType.Guid => Operator.Convert<Guid, T>(AsGuid()),
-                RealmValueType.Object => Operator.Convert<RealmObjectBase, T>(AsRealmObject()),
+                RealmValueType.Object => Operator.Convert<IRealmObjectBase, T>(AsIRealmObject()),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }
