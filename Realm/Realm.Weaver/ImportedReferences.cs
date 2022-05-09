@@ -88,7 +88,7 @@ namespace RealmWeaver
 
         public TypeReference RealmObjectBase { get; private set; }
 
-        public TypeReference IRealmObject { get; private set; }
+        public TypeReference IRealmObjectBase { get; private set; }
 
         public TypeReference EmbeddedObject { get; private set; }
 
@@ -249,7 +249,7 @@ namespace RealmWeaver
         {
             Realm = new TypeReference("Realms", "Realm", Module, realmAssembly);
             RealmObjectBase = new TypeReference("Realms", "RealmObjectBase", Module, realmAssembly);
-            IRealmObject = new TypeReference("Realms", "IRealmObject", Module, realmAssembly);
+            IRealmObjectBase = new TypeReference("Realms", "IRealmObjectBase", Module, realmAssembly);
             RealmObject = new TypeReference("Realms", "RealmObject", Module, realmAssembly);
             EmbeddedObject = new TypeReference("Realms", "EmbeddedObject", Module, realmAssembly);
             RealmSchema_PropertyType = new TypeReference("Realms.Schema", "PropertyType", Module, realmAssembly, valueType: true);
