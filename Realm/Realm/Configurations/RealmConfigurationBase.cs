@@ -235,7 +235,7 @@ namespace Realms
 
             try
             {
-                var sharedRealmHandle = await CreateHandleAsync(configuration, schema, cancellationToken, gcHandles);
+                var sharedRealmHandle = await CreateHandleAsync(configuration, schema, gcHandles, cancellationToken);
                 return GetRealm(sharedRealmHandle, schema);
             }
             catch (ManagedExceptionDuringCallbackException ex)
@@ -319,6 +319,6 @@ namespace Realms
 
         internal abstract SharedRealmHandle CreateHandle(Native.Configuration config, RealmSchema schema);
 
-        internal abstract Task<SharedRealmHandle> CreateHandleAsync(Native.Configuration config, RealmSchema schema, CancellationToken cancellationToken, IList<GCHandle> gcHandles);
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(Native.Configuration config, RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken);
     }
 }

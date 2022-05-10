@@ -1770,6 +1770,31 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void Integration_InitialSubscriptions_Named()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    var query = r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+
+                    r.Subscriptions.Add(query);
+                };
+
+                using var realm = await GetRealmAsync(config);
+
+                var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
+                Assert.That(query.Count(), Is.EqualTo(2));
+                Assert.That(query, Is.EquivalentTo(new[] { 1.5, 2.5 }));
+            });
+        }
+
         private async Task<Realm> AddSomeData(Guid testGuid)
         {
             var writerRealm = await GetFLXIntegrationRealmAsync();

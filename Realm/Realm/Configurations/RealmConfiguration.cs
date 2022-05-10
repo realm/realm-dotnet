@@ -140,10 +140,7 @@ namespace Realms
             return ret;
         }
 
-        internal override SharedRealmHandle CreateHandle(Configuration config, RealmSchema schema)
-        {
-            return SharedRealmHandle.Open(config, schema, EncryptionKey);
-        }
+        internal override SharedRealmHandle CreateHandle(Configuration config, RealmSchema schema) => SharedRealmHandle.Open(config, schema, EncryptionKey);
 
         internal override (Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
         {
@@ -167,7 +164,7 @@ namespace Realms
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.

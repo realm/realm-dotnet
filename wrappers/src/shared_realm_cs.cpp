@@ -150,8 +150,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
     
     if (configuration.managed_initialization_delegate) {
-        config.initialization_function = [&configuration](SharedRealm realm) {
-            if (!s_initialize_data(configuration.managed_initialization_delegate, &realm)) {
+        config.initialization_function = [managed_delegate = configuration.managed_initialization_delegate](SharedRealm realm) {
+            if (!s_initialize_data(managed_delegate, &realm)) {
                 throw ManagedExceptionDuringCallback("Exception occurred in a Realm data initialization callback.");
             }
         };

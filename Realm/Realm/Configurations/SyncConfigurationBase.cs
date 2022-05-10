@@ -102,7 +102,7 @@ namespace Realms.Sync
             return SharedRealmHandle.OpenWithSync(config, syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, CancellationToken cancellationToken, IList<GCHandle> gcHandles)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken)
         {
             var syncConfiguration = CreateNativeSyncConfiguration();
 
