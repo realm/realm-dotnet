@@ -28,6 +28,18 @@
 ### Internal
 * Using Core x.y.z.
 
+## 10.12.0 (2022-05-05)
+
+### Enhancements
+* Preview support for .NET 6 with iOS, Android, and MAUI.
+  We've added tentative support for the new .NET 6 Mobile workloads (except MacCatalyst, which will be enabled later). The .NET tooling itself is still in preview so we don't have good test coverage of the new platforms just yet. Please report any issues you find at https://github.com/realm/realm-dotnet/issues/new/choose.
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
 ## 10.11.2 (2022-04-12)
 
 ### Fixed
