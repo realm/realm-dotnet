@@ -5,16 +5,17 @@
   ```csharp
   using Realms;
 
-  var realm = GetRealm();
-  var person = new Person
+  var person = await _realm.WriteAsync(() =>
   {
-    FirstName = "Marco"
-  };
-
-  await realm.WriteAsync(() =>
-  {
-    realm.Add(person);
+    return _realm.Add(
+      new Person
+      {
+        FirstName = "Marco"
+      });
   });
+
+  // you can use/modify person now
+  // without the need of using ThreadSafeReference
   ```
   (PR [#2899](https://github.com/realm/realm-dotnet/pull/2899))
 

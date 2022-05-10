@@ -269,15 +269,18 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var person = new Person
+                var person = await _realm.WriteAsync(() =>
                 {
-                    FirstName = "Marco"
-                };
-
-                await _realm.WriteAsync(() =>
-                {
-                    _realm.Add(person);
+                    return _realm.Add(
+                        new Person
+                        {
+                            FirstName = "Marco"
+                        });
                 });
+
+                // assert that this thread can access a managed object that was created
+                // within an async write transaction
+                Assert.That(() => person.FullName, Throws.Nothing);
             });
         }
 
@@ -297,39 +300,6 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(peopleQuery.Single(), Is.EqualTo(person));
-            });
-        }
-
-        [Test]
-        public void AsyncBeginWrite_StackReferencedNativeException_DoesNotThrow()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var t = Task.Run(() => AsyncContext.Run(async () =>
-                {
-                    var realm = GetRealm();
-                    var transaction = await realm.BeginWriteAsync();
-                    while (true)
-                    {
-                        await Task.Delay(1000);
-                    }
-                }));
-
-                // give time for the lock to be acquired from the other task
-                await Task.Delay(2000);
-
-                Exception ex = null;
-
-                try
-                {
-                    await _realm.BeginWriteAsync();
-                }
-                catch (Exception e)
-                {
-                    ex = e;
-                }
-
-                Assert.That(ex, Is.Null);
             });
         }
 
@@ -360,40 +330,21 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var people = new Person[]
-                {
-                    new Person { FirstName = "Anderson" },
-                    new Person { FirstName = "Banderson" },
-                    new Person { FirstName = "Canderson" },
-                    new Person { FirstName = "Danderson" }
-                };
+                var acquisitionOrder = new List<int>();
+                var tasks = new List<Task>();
 
-                var markers = new ConcurrentQueue<Person>();
-                var actualWriters = new Queue<Person>();
-                var tasks = new Task[people.Length];
-
-                var thread = new AsyncContextThread();
-                Parallel.For(0, people.Length, index =>
+                for (var i = 0; i < 5; i++)
                 {
-                    tasks[index] = thread.Factory.Run(async () =>
+                    var index = i;
+                    tasks.Add(_realm.WriteAsync(() =>
                     {
-                        using var realm = GetRealm();
-                        markers.Enqueue(people[index]);
-                        await realm.WriteAsync(() =>
-                        {
-                            actualWriters.Enqueue(people[index]);
-                        });
-                    });
-                });
+                        acquisitionOrder.Add(index);
+                    }));
+                }
 
                 await Task.WhenAll(tasks);
 
-                for (int i = 0; i < people.Length; i++)
-                {
-                    var marker = markers.ElementAt(i);
-                    var writer = actualWriters.ElementAt(i);
-                    Assert.That(marker.FirstName, Is.EqualTo(writer.FirstName));
-                }
+                Assert.That(acquisitionOrder, Is.EqualTo(new[] { 0, 1, 2, 3, 4 }));
             });
         }
 

@@ -756,9 +756,7 @@ namespace Realms
         [MonoPInvokeCallback(typeof(NativeMethods.HandleTaskCompletionCallback))]
         private static void HandleTaskCompletionCallback(IntPtr tcs_ptr, NativeException ex)
         {
-            // The task awaiting on this tcs should only be unblocked once the native call has finished.
-            // If not scheduled for later execution, Realm::run_writes, the caller of this callback, losing control
-            // of the flow which is given back to the managed task that was awaiting.
+            // The task awaiting on this tcs should only continue once the native method Realm::run_writes has finished to run.
             SynchronizationContext.Current.Post(_ =>
             {
                 HandleTaskCompletion(tcs_ptr, () => (object)true, ex);
