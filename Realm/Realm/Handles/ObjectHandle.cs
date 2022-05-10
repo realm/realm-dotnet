@@ -177,12 +177,12 @@ namespace Realms
             // We need to special-handle objects because they need to be managed before we can set them.
             if (value.Type == RealmValueType.Object)
             {
-                switch (value.AsRealmObject())
+                switch (value.AsIRealmObject())
                 {
-                    case RealmObject realmObj when !realmObj.IsManaged:
+                    case IRealmObject realmObj when !realmObj.IsManaged:
                         realm.Add(realmObj);
                         break;
-                    case EmbeddedObject embeddedObj:
+                    case IEmbeddedObject embeddedObj:
                         if (embeddedObj.IsManaged)
                         {
                             throw new RealmException("Can't link to an embedded object that is already managed.");

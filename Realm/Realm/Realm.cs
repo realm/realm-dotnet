@@ -557,13 +557,13 @@ namespace Realms
         /// </remarks>
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c>.</returns>
         public T Add<T>(T obj, bool update = false)
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
             Argument.NotNull(obj, nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            AddInternal(obj, typeof(T), update);
+            AddInternal(obj, obj.GetType(), update);
             return obj;
         }
 
@@ -587,7 +587,7 @@ namespace Realms
         /// This method modifies the objects in-place, meaning that after it has run, all items in <c>objs</c> will be managed.
         /// </remarks>
         public void Add<T>(IEnumerable<T> objs, bool update = false)
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
             Argument.NotNull(objs, nameof(objs));
@@ -617,7 +617,7 @@ namespace Realms
         /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         /// <returns>The passed object.</returns>
-        public RealmObject Add(RealmObject obj, bool update = false)
+        public IRealmObject Add(RealmObject obj, bool update = false)
         {
             ThrowIfDisposed();
             Argument.NotNull(obj, nameof(obj));
@@ -626,7 +626,7 @@ namespace Realms
             return obj;
         }
 
-        internal void ManageEmbedded(EmbeddedObject obj, ObjectHandle handle)
+        internal void ManageEmbedded(IEmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
             var objectName = objectType.GetMappedOrOriginalName();
@@ -635,7 +635,7 @@ namespace Realms
             obj.SetManagedAccessor(ManagedAccessor.Create(this, handle, metadata), () => { metadata.Helper.CopyToRealm(obj, false, true); });
         }
 
-        private void AddInternal(RealmObject obj, Type objectType, bool update)
+        private void AddInternal(IRealmObject obj, Type objectType, bool update)
         {
             if (!ShouldAddNewObject(obj))
             {
@@ -1084,7 +1084,7 @@ namespace Realms
         /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
         /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this <see cref="Realm"/>.</returns>
         public IQueryable<T> All<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 
@@ -1125,7 +1125,7 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(long? primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1137,7 +1137,7 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(string primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1149,7 +1149,7 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(ObjectId? primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1161,11 +1161,11 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(Guid? primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         internal T FindCore<T>(RealmValue primaryKey)
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 
@@ -1175,7 +1175,7 @@ namespace Realms
                 return (T)MakeObject(metadata, objectHandle);
             }
 
-            return null;
+            return default(T);
         }
 
         #endregion Quick Find using primary key
@@ -1360,7 +1360,7 @@ namespace Realms
         /// If the type T is not part of the limited set of classes in this Realm's <see cref="Schema"/>.
         /// </exception>
         public void RemoveAll<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 

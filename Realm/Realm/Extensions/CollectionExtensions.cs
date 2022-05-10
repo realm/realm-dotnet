@@ -444,14 +444,14 @@ namespace Realms
                 foreach (var item in source)
                 {
                     var value = valueGetter(item);
-                    if (value is RealmObject obj && obj != null)
+                    if (value is IRealmObject obj && obj != null)
                     {
                         realm.Add(obj, update);
                     }
                     else if (value is RealmValue val && val.Type == RealmValueType.Object)
                     {
                         var wrappedObj = val.AsRealmObject();
-                        if (wrappedObj is RealmObject robj)
+                        if (wrappedObj is IRealmObject robj)
                         {
                             realm.Add(robj, update);
                         }

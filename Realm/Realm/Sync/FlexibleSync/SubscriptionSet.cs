@@ -126,7 +126,7 @@ namespace Realms.Sync
         /// a match.
         /// </returns>
         public Subscription Find<T>(IQueryable<T> query)
-            where T : RealmObject
+            where T : IRealmObject
         {
             var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return _handle.Find(results.ResultsHandle);
@@ -207,7 +207,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <returns>The subscription that represents the specified query.</returns>
         public Subscription Add<T>(IQueryable<T> query, SubscriptionOptions options = null)
-            where T : RealmObject
+            where T : IRealmObject
         {
             EnsureWritable();
 
@@ -240,7 +240,7 @@ namespace Realms.Sync
         /// <c>true</c> if the subscription existed in this subscription set and was removed; <c>false</c> otherwise.
         /// </returns>
         public int Remove<T>(IQueryable<T> query, bool removeNamed = false)
-            where T : RealmObject
+            where T : IRealmObject
         {
             EnsureWritable();
 
@@ -271,7 +271,7 @@ namespace Realms.Sync
         /// <param name="removeNamed">A flag indicating whether to also remove named subscriptions. Default is false.</param>
         /// <returns>The number of subscriptions that existed for this type and were removed.</returns>
         public int RemoveAll<T>(bool removeNamed = false)
-            where T : RealmObject => RemoveAll(typeof(T).GetMappedOrOriginalName(), removeNamed);
+            where T : IRealmObject => RemoveAll(typeof(T).GetMappedOrOriginalName(), removeNamed);
 
         /// <summary>
         /// Removes all subscriptions for the provided <paramref name="className"/>.

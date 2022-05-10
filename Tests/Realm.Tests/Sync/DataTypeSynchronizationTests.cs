@@ -581,7 +581,7 @@ namespace Realms.Tests.Sync
                 // item2 belongs to realm2 - we want to look up the equivalent in realm1 to add it to dict1
                 Assert.That(robj.GetObjectMetadata().Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
                 var item2InRealm1 = targetRealm.DynamicApi.FindCore(robj.ObjectSchema.Name, Operator.Convert<RealmValue>(pk));
-                return Operator.Convert<RealmObject, T>(item2InRealm1);
+                return Operator.Convert<IRealmObject, T>(item2InRealm1);
             }
 
             // If RealmValue that is holding an object, call CloneOrLookup
