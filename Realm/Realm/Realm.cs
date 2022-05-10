@@ -1098,7 +1098,7 @@ namespace Realms
 
         // This should only be used for tests
         internal IQueryable<T> AllEmbedded<T>()
-            where T : EmbeddedObject
+            where T : IEmbeddedObject
         {
             ThrowIfDisposed();
 
@@ -1861,7 +1861,7 @@ namespace Realms
                 return null;
             }
 
-            private EmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
+            private IEmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1872,14 +1872,14 @@ namespace Realms
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
-                var obj = (EmbeddedObject)realmList.Metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
                 obj.SetManagedAccessor(ManagedAccessor.Create(_realm, getHandle(realmList.NativeHandle), realmList.Metadata));
 
                 return obj;
             }
 
-            private EmbeddedObject PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            private IEmbeddedObject PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1890,7 +1890,7 @@ namespace Realms
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }
 
-                var obj = (EmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
                 obj.SetManagedAccessor(ManagedAccessor.Create(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata));
 

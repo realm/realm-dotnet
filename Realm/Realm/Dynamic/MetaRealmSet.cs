@@ -31,15 +31,15 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
         {
-            if (Value is IRealmCollection<EmbeddedObject>)
+            if (Value is IRealmCollection<IEmbeddedObject>)
             {
                 switch (binder.Name)
                 {
-                    case nameof(ISet<EmbeddedObject>.Add):
+                    case nameof(ISet<IEmbeddedObject>.Add):
                         throw new NotSupportedException("Can't add embedded objects directly. Instead use Realm.DynamicApi.AddEmbeddedObjectToSet.");
 
-                    case nameof(ISet<EmbeddedObject>.UnionWith):
-                    case nameof(ISet<EmbeddedObject>.SymmetricExceptWith):
+                    case nameof(ISet<IEmbeddedObject>.UnionWith):
+                    case nameof(ISet<IEmbeddedObject>.SymmetricExceptWith):
                         throw new NotSupportedException("Set methods that may result in adding embedded objects to a managed collection are not supported.");
                 }
             }

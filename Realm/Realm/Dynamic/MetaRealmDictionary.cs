@@ -48,7 +48,7 @@ namespace Realms.Dynamic
             {
                 switch (binder.Name)
                 {
-                    case nameof(RealmDictionary<EmbeddedObject>.Add):
+                    case nameof(RealmDictionary<IEmbeddedObject>.Add):
                         throw new NotSupportedException("Can't add embedded objects directly. Instead use Realm.DynamicApi.AddEmbeddedObjectToDictionary.");
                 }
             }
