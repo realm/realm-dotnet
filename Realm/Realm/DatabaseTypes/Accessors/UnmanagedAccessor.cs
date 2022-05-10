@@ -73,7 +73,7 @@ namespace Realms
 
         public ISet<T> GetSetValue<T>(string propertyName)
         {
-            return new HashSet<T>();
+            return new HashSet<T>(RealmSet<T>.Comparer);
         }
 
         public string GetStringDescription(string typeName)
