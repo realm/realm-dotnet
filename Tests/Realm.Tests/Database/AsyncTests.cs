@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -211,26 +210,23 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
-        public void AsyncBeginWrite_Close_DoesNotPersistData()
+        [Test, NUnit.Framework.Explicit]
+        public void AsyncBeginWrite_CloseRealm_DoesNotPersistData()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
                 using (var realm = GetRealm(_realm.Config))
                 {
                     var peopleQuery = realm.All<Person>();
-                    Assert.That(realm.All<Person>().Count(), Is.EqualTo(0));
-
                     Assert.That(peopleQuery.Count(), Is.EqualTo(0));
-
-                    using (var transaction = await realm.BeginWriteAsync())
-                    {
-                        var person = new Person { FullName = "Jonh Wickie" };
-                        realm.Add(person);
-                        Assert.That(peopleQuery.Count(), Is.EqualTo(1));
-                    }
+                    var transaction = await realm.BeginWriteAsync();
+                    var person = new Person { FullName = "Jonh Wickie" };
+                    realm.Add(person);
+                    Assert.That(peopleQuery.Count(), Is.EqualTo(1));
                 }
 
+                _realm.Refresh();
+                var count = _realm.All<Person>().Count();
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
             });
         }
