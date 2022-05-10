@@ -204,7 +204,7 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<RealmObject>();
+            var robj = value.AsRealmObject<IRealmObject>();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {

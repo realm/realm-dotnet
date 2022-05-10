@@ -21,12 +21,14 @@ namespace Realms
     /// <summary>
     /// Base for any embedded object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    public class EmbeddedObject : RealmObjectBase
+    public class EmbeddedObject : RealmObjectBase, IEmbeddedObject
     {
         /// <summary>
         /// Gets the parent of this <see cref="EmbeddedObject"/>. It can be either another
         /// <see cref="EmbeddedObject"/> or a standalone <see cref="RealmObject"/>.
         /// </summary>
         public RealmObjectBase Parent { get; }
+
+        IRealmObjectBase IEmbeddedObject.Parent => Parent;
     }
 }
