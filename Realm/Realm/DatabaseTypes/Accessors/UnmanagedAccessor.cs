@@ -28,8 +28,6 @@ namespace Realms
     internal class UnmanagedAccessor
         : IRealmAccessor
     {
-        private Dictionary<string, object> _container = new();
-
         public bool IsManaged => false;
 
         public bool IsValid => true;
@@ -65,32 +63,17 @@ namespace Realms
 
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            if (!_container.ContainsKey(propertyName))
-            {
-                _container[propertyName] = new Dictionary<string, TValue>();
-            }
-
-            return (IDictionary<string, TValue>)_container[propertyName];
+            return new Dictionary<string, TValue>();
         }
 
         public IList<T> GetListValue<T>(string propertyName)
         {
-            if (!_container.ContainsKey(propertyName))
-            {
-                _container[propertyName] = new List<T>();
-            }
-
-            return (IList<T>)_container[propertyName];
+            return new List<T>();
         }
 
         public ISet<T> GetSetValue<T>(string propertyName)
         {
-            if (!_container.ContainsKey(propertyName))
-            {
-                _container[propertyName] = new HashSet<T>(RealmSet<T>.Comparer);
-            }
-
-            return (ISet<T>)_container[propertyName];
+            return new HashSet<T>();
         }
 
         public string GetStringDescription(string typeName)
@@ -100,7 +83,7 @@ namespace Realms
 
         public RealmValue GetValue(string propertyName)
         {
-            return (RealmValue)_container[propertyName];
+            throw new NotImplementedException("This should not be used for now");
         }
 
         public bool ObjectEquals(object obj)
@@ -110,12 +93,12 @@ namespace Realms
 
         public void SetValue(string propertyName, RealmValue val)
         {
-            _container[propertyName] = val;
+            throw new NotImplementedException("This should not be used for now");
         }
 
         public void SetValueUnique(string propertyName, RealmValue val)
         {
-            _container[propertyName] = val;
+            throw new NotImplementedException("This should not be used for now");
         }
 
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
