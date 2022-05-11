@@ -270,7 +270,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
         public void Session_ClientReset_Access_Realm_OnBeforeReset()
         {
             const string validValue = "this will sync";
@@ -333,7 +333,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
         public void Session_ClientReset_Access_Realms_OnAfterReset()
         {
             const string validValue = "this will sync";
@@ -400,8 +400,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // [Ignore("This relies on ProtocolError::bad_changeset being a client reset error. We're waiting on core to implement this change.")]
-        [Test]
+        [Test, NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
         public void Session_DiscardLocalReset_TriggersNotifications()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
