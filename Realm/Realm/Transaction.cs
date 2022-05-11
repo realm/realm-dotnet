@@ -18,6 +18,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -79,6 +80,14 @@ namespace Realms
         public async Task CommitAsync()
         {
             EnsureActionFeasibility("commit");
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
+            {
+                Commit();
+                return;
+            }
+
             await _realm.SharedRealmHandle.CommitTransactionAsync();
             FinishTransaction();
         }
