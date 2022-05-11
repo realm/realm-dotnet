@@ -1,7 +1,44 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
+This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler();
+    };
+  ```
+  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done (all callbacks are optional):
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new DiscardLocalResetHandler
+      {
+        OnBeforeReset = (beforeFrozen) =>
+        {
+          // executed right before a client reset is about to happen
+        },
+        OnAfterReset = (beforeFrozen, after) =>
+        {
+          // executed right after a client reset is has completed
+        },
+        ManualResetFallback = (session, err) =>
+        {
+          // handle the reset manually
+        }
+      }
+    };
+  ```
+  If, instead, you want to continue using the manual solution even after the end of the deprecation period, the following should be done
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+      {
+          // user's code for manual recovery
+      });
+  ```
 
 ### Fixed
 * None
