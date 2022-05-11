@@ -24,12 +24,12 @@ namespace Realms.Extensions
     {
         public static ObjectHandle GetObjectHandle(this IRealmObjectBase iro)
         {
-            return (iro.Accessor as IManagedAccessor)?.ObjectHandle;
+            return (iro.Accessor as ManagedAccessor)?.ObjectHandle;
         }
 
         public static Metadata GetObjectMetadata(this IRealmObjectBase iro)
         {
-            return (iro.Accessor as IManagedAccessor)?.Metadata;
+            return (iro.Accessor as ManagedAccessor)?.Metadata;
         }
 
         public static void SetManagedAccessor(this IRealmObjectBase iro, IRealmAccessor accessor, Action copyToRealmAction = null)

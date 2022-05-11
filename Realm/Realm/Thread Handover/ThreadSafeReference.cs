@@ -193,7 +193,7 @@ namespace Realms
                     throw new RealmException("Cannot construct reference to unmanaged object, which can be passed across threads directly.");
                 }
 
-                return (IManagedAccessor)ro.Accessor;
+                return (ManagedAccessor)ro.Accessor;
             }
         }
 

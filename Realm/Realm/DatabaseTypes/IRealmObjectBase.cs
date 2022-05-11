@@ -42,7 +42,6 @@ namespace Realms
 
     public interface IEmbeddedObject: IRealmObjectBase
     {
-        IRealmObjectBase Parent { get; }
     }
 
     public interface IRealmAccessible  // TODO Need a better name

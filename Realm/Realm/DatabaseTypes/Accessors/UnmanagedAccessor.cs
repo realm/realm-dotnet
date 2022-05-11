@@ -44,8 +44,6 @@ namespace Realms
 
         public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
-
         public IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : IRealmObjectBase
         {

@@ -210,7 +210,15 @@ namespace Realms
         /// <param name="property">The property that is on the other end of the relationship.</param>
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => _accessor.GetBacklinks(objectType, property);
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
+        {
+            if (!_accessor.IsManaged)
+            {
+                throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
+            }
+
+            return (_accessor as ManagedAccessor).GetBacklinks(objectType, property);
+        }
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
@@ -322,9 +330,9 @@ namespace Realms
         /// </summary>
         public struct Dynamic
         {
-            private readonly IManagedAccessor _managedAccessor;
+            private readonly ManagedAccessor _managedAccessor;
 
-            internal Dynamic(IManagedAccessor managedAccessor)
+            internal Dynamic(ManagedAccessor managedAccessor)
             {
                 _managedAccessor = managedAccessor;
             }

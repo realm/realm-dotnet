@@ -28,7 +28,7 @@ using Realms.Schema;
 namespace Realms
 {
     internal class ManagedAccessor
-        : IManagedAccessor
+        : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
         private Lazy<int> _hashCode;
 

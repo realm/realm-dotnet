@@ -28,7 +28,5 @@ namespace Realms
         /// <see cref="EmbeddedObject"/> or a standalone <see cref="RealmObject"/>.
         /// </summary>
         public RealmObjectBase Parent { get; }
-
-        IRealmObjectBase IEmbeddedObject.Parent => Parent;
     }
 }
