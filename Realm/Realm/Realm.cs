@@ -563,7 +563,7 @@ namespace Realms
             Argument.NotNull(obj, nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            AddInternal(obj, obj.GetType(), update);
+            AddInternal(obj, typeof(T), update);
             return obj;
         }
 
@@ -617,7 +617,7 @@ namespace Realms
         /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         /// <returns>The passed object.</returns>
-        public IRealmObject Add(RealmObject obj, bool update = false)
+        public IRealmObject Add(IRealmObject obj, bool update = false)
         {
             ThrowIfDisposed();
             Argument.NotNull(obj, nameof(obj));
