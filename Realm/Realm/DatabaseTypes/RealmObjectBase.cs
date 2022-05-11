@@ -1,6 +1,6 @@
 // ////////////////////////////////////////////////////////////////////////////
 // //
-// // Copyright 2022 Realm Inc.
+// // Copyright 2016 Realm Inc.
 // //
 // // Licensed under the Apache License, Version 2.0 (the "License")
 // // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true)]
-    public abstract partial class RealmObjectBase
+    public abstract class RealmObjectBase
         : IRealmObjectBase,
           IRealmAccessible,
           INotifyPropertyChanged,

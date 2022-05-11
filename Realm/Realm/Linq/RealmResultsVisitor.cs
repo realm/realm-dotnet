@@ -814,7 +814,7 @@ namespace Realms
             }
             else if (typeof(IRealmObjectBase).IsAssignableFrom(columnType))
             {
-                action(realm, propertyIndex, RealmValue.Create(Operator.Convert<IRealmObjectBase>(value), RealmValueType.Object));  //TODO Maybe we can do better
+                action(realm, propertyIndex, RealmValue.Object(Operator.Convert<IRealmObjectBase>(value)));
             }
             else if (columnType == typeof(RealmValue))
             {

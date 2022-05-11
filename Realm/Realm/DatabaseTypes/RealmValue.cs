@@ -144,7 +144,7 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
-        private static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
+        internal static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {

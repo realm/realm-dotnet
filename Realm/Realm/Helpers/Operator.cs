@@ -787,7 +787,7 @@ namespace Realms.Helpers
 
         private class IRealmObjectBaseRealmValueConverter : SpecializedConverterBase<IRealmObjectBase, RealmValue>
         {
-            public override RealmValue Convert(IRealmObjectBase value) => RealmValue.Create(value, RealmValueType.Object);
+            public override RealmValue Convert(IRealmObjectBase value) => RealmValue.Object(value);
         }
         #endregion ToRealmValue Converters
 
