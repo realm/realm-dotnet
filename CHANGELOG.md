@@ -39,8 +39,6 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
           // user's code for manual recovery
       });
   ```
-* None
-* None
 
 ### Fixed
 * None
