@@ -75,7 +75,7 @@ namespace Realms
             _objectHandle = objectHandle;
             _metadata = metadata;
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
-            _objectType = objectType;
+            _objectType = objectType;  //TODO Not sure if getting the type is an expensive operation. In case, should we make it lazy?
         }
 
         public RealmValue GetValue(string propertyName)
@@ -161,23 +161,6 @@ namespace Realms
             _notificationToken = null;
         }
 
-        public string GetStringDescription(string typeName)
-        {
-            if (!IsValid)
-            {
-                return $"{typeName} (removed)";
-            }
-
-            if (ObjectSchema.PrimaryKeyProperty is Property pkProperty)
-            {
-                var pkName = pkProperty.Name;
-                var pkValue = GetValue(pkName);
-                return $"{typeName} ({pkName} = {pkValue})";
-            }
-
-            return typeName;
-        }
-
         /// <inheritdoc/>
         void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
@@ -229,37 +212,40 @@ namespace Realms
             _onNotifyPropertyChanged(propertyName);
         }
 
-        public bool ObjectEquals(object obj)
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
+
+        public override string ToString()
         {
-            // Special case to cover possible bugs similar to WPF (#1903)
-            if (obj is InvalidObject)
+            var typeName = _objectType.Name;
+
+            if (!IsValid)
             {
-                return !IsValid;
+                return $"{typeName} (removed)";
             }
 
-            // If run-time types are not exactly the same, return false.
-            if (obj is not IRealmObjectBase iro)
+            if (ObjectSchema.PrimaryKeyProperty is Property pkProperty)
             {
-                return false;
+                var pkName = pkProperty.Name;
+                var pkValue = GetValue(pkName);
+                return $"{typeName} ({pkName} = {pkValue})";
             }
 
-            // standalone objects cannot participate in the same store check
-            if (!iro.Accessor.IsManaged)
-            {
-                return false;
-            }
-
-            if (ObjectSchema.Name != iro.Accessor.ObjectSchema.Name)
-            {
-                return false;
-            }
-
-            // Return true if the fields match.
-            // Note that the base class is not invoked because it is
-            // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.ObjEquals(iro.GetObjectHandle());
+            return typeName;
         }
 
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
+        public override bool Equals(object obj)
+        {
+            if (obj is not ManagedAccessor ma)
+            {
+                return false;
+            }
+
+            if (ObjectSchema.Name != ma.ObjectSchema.Name)
+            {
+                return false;
+            }
+
+            return ObjectHandle.ObjEquals(ma.ObjectHandle);
+        }
     }
 }

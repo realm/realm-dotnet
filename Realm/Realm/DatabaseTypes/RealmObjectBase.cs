@@ -235,7 +235,18 @@ namespace Realms
                 return true;
             }
 
-            return _accessor.ObjectEquals(obj);
+            // Special case to cover possible bugs similar to WPF (#1903)
+            if (obj is InvalidObject)
+            {
+                return !IsValid;
+            }
+
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+
+            return _accessor.Equals(iro.Accessor);
         }
 
         /// <inheritdoc/>
@@ -252,7 +263,7 @@ namespace Realms
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return _accessor.GetStringDescription(GetType().Name);
+            return _accessor.ToString();
         }
 
         /// <summary>

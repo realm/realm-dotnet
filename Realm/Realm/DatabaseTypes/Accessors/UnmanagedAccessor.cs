@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
@@ -81,19 +80,9 @@ namespace Realms
             return new HashSet<T>(RealmSet<T>.Comparer);
         }
 
-        public string GetStringDescription(string typeName)
-        {
-            return $"{typeName} (unmanaged)";
-        }
-
         public RealmValue GetValue(string propertyName)
         {
             throw new NotImplementedException("This should not be used for now");
-        }
-
-        public bool ObjectEquals(object obj)
-        {
-            return false;
         }
 
         public void SetValue(string propertyName, RealmValue val)
@@ -112,6 +101,16 @@ namespace Realms
 
         public void UnsubscribeFromNotifications()
         {
+        }
+
+        public override string ToString()
+        {
+            return $"{_objectType.Name} (unmanaged)";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return false;
         }
     }
 }

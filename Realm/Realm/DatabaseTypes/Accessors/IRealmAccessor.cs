@@ -59,9 +59,5 @@ namespace Realms
         void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate);
 
         void UnsubscribeFromNotifications();
-
-        string GetStringDescription(string typeName);
-
-        bool ObjectEquals(object obj);
     }
 }
