@@ -28,6 +28,7 @@ using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Helpers;
 using Realms.Schema;
+using Realms.Weaving;
 
 namespace Realms
 {
@@ -37,7 +38,7 @@ namespace Realms
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase
         : IRealmObjectBase,
-          IRealmAccessible,
+          ISettableManagedAccessor,
           INotifyPropertyChanged,
           IReflectableType
     {
@@ -73,7 +74,6 @@ namespace Realms
             }
         }
 
-        // TODO This is not an autoimplemented property because otherwise the Mongodb.Bson Json serializer serializes it. Need to investigate
         [IgnoreDataMember, XmlIgnore]
         IRealmAccessor IRealmObjectBase.Accessor => _accessor;
 
@@ -149,11 +149,11 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        void IRealmAccessible.SetManagedAccessor(IRealmAccessor accessor, Action copyToRealmAction)
+        void ISettableManagedAccessor.SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper, bool update, bool skipDefaults)
         {
             _accessor = accessor;
 
-            copyToRealmAction?.Invoke();
+            helper?.CopyToRealm(this, update, skipDefaults);
 
             if (_propertyChanged != null)
             {
@@ -254,7 +254,7 @@ namespace Realms
         {
             // _hashCode is only set for managed objects - for unmanaged ones, we
             // fall back to the default behavior.
-            return _accessor.HashCode ?? base.GetHashCode();
+            return IsManaged ? _accessor.GetHashCode() : base.GetHashCode();
         }
 
         /// <summary>

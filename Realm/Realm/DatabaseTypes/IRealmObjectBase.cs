@@ -18,10 +18,11 @@
 
 using System;
 using Realms.Schema;
+using Realms.Weaving;
 
 namespace Realms
 {
-    public interface IRealmObjectBase : IRealmAccessible
+    public interface IRealmObjectBase : ISettableManagedAccessor
     {
         IRealmAccessor Accessor { get; }
 
@@ -36,16 +37,16 @@ namespace Realms
         ObjectSchema ObjectSchema { get; }
     }
 
-    public interface IRealmObject: IRealmObjectBase
+    public interface IRealmObject : IRealmObjectBase
     {
     }
 
-    public interface IEmbeddedObject: IRealmObjectBase
+    public interface IEmbeddedObject : IRealmObjectBase
     {
     }
 
-    public interface IRealmAccessible  // TODO Need a better name
+    public interface ISettableManagedAccessor
     {
-        void SetManagedAccessor(IRealmAccessor acccessor, Action copyToRealmAction = null);
+        void SetManagedAccessor(IRealmAccessor acccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false);
     }
 }

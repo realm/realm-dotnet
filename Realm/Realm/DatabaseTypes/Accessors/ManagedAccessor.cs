@@ -22,7 +22,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
-using Realms.Extensions;
 using Realms.Schema;
 
 namespace Realms
@@ -30,8 +29,6 @@ namespace Realms
     internal class ManagedAccessor
         : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
-        private Type _objectType;
-
         private Lazy<int> _hashCode;
 
         private Realm _realm;
@@ -56,8 +53,6 @@ namespace Realms
 
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
-        public int? HashCode => _hashCode.Value;
-
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
         public IThreadConfinedHandle Handle => _objectHandle;
@@ -68,14 +63,12 @@ namespace Realms
 
         internal ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
-            Metadata metadata,
-            Type objectType)
+            Metadata metadata)
         {
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
-            _objectType = objectType;  //TODO Not sure if getting the type is an expensive operation. In case, should we make it lazy?
         }
 
         public RealmValue GetValue(string propertyName)
@@ -214,9 +207,14 @@ namespace Realms
 
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
+        public override int GetHashCode()
+        {
+            return _hashCode.Value;
+        }
+
         public override string ToString()
         {
-            var typeName = _objectType.Name;
+            var typeName = _metadata.Schema.Type.Name;
 
             if (!IsValid)
             {

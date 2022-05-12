@@ -525,7 +525,7 @@ namespace Realms
         internal IRealmObjectBase MakeObject(Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata, ret.GetType()));
+            ret.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata));
             return ret;
         }
 
@@ -563,7 +563,7 @@ namespace Realms
             Argument.NotNull(obj, nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            AddInternal(obj, obj.GetType(), update);  //TODO Proably we can remove the method that doesn't use generic if we modify this
+            AddInternal(obj, obj.GetType(), update);
             return obj;
         }
 
@@ -599,40 +599,13 @@ namespace Realms
             }
         }
 
-        /// <summary>
-        /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
-        /// </summary>
-        /// <param name="obj">Must be a standalone object, <c>null</c> not allowed.</param>
-        /// <param name="update">If <c>true</c>, and an object with the same primary key already exists, performs an update.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">
-        /// You can't manage an object with more than one <see cref="Realm"/>.
-        /// </exception>
-        /// <remarks>
-        /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
-        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
-        /// You have to break the cycle manually and assign relationships after all object have been managed.
-        /// </remarks>
-        /// <returns>The passed object.</returns>
-        public IRealmObject Add(IRealmObject obj, bool update = false)
-        {
-            ThrowIfDisposed();
-            Argument.NotNull(obj, nameof(obj));
-
-            AddInternal(obj, obj.GetType(), update);
-            return obj;
-        }
-
         internal void ManageEmbedded(IEmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata, obj.GetType()), () => { metadata.Helper.CopyToRealm(obj, false, true); });
+            obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata), metadata.Helper, false, true);
         }
 
         private void AddInternal(IRealmObject obj, Type objectType, bool update)
@@ -658,7 +631,7 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
-            obj.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata, obj.GetType()), () => { metadata.Helper.CopyToRealm(obj, update, isNew); });
+            obj.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata), metadata.Helper, update, isNew);
         }
 
         private bool ShouldAddNewObject(IRealmObjectBase obj)
@@ -1619,7 +1592,7 @@ namespace Realms
                     ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
                     : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
-                result.SetManagedAccessor(new ManagedAccessor(_realm, objectHandle, metadata, result.GetType()));
+                result.SetManagedAccessor(new ManagedAccessor(_realm, objectHandle, metadata));
 
                 return result;
             }
@@ -1648,7 +1621,7 @@ namespace Realms
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
-                obj.SetManagedAccessor(new ManagedAccessor(_realm, handle, metadata, obj.GetType()));
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, handle, metadata));
 
                 return obj;
             }
@@ -1874,7 +1847,7 @@ namespace Realms
 
                 var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
-                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmList.NativeHandle), realmList.Metadata, obj.GetType()));
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmList.NativeHandle), realmList.Metadata));
 
                 return obj;
             }
@@ -1892,7 +1865,7 @@ namespace Realms
 
                 var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
-                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata, obj.GetType()));
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata));
 
                 return obj;
             }

@@ -35,8 +35,6 @@ namespace Realms
 
         ObjectSchema ObjectSchema { get; }
 
-        int? HashCode { get; }
-
         int BacklinksCount { get; }
 
         RealmObjectBase.Dynamic DynamicApi { get; }
