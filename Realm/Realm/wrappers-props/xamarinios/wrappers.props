@@ -3,7 +3,7 @@
     <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
   </PropertyGroup>
   <ItemGroup>
-  	<Content Include="$(MSBuildThisFileDirectory)Realm.dll.config">
+    <Content Include="$(MSBuildThisFileDirectory)Realm.dll.config">
       <Link>Realm.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
