@@ -28,6 +28,13 @@ namespace Realms
     internal class UnmanagedAccessor
         : IRealmAccessor
     {
+        private Type _objectType;
+
+        public UnmanagedAccessor(Type objectType)
+        {
+            _objectType = objectType;
+        }
+
         public bool IsManaged => false;
 
         public bool IsValid => true;

@@ -30,6 +30,8 @@ namespace Realms
     internal class ManagedAccessor
         : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
+        private Type _objectType;
+
         private Lazy<int> _hashCode;
 
         private Realm _realm;
@@ -64,21 +66,16 @@ namespace Realms
 
         public RealmObjectBase.Dynamic DynamicApi => new(this);
 
-        private ManagedAccessor(Realm realm,
+        internal ManagedAccessor(Realm realm,
             ObjectHandle objectHandle,
-            Metadata metadata)
+            Metadata metadata,
+            Type objectType)
         {
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
             _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
-        }
-
-        public static ManagedAccessor Create(Realm realm,
-            ObjectHandle objectHandle,
-            Metadata metadata)
-        {
-            return new ManagedAccessor(realm, objectHandle, metadata);
+            _objectType = objectType;
         }
 
         public RealmValue GetValue(string propertyName)

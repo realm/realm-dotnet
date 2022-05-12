@@ -525,7 +525,7 @@ namespace Realms
         internal IRealmObjectBase MakeObject(Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret.SetManagedAccessor(ManagedAccessor.Create(this, objectHandle, metadata));
+            ret.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata, ret.GetType()));
             return ret;
         }
 
@@ -563,7 +563,7 @@ namespace Realms
             Argument.NotNull(obj, nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            AddInternal(obj, typeof(T), update);
+            AddInternal(obj, obj.GetType(), update);  //TODO Proably we can remove the method that doesn't use generic if we modify this
             return obj;
         }
 
@@ -632,7 +632,7 @@ namespace Realms
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            obj.SetManagedAccessor(ManagedAccessor.Create(this, handle, metadata), () => { metadata.Helper.CopyToRealm(obj, false, true); });
+            obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata, obj.GetType()), () => { metadata.Helper.CopyToRealm(obj, false, true); });
         }
 
         private void AddInternal(IRealmObject obj, Type objectType, bool update)
@@ -658,7 +658,7 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
-            obj.SetManagedAccessor(ManagedAccessor.Create(this, objectHandle, metadata), () => { metadata.Helper.CopyToRealm(obj, update, isNew); });
+            obj.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata, obj.GetType()), () => { metadata.Helper.CopyToRealm(obj, update, isNew); });
         }
 
         private bool ShouldAddNewObject(IRealmObjectBase obj)
@@ -1619,7 +1619,7 @@ namespace Realms
                     ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
                     : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
-                result.SetManagedAccessor(ManagedAccessor.Create(_realm, objectHandle, metadata));
+                result.SetManagedAccessor(new ManagedAccessor(_realm, objectHandle, metadata, result.GetType()));
 
                 return result;
             }
@@ -1648,7 +1648,7 @@ namespace Realms
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
-                obj.SetManagedAccessor(ManagedAccessor.Create(_realm, handle, metadata));
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, handle, metadata, obj.GetType()));
 
                 return obj;
             }
@@ -1874,7 +1874,7 @@ namespace Realms
 
                 var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
-                obj.SetManagedAccessor(ManagedAccessor.Create(_realm, getHandle(realmList.NativeHandle), realmList.Metadata));
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmList.NativeHandle), realmList.Metadata, obj.GetType()));
 
                 return obj;
             }
@@ -1892,7 +1892,7 @@ namespace Realms
 
                 var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
-                obj.SetManagedAccessor(ManagedAccessor.Create(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata));
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata, obj.GetType()));
 
                 return obj;
             }
