@@ -48,17 +48,6 @@ steps:
   - #@ uploadArtifacts(outputVar, artifactsPath, 1)
 #@ end
 
-#@ def fetchiOSFrameworks():
-#@ for platform in iOSArchs:
-  - name: #@ "Fetch Framework for " + platform
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ "wrappers-ios-" + platform
-      path: wrappers/cmake
-    if: #@ wrappersCacheCondition
-#@ end
-#@ end
-
 ---
 name: wrappers
 "on":
@@ -97,35 +86,15 @@ jobs:
     runs-on: macos-latest
     name: macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-  ios-frameworks:
+  ios:
     runs-on: macos-latest
-    name: iOS frameworks
+    name: iOS
     strategy:
       matrix:
         arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -SkipXCFramework", "wrappers-ios-${{ matrix.arch }}", enableLto = False, artifactsPath = "wrappers/cmake/**/realm-wrappers.framework", cacheVariable = "wrappers-ios"))
-  ios:
-    runs-on: macos-latest
-    name: iOS XCframework
-    needs:
-      - check-cache
-      - ios-frameworks
-    if: needs.check-cache.outputs.wrappers-ios != 'true'
-    timeout-minutes: #@ wrappersTimeout
-    steps:
-      - #@ template.replace(checkoutCode("recursive", False))
-      - #@ checkCache("wrappers-ios")
-      - #@ template.replace(fetchiOSFrameworks())
-      - name: Create xcframework
-        #@yaml/text-templated-strings
-        run: |
-          $build_directory = "${{ github.workspace }}/wrappers/cmake/iOS"
-          $install_prefix = "${{ github.workspace }}/wrappers/build"
-          $xcframework_path = "$install_prefix/iOS/(@= configuration @)/realm-wrappers.xcframework"
-          xcodebuild -create-xcframework -framework $build_directory/src/(@= configuration @)-iphonesimulator/realm-wrappers.framework -framework $build_directory/src/(@= configuration @)-iphoneos/realm-wrappers.framework -output "$xcframework_path"
-        shell: powershell
-        if: #@ wrappersCacheCondition
-      - #@ uploadArtifacts("wrappers-ios", "wrappers/build/**", 1)
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }}", "wrappers-ios-${{ matrix.arch }}", enableLto = False))
+    #@yaml/map-key-override
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-ios-" + x + " != 'true'" for x in iOSArchs ])
   linux:
     runs-on: ubuntu-latest
     name: Linux

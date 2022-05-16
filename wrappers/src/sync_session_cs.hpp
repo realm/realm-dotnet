@@ -23,12 +23,14 @@
 #include <realm/sync/config.hpp>
 
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+using NotifyBeforeClientResetCallbackT = bool(SharedRealm& before_frozen, void* managed_sync_config);
+using NotifyAfterClientResetCallbackT = bool(SharedRealm& before_frozen, SharedRealm& after, void* managed_sync_config);
 
 namespace realm {
 namespace binding {
     extern std::function<ProgressCallbackT> s_progress_callback;
-
-    void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
+    extern std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
+    extern std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
 }
 }
 

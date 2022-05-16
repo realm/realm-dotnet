@@ -40,6 +40,12 @@ public:
     }
 };
 
+class ManagedExceptionDuringClientReset : public std::runtime_error {
+public:
+    ManagedExceptionDuringClientReset() : std::runtime_error("Managed exception happened during client reset") {
+    }
+};
+
 struct Configuration
 {
     uint16_t* path;
@@ -78,6 +84,9 @@ struct SyncConfiguration
     SchemaMode schema_mode;
 
     bool is_flexible_sync;
+
+    ClientResyncMode client_resync_mode;
+    void* managed_sync_config;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)
@@ -139,8 +148,8 @@ private:
 };
 
 void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
-}
-    
-}
+
+} // namespace bindings  
+} // namespace realm
 
 #endif /* defined(SHARED_REALM_CS_HPP) */

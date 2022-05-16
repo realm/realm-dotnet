@@ -2,6 +2,44 @@
 
 ### Enhancements
 * Adds the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
+* Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
+This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler();
+    };
+  ```
+  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done (all callbacks are optional):
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new DiscardLocalResetHandler
+      {
+        OnBeforeReset = (beforeFrozen) =>
+        {
+          // executed right before a client reset is about to happen
+        },
+        OnAfterReset = (beforeFrozen, after) =>
+        {
+          // executed right after a client reset is has completed
+        },
+        ManualResetFallback = (session, err) =>
+        {
+          // handle the reset manually
+        }
+      }
+    };
+  ```
+  If, instead, you want to continue using the manual solution even after the end of the deprecation period, the following should be done
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+      {
+          // user's code for manual recovery
+      });
+  ```
 
 ### Fixed
 * None
@@ -11,6 +49,18 @@
 
 ### Internal
 * Using Core x.y.z.
+
+## 10.12.0 (2022-05-05)
+
+### Enhancements
+* Preview support for .NET 6 with iOS, Android, and MAUI.
+  We've added tentative support for the new .NET 6 Mobile workloads (except MacCatalyst, which will be enabled later). The .NET tooling itself is still in preview so we don't have good test coverage of the new platforms just yet. Please report any issues you find at https://github.com/realm/realm-dotnet/issues/new/choose.
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
 
 ## 10.11.2 (2022-04-12)
 

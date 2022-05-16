@@ -73,6 +73,16 @@ namespace Realms.Helpers
             }
         }
 
+        public static T ValidateNotNull<T>(T value, string paramName)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+
+            return value;
+        }
+
         public static void AssertDebug(string message)
         {
             Logger.LogDefault(LogLevel.Error, $"{message} {OpenIssueText}");
