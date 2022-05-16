@@ -44,7 +44,7 @@ namespace Realms.Sync
         public FlexibleSyncConfiguration(User user, string optionalPath = null)
             : base(user)
         {
-            DatabasePath = GetPathToRealm(optionalPath ?? user.App.Handle.GetRealmPath(User, "default"));
+            DatabasePath = GetPathToRealm(optionalPath ?? user.App.Handle.GetRealmPath(User));
         }
 
         internal override Native.SyncConfiguration CreateNativeSyncConfiguration()
