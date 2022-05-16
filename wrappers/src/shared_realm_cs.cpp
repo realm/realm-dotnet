@@ -136,7 +136,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             }
         };
 
-        config.sync_config->notify_after_client_reset = [sync_configuration_handle](SharedRealm before_frozen, SharedRealm after) {
+        config.sync_config->notify_after_client_reset = [sync_configuration_handle](SharedRealm before_frozen, SharedRealm after, bool did_recover) {
             if (!s_notify_after_callback(before_frozen, after, sync_configuration_handle->handle())) {
                 throw ManagedExceptionDuringClientReset();
             }
@@ -491,13 +491,21 @@ REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReference* reference)
     delete reference;
 }
 
-REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, size_t path_len, char* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuration configuration, bool use_sync, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        Utf16StringAccessor pathStr(path, path_len);
+        Realm::Config config;
 
-        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        realm->get()->write_copy(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0));
+        // force_sync_history tells Core to synthesize/copy the sync history from the source.
+        config.force_sync_history = use_sync;
+
+        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        if (encryption_key) {
+            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+            config.encryption_key = std::vector<char>(key.begin(), key.end());
+        }
+
+        realm->convert(std::move(config));
     });
 }
 

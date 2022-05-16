@@ -346,8 +346,6 @@ namespace Realms.Tests.Sync
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
                 }
 
-                File.Delete(copyConfig.DatabasePath);
-
                 using var originalRealm = GetRealm(originalConfig);
 
                 AddDummyData(originalRealm, true);
@@ -359,7 +357,7 @@ namespace Realms.Tests.Sync
 
                 using var copiedRealm = GetRealm(copyConfig);
 
-                Assert.AreEqual(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), DummyDataSize / 2);
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count()));
 
                 var fromCopy = copiedRealm.Write(() =>
                 {
@@ -394,6 +392,108 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void WriteCopy_LocalToSync([Values(true, false)] bool originalEncrypted,
+                                          [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+                {
+                    Schema = new[] { typeof(ObjectIdPrimaryKeyWithValueObject) }
+                };
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(23);
+                }
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                var addedObjects = originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count();
+
+                originalRealm.WriteCopy(copyConfig);
+
+                if (copyEncrypted)
+                {
+                    var validKey = copyConfig.EncryptionKey;
+                    copyConfig.EncryptionKey = null;
+
+                    Assert.Throws<RealmFileAccessErrorException>(() => GetRealm(copyConfig));
+
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(1, 2, 3);
+                    Assert.Throws<RealmFileAccessErrorException>(() => GetRealm(copyConfig));
+
+                    copyConfig.EncryptionKey = validKey;
+                }
+
+                using var copiedRealm = GetRealm(copyConfig);
+
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(addedObjects));
+
+                await WaitForUploadAsync(copiedRealm);
+
+                var anotherUserRealm = await GetIntegrationRealmAsync(copyConfig.Partition.AsString());
+
+                Assert.That(anotherUserRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(addedObjects));
+
+                var addedObject = anotherUserRealm.Write(() =>
+                {
+                    return anotherUserRealm.Add(new ObjectIdPrimaryKeyWithValueObject
+                    {
+                        StringValue = "abc"
+                    });
+                });
+
+                await WaitForUploadAsync(anotherUserRealm);
+                await WaitForDownloadAsync(copiedRealm);
+
+                var syncedObject = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(addedObject.Id);
+
+                Assert.That(syncedObject.StringValue, Is.EqualTo("abc"));
+            });
+        }
+
+        [Test]
+        public void WriteCopy_SyncToLocal([Values(true, false)] bool originalEncrypted,
+                                          [Values(true, false)] bool copyEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var originalConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (originalEncrypted)
+                {
+                    originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                var copyConfig = new RealmConfiguration(Guid.NewGuid().ToString());
+                if (copyEncrypted)
+                {
+                    copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(23);
+                }
+
+                using var originalRealm = GetRealm(originalConfig);
+
+                AddDummyData(originalRealm, true);
+
+                await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
+
+                originalRealm.WriteCopy(copyConfig);
+
+                using var copiedRealm = GetRealm(copyConfig);
+
+                Assert.That(copiedRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(originalRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count()));
+            });
+        }
+
+        [Test]
         public void WriteCopy_FailsWhenPartitionsDiffer([Values(true, false)] bool originalEncrypted,
                                                         [Values(true, false)] bool copyEncrypted)
         {
@@ -414,8 +514,6 @@ namespace Realms.Tests.Sync
                 }
 
                 Assert.That(originalConfig.Partition, !Is.EqualTo(copyConfig.Partition));
-
-                File.Delete(copyConfig.DatabasePath);
 
                 using var originalRealm = GetRealm(originalConfig);
 
@@ -442,8 +540,6 @@ namespace Realms.Tests.Sync
                 {
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
                 }
-
-                File.Delete(copyConfig.DatabasePath);
 
                 using var originalRealm = GetRealm(originalConfig);
 
