@@ -184,7 +184,6 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            Assert.That(typeInfo.GetProperty(nameof(Owner.Name)), Is.EqualTo(typeInfo.GetDeclaredProperty(nameof(Owner.Name))));
             var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
 
             nameSetter.Invoke(owner, new[] { "John" });
