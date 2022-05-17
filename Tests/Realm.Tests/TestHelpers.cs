@@ -29,6 +29,7 @@ using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
+using System.Collections.Concurrent;
 #if __ANDROID__
 using Application = Android.App.Application;
 #endif
@@ -381,11 +382,11 @@ namespace Realms.Tests
             return $"<{byteArr[0]}>";
         }
 
-        public static void DrainQueue<T>(this Queue<T> queue, Action<T> action)
+        public static void DrainQueue<T>(this ConcurrentQueue<T> queue, Action<T> action)
         {
-            while (queue.Count > 0)
+            while (queue.TryDequeue(out var result))
             {
-                action(queue.Dequeue());
+                action(result);
             }
         }
 

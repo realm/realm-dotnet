@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -28,8 +29,8 @@ namespace Realms.Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly Queue<Session> _sessions = new Queue<Session>();
-        private readonly Queue<App> _apps = new Queue<App>();
+        private readonly ConcurrentQueue<Session> _sessions = new();
+        private readonly ConcurrentQueue<App> _apps = new();
 
         private App _defaultApp;
 
