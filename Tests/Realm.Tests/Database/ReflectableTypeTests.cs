@@ -18,17 +18,11 @@
 
 using System.Reflection;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-#if WINDOWS
-    [Ignore("ReflectableType is not respected by WPF.")]
-#elif NETCOREAPP1_1
-    [Ignore("ReflectableType is not needed/supported on .NET Core")]
-#endif
     public class ReflectableTypeTests : RealmInstanceTest
     {
         private const string DogName = "Sharo";
@@ -40,7 +34,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
             var getter = topDogProperty.GetMethod;
 
             var topDog = getter.Invoke(owner, null) as Dog;
@@ -54,7 +48,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
 
             var topDog = topDogProperty.GetValue(owner, null) as Dog;
             Assert.That(topDog, Is.Not.Null);
@@ -81,7 +75,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
             var getter = topDogProperty.GetMethod;
 
             var topDog = getter.Invoke(owner, null);
@@ -99,7 +93,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
 
             var topDog = topDogProperty.GetValue(owner, null);
             Assert.That(topDog, Is.Null);
@@ -126,7 +120,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameGetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).GetMethod;
+            var nameGetter = typeInfo.GetProperty(nameof(Owner.Name)).GetMethod;
 
             var name = nameGetter.Invoke(owner, null);
             Assert.That(name, Is.EqualTo(OwnerName));
@@ -149,7 +143,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameGetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).GetMethod;
+            var nameGetter = typeInfo.GetProperty(nameof(Owner.Name)).GetMethod;
 
             var name = nameGetter.Invoke(owner, null);
             Assert.That(name, Is.EqualTo(default(string)));
@@ -175,7 +169,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
 
             _realm.Write(() =>
             {
@@ -190,7 +184,8 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+            Assert.That(typeInfo.GetProperty(nameof(Owner.Name)), Is.EqualTo(typeInfo.GetDeclaredProperty(nameof(Owner.Name))));
+            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
 
             nameSetter.Invoke(owner, new[] { "John" });
 
@@ -202,7 +197,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name));
 
             _realm.Write(() =>
             {
@@ -217,7 +212,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name));
 
             pi.SetValue(owner, "John");
 
@@ -286,7 +281,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
 
             Assert.That(() =>
             {
@@ -303,7 +298,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner(add: false);
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name));
 
             pi.SetValue(owner, "John");
 
@@ -316,11 +311,21 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner(add: false);
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name));
 
             var name = pi.GetValue(owner);
 
             Assert.That(name, Is.EqualTo(OwnerName));
+        }
+
+        [Test]
+        public void ReflectableGetProperty_ShouldReturnSameAsDeclaredProperty()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var propName = typeInfo.GetProperty(nameof(Owner.Name));
+            var declaredPropName = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+            Assert.That(propName, Is.EqualTo(declaredPropName));
         }
 
         private Owner AddDogAndOwner(bool add = true)
