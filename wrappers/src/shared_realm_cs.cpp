@@ -433,6 +433,13 @@ REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, 
     });
 }
 
+REALM_EXPORT void shared_realm_cancel_async_transaction(SharedRealm& realm, uint32_t transaction_handle, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        realm->async_cancel_transaction(transaction_handle);
+    });
+}
+
 REALM_EXPORT void shared_realm_begin_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {

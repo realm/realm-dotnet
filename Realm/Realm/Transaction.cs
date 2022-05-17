@@ -77,7 +77,7 @@ namespace Realms
         /// it must be used before the end of that block.
         /// </summary>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public async Task CommitAsync()
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             EnsureActionFeasibility("commit");
 
@@ -88,7 +88,7 @@ namespace Realms
                 return;
             }
 
-            await _realm.SharedRealmHandle.CommitTransactionAsync();
+            await _realm.SharedRealmHandle.CommitTransactionAsync(cancellationToken);
             FinishTransaction();
         }
 

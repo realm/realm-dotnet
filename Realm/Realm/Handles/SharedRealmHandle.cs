@@ -465,13 +465,15 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public async Task BeginTransactionAsync()
+        public async Task BeginTransactionAsync(CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
-                _ = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                uint? asyncTransactionHandle = null;
+                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs));
+                asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
                 await tcs.Task;
             }
@@ -487,13 +489,15 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public async Task CommitTransactionAsync()
+        public async Task CommitTransactionAsync(CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
-                _ = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                uint? asyncTransactionHandle = null;
+                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs));
+                asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
                 await tcs.Task;
             }
@@ -770,9 +774,24 @@ namespace Realms
             var handleTcs = GCHandle.FromIntPtr(tcsPtr);
             var tcs = (TaskCompletionSource<T>)handleTcs.Target;
 
+
             if (ex.type == RealmExceptionCodes.NoError)
             {
-                tcs.TrySetResult(resultBuilder());
+                var handleCt = GCHandle.FromIntPtr(ctPtr);
+                var ct = (CancellationToken)handleCt.Target;
+                if (ct != CancellationToken.None)
+                {
+                    // TODO andrea: check if this is really necessary. Think of corner cases where bad timing may lead core to call
+                    // this but we have already cancelled tcs from the callback of the ct
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    tcs.TrySetResult(resultBuilder());
+                }
             }
             else
             {
@@ -780,6 +799,17 @@ namespace Realms
                 const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
                 tcs.TrySetException(new RealmException(outerMessage, inner));
             }
+        }
+
+        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs)
+        {
+            if (asyncTransactionHandle.HasValue)
+            {
+                NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException);
+                innerNativeException.ThrowIfNecessary();
+            }
+
+            tcs.TrySetCanceled();
         }
 
         public class SchemaMarshaler

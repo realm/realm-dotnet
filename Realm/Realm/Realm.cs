@@ -813,7 +813,7 @@ namespace Realms
         /// </example>
         /// <returns>An awaitable <see cref="Task"/> that returns a transaction in write mode.
         /// A transaction is required for any creation, deletion or modification of objects persisted in a <see cref="Realm"/>.</returns>
-        public async Task<Transaction> BeginWriteAsync()
+        public async Task<Transaction> BeginWriteAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
@@ -823,7 +823,7 @@ namespace Realms
                 return BeginWrite();
             }
 
-            await SharedRealmHandle.BeginTransactionAsync();
+            await SharedRealmHandle.BeginTransactionAsync(cancellationToken);
             return new Transaction(this);
         }
 
@@ -894,7 +894,7 @@ namespace Realms
         /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public Task WriteAsync(Action action)
+        public Task WriteAsync(Action action, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
 
@@ -904,7 +904,7 @@ namespace Realms
             {
                 action();
                 return true;
-            });
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -991,7 +991,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
-        public async Task<T> WriteAsync<T>(Func<T> function)
+        public async Task<T> WriteAsync<T>(Func<T> function, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             Argument.NotNull(function, nameof(function));
@@ -1002,9 +1002,9 @@ namespace Realms
                 return Write(function);
             }
 
-            using var transaction = await BeginWriteAsync();
+            using var transaction = await BeginWriteAsync(cancellationToken);
             var result = function();
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
             return result;
         }
 

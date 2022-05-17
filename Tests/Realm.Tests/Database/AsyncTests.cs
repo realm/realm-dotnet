@@ -426,5 +426,170 @@ namespace Realms.Tests.Database
                 Assert.That(_realm.All<Person>().Single, Is.EqualTo(person));
             });
         }
+
+        // This test can't easily check if SharedRealmHandle.NativeMethods.cancel_async_transaction
+        // does work what's expected to do.
+        [Test]
+        public void AsyncBeginWrite_CancelToken_OnAwait()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var asyncThreadFactory = new AsyncContextThread().Factory;
+                using var cts = new CancellationTokenSource();
+                var taskCancelled = false;
+
+                // NativeMethods.cancel_async_transaction needs to be called from
+                // the same thread/synchronizationContext where it's going to operate.
+                // Using an AsyncContextThread is a handy way to have all on the same synchronizationContext.
+                var syncTask = asyncThreadFactory.Run(async () =>
+                {
+                    try
+                    {
+                        using var realm = GetRealm(_realm.Config);
+                        var transaction = realm.BeginWrite();
+
+                        // Give time to asyncTask to get to await BeginWriteAsync. This allows us
+                        // to look with the debugger to see if cancel_async_transaction is called.
+                        await Task.Delay(1000);
+                        cts.Cancel();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("For more details check the inner exception", e);
+                    }
+                });
+
+                var asyncTask = asyncThreadFactory.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    try
+                    {
+                        await realm.BeginWriteAsync(cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        taskCancelled = true;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("For more details check the inner exception", e);
+                    }
+                });
+
+                await Task.WhenAll(syncTask, asyncTask);
+                Assert.That(taskCancelled, Is.EqualTo(true));
+            });
+        }
+
+        [Test]
+        public void AsyncWrite_CancelToken_OnAwait()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var asyncThreadFactory = new AsyncContextThread().Factory;
+                using var cts = new CancellationTokenSource();
+                var taskCancelled = false;
+
+                // NativeMethods.cancel_async_transaction needs to be called from
+                // the same thread/synchronizationContext where it's going to operate.
+                // Using an AsyncContextThread is a handy way to have all on the same synchronizationContext.
+                var syncTask = asyncThreadFactory.Run(async () =>
+                {
+                    try
+                    {
+                        using var realm = GetRealm(_realm.Config);
+                        var transaction = realm.BeginWrite();
+
+                        // Give time to asyncTask to get to await BeginWriteAsync. This allows us
+                        // to look with the debugger to see if cancel_async_transaction is called.
+                        await Task.Delay(1000);
+                        cts.Cancel();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("For more details check the inner exception", e);
+                    }
+                });
+
+                var asyncTask = asyncThreadFactory.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    try
+                    {
+                        await realm.WriteAsync(() => { }, cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        taskCancelled = true;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("For more details check the inner exception", e);
+                    }
+                });
+
+                await Task.WhenAll(syncTask, asyncTask);
+                Assert.That(taskCancelled, Is.EqualTo(true));
+            });
+        }
+
+        // TODO andrea: this doesn't work. Either the ct or the tcs are null when arriving in the managed callback
+        [Test]
+        public void AsyncCommit_CancelToken_OnAwait()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var asyncThreadFactory = new AsyncContextThread().Factory;
+                using var cts = new CancellationTokenSource();
+                var taskCancelled = false;
+
+                // NativeMethods.cancel_async_transaction needs to be called from
+                // the same thread/synchronizationContext where it's going to operate.
+                // Using an AsyncContextThread is a handy way to have all on the same synchronizationContext.
+                var syncTask = asyncThreadFactory.Run(async () =>
+                {
+                    try
+                    {
+                        using var realm = GetRealm(_realm.Config);
+                        var transaction = realm.BeginWrite();
+
+                        // Give time to asyncTask to get to await BeginWriteAsync. This allows us
+                        // to look with the debugger to see if cancel_async_transaction is called.
+                        await Task.Delay(1000);
+                        transaction.Rollback();
+                        await Task.Delay(500);
+                        transaction = realm.BeginWrite();
+                        await Task.Delay(1000);
+                        cts.Cancel();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("For more details check the inner exception", e);
+                    }
+                });
+
+                var asyncTask = asyncThreadFactory.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    try
+                    {
+                        var transaction = await realm.BeginWriteAsync();
+                        await Task.Delay(1000);
+                        await transaction.CommitAsync(cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        taskCancelled = true;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("For more details check the inner exception", e);
+                    }
+                });
+
+                await Task.WhenAll(syncTask, asyncTask);
+                Assert.That(taskCancelled, Is.EqualTo(true));
+            }, 999999999);
+        }
     }
 }
