@@ -42,13 +42,13 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
   ```
 
 ### Fixed
-* None
+* Fixed a `System.DllNotFoundException` being thrown by Realm APIs at startup on Xamarin.iOS (Issue [#2926](https://github.com/realm/realm-dotnet/issues/2926), since 10.12.0)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 11.14.0.
 
 ## 10.12.0 (2022-05-05)
 
