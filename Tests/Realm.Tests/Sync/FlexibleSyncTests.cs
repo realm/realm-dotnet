@@ -26,6 +26,7 @@ using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
+using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
@@ -1579,7 +1580,19 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                var errorTcs = new TaskCompletionSource<SessionException>();
                 var testGuid = Guid.NewGuid();
+                var config = await GetFLXIntegrationConfigAsync();
+                config.ClientResetHandler = new ManualRecoveryHandler(error =>
+                {
+                    errorTcs.TrySetResult(error);
+                });
+
+                config.OnSessionError = (session, error) =>
+                {
+                    errorTcs.TrySetResult(error);
+                };
+
                 var realm = await GetFLXIntegrationRealmAsync();
 
                 realm.Subscriptions.Update(() =>
@@ -1587,17 +1600,12 @@ namespace Realms.Tests.Sync
                     realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
                 });
 
-                var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
-                {
-                    Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
-                });
-
                 realm.Write(() =>
                 {
                     realm.Add(new SyncAllTypesObject());
                 });
 
-                var sessionError = await sessionErrorTask;
+                var sessionError = await errorTcs.Task;
                 Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
             });
         }
@@ -1607,17 +1615,19 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var testGuid = Guid.NewGuid();
-                var realm = await GetFLXIntegrationRealmAsync();
+                var config = await GetFLXIntegrationConfigAsync();
+                config.ClientResetHandler = new ManualRecoveryHandler(error =>
+                {
+                    errorTcs.TrySetResult(error);
+                });
+
+                var realm = await GetRealmAsync(config);
 
                 realm.Subscriptions.Update(() =>
                 {
                     realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
-                });
-
-                var sessionErrorTask = SyncTestHelpers.WaitForSessionError<ClientResetException>(session =>
-                {
-                    Assert.That(session.Path, Is.EqualTo(realm.Config.DatabasePath));
                 });
 
                 var ato = realm.Write(() =>
@@ -1640,7 +1650,7 @@ namespace Realms.Tests.Sync
                     ato.Int32Property = 15;
                 });
 
-                var sessionError = await sessionErrorTask;
+                var sessionError = await errorTcs.Task;
                 Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
             });
         }

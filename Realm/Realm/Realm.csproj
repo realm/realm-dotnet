@@ -38,9 +38,9 @@
       <LastGenOutput>Operator.cs</LastGenOutput>
     </None>
     <!-- iOS -->
-    <Content Include="ios-dllmap.config" Pack="true">
-      <PackagePath>contentFiles\any\xamarinios\$(AssemblyName).dll.config</PackagePath>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
+    <Content Include="wrappers-props\xamarinios\Realm.dll.config">
+      <Pack>true</Pack>
+      <PackagePath>build\xamarinios\</PackagePath>
     </Content>
     <Content Include="wrappers-props\xamarinios\wrappers.props" Pack="true" PackagePath="build\xamarinios\Realm.props" />
     <None Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework\**">

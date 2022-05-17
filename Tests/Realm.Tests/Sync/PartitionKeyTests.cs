@@ -107,7 +107,7 @@ namespace Realms.Tests.Sync
             {
                 var ids = new
                 {
-                    Long = (long)TestHelpers.Random.Next(int.MinValue, int.MaxValue),
+                    Long = TestHelpers.Random.Next(),
                     ObjectId = ObjectId.GenerateNewId(),
                     Guid = Guid.NewGuid(),
                     String = Guid.NewGuid().ToString(),

@@ -52,6 +52,8 @@ using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
+using SharedSyncSession = std::shared_ptr<SyncSession>;
+using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -66,6 +68,7 @@ namespace binding {
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
     std::function<HandleTaskCompletionCallbackT> s_handle_task_completion;
+    extern std::function<ErrorCallbackT> s_session_error_callback;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -111,9 +114,36 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         std::string partition(Utf16StringAccessor(sync_configuration.partition, sync_configuration.partition_len));
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, partition);
     }
-    config.sync_config->error_handler = handle_session_error;
-    config.sync_config->client_resync_mode = ClientResyncMode::Manual;
+
+    auto sync_configuration_handle = std::make_shared<GCHandleHolder>(sync_configuration.managed_sync_config);
+
+    config.sync_config->error_handler = [sync_configuration_handle](SharedSyncSession session, SyncError error) {
+        std::vector<std::pair<char*, char*>> user_info_pairs;
+
+        for (const auto& p : error.user_info) {
+            user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
+        }
+
+        s_session_error_callback(new SharedSyncSession(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), sync_configuration_handle->handle());
+    };
+
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
+    config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
+
+    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal) {
+
+        config.sync_config->notify_before_client_reset = [sync_configuration_handle](SharedRealm before_frozen) {
+            if (!s_notify_before_callback(before_frozen, sync_configuration_handle->handle())) {
+                throw ManagedExceptionDuringClientReset();
+            }
+        };
+
+        config.sync_config->notify_after_client_reset = [sync_configuration_handle](SharedRealm before_frozen, SharedRealm after, bool did_recover) {
+            if (!s_notify_after_callback(before_frozen, after, sync_configuration_handle->handle())) {
+                throw ManagedExceptionDuringClientReset();
+            }
+        };
+    }
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
 
     if (configuration.fallback_path) {
@@ -155,9 +185,9 @@ extern "C" {
 typedef uint32_t realm_table_key;
 
 REALM_EXPORT void shared_realm_install_callbacks(
-    RealmChangedT* realm_changed, 
-    GetNativeSchemaT* get_schema, 
-    OpenRealmCallbackT* open_callback, 
+    RealmChangedT* realm_changed,
+    GetNativeSchemaT* get_schema,
+    OpenRealmCallbackT* open_callback,
     ReleaseGCHandleT* release_gchandle_callback,
     LogMessageT* log_message,
     ObjectNotificationCallbackT* notify_object,
@@ -492,13 +522,21 @@ REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReference* reference)
     delete reference;
 }
 
-REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, size_t path_len, char* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuration configuration, bool use_sync, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        Utf16StringAccessor pathStr(path, path_len);
+        Realm::Config config;
 
-        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        realm->get()->write_copy(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0));
+        // force_sync_history tells Core to synthesize/copy the sync history from the source.
+        config.force_sync_history = use_sync;
+
+        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        if (encryption_key) {
+            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+            config.encryption_key = std::vector<char>(key.begin(), key.end());
+        }
+
+        realm->convert(std::move(config));
     });
 }
 
@@ -601,7 +639,7 @@ REALM_EXPORT Object* shared_realm_get_object_for_primary_key(SharedRealm& realm,
         }
 
         const TableRef table = get_table(realm, table_key);
-        const ObjectSchema& object_schema = *realm->schema().find(table_key); 
+        const ObjectSchema& object_schema = *realm->schema().find(table_key);
         if (object_schema.primary_key.empty()) {
             const std::string name(ObjectStore::object_type_for_table_name(table->get_name()));
             throw MissingPrimaryKeyException(name);
