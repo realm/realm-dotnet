@@ -153,9 +153,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var username = SyncTestHelpers.GetVerifiedUsername();
-                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
-                var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
-                var first = await DefaultApp.LogInAsync(credentials);
+                var password = SyncTestHelpers.DefaultPassword;
+                var first = await GetUserAsync(app: null, username, password);
 
                 Assert.That(DefaultApp.CurrentUser, Is.EqualTo(first));
 
@@ -165,7 +164,7 @@ namespace Realms.Tests.Sync
                 Exception ex = null;
                 try
                 {
-                    await DefaultApp.LogInAsync(credentials);
+                    await DefaultApp.LogInAsync(Credentials.EmailPassword(username, password));
                 }
                 catch (Exception e)
                 {

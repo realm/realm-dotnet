@@ -149,7 +149,14 @@ namespace binding {
 
     inline auto get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
-            handle_void_callback(tcs_ptr, err);
+            if (err) {
+                std::string error_category = err->error_code.message();
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+                s_void_callback(tcs_ptr, app_error);
+            }
+            else {
+                s_void_callback(tcs_ptr, MarshaledAppError());
+            }
         };
     }
 

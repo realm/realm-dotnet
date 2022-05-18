@@ -100,17 +100,6 @@ namespace realm {
         private:
             void* managed_logger;
         };
-        
-        void handle_void_callback(void* tcs_ptr, util::Optional<AppError> err) {
-            if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
-                s_void_callback(tcs_ptr, app_error);
-            }
-            else {
-                s_void_callback(tcs_ptr, MarshaledAppError());
-            }
-        }
     }
 }
 
@@ -277,9 +266,7 @@ extern "C" {
     REALM_EXPORT void shared_app_delete_user(SharedApp& app, SharedSyncUser& user, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            app->delete_user(user, [tcs_ptr](util::Optional<AppError> err) {
-                handle_void_callback(tcs_ptr, err);
-            });
+            app->delete_user(user, get_callback_handler(tcs_ptr));
         });
     }
 
