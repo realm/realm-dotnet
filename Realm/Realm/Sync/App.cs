@@ -251,7 +251,7 @@ namespace Realms.Sync
         /// <param name="user">The user to remove from the server.</param>
         /// <returns>
         /// An awaitable <see cref="Task"/> that represents the asynchronous deletion operation.
-        /// Successful completion indicates that the user has been removed, logged out and their local data have been removed.
+        /// Successful completion indicates that the user has been removed, logged out and their local data has been removed.
         /// </returns>
         public Task DeleteUserFromServerAsync(User user)
         {

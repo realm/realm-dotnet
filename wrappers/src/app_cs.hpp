@@ -143,7 +143,7 @@ namespace binding {
             }
             else {
                 s_user_callback(tcs_ptr, new SharedSyncUser(user), MarshaledAppError());
-            }        
+            }
         };
     }
 
