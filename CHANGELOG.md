@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.13.0 (2022-05-18)
 
 ### Enhancements
 * Adds the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
