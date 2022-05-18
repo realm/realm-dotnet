@@ -34,7 +34,7 @@ namespace Realms.DataBinding
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             var result = base.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers);
-            var wovenAttribute = result.GetCustomAttribute<WovenPropertyAttribute>();
+            var wovenAttribute = result?.GetCustomAttribute<WovenPropertyAttribute>();
             if (wovenAttribute != null)
             {
                 return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
