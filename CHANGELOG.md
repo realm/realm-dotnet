@@ -1,7 +1,8 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Adds the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
+* Added the method `App.DeleteUserFromServerAsync` to delete a user from the server. The biproduct is that the user is also removed from the device together with their data. (Issue [#2675](https://github.com/realm/realm-dotnet/issues/2675))
+* Added the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
 * Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
 This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
   ```csharp
