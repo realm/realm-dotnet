@@ -131,8 +131,6 @@ namespace binding {
     extern std::function<BsonCallbackT> s_bson_callback;
     extern std::function<ApiKeysCallbackT> s_api_keys_callback;
 
-    extern void handle_void_callback(void* tcs_ptr, util::Optional<AppError> err);
-
     inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
