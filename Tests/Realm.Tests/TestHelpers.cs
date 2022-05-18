@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 #if NETCOREAPP || NETFRAMEWORK
@@ -29,7 +30,6 @@ using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-using System.Collections.Concurrent;
 #if __ANDROID__
 using Application = Android.App.Application;
 #endif
