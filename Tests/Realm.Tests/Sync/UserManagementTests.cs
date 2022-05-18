@@ -148,6 +148,36 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void AppDeleteUserFromServer_RemovesUser()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var username = SyncTestHelpers.GetVerifiedUsername();
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+                var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
+                var first = await DefaultApp.LogInAsync(credentials);
+
+                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(first));
+
+                await DefaultApp.DeleteUserFromServerAsync(first);
+                Assert.That(DefaultApp.CurrentUser, Is.Null);
+
+                Exception ex = null;
+                try
+                {
+                    await DefaultApp.LogInAsync(credentials);
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                Assert.That(ex, Is.TypeOf<AppException>());
+                Assert.That(ex.Message, Is.EqualTo("InvalidPassword: invalid username/password"));
+            });
+        }
+
+        [Test]
         public void EmailPasswordRegisterUser_Works()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
