@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
@@ -37,7 +37,7 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {
-        private readonly Queue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
+        private readonly ConcurrentQueue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
 
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
@@ -1080,7 +1080,7 @@ namespace Realms.Tests.Sync
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Null);
 
-                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                static void NotificationChanged(object sender, PropertyChangedEventArgs e)
                 {
                 }
             });
@@ -1167,7 +1167,7 @@ namespace Realms.Tests.Sync
                 weakNotificationTokenRef = new WeakReference(internalNotificationToken);
                 Assert.That(weakNotificationTokenRef.IsAlive, Is.True);
 
-                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                static void NotificationChanged(object sender, PropertyChangedEventArgs e)
                 {
                 }
             });
