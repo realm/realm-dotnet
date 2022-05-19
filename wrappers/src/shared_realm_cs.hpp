@@ -40,6 +40,12 @@ public:
     }
 };
 
+class ManagedExceptionDuringClientReset : public std::runtime_error {
+public:
+    ManagedExceptionDuringClientReset() : std::runtime_error("Managed exception happened during client reset") {
+    }
+};
+
 struct Configuration
 {
     uint16_t* path;
@@ -78,6 +84,9 @@ struct SyncConfiguration
     SchemaMode schema_mode;
 
     bool is_flexible_sync;
+
+    ClientResyncMode client_resync_mode;
+    void* managed_sync_config;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)
@@ -88,28 +97,59 @@ inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)
 namespace realm {
 namespace binding {
     
-    class CSharpBindingContext: public BindingContext {
-    public:
-        CSharpBindingContext(void* managed_state_handle);
-        void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed) override;
-        
-        void* get_managed_state_handle()
-        {
-            return m_managed_state_handle;
+extern std::function<void(void*)> s_release_gchandle;
+
+struct GCHandleHolder {
+public:
+    GCHandleHolder(void* handle)
+        : m_handle(handle)
+    { }
+
+    GCHandleHolder(const GCHandleHolder&) = delete;
+    GCHandleHolder& operator=(const GCHandleHolder&) = delete;
+
+    GCHandleHolder(GCHandleHolder&& other) noexcept
+    {
+        m_handle = other.m_handle;
+        other.m_handle = nullptr;
+    }
+
+    ~GCHandleHolder()
+    {
+        if (m_handle != nullptr) {
+            s_release_gchandle(m_handle);
+            m_handle = nullptr;
         }
+    }
 
-        // TODO: this should go away once https://github.com/realm/realm-core/issues/4584 is resolved
-        Schema m_realm_schema;
+    void* handle() const
+    {
+        return m_handle;
+    }
+private:
+    void* m_handle;
+};
 
-    private:
-        void* m_managed_state_handle;
+class CSharpBindingContext: public BindingContext {
+public:
+    CSharpBindingContext(GCHandleHolder managed_state_handle);
+    void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed) override;
+        
+    void* get_managed_state_handle()
+    {
+        return m_managed_state_handle.handle();
+    }
 
-        ~CSharpBindingContext();
-    };
+    // TODO: this should go away once https://github.com/realm/realm-core/issues/4584 is resolved
+    Schema m_realm_schema;
 
-    void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
-}
-    
-}
+private:
+    GCHandleHolder m_managed_state_handle;
+};
+
+void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
+
+} // namespace bindings  
+} // namespace realm
 
 #endif /* defined(SHARED_REALM_CS_HPP) */

@@ -31,7 +31,7 @@ namespace Realms.Sync
 {
     internal partial class AppHandle : StandaloneHandle
     {
-        private static readonly List<WeakReference> _appHandles = new List<WeakReference>();
+        private static readonly List<WeakReference> _appHandles = new();
 
         private static class NativeMethods
         {
@@ -98,6 +98,9 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string refresh_token_buf, IntPtr refresh_token_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string access_token_buf, IntPtr access_token_len,
                 out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_clear_cached_apps", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void clear_cached_apps(out NativeException ex);
 
             public static class EmailPassword
             {
@@ -206,7 +209,7 @@ namespace Realms.Sync
             return new AppHandle(handle);
         }
 
-        public static void ForceCloseHandles()
+        public static void ForceCloseHandles(bool clearNativeCache = false)
         {
             lock (_appHandles)
             {
@@ -218,14 +221,20 @@ namespace Realms.Sync
 
                 _appHandles.Clear();
             }
+
+            if (clearNativeCache)
+            {
+                NativeMethods.clear_cached_apps(out var ex);
+                ex.ThrowIfNecessary();
+            }
         }
 
-        public string GetRealmPath(User user, string partition)
+        public string GetRealmPath(User user, string partition = null)
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
             {
                 isNull = false;
-                return NativeMethods.get_path_for_realm(this, user.Handle, partition, (IntPtr)partition.Length, buffer, bufferLength, out ex);
+                return NativeMethods.get_path_for_realm(this, user.Handle, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
             });
         }
 

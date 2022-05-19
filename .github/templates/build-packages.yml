@@ -1,0 +1,89 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages")
+
+#@ def buildDocs():
+  - name: Check Docfx cache
+    id: check-docfx-cache
+    if: inputs.build-docs
+    uses: #@ actionCache
+    with:
+      path: 'C:\docfx'
+      key: docfx
+  - name: Download docfx
+    if: inputs.build-docs && steps.check-docfx-cache.outputs.cache-hit != 'true'
+    run: |
+      Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
+      Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
+    shell: powershell
+  - name: Build docs
+    if: inputs.build-docs
+    run: |
+      C:\docfx\docfx Docs/docfx.json
+      Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
+  - _: #@ template.replace(uploadArtifacts("Docs.zip", "Realm/packages/Docs.zip"))
+    if: inputs.build-docs
+#@ end
+
+#@ def uploadPackageArtifacts():
+#@ for pkgName in nugetPackages:
+#@  finalPkgName = pkgName + ".${{ steps.get-version.outputs.version }}"
+  - #@ uploadArtifacts(finalPkgName, "Realm/packages/" + finalPkgName + ".*nupkg")
+#@ end
+#@ end
+
+#@ def mainPackagePaths():
+#@ result = []
+#@ for pkg in nugetPackages:
+#@   result.append("Realm/" + pkg)
+#@ end
+#@ return result
+#@ end
+
+---
+name: build-packages
+"on":
+  workflow_call:
+    inputs:
+      build-docs:
+        type: boolean
+        required: false
+        default: false
+    outputs:
+      package_version:
+        value: ${{ jobs.build-packages.outputs.package_version }}
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  build-packages:
+    runs-on: windows-latest
+    name: NuGet
+    outputs:
+      package_version: ${{ steps.get-version.outputs.version }}
+    timeout-minutes: 30
+    steps:
+      - #@ template.replace(checkoutCode())
+      - name: Set version suffix
+        id: set-version-suffix
+        #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.
+        run: |
+          $suffix = ""
+          if ($env:GITHUB_EVENT_NAME -eq "pull_request")
+          {
+            if (-Not "${{ github.head_ref }}".Contains("release"))
+            {
+              $suffix = "pr-${{ github.event.number }}.$env:GITHUB_RUN_NUMBER"
+            }
+          }
+          else
+          {
+            $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
+          }
+          echo "::set-output name=build_suffix::$suffix"
+      - #@ template.replace(fetchWrapperBinaries())
+      - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
+      - #@ template.replace(readVersionFromPackage())
+      - #@ template.replace(uploadPackageArtifacts())
+      - #@ uploadArtifacts("ExtractedChangelog", "Realm/Realm/ExtractedChangelog.md")
+      - #@ template.replace(buildDocs())
+

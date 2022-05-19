@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Helpers;
@@ -133,6 +135,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="config">The <see cref="AppConfiguration"/>, specifying key parameters for the app behavior.</param>
         /// <returns>An <see cref="App"/> instance can now be used to login users, call functions, or open synchronized Realms.</returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The http client is owned by the app and must be kept alive.")]
         public static App Create(AppConfiguration config)
         {
             Argument.NotNull(config, nameof(config));
@@ -150,6 +153,8 @@ namespace Realms.Sync
                 }
             }
 
+            var httpClient = config.HttpClientHandler == null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
+            var clientHandle = GCHandle.Alloc(httpClient);
             var nativeConfig = new Native.AppConfiguration
             {
                 AppId = config.AppId,
@@ -159,6 +164,7 @@ namespace Realms.Sync
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
+                managed_http_client = GCHandle.ToIntPtr(clientHandle),
 #pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
                 log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
             };

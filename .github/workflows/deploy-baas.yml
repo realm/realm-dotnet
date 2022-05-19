@@ -1,0 +1,46 @@
+name: deploy-baas
+"on":
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+    outputs:
+      clusterName:
+        value: ${{ jobs.deploy-baas.outputs.clusterName }}
+    secrets:
+      AtlasProjectId:
+        required: true
+      BaseUrl:
+        required: true
+      AtlasBaseUrl:
+        required: true
+      AtlasPublicKey:
+        required: true
+      AtlasPrivateKey:
+        required: true
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  deploy-baas:
+    runs-on: ubuntu-latest
+    name: ${{ inputs.name }}
+    outputs:
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
+    timeout-minutes: 20
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
+      id: deploy-mdb-apps
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ secrets.BaseUrl }}
+        atlasUrl: ${{ secrets.AtlasBaseUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        differentiator: ${{ inputs.name }}

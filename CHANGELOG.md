@@ -1,18 +1,122 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
+* None
 
 ### Fixed
-* Fixed an issue that could cause errors or loops with client reset on certain platforms. (PR [2830](https://github.com/realm/realm-dotnet/pull/2830))
-* [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
-* Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
+* None
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 11.11.0.
+* Using Core x.y.z.
+
+## 10.13.0 (2022-05-18)
+
+### Enhancements
+* Adds the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
+* Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
+This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler();
+    };
+  ```
+  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done (all callbacks are optional):
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new DiscardLocalResetHandler
+      {
+        OnBeforeReset = (beforeFrozen) =>
+        {
+          // executed right before a client reset is about to happen
+        },
+        OnAfterReset = (beforeFrozen, after) =>
+        {
+          // executed right after a client reset is has completed
+        },
+        ManualResetFallback = (session, err) =>
+        {
+          // handle the reset manually
+        }
+      }
+    };
+  ```
+  If, instead, you want to continue using the manual solution even after the end of the deprecation period, the following should be done
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+      {
+          // user's code for manual recovery
+      });
+  ```
+
+### Fixed
+* Fixed a `System.DllNotFoundException` being thrown by Realm APIs at startup on Xamarin.iOS (Issue [#2926](https://github.com/realm/realm-dotnet/issues/2926), since 10.12.0)
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
+## 10.12.0 (2022-05-05)
+
+### Enhancements
+* Preview support for .NET 6 with iOS, Android, and MAUI.
+  We've added tentative support for the new .NET 6 Mobile workloads (except MacCatalyst, which will be enabled later). The .NET tooling itself is still in preview so we don't have good test coverage of the new platforms just yet. Please report any issues you find at https://github.com/realm/realm-dotnet/issues/new/choose.
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
+## 10.11.2 (2022-04-12)
+
+### Fixed
+* Fixed corruption bugs when encryption is used. (Core Issue [#5360](https://github.com/realm/realm-core/issues/5360))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
+## 10.11.1 (2022-03-31)
+
+### Fixed
+* Fixed an issue that would cause the managed HttpClientHandler to be used in Xamarin applications, even if the project is configured to use the native one. (Issue [#2892](https://github.com/realm/realm-dotnet/issues/2892))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
+
+## 10.11.0 (2022-03-28)
+
+### Enhancements
+* Added property `Session.ConnectionState` to get a `Session`'s `SessionConnectionState`. Additionally, `Session` now implements `INotifyPropertyChanged` so that you can listen for changes on `Session.ConnectionState`. (Issue [#2801](https://github.com/realm/realm-dotnet/issues/2801))
+* Realm now supports running on Windows ARM64 for .NET Framework, .NET Core, and UWP apps. (Issues [#2704](https://github.com/realm/realm-dotnet/issues/2704) and [#2817](https://github.com/realm/realm-dotnet/issues/2817))
+* Added a property `AppConfiguration.HttpClientHandler` that allows you to override the default http client handler used by the Realm .NET SDK to make http calls. Note that this only affects the behavior of http calls, such as user login, function calls, and remote mongodb calls. The sync client uses a native websocket implementation and will not use the provided message handler. (Issue [#2865](https://github.com/realm/realm-dotnet/issues/2865))
+
+### Fixed
+* Fixed an issue that could cause errors or loops with client reset on certain platforms. (PR [2830](https://github.com/realm/realm-dotnet/pull/2830))
+* [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
+* Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
+* Query parser would not accept "in" as a property name (Core Issue [#5312](https://github.com/realm/realm-core/issues/5312))
+* Application would sometimes crash with exceptions like 'KeyNotFound' or assertion "has_refs()". Other issues indicating file corruption may also be fixed by this. The one mentioned here is the one that lead to solving the problem. (Core Issue [#5283](https://github.com/realm/realm-core/issues/5283))
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.12.0.
 * Enabled running Benchmarks on iOS devices by turning on the interpreter for some windows assemblies.
 
 ## 10.10.0 (2022-02-28)

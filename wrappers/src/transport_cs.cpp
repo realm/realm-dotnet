@@ -40,6 +40,8 @@ struct HttpClientRequest {
     size_t headers_len;
 
     realm_value_t body;
+
+    void* managed_http_client;
 };
 
 using ExecuteRequestT = void(HttpClientRequest request, void* callback);
@@ -47,10 +49,7 @@ using ResponseFunction = util::UniqueFunction<void(const Response&)>;
 
 namespace realm {
 namespace binding {
-std::shared_ptr<GenericNetworkTransport> s_transport;
 std::function<ExecuteRequestT> s_execute_request;
-}
-}
 
 struct HttpClientResponse {
     int http_status_code;
@@ -60,33 +59,35 @@ struct HttpClientResponse {
     size_t body_len;
 };
 
-struct HttpClientTransport : public GenericNetworkTransport {
-public:
-    void send_request_to_server(Request&& request, ResponseFunction&& completionBlock) override {
-        std::vector<std::pair<char*, char*>> headers;
-        for (auto& kvp : request.headers) {
-            headers.push_back(std::make_pair(const_cast<char*>(kvp.first.c_str()), const_cast<char*>(kvp.second.c_str())));
-        }
+HttpClientTransport::HttpClientTransport(GCHandleHolder managed_http_client) : m_managed_http_client(std::move(managed_http_client)) {}
 
-        HttpClientRequest client_request = {
-            request.method,
-            to_capi_value(request.url),
-            request.timeout_ms,
-            headers.data(),
-            headers.size(),
-            to_capi_value(request.body)
-        };
-
-        s_execute_request(std::move(client_request), new ResponseFunction(std::move(completionBlock)));
+void HttpClientTransport::send_request_to_server(Request&& request, ResponseFunction&& completionBlock) {
+    std::vector<std::pair<char*, char*>> headers;
+    for (auto& kvp : request.headers) {
+        headers.push_back(std::make_pair(const_cast<char*>(kvp.first.c_str()), const_cast<char*>(kvp.second.c_str())));
     }
-};
+
+    HttpClientRequest client_request = {
+        request.method,
+        to_capi_value(request.url),
+        request.timeout_ms,
+        headers.data(),
+        headers.size(),
+        to_capi_value(request.body),
+        m_managed_http_client.handle(),
+    };
+
+    s_execute_request(std::move(client_request), new ResponseFunction(std::move(completionBlock)));
+}
+
+}
+}
 
 extern "C" {
     REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
         s_execute_request = wrap_managed_callback(execute);
-        s_transport = std::make_shared<HttpClientTransport>();
-
+        
         realm::binding::s_can_call_managed = true;
     }
 

@@ -23,8 +23,6 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
-using Realms.Sync.Exceptions;
-using Realms.Sync.Testing;
 
 namespace Realms.Tests.Sync
 {
@@ -82,6 +80,7 @@ namespace Realms.Tests.Sync
 
             if (ensureNoSessionErrors)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var tcs = new TaskCompletionSource<object>();
                 Session.Error += HandleSessionError;
                 try
@@ -92,6 +91,7 @@ namespace Realms.Tests.Sync
                 {
                     Session.Error -= HandleSessionError;
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 void HandleSessionError(object _, ErrorEventArgs errorArgs)
                 {
@@ -128,7 +128,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            if (baseUrl != null)
+            if (!string.IsNullOrEmpty(baseUrl))
             {
                 _baseUri = new Uri(baseUrl);
             }
@@ -279,43 +279,6 @@ namespace Realms.Tests.Sync
                     _appIds[AppConfigType.FlexibleSync] = flexibleSyncApp.ClientAppId;
                 }
             }
-        }
-
-        public static Task<T> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message, Action<Session> sessionAssertions)
-            where T : Exception
-        {
-            var task = WaitForSessionError<T>(sessionAssertions);
-
-            session.SimulateError(code, message);
-
-            return task;
-        }
-
-        public static Task<T> WaitForSessionError<T>(Action<Session> sessionAssertions)
-            where T : Exception
-        {
-            var tcs = new TaskCompletionSource<T>();
-            EventHandler<ErrorEventArgs> handler = null;
-            handler = new EventHandler<ErrorEventArgs>((sender, e) =>
-            {
-                try
-                {
-                    Assert.That(sender, Is.TypeOf<Session>());
-                    Assert.That(e.Exception, Is.TypeOf<T>());
-                    sessionAssertions((Session)sender);
-                    tcs.TrySetResult((T)e.Exception);
-                }
-                catch (Exception ex)
-                {
-                    tcs.TrySetException(ex);
-                }
-
-                Session.Error -= handler;
-            });
-
-            Session.Error += handler;
-
-            return tcs.Task;
         }
     }
 }

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupNode", "actionGithubRelease", "actionReleaseToSlack", "actionFindPR", "actionMergePR", "actionCreatePR", "mainBranch", "downloadAllArtifacts", "readVersionFromPackage", "configureS3Credentials")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupNode", "actionGithubRelease", "actionReleaseToSlack", "actionFindPR", "actionMergePR", "actionCreatePR", "mainBranch", "downloadAllArtifacts", "readVersionFromPackage", "configureAWSCredentials")
 
 #@ def uploadToNuget(packageName):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
@@ -49,14 +49,14 @@
 #@ end
 
 #@ def uploadDocsToS3():
-  - #@ template.replace(configureS3Credentials("DOCS_S3_ACCESS_KEY", "DOCS_S3_SECRET_KEY", "us-east-2"))
+  - #@ template.replace(configureAWSCredentials("DOCS_S3_ACCESS_KEY", "DOCS_S3_SECRET_KEY", "us-east-2"))
   - name: Upload docs
     run: |
       Expand-Archive -Path Realm/packages/Docs.zip/Docs.zip -DestinationPath Realm/packages
       $versions = "${{ steps.get-version.outputs.version }}", "latest"
       Foreach ($ver in $versions)
       {
-        aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/realm-sdks/dotnet/$ver/
+        aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
       }
 #@ end
 
