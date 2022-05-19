@@ -76,6 +76,13 @@ namespace Realms
         /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
         /// it must be used before the end of that block.
         /// </summary>
+        /// <remarks>
+        /// Waiting on this method means waiting to be notified when the commit is effectively written to disk.
+        /// Hence, cancelling this call doesn't cancel the commit action. It only stops the notification of completion from being delivered.
+        /// </remarks>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to be notified when the commit is effectively written to disk.
+        /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {

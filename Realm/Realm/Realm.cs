@@ -811,6 +811,9 @@ namespace Realms
         /// }
         /// </code>
         /// </example>
+        /// <param name="cancellationToken">
+        /// Optionla cancellation token to stop waiting to start a write transaction.
+        /// </param>
         /// <returns>An awaitable <see cref="Task"/> that returns a transaction in write mode.
         /// A transaction is required for any creation, deletion or modification of objects persisted in a <see cref="Realm"/>.</returns>
         public async Task<Transaction> BeginWriteAsync(CancellationToken cancellationToken = default)
@@ -892,6 +895,9 @@ namespace Realms
         /// </example>
         /// <param name="action">
         /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action action, CancellationToken cancellationToken = default)
@@ -988,6 +994,9 @@ namespace Realms
         /// </example>
         /// <param name="function">
         /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>

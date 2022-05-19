@@ -774,24 +774,16 @@ namespace Realms
             var handleTcs = GCHandle.FromIntPtr(tcsPtr);
             var tcs = (TaskCompletionSource<T>)handleTcs.Target;
 
-
             if (ex.type == RealmExceptionCodes.NoError)
             {
                 var handleCt = GCHandle.FromIntPtr(ctPtr);
                 var ct = (CancellationToken)handleCt.Target;
-                if (ct != CancellationToken.None)
+                if (ct != CancellationToken.None && ct.IsCancellationRequested)
                 {
-                    // TODO andrea: check if this is really necessary. Think of corner cases where bad timing may lead core to call
-                    // this but we have already cancelled tcs from the callback of the ct
-                    if (ct.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                    return;
                 }
-                else
-                {
-                    tcs.TrySetResult(resultBuilder());
-                }
+
+                tcs.TrySetResult(resultBuilder());
             }
             else
             {
