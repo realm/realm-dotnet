@@ -154,11 +154,11 @@ namespace Realms.Tests.Sync
             {
                 var username = SyncTestHelpers.GetVerifiedUsername();
                 var password = SyncTestHelpers.DefaultPassword;
-                var first = await GetUserAsync(app: null, username, password);
+                var user = await GetUserAsync(app: null, username, password);
 
-                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(first));
+                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(user));
 
-                await DefaultApp.DeleteUserFromServerAsync(first);
+                await DefaultApp.DeleteUserFromServerAsync(user);
                 Assert.That(DefaultApp.CurrentUser, Is.Null);
 
                 Exception ex = null;
