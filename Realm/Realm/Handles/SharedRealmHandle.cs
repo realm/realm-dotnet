@@ -771,18 +771,18 @@ namespace Realms
 
         private static void HandleTaskCompletion<T>(IntPtr tcsPtr, Func<T> resultBuilder, NativeException ex)
         {
+            // if the cancellation of the task is executed just an instant before core calls this callback,
+            // the handle is already freed by the finally block of the managed caller.
+            if (tcsPtr == IntPtr.Zero)
+            {
+                return;
+            }
+
             var handleTcs = GCHandle.FromIntPtr(tcsPtr);
             var tcs = (TaskCompletionSource<T>)handleTcs.Target;
 
             if (ex.type == RealmExceptionCodes.NoError)
             {
-                var handleCt = GCHandle.FromIntPtr(ctPtr);
-                var ct = (CancellationToken)handleCt.Target;
-                if (ct != CancellationToken.None && ct.IsCancellationRequested)
-                {
-                    return;
-                }
-
                 tcs.TrySetResult(resultBuilder());
             }
             else
