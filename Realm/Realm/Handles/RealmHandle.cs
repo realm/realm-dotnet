@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
@@ -146,6 +147,8 @@ namespace Realms
             }
             catch
             {
+                Debug.Fail("Failed to close native handle");
+
                 // it would be really bad if we got an exception in here. We must not pass it on, but have to return false
                 return false;
             }

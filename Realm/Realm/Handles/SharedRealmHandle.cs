@@ -156,7 +156,7 @@ namespace Realms
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
+            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, [MarshalAs(UnmanagedType.U1)] bool useSync, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
@@ -523,9 +523,11 @@ namespace Realms
             return result;
         }
 
-        public void WriteCopy(string path, byte[] encryptionKey)
+        public void WriteCopy(RealmConfigurationBase config)
         {
-            NativeMethods.write_copy(this, path, (IntPtr)path.Length, encryptionKey, out var nativeException);
+            var useSync = config is SyncConfigurationBase;
+
+            NativeMethods.write_copy(this, config.CreateNativeConfiguration(), useSync, config.EncryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

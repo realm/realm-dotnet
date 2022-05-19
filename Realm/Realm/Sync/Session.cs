@@ -20,6 +20,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Realms.Exceptions.Sync;
 
 namespace Realms.Sync
 {
@@ -33,6 +34,7 @@ namespace Realms.Sync
         /// <summary>
         /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
+        [Obsolete("Use SyncConfigurationBase.OnSessionError in conjunction with SyncConfigurationBase.ClientResetHandler instead.")]
         public static event EventHandler<ErrorEventArgs> Error;
 
         private readonly SessionHandle _handle;
@@ -215,7 +217,7 @@ namespace Realms.Sync
             }
         }
 
-        internal void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, errorMessage, isFatal);
+        internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal);
 
         internal static void RaiseError(Session session, Exception error)
         {

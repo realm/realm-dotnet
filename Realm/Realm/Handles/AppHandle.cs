@@ -229,12 +229,12 @@ namespace Realms.Sync
             }
         }
 
-        public string GetRealmPath(User user, string partition)
+        public string GetRealmPath(User user, string partition = null)
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
             {
                 isNull = false;
-                return NativeMethods.get_path_for_realm(this, user.Handle, partition, (IntPtr)partition.Length, buffer, bufferLength, out ex);
+                return NativeMethods.get_path_for_realm(this, user.Handle, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
             });
         }
 

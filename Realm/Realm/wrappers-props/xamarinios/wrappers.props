@@ -1,0 +1,19 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Realm.dll.config">
+      <Link>Realm.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <NativeReference Include="$(_RealmNugetRuntimesPath)ios\native\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhone' ">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="$(_RealmNugetRuntimesPath)iossimulator\native\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhoneSimulator' ">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+  </ItemGroup>
+</Project>

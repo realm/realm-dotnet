@@ -1,0 +1,19 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <AndroidNativeLibrary Include="$(_RealmNugetRuntimesPath)android-arm\native\librealm-wrappers.so">
+      <Abi>armeabi-v7a</Abi>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="$(_RealmNugetRuntimesPath)android-x86\native\librealm-wrappers.so">
+      <Abi>x86</Abi>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="$(_RealmNugetRuntimesPath)android-arm64\native\librealm-wrappers.so">
+      <Abi>arm64-v8a</Abi>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="$(_RealmNugetRuntimesPath)android-x64\native\librealm-wrappers.so">
+      <Abi>x86_64</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+</Project>

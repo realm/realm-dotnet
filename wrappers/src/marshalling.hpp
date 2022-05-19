@@ -560,6 +560,5 @@ inline auto wrap_managed_callback(TReturn (*func)(TArgs... args))
         }
     };
 }
-
 } // namespace binding
 } // namespace realm
