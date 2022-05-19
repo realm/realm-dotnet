@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue that could cause errors or loops with client reset on certain platforms. (PR [2830](https://github.com/realm/realm-dotnet/pull/2830))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
@@ -106,7 +106,6 @@ This addition makes `Session.Error` **deprecated**. In order to temporarily cont
 * Added a property `AppConfiguration.HttpClientHandler` that allows you to override the default http client handler used by the Realm .NET SDK to make http calls. Note that this only affects the behavior of http calls, such as user login, function calls, and remote mongodb calls. The sync client uses a native websocket implementation and will not use the provided message handler. (Issue [#2865](https://github.com/realm/realm-dotnet/issues/2865))
 
 ### Fixed
-* Fixed an issue that could cause errors or loops with client reset on certain platforms. (PR [2830](https://github.com/realm/realm-dotnet/pull/2830))
 * [Unity] Fixed an issue that caused the weaver to fail when invoked via the `Tools->Realm->Weave Assemblies` editor menu with the error `UnityEngine.UnityException: get_dataPath can only be called from the main thread`. (Issue [#2836](https://github.com/realm/realm-dotnet/issues/2836))
 * Fixed an issue that caused `RealmInvalidObjectException` to be caused when enumerating an invalid Realm collection (e.g. a list belonging to a deleted object). (Issue [#2840](https://github.com/realm/realm-dotnet/issues/2840))
 * Query parser would not accept "in" as a property name (Core Issue [#5312](https://github.com/realm/realm-core/issues/5312))
