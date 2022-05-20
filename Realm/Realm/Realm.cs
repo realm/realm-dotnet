@@ -812,7 +812,7 @@ namespace Realms
         /// </code>
         /// </example>
         /// <param name="cancellationToken">
-        /// Optionla cancellation token to stop waiting to start a write transaction.
+        /// Optional cancellation token to stop waiting to start a write transaction.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/> that returns a transaction in write mode.
         /// A transaction is required for any creation, deletion or modification of objects persisted in a <see cref="Realm"/>.</returns>
