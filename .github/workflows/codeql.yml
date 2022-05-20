@@ -65,7 +65,7 @@ jobs:
     - name: Configure .NET 6
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 6.0.202
         include-prerelease: true
     - name: Build Realm.Fody
       run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
