@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* Fixed an issue that could cause errors or loops with client reset on certain platforms. (PR [2830](https://github.com/realm/realm-dotnet/pull/2830))
+* Fixed an issue that could cause errors or loops with client reset. (PR [2830](https://github.com/realm/realm-dotnet/pull/2830))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
