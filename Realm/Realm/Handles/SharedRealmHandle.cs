@@ -127,6 +127,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_commit_transaction_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern UInt32 commit_transaction_async(SharedRealmHandle sharedRealm, IntPtr tcsPtr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_async_transaction", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void cancel_async_transaction(SharedRealmHandle sharedRealm, UInt32 transaction_handle, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
