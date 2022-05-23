@@ -1,6 +1,6 @@
 name: PR Build
 "on":
-  push:
+  pull_request:
     paths:
     - '**.cs'
     - '**.cpp'
