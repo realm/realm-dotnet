@@ -1,7 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+	<AssemblyName>Realm.SourceGenerator</AssemblyName>
+	<PackageId>Realm.SourceGenerator</PackageId>
+	<Title>Realm.SourceGenerator</Title>
+	<ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
+	<CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
+	<DisableFody>true</DisableFody>
+	<NoWarn>1701;1702;NU1701</NoWarn>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -13,5 +20,10 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+	</ItemGroup>
+	<Import Project="..\AssemblyInfo.props" />
 
 </Project>
