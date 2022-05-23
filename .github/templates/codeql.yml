@@ -25,7 +25,7 @@
   - name: Configure .NET 6
     uses: #@ actionSetupDotnet
     with:
-      dotnet-version: '6.0.x'
+      dotnet-version: '6.0.202'
       include-prerelease: true
 #@ for pkgName in nugetPackages:
   - name: #@ "Build " + pkgName

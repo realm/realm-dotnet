@@ -263,6 +263,13 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void shared_app_delete_user(SharedApp& app, SharedSyncUser& user, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            app->delete_user(user, get_callback_handler(tcs_ptr));
+        });
+    }
+
     REALM_EXPORT size_t shared_app_sync_get_path_for_realm(SharedApp& app, SharedSyncUser& user, uint16_t* partition_buf, size_t partition_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

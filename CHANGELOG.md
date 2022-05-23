@@ -18,6 +18,8 @@
   // without the need of using ThreadSafeReference
   ```
   (PR [#2899](https://github.com/realm/realm-dotnet/pull/2899))
+* Added the method `App.DeleteUserFromServerAsync` to delete a user from the server. It will also invalidate the user locally as well as remove all their local data. It will not remove any data the user has uploaded from the server. (Issue [#2675](https://github.com/realm/realm-dotnet/issues/2675))
+* Added boolean property `ChangeSet.IsCleared` that is true when the collection gets cleared. Also Realm collections now raise `CollectionChanged` event with action `Reset` instead of `Remove` when the collections is cleared. Please note that this will work only with collection properties, such as `IList` and `ISet`. (Issue [#2856](https://github.com/realm/realm-dotnet/issues/2856))
 
 ### Fixed
 * None
@@ -31,7 +33,7 @@
 ## 10.13.0 (2022-05-18)
 
 ### Enhancements
-* Adds the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
+* Added the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
 * Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
 This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
   ```csharp

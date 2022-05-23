@@ -246,6 +246,21 @@ namespace Realms.Sync
         }
 
         /// <summary>
+        /// Deletes a user from the server. The user is also removed from the device together with their local data. If the user is logged in, they will be logged out in the process.
+        /// </summary>
+        /// <param name="user">The user to remove from the server.</param>
+        /// <returns>
+        /// An awaitable <see cref="Task"/> that represents the asynchronous deletion operation.
+        /// Successful completion indicates that the user has been removed, logged out and their local data has been removed.
+        /// </returns>
+        public Task DeleteUserFromServerAsync(User user)
+        {
+            Argument.NotNull(user, nameof(user));
+
+            return Handle.DeleteUserAsync(user.Handle);
+        }
+
+        /// <summary>
         /// A sync manager, handling synchronization of local Realm with remote MongoDB Realm apps. It is always scoped to a
         /// particular app and can only be accessed via <see cref="Sync"/>.
         /// </summary>

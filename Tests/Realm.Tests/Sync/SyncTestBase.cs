@@ -105,18 +105,18 @@ namespace Realms.Tests.Sync
             return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
         }
 
-        protected async Task<User> GetUserAsync(App app = null)
+        protected async Task<User> GetUserAsync(App app = null, string username = null, string password = null)
         {
             app ??= DefaultApp;
-
-            var username = SyncTestHelpers.GetVerifiedUsername();
-            await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+            username ??= SyncTestHelpers.GetVerifiedUsername();
+            password ??= SyncTestHelpers.DefaultPassword;
+            await app.EmailPasswordAuth.RegisterUserAsync(username, password);
+            var credentials = Credentials.EmailPassword(username, password);
 
             for (var i = 0; i < 5; i++)
             {
                 try
                 {
-                    var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
                     return await app.LogInAsync(credentials);
                 }
                 catch (AppException ex) when (ex.Message.Contains("confirmation required"))
