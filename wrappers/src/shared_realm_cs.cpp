@@ -152,7 +152,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     if (configuration.managed_initialization_delegate) {
         config.initialization_function = [managed_delegate = configuration.managed_initialization_delegate](SharedRealm realm) {
             if (!s_initialize_data(managed_delegate, &realm)) {
-                throw ManagedExceptionDuringCallback("Exception occurred in a Realm data initialization callback.");
+                throw ManagedExceptionDuringCallback("Exception occurred in a Realm.PopulateInitialData callback.");
             }
         };
     }
@@ -269,7 +269,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 };
 
                 if (!s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
-                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm migration callback.");
+                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm.MigrationCallback callback.");
                 }
             };
         }
@@ -277,7 +277,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         if (configuration.managed_initialization_delegate) {
             config.initialization_function = [&configuration](SharedRealm realm) {
                 if (!s_initialize_data(configuration.managed_initialization_delegate, &realm)) {
-                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm data initialization callback.");
+                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm.PopulateInitialData callback.");
                 }
             };
         }
@@ -286,7 +286,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             config.should_compact_on_launch_function = [&configuration](uint64_t total_bytes, uint64_t used_bytes) {
                 bool result;
                 if (!s_should_compact(configuration.managed_should_compact_delegate, total_bytes, used_bytes, &result)) {
-                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm ShouldCompact callback.");
+                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm.ShouldCompactOnLaunch callback.");
                 }
 
                 return result;

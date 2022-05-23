@@ -828,7 +828,7 @@ namespace Realms
             {
                 var realmHandle = new UnownedRealmHandle(realmPtr);
                 using var realm = wrapper.Value.GetRealm(realmHandle);
-                wrapper.Value.InitialDataCallback.Invoke(realm);
+                wrapper.Value.PopulateInitialData.Invoke(realm);
                 return true;
             }
             catch (Exception ex)

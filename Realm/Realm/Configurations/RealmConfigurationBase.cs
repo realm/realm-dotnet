@@ -191,7 +191,7 @@ namespace Realms
         /// <seealso cref="Realm.Freeze"/>
         public ulong MaxNumberOfActiveVersions { get; set; } = ulong.MaxValue;
 
-        internal InitialDataDelegate InitialDataCallback { get; set; }
+        internal InitialDataDelegate PopulateInitialData { get; set; }
 
         internal RealmConfigurationBase()
         {
@@ -266,7 +266,7 @@ namespace Realms
 #pragma warning restore CS0618 // Type or member is obsolete
             };
 
-            if (InitialDataCallback != null)
+            if (PopulateInitialData != null)
             {
                 var wrapper = CallbackWrapper.Create(this);
                 config.managed_initial_data_delegate = handles.AddHandleTo(wrapper);

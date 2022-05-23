@@ -1771,7 +1771,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Integration_InitialSubscriptions_Named()
+        public void Integration_InitialSubscriptions_Unnamed()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1792,6 +1792,88 @@ namespace Realms.Tests.Sync
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
                 Assert.That(query.Count(), Is.EqualTo(2));
                 Assert.That(query, Is.EquivalentTo(new[] { 1.5, 2.5 }));
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_Named()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    var query = r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.DoubleProperty > 2);
+
+                    r.Subscriptions.Add(query, new() { Name = "initial" });
+                };
+
+                using var realm = await GetRealmAsync(config);
+
+                var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
+                Assert.That(query.Count(), Is.EqualTo(1));
+                Assert.That(query, Is.EquivalentTo(new[] { 2.5 }));
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+                Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("initial"));
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_RunsOnlyOnce()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var invocations = 0;
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    invocations++;
+                };
+
+                for (var i = 0; i < 5; i++)
+                {
+                    using var realm = await GetRealmAsync(config);
+                    Assert.That(invocations, Is.EqualTo(1));
+                }
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_PropagatesErrors()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                var dummyException = new Exception("Very careless");
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    var query = r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+
+                    r.Subscriptions.Add(query);
+
+                    throw dummyException;
+                };
+
+                try
+                {
+                    await GetRealmAsync(config);
+                    Assert.Fail("Expected an exception to occur");
+                }
+                catch (AggregateException ex)
+                {
+                    Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
+                }
+
+                // We failed the first time, we should not see PopulateInitialSubscriptions get invoked the second time
+                var realm = await GetRealmAsync(config);
+                Assert.That(realm.Subscriptions.Count, Is.Zero);
             });
         }
 

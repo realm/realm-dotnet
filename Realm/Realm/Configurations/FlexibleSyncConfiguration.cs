@@ -93,12 +93,13 @@ namespace Realms.Sync
             var populateSubs = PopulateInitialSubscriptions;
             if (populateSubs != null)
             {
-                var oldDataCallback = InitialDataCallback;
-                InitialDataCallback = (realm) =>
+                var oldDataCallback = PopulateInitialData;
+                PopulateInitialData = (realm) =>
                 {
                     // We can't run the PopulateInitialSubscriptions callback here because
                     // the Realm is already in a write transaction, so Subscriptions.Update
-                    // will hang. We flag that `shouldPopulate` 
+                    // will hang. We flag that with `shouldPopulate` and update the subscriptions
+                    // after we open the realm.
                     oldDataCallback?.Invoke(realm);
                     shouldPopulate = true;
                 };
@@ -107,17 +108,26 @@ namespace Realms.Sync
             var result = await base.CreateRealmAsync(cancellationToken);
             if (shouldPopulate)
             {
-                result.Subscriptions.Update(() =>
+                try
                 {
-                    // We're not guarded by a write lock between invoking the `InitialDataCallback`
-                    // and getting here, so it's possible someone managed to insert subscriptions
-                    // before us. If that's the case, then don't insert anything and just wait for
-                    // sync.
-                    if (result.Subscriptions.Count == 0)
+                    result.Subscriptions.Update(() =>
                     {
-                        populateSubs(result);
-                    }
-                });
+                        // We're not guarded by a write lock between invoking the `InitialDataCallback`
+                        // and getting here, so it's possible someone managed to insert subscriptions
+                        // before us. If that's the case, then don't insert anything and just wait for
+                        // sync.
+                        if (result.Subscriptions.Count == 0)
+                        {
+                            populateSubs(result);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // This needs to duplicate the logic in RealmConfigurationBase.CreateRealmAsync
+                    throw new AggregateException("Exception occurred in a Realm.PopulateInitialSubscriptions callback. See inner exception for more details.", ex);
+                }
+
                 await result.Subscriptions.WaitForSynchronizationAsync();
             }
 
