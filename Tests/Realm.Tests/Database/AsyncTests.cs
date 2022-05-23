@@ -443,19 +443,12 @@ namespace Realms.Tests.Database
                 // Using an AsyncContextThread is a handy way to have all on the same synchronizationContext.
                 var syncTask = asyncThreadFactory.Run(async () =>
                 {
-                    try
-                    {
-                        using var realm = GetRealm(_realm.Config);
-                        var transaction = realm.BeginWrite();
+                    using var realm = GetRealm(_realm.Config);
+                    var transaction = realm.BeginWrite();
 
-                        // Give time to asyncTask to get to await BeginWriteAsync.
-                        await Task.Delay(500);
-                        cts.Cancel();
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception("For more details check the inner exception", e);
-                    }
+                    // Give time to asyncTask to get to await BeginWriteAsync.
+                    await Task.Delay(500);
+                    cts.Cancel();
                 });
 
                 var asyncTask = asyncThreadFactory.Run(async () =>
@@ -468,10 +461,6 @@ namespace Realms.Tests.Database
                     catch (TaskCanceledException)
                     {
                         taskCancelled = true;
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception("For more details check the inner exception", e);
                     }
                 });
 
@@ -496,19 +485,12 @@ namespace Realms.Tests.Database
                 // Using an AsyncContextThread is a handy way to have all on the same synchronizationContext.
                 var syncTask = asyncThreadFactory.Run(async () =>
                 {
-                    try
-                    {
-                        using var realm = GetRealm(_realm.Config);
-                        var transaction = realm.BeginWrite();
+                    using var realm = GetRealm(_realm.Config);
+                    var transaction = realm.BeginWrite();
 
-                        // Give time to asyncTask to get to await BeginWriteAsync.
-                        await Task.Delay(500);
-                        cts.Cancel();
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception("For more details check the inner exception", e);
-                    }
+                    // Give time to asyncTask to get to await BeginWriteAsync.
+                    await Task.Delay(500);
+                    cts.Cancel();
                 });
 
                 var asyncTask = asyncThreadFactory.Run(async () =>
@@ -521,10 +503,6 @@ namespace Realms.Tests.Database
                     catch (TaskCanceledException)
                     {
                         taskCancelled = true;
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception("For more details check the inner exception", e);
                     }
                 });
 
