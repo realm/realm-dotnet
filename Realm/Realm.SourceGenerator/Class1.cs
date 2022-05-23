@@ -16,9 +16,9 @@ namespace GeneratedNamespace
 {
     public class GeneratedClass
     {
-        public static void GeneratedMethod()
+        public static string GeneratedMethod()
         {
-            // generated code
+            return ""Hello, it's me"";
         }
     }
 }", Encoding.UTF8));

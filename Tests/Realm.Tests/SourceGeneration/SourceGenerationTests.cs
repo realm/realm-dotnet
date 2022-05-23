@@ -16,16 +16,12 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 using NUnit.Framework;
 using Realm.SourceGenerator;
@@ -92,7 +88,7 @@ namespace MyCode
         [Test]
         public async Task RecommendedGeneratorTest()
         {
-            var code = "initial code";
+            var code = string.Empty;
             var generated = SourceText.From(@"
 namespace GeneratedNamespace
 {

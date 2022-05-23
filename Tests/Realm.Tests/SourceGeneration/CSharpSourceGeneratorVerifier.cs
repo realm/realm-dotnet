@@ -30,10 +30,6 @@ namespace Realms.Tests.SourceGeneration
     {
         public class Test : CSharpSourceGeneratorTest<TSourceGenerator, NUnitVerifier>
         {
-            public Test()
-            {
-            }
-
             protected override CompilationOptions CreateCompilationOptions()
             {
                 var compilationOptions = base.CreateCompilationOptions();
