@@ -115,7 +115,7 @@ namespace GeneratedNamespace
                     },
                     GeneratedSources =
                     {
-                        (typeof(CustomGenerator), "myGeneratedFile,cs", generated),
+                        (typeof(CustomGenerator), "myGeneratedFile.cs", generated),
                     },
                 },
             }.RunAsync();
