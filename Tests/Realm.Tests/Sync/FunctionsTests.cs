@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
@@ -28,7 +29,7 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class FunctionsTests : SyncTestBase
     {
-        private readonly Queue<string> _conventionsToRemove = new Queue<string>();
+        private readonly ConcurrentQueue<string> _conventionsToRemove = new();
 
         [Test]
         public void CallFunction_ReturnsResult()

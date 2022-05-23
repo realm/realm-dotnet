@@ -1,6 +1,23 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added a more efficient replacement for `Realm.WriteAsync`. The previous API would start a background thread, open the Realm there and run a synchronous write transaction on the background thread. The new API will asynchronously acquire the write lock (begin transaction) and asynchronously commit the transaction, but the actual write block will execute on the original thread. This means that objects/queries captured before the block can be used inside the block without relying on threadsafe references. Importantly, you can mix and match async and sync calls. And when calling any `Realm.WriteAsync` on a background thread the call is just run synchronously, so you should use `Realm.Write` for readability sake. The new API is made of `Realm.WriteAsync<T>(Func<T> function)`, `Realm.WriteAsync(Action action)`, `Realm.BeginWriteAsync()` and `Transaction.CommitAsync()`. While the `Transaction.Rollback()` doesn't need an async counterpart. The deprecated API calls are `Realm.WriteAsync(Action<Realm> action)`, `Real.WriteAsync<T>(Func<Realm, IQueryable<T>> function)`, `Realm.WriteAsync<T>(Func<Realm, IList<T>> function)` and `Realm.WriteAsync<T>(Func<Realm, T> function)`. Here is an example of usage:
+  ```csharp
+  using Realms;
+
+  var person = await _realm.WriteAsync(() =>
+  {
+    return _realm.Add(
+      new Person
+      {
+        FirstName = "Marco"
+      });
+  });
+
+  // you can use/modify person now
+  // without the need of using ThreadSafeReference
+  ```
+  (PR [#2899](https://github.com/realm/realm-dotnet/pull/2899))
 * Added the method `App.DeleteUserFromServerAsync` to delete a user from the server. It will also invalidate the user locally as well as remove all their local data. It will not remove any data the user has uploaded from the server. (Issue [#2675](https://github.com/realm/realm-dotnet/issues/2675))
 * Added boolean property `ChangeSet.IsCleared` that is true when the collection gets cleared. Also Realm collections now raise `CollectionChanged` event with action `Reset` instead of `Remove` when the collections is cleared. Please note that this will work only with collection properties, such as `IList` and `ISet`. (Issue [#2856](https://github.com/realm/realm-dotnet/issues/2856))
 

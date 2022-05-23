@@ -515,7 +515,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
             TestHelpers.RunAsyncTest(async () =>

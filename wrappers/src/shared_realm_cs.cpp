@@ -51,6 +51,7 @@ using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = bool(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using ShouldCompactCallbackT = bool(void* managed_config_handle, uint64_t total_size, uint64_t data_size);
+using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
 
@@ -66,6 +67,7 @@ namespace binding {
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
+    std::function<HandleTaskCompletionCallbackT> s_handle_task_completion;
     extern std::function<ErrorCallbackT> s_session_error_callback;
 
     std::atomic<bool> s_can_call_managed;
@@ -191,7 +193,8 @@ REALM_EXPORT void shared_realm_install_callbacks(
     ObjectNotificationCallbackT* notify_object,
     DictionaryNotificationCallbackT* notify_dictionary,
     MigrationCallbackT* on_migration,
-    ShouldCompactCallbackT* should_compact)
+    ShouldCompactCallbackT* should_compact,
+    HandleTaskCompletionCallbackT* handle_task_completion)
 {
     s_realm_changed = wrap_managed_callback(realm_changed);
     s_get_native_schema = wrap_managed_callback(get_schema);
@@ -202,6 +205,7 @@ REALM_EXPORT void shared_realm_install_callbacks(
     realm::s_dictionary_notification_callback = wrap_managed_callback(notify_dictionary);
     s_on_migration = wrap_managed_callback(on_migration);
     s_should_compact = wrap_managed_callback(should_compact);
+    s_handle_task_completion = wrap_managed_callback(handle_task_completion);
 
     realm::binding::s_can_call_managed = true;
 }
@@ -400,6 +404,35 @@ REALM_EXPORT uint64_t shared_realm_get_schema_version(SharedRealm& realm, Native
     });
 }
 
+REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, void* tcs_ptr, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        
+        // notify_only is always set to true since we implement WriteAsync in terms of BeginWriteAsync and CommitAsync.
+        // Because of this, we never end the delegate passed to WriteAsync with the commit call.
+        return realm->async_begin_transaction([tcs_ptr]()
+        {
+            // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
+            // However, in this specific case, async_begin_transaction never throws, hence the need for a NoError nativeEx.
+            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
+            s_handle_task_completion(tcs_ptr, nativeEx);
+        }, /* notify_only */ true);
+    });
+}
+
+REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, void* tcs_ptr, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return realm->async_commit_transaction([tcs_ptr](std::exception_ptr err) {
+            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
+            if (err) {
+                nativeEx = convert_exception(err).for_marshalling();
+            }
+            s_handle_task_completion(tcs_ptr, nativeEx);
+        }, /* allow_grouping */ false);
+    });
+}
+
 REALM_EXPORT void shared_realm_begin_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -421,11 +454,9 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm& realm, NativeExce
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm)
 {
-    return handle_errors(ex, [&]() {
-        return realm->is_in_transaction();
-    });
+    return realm->is_in_transaction() || realm->is_in_async_transaction();
 }
 
 REALM_EXPORT bool shared_realm_is_same_instance(SharedRealm& lhs, SharedRealm& rhs, NativeException::Marshallable& ex)

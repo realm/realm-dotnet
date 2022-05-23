@@ -401,7 +401,7 @@ namespace Realms.Sync
         {
             try
             {
-                if (managedSessionHandle == null)
+                if (managedSessionHandle == IntPtr.Zero)
                 {
                     return;
                 }

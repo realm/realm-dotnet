@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -33,7 +35,6 @@ namespace Realms
         internal Transaction(Realm realm)
         {
             _realm = realm;
-            realm.SharedRealmHandle.BeginTransaction();
         }
 
         /// <summary>
@@ -55,28 +56,52 @@ namespace Realms
         /// </summary>
         public void Rollback()
         {
-            if (_realm == null)
-            {
-                throw new Exception("Transaction was already closed. Cannot roll back");
-            }
-
+            EnsureActionFeasibility("roll back");
             _realm.SharedRealmHandle.CancelTransaction();
-            _realm.DrainTransactionQueue();
-            _realm = null;
+            FinishTransaction();
         }
 
         /// <summary>
         /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
-        /// must be used before the end of that block.
+        /// it must be used before the end of that block.
         /// </summary>
         public void Commit()
         {
-            if (_realm == null)
+            EnsureActionFeasibility("commit");
+            _realm.SharedRealmHandle.CommitTransaction();
+            FinishTransaction();
+        }
+
+        /// <summary>
+        /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
+        /// it must be used before the end of that block.
+        /// </summary>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
+        public async Task CommitAsync()
+        {
+            EnsureActionFeasibility("commit");
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
             {
-                throw new Exception("Transaction was already closed. Cannot commit");
+                Commit();
+                return;
             }
 
-            _realm.SharedRealmHandle.CommitTransaction();
+            await _realm.SharedRealmHandle.CommitTransactionAsync();
+            FinishTransaction();
+        }
+
+        private void EnsureActionFeasibility(string executingAction)
+        {
+            if (_realm == null)
+            {
+                throw new Exception($"Transaction was already closed. Cannot {executingAction}");
+            }
+        }
+
+        private void FinishTransaction()
+        {
             _realm.DrainTransactionQueue();
             _realm = null;
         }

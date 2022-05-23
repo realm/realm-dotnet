@@ -126,7 +126,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void ManagedObject_WhenAnotherThreadInstanceChanged()
         {
             TestHelpers.RunAsyncTest(() =>
@@ -465,7 +465,7 @@ namespace Realms.Tests.Database
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
         {
             TestHelpers.RunAsyncTest(async () =>
