@@ -28,7 +28,6 @@ using Realms.Logging;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync;
-using static Realms.RealmConfiguration;
 
 namespace Realms
 {
@@ -73,17 +72,14 @@ namespace Realms
 
             // migrationSchema is a special schema that is used only in the context of a migration block.
             // It is a pointer because we need to be able to modify this schema in some migration methods directly in core.
-            [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
+            internal delegate IntPtr MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
-            [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool ShouldCompactCallback(IntPtr managedDelegate, ulong totalSize, ulong dataSize, [MarshalAs(UnmanagedType.U1)] ref bool should_compact);
+            internal delegate IntPtr ShouldCompactCallback(IntPtr managedDelegate, ulong totalSize, ulong dataSize, [MarshalAs(UnmanagedType.U1)] ref bool should_compact);
 
-            [return: MarshalAs(UnmanagedType.U1)]
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate bool InitializationCallback(IntPtr managedInitializationDelegate, IntPtr realm);
+            internal delegate IntPtr InitializationCallback(IntPtr managedInitializationDelegate, IntPtr realm);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open(Configuration configuration,
@@ -572,22 +568,10 @@ namespace Realms
         {
             var useSync = config is SyncConfigurationBase;
 
-            var (nativeConfig, wrappers, gcHandles) = config.CreateNativeConfiguration();
+            var nativeConfig = config.CreateNativeConfiguration();
 
-            try
-            {
-                NativeMethods.write_copy(this, nativeConfig, useSync, config.EncryptionKey, out var nativeException);
-                nativeException.ThrowIfNecessary();
-            }
-            catch (ManagedExceptionDuringCallbackException ex)
-            {
-                var managedEx = wrappers.FirstOrDefault(w => w.ManagedException != null)?.ManagedException;
-                throw new AggregateException($"{ex.Message} See inner exception for more details.", managedEx);
-            }
-            finally
-            {
-                gcHandles.Free();
-            }
+            NativeMethods.write_copy(this, nativeConfig, useSync, config.EncryptionKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public RealmSchema GetSchema()
@@ -746,49 +730,56 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
-        private static bool OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
+        private static IntPtr OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedConfigHandle)
         {
-            var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
-            var migration = (CallbackWrapper<Migration>)migrationHandle.Target;
-
-            var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
-            var oldConfiguration = new RealmConfiguration(migration.Value.Configuration.DatabasePath)
-            {
-                SchemaVersion = schemaVersion,
-                IsReadOnly = true,
-                EnableCache = false
-            };
-            using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
-
-            var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-            using var newRealm = new Realm(newRealmHandle, migration.Value.Configuration, migration.Value.Schema, isInMigration: true);
-
+            Migration migration = null;
             try
             {
-                migration.Value.Execute(oldRealm, newRealm, migrationSchema);
-                return true;
+                var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
+                var config = (RealmConfiguration)configHandle.Target;
+
+                var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
+                var oldConfiguration = new RealmConfiguration(config.DatabasePath)
+                {
+                    SchemaVersion = schemaVersion,
+                    IsReadOnly = true,
+                    EnableCache = false
+                };
+                using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
+
+                var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
+                using var newRealm = new Realm(newRealmHandle, config, config.GetSchema(), isInMigration: true);
+                migration = new Migration(oldRealm, newRealm, migrationSchema);
+
+                config.MigrationCallback.Invoke(migration, schemaVersion);
+                return IntPtr.Zero;
             }
             catch (Exception ex)
             {
-                migration.ManagedException = ex;
-                return false;
+                var exHandle = GCHandle.Alloc(ex);
+                return GCHandle.ToIntPtr(exHandle);
+            }
+            finally
+            {
+                migration?.Free();
             }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.ShouldCompactCallback))]
-        private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize, ref bool shouldCompact)
+        private static IntPtr ShouldCompactOnLaunchCallback(IntPtr managedConfigHandle, ulong totalSize, ulong dataSize, ref bool shouldCompact)
         {
-            var handle = GCHandle.FromIntPtr(delegatePtr);
-            var compactDelegate = (CallbackWrapper<ShouldCompactDelegate>)handle.Target;
             try
             {
-                shouldCompact = compactDelegate.Value(totalSize, dataSize);
-                return true;
+                var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
+                var config = (RealmConfiguration)configHandle.Target;
+
+                shouldCompact = config.ShouldCompactOnLaunch.Invoke(totalSize, dataSize);
+                return IntPtr.Zero;
             }
             catch (Exception ex)
             {
-                compactDelegate.ManagedException = ex;
-                return false;
+                var exHandle = GCHandle.Alloc(ex);
+                return GCHandle.ToIntPtr(exHandle);
             }
         }
 
@@ -820,21 +811,22 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.InitializationCallback))]
-        private static bool OnDataInitialization(IntPtr delegatePtr, IntPtr realmPtr)
+        private static IntPtr OnDataInitialization(IntPtr managedConfigHandle, IntPtr realmPtr)
         {
-            var wrapperHandle = GCHandle.FromIntPtr(delegatePtr);
-            var wrapper = (CallbackWrapper<RealmConfigurationBase>)wrapperHandle.Target;
             try
             {
+                var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
+                var config = (RealmConfigurationBase)configHandle.Target;
+
                 var realmHandle = new UnownedRealmHandle(realmPtr);
-                using var realm = wrapper.Value.GetRealm(realmHandle);
-                wrapper.Value.PopulateInitialData.Invoke(realm);
-                return true;
+                using var realm = config.GetRealm(realmHandle);
+                config.PopulateInitialData.Invoke(realm);
+                return IntPtr.Zero;
             }
             catch (Exception ex)
             {
-                wrapper.ManagedException = ex;
-                return false;
+                var exHandle = GCHandle.Alloc(ex);
+                return GCHandle.ToIntPtr(exHandle);
             }
         }
 

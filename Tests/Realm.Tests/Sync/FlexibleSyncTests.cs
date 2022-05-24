@@ -1575,7 +1575,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Ignore("This is no longer an error due to compensating writes")]
         public void Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

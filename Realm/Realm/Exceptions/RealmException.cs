@@ -98,9 +98,6 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.RealmDuplicatePrimaryKeyValue:
                     return new RealmDuplicatePrimaryKeyValueException(message);
 
-                case RealmExceptionCodes.RealmDotNetExceptionDuringCallback:
-                    return new ManagedExceptionDuringCallbackException(message);
-
                 case RealmExceptionCodes.RealmClosed:
                     return new RealmClosedException(message);
 

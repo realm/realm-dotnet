@@ -17,13 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
@@ -210,49 +208,24 @@ namespace Realms
         internal Realm CreateRealm()
         {
             var schema = GetSchema();
-            var (configuration, wrappers, gcHandles) = CreateNativeConfiguration();
+            var configuration = CreateNativeConfiguration();
 
-            try
-            {
-                var sharedRealmHandle = CreateHandle(configuration, schema);
-                return GetRealm(sharedRealmHandle, schema);
-            }
-            catch (ManagedExceptionDuringCallbackException ex)
-            {
-                var managedEx = wrappers.FirstOrDefault(w => w.ManagedException != null)?.ManagedException;
-                throw new AggregateException($"{ex.Message} See inner exception for more details.", managedEx);
-            }
-            finally
-            {
-                gcHandles.Free();
-            }
+            var sharedRealmHandle = CreateHandle(configuration, schema);
+            return GetRealm(sharedRealmHandle, schema);
         }
 
         internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
             var schema = GetSchema();
-            var (configuration, wrappers, gcHandles) = CreateNativeConfiguration();
+            var configuration = CreateNativeConfiguration();
 
-            try
-            {
-                var sharedRealmHandle = await CreateHandleAsync(configuration, schema, gcHandles, cancellationToken);
-                return GetRealm(sharedRealmHandle, schema);
-            }
-            catch (ManagedExceptionDuringCallbackException ex)
-            {
-                var managedEx = wrappers.FirstOrDefault(w => w.ManagedException != null)?.ManagedException;
-                throw new AggregateException($"{ex.Message} See inner exception for more details.", managedEx);
-            }
-            finally
-            {
-                gcHandles.Free();
-            }
+            var sharedRealmHandle = await CreateHandleAsync(configuration, schema, cancellationToken);
+            return GetRealm(sharedRealmHandle, schema);
         }
 
-        internal virtual (Native.Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
+        internal virtual Native.Configuration CreateNativeConfiguration()
         {
-            var handles = new List<GCHandle>();
-            var wrappers = new List<CallbackWrapper>();
+            var managedConfig = GCHandle.Alloc(this);
 
             var config = new Native.Configuration
             {
@@ -264,15 +237,11 @@ namespace Realms
 #pragma warning disable CS0618 // Type or member is obsolete
                 use_legacy_guid_representation = Realm.UseLegacyGuidRepresentation,
 #pragma warning restore CS0618 // Type or member is obsolete
+                invoke_initial_data_callback = PopulateInitialData != null,
+                managed_config = GCHandle.ToIntPtr(managedConfig),
             };
 
-            if (PopulateInitialData != null)
-            {
-                var wrapper = CallbackWrapper.Create(this);
-                config.managed_initial_data_delegate = handles.AddHandleTo(wrapper);
-            }
-
-            return (config, wrappers, handles);
+            return config;
         }
 
         internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema = null)
@@ -319,6 +288,6 @@ namespace Realms
 
         internal abstract SharedRealmHandle CreateHandle(Native.Configuration config, RealmSchema schema);
 
-        internal abstract Task<SharedRealmHandle> CreateHandleAsync(Native.Configuration config, RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken);
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(Native.Configuration config, RealmSchema schema, CancellationToken cancellationToken);
     }
 }

@@ -18,7 +18,6 @@
 
 using System;
 using Realms.Helpers;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -35,10 +34,6 @@ namespace Realms
     {
         private IntPtr _migrationSchema;
 
-        internal RealmConfiguration Configuration { get; }
-
-        internal RealmSchema Schema { get; }
-
         /// <summary>
         /// Gets the <see cref="Realm"/> as it was before migrating. Use the dynamic API to access it.
         /// </summary>
@@ -51,29 +46,19 @@ namespace Realms
         /// <value>The <see cref="Realm"/> that will be saved after the migration.</value>
         public Realm NewRealm { get; private set; }
 
-        internal Migration(RealmConfiguration configuration, RealmSchema schema)
+        internal Migration(Realm oldRealm, Realm newRealm, IntPtr migrationSchema)
         {
-            Configuration = configuration;
-            Schema = schema;
-        }
-
-        internal void Execute(Realm oldRealm, Realm newRealm, IntPtr migrationSchema)
-        {
+            _migrationSchema = migrationSchema;
             OldRealm = oldRealm;
             NewRealm = newRealm;
-            _migrationSchema = migrationSchema;
+        }
 
-            try
-            {
-                Configuration.MigrationCallback(this, oldRealm.Config.SchemaVersion);
-            }
-            finally
-            {
-                OldRealm = null;
-                NewRealm = null;
+        internal void Free()
+        {
+            OldRealm = null;
+            NewRealm = null;
 
-                _migrationSchema = IntPtr.Zero;
-            }
+            _migrationSchema = IntPtr.Zero;
         }
 
         /// <summary>

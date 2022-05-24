@@ -36,8 +36,10 @@ using namespace realm::binding;
 
 class ManagedExceptionDuringCallback : public std::runtime_error {
 public:
-    ManagedExceptionDuringCallback(std::string message) : std::runtime_error(message) {
+    ManagedExceptionDuringCallback(std::string message, void* managed_error) : std::runtime_error(message), m_managed_error(managed_error) {
     }
+
+    void* m_managed_error;
 };
 
 class ManagedExceptionDuringClientReset : public std::runtime_error {
@@ -62,16 +64,18 @@ struct Configuration
     
     uint64_t schema_version;
     
-    void* managed_migration_handle;
-    
-    void* managed_should_compact_delegate;
-    
     bool enable_cache;
     uint64_t max_number_of_active_versions;
 
     bool use_legacy_guid_representation;
 
-    void* managed_initialization_delegate;
+    void* managed_config;
+
+    bool invoke_should_compact_callback;
+
+    bool invoke_initial_data_callback;
+
+    bool invoke_migration_callback;
 };
 
 struct SyncConfiguration
@@ -88,7 +92,6 @@ struct SyncConfiguration
     bool is_flexible_sync;
 
     ClientResyncMode client_resync_mode;
-    void* managed_sync_config;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

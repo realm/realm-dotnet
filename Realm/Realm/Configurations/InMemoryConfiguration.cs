@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Native;
@@ -64,14 +62,14 @@ namespace Realms
 
         internal override SharedRealmHandle CreateHandle(Configuration config, RealmSchema schema) => SharedRealmHandle.Open(config, schema, EncryptionKey);
 
-        internal override (Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
+        internal override Configuration CreateNativeConfiguration()
         {
             var result = base.CreateNativeConfiguration();
-            result.Config.in_memory = true;
+            result.in_memory = true;
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken)
+        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, CancellationToken cancellationToken)
             => Task.FromResult(CreateHandle(config, schema));
     }
 }

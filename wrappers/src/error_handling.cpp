@@ -106,7 +106,7 @@ namespace realm {
             return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
         }
         catch (const ManagedExceptionDuringCallback& e) {
-            return { RealmErrorType::RealmDotNetExceptionDuringCallback, e.what() };
+            return { e.what(), e.m_managed_error };
         }
         catch (const DuplicatePrimaryKeyValueException& e) {
             return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };

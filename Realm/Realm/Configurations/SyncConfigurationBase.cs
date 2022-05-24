@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,12 +101,13 @@ namespace Realms.Sync
             return SharedRealmHandle.OpenWithSync(config, syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, CancellationToken cancellationToken)
         {
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
-            using var handle = SharedRealmHandle.OpenWithSyncAsync(config, syncConfiguration, schema, EncryptionKey, gcHandles.AddHandleTo(tcs));
+            var tcsHandle = GCHandle.Alloc(tcs);
+            using var handle = SharedRealmHandle.OpenWithSyncAsync(config, syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
             cancellationToken.Register(() =>
             {
                 if (!handle.IsClosed)
@@ -119,15 +119,21 @@ namespace Realms.Sync
 
             using var progressToken = OnBeforeRealmOpen(handle);
 
-            using var realmReference = await tcs.Task;
-            return SharedRealmHandle.ResolveFromReference(realmReference);
+            try
+            {
+                using var realmReference = await tcs.Task;
+                return SharedRealmHandle.ResolveFromReference(realmReference);
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         internal virtual IDisposable OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
-            var syncConfHandle = GCHandle.Alloc(this);
             var clientResyncMode = ClientResyncMode.DiscardLocal;
 
             if (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler)
@@ -141,7 +147,6 @@ namespace Realms.Sync
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = clientResyncMode,
-                managed_sync_configuration_handle = GCHandle.ToIntPtr(syncConfHandle),
             };
         }
     }

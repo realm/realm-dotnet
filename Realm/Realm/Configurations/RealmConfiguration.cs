@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
@@ -142,29 +140,19 @@ namespace Realms
 
         internal override SharedRealmHandle CreateHandle(Configuration config, RealmSchema schema) => SharedRealmHandle.Open(config, schema, EncryptionKey);
 
-        internal override (Configuration Config, List<CallbackWrapper> Wrappers, List<GCHandle> HandlesToFree) CreateNativeConfiguration()
+        internal override Configuration CreateNativeConfiguration()
         {
             var result = base.CreateNativeConfiguration();
 
-            result.Config.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
-            result.Config.read_only = IsReadOnly;
-
-            if (MigrationCallback != null)
-            {
-                var migration = result.Wrappers.AddWrapperTo(new Migration(this, GetSchema()));
-                result.Config.managed_migration_handle = result.HandlesToFree.AddHandleTo(migration);
-            }
-
-            if (ShouldCompactOnLaunch != null)
-            {
-                var shouldCompact = result.Wrappers.AddWrapperTo(ShouldCompactOnLaunch);
-                result.Config.managed_should_compact_delegate = result.HandlesToFree.AddHandleTo(shouldCompact);
-            }
+            result.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
+            result.read_only = IsReadOnly;
+            result.invoke_migration_callback = MigrationCallback != null;
+            result.invoke_should_compact_callback = ShouldCompactOnLaunch != null;
 
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, IList<GCHandle> gcHandles, CancellationToken cancellationToken)
+        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
