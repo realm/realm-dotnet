@@ -96,13 +96,13 @@ namespace Realms
             EnsureActionFeasibility("commit");
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out var synchronizationContext))
             {
                 Commit();
                 return;
             }
 
-            await _realm.SharedRealmHandle.CommitTransactionAsync(cancellationToken);
+            await _realm.SharedRealmHandle.CommitTransactionAsync(synchronizationContext, cancellationToken);
             FinishTransaction();
         }
 

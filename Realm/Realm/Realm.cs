@@ -821,12 +821,12 @@ namespace Realms
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out var synchronizationContext))
             {
                 return BeginWrite();
             }
 
-            await SharedRealmHandle.BeginTransactionAsync(cancellationToken);
+            await SharedRealmHandle.BeginTransactionAsync(synchronizationContext, cancellationToken);
             return new Transaction(this);
         }
 
@@ -949,7 +949,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -1006,14 +1006,20 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(function);
             }
 
             using var transaction = await BeginWriteAsync(cancellationToken);
             var result = function();
-            await transaction.CommitAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
+
+            await transaction.CommitAsync(default);
             return result;
         }
 
@@ -1061,7 +1067,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -1134,7 +1140,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -1195,7 +1201,7 @@ namespace Realms
                 return Task.FromResult(false);
             }
 
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Task.FromResult(Refresh());
             }

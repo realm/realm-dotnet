@@ -468,14 +468,14 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public async Task BeginTransactionAsync(CancellationToken ct)
+        public async Task BeginTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
                 uint? asyncTransactionHandle = null;
-                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs));
+                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
                 asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
                 await tcs.Task;
@@ -492,14 +492,14 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public async Task CommitTransactionAsync(CancellationToken ct)
+        public async Task CommitTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
                 uint? asyncTransactionHandle = null;
-                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs));
+                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
                 asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
                 await tcs.Task;
@@ -774,15 +774,16 @@ namespace Realms
 
         private static void HandleTaskCompletion<T>(IntPtr tcsPtr, Func<T> resultBuilder, NativeException ex)
         {
+            var handleTcs = GCHandle.FromIntPtr(tcsPtr);
+            var tcs = (TaskCompletionSource<T>)handleTcs.Target;
+
             // if the cancellation of the task is executed just an instant before core calls this callback,
             // the handle is already freed by the finally block of the managed caller.
-            if (tcsPtr == IntPtr.Zero)
+            // TODO andrea: this is dangerous as it could hide serious issues
+            if (tcs == null)
             {
                 return;
             }
-
-            var handleTcs = GCHandle.FromIntPtr(tcsPtr);
-            var tcs = (TaskCompletionSource<T>)handleTcs.Target;
 
             if (ex.type == RealmExceptionCodes.NoError)
             {
@@ -796,15 +797,24 @@ namespace Realms
             }
         }
 
-        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs)
+        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs, SynchronizationContext synchronizationContext)
         {
-            if (asyncTransactionHandle.HasValue)
+            // we need to post on the original SynchronizationContext where the lock was acquired because
+            // cancel_async_transaction needs to be on that thread in order to be able to perform the cancellation
+            synchronizationContext.Post(_ =>
             {
-                NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException);
-                innerNativeException.ThrowIfNecessary();
-            }
+                if (asyncTransactionHandle.HasValue)
+                {
+                    NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException);
 
-            tcs.TrySetCanceled();
+                    if (innerNativeException.type != RealmExceptionCodes.NoError)
+                    {
+                        tcs.TrySetException(innerNativeException.Convert());
+                    }
+                }
+
+                tcs.TrySetCanceled();
+            }, null);
         }
 
         public class SchemaMarshaler
