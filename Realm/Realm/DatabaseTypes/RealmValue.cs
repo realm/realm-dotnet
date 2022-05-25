@@ -603,6 +603,15 @@ namespace Realms
         /// </returns>
         public RealmObjectBase AsRealmObject() => AsRealmObject<RealmObjectBase>();
 
+        /// <summary>
+        /// Returns the stored value as a <see cref="IRealmObjectBase"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the underlying value is not of type <see cref="RealmValueType.Object"/> or <see cref="RealmValueType.Null"/>.
+        /// </exception>
+        /// <returns>
+        /// A <see cref="IRealmObjectBase"/> instance representing the value stored in the database. It will be <c>null</c> if <see cref="Type"/> is <see cref="RealmValueType.Null"/>.
+        /// </returns>
         public IRealmObjectBase AsIRealmObject() => AsRealmObject<IRealmObjectBase>();
 
         /// <summary>

@@ -19,7 +19,7 @@
 namespace Realms
 {
     /// <summary>
-    /// A comon interface, implemented by all handles for thread confined objects.
+    /// A common interface, implemented by all handles for thread confined objects.
     /// </summary>
     internal interface IThreadConfinedHandle
     {

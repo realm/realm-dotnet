@@ -74,6 +74,9 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Gets the accessor that encapsulates the methods and properties used by the object for its functioning.
+        /// </summary>
         [IgnoreDataMember, XmlIgnore]
         IRealmAccessor IRealmObjectBase.Accessor => _accessor;
 
@@ -149,6 +152,16 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
+        /// <summary>
+        /// Sets the accessor for the newly managed object and possibly adds the object to the realm.
+        /// </summary>
+        /// <param name="accessor">The accessor to set.</param>
+        /// <param name="helper">The<see cref="IRealmObjectHelper"/> implementation to use for copying the object to realm.</param>
+        /// <param name="update">If set to <c>true</c>, update the existing value (if any). Otherwise, try to add and throw if an object with the same primary key already exists.</param>
+        /// <param name="skipDefaults">
+        /// If set to <c>true</c> will not invoke the setters of properties that have default values.
+        /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
+        /// </param>
         void ISettableManagedAccessor.SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper, bool update, bool skipDefaults)
         {
             _accessor = accessor;
