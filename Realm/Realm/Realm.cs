@@ -1019,7 +1019,7 @@ namespace Realms
                 throw new TaskCanceledException();
             }
 
-            await transaction.CommitAsync(default);
+            await transaction.CommitAsync(CancellationToken.None);
             return result;
         }
 

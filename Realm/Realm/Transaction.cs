@@ -75,21 +75,21 @@ namespace Realms
 
         /// <summary>
         /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
-        /// it must be used before the end of that block. It terminates when the changes are effectively written to disk.
+        /// it must be used before the end of that block. It completes when the changes are effectively written to disk.
         /// </summary>
         /// <remarks>
-        /// Cancelling the returned <see cref="Task"/> simply makes the <see cref="Task"/>'s execution continue;
-        /// it does not cancel the commit action.
+        /// Cancelling the returned <see cref="Task"/> will not prevent the write to disk but
+        /// it will immediately resolve the task with a <see cref="TaskCanceledException"/>.
         /// In fact, the commit action can't be stopped and continues running to completion in the background.<br/>
         /// A use case for cancelling this action could be that you want to show users a pop-up indicating that the
-        /// data is being saved. But, you want to automcatically close such pop-up after a certain amount of time.
+        /// data is being saved. But, you want to automatically close such pop-up after a certain amount of time.
         /// Or, you may want to allow users to manually dismiss that pop-up.
         /// </remarks>
         /// <param name="cancellationToken">
         /// Optional cancellation token to stop waiting on the returned <see cref="Task"/>.
         /// </param>
         /// <returns>
-        /// An awaitable <see cref="Task"/> that terminates when the committed changes are effectively written to disk.
+        /// An awaitable <see cref="Task"/> that completes when the committed changes are effectively written to disk.
         /// </returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
