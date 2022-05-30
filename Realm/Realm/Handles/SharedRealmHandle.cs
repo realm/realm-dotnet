@@ -479,10 +479,10 @@ namespace Realms
                 asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
 
-                // if cancellation is requested before we obtain an async transaction handle (ATH)(queued cb in core)
-                // nothing is dequeued because nothing is there yet. However, we now have an ATH, so it has to be
-                // removed/cancelled otherwise we free the tcs before the cb is actually called.
-                // This must be done because referencing a null GCHandle when in mono results in a hard crash of the runtime.
+                // When starting an async operation, core internally queues a cb and returns a handle to it (CBH).
+                // By requesting cancellation before obtaining a CBH, nothing is dequeued because nothing is there yet.
+                // However, we now have a CBH, so we can dequeue the cb; otherwise we free the tcsHandle before core calls the cb.
+                // If not done, under Mono referencing a null GCHandle results in a hard crash of the runtime.
                 if (ct.IsCancellationRequested)
                 {
                     OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
@@ -513,10 +513,10 @@ namespace Realms
                 asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
 
-                // if cancellation is requested before we obtain an async transaction handle (ATH)(queued cb in core)
-                // nothing is dequeued because nothing is there yet. However, we now have an ATH, so it has to be
-                // removed/cancelled otherwise we free the tcs before the cb is actually called.
-                // This must be done because referencing a null GCHandle when in mono results in a hard crash of the runtime.
+                // When starting an async operation, core internally queues a cb and returns a handle to it (CBH).
+                // By requesting cancellation before obtaining a CBH, nothing is dequeued because nothing is there yet.
+                // However, we now have a CBH, so we can dequeue the cb; otherwise we free the tcsHandle before core calls the cb.
+                // If not done, under Mono referencing a null GCHandle results in a hard crash of the runtime.
                 if (ct.IsCancellationRequested)
                 {
                     OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
@@ -816,8 +816,8 @@ namespace Realms
             synchronizationContext.Post(_ =>
             {
                 // Since we're posting, execution can happen after core has dequeued the cb in order to execute it.
-                // Hence we can't cancel otherwise the handled to the tcs that the cb relies on will be freed by the caller.
-                // Referencing a null GCHandle when in mono results in a hard crash of the runtime.
+                // We can't cancel to avoid that the caller frees the handle to the tcs that the cb relies on.
+                // Referencing a null GCHandle when in Mono results in a hard crash of the runtime.
                 if (asyncTransactionHandle.HasValue &&
                     NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
                 {
