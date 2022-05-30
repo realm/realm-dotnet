@@ -128,7 +128,7 @@ namespace Realms
             public static extern UInt32 commit_transaction_async(SharedRealmHandle sharedRealm, IntPtr tcsPtr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_async_transaction", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void cancel_async_transaction(SharedRealmHandle sharedRealm, UInt32 transaction_handle, out NativeException ex);
+            public static extern bool cancel_async_transaction(SharedRealmHandle sharedRealm, UInt32 transaction_handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -472,12 +472,22 @@ namespace Realms
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
+            uint? asyncTransactionHandle = null;
+            ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
             try
             {
-                uint? asyncTransactionHandle = null;
-                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
                 asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
+
+                // if cancellation is requested before we obtain an async transaction handle (ATH)(queued cb in core)
+                // nothing is dequeued because nothing is there yet. However, we now have an ATH, so it has to be
+                // removed/cancelled otherwise we free the tcs before the cb is actually called.
+                // This must be done because referencing a null GCHandle when in mono results in a hard crash of the runtime.
+                if (ct.IsCancellationRequested)
+                {
+                    OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
+                }
+
                 await tcs.Task;
             }
             finally
@@ -496,12 +506,22 @@ namespace Realms
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
+            uint? asyncTransactionHandle = null;
+            ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
             try
             {
-                uint? asyncTransactionHandle = null;
-                ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
                 asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
+
+                // if cancellation is requested before we obtain an async transaction handle (ATH)(queued cb in core)
+                // nothing is dequeued because nothing is there yet. However, we now have an ATH, so it has to be
+                // removed/cancelled otherwise we free the tcs before the cb is actually called.
+                // This must be done because referencing a null GCHandle when in mono results in a hard crash of the runtime.
+                if (ct.IsCancellationRequested)
+                {
+                    OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
+                }
+
                 await tcs.Task;
             }
             finally
@@ -777,14 +797,6 @@ namespace Realms
             var handleTcs = GCHandle.FromIntPtr(tcsPtr);
             var tcs = (TaskCompletionSource<T>)handleTcs.Target;
 
-            // if the cancellation of the task is executed just an instant before core calls this callback,
-            // the handle is already freed by the finally block of the managed caller.
-            // TODO andrea: this is dangerous as it could hide serious issues
-            if (tcs == null)
-            {
-                return;
-            }
-
             if (ex.type == RealmExceptionCodes.NoError)
             {
                 tcs.TrySetResult(resultBuilder());
@@ -799,21 +811,23 @@ namespace Realms
 
         private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs, SynchronizationContext synchronizationContext)
         {
-            // we need to post on the original SynchronizationContext where the lock was acquired because
+            // We need to post on the original SynchronizationContext where the lock was acquired because
             // cancel_async_transaction needs to be on that thread in order to be able to perform the cancellation
             synchronizationContext.Post(_ =>
             {
-                if (asyncTransactionHandle.HasValue)
+                // Since we're posting, execution can happen after core has dequeued the cb in order to execute it.
+                // Hence we can't cancel otherwise the handled to the tcs that the cb relies on will be freed by the caller.
+                // Referencing a null GCHandle when in mono results in a hard crash of the runtime.
+                if (asyncTransactionHandle.HasValue &&
+                    NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
                 {
-                    NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException);
-
                     if (innerNativeException.type != RealmExceptionCodes.NoError)
                     {
                         tcs.TrySetException(innerNativeException.Convert());
                     }
-                }
 
-                tcs.TrySetCanceled();
+                    tcs.TrySetCanceled();
+                }
             }, null);
         }
 

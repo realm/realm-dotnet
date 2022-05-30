@@ -427,8 +427,6 @@ namespace Realms.Tests.Database
             });
         }
 
-        // This test can't easily check if SharedRealmHandle.NativeMethods.cancel_async_transaction
-        // does what's expected to do.
         [Test]
         public void AsyncBeginWrite_CancelToken_OnAwait()
         {
@@ -446,11 +444,6 @@ namespace Realms.Tests.Database
 
                     tcs.TrySetResult(null);
 
-                    // Give time to asyncTask to get to await BeginWriteAsync.
-                    // Without this you won't be able to have a handle
-                    // of the cb so no native call will be made. You can only verify
-                    // this with the debugger attached.
-                    await Task.Delay(1000);
                     cts.Cancel();
                     transaction.Rollback();
                 }));
@@ -474,8 +467,6 @@ namespace Realms.Tests.Database
             });
         }
 
-        // This test can't easily check if SharedRealmHandle.NativeMethods.cancel_async_transaction
-        // does what's expected to do.
         [Test]
         public void AsyncWrite_CancelToken_OnAwait()
         {
@@ -493,11 +484,6 @@ namespace Realms.Tests.Database
 
                     tcs.TrySetResult(null);
 
-                    // Give time to asyncTask to get to await BeginWriteAsync.
-                    // Without this you won't be able to have a handle
-                    // of the cb so no native call will be made. You can only verify
-                    // this with the debugger attached.
-                    await Task.Delay(1000);
                     cts.Cancel();
                     transaction.Rollback();
                 }));
