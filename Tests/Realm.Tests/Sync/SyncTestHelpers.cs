@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
@@ -60,10 +61,13 @@ namespace Realms.Tests.Sync
 #endif
         }
 
-        public static AppConfiguration GetAppConfig(string type = AppConfigType.Default) => new AppConfiguration(_appIds[type])
+        private static int _appCounter;
+
+        public static AppConfiguration GetAppConfig(string type = AppConfigType.Default) => new(_appIds[type])
         {
             BaseUri = _baseUri ?? new Uri("http://localhost:12345"),
             MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
+            BaseFilePath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"rt-sync-{System.Diagnostics.Process.GetCurrentProcess().Id}-{_appCounter++}")).FullName
         };
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)

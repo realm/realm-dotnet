@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
@@ -92,7 +93,18 @@ namespace Realms.Tests.Sync
                 Assert.That(weakConfigRef.Target, Is.Not.Null);
             });
             TearDown();
-            GC.Collect();
+
+            for (var i = 0; i < 10; i++)
+            {
+                GC.Collect();
+                if (!weakConfigRef.IsAlive)
+                {
+                    break;
+                }
+
+                Task.Delay(100).Wait();
+            }
+
             Assert.That(weakConfigRef.Target, Is.Null);
         }
 
