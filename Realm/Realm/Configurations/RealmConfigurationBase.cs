@@ -208,18 +208,14 @@ namespace Realms
         internal Realm CreateRealm()
         {
             var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
-
-            var sharedRealmHandle = CreateHandle(configuration, schema);
+            var sharedRealmHandle = CreateHandle(schema);
             return GetRealm(sharedRealmHandle, schema);
         }
 
         internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
             var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
-
-            var sharedRealmHandle = await CreateHandleAsync(configuration, schema, cancellationToken);
+            var sharedRealmHandle = await CreateHandleAsync(schema, cancellationToken);
             return GetRealm(sharedRealmHandle, schema);
         }
 
@@ -286,8 +282,8 @@ namespace Realms
             return RealmSchema.Default;
         }
 
-        internal abstract SharedRealmHandle CreateHandle(Native.Configuration config, RealmSchema schema);
+        internal abstract SharedRealmHandle CreateHandle(RealmSchema schema);
 
-        internal abstract Task<SharedRealmHandle> CreateHandleAsync(Native.Configuration config, RealmSchema schema, CancellationToken cancellationToken);
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken);
     }
 }

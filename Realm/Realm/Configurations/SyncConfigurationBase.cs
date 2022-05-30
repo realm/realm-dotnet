@@ -21,7 +21,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
@@ -95,19 +94,19 @@ namespace Realms.Sync
             User = user;
         }
 
-        internal override SharedRealmHandle CreateHandle(Configuration config, Schema.RealmSchema schema)
+        internal override SharedRealmHandle CreateHandle(Schema.RealmSchema schema)
         {
             var syncConfiguration = CreateNativeSyncConfiguration();
-            return SharedRealmHandle.OpenWithSync(config, syncConfiguration, schema, EncryptionKey);
+            return SharedRealmHandle.OpenWithSync(CreateNativeConfiguration(), syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<SharedRealmHandle> CreateHandleAsync(Configuration config, Schema.RealmSchema schema, CancellationToken cancellationToken)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Schema.RealmSchema schema, CancellationToken cancellationToken)
         {
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            using var handle = SharedRealmHandle.OpenWithSyncAsync(config, syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
+            using var handle = SharedRealmHandle.OpenWithSyncAsync(CreateNativeConfiguration(), syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
             cancellationToken.Register(() =>
             {
                 if (!handle.IsClosed)

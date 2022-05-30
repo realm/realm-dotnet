@@ -60,7 +60,7 @@ namespace Realms
             Identifier = identifier;
         }
 
-        internal override SharedRealmHandle CreateHandle(Configuration config, RealmSchema schema) => SharedRealmHandle.Open(config, schema, EncryptionKey);
+        internal override SharedRealmHandle CreateHandle(RealmSchema schema) => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, EncryptionKey);
 
         internal override Configuration CreateNativeConfiguration()
         {
@@ -69,7 +69,7 @@ namespace Realms
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(Configuration config, RealmSchema schema, CancellationToken cancellationToken)
-            => Task.FromResult(CreateHandle(config, schema));
+        internal override Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken)
+            => Task.FromResult(CreateHandle(schema));
     }
 }
