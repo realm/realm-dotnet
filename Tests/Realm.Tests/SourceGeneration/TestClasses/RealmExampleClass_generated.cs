@@ -15,20 +15,12 @@
 // // limitations under the License.
 // //
 // ////////////////////////////////////////////////////////////////////////////
+using System;
 
-using System.Threading.Tasks;
-using NUnit.Framework;
-using Realm.SourceGenerator;
-
-namespace Realms.Tests.SourceGeneration
+namespace TestClasses
 {
-    [TestFixture, Preserve(AllMembers = true)]
-    public class SourceGenerationTests : SourceGenerationTest
+    public partial class RealmExampleClass : IRealmObject
     {
-        [Test]
-        public async Task RecommendedGeneratorTest()
-        {
-            await RunSimpleComparisonTest("RealmExampleClass");
-        }
+
     }
 }

@@ -16,19 +16,16 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
-using Realm.SourceGenerator;
+using Realms;
 
-namespace Realms.Tests.SourceGeneration
+namespace Realms.Tests.SourceGeneration.TestClasses
 {
-    [TestFixture, Preserve(AllMembers = true)]
-    public class SourceGenerationTests : SourceGenerationTest
+    public partial class RealmExampleClass: IRealmObject
     {
-        [Test]
-        public async Task RecommendedGeneratorTest()
-        {
-            await RunSimpleComparisonTest("RealmExampleClass");
-        }
     }
 }
