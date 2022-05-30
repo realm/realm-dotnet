@@ -22,31 +22,85 @@ using Realms.Weaving;
 
 namespace Realms
 {
+    /// <summary>
+    /// An interface that is implemented by all objects that can be persisted in Realm.
+    /// This interface is used only internally for now.
+    /// </summary>
     public interface IRealmObjectBase : ISettableManagedAccessor
     {
+        /// <summary>
+        /// Gets the accessor that encapsulates the methods and properties used by the object for its functioning.
+        /// </summary>
         IRealmAccessor Accessor { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
+        /// <see cref="Realm.Add{T}(T, bool)"/>.
+        /// </summary>
+        /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
         bool IsManaged { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether this object is managed and represents a row in the database.
+        /// If a managed object has been removed from the Realm, it is no longer valid and accessing properties on it
+        /// will throw an exception.
+        /// Unmanaged objects are always considered valid.
+        /// </summary>
+        /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
         bool IsValid { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether this object is frozen. Frozen objects are immutable
+        /// and will not update when writes are made to the Realm. Unlike live objects, frozen
+        /// objects can be used across threads.
+        /// </summary>
+        /// <value><c>true</c> if the object is frozen and immutable; <c>false</c> otherwise.</value>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
         bool IsFrozen { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
+        /// </summary>
+        /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
         Realm Realm { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
+        /// </summary>
+        /// <value>A collection of properties describing the underlying schema of this object.</value>
         ObjectSchema ObjectSchema { get; }
     }
 
+    /// <summary>
+    /// Base interface for any object that can be persisted in a <see cref="Realm"/>.
+    /// </summary>
     public interface IRealmObject : IRealmObjectBase
     {
     }
 
+    /// <summary>
+    /// Base interface for any embedded object that can be persisted in a <see cref="Realm"/>.
+    /// </summary>
     public interface IEmbeddedObject : IRealmObjectBase
     {
     }
 
+    /// <summary>
+    /// Represents an object whose managed accessor can be set.
+    /// This interface is used only internally for now.
+    /// </summary>
     public interface ISettableManagedAccessor
     {
-        void SetManagedAccessor(IRealmAccessor acccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false);
+        /// <summary>
+        /// Sets the accessor for the newly managed object and possibly adds the object to the realm.
+        /// </summary>
+        /// <param name="accessor">The accessor to set.</param>
+        /// <param name="helper">The<see cref="IRealmObjectHelper"/> implementation to use for copying the object to realm.</param>
+        /// <param name="update">If set to <c>true</c>, update the existing value (if any). Otherwise, try to add and throw if an object with the same primary key already exists.</param>
+        /// <param name="skipDefaults">
+        /// If set to <c>true</c> will not invoke the setters of properties that have default values.
+        /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
+        /// </param>
+        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false);
     }
 }
