@@ -437,7 +437,7 @@ namespace Realms.Tests.Database
                 var tcs = new TaskCompletionSource<object>();
                 var taskCancelled = false;
 
-                var syncTask = Task.Run(() => AsyncContext.Run(async () =>
+                var syncTask = Task.Run(() => AsyncContext.Run(() =>
                 {
                     using var realm = GetRealm(_realm.Config);
                     var transaction = realm.BeginWrite();
@@ -477,7 +477,7 @@ namespace Realms.Tests.Database
                 var tcs = new TaskCompletionSource<object>();
                 var taskCancelled = false;
 
-                var syncTask = Task.Run(() => AsyncContext.Run(async () =>
+                var syncTask = Task.Run(() => AsyncContext.Run(() =>
                 {
                     using var realm = GetRealm(_realm.Config);
                     var transaction = realm.BeginWrite();
