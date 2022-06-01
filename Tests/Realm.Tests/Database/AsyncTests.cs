@@ -437,15 +437,13 @@ namespace Realms.Tests.Database
                 var tcs = new TaskCompletionSource<object>();
                 var taskCancelled = false;
 
-                var syncTask = Task.Run(() => AsyncContext.Run(() =>
+                var syncTask = Task.Run(() => AsyncContext.Run(async () =>
                 {
                     using var realm = GetRealm(_realm.Config);
-                    var transaction = realm.BeginWrite();
-
+                    using var transaction = realm.BeginWrite();
                     tcs.TrySetResult(null);
-
                     cts.Cancel();
-                    transaction.Rollback();
+                    await Task.Delay(1000);
                 }));
 
                 var asyncTask = Task.Run(() => AsyncContext.Run(async () =>
