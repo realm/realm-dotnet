@@ -1267,7 +1267,6 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        [Ignore("Doesn't work for some reason. Investigating.")]
         public void Integration_SubscriptionWithLinks()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1405,7 +1404,6 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        [Ignore("Doesn't work for some reason. Investigating.")]
         public void Integration_SubscritpionWithCollections()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1727,7 +1725,6 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        [Ignore("Doesn't work for some reason. Investigating.")]
         public void Integration_UpdatingSubscription_SupersedesPreviousOnes()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
