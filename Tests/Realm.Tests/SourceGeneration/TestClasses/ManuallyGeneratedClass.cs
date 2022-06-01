@@ -20,19 +20,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Realms.Schema;
 using Realms.Weaving;
 
 namespace Realms.Tests.SourceGeneration.TestClasses
 {
-    public partial class SimpleClass1 : IRealmObject, INotifyPropertyChanged
+    public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
         //public int Integer { get; set; }
 
         //public IList<int> IntegerList { get; }
 
+        [WovenProperty]
         public int Integer
         {
             get
@@ -46,12 +46,14 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             }
         }
 
+        [WovenProperty]
         public IList<int> IntegerList => _accessor.GetListValue<int>("IntegerList");
 
     }
 
-    [Woven(typeof(SimpleClassRealmObjectHelper))]
-    public partial class SimpleClass1 : IRealmObject
+    //TODO To be compatible with current implementation
+    [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
+    public partial class ManualllyGeneratedClass : IRealmObject
     {
         private IRealmAccessor _backupUnmanagedAccessor;
 
@@ -70,9 +72,9 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public SimpleClass1()
+        public ManualllyGeneratedClass()
         {
-            _accessor = new SimpleClass1UnmanagedAccessor(GetType());
+            _accessor = new ManuallyGeneratedClassAccessor(GetType());
         }
 
         public void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
@@ -141,11 +143,11 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             _accessor.UnsubscribeFromNotifications();
         }
 
-        internal class SimpleClassRealmObjectHelper : IRealmObjectHelper
+        internal class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
-                var castInstance = (SimpleClass1)instance;
+                var castInstance = (ManualllyGeneratedClass)instance;
 
                 //TODO Maybe we need a more clever way of passing the unmanagedAccessor
                 //TODO Not sure if it makes sense to make this generic (as in Fody)
@@ -180,7 +182,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
             public IRealmObjectBase CreateInstance()
             {
-                return new SimpleClass1();
+                return new ManualllyGeneratedClass();
             }
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
@@ -190,7 +192,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             }
         }
 
-        internal class SimpleClass1UnmanagedAccessor : IRealmAccessor
+        internal class ManuallyGeneratedClassAccessor : IRealmAccessor
         {
             //Backing fields
             private int _integer;
@@ -200,7 +202,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
             private Type _objectType;
 
-            public SimpleClass1UnmanagedAccessor(Type objectType)
+            public ManuallyGeneratedClassAccessor(Type objectType)
             {
                 _objectType = objectType;
             }
