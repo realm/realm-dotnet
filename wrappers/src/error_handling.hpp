@@ -26,9 +26,50 @@
 
 namespace realm {
 struct NativeException {
-    RealmErrorType type;
-    std::string message;
-    std::string detail;
+public:
+    union Detail {
+        Detail(): managed_error(nullptr) {}
+        Detail(std::string str) : string(str) {}
+        Detail(void* err) : managed_error(err) {}
+
+        std::string string;
+        void* managed_error;
+
+        ~Detail() {};
+    };
+
+    enum class DetailType : unsigned char {
+        NONE,
+        STRING,
+        MANAGED_ERROR,
+    };
+
+    NativeException(RealmErrorType type, std::string message)
+        : m_type(type),
+          m_message(message),
+          m_detail(),
+          m_detail_type(DetailType::NONE) {}
+
+    NativeException(RealmErrorType type, std::string message, std::string detail)
+        : m_type(type),
+          m_message(message),
+          m_detail(detail),
+          m_detail_type(DetailType::STRING) {}
+
+    NativeException(std::string message, void* managed_error)
+        : m_type(RealmErrorType::RealmDotNetExceptionDuringCallback),
+          m_message(message),
+          m_detail(managed_error),
+          m_detail_type(DetailType::MANAGED_ERROR) {}
+
+    std::string to_string() {
+        switch (m_detail_type) {
+        case DetailType::STRING:
+            return util::format("%1: %2", m_message, m_detail.string);
+        default:
+            return m_message;
+        }
+    }
 
     struct Marshallable {
         RealmErrorType type;
@@ -39,20 +80,40 @@ struct NativeException {
     };
 
     Marshallable for_marshalling() const {
-        auto messageCopy = ::operator new (message.size());
-        message.copy(reinterpret_cast<char*>(messageCopy), message.length());
+        auto messageCopy = ::operator new (m_message.size());
+        m_message.copy(reinterpret_cast<char*>(messageCopy), m_message.length());
 
-        auto detailCopy = ::operator new (detail.size());
-        detail.copy(reinterpret_cast<char*>(detailCopy), detail.length());
+        void* marshaled_detail;
+        size_t marshaled_detail_length;
+        switch (m_detail_type) {
+        case DetailType::STRING:
+            marshaled_detail = ::operator new (m_detail.string.size());
+            m_detail.string.copy(reinterpret_cast<char*>(marshaled_detail), m_detail.string.length());
+            marshaled_detail_length = m_detail.string.length();
+            break;
+        case DetailType::MANAGED_ERROR:
+            marshaled_detail = m_detail.managed_error;
+            marshaled_detail_length = (size_t)-1;
+            break;
+        default:
+            marshaled_detail = nullptr;
+            marshaled_detail_length = 0;
+            break;
+        }
 
         return {
-            type,
+            m_type,
             messageCopy,
-            message.size(),
-            detailCopy,
-            detail.size(),
+            m_message.size(),
+            marshaled_detail,
+            marshaled_detail_length,
         };
     }
+private:
+    RealmErrorType m_type;
+    std::string m_message;
+    Detail m_detail;
+    DetailType m_detail_type;
 };
 
 class RowDetachedException : public std::runtime_error {

@@ -303,6 +303,8 @@ namespace Realms.Sync
             {
                 NativeMethods.destroy_mutable(handle);
             }
+
+            handle = IntPtr.Zero;
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetSubscriptionCallback))]

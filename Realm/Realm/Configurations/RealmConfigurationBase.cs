@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Schema;
@@ -33,6 +34,8 @@ namespace Realms
     /// </remarks>
     public abstract class RealmConfigurationBase
     {
+        internal delegate void InitialDataDelegate(Realm realm);
+
         /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
@@ -186,6 +189,8 @@ namespace Realms
         /// <seealso cref="Realm.Freeze"/>
         public ulong MaxNumberOfActiveVersions { get; set; } = ulong.MaxValue;
 
+        internal InitialDataDelegate PopulateInitialData { get; set; }
+
         internal RealmConfigurationBase()
         {
         }
@@ -200,13 +205,25 @@ namespace Realms
             return (RealmConfigurationBase)MemberwiseClone();
         }
 
-        internal abstract Realm CreateRealm();
-
-        internal abstract Task<Realm> CreateRealmAsync(CancellationToken cancellationToken);
-
-        internal Native.Configuration CreateNativeConfiguration()
+        internal virtual Realm CreateRealm()
         {
-            return new Native.Configuration
+            var schema = GetSchema();
+            var sharedRealmHandle = CreateHandle(schema);
+            return GetRealm(sharedRealmHandle, schema);
+        }
+
+        internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        {
+            var schema = GetSchema();
+            var sharedRealmHandle = await CreateHandleAsync(schema, cancellationToken);
+            return GetRealm(sharedRealmHandle, schema);
+        }
+
+        internal virtual Native.Configuration CreateNativeConfiguration()
+        {
+            var managedConfig = GCHandle.Alloc(this);
+
+            var config = new Native.Configuration
             {
                 Path = DatabasePath,
                 FallbackPipePath = FallbackPipePath,
@@ -216,11 +233,20 @@ namespace Realms
 #pragma warning disable CS0618 // Type or member is obsolete
                 use_legacy_guid_representation = Realm.UseLegacyGuidRepresentation,
 #pragma warning restore CS0618 // Type or member is obsolete
+                invoke_initial_data_callback = PopulateInitialData != null,
+                managed_config = GCHandle.ToIntPtr(managedConfig),
             };
+
+            return config;
         }
 
-        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema)
+        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema = null)
         {
+            if (schema == null)
+            {
+                schema = GetSchema();
+            }
+
             if (IsDynamic && !schema.Any())
             {
                 try
@@ -255,5 +281,9 @@ namespace Realms
 
             return RealmSchema.Default;
         }
+
+        internal abstract SharedRealmHandle CreateHandle(RealmSchema schema);
+
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken);
     }
 }

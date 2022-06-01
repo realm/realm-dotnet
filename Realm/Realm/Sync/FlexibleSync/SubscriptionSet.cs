@@ -155,14 +155,7 @@ namespace Realms.Sync
             Argument.NotNull(action, nameof(action));
 
             var oldHandle = _handle;
-            var toDispose = new List<IDisposable>()
-            {
-                // If the write succeeds, we want to dispose the old handle.
-                oldHandle
-            };
-
             var writeableHandle = _handle.BeginWrite();
-            toDispose.Add(writeableHandle);
 
             // We need to set the writable handle as the current subscription set handle
             // to allow performing operations that modify it.
@@ -175,21 +168,21 @@ namespace Realms.Sync
                 // Committing the write will generate a new readonly subscription set handle that
                 // we need to set to _handle.
                 _handle = _handle.CommitWrite();
+
+                oldHandle.Dispose();
+                writeableHandle.Dispose();
             }
             catch
             {
-                // If an error occurs - revert to the old subscription set handle. Disposing the writeableHandle
-                // will rollback the transaction, so we don't need to worry about it.
-                toDispose.Remove(oldHandle);
+                // We need to immediately unbind the subscription set handle to rollback the transaction. If we
+                // don't do it, it will be unbound when the Realm closes or GC collects it which is too late.
+                // Using .Dispose here instead of .Unbind will only schedule it for unbinding which is not what
+                // we want.
+                writeableHandle.Unbind();
+
+                // If an error occurs - revert to the old subscription set handle.
                 _handle = oldHandle;
                 throw;
-            }
-            finally
-            {
-                foreach (var handle in toDispose)
-                {
-                    handle.Dispose();
-                }
             }
         }
 

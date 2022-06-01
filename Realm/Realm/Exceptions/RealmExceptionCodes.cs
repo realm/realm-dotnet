@@ -46,7 +46,7 @@ namespace Realms.Exceptions
         KeyAlreadyExists = 26,
         RealmInUseException = 27,
 
-        RealmDotNetExceptionDuringMigration = 30,
+        RealmDotNetExceptionDuringCallback = 30,
 
         NotNullableProperty = 31,
         PropertyMismatch = 32,
