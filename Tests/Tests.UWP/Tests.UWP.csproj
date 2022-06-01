@@ -27,7 +27,7 @@
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <PackageCertificateKeyFile>
     </PackageCertificateKeyFile>
-    <PackageCertificateThumbprint Condition=" '$(PackageCertificateKeyFile)' ==  '' ">5BF6DD8D5EFA4BB5A61748E69BCCFF30989EC4AC</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint Condition=" '$(PackageCertificateKeyFile)' ==  '' ">DC86DF96F20D7AD28FF9647D95E895E969F7FDD1</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != '' And '$(RestoreConfigFile)' == '' ">
     <RestoreConfigFile>$(MSBuildProjectDirectory)\..\Test.NuGet.Config</RestoreConfigFile>
