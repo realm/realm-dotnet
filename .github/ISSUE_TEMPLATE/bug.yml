@@ -36,7 +36,7 @@ body:
     attributes:
       label: What SDK flavour are you using?
       options:
-        - MongoDB Realm (i.e. Sync, auth, functions)
+        - MongoDB Atlas (i.e. Sync, auth, functions)
         - Local Database only
     validations:
       required: true

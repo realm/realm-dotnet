@@ -228,8 +228,8 @@ namespace Realms
         /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm
-        /// server if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
+        /// The <see cref="Session"/> that is responsible for synchronizing with MongoDB Atlas
+        /// if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
         /// otherwise.
         /// </value>
         public Session SyncSession

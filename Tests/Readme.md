@@ -45,7 +45,7 @@ run against cloud are located in the Scripts folder. Currently we have:
 * RemoveCluster.ps1 - deletes a deployed Atlas cluster
 * CliLogin.ps1 - logs in against cloud-dev and persists user authentication. You must execute this before calling Deploy/RemoveApps.
 * DeployApps.ps1 - imports the apps located in TestApps and links them to the specified cluster.
-* RemoveApps.ps1 - removes all MongoDB Realm apps for the specified project.
+* RemoveApps.ps1 - removes all Atlas App Services apps for the specified project.
 
 ## Unity
 

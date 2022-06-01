@@ -4,7 +4,7 @@ This is an action that takes the results.json file from a Benchmark.NET run and 
 
 1. It enhances the results with git information (i.e. commit, branch, etc.).
 2. It generates a charts dashboard that we can then import. This is only actually necessary when the benchmark tests change in any way.
-3. It uploads the enhanced results to MongoDB Atlas using MongoDB Realm.
+3. It uploads the enhanced results to MongoDB Atlas using Atlas App Services.
 
 ## Basic Usage
 
@@ -34,7 +34,7 @@ jobs:
 
 | Input | Required | Description |
 |-|-|-|
-| `realm-token` | `true` | The MongoDB Realm token used to upload the benchmark results. |
+| `realm-token` | `true` | The Atlas App services token used to upload the benchmark results. |
 | `file` | `true` | The Benchmark.NET results file (in json format). |
 | `nuget-package` | `true` |  The path to the Realm.nupkg that will be used for file size tracking. |
 | `dashboard-path` | `false` | Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated. |
@@ -44,5 +44,5 @@ jobs:
 We're using the `Realm SDK metrics` project to store benchmark data.
 
 * [MongoDB Atlas](https://cloud.mongodb.com/v2/5f2beb77dd663c59fa806486#clusters) for storing the benchmark results.
-* [MongoDB Realm](https://realm.mongodb.com/groups/5f2beb77dd663c59fa806486/apps/61153e38bc7c862b9c02c860/dashboard) for auth and uploading new documents.
+* [Atlas App Services](https://realm.mongodb.com/groups/5f2beb77dd663c59fa806486/apps/61153e38bc7c862b9c02c860/dashboard) for auth and uploading new documents.
 * [MongoDB Charts](https://charts.mongodb.com/charts-realm-sdk-metrics-yxjvt/dashboards) for plotting the data.

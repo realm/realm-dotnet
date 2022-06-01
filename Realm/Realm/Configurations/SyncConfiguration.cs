@@ -22,7 +22,7 @@ using MongoDB.Bson;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
+    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using Atlas Device Sync.
     /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     [Obsolete("Use PartitionSyncConfiguration instead.")]

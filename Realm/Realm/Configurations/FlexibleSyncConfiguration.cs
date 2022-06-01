@@ -26,7 +26,7 @@ namespace Realms.Sync
 {
     /// <summary>
     /// A <see cref="FlexibleSyncConfiguration"/> is used to setup a <see cref="Realm"/> whose data can be synchronized
-    /// between devices using MongoDB Realm. Unlike <see cref="PartitionSyncConfiguration"/>, a Realm opened with
+    /// between devices using Atlas Device Sync. Unlike <see cref="PartitionSyncConfiguration"/>, a Realm opened with
     /// <see cref="FlexibleSyncConfiguration"/> will be initially empty until one or more subscriptions are added
     /// via <see cref="Realm.Subscriptions"/>.
     /// </summary>

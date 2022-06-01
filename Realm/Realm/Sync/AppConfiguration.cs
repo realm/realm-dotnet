@@ -34,7 +34,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the unique app id that identifies the Realm application.
         /// </summary>
-        /// <value>The MongoDB Realm App's id.</value>
+        /// <value>The Atlas App Services App's id.</value>
         public string AppId { get; }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Realms.Sync
         /// </summary>
         /// <remarks>
         /// The local app name is typically used to differentiate between client applications that use the same
-        /// MongoDB Realm app. These can be the same conceptual app developed for different platforms, or
+        /// Atlas App Services app. These can be the same conceptual app developed for different platforms, or
         /// significantly different client side applications that operate on the same data - e.g. an event managing
         /// service that has different clients apps for organizers and attendees.
         /// </remarks>
@@ -132,19 +132,19 @@ namespace Realms.Sync
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
 
         /// <summary>
-        /// Gets or sets the default request timeout for HTTP requests to MongoDB Realm.
+        /// Gets or sets the default request timeout for HTTP requests to MongoDB Atlas.
         /// </summary>
         /// <value>The default HTTP request timeout.</value>
         public TimeSpan? DefaultRequestTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="HttpMessageHandler"/> that will be used
-        /// for the http requests to MongoDB Realm.
+        /// for the http requests to MongoDB Atlas.
         /// </summary>
         /// <value>The http client handler that configures things like certificates and proxy settings.</value>
         /// <remarks>
         /// You can use this to override the default http client handler and configure settings like proxies,
-        /// client certificates, and cookies. While these are not required to connect to MongoDB Realm under
+        /// client certificates, and cookies. While these are not required to connect to MongoDB Atlas under
         /// normal circumstances, they can be useful if client devices are behind corporate firewall or use
         /// a more complex networking setup.
         /// </remarks>
@@ -153,7 +153,7 @@ namespace Realms.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.
         /// </summary>
-        /// <param name="appId">The MongoDB Realm App id.</param>
+        /// <param name="appId">The Atlas App Services App id.</param>
         public AppConfiguration(string appId)
         {
             Argument.NotNullOrEmpty(appId, nameof(appId));
