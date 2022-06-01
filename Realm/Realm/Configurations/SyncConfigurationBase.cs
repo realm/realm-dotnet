@@ -94,47 +94,38 @@ namespace Realms.Sync
             User = user;
         }
 
-        internal override Realm CreateRealm()
+        internal override SharedRealmHandle CreateHandle(Schema.RealmSchema schema)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
-
-            var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            return GetRealm(srHandle, schema);
+            return SharedRealmHandle.OpenWithSync(CreateNativeConfiguration(), syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Schema.RealmSchema schema, CancellationToken cancellationToken)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            IDisposable progressToken = null;
+            using var handle = SharedRealmHandle.OpenWithSyncAsync(CreateNativeConfiguration(), syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
+            cancellationToken.Register(() =>
+            {
+                if (!handle.IsClosed)
+                {
+                    handle.Cancel();
+                    tcs.TrySetCanceled();
+                }
+            });
+
+            using var progressToken = OnBeforeRealmOpen(handle);
+
             try
             {
-                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, syncConfiguration, schema, EncryptionKey, tcsHandle);
-                cancellationToken.Register(() =>
-                {
-                    if (!handle.IsClosed)
-                    {
-                        handle.Cancel();
-                        tcs.TrySetCanceled();
-                    }
-                });
-
-                progressToken = OnBeforeRealmOpen(handle);
-
                 using var realmReference = await tcs.Task;
-                var sharedRealmHandle = SharedRealmHandle.ResolveFromReference(realmReference);
-                return GetRealm(sharedRealmHandle, schema);
+                return SharedRealmHandle.ResolveFromReference(realmReference);
             }
             finally
             {
                 tcsHandle.Free();
-                progressToken?.Dispose();
             }
         }
 
@@ -142,7 +133,6 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
-            var syncConfHandle = GCHandle.Alloc(this);
             var clientResyncMode = ClientResyncMode.DiscardLocal;
 
             if (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler)
@@ -156,7 +146,6 @@ namespace Realms.Sync
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = clientResyncMode,
-                managed_sync_configuration_handle = GCHandle.ToIntPtr(syncConfHandle),
             };
         }
     }

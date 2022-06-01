@@ -29,20 +29,53 @@ namespace Realms
         public RealmExceptionCodes type;
         public byte* messageBytes;
         public IntPtr messageLength;
-        public byte* detailBytes;
+        public IntPtr detail;
         public IntPtr detailLength;
 
         internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider = null)
         {
-            var message = (messageLength != IntPtr.Zero) ?
-                            Encoding.UTF8.GetString(messageBytes, (int)messageLength)
-                            : "No further information available";
-            NativeCommon.delete_pointer(messageBytes);
+            try
+            {
+                var overridden = overrider?.Invoke(type);
+                if (overridden != null)
+                {
+                    return overridden;
+                }
 
-            var detail = (detailLength != IntPtr.Zero) ? Encoding.UTF8.GetString(detailBytes, (int)detailLength) : null;
-            NativeCommon.delete_pointer(detailBytes);
+                var message = (messageLength != IntPtr.Zero) ?
+                    Encoding.UTF8.GetString(messageBytes, (int)messageLength)
+                    : "No further information available";
 
-            return overrider?.Invoke(type) ?? RealmException.Create(type, message, detail);
+                var innerException = GetInnerException();
+                if (innerException != null)
+                {
+                    return new AggregateException(message, innerException);
+                }
+
+                var detailMessage = detail != IntPtr.Zero ? Encoding.UTF8.GetString((byte*)detail, (int)detailLength) : null;
+                return RealmException.Create(type, message, detailMessage);
+            }
+            finally
+            {
+                NativeCommon.delete_pointer(messageBytes);
+                if (type != RealmExceptionCodes.RealmDotNetExceptionDuringCallback && detail != IntPtr.Zero)
+                {
+                    NativeCommon.delete_pointer((byte*)detail);
+                }
+            }
+        }
+
+        private Exception GetInnerException()
+        {
+            if (type == RealmExceptionCodes.RealmDotNetExceptionDuringCallback)
+            {
+                var handle = GCHandle.FromIntPtr(detail);
+                var result = (Exception)handle.Target;
+                handle.Free();
+                return result;
+            }
+
+            return null;
         }
 
         internal void ThrowIfNecessary(Func<RealmExceptionCodes, Exception> overrider = null)
