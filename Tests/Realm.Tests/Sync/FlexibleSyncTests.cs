@@ -1771,7 +1771,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Integration_InitialSubscriptions_Unnamed()
+        public void Integration_InitialSubscriptions_Unnamed([Values(true, false)] bool openAsync)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1787,17 +1787,28 @@ namespace Realms.Tests.Sync
                     r.Subscriptions.Add(query);
                 };
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+
+                if (openAsync)
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                }
+                else
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
                 Assert.That(query.Count(), Is.EqualTo(2));
                 Assert.That(query, Is.EquivalentTo(new[] { 1.5, 2.5 }));
-                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
             });
         }
 
         [Test]
-        public void Integration_InitialSubscriptions_Named()
+        public void Integration_InitialSubscriptions_Named([Values(true, false)] bool openAsync)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1813,18 +1824,29 @@ namespace Realms.Tests.Sync
                     r.Subscriptions.Add(query, new() { Name = "initial" });
                 };
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+                Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("initial"));
+
+                if (openAsync)
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                }
+                else
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
                 Assert.That(query.Count(), Is.EqualTo(1));
                 Assert.That(query, Is.EquivalentTo(new[] { 2.5 }));
-                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
-                Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("initial"));
             });
         }
 
         [Test]
-        public void Integration_InitialSubscriptions_RunsOnlyOnce()
+        public void Integration_InitialSubscriptions_RunsOnlyOnce([Values(true, false)] bool openAsync)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1837,14 +1859,14 @@ namespace Realms.Tests.Sync
 
                 for (var i = 0; i < 5; i++)
                 {
-                    using var realm = await GetRealmAsync(config);
+                    using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
                     Assert.That(invocations, Is.EqualTo(1));
                 }
             });
         }
 
         [Test]
-        public void Integration_InitialSubscriptions_PropagatesErrors()
+        public void Integration_InitialSubscriptions_PropagatesErrors([Values(true, false)] bool openAsync)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1863,7 +1885,7 @@ namespace Realms.Tests.Sync
 
                 try
                 {
-                    await GetRealmAsync(config);
+                    using var shouldFailRealm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
                     Assert.Fail("Expected an exception to occur");
                 }
                 catch (AggregateException ex)
@@ -1872,7 +1894,7 @@ namespace Realms.Tests.Sync
                 }
 
                 // We failed the first time, we should not see PopulateInitialSubscriptions get invoked the second time
-                var realm = await GetRealmAsync(config);
+                using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
                 Assert.That(realm.Subscriptions.Count, Is.Zero);
             });
         }

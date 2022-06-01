@@ -89,9 +89,39 @@ namespace Realms.Sync
 
         internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
-            var shouldPopulate = false;
-            var populateSubs = PopulateInitialSubscriptions;
-            if (populateSubs != null)
+            var tracker = InjectInitialSubscriptions();
+
+            var result = await base.CreateRealmAsync(cancellationToken);
+
+            InvokeInitialSubscriptions(tracker, result);
+
+            if (tracker.PopulateInitialDataInvoked)
+            {
+                await result.Subscriptions.WaitForSynchronizationAsync();
+            }
+
+            return result;
+        }
+
+        internal override Realm CreateRealm()
+        {
+            var tracker = InjectInitialSubscriptions();
+
+            var result = base.CreateRealm();
+
+            InvokeInitialSubscriptions(tracker, result);
+
+            return result;
+        }
+
+        private InitialDataTracker InjectInitialSubscriptions()
+        {
+            var tracker = new InitialDataTracker
+            {
+                Callback = PopulateInitialSubscriptions
+            };
+
+            if (tracker.Callback != null)
             {
                 var oldDataCallback = PopulateInitialData;
                 PopulateInitialData = (realm) =>
@@ -101,37 +131,39 @@ namespace Realms.Sync
                     // will hang. We flag that with `shouldPopulate` and update the subscriptions
                     // after we open the realm.
                     oldDataCallback?.Invoke(realm);
-                    shouldPopulate = true;
+                    tracker.PopulateInitialDataInvoked = true;
                 };
             }
 
-            var result = await base.CreateRealmAsync(cancellationToken);
-            if (shouldPopulate)
-            {
-                try
-                {
-                    result.Subscriptions.Update(() =>
-                    {
-                        // We're not guarded by a write lock between invoking the `InitialDataCallback`
-                        // and getting here, so it's possible someone managed to insert subscriptions
-                        // before us. If that's the case, then don't insert anything and just wait for
-                        // sync.
-                        if (result.Subscriptions.Count == 0)
-                        {
-                            populateSubs(result);
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    // This needs to duplicate the logic in RealmConfigurationBase.CreateRealmAsync
-                    throw new AggregateException("Exception occurred in a Realm.PopulateInitialSubscriptions callback. See inner exception for more details.", ex);
-                }
+            return tracker;
+        }
 
-                await result.Subscriptions.WaitForSynchronizationAsync();
+        private static void InvokeInitialSubscriptions(InitialDataTracker tracker, Realm realm)
+        {
+            if (!tracker.PopulateInitialDataInvoked)
+            {
+                return;
             }
 
-            return result;
+            try
+            {
+                realm.Subscriptions.Update(() =>
+                {
+                    // We're not guarded by a write lock between invoking the `InitialDataCallback`
+                    // and getting here, so it's possible someone managed to insert subscriptions
+                    // before us. If that's the case, then don't insert anything and just wait for
+                    // sync.
+                    if (realm.Subscriptions.Count == 0)
+                    {
+                        tracker.Callback(realm);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                // This needs to duplicate the logic in RealmConfigurationBase.CreateRealmAsync
+                throw new AggregateException("Exception occurred in a Realm.PopulateInitialSubscriptions callback. See inner exception for more details.", ex);
+            }
         }
 
         internal override Native.SyncConfiguration CreateNativeSyncConfiguration()
@@ -165,6 +197,16 @@ namespace Realms.Sync
 
                 base.ClientResetHandler = value;
             }
+        }
+
+        // This is a holder class to workaround the fact that we can't use ref booleans
+        // inside lambda functions. Its purpose is to server as a marker that PopulateInitialData
+        // was invoked, which means we need to then update subscriptions.
+        private class InitialDataTracker
+        {
+            public bool PopulateInitialDataInvoked;
+
+            public InitialSubscriptionsDelegate Callback;
         }
     }
 }

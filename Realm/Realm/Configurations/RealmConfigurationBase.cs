@@ -205,7 +205,7 @@ namespace Realms
             return (RealmConfigurationBase)MemberwiseClone();
         }
 
-        internal Realm CreateRealm()
+        internal virtual Realm CreateRealm()
         {
             var schema = GetSchema();
             var sharedRealmHandle = CreateHandle(schema);
