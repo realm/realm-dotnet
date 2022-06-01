@@ -56,7 +56,7 @@ using System;");
                 var className = classSymbol.Name;
 
                 //TODO Not necessarily the class is public
-                builder.Append(@$"
+                builder.AppendLine(@$"
 namespace {namespaceName}
 {{
     public partial class {className} : IRealmObject
@@ -64,7 +64,7 @@ namespace {namespaceName}
 
     }}
 }}");
-                //builder.Append("\n\r");
+
                 var sourceText = SourceText.From(builder.ToString(), Encoding.UTF8);
                 context.AddSource($"{className}_generated.cs", sourceText);
             }

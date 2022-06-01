@@ -17,13 +17,10 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Realm.SourceGenerator;
-using VerifyCS = Realms.Tests.SourceGeneration.CSharpSourceGeneratorVerifier<Realm.SourceGenerator.RealmClassGenerator>;
+using RealmClassGeneratorVerifier = Realms.Tests.SourceGeneration.CSharpSourceGeneratorVerifier<Realm.SourceGenerator.RealmClassGenerator>;
 
 namespace Realms.Tests.SourceGeneration
 {
@@ -50,7 +47,7 @@ namespace Realms.Tests.SourceGeneration
             var generated = GetGeneratedForClass(className);
             var generatedFileName = $"{className}_generated.cs";
 
-            await new VerifyCS.Test
+            await new RealmClassGeneratorVerifier.Test
             {
                 TestState =
                 {
@@ -60,7 +57,7 @@ namespace Realms.Tests.SourceGeneration
                     },
                     GeneratedSources =
                     {
-                        (generatedFileName, generated),
+                        (typeof(RealmClassGenerator), generatedFileName, generated),
                     },
                 },
             }.RunAsync();

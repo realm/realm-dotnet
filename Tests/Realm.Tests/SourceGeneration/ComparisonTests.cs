@@ -23,7 +23,7 @@ using Realm.SourceGenerator;
 namespace Realms.Tests.SourceGeneration
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SourceGenerationTests : SourceGenerationTest
+    public class ComparisonTests : SourceGenerationTest
     {
         [Test]
         public async Task RecommendedGeneratorTest()

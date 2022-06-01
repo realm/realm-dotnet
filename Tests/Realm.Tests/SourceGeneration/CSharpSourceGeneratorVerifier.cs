@@ -38,6 +38,7 @@ namespace Realms.Tests.SourceGeneration
             protected override CompilationOptions CreateCompilationOptions()
             {
                 var compilationOptions = base.CreateCompilationOptions();
+
                 return compilationOptions.WithSpecificDiagnosticOptions(
                      compilationOptions.SpecificDiagnosticOptions.SetItems(GetNullableWarningsFromCompiler()));
             }
