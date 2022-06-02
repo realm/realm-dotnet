@@ -36,7 +36,8 @@ namespace SetupUnityPackage
             "Fody",
             "Realm",
             "Microsoft.CSharp",
-            "System.Configuration.ConfigurationManager"
+            "System.Configuration.ConfigurationManager",
+            "Microsoft.NET.Test.Sdk"
         };
 
         private static readonly IEnumerable<DependencyInfo> _testsDependencies = new[]
