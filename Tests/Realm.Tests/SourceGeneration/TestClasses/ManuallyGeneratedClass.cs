@@ -26,12 +26,22 @@ using Realms.Weaving;
 
 namespace Realms.Tests.SourceGeneration.TestClasses
 {
+    public static partial class Schemas
+    {
+        //TODO We can generate this manually
+        //At the moment this has no effect
+        public static ObjectSchema ManuallyGeneratedClassSchema = new ObjectSchema
+            .Builder(typeof(ManualllyGeneratedClass))
+            .Build();
+    }
+
     public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
         //public int Integer { get; set; }
 
         //public IList<int> IntegerList { get; }
 
+        //TODO Necessary for now to create the schema
         [WovenProperty]
         public int Integer
         {
@@ -52,10 +62,15 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     }
 
     //TODO To be compatible with current implementation
+
+    //TODO Do we let the current module initializer created in the weaver add the schema of the new
+    //generated objects too?
+    //Otherwise we could use the ModuleInit from Fody (it's practically the same)
+    //There is also a new attribute, but available only from c# 9 and .NET 5
     [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
     public partial class ManualllyGeneratedClass : IRealmObject
     {
-        private IRealmAccessor _backupUnmanagedAccessor;
+        private IRealmAccessor _unmanagedAccessor;
 
         #region IRealmObject implementation
         private IRealmAccessor _accessor;
@@ -77,12 +92,15 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             _accessor = new ManuallyGeneratedClassAccessor(GetType());
         }
 
-        public void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            _backupUnmanagedAccessor = _accessor;
-            _accessor = accessor;
+            //TODO Can we do it differently?
+            _unmanagedAccessor = _accessor;
+            _accessor = managedAccessor;
 
             helper?.CopyToRealm(this, update, skipDefaults);
+
+            _unmanagedAccessor = null;
 
             if (_propertyChanged != null)
             {
@@ -149,11 +167,9 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             {
                 var castInstance = (ManualllyGeneratedClass)instance;
 
-                //TODO Maybe we need a more clever way of passing the unmanagedAccessor
-                //TODO Not sure if it makes sense to make this generic (as in Fody)
-                //or we generate it property-by-property like here
+                //TODO Maybe we need a more clever way of passing the unmanagedAccessor?
 
-                var unmanagedAccessor = castInstance._backupUnmanagedAccessor;
+                var unmanagedAccessor = castInstance._unmanagedAccessor;
                 var managedAccessor = castInstance.Accessor;
 
                 //List property

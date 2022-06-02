@@ -28,8 +28,18 @@ using Realms.Tests.SourceGeneration.TestClasses;
 namespace Realms.Tests.SourceGeneration
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ManulGenerationTests
+    public class ManulGenerationTests : RealmInstanceTest
     {
+        private RealmConfiguration _config;
+
+        protected override void CustomSetUp()
+        {
+            base.CustomSetUp();
+
+            _config = new RealmConfiguration();
+            //_config.Schema = new Type[] { typeof(ManualllyGeneratedClass) };
+        }
+
         [Test]
         public void TestUnmanaged()
         {
@@ -51,18 +61,7 @@ namespace Realms.Tests.SourceGeneration
             mgc.IntegerList.Add(10);
             mgc.IntegerList.Add(20);
 
-            var schemaBuilder = new RealmSchema.Builder();
-            schemaBuilder.Add(ObjectSchema.FromType(typeof(ManualllyGeneratedClass)));
-
-            var config = new RealmConfiguration();
-            config.Schema = schemaBuilder.Build();
-
-            var realm = Realm.GetInstance();
-
-            realm.Write(() =>
-            {
-                realm.RemoveAll<ManualllyGeneratedClass>();
-            });
+            using var realm = GetRealm(_config);
 
             realm.Write(() =>
             {
