@@ -127,6 +127,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_commit_transaction_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern UInt32 commit_transaction_async(SharedRealmHandle sharedRealm, IntPtr tcsPtr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_async_transaction", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool cancel_async_transaction(SharedRealmHandle sharedRealm, UInt32 transaction_handle, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
@@ -468,14 +471,26 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public async Task BeginTransactionAsync()
+        public async Task BeginTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
+            uint? asyncTransactionHandle = null;
+            ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
             try
             {
-                _ = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
+
+                // When starting an async operation, core internally queues a cb and returns a handle to it (CBH).
+                // By requesting cancellation before obtaining a CBH, nothing is dequeued because nothing is there yet.
+                // However, we now have a CBH, so we can dequeue the cb; otherwise we free the tcsHandle before core calls the cb.
+                // If not done, under Mono referencing a null GCHandle results in a hard crash of the runtime.
+                if (ct.IsCancellationRequested)
+                {
+                    OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
+                }
+
                 await tcs.Task;
             }
             finally
@@ -490,14 +505,26 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public async Task CommitTransactionAsync()
+        public async Task CommitTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<object>();
             var tcsHandle = GCHandle.Alloc(tcs);
+            uint? asyncTransactionHandle = null;
+            ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
             try
             {
-                _ = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
                 nativeException.ThrowIfNecessary();
+
+                // When starting an async operation, core internally queues a cb and returns a handle to it (CBH).
+                // By requesting cancellation before obtaining a CBH, nothing is dequeued because nothing is there yet.
+                // However, we now have a CBH, so we can dequeue the cb; otherwise we free the tcsHandle before core calls the cb.
+                // If not done, under Mono referencing a null GCHandle results in a hard crash of the runtime.
+                if (ct.IsCancellationRequested)
+                {
+                    OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
+                }
+
                 await tcs.Task;
             }
             finally
@@ -808,6 +835,28 @@ namespace Realms
                 const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
                 tcs.TrySetException(new RealmException(outerMessage, inner));
             }
+        }
+
+        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs, SynchronizationContext synchronizationContext)
+        {
+            // We need to post on the original SynchronizationContext where the lock was acquired because
+            // cancel_async_transaction needs to be on that thread in order to be able to perform the cancellation
+            synchronizationContext.Post(_ =>
+            {
+                // Since we're posting, execution can happen after core has dequeued the cb in order to execute it.
+                // We can't cancel to avoid that the caller frees the handle to the tcs that the cb relies on.
+                // Referencing a null GCHandle when in Mono results in a hard crash of the runtime.
+                if (asyncTransactionHandle.HasValue &&
+                    NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
+                {
+                    if (innerNativeException.type != RealmExceptionCodes.NoError)
+                    {
+                        tcs.TrySetException(innerNativeException.Convert());
+                    }
+
+                    tcs.TrySetCanceled();
+                }
+            }, null);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.InitializationCallback))]
