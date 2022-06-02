@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -25,8 +26,8 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
+using Realms.Logging;
 using Realms.Sync;
-using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
@@ -1575,25 +1576,24 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Ignore("This is no longer an error due to compensating writes")]
+        [Test]
         public void Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
         {
+            Logger.Default = Logger.Function(msg => Debug.WriteLine(msg));
+            Logger.LogLevel = LogLevel.Trace;
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var errorTcs = new TaskCompletionSource<SessionException>();
                 var testGuid = Guid.NewGuid();
                 var config = await GetFLXIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler(error =>
-                {
-                    errorTcs.TrySetResult(error);
-                });
 
                 config.OnSessionError = (session, error) =>
                 {
                     errorTcs.TrySetResult(error);
                 };
 
-                var realm = await GetFLXIntegrationRealmAsync();
+                var realm = await GetRealmAsync(config);
 
                 realm.Subscriptions.Update(() =>
                 {
@@ -1606,7 +1606,7 @@ namespace Realms.Tests.Sync
                 });
 
                 var sessionError = await errorTcs.Task;
-                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.CompensatingWrite));
             });
         }
 
@@ -1615,13 +1615,13 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var errorTcs = new TaskCompletionSource<ClientResetException>();
+                var errorTcs = new TaskCompletionSource<SessionException>();
                 var testGuid = Guid.NewGuid();
                 var config = await GetFLXIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler(error =>
+                config.OnSessionError = (session, error) =>
                 {
                     errorTcs.TrySetResult(error);
-                });
+                };
 
                 var realm = await GetRealmAsync(config);
 
@@ -1651,7 +1651,7 @@ namespace Realms.Tests.Sync
                 });
 
                 var sessionError = await errorTcs.Task;
-                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.CompensatingWrite));
             });
         }
 
