@@ -30,7 +30,6 @@
 * Flexible sync will now ensure that a bootstrap from the server will only be applied if the entire bootstrap is received - ensuring there are no orphaned objects as a result of changing the read snapshot on the server ([#5331](https://github.com/realm/realm-core/pull/5331))
 * Partially fix a performance regression in write performance on Apple platforms. Committing an empty write transaction is ~10x faster than 10.13.0, but still slower than pre-10.7.1 due to using more crash-safe file synchronization (since v10.7.1). (Swift issue [#7740](https://github.com/realm/realm-swift/issues/7740)).
 
-
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 

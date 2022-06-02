@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -26,7 +25,6 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
-using Realms.Logging;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -1579,9 +1577,6 @@ namespace Realms.Tests.Sync
         [Test]
         public void Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
         {
-            Logger.Default = Logger.Function(msg => Debug.WriteLine(msg));
-            Logger.LogLevel = LogLevel.Trace;
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var errorTcs = new TaskCompletionSource<SessionException>();
