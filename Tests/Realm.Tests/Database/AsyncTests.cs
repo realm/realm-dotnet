@@ -426,5 +426,83 @@ namespace Realms.Tests.Database
                 Assert.That(_realm.All<Person>().Single, Is.EqualTo(person));
             });
         }
+
+        [Test]
+        public void AsyncBeginWrite_CancelToken_OnAwait()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var asyncThreadFactory = new AsyncContextThread().Factory;
+                using var cts = new CancellationTokenSource();
+                var tcs = new TaskCompletionSource<object>();
+                var taskCancelled = false;
+
+                var syncTask = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    using var transaction = realm.BeginWrite();
+                    tcs.TrySetResult(null);
+                    cts.Cancel();
+                    await Task.Delay(1000);
+                }));
+
+                var asyncTask = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    try
+                    {
+                        await tcs.Task;
+                        await realm.BeginWriteAsync(cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        taskCancelled = true;
+                    }
+                }));
+
+                await Task.WhenAll(syncTask, asyncTask);
+                Assert.That(taskCancelled, Is.EqualTo(true));
+            });
+        }
+
+        [Test]
+        public void AsyncWrite_CancelToken_OnAwait()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var asyncThreadFactory = new AsyncContextThread().Factory;
+                using var cts = new CancellationTokenSource();
+                var tcs = new TaskCompletionSource<object>();
+                var taskCancelled = false;
+
+                var syncTask = Task.Run(() => AsyncContext.Run(() =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    var transaction = realm.BeginWrite();
+
+                    tcs.TrySetResult(null);
+
+                    cts.Cancel();
+                    transaction.Rollback();
+                }));
+
+                var asyncTask = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    try
+                    {
+                        await tcs.Task;
+                        await realm.WriteAsync(() => { }, cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        taskCancelled = true;
+                    }
+                }));
+
+                await Task.WhenAll(syncTask, asyncTask);
+                Assert.That(taskCancelled, Is.EqualTo(true));
+            });
+        }
     }
 }

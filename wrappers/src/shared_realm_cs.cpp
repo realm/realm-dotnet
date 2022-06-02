@@ -438,11 +438,9 @@ REALM_EXPORT uint64_t shared_realm_get_schema_version(SharedRealm& realm, Native
 REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, void* tcs_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        
         // notify_only is always set to true since we implement WriteAsync in terms of BeginWriteAsync and CommitAsync.
         // Because of this, we never end the delegate passed to WriteAsync with the commit call.
-        return realm->async_begin_transaction([tcs_ptr]()
-        {
+        return realm->async_begin_transaction([tcs_ptr]() {
             // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
             // However, in this specific case, async_begin_transaction never throws, hence the need for a NoError nativeEx.
             NativeException::Marshallable nativeEx { RealmErrorType::NoError };
@@ -461,6 +459,13 @@ REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, 
             }
             s_handle_task_completion(tcs_ptr, nativeEx);
         }, /* allow_grouping */ false);
+    });
+}
+
+REALM_EXPORT bool shared_realm_cancel_async_transaction(SharedRealm& realm, uint32_t transaction_handle, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return realm->async_cancel_transaction(transaction_handle);
     });
 }
 

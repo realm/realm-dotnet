@@ -30,7 +30,7 @@ namespace Realms.Helpers
 
         public static void EnsureValidContext()
         {
-            if (!HasValidContext)
+            if (!TryGetValidContext(out _))
             {
                 throw new NotSupportedException(MissingContextErrorMessage)
                 {
@@ -39,11 +39,15 @@ namespace Realms.Helpers
             }
         }
 
-        public static bool HasValidContext => SynchronizationContext.Current != null;
+        public static bool TryGetValidContext(out SynchronizationContext synchronizationContext)
+        {
+            synchronizationContext = SynchronizationContext.Current;
+            return synchronizationContext != null;
+        }
 
         public static bool TryGetScheduler(out TaskScheduler scheduler)
         {
-            if (HasValidContext)
+            if (TryGetValidContext(out _))
             {
                 scheduler = TaskScheduler.FromCurrentSynchronizationContext();
                 return true;

@@ -811,19 +811,22 @@ namespace Realms
         /// }
         /// </code>
         /// </example>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
+        /// </param>
         /// <returns>An awaitable <see cref="Task"/> that returns a transaction in write mode.
         /// A transaction is required for any creation, deletion or modification of objects persisted in a <see cref="Realm"/>.</returns>
-        public async Task<Transaction> BeginWriteAsync()
+        public async Task<Transaction> BeginWriteAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out var synchronizationContext))
             {
                 return BeginWrite();
             }
 
-            await SharedRealmHandle.BeginTransactionAsync();
+            await SharedRealmHandle.BeginTransactionAsync(synchronizationContext, cancellationToken);
             return new Transaction(this);
         }
 
@@ -893,8 +896,11 @@ namespace Realms
         /// <param name="action">
         /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
+        /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public Task WriteAsync(Action action)
+        public Task WriteAsync(Action action, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
 
@@ -904,7 +910,7 @@ namespace Realms
             {
                 action();
                 return true;
-            });
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -943,7 +949,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -989,22 +995,31 @@ namespace Realms
         /// <param name="function">
         /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
+        /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
-        public async Task<T> WriteAsync<T>(Func<T> function)
+        public async Task<T> WriteAsync<T>(Func<T> function, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(function);
             }
 
-            using var transaction = await BeginWriteAsync();
+            using var transaction = await BeginWriteAsync(cancellationToken);
             var result = function();
-            await transaction.CommitAsync();
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
+
+            await transaction.CommitAsync(CancellationToken.None);
             return result;
         }
 
@@ -1052,7 +1067,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -1125,7 +1140,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -1186,7 +1201,7 @@ namespace Realms
                 return Task.FromResult(false);
             }
 
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Task.FromResult(Refresh());
             }
