@@ -441,8 +441,7 @@ REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, v
         
         // notify_only is always set to true since we implement WriteAsync in terms of BeginWriteAsync and CommitAsync.
         // Because of this, we never end the delegate passed to WriteAsync with the commit call.
-        return realm->async_begin_transaction([tcs_ptr]()
-        {
+        return realm->async_begin_transaction([tcs_ptr]() {
             // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
             // However, in this specific case, async_begin_transaction never throws, hence the need for a NoError nativeEx.
             NativeException::Marshallable nativeEx { RealmErrorType::NoError };
