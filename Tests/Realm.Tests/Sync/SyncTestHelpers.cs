@@ -76,7 +76,7 @@ namespace Realms.Tests.Sync
         {
             if (_baseUri == null)
             {
-                Assert.Ignore("MongoDB Realm is not setup.");
+                Assert.Ignore("Atlas App Services are not setup.");
             }
 
             AsyncContext.Run(async () =>

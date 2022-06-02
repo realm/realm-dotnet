@@ -24,17 +24,17 @@ namespace Realms.Sync
     public enum ConnectionState : byte
     {
         /// <summary>
-        /// The session is disconnected from the MongoDB Realm server.
+        /// The session is disconnected from Atlas Device Sync.
         /// </summary>
         Disconnected = 0,
 
         /// <summary>
-        /// The session is connecting to the MongoDB Realm server.
+        /// The session is connecting to the Atlas Device Sync.
         /// </summary>
         Connecting = 1,
 
         /// <summary>
-        /// The session is connected to the MongoDB Realm server.
+        /// The session is connected to the Atlas Device Sync.
         /// </summary>
         Connected = 2
     }

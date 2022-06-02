@@ -27,7 +27,7 @@ using Realms.Sync.Exceptions;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
+    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using Atlas Device Sync.
     /// There are two synchronization modes with their respective configurations - "partition" sync with <see cref="PartitionSyncConfiguration"/> allows you
     /// to split your data in separarate partitions and synchronize an entire partition with an entire Realm; "flexible" sync with
     /// <see cref="FlexibleSyncConfiguration"/> allows you to start with an empty Realm and send the server a set of queries which it will run and

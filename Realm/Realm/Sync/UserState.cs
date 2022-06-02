@@ -29,7 +29,7 @@ namespace Realms.Sync
         LoggedOut,
 
         /// <summary>
-        /// The user is logged in, and any Realms associated with it are synchronizing with MongoDB Realm.
+        /// The user is logged in, and any Realms associated with it are synchronizing with Atlas Device Sync.
         /// </summary>
         LoggedIn,
 

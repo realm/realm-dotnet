@@ -23,7 +23,7 @@ using Realms.Sync.Native;
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
-    /// An exception thrown from operations interacting with a MongoDB Realm app.
+    /// An exception thrown from operations interacting with a Atlas App Services app.
     /// </summary>
     public class AppException : Exception
     {

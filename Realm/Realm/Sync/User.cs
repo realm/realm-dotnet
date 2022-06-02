@@ -29,14 +29,14 @@ using Realms.Sync.Exceptions;
 namespace Realms.Sync
 {
     /// <summary>
-    /// This class represents a user in a MongoDB Realm app. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
+    /// This class represents a user in a Atlas App Services application. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
     /// A user can log in to the server and, if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
     /// It is possible to persist a user. By retrieving a user, there is no need to log in to the 3rd party provider again. Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
     /// </summary>
     public class User : IEquatable<User>
     {
         /// <summary>
-        /// Gets this user's refresh token. This is the user's credential for accessing MongoDB Realm data and should be treated as sensitive information.
+        /// Gets this user's refresh token. This is the user's credential for accessing MongoDB Atlas data and should be treated as sensitive information.
         /// </summary>
         /// <value>A unique string that can be used for refreshing the user's credentials.</value>
         public string RefreshToken
@@ -45,7 +45,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets this user's access token. This is the user's credential for accessing MongoDB Realm data and should be treated as sensitive information.
+        /// Gets this user's access token. This is the user's credential for accessing MongoDB Atlas data and should be treated as sensitive information.
         /// </summary>
         /// <value>A unique string that can be used to represent this user before the server.</value>
         public string AccessToken
@@ -63,7 +63,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets the Id of this user on MongoDB Realm.
+        /// Gets the Id of this user in Atlas App Services.
         /// </summary>
         /// <value>A string that uniquely identifies that user.</value>
         public string Id => Handle.GetUserId();
@@ -153,7 +153,7 @@ namespace Realms.Sync
         public ApiKeyClient ApiKeys { get; }
 
         /// <summary>
-        /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality for calling remote MongoDB Realm functions.
+        /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality for calling remote Atlas Functions.
         /// </summary>
         /// <value>A <see cref="FunctionsClient"/> instance scoped to this <see cref="User"/>.</value>
         /// <seealso href="https://docs.mongodb.com/realm/functions/">Functions Docs</seealso>
@@ -224,13 +224,13 @@ namespace Realms.Sync
         public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
 
         /// <summary>
-        /// Gets a client for interacting the with Firebase Cloud Messaging service exposed in MongoDB Realm.
+        /// Gets a client for interacting the with Firebase Cloud Messaging service exposed in Atlas App Services.
         /// </summary>
         /// <remarks>
-        /// The FCM service needs to be configured and enabled in the MongodB Realm UI before devices can register
+        /// The FCM service needs to be configured and enabled in the App Services UI before devices can register
         /// and receive push notifications.
         /// </remarks>
-        /// <param name="serviceName">The name of the service as configured in the MongoDB Realm UI.</param>
+        /// <param name="serviceName">The name of the service as configured in the App Services UI.</param>
         /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification">Send Mobile Push Notifications Docs</seealso>
         public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
@@ -242,7 +242,7 @@ namespace Realms.Sync
         /// Linking a user with more credentials, mean the user can login either of these credentials. It also
         /// makes it possible to "upgrade" an anonymous user by linking it with e.g. Email/Password credentials.
         /// <br/>
-        /// Note: It is not possible to link two existing users of MongoDB Realm. The provided credentials must not have been used by another user.
+        /// Note: It is not possible to link two existing users of Atlas App Services. The provided credentials must not have been used by another user.
         /// <br/>
         /// Note for email/password auth: To link a user with a new set of <see cref="Credentials.EmailPassword"/> credentials, you will need to first
         /// register these credentials by calling <see cref="App.EmailPasswordClient.RegisterUserAsync"/>.
@@ -402,7 +402,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// A class exposing functionality for calling remote MongoDB Realm functions.
+        /// A class exposing functionality for calling remote Atlas Functions.
         /// </summary>
         /// <seealso href="https://docs.mongodb.com/realm/functions/">Functions Docs</seealso>
         public class FunctionsClient
@@ -471,12 +471,12 @@ namespace Realms.Sync
             }
 
             /// <summary>
-            /// Registers the given Firebase Cloud Messaging registration token with the user's device on MongoDB Realm.
+            /// Registers the given Firebase Cloud Messaging registration token with the user's device on Atlas App Services.
             /// </summary>
             /// <param name="token">The FCM registration token.</param>
             /// <returns>
             /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
-            /// by the MongoDB Realm server and this device can now receive push notifications.
+            /// by Atlas App Services and this device can now receive push notifications.
             /// </returns>
             public Task RegisterDeviceAsync(string token)
             {
@@ -491,8 +491,8 @@ namespace Realms.Sync
             /// Deregister the user's device from Firebase Cloud Messaging.
             /// </summary>
             /// <returns>
-            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the devices registration token
-            /// was removed from the MongoDB Realm server and it will no longer receive push notifications.
+            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the device's registration token
+            /// was removed from Atlas App Services and it will no longer receive push notifications.
             /// </returns>
             public Task DeregisterDeviceAsync()
             {
