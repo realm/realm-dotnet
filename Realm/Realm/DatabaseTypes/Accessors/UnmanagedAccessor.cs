@@ -53,28 +53,24 @@ namespace Realms
         public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
             => throw new NotSupportedException("Using the GetBacklinks is only possible for managed (persisted) objects.");
 
-        public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName) => GetPropertyValue<IDictionary<string, TValue>>(propertyName);
+        public virtual IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName) => GetPropertyValue<IDictionary<string, TValue>>(propertyName);
 
-        public IList<T> GetListValue<T>(string propertyName) => GetPropertyValue<IList<T>>(propertyName);
+        public virtual IList<T> GetListValue<T>(string propertyName) => GetPropertyValue<IList<T>>(propertyName);
 
-        public ISet<T> GetSetValue<T>(string propertyName) => GetPropertyValue<ISet<T>>(propertyName);
+        public virtual ISet<T> GetSetValue<T>(string propertyName) => GetPropertyValue<ISet<T>>(propertyName);
 
-        public RealmValue GetValue(string propertyName) => GetPropertyValue<RealmValue>(propertyName);
+        public virtual RealmValue GetValue(string propertyName) => GetPropertyValue<RealmValue>(propertyName);
 
-        public void SetValue(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
+        public virtual void SetValue(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
 
-        public void SetValueUnique(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
+        public virtual void SetValueUnique(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
 
-        public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
+        public virtual void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
-            // TODO: implement me
-            throw new NotImplementedException();
         }
 
-        public void UnsubscribeFromNotifications()
+        public virtual void UnsubscribeFromNotifications()
         {
-            // TODO: implement me
-            throw new NotImplementedException();
         }
 
         public override string ToString()
@@ -103,6 +99,21 @@ namespace Realms
     {
         public GenericUnmanagedAccessor(Type type) : base(type)
         {
+        }
+
+        public override IList<T> GetListValue<T>(string propertyName)
+        {
+            return new List<T>();
+        }
+
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {
+            return new HashSet<T>(RealmSet<T>.Comparer);
+        }
+
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            return new Dictionary<string, TValue>();
         }
 
         protected override T GetPropertyValue<T>(string propertyName)

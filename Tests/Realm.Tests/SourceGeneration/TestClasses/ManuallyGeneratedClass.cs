@@ -79,16 +79,19 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             var unmanagedAccessor = _accessor;
             _accessor = (IManuallyGeneratedClassAccessor)managedAccessor;
 
-            // CopyToRealm
-            Integer = unmanagedAccessor.Integer;
-            if (!skipDefaults)
+            if (helper != null)
             {
-                IntegerList.Clear();
-            }
+                Integer = unmanagedAccessor.Integer;
 
-            foreach (var val in unmanagedAccessor.IntegerList)
-            {
-                IntegerList.Add(val);
+                if (!skipDefaults)
+                {
+                    IntegerList.Clear();
+                }
+
+                foreach (var val in unmanagedAccessor.IntegerList)
+                {
+                    IntegerList.Add(val);
+                }
             }
 
             if (_propertyChanged != null)
