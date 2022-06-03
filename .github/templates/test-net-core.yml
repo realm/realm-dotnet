@@ -3,29 +3,41 @@
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
-name: test-net-framework
-_: #@ template.replace(testDefinition(additionalInputs = [ "os", "framework"]))
+name: test-net-core
+_: #@ template.replace(testDefinition(additionalInputs = [ "framework"]))
 jobs:
   run-tests:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.framework }}, ${{ matrix.os }}
+    runs-on: ${{ matrix.os.runner }}
+    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJson(inputs.os) }}
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-latest
+          runtime: osx-x64
+        - runner: win81
+          runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
+        include:
+        - framework: net6.0
+          os:
+            runner: macos-arm
+            runtime: osx-arm64
     steps:
-      - name: Cleanup Workspace
-        run: Remove-Item ${{ github.workspace }}\* -Recurse -Force
-        if: matrix.os == 'win81'
       - #@ template.replace(checkoutCode())
+      - name: Cleanup Workspace
+        run: git clean -fdx
       - uses: #@ actionSetupDotnet
-        if: matrix.framework == 'net6.0'
+        if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
         with:
           dotnet-version: '6.0.x'
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}"))
+      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs
-      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os }}, ${{ matrix.framework }})")
+      - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")
