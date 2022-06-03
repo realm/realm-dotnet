@@ -60,10 +60,6 @@ namespace Realms.Native
 
         internal ulong schema_version;
 
-        internal IntPtr managed_migration_handle;
-
-        internal IntPtr managed_should_compact_delegate;
-
         [MarshalAs(UnmanagedType.U1)]
         internal bool enable_cache;
 
@@ -71,5 +67,16 @@ namespace Realms.Native
 
         [MarshalAs(UnmanagedType.U1)]
         internal bool use_legacy_guid_representation;
+
+        internal IntPtr managed_config;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool invoke_should_compact_callback;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool invoke_initial_data_callback;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool invoke_migration_callback;
     }
 }

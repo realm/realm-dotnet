@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using NUnitLite;
 
 namespace Realms.Tests
@@ -26,6 +28,8 @@ namespace Realms.Tests
     {
         public static int Main(string[] args)
         {
+            Console.WriteLine($"Running on {RuntimeInformation.OSDescription} / CPU {RuntimeInformation.ProcessArchitecture} / Framework {RuntimeInformation.FrameworkDescription}");
+
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
             var arguments = Sync.SyncTestHelpers.ExtractBaasSettings(args);
 

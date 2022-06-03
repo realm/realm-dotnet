@@ -24,10 +24,10 @@ jobs:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Weaver/Realm.Fody.Tests/*.csproj') }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r ${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }} --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r win-x64 --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/${{ (runner.os == 'macOS' && 'osx-x64') || (runner.os == 'Windows' && 'win-x64') || (runner.os == 'Linux' && 'linux-x64') || '???' }}'
+      run: echo '::set-output name=executable-path::./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/win-x64'
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results

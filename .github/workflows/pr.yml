@@ -77,7 +77,6 @@ jobs:
     uses: ./.github/workflows/test-net-core.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      os: '["macos-latest", "windows-latest", "ubuntu-latest", "win81"]'
       framework: '["net6.0"]'
   test-xamarinmacos:
     uses: ./.github/workflows/test-xamarinmacos.yml

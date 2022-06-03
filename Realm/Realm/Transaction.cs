@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
 
@@ -74,21 +75,34 @@ namespace Realms
 
         /// <summary>
         /// Use to save the changes to the realm. If <see cref="Transaction"/> is declared in a <c>using</c> block,
-        /// it must be used before the end of that block.
+        /// it must be used before the end of that block. It completes when the changes are effectively written to disk.
         /// </summary>
-        /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public async Task CommitAsync()
+        /// <remarks>
+        /// Cancelling the returned <see cref="Task"/> will not prevent the write to disk but
+        /// it will immediately resolve the task with a <see cref="TaskCanceledException"/>.
+        /// In fact, the commit action can't be stopped and continues running to completion in the background.<br/>
+        /// A use case for cancelling this action could be that you want to show users a pop-up indicating that the
+        /// data is being saved. But, you want to automatically close such pop-up after a certain amount of time.
+        /// Or, you may want to allow users to manually dismiss that pop-up.
+        /// </remarks>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting on the returned <see cref="Task"/>.
+        /// </param>
+        /// <returns>
+        /// An awaitable <see cref="Task"/> that completes when the committed changes are effectively written to disk.
+        /// </returns>
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             EnsureActionFeasibility("commit");
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out var synchronizationContext))
             {
                 Commit();
                 return;
             }
 
-            await _realm.SharedRealmHandle.CommitTransactionAsync();
+            await _realm.SharedRealmHandle.CommitTransactionAsync(synchronizationContext, cancellationToken);
             FinishTransaction();
         }
 

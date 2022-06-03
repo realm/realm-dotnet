@@ -342,8 +342,7 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(SubscriptionSet* subs, vo
                 }
                 catch (...) {
                     auto inner_ex = convert_exception();
-                    auto error_message = util::format("%1: %2", inner_ex.message, inner_ex.detail);
-                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(error_message));
+                    s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(inner_ex.to_string()));
                 }
             });
     });

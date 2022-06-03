@@ -59,7 +59,7 @@ jobs:
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
-  _: #@ template.replace(runNetCoreTests("[\"macos-latest\", \"windows-latest\", \"ubuntu-latest\", \"win81\"]", "[\"netcoreapp3.1\", \"net5.0\", \"net6.0\"]"))
+  _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net5.0\", \"net6.0\"]"))
   _: #@ template.replace(runTests("Xamarin.macOS"))
   _: #@ template.replace(runTests("Xamarin.iOS"))
   _: #@ template.replace(runTests("Xamarin.Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
@@ -76,7 +76,7 @@ jobs:
       - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '6.0.x'
-      - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
+      - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   test-weaver:
@@ -96,7 +96,7 @@ jobs:
       - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '6.0.x'
-      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0"))
+      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
       - name: Find Results file

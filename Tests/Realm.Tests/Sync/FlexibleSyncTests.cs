@@ -26,7 +26,6 @@ using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
-using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
@@ -1583,17 +1582,13 @@ namespace Realms.Tests.Sync
                 var errorTcs = new TaskCompletionSource<SessionException>();
                 var testGuid = Guid.NewGuid();
                 var config = await GetFLXIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler(error =>
-                {
-                    errorTcs.TrySetResult(error);
-                });
 
                 config.OnSessionError = (session, error) =>
                 {
                     errorTcs.TrySetResult(error);
                 };
 
-                var realm = await GetFLXIntegrationRealmAsync();
+                var realm = await GetRealmAsync(config);
 
                 realm.Subscriptions.Update(() =>
                 {
@@ -1606,7 +1601,7 @@ namespace Realms.Tests.Sync
                 });
 
                 var sessionError = await errorTcs.Task;
-                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.CompensatingWrite));
             });
         }
 
@@ -1615,13 +1610,13 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var errorTcs = new TaskCompletionSource<ClientResetException>();
+                var errorTcs = new TaskCompletionSource<SessionException>();
                 var testGuid = Guid.NewGuid();
                 var config = await GetFLXIntegrationConfigAsync();
-                config.ClientResetHandler = new ManualRecoveryHandler(error =>
+                config.OnSessionError = (session, error) =>
                 {
                     errorTcs.TrySetResult(error);
-                });
+                };
 
                 var realm = await GetRealmAsync(config);
 
@@ -1651,7 +1646,7 @@ namespace Realms.Tests.Sync
                 });
 
                 var sessionError = await errorTcs.Task;
-                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.WriteNotAllowed));
+                Assert.That(sessionError.ErrorCode, Is.EqualTo(ErrorCode.CompensatingWrite));
             });
         }
 
@@ -1767,6 +1762,135 @@ namespace Realms.Tests.Sync
                 Assert.That(subs.State, Is.EqualTo(SubscriptionSetState.Superseded));
                 Assert.That(subs.Version, Is.EqualTo(version));
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_Unnamed([Values(true, false)] bool openAsync)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    var query = r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+
+                    r.Subscriptions.Add(query);
+                };
+
+                using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+
+                if (openAsync)
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                }
+                else
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                }
+
+                var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
+                Assert.That(query.Count(), Is.EqualTo(2));
+                Assert.That(query, Is.EquivalentTo(new[] { 1.5, 2.5 }));
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_Named([Values(true, false)] bool openAsync)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    var query = r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.DoubleProperty > 2);
+
+                    r.Subscriptions.Add(query, new() { Name = "initial" });
+                };
+
+                using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+                Assert.That(realm.Subscriptions[0].Name, Is.EqualTo("initial"));
+
+                if (openAsync)
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
+                }
+                else
+                {
+                    Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
+                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                }
+
+                var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
+                Assert.That(query.Count(), Is.EqualTo(1));
+                Assert.That(query, Is.EquivalentTo(new[] { 2.5 }));
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_RunsOnlyOnce([Values(true, false)] bool openAsync)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var invocations = 0;
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    invocations++;
+                };
+
+                for (var i = 0; i < 5; i++)
+                {
+                    using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+                    Assert.That(invocations, Is.EqualTo(1));
+                }
+            });
+        }
+
+        [Test]
+        public void Integration_InitialSubscriptions_PropagatesErrors([Values(true, false)] bool openAsync)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                var dummyException = new Exception("Very careless");
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    var query = r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid);
+
+                    r.Subscriptions.Add(query);
+
+                    throw dummyException;
+                };
+
+                try
+                {
+                    using var shouldFailRealm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+                    Assert.Fail("Expected an exception to occur");
+                }
+                catch (AggregateException ex)
+                {
+                    Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
+                }
+
+                // We failed the first time, we should not see PopulateInitialSubscriptions get invoked the second time
+                using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
+                Assert.That(realm.Subscriptions.Count, Is.Zero);
             });
         }
 
