@@ -780,6 +780,15 @@ Analytics payload
 
             helperType.Methods.Add(createInstance);
 
+            var createAccessor = new MethodDefinition("CreateAccessor", DefaultMethodAttributes, _references.ManagedAccessor);
+            {
+                var il = createAccessor.Body.GetILProcessor();
+                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Ret);
+            }
+
+            helperType.Methods.Add(createAccessor);
+
             var copyToRealm = new MethodDefinition("CopyToRealm", DefaultMethodAttributes, _moduleDefinition.TypeSystem.Void);
             {
                 // This roughly translates to

@@ -605,7 +605,7 @@ namespace Realms
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            obj.CreateAndSetAccessor(handle, this, metadata, update: false, skipDefaults: true);
+            obj.CreateAndSetAccessor(handle, this, metadata, copyToRealm: true, update: false, skipDefaults: true);
         }
 
         private void AddInternal(IRealmObject obj, Type objectType, bool update)
@@ -631,7 +631,7 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
-            obj.CreateAndSetAccessor(objectHandle, this, metadata, update, skipDefaults: isNew);
+            obj.CreateAndSetAccessor(objectHandle, this, metadata, copyToRealm: true, update: update, skipDefaults: isNew);
         }
 
         private bool ShouldAddNewObject(IRealmObjectBase obj)

@@ -44,11 +44,13 @@ namespace Realms.Extensions
             return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
-        public static void CreateAndSetAccessor(this ISettableManagedAccessor iro, ObjectHandle handle, Realm realm, Metadata metadata, bool update = false, bool skipDefaults = false)
+        public static void CreateAndSetAccessor(this ISettableManagedAccessor iro,
+            ObjectHandle handle, Realm realm, Metadata metadata, 
+            bool copyToRealm = false, bool update = false, bool skipDefaults = false)
         {
             var accessor = metadata.Helper.CreateAccessor() ?? new GenericManagedAccessor();
             accessor.Initialize(realm, handle, metadata);
-            iro.SetManagedAccessor(accessor, metadata.Helper, update, skipDefaults);
+            iro.SetManagedAccessor(accessor, copyToRealm ? metadata.Helper : null, update, skipDefaults);
         }
     }
 }
