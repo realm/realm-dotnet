@@ -18,21 +18,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Realms.Schema;
 
 namespace Realms
 {
-    internal class UnmanagedAccessor
-        : IRealmAccessor
+    // Should be used by generator and undocumented
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public abstract class UnmanagedAccessor : IRealmAccessor
     {
-        private Type _objectType;
-
-        public UnmanagedAccessor(Type objectType)
-        {
-            _objectType = objectType;
-        }
+        private readonly Type _objectType;
 
         public bool IsManaged => false;
 
@@ -48,57 +45,36 @@ namespace Realms
 
         public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
-        public IQueryable<T> GetBacklinks<T>(string propertyName)
-            where T : IRealmObjectBase
+        public UnmanagedAccessor(Type objectType)
         {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
-
-            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
+            _objectType = objectType;
         }
 
-        public static ThreadSafeReference GetSafeReference()
-        {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
+        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
+            => throw new NotSupportedException("Using the GetBacklinks is only possible for managed (persisted) objects.");
 
-            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
-        }
+        public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName) => GetPropertyValue<IDictionary<string, TValue>>(propertyName);
 
-        public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            return new Dictionary<string, TValue>();
-        }
+        public IList<T> GetListValue<T>(string propertyName) => GetPropertyValue<IList<T>>(propertyName);
 
-        public IList<T> GetListValue<T>(string propertyName)
-        {
-            return new List<T>();
-        }
+        public ISet<T> GetSetValue<T>(string propertyName) => GetPropertyValue<ISet<T>>(propertyName);
 
-        public ISet<T> GetSetValue<T>(string propertyName)
-        {
-            return new HashSet<T>(RealmSet<T>.Comparer);
-        }
+        public RealmValue GetValue(string propertyName) => GetPropertyValue<RealmValue>(propertyName);
 
-        public RealmValue GetValue(string propertyName)
-        {
-            throw new NotImplementedException("This should not be used for now");
-        }
+        public void SetValue(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
 
-        public void SetValue(string propertyName, RealmValue val)
-        {
-            throw new NotImplementedException("This should not be used for now");
-        }
-
-        public void SetValueUnique(string propertyName, RealmValue val)
-        {
-            throw new NotImplementedException("This should not be used for now");
-        }
+        public void SetValueUnique(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
 
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
+            // TODO: implement me
+            throw new NotImplementedException();
         }
 
         public void UnsubscribeFromNotifications()
         {
+            // TODO: implement me
+            throw new NotImplementedException();
         }
 
         public override string ToString()
@@ -108,7 +84,35 @@ namespace Realms
 
         public override bool Equals(object obj)
         {
-            return false;
+            return ReferenceEquals(this, obj);
+        }
+
+        protected virtual T GetPropertyValue<T>(string propertyName)
+        {
+            return (T)GetType().GetProperty(propertyName).GetValue(this);
+        }
+
+        protected virtual void SetPropertyValue(string propertyName, object value)
+        {
+            GetType().GetProperty(propertyName).SetValue(this, value);
+        }
+    }
+
+    // Should be used by the weaver and undocumented
+    internal class GenericUnmanagedAccessor : UnmanagedAccessor
+    {
+        public GenericUnmanagedAccessor(Type type) : base(type)
+        {
+        }
+
+        protected override T GetPropertyValue<T>(string propertyName)
+        {
+            throw new NotSupportedException("This should not be used for now");
+        }
+
+        protected override void SetPropertyValue(string propertyName, object value)
+        {
+            throw new NotSupportedException("This should not be used for now");
         }
     }
 }
