@@ -141,7 +141,7 @@ namespace Realms
 
         internal RealmObjectBase()
         {
-            _accessor = new UnmanagedAccessor(GetType());
+            _accessor = new GenericUnmanagedAccessor(GetType());
         }
 
         /// <summary>

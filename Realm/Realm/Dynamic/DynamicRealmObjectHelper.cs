@@ -61,5 +61,7 @@ namespace Realms.Dynamic
             value = instance.ObjectSchema.PrimaryKeyProperty.Value.PropertyInfo.GetValue(instance);
             return true;
         }
+
+        public ManagedAccessor CreateAccessor() => null;
     }
 }

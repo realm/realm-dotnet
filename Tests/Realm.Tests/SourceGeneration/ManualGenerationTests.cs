@@ -28,7 +28,7 @@ using Realms.Tests.SourceGeneration.TestClasses;
 namespace Realms.Tests.SourceGeneration
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ManulGenerationTests : RealmInstanceTest
+    public class ManualGenerationTests : RealmInstanceTest
     {
         private RealmConfiguration _config;
 
