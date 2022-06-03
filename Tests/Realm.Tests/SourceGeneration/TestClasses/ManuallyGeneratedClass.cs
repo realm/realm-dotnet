@@ -26,16 +26,7 @@ using Realms.Weaving;
 
 namespace Realms.Tests.SourceGeneration.TestClasses
 {
-    public static partial class Schemas
-    {
-        //TODO We can generate this manually
-        //At the moment this has no effect
-        public static ObjectSchema ManuallyGeneratedClassSchema = new ObjectSchema
-            .Builder(typeof(ManualllyGeneratedClass))
-            .Build();
-    }
-
-    public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
+    public partial class ManualllyGeneratedClass : IRealmObject
     {
         //public int Integer { get; set; }
 
@@ -58,19 +49,13 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         [WovenProperty]
         public IList<int> IntegerList => _accessor.GetListValue<int>("IntegerList");
-
     }
 
-    //TODO To be compatible with current implementation
-
-    //TODO Do we let the current module initializer created in the weaver add the schema of the new
-    //generated objects too?
-    //Otherwise we could use the ModuleInit from Fody (it's practically the same)
-    //There is also a new attribute, but available only from c# 9 and .NET 5
     [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
-    public partial class ManualllyGeneratedClass : IRealmObject
+    public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
-        private IRealmAccessor _unmanagedAccessor;
+        //TODO an idea;
+        public static ObjectSchema RealmSchema; 
 
         #region IRealmObject implementation
         private IRealmAccessor _accessor;
@@ -94,13 +79,35 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            //TODO Can we do it differently?
-            _unmanagedAccessor = _accessor;
+            var unmanagedAccessor = _accessor;
             _accessor = managedAccessor;
 
-            helper?.CopyToRealm(this, update, skipDefaults);
+            // We don't call helper.CopyToRealm for simplicity, so we don't need to pass the unmanaged accessor
+            if (helper != null)
+            {
+                //List property
 
-            _unmanagedAccessor = null;
+                var unmnagedList = unmanagedAccessor.GetListValue<int>("IntegerList");
+                var list = managedAccessor.GetListValue<int>("IntegerList");
+
+                if (!skipDefaults)
+                {
+                    list.Clear();
+                }
+
+                if (true)
+                {
+                    foreach (var val in unmnagedList)
+                    {
+                        list.Add(val);
+                    }
+                }
+
+                //Scalar property
+
+                var unmanagedVal = unmanagedAccessor.GetValue("Integer");
+                managedAccessor.SetValue("Integer", unmanagedVal);
+            }
 
             if (_propertyChanged != null)
             {
@@ -161,39 +168,19 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             _accessor.UnsubscribeFromNotifications();
         }
 
+        public interface IManuallyGeneratedClass
+        {
+            public int Integer { get; set; }
+
+            public IList<int> IntegerList { get; }
+
+        }
+
         internal class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
-                var castInstance = (ManualllyGeneratedClass)instance;
-
-                //TODO Maybe we need a more clever way of passing the unmanagedAccessor?
-
-                var unmanagedAccessor = castInstance._unmanagedAccessor;
-                var managedAccessor = castInstance.Accessor;
-
-                //List property
-
-                var unmnagedList = unmanagedAccessor.GetListValue<int>("IntegerList");
-                var list = managedAccessor.GetListValue<int>("IntegerList");
-
-                if (!skipDefaults)
-                {
-                    list.Clear();
-                }
-
-                if (true)
-                {
-                    foreach (var val in unmnagedList)
-                    {
-                        list.Add(val);
-                    }
-                }
-
-                //Scalar property
-
-                var unmanagedVal = unmanagedAccessor.GetValue("Integer");
-                managedAccessor.SetValue("Integer", unmanagedVal);
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
             public IRealmObjectBase CreateInstance()
