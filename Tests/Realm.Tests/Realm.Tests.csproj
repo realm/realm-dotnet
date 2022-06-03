@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <LocalDev Condition="'$(LocalDev)' == ''">false</LocalDev>
-    <!-- When you want to do local testing of .net6, localDev must be set to tru4 because because of a .NET bug described a few lines below -->
+    <!-- When you want to do local testing of .net6, localDev must be set to true because because of a .NET bug described a few lines below -->
     <LocalDev Condition="'$(Net6VsRunner)' == true">true</LocalDev>
     <UnityBuild>false</UnityBuild>
   </PropertyGroup>
