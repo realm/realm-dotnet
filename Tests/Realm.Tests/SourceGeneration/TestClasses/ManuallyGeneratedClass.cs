@@ -45,13 +45,21 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         [WovenProperty]
         public IList<int> IntegerList => _accessor.IntegerList;
+
+        /*TODO:
+         * - Generate the schema
+         * - Modify ObjectSchema to use the generated schema (static prop)
+         * - Remove WovenProperty
+         * - Check how it should work with mapped properties
+         * - See if we can cache column key for properties in managed accessor
+         */
     }
 
     [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
     public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
         //TODO Need to fill out
-        public static ObjectSchema RealmSchema; 
+        public static ObjectSchema RealmSchema;
 
         #region IRealmObject implementation
 
@@ -185,21 +193,23 @@ namespace Realm.Generated
         IList<int> IntegerList { get; }
     }
 
-    internal class ManuallyGeneratedClassManagedAccessor : ManagedAccessor, IManuallyGeneratedClassAccessor
+    internal class ManuallyGeneratedClassManagedAccessor 
+        : ManagedAccessor, IManuallyGeneratedClassAccessor
     {
         public int Integer
         {
-            get => (int)base.GetValue(nameof(Integer));
-            set => base.SetValue(nameof(Integer), value);
+            get => (int)GetValue(nameof(Integer));
+            set => SetValue(nameof(Integer), value);
         }
 
         public IList<int> IntegerList
         {
-            get => base.GetListValue<int>(nameof(IntegerList));
+            get => GetListValue<int>(nameof(IntegerList));
         }
     }
 
-    internal class ManuallyGeneratedClassUnmanagedAccessor : UnmanagedAccessor, IManuallyGeneratedClassAccessor
+    internal class ManuallyGeneratedClassUnmanagedAccessor 
+        : UnmanagedAccessor, IManuallyGeneratedClassAccessor
     {
         public int Integer { get; set; }
 
