@@ -54,7 +54,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
     public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
-        //TODO an idea;
+        //TODO Need to fill out
         public static ObjectSchema RealmSchema; 
 
         #region IRealmObject implementation
@@ -168,7 +168,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             _accessor.UnsubscribeFromNotifications();
         }
 
-        public interface IManuallyGeneratedClass
+        public interface IManuallyGeneratedClass : IRealmAccessor
         {
             public int Integer { get; set; }
 
