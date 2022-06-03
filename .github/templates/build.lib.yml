@@ -71,7 +71,7 @@
     #@ end
 #@ end
 
-#@ def runNetCoreTests(os, framework):
+#@ def runNetCoreTests(frameworks):
 test-net-core:
   if: #@ ignoreSkippedJobsCondition
   name: Test
@@ -80,8 +80,7 @@ test-net-core:
   uses: "./.github/workflows/test-net-core.yml"
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    os: #@ os
-    framework: #@ framework
+    framework: #@ frameworks
 #@ end
 
 #@ def buildUnity():

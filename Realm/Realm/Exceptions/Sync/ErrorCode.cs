@@ -151,6 +151,12 @@ namespace Realms.Sync.Exceptions
         WriteNotAllowed = 230,
 
         /// <summary>
+        /// Client attempted a write that is disallowed by permissions, or modifies an
+        /// object outside the current query, and the server undid the modification.
+        /// </summary>
+        CompensatingWrite = 231,
+
+        /// <summary>
         /// Your request parameters did not validate.
         /// </summary>
         InvalidParameters = 601,
