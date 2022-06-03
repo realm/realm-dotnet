@@ -33,6 +33,9 @@ To facilitate local development setups, the following files are ignored, but it 
     </PropertyGroup>
   </Project>
   ```
+  However, if you need to run tests for .net6, set `Net6VsRunner` to true like so:
+  `<Net6VsRunner>true</Net6VsRunner>`
+  Note that setting `Net6VsRunner` always sets `LocalDev`. This is because there's a bug on older .NET versions that prevents restore from working when `TargetFrameworks` includes .net5  and upwards.
 
 After adding them, restart VS (if running) to have it pick up the changes.
 
