@@ -93,7 +93,10 @@ jobs:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net5.0", "linux-x64"))
+      - uses: #@ actionSetupDotnet
+        with:
+          dotnet-version: '6.0.x'
+      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
       - name: Find Results file
