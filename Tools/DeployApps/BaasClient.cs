@@ -66,7 +66,6 @@ namespace Baas
         private readonly HttpClient _client = new HttpClient();
 
         private readonly string _clusterName;
-        public string Differentiator { get; }
 
         [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We don't own the writer")]
         private readonly TextWriter _output;
@@ -97,6 +96,8 @@ namespace Baas
         }
 
         private string _appSuffix => $"-{_shortDifferentiator}-{_clusterName}";
+
+        public string Differentiator { get; }
 
         private BaasClient(Uri baseUri, string differentiator, TextWriter output, string clusterName = null)
         {
