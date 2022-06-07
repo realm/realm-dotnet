@@ -65,7 +65,6 @@ namespace Realms.Tests.Sync
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
         };
 
-        public static string CustomUserDataDB => $"UserData_{_dbSuffix}";
         public static string RemoteMongoDBName => $"Schema_{_dbSuffix}";
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)

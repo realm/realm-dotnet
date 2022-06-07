@@ -339,7 +339,7 @@ namespace Baas
                 {
                     mongo_service_id = mongoServiceId,
                     enabled = true,
-                    database_name = $"UserData_{Differentiator}",
+                    database_name = $"Schema_{Differentiator}",
                     collection_name = "users",
                     user_id_field = "user_id"
                 });
