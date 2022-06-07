@@ -43,7 +43,8 @@ deploy-apps:
       dotnet-version: '6.0.x'
   - #@ setupNugetCache([ "Tools/DeployApps" ])
   - name: Deploy Apps
-    run: #@ "dotnet run Tools/DeployApps --baasurl=" + secret_BaseUrl + " --baascluster=${{ needs.deploy-cluster.outputs.clusterName }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId + " --baasdifferentiator=${{ matrix.differentiator }}"
+    run: #@ "dotnet run . --baasurl=" + secret_BaseUrl + " --baascluster=${{ needs.deploy-cluster.outputs.clusterName }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId + " --baasdifferentiator=${{ matrix.differentiator }}"
+    working-directory: Tools/DeployApps
 #@ end
 
 #@ def cleanupBaas(dependencies = []):
