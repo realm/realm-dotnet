@@ -21,33 +21,18 @@
 #@ def deployBaas(targets = []):
 #@ differentiators = []
 #@ for target in targets:
-#@   differentiators.append(getJobName("", target))
+#@   differentiators.append('"' + getJobName("", target) + '"')
 #@ end
 deploy-cluster:
   uses: ./.github/workflows/deploy-baas.yml
+  with:
+    differentiators: #@ '[' + ", ".join(differentiators) + ']'
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
     AtlasBaseUrl: #@ secret_AtlasBaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
-deploy-apps:
-  name: Deploy Apps
-  needs: deploy-cluster
-  runs-on: ubuntu-latest
-  strategy:
-    matrix:
-      differentiator: #@ differentiators
-  if: #@ ignoreSkippedJobsCondition
-  steps:
-  - #@ template.replace(checkoutCode())
-  - uses: #@ actionSetupDotnet
-    with:
-      dotnet-version: '6.0.x'
-  - #@ setupNugetCache([ "Tools/DeployApps" ])
-  - name: Deploy Apps
-    run: #@ "dotnet run . --baasurl=" + secret_BaseUrl + " --baascluster=${{ needs.deploy-cluster.outputs.clusterName }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId + " --baasdifferentiator=${{ matrix.differentiator }}"
-    working-directory: Tools/DeployApps
 #@ end
 
 #@ def cleanupBaas(dependencies = []):
@@ -78,7 +63,6 @@ cleanup-cluster:
     - build-packages
     #@ if runSyncTests:
     - deploy-cluster
-    - deploy-apps
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}

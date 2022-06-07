@@ -1,6 +1,10 @@
 name: deploy-baas
 "on":
   workflow_call:
+    inputs:
+      differentiators:
+        required: true
+        type: string
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
@@ -40,3 +44,23 @@ jobs:
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
         differentiator: realm-dotnet
+  deploy-apps:
+    name: Deploy Apps
+    needs: deploy-baas
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        differentiator: ${{ fromJson(inputs.differentiators) }}
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Deploy Apps
+      run: dotnet run . --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      working-directory: Tools/DeployApps
