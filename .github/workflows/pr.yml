@@ -147,6 +147,7 @@ jobs:
     needs:
     - build-packages
     - deploy-cluster
+    - deploy-apps
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}

@@ -73,6 +73,7 @@ cleanup-cluster:
     - build-packages
     #@ if runSyncTests:
     - deploy-cluster
+    - deploy-apps
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
