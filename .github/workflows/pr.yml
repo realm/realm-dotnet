@@ -36,7 +36,7 @@ jobs:
     strategy:
       matrix:
         differentiator:
-        - test-code-coverage
+        - code-coverage
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     steps:
     - name: Checkout code

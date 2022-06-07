@@ -35,12 +35,12 @@ jobs:
     strategy:
       matrix:
         differentiator:
-        - test-net-framework
-        - test-code-coverage
-        - test-uwp-managed
-        - test-xamarinmacos
-        - test-xamarinios
-        - test-xamarinandroid
+        - net-framework
+        - code-coverage
+        - uwp-managed
+        - xamarinmacos
+        - xamarinios
+        - xamarinandroid
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     steps:
     - name: Checkout code

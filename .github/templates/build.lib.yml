@@ -12,13 +12,16 @@
 #@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
 
 #@ def getJobName(prefix, name):
-#@ return prefix + "-" + name.replace(".", "").replace(" ", "-").lower()
+#@ if (prefix != ""):
+#@   prefix = prefix + "-"
+#@ end
+#@ return prefix + name.replace(".", "").replace(" ", "-").lower()
 #@ end
 
 #@ def deployBaas(targets = []):
 #@ differentiators = []
 #@ for target in targets:
-#@   differentiators.append(getJobName("test", target))
+#@   differentiators.append(getJobName("", target))
 #@ end
 deploy-cluster:
   uses: ./.github/workflows/deploy-baas.yml
