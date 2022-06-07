@@ -53,6 +53,7 @@ deploy-apps:
 #@ end
 cleanup-cluster:
   uses: ./.github/workflows/cleanup-baas.yml
+  if: always()
   name: Cleanup
   needs: #@ needs
   secrets:

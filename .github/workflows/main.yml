@@ -331,6 +331,7 @@ jobs:
         retention-days: 30
   cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
+    if: always()
     name: Cleanup
     needs:
     - test-net-framework
