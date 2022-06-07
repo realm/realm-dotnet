@@ -82,9 +82,9 @@ namespace Baas
                     return _differentiator;
                 }
 
-                using var md5 = MD5.Create();
+                using var sha = SHA256.Create();
                 byte[] inputBytes = Encoding.ASCII.GetBytes(_differentiator);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
+                byte[] hashBytes = sha.ComputeHash(inputBytes);
 
                 var sb = new StringBuilder();
                 for (var i = 0; i < 4; i++)
@@ -139,6 +139,11 @@ namespace Baas
 
         public static async Task<(BaasClient Client, Uri BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
         {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
             var result = new List<string>();
 
             string baasCluster = null;
@@ -171,7 +176,6 @@ namespace Baas
             var client = string.IsNullOrEmpty(baasCluster)
                 ? await Docker(baseUri, differentiator, output)
                 : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
-
 
             return (client, baseUri, result.ToArray());
 
