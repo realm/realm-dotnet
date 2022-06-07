@@ -22,6 +22,6 @@ jobs:
         shell: powershell
       - #@ template.replace(buildTests("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateKeyFile="${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", PackageCertificatePassword='"${{ secrets.Pfx_Password }}"', UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
       - name: Run the tests
-        run: #@ "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '" + baasTestArgs + "'"
+        run: #@ "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '" + baasTestArgs("uwp-managed") + "'"
         shell: powershell
       - #@ publishTestsResults("${{ env.TEST_RESULTS }}", "UWP Managed")

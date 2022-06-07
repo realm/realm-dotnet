@@ -15,5 +15,5 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(buildTests("Tests/Tests.XamarinMac"))
       - name: Run the tests
-        run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All" + baasTestArgs
+        run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All" + baasTestArgs("xamarinmacos")
       - #@ publishTestsResults("TestResults.macOS.xml", "Xamarin.macOS")

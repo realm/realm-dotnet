@@ -1,10 +1,6 @@
 name: deploy-baas
 "on":
   workflow_call:
-    inputs:
-      name:
-        required: true
-        type: string
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
@@ -25,7 +21,7 @@ env:
 jobs:
   deploy-baas:
     runs-on: ubuntu-latest
-    name: ${{ inputs.name }}
+    name: Deploy Cluster
     outputs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
@@ -43,4 +39,4 @@ jobs:
         atlasUrl: ${{ secrets.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        differentiator: ${{ inputs.name }}
+        differentiator: realm-dotnet

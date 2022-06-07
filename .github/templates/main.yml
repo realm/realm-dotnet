@@ -35,12 +35,7 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  _: #@ template.replace(deployBaas(".NET Framework"))
-  _: #@ template.replace(deployBaas("UWP Managed"))
-  _: #@ template.replace(deployBaas("Xamarin.macOS"))
-  _: #@ template.replace(deployBaas("Xamarin.iOS"))
-  _: #@ template.replace(deployBaas("Xamarin.Android"))
-  _: #@ template.replace(deployBaas("Code Coverage"))
+  _: #@ template.replace(deployBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "Xamarin.iOS", "Xamarin.Android"]))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -113,9 +108,4 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-  _: #@ template.replace(cleanupBaas(".NET Framework"))
-  _: #@ template.replace(cleanupBaas("UWP Managed"))
-  _: #@ template.replace(cleanupBaas("Xamarin.macOS"))
-  _: #@ template.replace(cleanupBaas("Xamarin.iOS"))
-  _: #@ template.replace(cleanupBaas("Xamarin.Android"))
-  _: #@ template.replace(cleanupBaas("Code Coverage"))
+  _: #@ template.replace(cleanupBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "Xamarin.iOS", "Xamarin.Android"]))

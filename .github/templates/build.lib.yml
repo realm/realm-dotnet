@@ -1,3 +1,6 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet", "setupNugetCache")
+
 #@ isRelease = "contains(github.head_ref, 'release')"
 
 #@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
@@ -12,30 +15,46 @@
 #@ return prefix + "-" + name.replace(".", "").replace(" ", "-").lower()
 #@ end
 
-#@ def deployBaas(name):
-#@yaml/text-templated-strings
-(@= getJobName("baas", name) @):
+#@ def deployBaas(targets = []):
+#@ differentiators = []
+#@ for target in targets:
+#@   differentiators.append(getJobName("test", target))
+#@ end
+deploy-cluster:
   uses: ./.github/workflows/deploy-baas.yml
-  name: BaaS
-  with:
-    name: #@ name
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
     AtlasBaseUrl: #@ secret_AtlasBaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
+deploy-apps:
+  name: Deploy Apps
+  needs: deploy-cluster
+  runs-on: ubuntu-latest
+  strategy:
+    matrix:
+      differentiator: #@ differentiators
+  if: #@ ignoreSkippedJobsCondition
+  steps:
+  - #@ template.replace(checkoutCode())
+  - uses: #@ actionSetupDotnet
+    with:
+      dotnet-version: '6.0.x'
+  - #@ setupNugetCache([ "Tools/DeployApps" ])
+  - name: Deploy Apps
+    run: #@ "dotnet run Tools/DeployApps --baasurl=" + secret_BaseUrl + " --baascluster=${{ needs.deploy-cluster.outputs.clusterName }} --baasapikey=" + secret_AtlasPublicKey + " --baasprivateapikey=" + secret_AtlasPrivateKey + " --baasprojectid=" + secret_AtlasProjectId + " --baasdifferentiator=${{ matrix.differentiator }}"
 #@ end
 
-#@ def cleanupBaas(name):
-#@yaml/text-templated-strings
-(@= getJobName("cleanup", name) @):
+#@ def cleanupBaas(dependencies = []):
+#@ needs = []
+#@ for dependency in dependencies:
+#@   needs.append(getJobName("test", dependency))
+#@ end
+cleanup-cluster:
   uses: ./.github/workflows/cleanup-baas.yml
   name: Cleanup
-  needs:
-    - #@ getJobName("test", name)
-  with:
-    name: #@ name
+  needs: #@ needs
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
@@ -53,11 +72,11 @@
   needs:
     - build-packages
     #@ if runSyncTests:
-    - #@ getJobName("baas", name)
+    - deploy-cluster
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    clusterName: #@ "${{ needs." + getJobName("baas", name) + ".outputs.clusterName }}"
+    clusterName: #@ "${{ needs.deploy-cluster.outputs.clusterName }}"
   secrets:
     #@ if runSyncTests:
     AtlasProjectId: #@ secret_AtlasProjectId

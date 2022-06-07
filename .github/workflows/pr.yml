@@ -21,17 +21,42 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  baas-code-coverage:
+  deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
-    name: BaaS
-    with:
-      name: Code Coverage
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
       AtlasBaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+  deploy-apps:
+    name: Deploy Apps
+    needs: deploy-cluster
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        differentiator:
+        - test-code-coverage
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('Tools/DeployApps/*.csproj') }}
+    - name: Deploy Apps
+      run: dotnet run Tools/DeployApps --baasurl=${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }} --baascluster=${{ needs.deploy-cluster.outputs.clusterName }} --baasapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }} --baasprivateapikey=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }} --baasprojectid=${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }} --baasdifferentiator=${{ matrix.differentiator }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -55,7 +80,7 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.baas-net-framework.outputs.clusterName }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
   test-uwp-managed:
     uses: ./.github/workflows/test-uwp-managed.yml
@@ -65,7 +90,7 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.baas-uwp-managed.outputs.clusterName }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
       Pfx_Password: ${{ secrets.Pfx_Password }}
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
@@ -86,7 +111,7 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.baas-xamarinmacos.outputs.clusterName }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
   test-xamarinios:
     uses: ./.github/workflows/test-xamarinios.yml
@@ -96,7 +121,7 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.baas-xamarinios.outputs.clusterName }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
   test-xamarinandroid:
     uses: ./.github/workflows/test-xamarinandroid.yml
@@ -106,7 +131,7 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.baas-xamarinandroid.outputs.clusterName }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
       AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
       AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
@@ -121,22 +146,20 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    - baas-code-coverage
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.baas-code-coverage.outputs.clusterName }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-  cleanup-code-coverage:
+  cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
     name: Cleanup
     needs:
     - test-code-coverage
-    with:
-      name: Code Coverage
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}

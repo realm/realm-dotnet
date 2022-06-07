@@ -155,4 +155,10 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
+      <Link>Sync\BaasClient.cs</Link>
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
