@@ -39,6 +39,7 @@ namespace Realms.Tests.Sync
         };
 
         private static Uri _baseUri;
+        private static string _dbSuffix;
 
         static SyncTestHelpers()
         {
@@ -63,6 +64,9 @@ namespace Realms.Tests.Sync
             BaseFilePath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"rt-sync-{System.Diagnostics.Process.GetCurrentProcess().Id}-{_appCounter++}")).FullName
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
         };
+
+        public static string CustomUserDataDB => $"UserData_{_dbSuffix}";
+        public static string RemoteMongoDBName => $"Schema_{_dbSuffix}";
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
         {
@@ -111,6 +115,7 @@ namespace Realms.Tests.Sync
             if (client != null)
             {
                 _baseUri = baseUri;
+                _dbSuffix = client.Differentiator;
 
                 _appIds = await client.GetOrCreateApps();
             }
@@ -151,6 +156,7 @@ namespace Realms.Tests.Sync
 #endif
 
             client ??= await BaasClient.Docker(_baseUri, "local", TestHelpers.Output);
+            _dbSuffix = client.Differentiator;
 
             using (client)
             {

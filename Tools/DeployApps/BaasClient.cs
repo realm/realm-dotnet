@@ -66,7 +66,7 @@ namespace Baas
         private readonly HttpClient _client = new HttpClient();
 
         private readonly string _clusterName;
-        private readonly string _differentiator;
+        public string Differentiator { get; }
 
         [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We don't own the writer")]
         private readonly TextWriter _output;
@@ -77,13 +77,13 @@ namespace Baas
         {
             get
             {
-                if (_differentiator.Length < 8)
+                if (Differentiator.Length < 8)
                 {
-                    return _differentiator;
+                    return Differentiator;
                 }
 
                 using var sha = SHA256.Create();
-                byte[] inputBytes = Encoding.ASCII.GetBytes(_differentiator);
+                byte[] inputBytes = Encoding.ASCII.GetBytes(Differentiator);
                 byte[] hashBytes = sha.ComputeHash(inputBytes);
 
                 var sb = new StringBuilder();
@@ -103,7 +103,7 @@ namespace Baas
             _client.BaseAddress = new Uri(baseUri, "api/admin/v3.0/");
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
             _clusterName = clusterName;
-            _differentiator = differentiator;
+            Differentiator = differentiator;
             _output = output;
         }
 
@@ -306,7 +306,7 @@ namespace Baas
                 sync = new
                 {
                     state = "enabled",
-                    database_name = $"PBS_{_differentiator}_{partitionKeyType}",
+                    database_name = $"PBS_{Differentiator}_{partitionKeyType}",
                     partition = new
                     {
                         key = "realm_id",
@@ -327,9 +327,9 @@ namespace Baas
 
             if (setupCollections)
             {
-                (var salesSchema, var salesRules) = Schemas.Sales(partitionKeyType, _differentiator);
-                (var usersSchema, var usersRules) = Schemas.Users(partitionKeyType, _differentiator);
-                (var foosSchema, var foosRules) = Schemas.Foos(partitionKeyType, _differentiator);
+                (var salesSchema, var salesRules) = Schemas.Sales(partitionKeyType, Differentiator);
+                (var usersSchema, var usersRules) = Schemas.Users(partitionKeyType, Differentiator);
+                (var foosSchema, var foosRules) = Schemas.Foos(partitionKeyType, Differentiator);
 
                 await CreateSchema(app, mongoServiceId, salesSchema, salesRules);
                 await CreateSchema(app, mongoServiceId, usersSchema, usersRules);
@@ -339,7 +339,7 @@ namespace Baas
                 {
                     mongo_service_id = mongoServiceId,
                     enabled = true,
-                    database_name = $"UserData_{_differentiator}",
+                    database_name = $"UserData_{Differentiator}",
                     collection_name = "users",
                     user_id_field = "user_id"
                 });
@@ -357,7 +357,7 @@ namespace Baas
                 flexible_sync = new
                 {
                     state = "enabled",
-                    database_name = $"FLX_{_differentiator}",
+                    database_name = $"FLX_{Differentiator}",
                     queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int" },
                     permissions = new
                     {
