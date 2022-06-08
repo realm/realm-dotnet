@@ -1,5 +1,8 @@
 ﻿using Realms.Tests;
 using NUnitLite;
+using System.Diagnostics;
+using System.Text;
+using NUnit.Common;
 
 namespace Tests.Maui;
 
@@ -9,12 +12,12 @@ public static class MauiProgram
     {
         try
         {
-            var args = new[] { "--labels=All" };
+            var args = new[] { "--labels=After" };
             var autorun = new AutoRun(typeof(TestHelpers).Assembly);
             var arguments = Realms.Tests.Sync.SyncTestHelpers.ExtractBaasSettings(args);
 
-            using var reader = new System.IO.StringReader(string.Empty);
-            using var writer = new NUnit.Common.ColorConsoleWriter(colorEnabled: false);
+            using var reader = new StringReader(string.Empty);
+            using ExtendedTextWriter writer = Debugger.IsAttached ? new DebugWriter() : new ColorConsoleWriter();
             autorun.Execute(arguments, writer, reader);
 
             var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
@@ -23,9 +26,9 @@ public static class MauiProgram
                 TestHelpers.TransformTestResults(resultPath);
             }
 
-            System.Environment.Exit(0);
+            Environment.Exit(0);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Console.WriteLine(e.ToString());
         }
@@ -39,5 +42,40 @@ public static class MauiProgram
             });
 
         return builder.Build();
+    }
+
+    private class DebugWriter : ExtendedTextWriter
+    {
+        public override Encoding Encoding => Encoding.UTF8;
+
+        public override void Write(ColorStyle style, string value)
+        {
+            Debug.Write(value);
+        }
+
+        public override void WriteLabel(string label, object option)
+        {
+            Debug.Write(label);
+        }
+
+        public override void WriteLabel(string label, object option, ColorStyle valueStyle)
+        {
+            Debug.Write(label);
+        }
+
+        public override void WriteLabelLine(string label, object option)
+        {
+            Debug.WriteLine(label);
+        }
+
+        public override void WriteLabelLine(string label, object option, ColorStyle valueStyle)
+        {
+            Debug.WriteLine(label);
+        }
+
+        public override void WriteLine(ColorStyle style, string value)
+        {
+            Debug.WriteLine(value);
+        }
     }
 }
