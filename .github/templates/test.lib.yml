@@ -69,7 +69,6 @@ env:
 
 #@ def dotnetBuildTests(projectPath, framework, runtime, version = "inputs.version"):
 #@ properties = {
-#@   "AdditionalFrameworks": framework,
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}"
 #@ }

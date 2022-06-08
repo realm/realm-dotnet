@@ -37,7 +37,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
+      - #@ template.replace(dotnetBuildTests("Tests/Tests.NetCore", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
-        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Tests.NetCore --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")
