@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
@@ -35,6 +34,8 @@ namespace Realms.Tests.iOS
         public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
         {
             Forms.Init();
+
+            TestHelpers.IsAOTTarget = true;
 
             var nunit = new App();
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);

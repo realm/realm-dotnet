@@ -546,10 +546,6 @@ namespace Realms.Tests.Database
             });
         }
 
-#if WINDOWS_UWP
-        [Ignore("Locks on .NET Native")]
-#endif
-
         [Test]
         public void GetInstanceAsync_ExecutesMigrationsInBackground()
         {

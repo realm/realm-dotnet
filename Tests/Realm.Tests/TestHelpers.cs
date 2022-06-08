@@ -19,26 +19,21 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-#if NETCOREAPP || NETFRAMEWORK
-using System.Runtime.InteropServices;
-#endif
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-#if __ANDROID__
-using Application = Android.App.Application;
-#endif
 
 namespace Realms.Tests
 {
     public static class TestHelpers
     {
-        public static readonly Random Random = new Random();
+        public static readonly Random Random = new();
 
         public static TextWriter Output { get; set; } = Console.Out;
 
@@ -170,51 +165,11 @@ namespace Realms.Tests
         {
             get
             {
-#if NETCOREAPP || NETFRAMEWORK
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#else
-                return false;
-#endif
             }
         }
 
-        public static bool IsMacOS
-        {
-            get
-            {
-#if __MACOS__
-                return true;
-#elif NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsLinux
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsAOTTarget
-        {
-            get
-            {
-#if __IOS__
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
+        public static bool IsAOTTarget { get; set; }
 
         public static bool IsUnity
         {
@@ -265,7 +220,7 @@ namespace Realms.Tests
             };
         }
 
-        public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
+        public static ObjectId GenerateRepetitiveObjectId(byte value) => new(Enumerable.Range(0, 12).Select(_ => value).ToArray());
 
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
             where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
