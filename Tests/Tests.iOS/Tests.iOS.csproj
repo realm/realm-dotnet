@@ -142,7 +142,6 @@
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
       <Project>{78799fcd-be2e-4ece-a52e-662846615b58}</Project>
       <Name>Realm.Tests</Name>
-      <Properties>TargetFrameworks=netstandard2.0</Properties>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
