@@ -25,7 +25,7 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  _: #@ template.replace(deployBaas("Code Coverage"))
+  _: #@ template.replace(deployBaas(["Code Coverage"]))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -44,4 +44,4 @@ jobs:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
   _: #@ template.replace(runTests("Code Coverage"))
-  _: #@ template.replace(cleanupBaas("Code Coverage"))
+  _: #@ template.replace(cleanupBaas(["Code Coverage"]))

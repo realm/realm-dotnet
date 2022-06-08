@@ -1,3 +1,6 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet", "setupNugetCache")
+
 #@ isRelease = "contains(github.head_ref, 'release')"
 
 #@ ignoreSkippedJobsCondition = "always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')"
@@ -9,16 +12,21 @@
 #@ secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
 
 #@ def getJobName(prefix, name):
-#@ return prefix + "-" + name.replace(".", "").replace(" ", "-").lower()
+#@ if (prefix != ""):
+#@   prefix = prefix + "-"
+#@ end
+#@ return prefix + name.replace(".", "").replace(" ", "-").lower()
 #@ end
 
-#@ def deployBaas(name):
-#@yaml/text-templated-strings
-(@= getJobName("baas", name) @):
+#@ def deployBaas(targets = []):
+#@ differentiators = []
+#@ for target in targets:
+#@   differentiators.append('"' + getJobName("", target) + '"')
+#@ end
+deploy-cluster:
   uses: ./.github/workflows/deploy-baas.yml
-  name: BaaS
   with:
-    name: #@ name
+    differentiators: #@ '[' + ", ".join(differentiators) + ']'
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
@@ -27,15 +35,16 @@
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
 
-#@ def cleanupBaas(name):
-#@yaml/text-templated-strings
-(@= getJobName("cleanup", name) @):
+#@ def cleanupBaas(dependencies = []):
+#@ needs = []
+#@ for dependency in dependencies:
+#@   needs.append(getJobName("test", dependency))
+#@ end
+cleanup-cluster:
   uses: ./.github/workflows/cleanup-baas.yml
+  if: always()
   name: Cleanup
-  needs:
-    - #@ getJobName("test", name)
-  with:
-    name: #@ name
+  needs: #@ needs
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ secret_BaseUrl
@@ -53,11 +62,11 @@
   needs:
     - build-packages
     #@ if runSyncTests:
-    - #@ getJobName("baas", name)
+    - deploy-cluster
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    clusterName: #@ "${{ needs." + getJobName("baas", name) + ".outputs.clusterName }}"
+    clusterName: #@ "${{ needs.deploy-cluster.outputs.clusterName }}"
   secrets:
     #@ if runSyncTests:
     AtlasProjectId: #@ secret_AtlasProjectId
