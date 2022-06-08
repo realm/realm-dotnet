@@ -20,7 +20,7 @@ using System;
 using System.Threading.Tasks;
 using Baas;
 
-namespace Realms.Tests
+namespace Baas
 {
     public sealed class Program
     {

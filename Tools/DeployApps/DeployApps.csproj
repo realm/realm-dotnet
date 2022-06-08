@@ -1,14 +1,10 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <OutputType>Exe</OutputType>
-        <RootNamespace>DeployApps</RootNamespace>
-        <LangVersion>9.0</LangVersion>
-        <GenerateProgramFile>false</GenerateProgramFile>
+        <RootNamespace>Baas</RootNamespace>
         <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-        <NoWarn>MSB4011</NoWarn>
     </PropertyGroup>
 
   <ItemGroup>
@@ -21,21 +17,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <AdditionalFiles Include="..\..\stylecop.json" />
     <PackageReference Include="MongoDB.Bson" Version="2.16.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="BaasClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="EmptyClass.cs">
-      <SubType></SubType>
-    </Compile>
-    <Compile Update="GlobalSuppressions.cs">
-      <SubType></SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="MongoDB.Bson" />
+    <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
 </Project>
