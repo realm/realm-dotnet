@@ -46,15 +46,16 @@ jobs:
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-  test-console:
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+  test-net-framework:
+    uses: ./.github/workflows/test-net-framework.yml
     name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
-    uses: ./.github/workflows/test-console.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      framework: ""
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets: {}
   test-uwp-managed:
     uses: ./.github/workflows/test-uwp-managed.yml
     name: Test
@@ -67,14 +68,15 @@ jobs:
     secrets:
       Pfx_Password: ${{ secrets.Pfx_Password }}
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
-  test-net6:
+  test-console:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test
     needs:
     - build-packages
-    uses: ./.github/workflows/test-net6.yml
+    uses: ./.github/workflows/test-console.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
+      framework: '["net6.0"]'
   test-xamarinmacos:
     uses: ./.github/workflows/test-xamarinmacos.yml
     name: Test

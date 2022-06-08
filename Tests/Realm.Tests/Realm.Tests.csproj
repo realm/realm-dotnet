@@ -4,18 +4,18 @@
     <IsTestProject>true</IsTestProject>
     <LangVersion>9.0</LangVersion>
     <PackageId>Realm.Tests</PackageId>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(UnityBuild)' != 'true'">$(TargetFrameworks);net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
     <NoWarn>MSB4011</NoWarn>
-    <OutputType Condition="'$(TargetFramework)' == 'net6.0'">Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'net461'">Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
     <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
   </PropertyGroup>
@@ -54,7 +54,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" Condition="'$(TargetFramework)' == 'net6.0'" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" Condition="'$(TargetFramework)' == 'net461'" />
     <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
       <PrivateAssets>all</PrivateAssets>
@@ -71,13 +71,25 @@
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(TargetFramework)' == 'net6.0'">
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(TargetFramework)' == 'net461'">
     <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
+      <Link>lib\win32\x64\ucrtbased.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x86\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
+      <Link>lib\win32\x86\ucrtbased.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll')">
+      <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll')">
+      <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -104,7 +116,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
     <Compile Remove="Program.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "setupDotnet")
+#@ load("common.lib.yml", "checkoutCode", "configuration")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
 
 ---
@@ -13,7 +13,6 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupDotnet()
       - #@ template.replace(buildTests("Tests/Tests.XamarinMac"))
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.macOS.xml --labels=All" + baasTestArgs("xamarinmacos")

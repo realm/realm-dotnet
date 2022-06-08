@@ -1,12 +1,12 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
-name: test-console
+name: test-net-core
 _: #@ template.replace(testDefinition(additionalInputs = [ "framework"]))
 jobs:
-  test-console:
+  run-tests:
     runs-on: ${{ matrix.os.runner }}
     name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
     timeout-minutes: 45
@@ -24,16 +24,20 @@ jobs:
           runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
-        - framework: net461
+        - framework: net6.0
           os:
-            runner: windows-latest
-            runtime: win-x64
+            runner: macos-arm
+            runtime: osx-arm64
     steps:
       - #@ template.replace(checkoutCode())
       - name: Cleanup Workspace
         run: git clean -fdx
+      - uses: #@ actionSetupDotnet
+        if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
+        with:
+          dotnet-version: '6.0.x'
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetBuildTests("Tests/Tests.Console", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
+      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
-        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Tests.Console --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")

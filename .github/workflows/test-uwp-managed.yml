@@ -49,9 +49,6 @@ jobs:
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
     - name: Import test certificate
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")

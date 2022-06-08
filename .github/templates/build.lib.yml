@@ -92,17 +92,6 @@ test-console:
     framework: #@ frameworks
 #@ end
 
-#@ def runNet6Tests():
-test-net6:
-  if: #@ ignoreSkippedJobsCondition
-  name: Test
-  needs:
-    - build-packages
-  uses: "./.github/workflows/test-net6.yml"
-  with:
-    version: ${{ needs.build-packages.outputs.package_version }}
-#@ end
-
 #@ def buildUnity():
 build-unity:
   uses: ./.github/workflows/build-unity.yml

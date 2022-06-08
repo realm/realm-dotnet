@@ -1,7 +1,7 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact")
 #@ load("test.lib.yml", "dotnetBuildTests")
-#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runConsoleTests", "ignoreSkippedJobsCondition", "buildUnity", "runNet6Tests")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runConsoleTests", "ignoreSkippedJobsCondition", "buildUnity")
 
 #@ def fetchPackageArtifacts():
 #@ for pkg in [ "Realm", "Realm.Fody" ]:
@@ -54,8 +54,7 @@ jobs:
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
-  _: #@ template.replace(runConsoleTests("[\"netcoreapp3.1\", \"net5.0\"]"))
-  _: #@ template.replace(runNet6Tests())
+  _: #@ template.replace(runConsoleTests("[\"netcoreapp3.1\", \"net5.0\", \"net6.0\"]"))
   _: #@ template.replace(runTests("Xamarin.macOS"))
   _: #@ template.replace(runTests("Xamarin.iOS"))
   _: #@ template.replace(runTests("Xamarin.Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
