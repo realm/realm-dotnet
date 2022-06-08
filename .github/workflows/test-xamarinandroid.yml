@@ -53,6 +53,9 @@ jobs:
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: ${{ runner.os == 'Windows' }}

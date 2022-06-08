@@ -195,3 +195,12 @@ with:
   path: #@ "${{ github.workspace }}/" + relPath
   retention-days: #@ retentionDays
 #@ end
+---
+#@ def setupDotnet(version = '6.0.x', ifCondition = ''):
+uses: #@ actionSetupDotnet
+#@ if (ifCondition != ''):
+if: matrix.runner != 'macos-arm'
+#@ end
+with:
+  dotnet-version: #@ version
+#@ end

@@ -1,12 +1,12 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
+#@ load("common.lib.yml", "checkoutCode", "setupDotnet")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
 name: test-console
 _: #@ template.replace(testDefinition())
 jobs:
-  run-tests:
+  test-net6:
     runs-on: ${{ matrix.runner }}
     name: .NET 6 ${{ matrix.runtime }}
     timeout-minutes: 45
@@ -28,10 +28,7 @@ jobs:
       - #@ template.replace(checkoutCode())
       - name: Cleanup Workspace
         run: git clean -fdx
-      - uses: #@ actionSetupDotnet
-        if: matrix.runner != 'macos-arm'
-        with:
-          dotnet-version: '6.0.x'
+      - #@ setupDotnet(ifCondition = "matrix.runner != 'macos-arm'")
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "net6.0", "${{ matrix.runtime }}"))
       - name: Run the tests

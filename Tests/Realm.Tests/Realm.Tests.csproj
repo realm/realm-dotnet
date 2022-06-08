@@ -4,7 +4,8 @@
     <IsTestProject>true</IsTestProject>
     <LangVersion>9.0</LangVersion>
     <PackageId>Realm.Tests</PackageId>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(UnityBuild)' != 'true'">$(TargetFrameworks);net6.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
@@ -84,7 +85,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-    
+
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <EmbeddedResource Include="EmbeddedResources\guids.realm" />

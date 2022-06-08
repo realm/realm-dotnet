@@ -21,7 +21,7 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  run-tests:
+  test-net6:
     runs-on: ${{ matrix.runner }}
     name: .NET 6 ${{ matrix.runtime }}
     timeout-minutes: 45

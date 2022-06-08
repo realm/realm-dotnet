@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "actionSetupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact")
 #@ load("test.lib.yml", "dotnetBuildTests")
 #@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runConsoleTests", "ignoreSkippedJobsCondition", "buildUnity", "runNet6Tests")
 
@@ -69,9 +69,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - uses: #@ actionSetupDotnet
-        with:
-          dotnet-version: '6.0.x'
+      - #@ setupDotnet()
       - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
@@ -89,9 +87,7 @@ jobs:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - uses: #@ actionSetupDotnet
-        with:
-          dotnet-version: '6.0.x'
+      - #@ setupDotnet()
       - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"

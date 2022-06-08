@@ -1,12 +1,12 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
+#@ load("common.lib.yml", "checkoutCode")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
 name: test-console
 _: #@ template.replace(testDefinition(additionalInputs = [ "framework"]))
 jobs:
-  run-tests:
+  test-console:
     runs-on: ${{ matrix.os.runner }}
     name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
     timeout-minutes: 45

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator", "setupDotnet")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
 
 ---
@@ -13,6 +13,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
+      - #@ setupDotnet()
       - #@ template.replace(buildTests("Tests/Tests.iOS", Platform="iPhoneSimulator"))
       - name: Run the tests
         uses: #@ actionRuniOSSimulator
