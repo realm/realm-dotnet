@@ -1,21 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net461</TargetFrameworks>
     <DisableFody>true</DisableFody>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnitLite" Version="3.13.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
-      <PrivateAssets>none</PrivateAssets>
-    </ProjectReference>
+    <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(TargetFramework)' != 'net6.0'">
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
       <Link Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">lib\win32\x64\ucrtbased.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -42,4 +41,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Realm.Tests\Program.cs">
+      <Link>Program.cs</Link>
+    </Compile>
+  </ItemGroup>
 </Project>

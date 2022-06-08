@@ -13,7 +13,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(buildTests("Tests/Tests.NetCore", TargetFramework="net461"))
+      - #@ template.replace(buildTests("Tests/Tests.Console", TargetFramework="net461"))
       - name: Run the tests
-        run: #@ "./Tests/Tests.NetCore/bin/" + configuration + "/net461/Tests.NetCore.exe --result=TestResults.Windows.xml --labels=After" + baasTestArgs("net-framework")
+        run: #@ "./Tests/Tests.Console/bin/" + configuration + "/net461/Tests.Console.exe --result=TestResults.Windows.xml --labels=After" + baasTestArgs("net-framework")
       - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")

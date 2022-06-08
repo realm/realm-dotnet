@@ -81,7 +81,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Maui", "Tests\Tests.M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeployApps", "Tools\DeployApps\DeployApps.csproj", "{E1411FA6-4CF9-4A5A-9511-AB3E1AFAED81}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.NetCore", "Tests\Tests.NetCore\Tests.NetCore.csproj", "{F674F65E-8AEB-4D47-9DFE-5A081935B7DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Console", "Tests\Tests.Console\Tests.Console.csproj", "{F674F65E-8AEB-4D47-9DFE-5A081935B7DC}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

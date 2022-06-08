@@ -103,6 +103,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
       <Link>Sync\BaasClient.cs</Link>

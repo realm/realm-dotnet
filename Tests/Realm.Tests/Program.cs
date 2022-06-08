@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -21,17 +21,18 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnitLite;
+using Realms.Tests.Sync;
 
 namespace Realms.Tests
 {
-    public sealed class Program
+    internal class Program
     {
-        public static int Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine($"Running on {RuntimeInformation.OSDescription} / CPU {RuntimeInformation.ProcessArchitecture} / Framework {RuntimeInformation.FrameworkDescription}");
 
-            var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            var arguments = Sync.SyncTestHelpers.ExtractBaasSettings(args);
+            var autorun = new AutoRun(typeof(TestHelpers).GetTypeInfo().Assembly);
+            var arguments = SyncTestHelpers.ExtractBaasSettings(args);
 
             autorun.Execute(arguments);
 
@@ -40,8 +41,6 @@ namespace Realms.Tests
             {
                 TestHelpers.TransformTestResults(resultPath);
             }
-
-            return 0;
         }
     }
 }

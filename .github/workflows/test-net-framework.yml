@@ -51,11 +51,11 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.NetCore/*.csproj') }}
-    - name: Build Tests/Tests.NetCore
-      run: msbuild Tests/Tests.NetCore -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:TargetFramework=net461
+        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.Console/*.csproj') }}
+    - name: Build Tests/Tests.Console
+      run: msbuild Tests/Tests.Console -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:TargetFramework=net461
     - name: Run the tests
-      run: ./Tests/Tests.NetCore/bin/Release/net461/Tests.NetCore.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-framework
+      run: ./Tests/Tests.Console/bin/Release/net461/Tests.Console.exe --result=TestResults.Windows.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-framework
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
