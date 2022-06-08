@@ -114,15 +114,23 @@ jobs:
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
       Pfx_Password: ${{ secrets.Pfx_Password }}
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
-  test-net-core:
+  test-console:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test
     needs:
     - build-packages
-    uses: ./.github/workflows/test-net-core.yml
+    uses: ./.github/workflows/test-console.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["netcoreapp3.1", "net5.0", "net6.0"]'
+      framework: '["netcoreapp3.1", "net5.0"]'
+  test-net6:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test
+    needs:
+    - build-packages
+    uses: ./.github/workflows/test-net6.yml
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
   test-xamarinmacos:
     uses: ./.github/workflows/test-xamarinmacos.yml
     name: Test

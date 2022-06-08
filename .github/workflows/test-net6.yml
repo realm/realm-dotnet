@@ -1,4 +1,4 @@
-name: test-net-core
+name: test-console
 "on":
   workflow_call:
     inputs:
@@ -7,9 +7,6 @@ name: test-net-core
         type: string
       clusterName:
         required: false
-        type: string
-      framework:
-        required: true
         type: string
     secrets:
       AtlasProjectId:
@@ -25,13 +22,15 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   run-tests:
-    runs-on: ${{ matrix.os.runner }}
-    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
+    runs-on: ${{ matrix.runner }}
+    name: .NET 6 ${{ matrix.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        os:
+        include:
+        - runner: macos-arm
+          runtime: osx-arm64
         - runner: windows-latest
           runtime: win-x64
         - runner: ubuntu-latest
@@ -40,12 +39,6 @@ jobs:
           runtime: osx-x64
         - runner: win81
           runtime: win-x64
-        framework: ${{ fromJson(inputs.framework) }}
-        include:
-        - framework: net6.0
-          os:
-            runner: macos-arm
-            runtime: osx-arm64
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -59,7 +52,7 @@ jobs:
     - name: Cleanup Workspace
       run: git clean -fdx
     - uses: actions/setup-dotnet@v1
-      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
+      if: matrix.runner != 'macos-arm'
       with:
         dotnet-version: 6.0.x
     - name: Fetch Realm
@@ -75,19 +68,19 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/${{ matrix.framework == 'net6.0' && 'Realm.Tests' || 'Tests.Console' }}/*.csproj') }}
-    - name: Publish Tests/${{ matrix.framework == 'net6.0' && 'Realm.Tests' || 'Tests.Console' }}
-      run: dotnet publish Tests/${{ matrix.framework == 'net6.0' && 'Realm.Tests' || 'Tests.Console' }} -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
+        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Realm.Tests/*.csproj') }}
+    - name: Publish Tests/Realm.Tests
+      run: dotnet publish Tests/Realm.Tests -c Release -f net6.0 -r ${{ matrix.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/${{ matrix.framework == 'net6.0' && 'Realm.Tests' || 'Tests.Console' }}/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}'
+      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net6.0/${{ matrix.runtime }}'
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/${{ matrix.framework == 'net6.0' && 'Realm.Tests' || 'Tests.Console' }} --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-6-${{ matrix.runner }}-${{ matrix.runtime }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        name: Results .NET (${{ matrix.os.runner }}, ${{ matrix.framework }})
+        name: Results .NET (${{ matrix.runner }}, net6.0)
         path: TestResults.xml
         reporter: java-junit
         list-suites: failed
