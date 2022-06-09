@@ -1,12 +1,12 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
 name: test-xamarinios
 _: #@ template.replace(testDefinition())
 jobs:
-  run-tests:
+  test-xamarin:
     runs-on: macos-latest
     name: Xamarin.iOS
     timeout-minutes: 45
@@ -22,3 +22,21 @@ jobs:
           iphoneToSimulate: 'iPhone-8'
           arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml" + baasTestArgs("xamarinios")
       - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
+
+  test-maui:
+    runs-on: macos-latest
+    name: Maui.iOS
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ template.replace(fetchPackageArtifacts())
+      - name: Build the tests
+        run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6-ios -r iossimulator-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
+      - name: Run the tests
+        uses: #@ actionRuniOSSimulator
+        with:
+          appPath: #@ "Tests/Tests.Maui/bin/" + configuration + "/net6-ios/iossimulator-x64/Tests.Maui.app"
+          bundleId: 'io.realm.mauitests'
+          iphoneToSimulate: 'iPhone-8'
+          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml"
+      - #@ publishTestsResults("TestResults.iOS.xml", "Maui.iOS")
