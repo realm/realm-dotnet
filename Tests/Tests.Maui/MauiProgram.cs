@@ -8,11 +8,10 @@ namespace Tests.Maui;
 
 public static class MauiProgram
 {
-    public static MauiApp CreateMauiApp()
+    public static MauiApp CreateMauiApp(string[] args)
     {
         try
         {
-            var args = new[] { "--labels=After" };
             var autorun = new AutoRun(typeof(TestHelpers).Assembly);
             var arguments = Realms.Tests.Sync.SyncTestHelpers.ExtractBaasSettings(args);
 
