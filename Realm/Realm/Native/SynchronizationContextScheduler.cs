@@ -49,12 +49,12 @@ namespace Realms
 
         private class Scheduler
         {
-            private static readonly Lazy<FieldInfo> XunitInnerContext = new Lazy<FieldInfo>(() =>
+            private static readonly Lazy<FieldInfo> XunitInnerContext = new(() =>
             {
                 try
                 {
                     var type = Type.GetType("Xunit.Sdk.AsyncTestSyncContext, xunit.execution.dotnet");
-                    return type.GetField("innerContext", BindingFlags.NonPublic | BindingFlags.Instance);
+                    return type?.GetField("innerContext", BindingFlags.NonPublic | BindingFlags.Instance);
                 }
                 catch
                 {
