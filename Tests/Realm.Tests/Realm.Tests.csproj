@@ -14,9 +14,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' == ''">
-    <TargetFrameworks>net461</TargetFrameworks>
     <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
-    <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
 
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
@@ -131,7 +130,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <EmbeddedResource Include="EmbeddedResources\guids.realm" />
