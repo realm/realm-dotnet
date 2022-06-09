@@ -1,36 +1,35 @@
-﻿using Realms.Tests;
-using NUnitLite;
-using NUnit.Common;
-using System.Text;
-using System.Diagnostics;
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2022 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 namespace Tests.Maui;
 
 public static class MauiProgram
 {
-    public static MauiApp CreateMauiApp(string[] args)
+    public static string[] Args { get; private set; }
+
+    public static MauiApp CreateMauiApp(params string[] args)
     {
-        try
+        if (args.Length == 0)
         {
-            var autorun = new AutoRun(typeof(TestHelpers).Assembly);
-            var arguments = Realms.Tests.Sync.SyncTestHelpers.ExtractBaasSettings(args);
-
-            using var reader = new StringReader(string.Empty);
-            using ExtendedTextWriter writer = Debugger.IsAttached ? new DebugWriter() : new ColorConsoleWriter(colorEnabled: false);
-            autorun.Execute(arguments, writer, reader);
-
-            var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
-            if (!string.IsNullOrEmpty(resultPath))
-            {
-                TestHelpers.TransformTestResults(resultPath);
-            }
-
-            System.Environment.Exit(0);
+            args = new[] { "--labels=After" };
         }
-        catch (System.Exception e)
-        {
-            Console.WriteLine(e.ToString());
-        }
+
+        Args = args;
 
         var builder = MauiApp.CreateBuilder();
         builder
@@ -41,22 +40,5 @@ public static class MauiProgram
             });
 
         return builder.Build();
-    }
-
-    private class DebugWriter : ExtendedTextWriter
-    {
-        public override Encoding Encoding => Encoding.UTF8;
-
-        public override void Write(ColorStyle style, string value) => Debug.Write(value);
-
-        public override void WriteLabel(string label, object option) => Debug.Write(label);
-
-        public override void WriteLabel(string label, object option, ColorStyle valueStyle) => Debug.Write(label);
-
-        public override void WriteLabelLine(string label, object option) => Debug.WriteLine(label);
-
-        public override void WriteLabelLine(string label, object option, ColorStyle valueStyle) => Debug.WriteLine(label);
-
-        public override void WriteLine(ColorStyle style, string value) => Debug.WriteLine(value);
     }
 }
