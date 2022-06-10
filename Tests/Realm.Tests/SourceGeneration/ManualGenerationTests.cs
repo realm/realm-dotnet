@@ -16,13 +16,8 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms.Schema;
 using Realms.Tests.SourceGeneration.TestClasses;
 
 namespace Realms.Tests.SourceGeneration
@@ -30,24 +25,18 @@ namespace Realms.Tests.SourceGeneration
     [TestFixture, Preserve(AllMembers = true)]
     public class ManualGenerationTests : RealmInstanceTest
     {
-        private RealmConfiguration _config;
-
-        protected override void CustomSetUp()
-        {
-            base.CustomSetUp();
-
-            _config = new RealmConfiguration();
-            //_config.Schema = new Type[] { typeof(ManualllyGeneratedClass) };
-        }
-
         [Test]
         public void TestUnmanaged()
         {
             var mgc = new ManualllyGeneratedClass();
+            mgc.PKey = 1;
+            mgc.Name = "Mario";
             mgc.Integer = 24;
             mgc.IntegerList.Add(10);
             mgc.IntegerList.Add(20);
 
+            Assert.That(mgc.PKey, Is.EqualTo(1));
+            Assert.That(mgc.Name, Is.EqualTo("Mario"));
             Assert.That(mgc.Integer, Is.EqualTo(24));
             Assert.That(mgc.IntegerList[0], Is.EqualTo(10));
             Assert.That(mgc.IntegerList[1], Is.EqualTo(20));
@@ -57,19 +46,24 @@ namespace Realms.Tests.SourceGeneration
         public void TestManaged()
         {
             var mgc = new ManualllyGeneratedClass();
+            mgc.PKey = 1;
+            mgc.Name = "Mario";
             mgc.Integer = 24;
             mgc.IntegerList.Add(10);
             mgc.IntegerList.Add(20);
 
-            using var realm = GetRealm(_config);
+            using var realm = GetRealm();
 
             realm.Write(() =>
             {
                 realm.Add(mgc);
             });
 
-            var retrieved = realm.All<ManualllyGeneratedClass>().First();
+            var retrieved = realm.Find<ManualllyGeneratedClass>(1);
+            retrieved = realm.All<ManualllyGeneratedClass>().First();
 
+            Assert.That(retrieved.PKey, Is.EqualTo(1));
+            Assert.That(retrieved.Name, Is.EqualTo("Mario"));
             Assert.That(retrieved.Integer, Is.EqualTo(24));
             Assert.That(retrieved.IntegerList.Count, Is.EqualTo(2));
             Assert.That(retrieved.IntegerList[0], Is.EqualTo(10));
@@ -77,10 +71,12 @@ namespace Realms.Tests.SourceGeneration
 
             realm.Write(() =>
             {
+                mgc.Name = "Luigi";
                 mgc.Integer = 15;
                 mgc.IntegerList.Add(30);
             });
 
+            Assert.That(retrieved.Name, Is.EqualTo("Luigi"));
             Assert.That(retrieved.Integer, Is.EqualTo(15));
             Assert.That(retrieved.IntegerList.Count, Is.EqualTo(3));
             Assert.That(retrieved.IntegerList[0], Is.EqualTo(10));
@@ -89,10 +85,12 @@ namespace Realms.Tests.SourceGeneration
 
             realm.Write(() =>
             {
-                mgc.Integer = 65;
-                mgc.IntegerList.Add(40);
+                retrieved.Name = "Peach";
+                retrieved.Integer = 65;
+                retrieved.IntegerList.Add(40);
             });
 
+            Assert.That(mgc.Name, Is.EqualTo("Peach"));
             Assert.That(mgc.Integer, Is.EqualTo(65));
             Assert.That(mgc.IntegerList.Count, Is.EqualTo(4));
             Assert.That(mgc.IntegerList[0], Is.EqualTo(10));
