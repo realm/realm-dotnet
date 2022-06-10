@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
@@ -26,11 +27,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
+using Realms.Logging;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
+using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 
 namespace Realms.Tests.Sync
 {
@@ -38,6 +41,20 @@ namespace Realms.Tests.Sync
     public class SessionTests : SyncTestBase
     {
         private readonly ConcurrentQueue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
+
+        private static IEnumerable<IClientResetHandler> _clientResetHandlers()
+        {
+            yield return new ClientResetHanlder<DiscardLocalResetHandler>();
+            yield return new ClientResetHanlder<AutomaticRecoveryHandler>();
+            yield return new ClientResetHanlder<AutomaticRecoveryOrDiscardLocalHandler>();
+        }
+
+        private static ClientResetHandlerBase[] _clientResetInstanceHandlers = new ClientResetHandlerBase[]
+        {
+            new DiscardLocalResetHandler(),
+            new AutomaticRecoveryHandler(),
+            new AutomaticRecoveryOrDiscardLocalHandler()
+        };
 
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
@@ -50,8 +67,7 @@ namespace Realms.Tests.Sync
             Assert.That(session.User, Is.EqualTo(config.User));
         }
 
-        [Test]
-        [Obsolete("tests obsolete functionality")]
+        [Test, Obsolete("tests obsolete functionality")]
         public void Realm_GetSession_WhenSyncedRealm()
         {
             var config = GetFakeConfig();
@@ -63,8 +79,7 @@ namespace Realms.Tests.Sync
             Assert.That(session.User, Is.EqualTo(config.User));
         }
 
-        [Test]
-        [Obsolete("tests obsolete functionality")]
+        [Test, Obsolete("tests obsolete functionality")]
         public void Realm_GetSession_WhenLocalRealm_ShouldThrow()
         {
             using var realm = GetRealm();
@@ -129,45 +144,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_ClientReset_DiscardLocal_OnBefore_And_OnAfter()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var onBeforeTriggered = false;
-                var onAfterTriggered = false;
-                var tcs = new TaskCompletionSource<object>();
-                var config = await GetIntegrationConfigAsync();
-
-                config.ClientResetHandler = new DiscardLocalResetHandler
-                {
-                    OnBeforeReset = GetOnBeforeHandler(tcs, beforeFrozen =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.False);
-                        Assert.That(onAfterTriggered, Is.False);
-                        onBeforeTriggered = true;
-                    }),
-                    OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.True);
-                        Assert.That(onAfterTriggered, Is.False);
-                        onAfterTriggered = true;
-                    })
-                };
-
-                using var realm = await GetRealmAsync(config);
-
-                GetSession(realm).SimulateClientReset("simulated client reset");
-
-                await tcs.Task;
-
-                Assert.That(onBeforeTriggered, Is.True);
-                Assert.That(onAfterTriggered, Is.True);
-            });
-        }
-
-        [Test]
-        public void Session_ClientReset_DiscardLocal_ManualResetFallback_AutoClientReset()
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        public void Session_ClientResetHandlers_ManualResetFallback_AutoClientReset(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -177,26 +155,25 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 var tcs = new TaskCompletionSource<object>();
 
-                config.ClientResetHandler = new DiscardLocalResetHandler
+                var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
-                    OnBeforeReset = GetOnBeforeHandler(tcs, beforeFrozen =>
-                    {
-                        onBeforeTriggered = true;
-                    }),
-                    OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
-                    {
-                        onAfterTriggered = true;
-                    }),
-                    ManualResetFallback = (err) =>
-                    {
-                        Assert.That(err, Is.InstanceOf<ClientResetException>());
-                        Assert.That(onBeforeTriggered, Is.False);
-                        Assert.That(onAfterTriggered, Is.False);
-                        Assert.That(manualResetFallbackHandled, Is.False);
-                        manualResetFallbackHandled = true;
-                        tcs.TrySetResult(true);
-                    }
+                    onBeforeTriggered = true;
+                });
+                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
+                {
+                    onAfterTriggered = true;
+                });
+                ClientResetCallback manualCb = (err) =>
+                {
+                    Assert.That(err, Is.InstanceOf<ClientResetException>());
+                    Assert.That(onBeforeTriggered, Is.False);
+                    Assert.That(onAfterTriggered, Is.False);
+                    Assert.That(manualResetFallbackHandled, Is.False);
+                    manualResetFallbackHandled = true;
+                    tcs.TrySetResult(true);
                 };
+
+                config.ClientResetHandler = handler.BuildHandler(beforeCb, afterCb, manualCb);
 
                 using var realm = await GetRealmAsync(config);
 
@@ -240,23 +217,21 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_ClientReset_DiscardLocal_ManualResetFallback_InitiateClientReset()
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        public void Session_ClientResetHandlers_ManualResetFallback_InitiateClientReset(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var manualResetFallbackHandled = false;
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
+                ClientResetCallback manualCb = (err) =>
                 {
-                    ManualResetFallback = (err) =>
-                    {
-                        manualResetFallbackHandled = true;
-                        errorTcs.TrySetResult(err);
-                    }
+                    manualResetFallbackHandled = true;
+                    errorTcs.TrySetResult(err);
                 };
 
+                config.ClientResetHandler = handler.BuildHandler(null, null, manualCb);
                 using (var realm = await GetRealmAsync(config))
                 {
                     GetSession(realm).SimulateAutomaticClientResetFailure("simulated client reset failure");
@@ -270,8 +245,46 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
-        public void Session_ClientReset_Access_Realm_OnBeforeReset()
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        public void Session_ClientResetHandlers_OnBefore_And_OnAfter(IClientResetHandler handler)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var onBeforeTriggered = false;
+                var onAfterTriggered = false;
+                var tcs = new TaskCompletionSource<object>();
+                var config = await GetIntegrationConfigAsync();
+
+                var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
+                {
+                    Assert.That(onBeforeTriggered, Is.False);
+                    Assert.That(onAfterTriggered, Is.False);
+                    onBeforeTriggered = true;
+                });
+
+                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
+                {
+                    Assert.That(onBeforeTriggered, Is.True);
+                    Assert.That(onAfterTriggered, Is.False);
+                    onAfterTriggered = true;
+                });
+
+                config.ClientResetHandler = handler.BuildHandler(beforeCb, afterCb);
+
+                using var realm = await GetRealmAsync(config);
+
+                GetSession(realm).SimulateClientReset("simulated client reset");
+
+                await tcs.Task;
+
+                Assert.That(onBeforeTriggered, Is.True);
+                Assert.That(onAfterTriggered, Is.True);
+            });
+        }
+
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        [NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
+        public void Session_ClientResetHandlers_AccessRealm_OnBeforeReset(IClientResetHandler handler)
         {
             const string validValue = "this will sync";
             const string invalidValue = "this will be deleted";
@@ -281,20 +294,18 @@ namespace Realms.Tests.Sync
                 var tcs = new TaskCompletionSource<object>();
                 var onBeforeTriggered = false;
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
+                var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
-                    OnBeforeReset = GetOnBeforeHandler(tcs, beforeFrozen =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.False);
+                    Assert.That(onBeforeTriggered, Is.False);
 
-                        var frozenObjs = beforeFrozen.All<ObjectWithPartitionValue>().ToArray();
-                        Assert.That(frozenObjs.Length, Is.EqualTo(2));
-                        Assert.That(frozenObjs.Select(o => o.Value), Is.EquivalentTo(new[] { validValue, invalidValue }));
+                    var frozenObjs = beforeFrozen.All<ObjectWithPartitionValue>().ToArray();
+                    Assert.That(frozenObjs.Length, Is.EqualTo(2));
+                    Assert.That(frozenObjs.Select(o => o.Value), Is.EquivalentTo(new[] { validValue, invalidValue }));
 
-                        onBeforeTriggered = true;
-                        tcs.TrySetResult(null);
-                    })
-                };
+                    onBeforeTriggered = true;
+                    tcs.TrySetResult(null);
+                });
+                config.ClientResetHandler = handler.BuildHandler(beforeCb);
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config);
@@ -333,8 +344,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
-        public void Session_ClientReset_Access_Realms_OnAfterReset()
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        [NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
+        public void Session_ClientResetHandlers_Access_Realms_OnAfterReset(IClientResetHandler handler)
         {
             const string validValue = "this will sync";
             const string invalidValue = "this will be deleted";
@@ -344,23 +356,21 @@ namespace Realms.Tests.Sync
                 var tcs = new TaskCompletionSource<object>();
                 var onAfterTriggered = false;
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
+                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
                 {
-                    OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
-                    {
-                        Assert.That(onAfterTriggered, Is.False);
+                    Assert.That(onAfterTriggered, Is.False);
 
-                        var frozenObjs = beforeFrozen.All<ObjectWithPartitionValue>().ToArray();
-                        Assert.That(frozenObjs.Length, Is.EqualTo(2));
-                        Assert.That(frozenObjs.Select(o => o.Value), Is.EquivalentTo(new[] { validValue, invalidValue }));
+                    var frozenObjs = beforeFrozen.All<ObjectWithPartitionValue>().ToArray();
+                    Assert.That(frozenObjs.Length, Is.EqualTo(2));
+                    Assert.That(frozenObjs.Select(o => o.Value), Is.EquivalentTo(new[] { validValue, invalidValue }));
 
-                        var objs = after.All<ObjectWithPartitionValue>();
-                        Assert.That(objs.Count(), Is.EqualTo(1));
-                        Assert.That(objs.Single().Value, Is.EqualTo(validValue));
+                    var objs = after.All<ObjectWithPartitionValue>();
+                    Assert.That(objs.Count(), Is.EqualTo(1));
+                    Assert.That(objs.Single().Value, Is.EqualTo(validValue));
 
-                        onAfterTriggered = true;
-                    })
-                };
+                    onAfterTriggered = true;
+                });
+                config.ClientResetHandler = handler.BuildHandler(null, afterCb);
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config);
@@ -400,14 +410,26 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
-        public void Session_DiscardLocalReset_TriggersNotifications()
+        [TestCaseSource(nameof(_clientResetInstanceHandlers))]
+        [NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
+        public void Session_ClientResetAutomaticChanges_TriggersNotifications(ClientResetHandlerBase handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                //Logger.LogLevel = LogLevel.Trace;
+
+                //Logger.Default = Logger.Function(message =>
+                //{
+                //    var fileName = "C:\\Users\\andrea.catalini\\clientLogs.txt";
+                //    StreamWriter sw = new StreamWriter(fileName, true);
+                //    sw.WriteLine(message);
+                //    sw.Close();
+                //});
+
                 // We'll add an object with the wrong partition
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
+                config.ClientResetHandler = handler;
 
                 using var realm = await GetRealmAsync(config);
 
@@ -454,8 +476,8 @@ namespace Realms.Tests.Sync
             }, timeout: 120_000);
         }
 
-        [Test]
-        public void Session_ClientReset_DiscardLocal_ManualResetFallback_Exception_OnBefore()
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        public void Session_ClientResetHandlers_ManualResetFallback_Exception_OnBefore(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -464,37 +486,39 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
-                {
-                    OnBeforeReset = beforeFrozen =>
-                    {
-                        try
-                        {
-                            Assert.That(onBeforeTriggered, Is.False);
-                            Assert.That(onAfterResetTriggered, Is.False);
-                            Assert.That(manualFallbackTriggered, Is.False);
-                            onBeforeTriggered = true;
-                        }
-                        catch (Exception ex)
-                        {
-                            tcs.TrySetException(ex);
-                        }
 
-                        throw new Exception("Exception thrown in OnBeforeReset");
-                    },
-                    OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
+                BeforeResetCallback beforeCb = beforeFrozen =>
+                {
+                    try
                     {
-                        onAfterResetTriggered = true;
-                    }),
-                    ManualResetFallback = GetClientResetHandler(tcs, (ex) =>
-                    {
-                        Assert.That(ex, Is.InstanceOf<ClientResetException>());
-                        Assert.That(onBeforeTriggered, Is.True);
+                        Assert.That(onBeforeTriggered, Is.False);
                         Assert.That(onAfterResetTriggered, Is.False);
                         Assert.That(manualFallbackTriggered, Is.False);
-                        manualFallbackTriggered = true;
-                    })
+                        onBeforeTriggered = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+
+                    throw new Exception("Exception thrown in OnBeforeReset");
                 };
+
+                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
+                {
+                    onAfterResetTriggered = true;
+                });
+
+                var manualCb = GetClientResetHandler(tcs, (ex) =>
+                {
+                    Assert.That(ex, Is.InstanceOf<ClientResetException>());
+                    Assert.That(onBeforeTriggered, Is.True);
+                    Assert.That(onAfterResetTriggered, Is.False);
+                    Assert.That(manualFallbackTriggered, Is.False);
+                    manualFallbackTriggered = true;
+                });
+
+                config.ClientResetHandler = handler.BuildHandler(beforeCb, afterCb, manualCb);
 
                 using var realm = await GetRealmAsync(config);
 
@@ -508,8 +532,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_ClientReset_DiscardLocal_ManualResetFallback_Exception_OnAfter()
+        [TestCaseSource(nameof(_clientResetHandlers))]
+        public void Session_ClientResetHandlers_ManualResetFallback_Exception_OnAfter(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -518,32 +542,32 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
+
+                var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
-                    OnBeforeReset = GetOnBeforeHandler(tcs, beforeFrozen =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.False);
-                        Assert.That(onAfterResetTriggered, Is.False);
-                        Assert.That(manualFallbackTriggered, Is.False);
-                        onBeforeTriggered = true;
-                    }),
-                    OnAfterReset = (beforeFrozen, after) =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.True);
-                        Assert.That(onAfterResetTriggered, Is.False);
-                        Assert.That(manualFallbackTriggered, Is.False);
-                        onAfterResetTriggered = true;
-                        throw new Exception("Exception thrown in OnAfterReset");
-                    },
-                    ManualResetFallback = GetClientResetHandler(tcs, (ex) =>
-                    {
-                        Assert.That(ex, Is.InstanceOf<ClientResetException>());
-                        Assert.That(onBeforeTriggered, Is.True);
-                        Assert.That(onAfterResetTriggered, Is.True);
-                        Assert.That(manualFallbackTriggered, Is.False);
-                        manualFallbackTriggered = true;
-                    })
+                    Assert.That(onBeforeTriggered, Is.False);
+                    Assert.That(onAfterResetTriggered, Is.False);
+                    Assert.That(manualFallbackTriggered, Is.False);
+                    onBeforeTriggered = true;
+                });
+                AfterResetCallback afterCb = (beforeFrozen, after) =>
+                {
+                    Assert.That(onBeforeTriggered, Is.True);
+                    Assert.That(onAfterResetTriggered, Is.False);
+                    Assert.That(manualFallbackTriggered, Is.False);
+                    onAfterResetTriggered = true;
+                    throw new Exception("Exception thrown in OnAfterReset");
                 };
+                var manualCb = GetClientResetHandler(tcs, (ex) =>
+                {
+                    Assert.That(ex, Is.InstanceOf<ClientResetException>());
+                    Assert.That(onBeforeTriggered, Is.True);
+                    Assert.That(onAfterResetTriggered, Is.True);
+                    Assert.That(manualFallbackTriggered, Is.False);
+                    manualFallbackTriggered = true;
+                });
+
+                config.ClientResetHandler = handler.BuildHandler(beforeCb, afterCb, manualCb);
 
                 using var realm = await GetRealmAsync(config);
 
@@ -558,7 +582,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Session_Error_OnSessionError()
+        public void Session_OnSessionError()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -588,8 +612,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
-        public void Session_ClientReset_DiscardLocal_Coexistence()
+        [TestCaseSource(nameof(_clientResetHandlers)),
+            Obsolete("Testing Sesion.Error compatibility")]
+        public void Session_ClientResetHandlers_Coexistence(IClientResetHandler clientResetHandler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -598,21 +623,20 @@ namespace Realms.Tests.Sync
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
+                var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
-                    OnBeforeReset = GetOnBeforeHandler(tcs, beforeFrozen =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.False);
-                        Assert.That(onAfterTriggered, Is.False);
-                        onBeforeTriggered = true;
-                    }),
-                    OnAfterReset = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
-                    {
-                        Assert.That(onBeforeTriggered, Is.True);
-                        Assert.That(onAfterTriggered, Is.False);
-                        onAfterTriggered = true;
-                    })
-                };
+                    Assert.That(onBeforeTriggered, Is.False);
+                    Assert.That(onAfterTriggered, Is.False);
+                    onBeforeTriggered = true;
+                });
+                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
+                {
+                    Assert.That(onBeforeTriggered, Is.True);
+                    Assert.That(onAfterTriggered, Is.False);
+                    onAfterTriggered = true;
+                });
+
+                config.ClientResetHandler = clientResetHandler.BuildHandler(beforeCb, afterCb);
 
                 var handler = GetErrorEventHandler(tcs, (session, error) =>
                 {
@@ -639,15 +663,15 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
-        public void Session_WithDiscardLocalHandler_DoesntRaiseSessionError()
+        [TestCaseSource(nameof(_clientResetInstanceHandlers)),
+            Obsolete("Testing Sesion.Error compatibility")]
+        public void Session_WithNewClientResetHandlers_DoesntRaiseSessionError(ClientResetHandlerBase handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var obsoleteSessionErrorTriggered = false;
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler();
-
+                config.ClientResetHandler = handler;
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
@@ -669,8 +693,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
-        public void Session_ClientReset_DiscardLocal_ManualResetFallback_Coexistence()
+        [TestCaseSource(nameof(_clientResetHandlers)),
+            Obsolete("Testing Sesion.Error compatibility")]
+        public void Session_ClientResetHandlers_ManualResetFallback_Coexistence(IClientResetHandler clientResetHandler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -679,20 +704,20 @@ namespace Realms.Tests.Sync
                 var errorMsg = "simulated client reset failure";
                 var tcs = new TaskCompletionSource<object>();
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = new DiscardLocalResetHandler
-                {
-                    ManualResetFallback = (err) =>
-                    {
-                        Assert.That(manualResetFallbackHandled, Is.False);
-                        Assert.That(err, Is.InstanceOf<ClientResetException>());
 
-                        Assert.That((int)err.ErrorCode, Is.EqualTo((int)ClientError.AutoClientResetFailed));
-                        Assert.That(err.Message, Is.EqualTo(errorMsg));
-                        Assert.That(err.InnerException, Is.Null);
-                        manualResetFallbackHandled = true;
-                        tcs.TrySetResult(true);
-                    }
+                ClientResetCallback manualCb = (err) =>
+                {
+                    Assert.That(manualResetFallbackHandled, Is.False);
+                    Assert.That(err, Is.InstanceOf<ClientResetException>());
+
+                    Assert.That((int)err.ErrorCode, Is.EqualTo((int)ClientError.AutoClientResetFailed));
+                    Assert.That(err.Message, Is.EqualTo(errorMsg));
+                    Assert.That(err.InnerException, Is.Null);
+                    manualResetFallbackHandled = true;
+                    tcs.TrySetResult(true);
                 };
+
+                config.ClientResetHandler = clientResetHandler.BuildHandler(null, null, manualCb);
 
                 using var realm = await GetRealmAsync(config);
 
@@ -876,15 +901,15 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
-        [TestCase(ProgressMode.ReportIndefinitely)]
-        public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
+        [TestCaseSource(nameof(DoubleModeClientResetHandlers))]
+        public void Session_ProgressObservable_IntegrationTests((ProgressMode Mode, ClientResetHandlerBase Handler) tuple)
         {
             const int ObjectSize = 1_000_000;
             const int ObjectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                config.ClientResetHandler = tuple.Handler;
                 using var realm = GetRealm(config);
 
                 var completionTCS = new TaskCompletionSource<ulong>();
@@ -892,7 +917,7 @@ namespace Realms.Tests.Sync
 
                 var session = GetSession(realm);
 
-                var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
+                var observable = session.GetProgressObservable(ProgressDirection.Upload, tuple.Mode);
 
                 for (var i = 0; i < ObjectsToRecord; i++)
                 {
@@ -914,7 +939,7 @@ namespace Realms.Tests.Sync
                             // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
                         }
 
-                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        if (tuple.Mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
                             if (p.TransferableBytes <= ObjectSize ||
                                 p.TransferableBytes >= (ObjectsToRecord + 2) * ObjectSize)
@@ -941,7 +966,7 @@ namespace Realms.Tests.Sync
 
                 var totalTransferred = await completionTCS.Task;
 
-                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                if (tuple.Mode == ProgressMode.ForCurrentlyOutstandingWork)
                 {
                     Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
 
@@ -1320,6 +1345,17 @@ namespace Realms.Tests.Sync
             Assert.That(session.Equals(new object()), Is.False);
         }
 
+        private static IEnumerable<(ProgressMode Mode, ClientResetHandlerBase Handler)> DoubleModeClientResetHandlers()
+        {
+            foreach (var intMode in Enum.GetValues(typeof(ProgressMode)))
+            {
+                foreach (var handler in _clientResetInstanceHandlers)
+                {
+                    yield return ((ProgressMode)intMode, handler);
+                }
+            }
+        }
+
         protected override void CustomTearDown()
         {
             base.CustomTearDown();
@@ -1328,6 +1364,44 @@ namespace Realms.Tests.Sync
             _sessionErrorHandlers.DrainQueue(handler => Session.Error -= handler);
 #pragma warning restore CS0618 // Type or member is obsolete
 
+        }
+
+        public interface IClientResetHandler
+        {
+            ClientResetHandlerBase BuildHandler(BeforeResetCallback beforeCb = null,
+                                                AfterResetCallback afterCb = null,
+                                                ClientResetCallback manualCb = null);
+        }
+
+        private class ClientResetHanlder<T> : IClientResetHandler
+            where T : ClientResetHandlerBase
+        {
+            public Type _handlerType;
+
+            public ClientResetHanlder()
+            {
+                _handlerType = typeof(T);
+            }
+
+            public ClientResetHandlerBase BuildHandler(BeforeResetCallback beforeCb = null,
+                                                       AfterResetCallback afterCb = null,
+                                                       ClientResetCallback manualCb = null)
+            {
+                var handler = (ClientResetHandlerBase)Activator.CreateInstance(_handlerType);
+                SetBeforeCb(beforeCb, handler);
+                SetAfterCb(afterCb, handler);
+                SetManualCb(manualCb, handler);
+                return handler;
+            }
+
+            private static void SetBeforeCb(BeforeResetCallback function, ClientResetHandlerBase target) =>
+                typeof(T).GetProperty("OnBeforeReset").SetValue(target, function);
+
+            private static void SetAfterCb(AfterResetCallback function, ClientResetHandlerBase target) =>
+                typeof(T).GetProperty("OnAfterReset").SetValue(target, function);
+
+            private static void SetManualCb(ClientResetCallback function, ClientResetHandlerBase target) =>
+                typeof(T).GetProperty("ManualResetFallback").SetValue(target, function);
         }
 
         private static async Task TryInitiateClientReset(ClientResetException ex, int expectedError, SyncConfigurationBase config)
@@ -1347,9 +1421,9 @@ namespace Realms.Tests.Sync
             Assert.That(File.Exists(config.DatabasePath), Is.False);
         }
 
-        private static DiscardLocalResetHandler.AfterResetCallback GetOnAfterHandler(TaskCompletionSource<object> tcs, Action<Realm, Realm> assertions)
+        private static AfterResetCallback GetOnAfterHandler(TaskCompletionSource<object> tcs, Action<Realm, Realm> assertions)
         {
-            return new DiscardLocalResetHandler.AfterResetCallback((frozen, live) =>
+            return new AfterResetCallback((frozen, live) =>
             {
                 try
                 {
@@ -1363,9 +1437,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private static DiscardLocalResetHandler.BeforeResetCallback GetOnBeforeHandler(TaskCompletionSource<object> tcs, Action<Realm> assertions)
+        private static BeforeResetCallback GetOnBeforeHandler(TaskCompletionSource<object> tcs, Action<Realm> assertions)
         {
-            return new DiscardLocalResetHandler.BeforeResetCallback(frozen =>
+            return new BeforeResetCallback(frozen =>
             {
                 try
                 {
@@ -1378,9 +1452,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private static ClientResetHandlerBase.ClientResetCallback GetClientResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
+        private static ClientResetCallback GetClientResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
         {
-            return new ClientResetHandlerBase.ClientResetCallback(clientResetException =>
+            return new ClientResetCallback(clientResetException =>
             {
                 try
                 {

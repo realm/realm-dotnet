@@ -36,6 +36,37 @@ namespace Realms.Sync.ErrorHandling
         /// </param>
         public delegate void ClientResetCallback(ClientResetException clientResetException);
 
+        // TODO andrea: review the documentation here given the addition of the automatic recoveries
+        /// <summary>
+        /// Callback that indicates a Client Reset is about to happen.
+        /// </summary>
+        /// <param name="beforeFrozen">
+        /// The frozen <see cref="Realm"/> before the reset.
+        /// </param>
+        /// <remarks>
+        /// The lifetime of the Realm is tied to the callback, so don't store references to the Realm or objects
+        /// obtained from it for use outside of the callback. If you need to preserve the state as it was, use
+        /// <see cref="Realm.WriteCopy(RealmConfigurationBase)"/> to create a backup.
+        /// </remarks>
+        public delegate void BeforeResetCallback(Realm beforeFrozen);
+
+        // TODO andrea: review the documentation here given the addition of the automatic recoveries
+        /// <summary>
+        /// Callback that indicates a Client Reset has just happened.
+        /// </summary>
+        /// <param name="beforeFrozen">
+        /// The frozen <see cref="Realm"/> as it was before the reset.
+        /// </param>
+        /// <param name="after">
+        /// The <see cref="Realm"/> after the client reset. In order to modify this realm a write transaction needs to be started.
+        /// </param>
+        /// <remarks>
+        /// The lifetime of the Realm instances supplied is tied to the callback, so don't store references to
+        /// the Realm or objects obtained from it for use outside of the callback. If you need to preserve the
+        /// state as it was, use <see cref="Realm.WriteCopy(RealmConfigurationBase)"/> to create a backup.
+        /// </remarks>
+        public delegate void AfterResetCallback(Realm beforeFrozen, Realm after);
+
         internal ClientResetCallback ManualClientReset { get; set; }
 
         internal ClientResetHandlerBase()

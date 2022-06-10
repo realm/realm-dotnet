@@ -55,6 +55,7 @@ namespace Realms.Sync
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
 
+        // TODO andrea: extend the API documentation to include the new modes
         /// <summary>
         /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="DiscardLocalResetHandler"/>.
         /// </summary>
@@ -133,11 +134,19 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
-            var clientResyncMode = ClientResyncMode.DiscardLocal;
+            // TODO andrea: investigate which one should be the default one
+            var clientResyncMode = ClientResyncMode.AutomaticRecoveryOrDiscardLocal;
 
-            if (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler)
+            if (ClientResetHandler != null)
             {
-                clientResyncMode = ClientResyncMode.Manual;
+                clientResyncMode = ClientResetHandler switch
+                {
+                    ManualRecoveryHandler => ClientResyncMode.Manual,
+                    DiscardLocalResetHandler => ClientResyncMode.DiscardLocal,
+                    AutomaticRecoveryHandler => ClientResyncMode.AutomaticRecovery,
+                    AutomaticRecoveryOrDiscardLocalHandler => ClientResyncMode.AutomaticRecoveryOrDiscardLocal,
+                    _ => throw new NotSupportedException($"ClientResyncMode {ClientResetHandler} not handled yet"),
+                };
             }
 
             return new Native.SyncConfiguration

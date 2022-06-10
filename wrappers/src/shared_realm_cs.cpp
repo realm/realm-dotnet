@@ -133,7 +133,9 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
     config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
 
-    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal) {
+    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal ||
+        sync_configuration.client_resync_mode == ClientResyncMode::Recover ||
+        sync_configuration.client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
 
         config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
             if (!s_notify_before_callback(before_frozen, configuration_handle->handle())) {
