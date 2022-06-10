@@ -1,20 +1,20 @@
-﻿// ////////////////////////////////////////////////////////////////////////////
-// //
-// // Copyright 2022 Realm Inc.
-// //
-// // Licensed under the Apache License, Version 2.0 (the "License")
-// // you may not use this file except in compliance with the License.
-// // You may obtain a copy of the License at
-// //
-// // http://www.apache.org/licenses/LICENSE-2.0
-// //
-// // Unless required by applicable law or agreed to in writing, software
-// // distributed under the License is distributed on an "AS IS" BASIS,
-// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// // See the License for the specific language governing permissions and
-// // limitations under the License.
-// //
-// ////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2022 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License")
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,6 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
     public partial class ManualllyGeneratedClass : IRealmObject
     {
-
         #region Original class
 
         //public int Integer { get; set; }
@@ -48,40 +47,30 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         #region Weaved class
 
-        //TODO Necessary for now to create the schema
-        [WovenProperty]
-        public int Integer
+        public int IntValue
         {
-            get => _accessor.Integer;
-            set => _accessor.Integer = value;
+            get => _accessor.IntValue;
+            set => _accessor.IntValue = value;
         }
 
-        [WovenProperty]
-        public IList<int> IntegerList => _accessor.IntegerList;
+        public IList<int> ListValue => _accessor.ListValue;
 
-        [WovenProperty]
-        [MapTo("_name")]
-        public string Name
+        [MapTo("_string")]
+        public string StringValue
         {
-            get => _accessor.Name;
-            set => _accessor.Name = value;
+            get => _accessor.StringValue;
+            set => _accessor.StringValue = value;
         }
 
-        [WovenProperty]
         [PrimaryKey]
-        public int PKey
+        public int PrimaryKeyValue
         {
-            get => _accessor.PKey;
-            set => _accessor.PKey = value;
+            get => _accessor.PrimaryKeyValue;
+            set => _accessor.PrimaryKeyValue = value;
         }
 
         /*TODO:
-         * - Generate the schema
-         * - Modify ObjectSchema to use the generated schema (static prop)
-         * - Remove WovenProperty
-         * - Check how it should work with mapped properties
          * - See if we can cache column key for properties in managed accessor
-         * - Add primary key
          */
         #endregion
     }
@@ -89,8 +78,13 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
     public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
-        //TODO Need to fill out
-        public static ObjectSchema RealmSchema;
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ManualllyGeneratedClass", isEmbedded: false)
+        {
+            Property.Primitive("IntValue", RealmValueType.Int),
+            Property.PrimitiveList("ListValue", RealmValueType.Int),
+            Property.Primitive("_string", RealmValueType.String),
+            Property.Primitive("PrimaryKeyValue", RealmValueType.Int, isPrimaryKey: true),
+        }.Build();
 
         #region IRealmObject implementation
 
@@ -120,17 +114,17 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
             if (helper != null)
             {
-                Integer = unmanagedAccessor.Integer;
-                Name = unmanagedAccessor.Name;
+                IntValue = unmanagedAccessor.IntValue;
+                StringValue = unmanagedAccessor.StringValue;
 
                 if (!skipDefaults)
                 {
-                    IntegerList.Clear();
+                    ListValue.Clear();
                 }
 
-                foreach (var val in unmanagedAccessor.IntegerList)
+                foreach (var val in unmanagedAccessor.ListValue)
                 {
-                    IntegerList.Add(val);
+                    ListValue.Add(val);
                 }
             }
 
@@ -213,59 +207,59 @@ namespace Realm.Generated
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
-            value = (instance.Accessor as IManuallyGeneratedClassAccessor).PKey;
+            value = (instance.Accessor as IManuallyGeneratedClassAccessor).PrimaryKeyValue;
             return true;
         }
     }
 
     internal interface IManuallyGeneratedClassAccessor : IRealmAccessor
     {
-        int Integer { get; set; }
+        int IntValue { get; set; }
 
-        IList<int> IntegerList { get; }
+        IList<int> ListValue { get; }
 
-        public string Name { get; set; }
+        public string StringValue { get; set; }
 
-        public int PKey { get; set; }
+        public int PrimaryKeyValue { get; set; }
     }
 
     internal class ManuallyGeneratedClassManagedAccessor
         : ManagedAccessor, IManuallyGeneratedClassAccessor
     {
-        public int Integer
+        public int IntValue
         {
-            get => (int)GetValue("Integer");
-            set => SetValue("Integer", value);
+            get => (int)GetValue("IntValue");
+            set => SetValue("IntValue", value);
         }
 
-        public IList<int> IntegerList
+        public IList<int> ListValue
         {
-            get => GetListValue<int>("IntegerList");
+            get => GetListValue<int>("ListValue");
         }
 
-        public string Name
+        public string StringValue
         {
-            get => (string)GetValue("_name");
-            set => SetValue("_name", value);
+            get => (string)GetValue("_string");
+            set => SetValue("_string", value);
         }
 
-        public int PKey
+        public int PrimaryKeyValue
         {
-            get => (int)GetValue("PKey");
-            set => SetValueUnique("PKey", value);
+            get => (int)GetValue("PrimaryKeyValue");
+            set => SetValueUnique("PrimaryKeyValue", value);
         }
     }
 
     internal class ManuallyGeneratedClassUnmanagedAccessor
         : UnmanagedAccessor, IManuallyGeneratedClassAccessor
     {
-        public int Integer { get; set; }
+        public int IntValue { get; set; }
 
-        public IList<int> IntegerList { get; } = new List<int>();
+        public IList<int> ListValue { get; } = new List<int>();
 
-        public string Name { get; set; }
+        public string StringValue { get; set; }
 
-        public int PKey { get; set; }
+        public int PrimaryKeyValue { get; set; }
 
         public ManuallyGeneratedClassUnmanagedAccessor(Type objectType) : base(objectType)
         {

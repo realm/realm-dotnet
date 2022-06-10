@@ -214,11 +214,26 @@ namespace Realms.Schema
                 Argument.NotNull(type, nameof(type));
                 Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
 
-                Name = type.GetMappedOrOriginalName();
-                IsEmbedded = type.IsEmbeddedObject();
-                foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                var schemaField = type.GetField("RealmSchema", BindingFlags.Public | BindingFlags.Static);
+                if (schemaField != null)
                 {
-                    Add(Property.FromPropertyInfo(property));
+                    var objectSchema = (ObjectSchema)schemaField.GetValue(null);
+                    Name = objectSchema.Name;
+                    IsEmbedded = objectSchema.IsEmbedded;
+
+                    foreach (var prop in objectSchema)
+                    {
+                        Add(prop);
+                    }
+                }
+                else
+                {
+                    Name = type.GetMappedOrOriginalName();
+                    IsEmbedded = type.IsEmbeddedObject();
+                    foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                    {
+                        Add(Property.FromPropertyInfo(property));
+                    }
                 }
 
                 if (Count == 0)

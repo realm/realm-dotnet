@@ -29,28 +29,28 @@ namespace Realms.Tests.SourceGeneration
         public void TestUnmanaged()
         {
             var mgc = new ManualllyGeneratedClass();
-            mgc.PKey = 1;
-            mgc.Name = "Mario";
-            mgc.Integer = 24;
-            mgc.IntegerList.Add(10);
-            mgc.IntegerList.Add(20);
+            mgc.PrimaryKeyValue = 1;
+            mgc.StringValue = "Mario";
+            mgc.IntValue = 24;
+            mgc.ListValue.Add(10);
+            mgc.ListValue.Add(20);
 
-            Assert.That(mgc.PKey, Is.EqualTo(1));
-            Assert.That(mgc.Name, Is.EqualTo("Mario"));
-            Assert.That(mgc.Integer, Is.EqualTo(24));
-            Assert.That(mgc.IntegerList[0], Is.EqualTo(10));
-            Assert.That(mgc.IntegerList[1], Is.EqualTo(20));
+            Assert.That(mgc.PrimaryKeyValue, Is.EqualTo(1));
+            Assert.That(mgc.StringValue, Is.EqualTo("Mario"));
+            Assert.That(mgc.IntValue, Is.EqualTo(24));
+            Assert.That(mgc.ListValue[0], Is.EqualTo(10));
+            Assert.That(mgc.ListValue[1], Is.EqualTo(20));
         }
 
         [Test]
         public void TestManaged()
         {
             var mgc = new ManualllyGeneratedClass();
-            mgc.PKey = 1;
-            mgc.Name = "Mario";
-            mgc.Integer = 24;
-            mgc.IntegerList.Add(10);
-            mgc.IntegerList.Add(20);
+            mgc.PrimaryKeyValue = 1;
+            mgc.StringValue = "Mario";
+            mgc.IntValue = 24;
+            mgc.ListValue.Add(10);
+            mgc.ListValue.Add(20);
 
             using var realm = GetRealm();
 
@@ -62,41 +62,41 @@ namespace Realms.Tests.SourceGeneration
             var retrieved = realm.Find<ManualllyGeneratedClass>(1);
             retrieved = realm.All<ManualllyGeneratedClass>().First();
 
-            Assert.That(retrieved.PKey, Is.EqualTo(1));
-            Assert.That(retrieved.Name, Is.EqualTo("Mario"));
-            Assert.That(retrieved.Integer, Is.EqualTo(24));
-            Assert.That(retrieved.IntegerList.Count, Is.EqualTo(2));
-            Assert.That(retrieved.IntegerList[0], Is.EqualTo(10));
-            Assert.That(retrieved.IntegerList[1], Is.EqualTo(20));
+            Assert.That(retrieved.PrimaryKeyValue, Is.EqualTo(1));
+            Assert.That(retrieved.StringValue, Is.EqualTo("Mario"));
+            Assert.That(retrieved.IntValue, Is.EqualTo(24));
+            Assert.That(retrieved.ListValue.Count, Is.EqualTo(2));
+            Assert.That(retrieved.ListValue[0], Is.EqualTo(10));
+            Assert.That(retrieved.ListValue[1], Is.EqualTo(20));
 
             realm.Write(() =>
             {
-                mgc.Name = "Luigi";
-                mgc.Integer = 15;
-                mgc.IntegerList.Add(30);
+                mgc.StringValue = "Luigi";
+                mgc.IntValue = 15;
+                mgc.ListValue.Add(30);
             });
 
-            Assert.That(retrieved.Name, Is.EqualTo("Luigi"));
-            Assert.That(retrieved.Integer, Is.EqualTo(15));
-            Assert.That(retrieved.IntegerList.Count, Is.EqualTo(3));
-            Assert.That(retrieved.IntegerList[0], Is.EqualTo(10));
-            Assert.That(retrieved.IntegerList[1], Is.EqualTo(20));
-            Assert.That(retrieved.IntegerList[2], Is.EqualTo(30));
+            Assert.That(retrieved.StringValue, Is.EqualTo("Luigi"));
+            Assert.That(retrieved.IntValue, Is.EqualTo(15));
+            Assert.That(retrieved.ListValue.Count, Is.EqualTo(3));
+            Assert.That(retrieved.ListValue[0], Is.EqualTo(10));
+            Assert.That(retrieved.ListValue[1], Is.EqualTo(20));
+            Assert.That(retrieved.ListValue[2], Is.EqualTo(30));
 
             realm.Write(() =>
             {
-                retrieved.Name = "Peach";
-                retrieved.Integer = 65;
-                retrieved.IntegerList.Add(40);
+                retrieved.StringValue = "Peach";
+                retrieved.IntValue = 65;
+                retrieved.ListValue.Add(40);
             });
 
-            Assert.That(mgc.Name, Is.EqualTo("Peach"));
-            Assert.That(mgc.Integer, Is.EqualTo(65));
-            Assert.That(mgc.IntegerList.Count, Is.EqualTo(4));
-            Assert.That(mgc.IntegerList[0], Is.EqualTo(10));
-            Assert.That(mgc.IntegerList[1], Is.EqualTo(20));
-            Assert.That(mgc.IntegerList[2], Is.EqualTo(30));
-            Assert.That(mgc.IntegerList[3], Is.EqualTo(40));
+            Assert.That(mgc.StringValue, Is.EqualTo("Peach"));
+            Assert.That(mgc.IntValue, Is.EqualTo(65));
+            Assert.That(mgc.ListValue.Count, Is.EqualTo(4));
+            Assert.That(mgc.ListValue[0], Is.EqualTo(10));
+            Assert.That(mgc.ListValue[1], Is.EqualTo(20));
+            Assert.That(mgc.ListValue[2], Is.EqualTo(30));
+            Assert.That(mgc.ListValue[3], Is.EqualTo(40));
         }
     }
 }
