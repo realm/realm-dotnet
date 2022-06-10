@@ -40,7 +40,7 @@ public partial class MainPage : ContentPage
 
     private async Task RunHeadless()
     {
-        if (TestHelpers.IsHeadlessRun(MauiProgram.Args))
+        if (!TestHelpers.IsHeadlessRun(MauiProgram.Args))
         {
             return;
         }
