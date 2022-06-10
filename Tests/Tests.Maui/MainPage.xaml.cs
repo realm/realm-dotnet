@@ -30,15 +30,24 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
 
-        if (TestHelpers.IsHeadlessRun(MauiProgram.Args))
-        {
-            _ = RunTests();
-        }
+        _ = RunHeadless();
     }
 
     private void OnRunTestsClicked(object sender, EventArgs e)
     {
         _ = RunTests();
+    }
+
+    private async Task RunHeadless()
+    {
+        if (TestHelpers.IsHeadlessRun(MauiProgram.Args))
+        {
+            return;
+        }
+
+        await RunTests();
+
+        Environment.Exit(0);
     }
 
     private async Task RunTests()
@@ -84,9 +93,9 @@ public partial class MainPage : ContentPage
                         }
                     });
                 });
-                var failed = autorun.Execute(arguments, writer, reader);
+                var failed = autorun.Execute(arguments.Where(a => a != "--headless").ToArray(), writer, reader);
 
-                var resultPath = MauiProgram.Args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
+                var resultPath = TestHelpers.GetResultsPath(MauiProgram.Args); 
                 if (!string.IsNullOrEmpty(resultPath))
                 {
                     TestHelpers.TransformTestResults(resultPath);
