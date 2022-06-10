@@ -69,9 +69,6 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             set => _accessor.PrimaryKeyValue = value;
         }
 
-        /*TODO:
-         * - See if we can cache column key for properties in managed accessor
-         */
         #endregion
     }
 
@@ -226,6 +223,9 @@ namespace Realm.Generated
     internal class ManuallyGeneratedClassManagedAccessor
         : ManagedAccessor, IManuallyGeneratedClassAccessor
     {
+        /** If we want to make this more efficient, we can use property indexes here.
+         * We should have all the info necessary to compute them during source generation.
+         */
         public int IntValue
         {
             get => (int)GetValue("IntValue");

@@ -10,6 +10,8 @@ namespace Realm.SourceGenerator
     [Generator]
     public class RealmClassGenerator : ISourceGenerator
     {
+
+        //TODO How to format: https://github.com/dotnet/roslyn/issues/49685
         public void Initialize(GeneratorInitializationContext context) 
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
