@@ -34,8 +34,8 @@ public partial class App : MauiWinUIApplication
 
     protected override MauiApp CreateMauiApp()
     {
-        var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
-        
+        var args = Environment.GetCommandLineArgs();
+
         return MauiProgram.CreateMauiApp(args);
     }
 }
