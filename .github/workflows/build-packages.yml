@@ -65,6 +65,11 @@ jobs:
       with:
         name: wrappers-ios-Device
         path: wrappers/build
+    - name: Fetch artifacts for ios-Catalyst
+      uses: actions/download-artifact@v2
+      with:
+        name: wrappers-ios-Catalyst
+        path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
       uses: actions/download-artifact@v2
       with:

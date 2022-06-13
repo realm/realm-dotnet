@@ -1,22 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6-android;net6-ios</TargetFrameworks>
+    <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Tests.Maui</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-	<DisableFody>true</DisableFody>
+    <DisableFody>true</DisableFody>
 
     <!-- Display name -->
     <ApplicationTitle>Tests.Maui</ApplicationTitle>
 
     <!-- App Identifier -->
     <ApplicationId>io.realm.mauitests</ApplicationId>
-    <ApplicationId Condition="$(TargetFramework.Contains('-windows'))">2C2642F2-AA05-4016-985D-211F026B08B8</ApplicationId>
+    <ApplicationIdGuid>2C2642F2-AA05-4016-985D-211F026B08B8</ApplicationIdGuid>
 
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -25,8 +24,8 @@
     <!-- Required for C# Hot Reload -->
     <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
-    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">11.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">13.2</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
@@ -54,13 +53,19 @@
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-	
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6-ios'">
-	<NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
+    <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
     <NativeReference Include="..\..\wrappers\build\iphonesimulator\$(Configuration)\realm-wrappers.framework" Condition="!$(RuntimeIdentifier.StartsWith('ios-'))">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\..\wrappers\build\macosx\$(Configuration)\realm-wrappers.framework" Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
