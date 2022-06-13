@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Realm.Generated;
 using Realms;
@@ -75,6 +74,8 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     [Woven(typeof(ManuallyGeneratedClassObjectHelper))]
     public partial class ManualllyGeneratedClass : IRealmObject, INotifyPropertyChanged
     {
+        // The schema property could be part of an interface, but for that the user needs to have at least .NET 5.0 and C# 8.0
+        // So we need to use reflection to check if this exists.
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ManualllyGeneratedClass", isEmbedded: false)
         {
             Property.Primitive("IntValue", RealmValueType.Int),
@@ -186,6 +187,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     }
 }
 
+// Having a separate namespace allows to hide the implementation details better.
 namespace Realm.Generated
 {
     internal class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper
@@ -224,7 +226,7 @@ namespace Realm.Generated
         : ManagedAccessor, IManuallyGeneratedClassAccessor
     {
         /** If we want to make this more efficient, we can use property indexes here.
-         * We should have all the info necessary to compute them during source generation.
+         * We should have all the info necessary to compute them during source generation (as we do in Realm.CreateRealmObjectMetadata).
          */
         public int IntValue
         {
