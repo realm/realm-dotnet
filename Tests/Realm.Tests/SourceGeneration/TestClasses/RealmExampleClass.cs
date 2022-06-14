@@ -27,5 +27,29 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
     public partial class RealmExampleClass: IRealmObject
     {
+        //[PrimaryKey]
+        //public int PrimaryKey { get; set; }
+
+        //public int Age { get; set; }
+
+        //public int? NullableAge { get; set; }
+
+        //[Ignored]
+        //public int IgnoredString { get; set; }
+
+        //public IList<int> IntList { get; }
+
+        //public byte[] ByteArray { get; set; }
+
+        //public EmbeddedClass Embedded { get; set; }
+
+        //public IList<EmbeddedClass> ListOfEmbedded { get;  }
+
+        public IDictionary<string, int> DictionaryInt { get; }
+    }
+
+    public partial class EmbeddedClass : IEmbeddedObject
+    {
+
     }
 }

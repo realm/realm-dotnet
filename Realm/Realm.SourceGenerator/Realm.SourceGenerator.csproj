@@ -26,6 +26,10 @@
 	<ItemGroup>
 		<AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Realm\Realm.csproj" />
+	</ItemGroup>
 	<Import Project="..\AssemblyInfo.props" />
 
 </Project>
