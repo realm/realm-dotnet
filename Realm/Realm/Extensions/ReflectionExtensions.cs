@@ -45,9 +45,9 @@ namespace Realms
 
         public static string GetMappedOrOriginalName(this MemberInfo member) => member?.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member?.Name;
 
-        public static bool IsEmbeddedObject(this Type type) => type == typeof(EmbeddedObject) || type.BaseType == typeof(EmbeddedObject);
+        public static bool IsEmbeddedObject(this Type type) => typeof(IEmbeddedObject).IsAssignableFrom(type);
 
-        public static bool IsRealmObject(this Type type) => type == typeof(RealmObject) || type.BaseType == typeof(RealmObject);
+        public static bool IsRealmObject(this Type type) => typeof(IRealmObject).IsAssignableFrom(type);
 
         public static T[] GetEnumValues<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();
     }

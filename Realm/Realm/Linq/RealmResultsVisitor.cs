@@ -33,7 +33,7 @@ namespace Realms
     internal class RealmResultsVisitor : ExpressionVisitor
     {
         private readonly Realm _realm;
-        private readonly RealmObjectBase.Metadata _metadata;
+        private readonly Metadata _metadata;
 
         private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         private SortDescriptorHandle _sortDescriptor;
@@ -80,7 +80,7 @@ namespace Realms
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, RealmObjectBase.Metadata metadata)
+        internal RealmResultsVisitor(Realm realm, Metadata metadata)
         {
             _realm = realm;
             _metadata = metadata;
@@ -565,7 +565,7 @@ namespace Realms
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression.\nUnable to process '{node.Right}'.");
                 }
 
-                if (rightValue is RealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
+                if (rightValue is IRealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase.\nUnable to process '{node.Right}'.");
                 }
@@ -812,9 +812,9 @@ namespace Realms
             {
                 action(realm, propertyIndex, Operator.Convert<DateTimeOffset>(value));
             }
-            else if (typeof(RealmObjectBase).IsAssignableFrom(columnType))
+            else if (typeof(IRealmObjectBase).IsAssignableFrom(columnType))
             {
-                action(realm, propertyIndex, Operator.Convert<RealmObjectBase>(value));
+                action(realm, propertyIndex, RealmValue.Object(Operator.Convert<IRealmObjectBase>(value)));
             }
             else if (columnType == typeof(RealmValue))
             {

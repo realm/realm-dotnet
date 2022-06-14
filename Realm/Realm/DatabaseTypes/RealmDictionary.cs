@@ -100,7 +100,7 @@ namespace Realms
 
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
-        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, RealmObjectBase.Metadata metadata)
+        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
             : base(realm, metadata)
         {
             _dictionaryHandle = adoptedDictionary;

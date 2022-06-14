@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
+using Realms.Extensions;
 using Realms.Helpers;
 using Realms.Native;
 
@@ -57,7 +58,7 @@ namespace Realms
         private readonly PrimitiveValue _primitiveValue;
         private readonly string _stringValue;
         private readonly byte[] _dataValue;
-        private readonly RealmObjectBase _objectValue;
+        private readonly IRealmObjectBase _objectValue;
 
         private readonly ObjectHandle _objectHandle;
         private readonly IntPtr _propertyIndex;
@@ -111,7 +112,7 @@ namespace Realms
             _stringValue = value;
         }
 
-        private RealmValue(RealmObjectBase obj) : this()
+        private RealmValue(IRealmObjectBase obj) : this()
         {
             Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
             _objectValue = obj;
@@ -143,7 +144,7 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
-        private static RealmValue Object(RealmObjectBase value) => new RealmValue(value);
+        internal static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -164,7 +165,7 @@ namespace Realms
                 RealmValueType.Decimal128 => Decimal(Operator.Convert<T, Decimal128>(value)),
                 RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
                 RealmValueType.Guid => Guid(Operator.Convert<T, Guid>(value)),
-                RealmValueType.Object => Object(Operator.Convert<T, RealmObjectBase>(value)),
+                RealmValueType.Object => Object(Operator.Convert<T, IRealmObjectBase>(value)),
                 _ => throw new NotSupportedException($"RealmValueType {type} is not supported."),
             };
         }
@@ -197,7 +198,7 @@ namespace Realms
                         throw new InvalidOperationException("Can't convert unmanaged object to native");
                     }
 
-                    return (PrimitiveValue.Object(_objectValue?.ObjectHandle), null);
+                    return (PrimitiveValue.Object(_objectValue?.GetObjectHandle()), null);
                 default:
                     return (_primitiveValue, null);
             }
@@ -603,6 +604,17 @@ namespace Realms
         public RealmObjectBase AsRealmObject() => AsRealmObject<RealmObjectBase>();
 
         /// <summary>
+        /// Returns the stored value as a <see cref="IRealmObjectBase"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the underlying value is not of type <see cref="RealmValueType.Object"/> or <see cref="RealmValueType.Null"/>.
+        /// </exception>
+        /// <returns>
+        /// A <see cref="IRealmObjectBase"/> instance representing the value stored in the database. It will be <c>null</c> if <see cref="Type"/> is <see cref="RealmValueType.Null"/>.
+        /// </returns>
+        public IRealmObjectBase AsIRealmObject() => AsRealmObject<IRealmObjectBase>();
+
+        /// <summary>
         /// Returns the stored value as a <typeparamref name="T"/> which inherits from <see cref="RealmObjectBase"/>.
         /// </summary>
         /// <exception cref="InvalidOperationException">
@@ -613,11 +625,11 @@ namespace Realms
         /// A <see cref="RealmObjectBase"/> instance representing the value stored in the database. It will be <c>null</c> if <see cref="Type"/> is <see cref="RealmValueType.Null"/>.
         /// </returns>
         public T AsRealmObject<T>()
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             if (Type == RealmValueType.Null)
             {
-                return null;
+                return default(T);
             }
 
             EnsureType("object", RealmValueType.Object);
@@ -651,7 +663,7 @@ namespace Realms
                 RealmValueType.Decimal128 => Operator.Convert<Decimal128, T>(AsDecimal128()),
                 RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(AsObjectId()),
                 RealmValueType.Guid => Operator.Convert<Guid, T>(AsGuid()),
-                RealmValueType.Object => Operator.Convert<RealmObjectBase, T>(AsRealmObject()),
+                RealmValueType.Object => Operator.Convert<IRealmObjectBase, T>(AsIRealmObject()),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }

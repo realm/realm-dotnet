@@ -20,6 +20,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Realms.Extensions;
 using Realms.Weaving;
 
 namespace Realms.Tests.Database
@@ -103,7 +104,7 @@ namespace Realms.Tests.Database
 
         private static IRealmObjectHelper GetHelper(RealmObjectBase obj)
         {
-            return obj.ObjectMetadata.Helper;
+            return obj.GetObjectMetadata().Helper;
         }
 
         private IRealmObjectHelper GetHelper(Type type)

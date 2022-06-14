@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Dynamic;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Helpers;
 using Realms.Logging;
 using Realms.Native;
@@ -328,7 +329,7 @@ namespace Realms
             DynamicApi = new Dynamic(this);
         }
 
-        private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
+        private Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
             var tableKey = SharedRealmHandle.GetTableKey(schema.Name);
             Weaving.IRealmObjectHelper helper;
@@ -360,7 +361,7 @@ namespace Realms
                 initPropertyMap[prop.Name] = (IntPtr)index;
             }
 
-            return new RealmObjectBase.Metadata(tableKey, helper, initPropertyMap, schema);
+            return new Metadata(tableKey, helper, initPropertyMap, schema);
         }
 
         /// <summary>
@@ -521,11 +522,10 @@ namespace Realms
             return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
         }
 
-        internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
+        internal IRealmObjectBase MakeObject(Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret.SetOwner(this, objectHandle, metadata);
-            ret.OnManaged();
+            ret.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata));
             return ret;
         }
 
@@ -557,13 +557,13 @@ namespace Realms
         /// </remarks>
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c>.</returns>
         public T Add<T>(T obj, bool update = false)
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
             Argument.NotNull(obj, nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            AddInternal(obj, typeof(T), update);
+            AddInternal(obj, obj.GetType(), update);
             return obj;
         }
 
@@ -587,7 +587,7 @@ namespace Realms
         /// This method modifies the objects in-place, meaning that after it has run, all items in <c>objs</c> will be managed.
         /// </remarks>
         public void Add<T>(IEnumerable<T> objs, bool update = false)
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
             Argument.NotNull(objs, nameof(objs));
@@ -599,47 +599,16 @@ namespace Realms
             }
         }
 
-        /// <summary>
-        /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
-        /// </summary>
-        /// <param name="obj">Must be a standalone object, <c>null</c> not allowed.</param>
-        /// <param name="update">If <c>true</c>, and an object with the same primary key already exists, performs an update.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">
-        /// You can't manage an object with more than one <see cref="Realm"/>.
-        /// </exception>
-        /// <remarks>
-        /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
-        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
-        /// You have to break the cycle manually and assign relationships after all object have been managed.
-        /// </remarks>
-        /// <returns>The passed object.</returns>
-        public RealmObject Add(RealmObject obj, bool update = false)
-        {
-            ThrowIfDisposed();
-            Argument.NotNull(obj, nameof(obj));
-
-            AddInternal(obj, obj.GetType(), update);
-            return obj;
-        }
-
-        internal void ManageEmbedded(EmbeddedObject obj, ObjectHandle handle)
+        internal void ManageEmbedded(IEmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            obj.SetOwner(this, handle, metadata);
-
-            // If an object is newly created, we don't need to invoke setters of properties with default values.
-            metadata.Helper.CopyToRealm(obj, update: false, skipDefaults: true);
-            obj.OnManaged();
+            obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata), metadata.Helper, false, true);
         }
 
-        private void AddInternal(RealmObject obj, Type objectType, bool update)
+        private void AddInternal(IRealmObject obj, Type objectType, bool update)
         {
             if (!ShouldAddNewObject(obj))
             {
@@ -662,14 +631,10 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
-            obj.SetOwner(this, objectHandle, metadata);
-
-            // If an object is newly created, we don't need to invoke setters of properties with default values.
-            metadata.Helper.CopyToRealm(obj, update, isNew);
-            obj.OnManaged();
+            obj.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata), metadata.Helper, update, isNew);
         }
 
-        private bool ShouldAddNewObject(RealmObjectBase obj)
+        private bool ShouldAddNewObject(IRealmObjectBase obj)
         {
             Argument.NotNull(obj, nameof(obj));
 
@@ -959,7 +924,7 @@ namespace Realms
             {
                 using var realm = GetInstance(Config);
                 var writeAction = realm.Write(() => function(realm));
-                if (writeAction is RealmObjectBase rob && rob.IsManaged && rob.IsValid)
+                if (writeAction is IRealmObjectBase rob && rob.IsManaged && rob.IsValid)
                 {
                     return (object)ThreadSafeReference.Create(rob);
                 }
@@ -969,7 +934,7 @@ namespace Realms
 
             await RefreshAsync();
 
-            if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
+            if (result is ThreadSafeReference.Object<IRealmObjectBase> tsr)
             {
                 return (T)(object)ResolveReference(tsr);
             }
@@ -1060,7 +1025,7 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
         [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             ThrowIfDisposed();
 
@@ -1224,7 +1189,7 @@ namespace Realms
         /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
         /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this <see cref="Realm"/>.</returns>
         public IQueryable<T> All<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 
@@ -1238,7 +1203,7 @@ namespace Realms
 
         // This should only be used for tests
         internal IQueryable<T> AllEmbedded<T>()
-            where T : EmbeddedObject
+            where T : IEmbeddedObject
         {
             ThrowIfDisposed();
 
@@ -1265,7 +1230,7 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(long? primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1277,7 +1242,7 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(string primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1289,7 +1254,7 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(ObjectId? primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1301,11 +1266,11 @@ namespace Realms
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T Find<T>(Guid? primaryKey)
-            where T : RealmObject => FindCore<T>(primaryKey);
+            where T : IRealmObject => FindCore<T>(primaryKey);
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         internal T FindCore<T>(RealmValue primaryKey)
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 
@@ -1315,7 +1280,7 @@ namespace Realms
                 return (T)MakeObject(metadata, objectHandle);
             }
 
-            return null;
+            return default(T);
         }
 
         #endregion Quick Find using primary key
@@ -1333,7 +1298,7 @@ namespace Realms
         /// if the object has been deleted after the reference was created.
         /// </returns>
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1343,7 +1308,7 @@ namespace Realms
             if (!objectHandle.IsValid)
             {
                 objectHandle.Dispose();
-                return null;
+                return default(T);
             }
 
             if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
@@ -1437,7 +1402,7 @@ namespace Realms
         /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
         /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1457,14 +1422,14 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>obj</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If you pass a standalone object.</exception>
-        public void Remove(RealmObjectBase obj)
+        public void Remove(IRealmObjectBase obj)
         {
             ThrowIfDisposed();
 
             Argument.NotNull(obj, nameof(obj));
             Argument.Ensure(obj.IsManaged, "Object is not managed by Realm, so it cannot be removed.", nameof(obj));
 
-            obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
+            obj.GetObjectHandle().RemoveFromRealm(SharedRealmHandle);
         }
 
         /// <summary>
@@ -1480,7 +1445,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
         public void RemoveRange<T>(IQueryable<T> range)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             ThrowIfDisposed();
 
@@ -1500,7 +1465,7 @@ namespace Realms
         /// If the type T is not part of the limited set of classes in this Realm's <see cref="Schema"/>.
         /// </exception>
         public void RemoveAll<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             ThrowIfDisposed();
 
@@ -1577,30 +1542,30 @@ namespace Realms
 
         internal class RealmMetadata
         {
-            private readonly Dictionary<string, RealmObjectBase.Metadata> stringToRealmObjectMetadataDict;
-            private readonly Dictionary<TableKey, RealmObjectBase.Metadata> tableKeyToRealmObjectMetadataDict;
+            private readonly Dictionary<string, Metadata> stringToRealmObjectMetadataDict;
+            private readonly Dictionary<TableKey, Metadata> tableKeyToRealmObjectMetadataDict;
 
-            public IEnumerable<RealmObjectBase.Metadata> Values => stringToRealmObjectMetadataDict.Values;
+            public IEnumerable<Metadata> Values => stringToRealmObjectMetadataDict.Values;
 
-            public RealmMetadata(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            public RealmMetadata(IEnumerable<Metadata> objectsMetadata)
             {
-                stringToRealmObjectMetadataDict = new Dictionary<string, RealmObjectBase.Metadata>();
-                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, RealmObjectBase.Metadata>();
+                stringToRealmObjectMetadataDict = new Dictionary<string, Metadata>();
+                tableKeyToRealmObjectMetadataDict = new Dictionary<TableKey, Metadata>();
 
                 Add(objectsMetadata);
             }
 
-            public bool TryGetValue(string objectType, out RealmObjectBase.Metadata metadata) =>
+            public bool TryGetValue(string objectType, out Metadata metadata) =>
                 stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata);
 
-            public bool TryGetValue(TableKey tablekey, out RealmObjectBase.Metadata metadata) =>
+            public bool TryGetValue(TableKey tablekey, out Metadata metadata) =>
                 tableKeyToRealmObjectMetadataDict.TryGetValue(tablekey, out metadata);
 
-            public RealmObjectBase.Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
+            public Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
 
-            public RealmObjectBase.Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
+            public Metadata this[TableKey tablekey] => tableKeyToRealmObjectMetadataDict[tablekey];
 
-            public void Add(IEnumerable<RealmObjectBase.Metadata> objectsMetadata)
+            public void Add(IEnumerable<Metadata> objectsMetadata)
             {
                 foreach (var objectMetadata in objectsMetadata)
                 {
@@ -1759,8 +1724,8 @@ namespace Realms
                     ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
                     : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
-                result.SetOwner(_realm, objectHandle, metadata);
-                result.OnManaged();
+                result.SetManagedAccessor(new ManagedAccessor(_realm, objectHandle, metadata));
+
                 return result;
             }
 
@@ -1774,22 +1739,21 @@ namespace Realms
             /// </param>
             /// <param name="propertyName">The property to which the newly created embedded object will be assigned.</param>
             /// <returns>A dynamically-accessed embedded object.</returns>
-            public dynamic CreateEmbeddedObjectForProperty(RealmObjectBase parent, string propertyName)
+            public dynamic CreateEmbeddedObjectForProperty(IRealmObjectBase parent, string propertyName)
             {
                 _realm.ThrowIfDisposed();
 
                 Argument.NotNull(parent, nameof(parent));
                 Argument.Ensure(parent.IsManaged && parent.IsValid, "The object passed as parent must be managed and valid to create an embedded object.", nameof(parent));
                 Argument.Ensure(parent.Realm.IsSameInstance(_realm), "The object passed as parent is managed by a different Realm", nameof(parent));
-                Argument.Ensure(parent.ObjectMetadata.Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
+                Argument.Ensure(parent.GetObjectMetadata().Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
                 Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
                 Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
-                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(propertyName, parent.ObjectMetadata);
+                var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
-                obj.SetOwner(_realm, handle, metadata);
-                obj.OnManaged();
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, handle, metadata));
 
                 return obj;
             }
@@ -2002,7 +1966,7 @@ namespace Realms
                 return null;
             }
 
-            private EmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
+            private IEmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -2013,15 +1977,14 @@ namespace Realms
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
-                var obj = (EmbeddedObject)realmList.Metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
-                obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
-                obj.OnManaged();
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmList.NativeHandle), realmList.Metadata));
 
                 return obj;
             }
 
-            private EmbeddedObject PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
+            private IEmbeddedObject PerformEmbeddedDictionaryOperation(object dictionary, Func<DictionaryHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
@@ -2032,10 +1995,9 @@ namespace Realms
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }
 
-                var obj = (EmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
-                obj.SetOwner(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata);
-                obj.OnManaged();
+                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata));
 
                 return obj;
             }

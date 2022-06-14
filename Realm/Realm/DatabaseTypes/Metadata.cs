@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,21 +17,30 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
-using System.Reflection;
-using Realms.Helpers;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Realms.Native;
+using Realms.Schema;
+using Realms.Weaving;
 
-namespace Realms.DataBinding
+namespace Realms
 {
-    internal static class TypeInfoHelper
+    internal class Metadata
     {
-        // Holds Type -> RealmObjectTypeInfo map to avoid creating a new TypeDelegator for each IReflectableType.GetTypeInfo invocation.
-        private static readonly ConcurrentDictionary<Type, RealmObjectTypeDelegator> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeDelegator>();
+        internal readonly TableKey TableKey;
 
-        public static TypeInfo GetInfo(IRealmObjectBase obj)
+        internal readonly IRealmObjectHelper Helper;
+
+        internal readonly IReadOnlyDictionary<string, IntPtr> PropertyIndices;
+
+        internal readonly ObjectSchema Schema;
+
+        public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
         {
-            Argument.NotNull(obj, nameof(obj));
-            return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t));
+            TableKey = tableKey;
+            Helper = helper;
+            PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
+            Schema = schema;
         }
     }
 }

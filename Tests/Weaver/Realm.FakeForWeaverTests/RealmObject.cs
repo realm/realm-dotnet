@@ -31,7 +31,11 @@ namespace Realms
     {
     }
 
-    public abstract class RealmObjectBase : INotifyPropertyChanged
+    public interface IRealmObjectBase
+    {
+    }
+
+    public abstract class RealmObjectBase : IRealmObjectBase, INotifyPropertyChanged
     {
         public List<string> LogList = new List<string>();
 

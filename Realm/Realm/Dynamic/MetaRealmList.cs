@@ -49,7 +49,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindSetIndex(SetIndexBinder binder, DynamicMetaObject[] indexes, DynamicMetaObject value)
         {
-            if (Value is IRealmCollection<EmbeddedObject>)
+            if (Value is IRealmCollection<IEmbeddedObject>)
             {
                 throw new NotSupportedException("Can't set embedded objects directly. Instead use Realm.DynamicApi.SetEmbeddedObjectInList.");
             }
@@ -59,7 +59,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
         {
-            if (Value is IRealmCollection<EmbeddedObject>)
+            if (Value is IRealmCollection<IEmbeddedObject>)
             {
                 switch (binder.Name)
                 {
