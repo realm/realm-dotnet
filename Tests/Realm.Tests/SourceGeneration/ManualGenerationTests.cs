@@ -28,7 +28,7 @@ namespace Realms.Tests.SourceGeneration
     public class ManualGenerationTests : RealmInstanceTest
     {
         [Test]
-        public void TestUnmanaged()
+        public void TestBaseUnmanaged()
         {
             var mgc = new ManualllyGeneratedClass();
             mgc.PrimaryKeyValue = 1;
@@ -45,35 +45,30 @@ namespace Realms.Tests.SourceGeneration
         }
 
         [Test]
-        public void TestNotificationUnmanaged()
+        public void TestBaseUnmanagedWithAccessor()
         {
-            string notifiedPropertyName = null;
-
-            var handler = new PropertyChangedEventHandler((sender, eventArgs) =>
-            {
-                notifiedPropertyName = eventArgs.PropertyName;
-            });
-
             var mgc = new ManualllyGeneratedClass();
-            mgc.PrimaryKeyValue = 1;
-            mgc.StringValue = "required";
+            mgc.Accessor.SetValue("PrimaryKeyValue", 1);
+            mgc.Accessor.SetValue("_string", "Mario");
+            mgc.Accessor.SetValue("IntValue", 24);
+            mgc.Accessor.GetListValue<int>("ListValue").Add(10);
+            mgc.Accessor.GetListValue<int>("ListValue").Add(20);
 
-            mgc.PropertyChanged += handler;
+            Assert.That(mgc.PrimaryKeyValue, Is.EqualTo(1));
+            Assert.That(mgc.StringValue, Is.EqualTo("Mario"));
+            Assert.That(mgc.IntValue, Is.EqualTo(24));
+            Assert.That(mgc.ListValue[0], Is.EqualTo(10));
+            Assert.That(mgc.ListValue[1], Is.EqualTo(20));
 
-            mgc.IntValue = 11;
-
-            Assert.That(notifiedPropertyName, Is.EqualTo("IntValue"));
-            notifiedPropertyName = null;
-
-            mgc.PropertyChanged -= handler;
-
-            mgc.IntValue = 22;
-
-            Assert.That(notifiedPropertyName, Is.Null);
+            Assert.That((int)mgc.Accessor.GetValue("PrimaryKeyValue"), Is.EqualTo(1));
+            Assert.That((string)mgc.Accessor.GetValue("_string"), Is.EqualTo("Mario"));
+            Assert.That((int)mgc.Accessor.GetValue("IntValue"), Is.EqualTo(24));
+            Assert.That(mgc.Accessor.GetListValue<int>("ListValue")[0], Is.EqualTo(10));
+            Assert.That(mgc.Accessor.GetListValue<int>("ListValue")[1], Is.EqualTo(20));
         }
 
         [Test]
-        public void TestManaged()
+        public void TestBaseManaged()
         {
             var mgc = new ManualllyGeneratedClass();
             mgc.PrimaryKeyValue = 1;
@@ -128,6 +123,39 @@ namespace Realms.Tests.SourceGeneration
         }
 
         [Test]
+        public void TestNotificationUnmanaged()
+        {
+            string notifiedPropertyName = null;
+
+            var handler = new PropertyChangedEventHandler((sender, eventArgs) =>
+            {
+                notifiedPropertyName = eventArgs.PropertyName;
+            });
+
+            var mgc = new ManualllyGeneratedClass();
+            mgc.PrimaryKeyValue = 1;
+            mgc.StringValue = "required";
+
+            mgc.PropertyChanged += handler;
+
+            mgc.IntValue = 11;
+
+            Assert.That(notifiedPropertyName, Is.EqualTo("IntValue"));
+            notifiedPropertyName = null;
+
+            mgc.Accessor.SetValue("_string", "newVal");
+
+            Assert.That(notifiedPropertyName, Is.EqualTo("_string"));
+            notifiedPropertyName = null;
+
+            mgc.PropertyChanged -= handler;
+
+            mgc.IntValue = 22;
+
+            Assert.That(notifiedPropertyName, Is.Null);
+        }
+
+        [Test]
         public void TestNotificationManaged()
         {
             string notifiedPropertyName = null;
@@ -171,7 +199,7 @@ namespace Realms.Tests.SourceGeneration
         }
 
         [Test]
-        public void TestNotificationsFromUnmanagedToManaged()
+        public void TestNotificationsUnmanagedToManaged()
         {
             string notifiedPropertyName = null;
             int count = 0;

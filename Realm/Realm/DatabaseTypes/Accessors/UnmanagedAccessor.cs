@@ -31,6 +31,8 @@ namespace Realms
     {
         private readonly Type _objectType;
 
+        private Action<string> _onNotifyPropertyChanged;
+
         public bool IsManaged => false;
 
         public bool IsValid => true;
@@ -67,10 +69,17 @@ namespace Realms
 
         public virtual void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
+            _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
         }
 
         public virtual void UnsubscribeFromNotifications()
         {
+            _onNotifyPropertyChanged = null;
+        }
+
+        protected void RaisePropertyChanged(string propertyName)
+        {
+            _onNotifyPropertyChanged?.Invoke(propertyName);
         }
 
         public override string ToString()
@@ -88,6 +97,8 @@ namespace Realms
             return (T)GetType().GetProperty(propertyName).GetValue(this);
         }
 
+        //TODO This does not work because value is usually RealmValue and the property is of a specific type. 
+        //We could make this abstract and implement it in the class
         protected virtual void SetPropertyValue(string propertyName, object value)
         {
             GetType().GetProperty(propertyName).SetValue(this, value);

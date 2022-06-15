@@ -706,7 +706,11 @@ Analytics payload
             ////   11: ret
             ////
             //// This is roughly equivalent to:
-            ////   if (!base.IsManaged) this.<backingField> = value;
+            ////   if (!base.IsManaged)
+            ////   {
+            ////        this.<backingField> = value;
+            ////        RaisePropertyChanged(propertyName);
+            ////    }
             ////   else base.SetValue<T>(<columnName>, value);
 
             if (setValueReference == null)
