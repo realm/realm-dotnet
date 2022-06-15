@@ -141,7 +141,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
         {
             add
             {
-                if (IsManaged && _propertyChanged == null)
+                if (_propertyChanged == null)
                 {
                     SubscribeForNotifications();
                 }
@@ -153,8 +153,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             {
                 _propertyChanged -= value;
 
-                if (IsManaged &&
-                    _propertyChanged == null)
+                if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
@@ -224,6 +223,8 @@ namespace Realm.Generated
     internal class ManuallyGeneratedClassManagedAccessor
         : ManagedAccessor, IManuallyGeneratedClassAccessor
     {
+        private IList<int> _listValue;
+
         /** If we want to make this more efficient, we can use property indexes here.
          * We should have all the info necessary to compute them during source generation (as we do in Realm.CreateRealmObjectMetadata).
          */
@@ -235,7 +236,15 @@ namespace Realm.Generated
 
         public IList<int> ListValue
         {
-            get => GetListValue<int>("ListValue");
+            get
+            {
+                if (_listValue == null)
+                {
+                    _listValue = GetListValue<int>("ListValue");
+                }
+
+                return _listValue;
+            }
         }
 
         public string StringValue
@@ -254,16 +263,77 @@ namespace Realm.Generated
     internal class ManuallyGeneratedClassUnmanagedAccessor
         : UnmanagedAccessor, IManuallyGeneratedClassAccessor
     {
-        public int IntValue { get; set; }
+        private int intValue;
+        private string stringValue;
+        private int primaryKeyValue;
+
+        public int IntValue
+        {
+            get => intValue;
+            set
+            {
+                intValue = value;
+                RaisePropertyChanged("IntValue");
+            }
+        }
 
         public IList<int> ListValue { get; } = new List<int>();
 
-        public string StringValue { get; set; }
+        public string StringValue
+        {
+            get => stringValue;
+            set
+            {
+                stringValue = value;
+                RaisePropertyChanged("_string");
+            }
+        }
 
-        public int PrimaryKeyValue { get; set; }
+        public int PrimaryKeyValue
+        {
+            get => primaryKeyValue;
+            set
+            {
+                primaryKeyValue = value;
+                RaisePropertyChanged("PrimaryKeyValue");
+            }
+        }
 
         public ManuallyGeneratedClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
+        }
+
+        //TODO Need to find a more elegant way
+        //We could also directly override the public mehotds (Get/SetValue, GetListValue, ...) and make those abstracts.
+        protected override T GetPropertyValue<T>(string propertyName)
+        {
+            return propertyName switch
+            {
+                "_string" => (T)(object)(RealmValue)stringValue,
+                "IntValue" => (T)(object)(RealmValue)intValue,
+                "PrimaryKeyValue" => (T)(object)(RealmValue)primaryKeyValue,
+                "ListValue" => (T)(object)ListValue,
+                _ => throw new ArgumentException($"The object does not have a Realm property with name {propertyName}"),
+            };
+        }
+
+        protected override void SetPropertyValue(string propertyName, object value)
+        {
+            var realmVal = (RealmValue)value;
+            switch (propertyName)
+            {
+                case "_string":
+                    StringValue = (string)realmVal;
+                    return;
+                case "IntValue":
+                    IntValue = (int)realmVal;
+                    return;
+                case "PrimaryKeyValue":
+                    PrimaryKeyValue = (int)realmVal;
+                    return;
+                default:
+                    throw new ArgumentException($"The object does not have a settable Realm property with name {propertyName}");
+            }
         }
     }
 }
