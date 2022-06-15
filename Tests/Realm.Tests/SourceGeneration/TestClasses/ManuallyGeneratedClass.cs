@@ -161,19 +161,15 @@ namespace Realms.Tests.SourceGeneration.TestClasses
             }
         }
 
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-        }
+        partial void OnPropertyChanged(string propertyName);
 
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
 
-        protected internal virtual void OnManaged()
-        {
-        }
+        partial void OnManaged();
 
         private void SubscribeForNotifications()
         {
@@ -190,6 +186,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 // Having a separate namespace allows to hide the implementation details better.
 namespace Realm.Generated
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     internal class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper
     {
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -206,22 +203,24 @@ namespace Realm.Generated
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
-            value = (instance.Accessor as IManuallyGeneratedClassAccessor).PrimaryKeyValue;
+            value = ((IManuallyGeneratedClassAccessor)instance.Accessor).PrimaryKeyValue;
             return true;
         }
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IManuallyGeneratedClassAccessor : IRealmAccessor
     {
         int IntValue { get; set; }
 
         IList<int> ListValue { get; }
 
-        public string StringValue { get; set; }
+        string StringValue { get; set; }
 
-        public int PrimaryKeyValue { get; set; }
+        int PrimaryKeyValue { get; set; }
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     internal class ManuallyGeneratedClassManagedAccessor
         : ManagedAccessor, IManuallyGeneratedClassAccessor
     {

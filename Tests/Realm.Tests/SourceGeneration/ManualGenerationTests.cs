@@ -16,7 +16,9 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Tests.SourceGeneration.TestClasses;
 
@@ -43,6 +45,34 @@ namespace Realms.Tests.SourceGeneration
         }
 
         [Test]
+        public void TestNotificationUnmanaged()
+        {
+            string notifiedPropertyName = null;
+
+            var handler = new PropertyChangedEventHandler((sender, eventArgs) =>
+            {
+                notifiedPropertyName = eventArgs.PropertyName;
+            });
+
+            var mgc = new ManualllyGeneratedClass();
+            mgc.PrimaryKeyValue = 1;
+            mgc.StringValue = "required";
+
+            mgc.PropertyChanged += handler;
+
+            mgc.IntValue = 11;
+
+            Assert.That(notifiedPropertyName, Is.EqualTo("IntValue"));
+            notifiedPropertyName = null;
+
+            mgc.PropertyChanged -= handler;
+
+            mgc.IntValue = 22;
+
+            Assert.That(notifiedPropertyName, Is.Null);
+        }
+
+        [Test]
         public void TestManaged()
         {
             var mgc = new ManualllyGeneratedClass();
@@ -52,15 +82,13 @@ namespace Realms.Tests.SourceGeneration
             mgc.ListValue.Add(10);
             mgc.ListValue.Add(20);
 
-            using var realm = GetRealm();
-
-            realm.Write(() =>
+            _realm.Write(() =>
             {
-                realm.Add(mgc);
+                _realm.Add(mgc);
             });
 
-            var retrieved = realm.Find<ManualllyGeneratedClass>(1);
-            retrieved = realm.All<ManualllyGeneratedClass>().First();
+            var retrieved = _realm.Find<ManualllyGeneratedClass>(1);
+            retrieved = _realm.All<ManualllyGeneratedClass>().First();
 
             Assert.That(retrieved.PrimaryKeyValue, Is.EqualTo(1));
             Assert.That(retrieved.StringValue, Is.EqualTo("Mario"));
@@ -69,7 +97,7 @@ namespace Realms.Tests.SourceGeneration
             Assert.That(retrieved.ListValue[0], Is.EqualTo(10));
             Assert.That(retrieved.ListValue[1], Is.EqualTo(20));
 
-            realm.Write(() =>
+            _realm.Write(() =>
             {
                 mgc.StringValue = "Luigi";
                 mgc.IntValue = 15;
@@ -83,7 +111,7 @@ namespace Realms.Tests.SourceGeneration
             Assert.That(retrieved.ListValue[1], Is.EqualTo(20));
             Assert.That(retrieved.ListValue[2], Is.EqualTo(30));
 
-            realm.Write(() =>
+            _realm.Write(() =>
             {
                 retrieved.StringValue = "Peach";
                 retrieved.IntValue = 65;
@@ -97,6 +125,91 @@ namespace Realms.Tests.SourceGeneration
             Assert.That(mgc.ListValue[1], Is.EqualTo(20));
             Assert.That(mgc.ListValue[2], Is.EqualTo(30));
             Assert.That(mgc.ListValue[3], Is.EqualTo(40));
+        }
+
+        [Test]
+        public void TestNotificationManaged()
+        {
+            string notifiedPropertyName = null;
+
+            var handler = new PropertyChangedEventHandler((sender, eventArgs) =>
+            {
+                notifiedPropertyName = eventArgs.PropertyName;
+            });
+
+            var mgc = new ManualllyGeneratedClass();
+            mgc.PrimaryKeyValue = 1;
+            mgc.StringValue = "required";
+
+            _realm.Write(() =>
+            {
+                _realm.Add(mgc);
+            });
+
+            mgc.PropertyChanged += handler;
+
+            _realm.Write(() =>
+            {
+                mgc.IntValue = 11;
+            });
+
+            _realm.Refresh();
+
+            Assert.That(notifiedPropertyName, Is.EqualTo("IntValue"));
+            notifiedPropertyName = null;
+
+            mgc.PropertyChanged -= handler;
+
+            _realm.Write(() =>
+            {
+                mgc.IntValue = 22;
+            });
+
+            _realm.Refresh();
+
+            Assert.That(notifiedPropertyName, Is.Null);
+        }
+
+        [Test]
+        public void TestNotificationsFromUnmanagedToManaged()
+        {
+            string notifiedPropertyName = null;
+            int count = 0;
+
+            var handler = new PropertyChangedEventHandler((sender, eventArgs) =>
+            {
+                notifiedPropertyName = eventArgs.PropertyName;
+                count++;
+            });
+
+            var mgc = new ManualllyGeneratedClass();
+            mgc.PrimaryKeyValue = 1;
+            mgc.StringValue = "required";
+
+            mgc.PropertyChanged += handler;
+
+            mgc.IntValue = 11;
+
+            Assert.That(notifiedPropertyName, Is.EqualTo("IntValue"));
+            Assert.That(count, Is.EqualTo(1));
+            notifiedPropertyName = null;
+
+            _realm.Write(() =>
+            {
+                _realm.Add(mgc);
+            });
+
+            _realm.Refresh();
+            Assert.That(count, Is.EqualTo(1));
+
+            _realm.Write(() =>
+            {
+                mgc.IntValue = 22;
+            });
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyName, Is.EqualTo("IntValue"));
+            Assert.That(count, Is.EqualTo(2));
         }
     }
 }
