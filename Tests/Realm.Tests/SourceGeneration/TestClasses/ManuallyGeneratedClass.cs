@@ -305,6 +305,7 @@ namespace Realm.Generated
 
         //TODO Need to find a more elegant way
         //We could also directly override the public mehotds (Get/SetValue, GetListValue, ...) and make those abstracts.
+        //If we do that, we don't even need this
         protected override T GetPropertyValue<T>(string propertyName)
         {
             return propertyName switch

@@ -66,7 +66,7 @@ using System;");
                 var propertiesSymbol = classSymbol.GetMembers()
                     .OfType<IPropertySymbol>().Where( p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
 
-                var extractedInfo = propertiesSymbol.Select(ExtractPropertyInfo).ToList();
+                var extractedInfo = ExtractPropertyInfo(context, propertiesSymbol);
 
                 //TODO Not necessarily the class is public, need to get correct visibility
                 builder.AppendLine(@$"
@@ -95,22 +95,43 @@ namespace {namespaceName}
 
         }
 
-        private PropertyInfo ExtractPropertyInfo(IPropertySymbol propSymbol)
+        private IEnumerable<PropertyInfo> ExtractPropertyInfo(GeneratorExecutionContext context, IEnumerable<IPropertySymbol> propList)
         {
-            var info = new PropertyInfo();
+            var infoList = new List<PropertyInfo>();
 
-            info.Name = propSymbol.Name;
-            info.IsIndexed = propSymbol.HasAttribute<IndexedAttribute>();
-            info.IsRequired = propSymbol.HasAttribute<RequiredAttribute>();
-            info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
-            info.MapTo = (string)propSymbol.GetAttributeArgument<MapToAttribute>();
-            info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
-            info.TypeInfo = ExtractTypeInfo(propSymbol.Type);
+            bool primaryKeySet = false;
+
+            foreach (var propSymbol in propList)
+            {
+                var info = new PropertyInfo();
+
+                info.Name = propSymbol.Name;
+                info.IsIndexed = propSymbol.HasAttribute<IndexedAttribute>();
+                info.IsRequired = propSymbol.HasAttribute<RequiredAttribute>();
+                info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
+                info.MapTo = (string)propSymbol.GetAttributeArgument<MapToAttribute>();
+                info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
+                info.TypeInfo = ExtractTypeInfo(propSymbol.Type);
+
+                if (info.IsPrimaryKey)
+                {
+                    if (primaryKeySet)
+                    {
+                        context.ReportDiagnostic(Diagnostics.MultiplePrimaryKeys("test", Location.None));
+                    }
+
+                    primaryKeySet = true;
+                }
+
+                infoList.Add(info);
+            }
+
+
 
             //TODO This is where I need to check it's a valid property
             // For instance: primary keys / indexed can only be of certain types
 
-            return info;
+            return infoList;
         }
 
         private TypeInfo ExtractTypeInfo(ITypeSymbol typeSymbol)
