@@ -14,7 +14,7 @@ namespace Realm.SourceGenerator
     [Generator]
     public class RealmClassGenerator : ISourceGenerator
     {
-        public void Initialize(GeneratorInitializationContext context) 
+        public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
         }
@@ -26,9 +26,11 @@ namespace Realm.SourceGenerator
                 return;
             }
 
-            var builder = new StringBuilder();
+            foreach (var (classSyntax, classSymbol) in scr.RealmClasses)
+            {
+                var builder = new StringBuilder();
 
-            builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
+                builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright 2022 Realm Inc.
 // //
@@ -46,33 +48,32 @@ namespace Realm.SourceGenerator
 // //
 // ////////////////////////////////////////////////////////////////////////////");
 
-            //Usings
-            builder.AppendLine(@"
+                //Usings
+                builder.AppendLine(@"
 using System;");
 
-            foreach (var (classSyntax, classSymbol) in scr.RealmClasses)
-            {
                 //TODO Need to check if needed at some point
                 var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
 
-                //Namespace
-                var namespaceSymbol = classSymbol.ContainingNamespace;
-                var namespaceName = namespaceSymbol.Name;
+                var classInfo = new ClassInfo();
 
-                //Class name
-                var className = classSymbol.Name;
+                //General info
+                classInfo.Namespace = classSymbol.ContainingNamespace.Name;
+                classInfo.Name = classSymbol.Name;
+                classInfo.MapTo = (string)classSymbol.GetAttributeArgument<MapToAttribute>();
+                classInfo.Accessibility = classSymbol.DeclaredAccessibility;
 
-                //var properties = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+                //Properties
                 var propertiesSymbol = classSymbol.GetMembers()
-                    .OfType<IPropertySymbol>().Where( p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
+                    .OfType<IPropertySymbol>().Where(p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
 
                 var extractedInfo = ExtractPropertyInfo(context, propertiesSymbol);
 
                 //TODO Not necessarily the class is public, need to get correct visibility
                 builder.AppendLine(@$"
-namespace {namespaceName}
+namespace {classInfo.Namespace}
 {{
-    public partial class {className} : IRealmObject
+    {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
     {{
 ");
                 foreach (var prop in extractedInfo)
@@ -90,7 +91,7 @@ namespace {namespaceName}
                 // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
                 var stringCode = builder.ToString();
                 var sourceText = SourceText.From(stringCode, Encoding.UTF8);
-                context.AddSource($"{className}_generated.cs", sourceText);
+                context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
             }
 
         }
@@ -106,6 +107,7 @@ namespace {namespaceName}
                 var info = new PropertyInfo();
 
                 info.Name = propSymbol.Name;
+                info.Accessibility = propSymbol.DeclaredAccessibility;  
                 info.IsIndexed = propSymbol.HasAttribute<IndexedAttribute>();
                 info.IsRequired = propSymbol.HasAttribute<RequiredAttribute>();
                 info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
@@ -236,33 +238,6 @@ namespace {namespaceName}
         }
     }
 
-    internal record PropertyInfo
-    {
-        public bool IsIndexed { get; set; }
-
-        public bool IsRequired { get; set; }
-
-        public bool IsPrimaryKey { get; set; }
-
-        public bool IsNullable { get; set; }
-
-        public string MapTo { get; set; }
-
-        public string Backlink { get; set; }
-
-        public TypeInfo TypeInfo { get; set; }
-
-        public string Name { get; set; }
-    }
-
-    internal record TypeInfo
-    {
-        public PropertyType Type { get; set; }
-
-        public string TypeString { get; set; }
-
-    }
-
     internal static class Utils
     {
         public static bool HasAttribute(this ISymbol symbol, string attributeName)
@@ -271,7 +246,7 @@ namespace {namespaceName}
         }
 
         // TODO We could remove this and use directly strings, it would be more efficient probably
-        public static bool HasAttribute<T>(this ISymbol symbol) where T: Attribute
+        public static bool HasAttribute<T>(this ISymbol symbol) where T : Attribute
         {
             var attributeName = typeof(T).Name;
             return symbol.HasAttribute(attributeName);
@@ -301,6 +276,20 @@ namespace {namespaceName}
         {
             return symbol.AllInterfaces.Any(i => i.Name == "IRealmObjectBase");
         }
+
+        public static string ToDisplayString(this Accessibility acc)
+        {
+            return acc switch
+            {
+                Accessibility.Private => "private",
+                Accessibility.ProtectedAndInternal => "private protected",
+                Accessibility.Protected => "protected",
+                Accessibility.Internal => "internal",
+                Accessibility.ProtectedOrInternal => "protected internal",
+                Accessibility.Public => "public",
+                _ => throw new ArgumentException("Unrecognised accessibilty")
+            };
+        }
     }
 
     internal class SyntaxContextReceiver : ISyntaxContextReceiver
@@ -314,7 +303,7 @@ namespace {namespaceName}
                 return;
             }
 
-            
+
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(cds) as ITypeSymbol;
 
             //This looks for the interfaces of the base class too (recursively)
