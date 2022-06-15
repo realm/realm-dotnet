@@ -31,19 +31,16 @@ namespace Realms.DataBinding
         {
         }
 
-        public override PropertyInfo GetDeclaredProperty(string name)
+        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
-            return _propertyCache.GetOrAdd(name, n =>
+            var result = base.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers);
+            var wovenAttribute = result?.GetCustomAttribute<WovenPropertyAttribute>();
+            if (wovenAttribute != null)
             {
-                var result = base.GetDeclaredProperty(name);
-                var wovenAttribute = result.GetCustomAttribute<WovenPropertyAttribute>();
-                if (wovenAttribute != null)
-                {
-                    result = new WovenPropertyInfo(result);
-                }
+                return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
+            }
 
-                return result;
-            });
+            return result;
         }
     }
 }

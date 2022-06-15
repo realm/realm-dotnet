@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 #if NETCOREAPP || NETFRAMEWORK
@@ -381,11 +382,11 @@ namespace Realms.Tests
             return $"<{byteArr[0]}>";
         }
 
-        public static void DrainQueue<T>(this Queue<T> queue, Action<T> action)
+        public static void DrainQueue<T>(this ConcurrentQueue<T> queue, Action<T> action)
         {
-            while (queue.Count > 0)
+            while (queue.TryDequeue(out var result))
             {
-                action(queue.Dequeue());
+                action(result);
             }
         }
 

@@ -88,6 +88,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_remove_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove_user(AppHandle app, SyncUserHandle user, IntPtr tcs_ptr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_delete_user", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void delete_user(AppHandle app, SyncUserHandle user, IntPtr tcs_ptr, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reset_for_testing(AppHandle app);
 
@@ -229,12 +232,12 @@ namespace Realms.Sync
             }
         }
 
-        public string GetRealmPath(User user, string partition)
+        public string GetRealmPath(User user, string partition = null)
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
             {
                 isNull = false;
-                return NativeMethods.get_path_for_realm(this, user.Handle, partition, (IntPtr)partition.Length, buffer, bufferLength, out ex);
+                return NativeMethods.get_path_for_realm(this, user.Handle, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
             });
         }
 
@@ -303,6 +306,22 @@ namespace Realms.Sync
             try
             {
                 NativeMethods.remove_user(this, user, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+                await tcs.Task;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
+        }
+
+        public async Task DeleteUserAsync(SyncUserHandle user)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var tcsHandle = GCHandle.Alloc(tcs);
+            try
+            {
+                NativeMethods.delete_user(this, user, GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
                 await tcs.Task;
             }

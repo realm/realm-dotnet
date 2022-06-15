@@ -14,13 +14,18 @@
     <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UnityBuild)' != 'true'">
+  <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' == ''">
     <TargetFrameworks>net461</TargetFrameworks>
     <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
-    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;$(AdditionalFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
 
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' != ''">
+    <TargetFrameworks>$(AdditionalFrameworks)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -120,6 +125,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -134,6 +140,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <EmbeddedResource Include="EmbeddedResources\guids.realm" />
@@ -160,5 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" />
+    <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
+      <Link>Sync\BaasClient.cs</Link>
+      <SubType></SubType>
+    </Compile>
   </ItemGroup>
 </Project>

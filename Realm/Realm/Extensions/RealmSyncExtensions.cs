@@ -32,7 +32,7 @@ namespace Realms.Sync
         /// Gets the <see cref="Session"/> for the realm file behind this <see cref="Realm"/>.
         /// </summary>
         /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfigurationBase"/> object.</param>
-        /// <returns>The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm server.</returns>
+        /// <returns>The <see cref="Session"/> that is responsible for synchronizing with MongoDB Atlas.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="realm"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="realm"/> was not created with a <see cref="SyncConfigurationBase"/> object.</exception>
         [Obsolete("Use Realm.SyncSession instead.")]

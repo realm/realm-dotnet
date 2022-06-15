@@ -20,5 +20,5 @@ jobs:
           appPath: #@ "Tests/Tests.iOS/bin/iPhoneSimulator/" + configuration + "/Tests.iOS.app"
           bundleId: 'io.realm.dotnettests'
           iphoneToSimulate: 'iPhone-8'
-          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml" + baasTestArgs
+          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.iOS.xml" + baasTestArgs("xamarinios")
       - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")

@@ -10,7 +10,9 @@
 #@ end
 #@ end
 
-#@ baasTestArgs = " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }}"
+#@ def baasTestArgs(differentiator):
+#@   return " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
+#@ end
 ---
 #@ def publishTestsResults(files, test_title):
 name: Publish Unit Test Results
@@ -65,11 +67,11 @@ env:
 #@ return msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ inputs.version }}", **properties)
 #@ end
 
-#@ def dotnetBuildTests(projectPath, framework):
+#@ def dotnetBuildTests(projectPath, framework, runtime, version = "inputs.version"):
 #@ properties = {
 #@   "AdditionalFrameworks": framework,
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
-#@   "UseRealmNupkgsWithVersion": "${{ inputs.version }}"
+#@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}"
 #@ }
-#@ return dotnetPublish(projectPath, framework, properties)
+#@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end

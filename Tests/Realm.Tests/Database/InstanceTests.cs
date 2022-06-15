@@ -515,7 +515,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests deprecated WriteAsync API")]
         public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -590,11 +590,9 @@ namespace Realms.Tests.Database
             });
         }
 
-        [TestCase(true, true)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(false, false)]
-        public void WriteEncryptedCopy_WhenEncryptionKeyProvided_WritesACopy(bool originalEncrypted, bool copyEncrypted)
+        [Test]
+        public void WriteEncryptedCopy_WhenEncryptionKeyProvided_WritesACopy([Values(true, false)] bool originalEncrypted,
+                                                                             [Values(true, false)] bool copyEncrypted)
         {
             var originalConfig = new RealmConfiguration(Guid.NewGuid().ToString());
             if (originalEncrypted)

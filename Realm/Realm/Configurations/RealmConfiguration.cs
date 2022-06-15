@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -140,46 +138,22 @@ namespace Realms
             return ret;
         }
 
-        internal override Realm CreateRealm()
+        internal override SharedRealmHandle CreateHandle(RealmSchema schema)
+            => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, EncryptionKey);
+
+        internal override Configuration CreateNativeConfiguration()
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
-            configuration.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
-            configuration.read_only = IsReadOnly;
+            var result = base.CreateNativeConfiguration();
 
-            Migration migration = null;
-            if (MigrationCallback != null)
-            {
-                migration = new Migration(this, schema);
-                configuration.managed_migration_handle = GCHandle.ToIntPtr(migration.MigrationHandle);
-            }
+            result.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
+            result.read_only = IsReadOnly;
+            result.invoke_migration_callback = MigrationCallback != null;
+            result.invoke_should_compact_callback = ShouldCompactOnLaunch != null;
 
-            GCHandle? shouldCompactHandle = null;
-            if (ShouldCompactOnLaunch != null)
-            {
-                shouldCompactHandle = GCHandle.Alloc(ShouldCompactOnLaunch);
-                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(shouldCompactHandle.Value);
-            }
-
-            SharedRealmHandle sharedRealmHandle;
-            try
-            {
-                sharedRealmHandle = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
-            }
-            catch (ManagedExceptionDuringMigrationException)
-            {
-                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
-            }
-            finally
-            {
-                migration?.ReleaseHandle();
-                shouldCompactHandle?.Free();
-            }
-
-            return GetRealm(sharedRealmHandle, schema);
+            return result;
         }
 
-        internal override Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        internal override Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
@@ -187,13 +161,13 @@ namespace Realms
             {
                 return Task.Run(() =>
                 {
-                    using (CreateRealm())
+                    using (CreateHandle(schema))
                     {
                     }
-                }, cancellationToken).ContinueWith(_ => CreateRealm(), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateHandle(schema), scheduler);
             }
 
-            return Task.FromResult(CreateRealm());
+            return Task.FromResult(CreateHandle(schema));
         }
     }
 }

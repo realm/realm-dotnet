@@ -148,6 +148,35 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void AppDeleteUserFromServer_RemovesUser()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var username = SyncTestHelpers.GetVerifiedUsername();
+                var password = SyncTestHelpers.DefaultPassword;
+                var user = await GetUserAsync(app: null, username, password);
+
+                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(user));
+
+                await DefaultApp.DeleteUserFromServerAsync(user);
+                Assert.That(DefaultApp.CurrentUser, Is.Null);
+
+                Exception ex = null;
+                try
+                {
+                    await DefaultApp.LogInAsync(Credentials.EmailPassword(username, password));
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                Assert.That(ex, Is.TypeOf<AppException>());
+                Assert.That(ex.Message, Is.EqualTo("InvalidPassword: invalid username/password"));
+            });
+        }
+
+        [Test]
         public void EmailPasswordRegisterUser_Works()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -864,7 +893,7 @@ namespace Realms.Tests.Sync
                 var updatedData = await user.RefreshCustomDataAsync();
                 Assert.That(updatedData, Is.Null);
 
-                var collection = user.GetMongoClient("BackingDB").GetDatabase("my-db").GetCollection("users");
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName).GetCollection("users");
 
                 var customDataDoc = BsonDocument.Parse(@"{
                     _id: ObjectId(""" + ObjectId.GenerateNewId() + @"""),
@@ -897,7 +926,7 @@ namespace Realms.Tests.Sync
                 var updatedData = await user.RefreshCustomDataAsync<CustomDataDocument>();
                 Assert.That(updatedData, Is.Null);
 
-                var collection = user.GetMongoClient("BackingDB").GetDatabase("my-db").GetCollection<CustomDataDocument>("users");
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName).GetCollection<CustomDataDocument>("users");
 
                 var customDataDoc = new CustomDataDocument
                 {

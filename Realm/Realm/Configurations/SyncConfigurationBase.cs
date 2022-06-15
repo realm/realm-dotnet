@@ -21,11 +21,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
+using Realms.Sync.ErrorHandling;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
+    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using Atlas Device Sync.
     /// There are two synchronization modes with their respective configurations - "partition" sync with <see cref="PartitionSyncConfiguration"/> allows you
     /// to split your data in separarate partitions and synchronize an entire partition with an entire Realm; "flexible" sync with
     /// <see cref="FlexibleSyncConfiguration"/> allows you to start with an empty Realm and send the server a set of queries which it will run and
@@ -34,11 +36,48 @@ namespace Realms.Sync
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
+        private ClientResetHandlerBase _clientResetHandler = new DiscardLocalResetHandler();
+
+        /// <summary>
+        /// Callback triggered when an error occurs in a session.
+        /// </summary>
+        /// <param name="session">
+        /// The <see cref="Session"/> where the error happened on.
+        /// </param>
+        /// <param name="error">
+        /// The specific <see cref="SessionException"/> occurred on this <see cref="Session"/>.
+        /// </param>
+        public delegate void SessionErrorCallback(Session session, SessionException error);
+
         /// <summary>
         /// Gets the <see cref="User"/> used to create this <see cref="SyncConfigurationBase"/>.
         /// </summary>
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
+
+        /// <summary>
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="DiscardLocalResetHandler"/>.
+        /// </summary>
+        /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
+        /// <remarks>
+        /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
+        /// The default <see cref="DiscardLocalResetHandler"/> will have no custom actions set for the before and after callbacks.
+        /// </remarks>
+        /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
+        public virtual ClientResetHandlerBase ClientResetHandler
+        {
+            get => _clientResetHandler;
+            set => _clientResetHandler = Argument.ValidateNotNull(value, nameof(value));
+        }
+
+        /// <summary>
+        /// Gets or sets a callback that will be invoked whenever a <see cref="SessionException"/> occurs for the synchronized Realm.
+        /// </summary>
+        /// <value>The <see cref="SessionErrorCallback"/> that will be used to report transient session errors.</value>
+        /// <remarks>
+        /// Client reset errors will not be reported through this callback as they are handled by the set <see cref="ClientResetHandler"/>.
+        /// </remarks>
+        public SessionErrorCallback OnSessionError { get; set; }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
@@ -55,47 +94,38 @@ namespace Realms.Sync
             User = user;
         }
 
-        internal override Realm CreateRealm()
+        internal override SharedRealmHandle CreateHandle(Schema.RealmSchema schema)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
-
-            var srHandle = SharedRealmHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            return GetRealm(srHandle, schema);
+            return SharedRealmHandle.OpenWithSync(CreateNativeConfiguration(), syncConfiguration, schema, EncryptionKey);
         }
 
-        internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
+        internal override async Task<SharedRealmHandle> CreateHandleAsync(Schema.RealmSchema schema, CancellationToken cancellationToken)
         {
-            var schema = GetSchema();
-            var configuration = CreateNativeConfiguration();
             var syncConfiguration = CreateNativeSyncConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            IDisposable progressToken = null;
+            using var handle = SharedRealmHandle.OpenWithSyncAsync(CreateNativeConfiguration(), syncConfiguration, schema, EncryptionKey, GCHandle.ToIntPtr(tcsHandle));
+            cancellationToken.Register(() =>
+            {
+                if (!handle.IsClosed)
+                {
+                    handle.Cancel();
+                    tcs.TrySetCanceled();
+                }
+            });
+
+            using var progressToken = OnBeforeRealmOpen(handle);
+
             try
             {
-                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, syncConfiguration, schema, EncryptionKey, tcsHandle);
-                cancellationToken.Register(() =>
-                {
-                    if (!handle.IsClosed)
-                    {
-                        handle.Cancel();
-                        tcs.TrySetCanceled();
-                    }
-                });
-
-                progressToken = OnBeforeRealmOpen(handle);
-
                 using var realmReference = await tcs.Task;
-                var sharedRealmHandle = SharedRealmHandle.ResolveFromReference(realmReference);
-                return GetRealm(sharedRealmHandle, schema);
+                return SharedRealmHandle.ResolveFromReference(realmReference);
             }
             finally
             {
                 tcsHandle.Free();
-                progressToken?.Dispose();
             }
         }
 
@@ -103,11 +133,19 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
+            var clientResyncMode = ClientResyncMode.DiscardLocal;
+
+            if (ClientResetHandler != null && ClientResetHandler is ManualRecoveryHandler)
+            {
+                clientResyncMode = ClientResyncMode.Manual;
+            }
+
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                client_resync_mode = clientResyncMode,
             };
         }
     }

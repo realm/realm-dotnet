@@ -80,7 +80,7 @@ namespace realm {
 
         RealmInUseException = 27,
      
-        RealmDotNetExceptionDuringMigration = 30,
+        RealmDotNetExceptionDuringCallback = 30,
 
         NotNullableProperty = 31,
         

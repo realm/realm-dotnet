@@ -229,8 +229,8 @@ namespace Realms
         /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm
-        /// server if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
+        /// The <see cref="Session"/> that is responsible for synchronizing with MongoDB Atlas
+        /// if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
         /// otherwise.
         /// </value>
         public Session SyncSession
@@ -653,7 +653,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Factory for a write <see cref="Transaction"/>. Essential object to create scope for updates.
+        /// Begins a write transaction for this Realm.
         /// </summary>
         /// <example>
         /// <code>
@@ -673,6 +673,7 @@ namespace Realms
             ThrowIfDisposed();
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
+            SharedRealmHandle.BeginTransaction();
             return new Transaction(this);
         }
 
@@ -751,6 +752,50 @@ namespace Realms
         }
 
         /// <summary>
+        /// Asynchronously begins a write transaction for this Realm.
+        /// </summary>
+        /// <remarks>
+        /// This method asynchronously acquires the write lock and then dispatches the continuation on the original
+        /// thread the Realm was opened on. The transaction can then be committed either asynchronously or
+        /// synchronously.
+        /// <br/>
+        /// When invoked on a thread without SynchronizationContext (i.e. typically background threads), this method
+        /// calls <see cref="BeginWrite"/> and executes synchronously.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// using (var trans = await realm.BeginWriteAsync())
+        /// {
+        ///     realm.Add(new Dog
+        ///     {
+        ///         Name = "Rex"
+        ///     });
+        ///     await trans.CommitAsync();
+        ///     // or just
+        ///     // trans.Commit();
+        /// }
+        /// </code>
+        /// </example>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
+        /// </param>
+        /// <returns>An awaitable <see cref="Task"/> that returns a transaction in write mode.
+        /// A transaction is required for any creation, deletion or modification of objects persisted in a <see cref="Realm"/>.</returns>
+        public async Task<Transaction> BeginWriteAsync(CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
+
+            if (!AsyncHelper.TryGetValidContext(out var synchronizationContext))
+            {
+                return BeginWrite();
+            }
+
+            await SharedRealmHandle.BeginTransactionAsync(synchronizationContext, cancellationToken);
+            return new Transaction(this);
+        }
+
+        /// <summary>
         /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
@@ -784,8 +829,11 @@ namespace Realms
         /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Action action) instead.")]
         public Task WriteAsync(Action<Realm> action)
         {
+            ThrowIfDisposed();
+
             Argument.NotNull(action, nameof(action));
 
             return WriteAsync(tempRealm =>
@@ -793,6 +841,41 @@ namespace Realms
                 action(tempRealm);
                 return true;
             });
+        }
+
+        /// <summary>
+        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> will be committed.
+        /// <b>If</b> the method is not called from a thread with a <see cref="SynchronizationContext"/> (like the UI thread), it behaves synchronously.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// await realm.WriteAsync(() =&gt;
+        /// {
+        ///     realm.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        /// });
+        /// </code>
+        /// </example>
+        /// <param name="action">
+        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
+        /// </param>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
+        public Task WriteAsync(Action action, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+
+            Argument.NotNull(action, nameof(action));
+
+            return WriteAsync(() =>
+            {
+                action();
+                return true;
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -823,6 +906,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<T> WriteAsync<T>(Func<Realm, T> function)
         {
             ThrowIfDisposed();
@@ -830,7 +914,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -856,6 +940,52 @@ namespace Realms
             }
 
             return (T)result;
+        }
+
+        /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> will be committed.
+        /// <b>If</b> the method is not called from a thread with a <see cref="SynchronizationContext"/> (like the UI thread), it behaves synchronously.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var dog = await realm.WriteAsync(() =&gt;
+        /// {
+        ///     return realm.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        /// });
+        /// </code>
+        /// </example>
+        /// <param name="function">
+        /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// Optional cancellation token to stop waiting to start a write transaction.
+        /// </param>
+        /// <typeparam name="T">The type returned by the input delegate.</typeparam>
+        /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
+        public async Task<T> WriteAsync<T>(Func<T> function, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(function, nameof(function));
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.TryGetValidContext(out _))
+            {
+                return Write(function);
+            }
+
+            using var transaction = await BeginWriteAsync(cancellationToken);
+            var result = function();
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
+
+            await transaction.CommitAsync(CancellationToken.None);
+            return result;
         }
 
         /// <summary>
@@ -893,6 +1023,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
             where T : IRealmObjectBase
         {
@@ -901,7 +1032,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -966,6 +1097,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
+        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
         public async Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
         {
             ThrowIfDisposed();
@@ -973,7 +1105,7 @@ namespace Realms
             Argument.NotNull(function, nameof(function));
 
             // If running on background thread, execute synchronously.
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Write(() => function(this));
             }
@@ -1034,7 +1166,7 @@ namespace Realms
                 return Task.FromResult(false);
             }
 
-            if (!AsyncHelper.HasValidContext)
+            if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Task.FromResult(Refresh());
             }
@@ -1379,7 +1511,7 @@ namespace Realms
                 throw new NotSupportedException($"Changing the partition to synchronize on is not supported when writing a Realm copy. Original partition: {originalConfig.Partition}, passed partition: {copiedConfig.Partition}");
             }
 
-            SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
+            SharedRealmHandle.WriteCopy(config);
         }
 
         #region Transactions

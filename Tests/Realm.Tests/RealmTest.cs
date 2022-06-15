@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace Realms.Tests
     [Preserve(AllMembers = true)]
     public abstract class RealmTest
     {
-        private readonly Queue<Realm> _realms = new Queue<Realm>();
+        private readonly ConcurrentQueue<Realm> _realms = new();
         private Logger _originalLogger;
         private LogLevel _originalLogLevel;
 

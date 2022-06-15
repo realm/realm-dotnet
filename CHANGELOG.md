@@ -12,6 +12,96 @@
 ### Internal
 * Using Core x.y.z.
 
+## 10.14.0 (2022-06-02)
+
+### Enhancements
+* Added a more efficient replacement for `Realm.WriteAsync`. The previous API would start a background thread, open the Realm there and run a synchronous write transaction on the background thread. The new API will asynchronously acquire the write lock (begin transaction) and asynchronously commit the transaction, but the actual write block will execute on the original thread. This means that objects/queries captured before the block can be used inside the block without relying on threadsafe references. Importantly, you can mix and match async and sync calls. And when calling any `Realm.WriteAsync` on a background thread the call is just run synchronously, so you should use `Realm.Write` for readability sake. The new API is made of `Realm.WriteAsync<T>(Func<T> function, CancellationToken cancellationToken)`, `Realm.WriteAsync(Action action, CancellationToken cancellationToken)`, `Realm.BeginWriteAsync(CancellationToken cancellationToken)` and `Transaction.CommitAsync(CancellationToken cancellationToken)`. While the `Transaction.Rollback()` doesn't need an async counterpart. The deprecated API calls are `Realm.WriteAsync(Action<Realm> action)`, `Real.WriteAsync<T>(Func<Realm, IQueryable<T>> function)`, `Realm.WriteAsync<T>(Func<Realm, IList<T>> function)` and `Realm.WriteAsync<T>(Func<Realm, T> function)`. Here is an example of usage:
+  ```csharp
+  using Realms;
+
+  var person = await _realm.WriteAsync(() =>
+  {
+    return _realm.Add(
+      new Person
+      {
+        FirstName = "Marco"
+      });
+  });
+
+  // you can use/modify person now
+  // without the need of using ThreadSafeReference
+  ```
+  (PR [#2899](https://github.com/realm/realm-dotnet/pull/2899))
+* Added the method `App.DeleteUserFromServerAsync` to delete a user from the server. It will also invalidate the user locally as well as remove all their local data. It will not remove any data the user has uploaded from the server. (Issue [#2675](https://github.com/realm/realm-dotnet/issues/2675))
+* Added boolean property `ChangeSet.IsCleared` that is true when the collection gets cleared. Also Realm collections now raise `CollectionChanged` event with action `Reset` instead of `Remove` when the collections is cleared. Please note that this will work only with collection properties, such as `IList` and `ISet`. (Issue [#2856](https://github.com/realm/realm-dotnet/issues/2856))
+* Added `PopulateInitialSubscriptions` to `FlexibleSyncConfiguration` - this is a callback that will be invoked the first time a Realm is opened. It allows you to create the initial subscriptions that will be added to the Realm before it is opened. (Issue [#2913](https://github.com/realm/realm-dotnet/issues/2913))
+* Bump the SharedInfo version to 12. This requires update of any app accessing the file in a multiprocess scenario, including Realm Studio.
+* The sync client will gracefully handle compensating write error messages from the server and pass detailed info to the SDK's sync error handler about which objects caused the compensating write to occur. ([#5528](https://github.com/realm/realm-core/pull/5528))
+
+### Fixed
+* Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387))
+* Flexible sync would not correctly resume syncing if a bootstrap was interrupted ([#5466](https://github.com/realm/realm-core/pull/5466))
+* Flexible sync will now ensure that a bootstrap from the server will only be applied if the entire bootstrap is received - ensuring there are no orphaned objects as a result of changing the read snapshot on the server ([#5331](https://github.com/realm/realm-core/pull/5331))
+* Partially fix a performance regression in write performance on Apple platforms. Committing an empty write transaction is ~10x faster than 10.13.0, but still slower than pre-10.7.1 due to using more crash-safe file synchronization (since v10.7.1). (Swift issue [#7740](https://github.com/realm/realm-swift/issues/7740)).
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 12.1.0.
+
+## 10.13.0 (2022-05-18)
+
+### Enhancements
+* Added the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
+* Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
+This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler();
+    };
+  ```
+  In order to take advantage of the new **Discard Unsynced Changes** feature, the following should be done (all callbacks are optional):
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new DiscardLocalResetHandler
+      {
+        OnBeforeReset = (beforeFrozen) =>
+        {
+          // executed right before a client reset is about to happen
+        },
+        OnAfterReset = (beforeFrozen, after) =>
+        {
+          // executed right after a client reset is has completed
+        },
+        ManualResetFallback = (session, err) =>
+        {
+          // handle the reset manually
+        }
+      }
+    };
+  ```
+  If, instead, you want to continue using the manual solution even after the end of the deprecation period, the following should be done
+  ```csharp
+    var conf = new PartitionSyncConfiguration(partition, user)
+    {
+      ClientResetHandler = new ManualRecoveryHandler((sender, e) =>
+      {
+          // user's code for manual recovery
+      });
+  ```
+
+### Fixed
+* Fixed a `System.DllNotFoundException` being thrown by Realm APIs at startup on Xamarin.iOS (Issue [#2926](https://github.com/realm/realm-dotnet/issues/2926), since 10.12.0)
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 11.14.0.
+
 ## 10.12.0 (2022-05-05)
 
 ### Enhancements

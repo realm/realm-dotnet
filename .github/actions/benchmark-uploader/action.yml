@@ -1,10 +1,10 @@
 name: "Benchmarks to MongoDB Charts"
-description: "Enhances Benchmark.NET results and uploads them to MongoDB Atlas through Realm. It also generates a Charts dashboard that can be imported and used to visualize the results."
+description: "Enhances Benchmark.NET results and uploads them to MongoDB Atlas through Atlas App Services. It also generates a Charts dashboard that can be imported and used to visualize the results."
 author: "Nikola Irinchev"
 inputs:
     realm-token:
         required: true
-        description: The MongoDB Realm token for the benchmark upload.
+        description: The Atlas App Services token for the benchmark upload.
     file:
         required: true
         description: The path to the Benchmark.NET json results.

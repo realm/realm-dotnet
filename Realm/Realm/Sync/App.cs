@@ -28,7 +28,7 @@ using Realms.Logging;
 namespace Realms.Sync
 {
     /// <summary>
-    /// An <see cref="App"/> is the main client-side entry point for interacting with a MongoDB Realm App.
+    /// An <see cref="App"/> is the main client-side entry point for interacting with a Atlas App Services application.
     /// </summary>
     /// <remarks>
     /// The App can be used to:
@@ -192,7 +192,7 @@ namespace Realms.Sync
         /// This is a convenience method that creates an <see cref="AppConfiguration"/> with the default parameters and the provided <paramref name="appId"/>
         /// and invokes <see cref="Create(AppConfiguration)"/>.
         /// </remarks>
-        /// <param name="appId">The application id of the MongoDB Realm Application.</param>
+        /// <param name="appId">The application id of the Atlas App Services Application.</param>
         /// <returns>An <see cref="App"/> instance can now be used to login users, call functions, or open synchronized Realms.</returns>
         public static App Create(string appId) => Create(new AppConfiguration(appId));
 
@@ -246,7 +246,22 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// A sync manager, handling synchronization of local Realm with remote MongoDB Realm apps. It is always scoped to a
+        /// Deletes a user from the server. The user is also removed from the device together with their local data. If the user is logged in, they will be logged out in the process.
+        /// </summary>
+        /// <param name="user">The user to remove from the server.</param>
+        /// <returns>
+        /// An awaitable <see cref="Task"/> that represents the asynchronous deletion operation.
+        /// Successful completion indicates that the user has been removed, logged out and their local data has been removed.
+        /// </returns>
+        public Task DeleteUserFromServerAsync(User user)
+        {
+            Argument.NotNull(user, nameof(user));
+
+            return Handle.DeleteUserAsync(user.Handle);
+        }
+
+        /// <summary>
+        /// A sync manager, handling synchronization of local Realm with MongoDB Atlas. It is always scoped to a
         /// particular app and can only be accessed via <see cref="Sync"/>.
         /// </summary>
         public class SyncClient

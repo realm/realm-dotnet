@@ -19,8 +19,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
+using Realms.Sync.ErrorHandling;
 
 namespace Realms.Tests.Sync
 {
@@ -77,6 +79,40 @@ namespace Realms.Tests.Sync
             file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists);
             Assert.That(config.DatabasePath, Is.EqualTo(path));
+        }
+
+        [Test]
+        public void Test_SyncConfigRelease()
+        {
+            WeakReference weakConfigRef = null;
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
+                using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
+                var session = GetSession(realm);
+                Assert.That(weakConfigRef.Target, Is.Not.Null);
+            });
+            TearDown();
+
+            for (var i = 0; i < 10; i++)
+            {
+                GC.Collect();
+                if (!weakConfigRef.IsAlive)
+                {
+                    break;
+                }
+
+                Task.Delay(100).Wait();
+            }
+
+            Assert.That(weakConfigRef.Target, Is.Null);
+        }
+
+        [Test]
+        public void FlexibleSyncConfiguration_Throws_When_Assigned_DiscardLocalResetHandler()
+        {
+            var conf = GetFakeFLXConfig();
+            Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

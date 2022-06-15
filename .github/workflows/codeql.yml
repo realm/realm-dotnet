@@ -28,7 +28,7 @@ jobs:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: cpp
         queries: security-and-quality
@@ -41,7 +41,7 @@ jobs:
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
   analyze-csharp:
     name: Analyze C#
     runs-on: windows-2019
@@ -56,7 +56,7 @@ jobs:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: csharp
         queries: security-and-quality
@@ -65,7 +65,7 @@ jobs:
     - name: Configure .NET 6
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 6.0.202
         include-prerelease: true
     - name: Build Realm.Fody
       run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
@@ -76,4 +76,4 @@ jobs:
     - name: Build Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2

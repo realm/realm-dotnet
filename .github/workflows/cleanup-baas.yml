@@ -1,10 +1,6 @@
 name: cleanup-baas
 "on":
   workflow_call:
-    inputs:
-      name:
-        required: true
-        type: string
     secrets:
       AtlasProjectId:
         required: true
@@ -22,7 +18,7 @@ env:
 jobs:
   cleanup-baas:
     runs-on: ubuntu-latest
-    name: ${{ inputs.name }}
+    name: Cleanup Cluster
     timeout-minutes: 5
     steps:
     - name: Checkout code
@@ -37,4 +33,4 @@ jobs:
         atlasUrl: ${{ secrets.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        differentiator: ${{ inputs.name }}
+        differentiator: realm-dotnet

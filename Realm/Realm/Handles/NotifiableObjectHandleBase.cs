@@ -40,6 +40,7 @@ namespace Realms
             }
 
             public MarshaledVector<Move> Moves;
+            public bool Cleared;
             public MarshaledVector<IntPtr> Properties;
         }
 

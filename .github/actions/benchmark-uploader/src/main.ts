@@ -123,21 +123,15 @@ export async function uploadBenchmarkResults(apiKey: string, results: any): Prom
 }
 
 export async function extractPackageSizes(packagePath: string): Promise<{file: string; size: number}[]> {
-    fs.rmdirSync(`${__dirname}/packageContents`, {recursive: true});
+    if (fs.existsSync(`${__dirname}/packageContents`)) {
+        fs.rmSync(`${__dirname}/packageContents`, {recursive: true, force: true});
+    }
+
     await execCmd(`unzip -d ${__dirname}/packageContents ${packagePath}`);
 
     const results = new Array<{file: string; size: number}>();
 
-    // This handles all platforms except for iOS and Android
     results.push(...(await getDirectorySizes(`${__dirname}/packageContents/runtimes`)));
-
-    // Android
-    results.push(...(await getDirectorySizes(`${__dirname}/packageContents/native/android`, abi => `android-${abi}`)));
-
-    // iOS
-    results.push(
-        ...(await getDirectorySizes(`${__dirname}/packageContents/native/ios/universal/realm-wrappers.xcframework`)),
-    );
 
     // The package itself
     results.push({file: "NuGet package", size: fs.statSync(packagePath).size});

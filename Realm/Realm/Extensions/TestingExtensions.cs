@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Exceptions.Sync;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
 
@@ -34,7 +35,7 @@ namespace Realms.Sync.Testing
         /// <param name="message">Error message.</param>
         /// <param name="isFatal">If set to <c>true</c> the error will be marked as fatal.</param>
         /// <remarks>
-        /// Use this method to test your error handling code without connecting to a MongoDB Realm Server.
+        /// Use this method to test your error handling code without connecting to Atlas Device Sync.
         /// Some error codes, such as <see cref="ErrorCode.OtherSessionError"/> will be ignored and will not be reported
         /// to <see cref="Session.Error"/> subscribers.
         /// </remarks>
@@ -43,7 +44,36 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)errorCode, message, isFatal);
+            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.SessionError, message, isFatal);
+        }
+
+        /// <summary>
+        /// Simulates a client reset.
+        /// </summary>
+        /// <param name="session">The session where the simulated client reset will occur.</param>
+        /// <param name="message">Error message.</param>
+        /// <remarks>
+        /// You still need to set up a Realm integration testing environment, namely a testing app to connect to.
+        /// </remarks>
+        public static void SimulateClientReset(this Session session, string message)
+        {
+            Argument.NotNull(session, nameof(session));
+            Argument.NotNull(message, nameof(message));
+
+            session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false);
+        }
+
+        /// <summary>
+        /// Simulates an error occurring during automatic handling of client reset.
+        /// </summary>
+        /// <param name="session">The session where the simulated client reset will occur.</param>
+        /// <param name="message">Error message.</param>
+        public static void SimulateAutomaticClientResetFailure(this Session session, string message)
+        {
+            Argument.NotNull(session, nameof(session));
+            Argument.NotNull(message, nameof(message));
+
+            session.ReportErrorForTesting((int)ClientError.AutoClientResetFailed, SessionErrorCategory.ClientError, message, false);
         }
     }
 }

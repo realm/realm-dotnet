@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Baas;
 using MongoDB.Bson;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -28,8 +30,8 @@ namespace Realms.Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly Queue<Session> _sessions = new Queue<Session>();
-        private readonly Queue<App> _apps = new Queue<App>();
+        private readonly ConcurrentQueue<Session> _sessions = new();
+        private readonly ConcurrentQueue<App> _apps = new();
 
         private App _defaultApp;
 
@@ -104,18 +106,18 @@ namespace Realms.Tests.Sync
             return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
         }
 
-        protected async Task<User> GetUserAsync(App app = null)
+        protected async Task<User> GetUserAsync(App app = null, string username = null, string password = null)
         {
             app ??= DefaultApp;
-
-            var username = SyncTestHelpers.GetVerifiedUsername();
-            await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+            username ??= SyncTestHelpers.GetVerifiedUsername();
+            password ??= SyncTestHelpers.DefaultPassword;
+            await app.EmailPasswordAuth.RegisterUserAsync(username, password);
+            var credentials = Credentials.EmailPassword(username, password);
 
             for (var i = 0; i < 5; i++)
             {
                 try
                 {
-                    var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
                     return await app.LogInAsync(credentials);
                 }
                 catch (AppException ex) when (ex.Message.Contains("confirmation required"))

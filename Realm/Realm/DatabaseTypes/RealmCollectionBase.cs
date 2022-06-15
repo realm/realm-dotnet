@@ -269,6 +269,13 @@ namespace Realms
             }
             else if (change != null)
             {
+                if (change.IsCleared)
+                {
+                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    RaisePropertyChanged();
+                    return;
+                }
+
                 if (change.Moves.Length > 0 &&
                     change.Moves.Length == change.InsertedIndices.Length &&
                     change.Moves.Length == change.DeletedIndices.Length)
@@ -400,7 +407,8 @@ namespace Realms
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
                     newModifiedIndices: actualChanges.Modifications_New.AsEnumerable().Select(i => (int)i).ToArray(),
                     deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray(),
-                    moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray());
+                    moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
+                    cleared: actualChanges.Cleared);
             }
             else
             {

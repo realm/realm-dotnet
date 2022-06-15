@@ -54,5 +54,7 @@ namespace Realms.Sync.Native
 
         [MarshalAs(UnmanagedType.I1)]
         internal bool is_flexible_sync;
+
+        internal ClientResyncMode client_resync_mode;
     }
 }

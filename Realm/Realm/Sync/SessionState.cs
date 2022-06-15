@@ -24,7 +24,7 @@ namespace Realms.Sync
     public enum SessionState : byte
     {
         /// <summary>
-        /// The session is connected to the MongoDB Realm server and is actively transferring data.
+        /// The session is connected to Atlas Devices and is actively transferring data.
         /// </summary>
         Active = 0,
 

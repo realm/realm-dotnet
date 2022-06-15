@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Baas;
 
-namespace Realms.Exceptions
+namespace Baas
 {
-    [SuppressMessage("Design", "CA1064:Exceptions should be public", Justification = "Always caught internally and never propagated to the user.")]
-    internal class ManagedExceptionDuringMigrationException : Exception
+    public sealed class Program
     {
-        public ManagedExceptionDuringMigrationException(string message) : base(message)
+        public static async Task Main(string[] args)
         {
+            var (client, _, _) = await BaasClient.CreateClientFromArgs(args, Console.Out);
+            await client.GetOrCreateApps();
         }
     }
 }
