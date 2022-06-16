@@ -36,7 +36,7 @@ namespace Realms.Sync
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
-        private ClientResetHandlerBase _clientResetHandler = new DiscardLocalResetHandler();
+        private ClientResetHandlerBase _clientResetHandler = new AutomaticRecoveryOrDiscardLocalHandler();
 
         /// <summary>
         /// Callback triggered when an error occurs in a session.

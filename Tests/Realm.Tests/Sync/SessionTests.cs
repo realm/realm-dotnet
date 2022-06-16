@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
 using Realms.Logging;
@@ -42,19 +43,18 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
 
-        private static IEnumerable<IClientResetHandler> _clientResetHandlers()
+        private static IEnumerable<IClientResetHandler> _allClientResetHandlers()
         {
             yield return new ClientResetHanlder<DiscardLocalResetHandler>();
             yield return new ClientResetHanlder<AutomaticRecoveryHandler>();
             yield return new ClientResetHanlder<AutomaticRecoveryOrDiscardLocalHandler>();
         }
 
-        private static ClientResetHandlerBase[] _clientResetInstanceHandlers = new ClientResetHandlerBase[]
+        private static IEnumerable<IClientResetHandler> _automaticClientResetHandlers()
         {
-            new DiscardLocalResetHandler(),
-            new AutomaticRecoveryHandler(),
-            new AutomaticRecoveryOrDiscardLocalHandler()
-        };
+            yield return new ClientResetHanlder<AutomaticRecoveryHandler>();
+            yield return new ClientResetHanlder<AutomaticRecoveryOrDiscardLocalHandler>();
+        }
 
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
@@ -144,7 +144,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         public void Session_ClientResetHandlers_ManualResetFallback_AutoClientReset(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -217,7 +217,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         public void Session_ClientResetHandlers_ManualResetFallback_InitiateClientReset(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -245,7 +245,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         public void Session_ClientResetHandlers_OnBefore_And_OnAfter(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -282,7 +282,356 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        /* If any ArrayDelete or ArrayMove operates on indices not added by the recovery, any further modification is discarded
+         *
+         * 1. clientA adds objectA with array innerObj[0,1,2] and syncs it, then disconnects
+         * 2. clientB starts and syncs the same objectA, then disconnects
+         * 3. While offline, clientA deletes innerObj[2] while clientB swaps innerObj[0] with innerObj[2]
+         * 4. A client reset is triggered on the server
+         * 5. clientA goes online and uploads the changes
+         * 6. only now clientB goes online, downloads and merges the changes. Only innerObj[0,1] exist and the swap is discarded
+         */
+        [NUnit.Framework.Explicit("Can't execute until we have a reliable way to trigger client reset on the server")]
+        [TestCaseSource(nameof(_automaticClientResetHandlers))]
+        public void SessionIntegrationTest_ClientResetHandlers_OutOfBoundArrayMove_Discarded(IClientResetHandler handler)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tscWriterOne = new TaskCompletionSource<bool>();
+                var tscWriterTwo = new TaskCompletionSource<bool>();
+
+                var writerOne = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    var config = await GetIntegrationConfigAsync("realm123.realm");
+                    config.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
+                    var tscAfterMerge = new TaskCompletionSource<object>();
+                    var afterCb = GetOnAfterHandler(tscAfterMerge, (before, after) =>
+                    {
+                        var list = after.All<SyncObjectWithRequiredStringList>().First().Strings;
+                        Assert.That(list.Count, Is.EqualTo("3"));
+                        Assert.That(list[0], Is.EqualTo("0"));
+                        Assert.That(list[1], Is.EqualTo("1"));
+                        Assert.That(list[2], Is.EqualTo("2"));
+                        tscAfterMerge.TrySetResult(true);
+                    });
+                    config.ClientResetHandler = handler.BuildHandler();
+                    using var realm = await GetRealmAsync(config);
+
+                    var originalObj = realm.Write(() =>
+                    {
+                        var toAdd = new SyncObjectWithRequiredStringList
+                        {
+                            Id = Guid.NewGuid().ToString()
+                        };
+                        toAdd.Strings.Add("0");
+                        toAdd.Strings.Add("1");
+                        toAdd.Strings.Add("2");
+                        return realm.Add(toAdd);
+                    });
+                    await WaitForUploadAsync(realm);
+
+                    var session = GetSession(realm);
+                    session.Stop();
+                    tscWriterTwo.TrySetResult(true);
+
+                    realm.Write(() =>
+                    {
+                        originalObj.Strings.RemoveAt(2);
+                    });
+
+                    await tscWriterOne.Task;
+
+                    var result = await ((PartitionSyncConfiguration)realm.Config).User.Functions.CallAsync<string>("generateClientReset");
+                    Assert.That(result.Contains("success"), Is.True);
+
+                    session.Start();
+                    await WaitForDownloadAsync(realm);
+                    await tscAfterMerge.Task;
+                    await WaitForUploadAsync(realm);
+                    tscWriterTwo.TrySetResult(true);
+                }));
+
+                var writerTwo = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    await tscWriterTwo.Task;
+                    var config = await GetIntegrationConfigAsync("realm456.realm");
+                    config.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
+                    var tscAfterMerge = new TaskCompletionSource<object>();
+                    var afterCb = GetOnAfterHandler(tscAfterMerge, (before, after) =>
+                    {
+                        var list = after.All<SyncObjectWithRequiredStringList>().Single().Strings;
+                        Assert.That(list.Count, Is.EqualTo("2"));
+                        Assert.That(list[0], Is.EqualTo("0"));
+                        Assert.That(list[1], Is.EqualTo("1"));
+                        tscAfterMerge.TrySetResult(true);
+                    });
+                    using var realm = await GetRealmAsync(config);
+                    await WaitForDownloadAsync(realm);
+                    var originalObjStr = realm.All<SyncObjectWithRequiredStringList>().Single().Strings;
+                    Assert.That(originalObjStr.Count, Is.EqualTo("3"));
+                    Assert.That(originalObjStr.First(), Is.EqualTo("0"));
+                    Assert.That(originalObjStr.ElementAt(1), Is.EqualTo("1"));
+                    Assert.That(originalObjStr.ElementAt(2), Is.EqualTo("2"));
+
+                    var session = GetSession(realm);
+                    session.Stop();
+                    tscWriterOne.TrySetResult(true);
+
+                    realm.Write(() =>
+                    {
+                        var tempObj = originalObjStr.ElementAt(0);
+                        originalObjStr.Move(2, 0);
+                        originalObjStr.Insert(2, tempObj);
+                    });
+
+                    await tscWriterTwo.Task;
+                    session.Start();
+                    await WaitForDownloadAsync(realm);
+                    await tscAfterMerge.Task;
+                }));
+
+                await Task.WhenAll(tscWriterOne.Task, tscWriterTwo.Task);
+            });
+        }
+
+        /* Any ArrayInsert to an index beyond the fresh list size is changed to insert to the end of the list.
+         *
+         * 1. clientA adds objectA with array innerObj[0,1,2] and syncs it, then disconnects
+         * 2. clientB starts and syncs the same objectA, then disconnects
+         * 3. While offline, clientA deletes innerObj[2] while clientB inserts innerObj[3]
+         * 4. A client reset is triggered on the server
+         * 5. clientA goes online and uploads the changes
+         * 6. only now clientB goes online, downloads and merges the changes. clientB will have innerObj[0,1,3]
+         * 7. clientA will also have innerObj[0,1,3]
+         */
+        [NUnit.Framework.Explicit("Can't execute until we have a reliable way to trigger client reset on the server")]
+        [TestCaseSource(nameof(_automaticClientResetHandlers))]
+        public void SessionIntegrationTest_ClientResetHandlers_OutOfBoundArrayInsert_AddedToTail(IClientResetHandler handler)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tscWriterOne = new TaskCompletionSource<bool>();
+                var tscWriterTwo = new TaskCompletionSource<bool>();
+
+                var writerOne = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    var config = await GetIntegrationConfigAsync("realm123.realm");
+                    config.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
+                    var tscInternalSync = new TaskCompletionSource<object>();
+                    var afterCb = GetOnAfterHandler(tscInternalSync, (before, after) =>
+                    {
+                        var list = after.All<SyncObjectWithRequiredStringList>().First().Strings;
+                        Assert.That(list.Count, Is.EqualTo("3"));
+                        Assert.That(list[0], Is.EqualTo("0"));
+                        Assert.That(list[1], Is.EqualTo("1"));
+                        Assert.That(list[2], Is.EqualTo("2"));
+                        tscInternalSync.TrySetResult(true);
+                    });
+                    config.ClientResetHandler = handler.BuildHandler();
+                    using var realm = await GetRealmAsync(config);
+
+                    var originalObj = realm.Write(() =>
+                    {
+                        var toAdd = new SyncObjectWithRequiredStringList
+                        {
+                            Id = Guid.NewGuid().ToString()
+                        };
+                        toAdd.Strings.Add("0");
+                        toAdd.Strings.Add("1");
+                        toAdd.Strings.Add("2");
+                        return realm.Add(toAdd);
+                    });
+                    await WaitForUploadAsync(realm);
+
+                    var session = GetSession(realm);
+                    session.Stop();
+                    tscWriterTwo.TrySetResult(true);
+
+                    realm.Write(() =>
+                    {
+                        originalObj.Strings.RemoveAt(2);
+                    });
+
+                    await tscWriterOne.Task;
+
+                    var result = await ((PartitionSyncConfiguration)realm.Config).User.Functions.CallAsync<string>("triggerClientResetOnSyncServer");
+                    Assert.That(result.Contains("success"), Is.True);
+
+                    session.Start();
+                    await WaitForDownloadAsync(realm);
+                    await tscInternalSync.Task;
+                    await WaitForUploadAsync(realm);
+                    tscWriterTwo.TrySetResult(true);
+
+                    // check that the sync updates are as expected
+                    realm.All<SyncObjectWithRequiredStringList>().First().PropertyChanged += (sender, eventArgs) =>
+                    {
+                        if (eventArgs.PropertyName == nameof(SyncObjectWithRequiredStringList.Strings))
+                        {
+                            var list = realm.All<SyncObjectWithRequiredStringList>().Single().Strings;
+                            Assert.That(list.Count, Is.EqualTo("3"));
+                            Assert.That(list[0], Is.EqualTo("0"));
+                            Assert.That(list[1], Is.EqualTo("1"));
+                            Assert.That(list[1], Is.EqualTo("3"));
+                            tscInternalSync.TrySetResult(true);
+                        }
+                    };
+                    await tscInternalSync.Task;
+                }));
+
+                var writerTwo = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    await tscWriterTwo.Task;
+                    var config = await GetIntegrationConfigAsync("realm456.realm");
+                    config.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
+                    var tscAfterMerge = new TaskCompletionSource<object>();
+                    var afterCb = GetOnAfterHandler(tscAfterMerge, (before, after) =>
+                    {
+                        var list = after.All<SyncObjectWithRequiredStringList>().Single().Strings;
+                        Assert.That(list.Count, Is.EqualTo("3"));
+                        Assert.That(list[0], Is.EqualTo("0"));
+                        Assert.That(list[1], Is.EqualTo("1"));
+                        Assert.That(list[1], Is.EqualTo("3"));
+                        tscAfterMerge.TrySetResult(true);
+                    });
+                    using var realm = await GetRealmAsync(config);
+                    await WaitForDownloadAsync(realm);
+                    var originalObjStr = realm.All<SyncObjectWithRequiredStringList>().Single().Strings;
+                    Assert.That(originalObjStr.Count, Is.EqualTo("3"));
+                    Assert.That(originalObjStr[0], Is.EqualTo("0"));
+                    Assert.That(originalObjStr[1], Is.EqualTo("1"));
+                    Assert.That(originalObjStr[2], Is.EqualTo("2"));
+
+                    var session = GetSession(realm);
+                    session.Stop();
+                    tscWriterOne.TrySetResult(true);
+
+                    realm.Write(() =>
+                    {
+                        originalObjStr.Add("3");
+                    });
+
+                    Assert.That(originalObjStr.Count, Is.EqualTo("4"));
+                    Assert.That(originalObjStr[3], Is.EqualTo("3"));
+
+                    await tscWriterTwo.Task;
+                    session.Start();
+                    await WaitForDownloadAsync(realm);
+                    await tscAfterMerge.Task;
+                }));
+
+                await Task.WhenAll(tscWriterOne.Task, tscWriterTwo.Task);
+            });
+        }
+
+        /* Any Update to an object which does not exist in the fresh Realm is discarded
+         *
+         * 1. clientA adds obj0 and obj1 and syncs it, then disconnects
+         * 2. clientB starts and syncs the same 2 objects, then disconnects
+         * 3. While offline, clientA deletes obj1 while clientB updates obj1
+         * 4. A client reset is triggered on the server
+         * 5. clientA goes online and uploads the deletion
+         * 6. only now clientB goes online, and the resulting merge
+         *    has discarded clientB's update to obj1. In fact, only obj0 exists
+         */
+        [NUnit.Framework.Explicit("Can't execute until we have a reliable way to trigger client reset on the server")]
+        [TestCaseSource(nameof(_automaticClientResetHandlers))]
+        public void SessionIntegrationTest_ClientResetHandlers_UpdateToDeletedObject_Discarded(IClientResetHandler handler)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tscWriterOne = new TaskCompletionSource<bool>();
+                var tscWriterTwo = new TaskCompletionSource<bool>();
+
+                var writerOne = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    var config = await GetIntegrationConfigAsync("realm123.realm");
+                    config.Schema = new[] { typeof(ObjectWithPartitionValue) };
+                    var tscAfterMerge = new TaskCompletionSource<object>();
+                    var afterCb = GetOnAfterHandler(tscAfterMerge, (before, after) =>
+                    {
+                        Assert.That(after.All<ObjectWithPartitionValue>().Single().Value, Is.EqualTo("obj0"));
+                        tscAfterMerge.TrySetResult(true);
+                    });
+                    config.ClientResetHandler = handler.BuildHandler();
+                    using var realm = await GetRealmAsync(config);
+
+                    var objToRemove = realm.Write(() =>
+                    {
+                        realm.Add(new ObjectWithPartitionValue
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Value = "obj0"
+                        });
+                        return realm.Add(new ObjectWithPartitionValue
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Value = "obj1"
+                        });
+                    });
+                    await WaitForUploadAsync(realm);
+
+                    var session = GetSession(realm);
+                    session.Stop();
+                    tscWriterTwo.TrySetResult(true);
+
+                    realm.Write(() =>
+                    {
+                        realm.Remove(objToRemove);
+                    });
+
+                    await tscWriterOne.Task;
+
+                    var result = await ((PartitionSyncConfiguration)realm.Config).User.Functions.CallAsync<string>("generateClientReset");
+                    Assert.That(result.Contains("success"), Is.True);
+
+                    session.Start();
+                    await WaitForDownloadAsync(realm);
+                    await tscAfterMerge.Task;
+                    await WaitForUploadAsync(realm);
+                    tscWriterTwo.TrySetResult(true);
+                }));
+
+                var writerTwo = Task.Run(() => AsyncContext.Run(async () =>
+                {
+                    await tscWriterTwo.Task;
+                    var config = await GetIntegrationConfigAsync("realm456.realm");
+                    config.Schema = new[] { typeof(ObjectWithPartitionValue) };
+                    var tscAfterMerge = new TaskCompletionSource<object>();
+                    var afterCb = GetOnAfterHandler(tscAfterMerge, (before, after) =>
+                    {
+                        Assert.That(after.All<ObjectWithPartitionValue>().Single().Value, Is.EqualTo("obj0"));
+                        tscAfterMerge.TrySetResult(true);
+                    });
+
+                    using var realm = await GetRealmAsync(config);
+                    await WaitForDownloadAsync(realm);
+                    var objToUpdate = realm.All<ObjectWithPartitionValue>().ElementAt(1);
+                    Assert.That(realm.All<ObjectWithPartitionValue>().Count, Is.EqualTo(2));
+                    Assert.That(realm.All<ObjectWithPartitionValue>().First().Value, Is.EqualTo("obj0"));
+                    Assert.That(objToUpdate.Value, Is.EqualTo("obj1"));
+
+                    var session = GetSession(realm);
+                    session.Stop();
+                    tscWriterOne.TrySetResult(true);
+
+                    realm.Write(() =>
+                    {
+                        objToUpdate.Value = "changed but it'll be discarded";
+                    });
+
+                    await tscWriterTwo.Task;
+                    session.Start();
+                    await WaitForDownloadAsync(realm);
+                    await tscAfterMerge.Task;
+                }));
+
+                await Task.WhenAll(tscWriterOne.Task, tscWriterTwo.Task);
+            });
+        }
+
+        // TODO andrea: needs to be updated to use the new trigger for the clientReset on the server
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         [NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
         public void Session_ClientResetHandlers_AccessRealm_OnBeforeReset(IClientResetHandler handler)
         {
@@ -344,7 +693,8 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        // TODO andrea: needs to be updated to use the new trigger for the clientReset on the server
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         [NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
         public void Session_ClientResetHandlers_Access_Realms_OnAfterReset(IClientResetHandler handler)
         {
@@ -410,9 +760,10 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetInstanceHandlers))]
+        // TODO andrea: needs to be updated to use the new trigger for the clientReset on the server
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         [NUnit.Framework.Explicit("Relies on ProtocolError::bad_changeset to be ClientReset Error")]
-        public void Session_ClientResetAutomaticChanges_TriggersNotifications(ClientResetHandlerBase handler)
+        public void Session_ClientResetAutomaticChanges_TriggersNotifications(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -420,7 +771,7 @@ namespace Realms.Tests.Sync
 
                 //Logger.Default = Logger.Function(message =>
                 //{
-                //    var fileName = "C:\\Users\\andrea.catalini\\clientLogs.txt";
+                //    var fileName = "C:\\Users\\andrea.catalini\\clientLogs.log";
                 //    StreamWriter sw = new StreamWriter(fileName, true);
                 //    sw.WriteLine(message);
                 //    sw.Close();
@@ -429,7 +780,7 @@ namespace Realms.Tests.Sync
                 // We'll add an object with the wrong partition
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-                config.ClientResetHandler = handler;
+                config.ClientResetHandler = handler.BuildHandler();
 
                 using var realm = await GetRealmAsync(config);
 
@@ -457,6 +808,7 @@ namespace Realms.Tests.Sync
 
                 var objects = realm.All<ObjectWithPartitionValue>().AsRealmCollection();
                 Assert.That(objects.Count, Is.EqualTo(2));
+                var result = await config.User.Functions.CallAsync("generateClientReset");
 
                 var tcs = new TaskCompletionSource<NotifyCollectionChangedEventArgs>();
                 objects.CollectionChanged += onCollectionChanged;
@@ -476,7 +828,7 @@ namespace Realms.Tests.Sync
             }, timeout: 120_000);
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         public void Session_ClientResetHandlers_ManualResetFallback_Exception_OnBefore(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -532,7 +884,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers))]
+        [TestCaseSource(nameof(_allClientResetHandlers))]
         public void Session_ClientResetHandlers_ManualResetFallback_Exception_OnAfter(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -612,7 +964,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers)),
+        [TestCaseSource(nameof(_allClientResetHandlers)),
             Obsolete("Testing Sesion.Error compatibility")]
         public void Session_ClientResetHandlers_Coexistence(IClientResetHandler clientResetHandler)
         {
@@ -663,15 +1015,15 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetInstanceHandlers)),
+        [TestCaseSource(nameof(_allClientResetHandlers)),
             Obsolete("Testing Sesion.Error compatibility")]
-        public void Session_WithNewClientResetHandlers_DoesntRaiseSessionError(ClientResetHandlerBase handler)
+        public void Session_WithNewClientResetHandlers_DoesntRaiseSessionError(IClientResetHandler handler)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var obsoleteSessionErrorTriggered = false;
                 var config = await GetIntegrationConfigAsync();
-                config.ClientResetHandler = handler;
+                config.ClientResetHandler = handler.BuildHandler();
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
 
@@ -693,7 +1045,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(_clientResetHandlers)),
+        [TestCaseSource(nameof(_allClientResetHandlers)),
             Obsolete("Testing Sesion.Error compatibility")]
         public void Session_ClientResetHandlers_ManualResetFallback_Coexistence(IClientResetHandler clientResetHandler)
         {
@@ -1349,9 +1701,10 @@ namespace Realms.Tests.Sync
         {
             foreach (var intMode in Enum.GetValues(typeof(ProgressMode)))
             {
-                foreach (var handler in _clientResetInstanceHandlers)
+                foreach (var handler in _allClientResetHandlers())
                 {
-                    yield return ((ProgressMode)intMode, handler);
+                    var handlerInstance = handler.BuildHandler();
+                    yield return ((ProgressMode)intMode, handlerInstance);
                 }
             }
         }
@@ -1534,6 +1887,16 @@ namespace Realms.Tests.Sync
 
             [MapTo("realm_id")]
             public string Partition { get; set; }
+        }
+
+        public class SyncObjectWithRequiredStringList : RealmObject
+        {
+            [PrimaryKey]
+            [MapTo("_id")]
+            public string Id { get; set; }
+
+            [Required]
+            public IList<string> Strings { get; }
         }
 
         private static SessionNotificationToken? GetNotificationToken(Session session)

@@ -63,6 +63,23 @@ namespace Baas
                   return { status: 'fail' };
                 };";
 
+        private const string TriggerClientResetOnSyncServerFuncSource =
+            @"exports = async function() {
+              const mongodb = context.services.get('BackingDB');
+              console.log('user.id = ' + context.user.id.toString()); 
+              let deletionResult;
+              try {
+                deletionResult = await mongodb.db('__realm_sync').collection('clientfiles').deleteMany({ ownerId: context.user.id.toString() });
+                console.log('Deleted ' + deletionResult.deletedCount + ' documents');
+              } catch(err) {
+                throw 'Deletion failed: ' + err;
+              }
+              if (deletionResult.deletedCount > 0) {
+                return { status: 'success', deletedDocs: deletionResult.deletedCount };
+              }
+              return { status: 'failure' };
+            };";
+
         private readonly HttpClient _client = new HttpClient();
 
         private readonly string _clusterName;
@@ -238,6 +255,8 @@ namespace Baas
             var authFuncId = await CreateFunction(app, "authFunc", @"exports = (loginPayload) => {
                       return loginPayload[""realmCustomAuthFuncUserId""];
                     };");
+
+            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource);
 
             await CreateFunction(app, "documentFunc", @"exports = function(first, second){
                 return {
