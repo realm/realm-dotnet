@@ -67,5 +67,7 @@ namespace Realm.SourceGenerator
 
         public string TypeString { get; set; }
 
+        public ITypeSymbol ObjectTypeSymbol { get; set; }
+
     }
 }

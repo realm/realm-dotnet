@@ -133,7 +133,7 @@ namespace {classInfo.Namespace}
 
         private TypeInfo ExtractTypeInfo(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol)
         {
-            var propertyType = ExtractPropertyType(context, classInfo, typeSymbol, out var objectType);
+            var propertyType = GetPropertyType(context, classInfo, typeSymbol, out var objectTypeSymbol);
             var typeString = typeSymbol.ToDisplayString(); // This has also the complete namespace
             // We can use also ToMinimalDisplayString, but it requires the semantic model too;
 
@@ -146,7 +146,7 @@ namespace {classInfo.Namespace}
             return info;
         }
 
-        private PropertyType ExtractPropertyType(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol, out ITypeSymbol objectTypeSymbol)
+        private PropertyType GetPropertyType(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol, out ITypeSymbol objectTypeSymbol)
         {
             objectTypeSymbol = null;
             PropertyType nullabilityModifier = default;
@@ -186,7 +186,7 @@ namespace {classInfo.Namespace}
                     return PropertyType.Object | PropertyType.Nullable;
                 case INamedTypeSymbol when typeSymbol.Name == "IList":
                     var listArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    var listResult = PropertyType.Array | ExtractPropertyType(context, classInfo, listArgument, out objectTypeSymbol);
+                    var listResult = PropertyType.Array | GetPropertyType(context, classInfo, listArgument, out objectTypeSymbol);
 
                     if (listResult.HasFlag(PropertyType.Object))
                     {
@@ -197,7 +197,7 @@ namespace {classInfo.Namespace}
                     return listResult;
                 case INamedTypeSymbol when typeSymbol.Name == "ISet":
                     var setArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    var setResult = PropertyType.Set | ExtractPropertyType(setArgument, out objectTypeSymbol);
+                    var setResult = PropertyType.Set | GetPropertyType(context, classInfo, setArgument, out objectTypeSymbol);
 
                     if (setResult.HasFlag(PropertyType.Object))
                     {
@@ -216,7 +216,7 @@ namespace {classInfo.Namespace}
                         throw new Exception(); //TODO This needs to be different...
                     }
 
-                    var dictionaryResult = PropertyType.Dictionary | ExtractPropertyType(valueArgument, out objectTypeSymbol);
+                    var dictionaryResult = PropertyType.Dictionary | GetPropertyType(context, classInfo, valueArgument, out objectTypeSymbol);
 
                     if (dictionaryResult.HasFlag(PropertyType.Object))
                     {
