@@ -21,7 +21,8 @@ using Realms.Sync.Exceptions;
 namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
-    /// The base class for the different client reset handler types. The possible implementations are <see cref="DiscardLocalResetHandler"/> and <see cref="ManualRecoveryHandler"/>.
+    /// The base class for the different client reset handler types. The possible implementations are <see cref="AutomaticRecoveryHandler"/>,
+    /// <see cref="AutomaticRecoveryOrDiscardLocalHandler"/>, <see cref="DiscardLocalResetHandler"/> and <see cref="ManualRecoveryHandler"/>.
     /// To use either of them, create a new instance and assign it to <see cref="SyncConfigurationBase.ClientResetHandler"/> on the configuration
     /// you use to open the synchronized <see cref="Realm"/> instance.
     /// </summary>
@@ -36,7 +37,6 @@ namespace Realms.Sync.ErrorHandling
         /// </param>
         public delegate void ClientResetCallback(ClientResetException clientResetException);
 
-        // TODO andrea: review the documentation here given the addition of the automatic recoveries
         /// <summary>
         /// Callback that indicates a Client Reset is about to happen.
         /// </summary>
@@ -50,7 +50,6 @@ namespace Realms.Sync.ErrorHandling
         /// </remarks>
         public delegate void BeforeResetCallback(Realm beforeFrozen);
 
-        // TODO andrea: review the documentation here given the addition of the automatic recoveries
         /// <summary>
         /// Callback that indicates a Client Reset has just happened.
         /// </summary>

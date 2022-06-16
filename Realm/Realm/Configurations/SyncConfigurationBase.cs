@@ -55,14 +55,14 @@ namespace Realms.Sync
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
 
-        // TODO andrea: extend the API documentation to include the new modes
         /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="DiscardLocalResetHandler"/>.
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="AutomaticRecoveryOrDiscardLocalHandler"/>.
         /// </summary>
         /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
         /// <remarks>
-        /// Supported values are instances of <see cref="ManualRecoveryHandler"/> or <see cref="DiscardLocalResetHandler"/>.
-        /// The default <see cref="DiscardLocalResetHandler"/> will have no custom actions set for the before and after callbacks.
+        /// Supported values are instances of <see cref="ManualRecoveryHandler"/>, <see cref="DiscardLocalResetHandler"/>,
+        /// <see cref="AutomaticRecoveryHandler"/> and <see cref="AutomaticRecoveryOrDiscardLocalHandler"/>.
+        /// The default <see cref="AutomaticRecoveryOrDiscardLocalHandler"/> will have no custom actions set for the before and after callbacks.
         /// </remarks>
         /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
         public virtual ClientResetHandlerBase ClientResetHandler
@@ -134,7 +134,6 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
-            // TODO andrea: investigate which one should be the default one
             var clientResyncMode = ClientResyncMode.AutomaticRecoveryOrDiscardLocal;
 
             if (ClientResetHandler != null)
