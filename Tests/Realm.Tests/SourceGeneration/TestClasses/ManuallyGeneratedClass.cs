@@ -303,38 +303,61 @@ namespace Realm.Generated
         {
         }
 
-        //TODO Need to find a more elegant way
-        //We could also directly override the public mehotds (Get/SetValue, GetListValue, ...) and make those abstracts.
-        //If we do that, we don't even need this
-        protected override T GetPropertyValue<T>(string propertyName)
+        public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
-                "_string" => (T)(object)(RealmValue)stringValue,
-                "IntValue" => (T)(object)(RealmValue)intValue,
-                "PrimaryKeyValue" => (T)(object)(RealmValue)primaryKeyValue,
-                "ListValue" => (T)(object)ListValue,
+                "_string" => stringValue,
+                "IntValue" => intValue,
+                "PrimaryKeyValue" => primaryKeyValue,
                 _ => throw new ArgumentException($"The object does not have a Realm property with name {propertyName}"),
             };
         }
 
-        protected override void SetPropertyValue(string propertyName, object value)
+        public override void SetValue(string propertyName, RealmValue val)
         {
-            var realmVal = (RealmValue)value;
             switch (propertyName)
             {
                 case "_string":
-                    StringValue = (string)realmVal;
+                    StringValue = (string)val;
                     return;
                 case "IntValue":
-                    IntValue = (int)realmVal;
+                    IntValue = (int)val;
                     return;
                 case "PrimaryKeyValue":
-                    PrimaryKeyValue = (int)realmVal;
-                    return;
+                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                 default:
-                    throw new ArgumentException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
+        }
+
+        public override IList<T> GetListValue<T>(string propertyName)
+        {
+            return propertyName switch
+            {
+                "ListValue" => (IList<T>)ListValue,
+                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+            };
+        }
+
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+        }
+
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+        }
+
+        public override void SetValueUnique(string propertyName, RealmValue val)
+        {
+            if (propertyName != "PrimaryKeyValue")
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            PrimaryKeyValue = (int)val;
         }
     }
 }

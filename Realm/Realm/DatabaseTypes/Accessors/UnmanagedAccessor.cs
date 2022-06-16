@@ -55,17 +55,17 @@ namespace Realms
         public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
             => throw new NotSupportedException("Using the GetBacklinks is only possible for managed (persisted) objects.");
 
-        public virtual IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName) => GetPropertyValue<IDictionary<string, TValue>>(propertyName);
+        public abstract IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
 
-        public virtual IList<T> GetListValue<T>(string propertyName) => GetPropertyValue<IList<T>>(propertyName);
+        public abstract IList<T> GetListValue<T>(string propertyName);
 
-        public virtual ISet<T> GetSetValue<T>(string propertyName) => GetPropertyValue<ISet<T>>(propertyName);
+        public abstract ISet<T> GetSetValue<T>(string propertyName);
 
-        public virtual RealmValue GetValue(string propertyName) => GetPropertyValue<RealmValue>(propertyName);
+        public abstract RealmValue GetValue(string propertyName);
 
-        public virtual void SetValue(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
+        public abstract void SetValue(string propertyName, RealmValue val);
 
-        public virtual void SetValueUnique(string propertyName, RealmValue val) => SetPropertyValue(propertyName, val);
+        public abstract void SetValueUnique(string propertyName, RealmValue val);
 
         public virtual void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
@@ -91,18 +91,6 @@ namespace Realms
         {
             return ReferenceEquals(this, obj);
         }
-
-        protected virtual T GetPropertyValue<T>(string propertyName)
-        {
-            return (T)GetType().GetProperty(propertyName).GetValue(this);
-        }
-
-        //TODO This does not work because value is usually RealmValue and the property is of a specific type. 
-        //We could make this abstract and implement it in the class
-        protected virtual void SetPropertyValue(string propertyName, object value)
-        {
-            GetType().GetProperty(propertyName).SetValue(this, value);
-        }
     }
 
     // Should be used by the weaver and undocumented
@@ -127,12 +115,17 @@ namespace Realms
             return new Dictionary<string, TValue>();
         }
 
-        protected override T GetPropertyValue<T>(string propertyName)
+        public override RealmValue GetValue(string propertyName)
         {
             throw new NotSupportedException("This should not be used for now");
         }
 
-        protected override void SetPropertyValue(string propertyName, object value)
+        public override void SetValue(string propertyName, RealmValue val)
+        {
+            throw new NotSupportedException("This should not be used for now");
+        }
+
+        public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new NotSupportedException("This should not be used for now");
         }

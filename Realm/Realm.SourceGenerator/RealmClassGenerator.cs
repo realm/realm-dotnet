@@ -67,16 +67,15 @@ using System;");
                 var propertiesSymbol = classSymbol.GetMembers()
                     .OfType<IPropertySymbol>().Where(p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
 
-                var extractedInfo = ExtractPropertyInfo(context, propertiesSymbol);
+                ExtractPropertyInfo(context, classInfo, propertiesSymbol);
 
-                //TODO Not necessarily the class is public, need to get correct visibility
                 builder.AppendLine(@$"
 namespace {classInfo.Namespace}
 {{
     {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
     {{
 ");
-                foreach (var prop in extractedInfo)
+                foreach (var prop in classInfo.Properties)
                 {
                     builder.AppendLine($"// {prop.TypeInfo.TypeString} {prop.Name}");
                     builder.AppendLine($"// {prop.TypeInfo.Type}");
@@ -88,6 +87,7 @@ namespace {classInfo.Namespace}
     }}
 }}");
                 // We could use this, but we're adding time to compilation
+                // It's not a full format, but it just normalizes whitespace
                 // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
                 var stringCode = builder.ToString();
                 var sourceText = SourceText.From(stringCode, Encoding.UTF8);
@@ -96,7 +96,7 @@ namespace {classInfo.Namespace}
 
         }
 
-        private IEnumerable<PropertyInfo> ExtractPropertyInfo(GeneratorExecutionContext context, IEnumerable<IPropertySymbol> propList)
+        private void ExtractPropertyInfo(GeneratorExecutionContext context, ClassInfo classInfo, IEnumerable<IPropertySymbol> propList)
         {
             var infoList = new List<PropertyInfo>();
 
@@ -113,7 +113,7 @@ namespace {classInfo.Namespace}
                 info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
                 info.MapTo = (string)propSymbol.GetAttributeArgument<MapToAttribute>();
                 info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
-                info.TypeInfo = ExtractTypeInfo(propSymbol.Type);
+                info.TypeInfo = ExtractTypeInfo(context, classInfo, propSymbol.Type);
 
                 if (info.IsPrimaryKey)
                 {
@@ -128,17 +128,12 @@ namespace {classInfo.Namespace}
                 infoList.Add(info);
             }
 
-
-
-            //TODO This is where I need to check it's a valid property
-            // For instance: primary keys / indexed can only be of certain types
-
-            return infoList;
+            classInfo.Properties = infoList;
         }
 
-        private TypeInfo ExtractTypeInfo(ITypeSymbol typeSymbol)
+        private TypeInfo ExtractTypeInfo(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol)
         {
-            var propertyType = ExtractPropertyType(typeSymbol, out var objectType);
+            var propertyType = ExtractPropertyType(context, classInfo, typeSymbol, out var objectType);
             var typeString = typeSymbol.ToDisplayString(); // This has also the complete namespace
             // We can use also ToMinimalDisplayString, but it requires the semantic model too;
 
@@ -151,7 +146,7 @@ namespace {classInfo.Namespace}
             return info;
         }
 
-        private PropertyType ExtractPropertyType(ITypeSymbol typeSymbol, out ITypeSymbol objectTypeSymbol)
+        private PropertyType ExtractPropertyType(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol, out ITypeSymbol objectTypeSymbol)
         {
             objectTypeSymbol = null;
             PropertyType nullabilityModifier = default;
@@ -191,7 +186,7 @@ namespace {classInfo.Namespace}
                     return PropertyType.Object | PropertyType.Nullable;
                 case INamedTypeSymbol when typeSymbol.Name == "IList":
                     var listArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    var listResult = PropertyType.Array | ExtractPropertyType(listArgument, out objectTypeSymbol);
+                    var listResult = PropertyType.Array | ExtractPropertyType(context, classInfo, listArgument, out objectTypeSymbol);
 
                     if (listResult.HasFlag(PropertyType.Object))
                     {
@@ -302,7 +297,6 @@ namespace {classInfo.Namespace}
             {
                 return;
             }
-
 
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(cds) as ITypeSymbol;
 

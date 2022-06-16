@@ -27,8 +27,8 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
     public partial class RealmExampleClass: IRealmObject
     {
-        //[PrimaryKey]
-        //public int PrimaryKey { get; set; }
+        [PrimaryKey]
+        public int PrimaryKey { get; set; }
 
         //public int Age { get; set; }
 
@@ -45,6 +45,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         //public IList<EmbeddedClass> ListOfEmbedded { get;  }
 
+        [PrimaryKey]
         public IDictionary<string, int> DictionaryInt { get; }
     }
 

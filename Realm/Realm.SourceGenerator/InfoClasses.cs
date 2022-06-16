@@ -36,6 +36,8 @@ namespace Realm.SourceGenerator
 
         public Accessibility Accessibility { get; set; }
 
+        public IEnumerable<PropertyInfo> Properties { get; set; }
+
     }
 
     internal record PropertyInfo
