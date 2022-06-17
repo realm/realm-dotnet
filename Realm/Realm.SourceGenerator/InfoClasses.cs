@@ -36,7 +36,9 @@ namespace Realm.SourceGenerator
 
         public Accessibility Accessibility { get; set; }
 
-        public IEnumerable<PropertyInfo> Properties { get; set; }
+        public List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
+
+        public List<Diagnostic> Diagnostics { get; set; } = new List<Diagnostic>();
 
     }
 

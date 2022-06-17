@@ -24,17 +24,19 @@ namespace Realm.SourceGenerator
     {
         #region Errors
 
-        public static Diagnostic ExceptionError(Location location)
+        public static Diagnostic UnexpectedError(string className, string message, string stackTrace)
         {
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "Unexpcted error during source generation",
-                $"There was an unexpected error during source generation",
+                $"There was an unexpected error during source generation of class {className}",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                true,
+                description: $"Exception Message: {message}. \r\nCallstack:\r\n{stackTrace}"
+                );
 
-            return Diagnostic.Create(descriptor, location);
+            return Diagnostic.Create(descriptor, Location.None);
         }
 
         public static Diagnostic ObjectWithNoProperties(string className, Location location)

@@ -28,9 +28,36 @@ namespace Realm.SourceGenerator
 
             foreach (var (classSyntax, classSymbol) in scr.RealmClasses)
             {
-                var builder = new StringBuilder();
+                try
+                {
+                    //TODO Need to check if needed at some point
+                    var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
 
-                builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
+                    var classInfo = new ClassInfo();
+
+                    //General info
+                    classInfo.Namespace = classSymbol.ContainingNamespace.Name;
+                    classInfo.Name = classSymbol.Name;
+                    classInfo.MapTo = (string)classSymbol.GetAttributeArgument<MapToAttribute>();
+                    classInfo.Accessibility = classSymbol.DeclaredAccessibility;
+
+                    //Properties
+                    var propertiesSymbol = classSymbol.GetMembers()
+                        .OfType<IPropertySymbol>().Where(p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
+
+                    FillPropertyInfo(context, classInfo, propertiesSymbol);
+
+                    classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
+
+                    if (classInfo.Diagnostics.Any( d => d.Severity == DiagnosticSeverity.Error))
+                    {
+                        continue;
+                    }
+
+                    var builder = new StringBuilder();
+
+                    //TODO Do we need the copyRight...?
+                    builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright 2022 Realm Inc.
 // //
@@ -48,94 +75,81 @@ namespace Realm.SourceGenerator
 // //
 // ////////////////////////////////////////////////////////////////////////////");
 
-                //Usings
-                builder.AppendLine(@"
+                    //Usings
+                    builder.AppendLine(@"
 using System;");
 
-                //TODO Need to check if needed at some point
-                var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
 
-                var classInfo = new ClassInfo();
-
-                //General info
-                classInfo.Namespace = classSymbol.ContainingNamespace.Name;
-                classInfo.Name = classSymbol.Name;
-                classInfo.MapTo = (string)classSymbol.GetAttributeArgument<MapToAttribute>();
-                classInfo.Accessibility = classSymbol.DeclaredAccessibility;
-
-                //Properties
-                var propertiesSymbol = classSymbol.GetMembers()
-                    .OfType<IPropertySymbol>().Where(p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
-
-                ExtractPropertyInfo(context, classInfo, propertiesSymbol);
-
-                builder.AppendLine(@$"
+                    builder.AppendLine(@$"
 namespace {classInfo.Namespace}
 {{
     {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
     {{
 ");
-                foreach (var prop in classInfo.Properties)
-                {
-                    builder.AppendLine($"// {prop.TypeInfo.TypeString} {prop.Name}");
-                    builder.AppendLine($"// {prop.TypeInfo.Type}");
-                    builder.AppendLine();
-                }
+                    foreach (var prop in classInfo.Properties)
+                    {
+                        builder.AppendLine($"// {prop.TypeInfo.TypeString} {prop.Name}");
+                        builder.AppendLine($"// {prop.TypeInfo.Type}");
+                        builder.AppendLine();
+                    }
 
-
-                builder.AppendLine(@$"
+                    builder.AppendLine(@$"
     }}
 }}");
-                // We could use this, but we're adding time to compilation
-                // It's not a full format, but it just normalizes whitespace
-                // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-                var stringCode = builder.ToString();
-                var sourceText = SourceText.From(stringCode, Encoding.UTF8);
-                context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
+                    // We could use this, but we're adding time to compilation
+                    // It's not a full format, but it just normalizes whitespace
+                    // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+                    var stringCode = builder.ToString();
+                    var sourceText = SourceText.From(stringCode, Encoding.UTF8);
+                    context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
+
+                }
+                catch (Exception ex)
+                {
+                    context.ReportDiagnostic(Diagnostics.UnexpectedError(classSymbol.Name, ex.Message, ex.StackTrace));
+                    throw;
+                }
             }
+
 
         }
 
-        private void ExtractPropertyInfo(GeneratorExecutionContext context, ClassInfo classInfo, IEnumerable<IPropertySymbol> propList)
+        private void FillPropertyInfo(GeneratorExecutionContext context, ClassInfo classInfo, IEnumerable<IPropertySymbol> propertySymbolList)
         {
-            var infoList = new List<PropertyInfo>();
-
             bool primaryKeySet = false;
 
-            foreach (var propSymbol in propList)
+            foreach (var propSymbol in propertySymbolList)
             {
                 var info = new PropertyInfo();
 
                 info.Name = propSymbol.Name;
-                info.Accessibility = propSymbol.DeclaredAccessibility;  
+                info.Accessibility = propSymbol.DeclaredAccessibility;
                 info.IsIndexed = propSymbol.HasAttribute<IndexedAttribute>();
                 info.IsRequired = propSymbol.HasAttribute<RequiredAttribute>();
                 info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
                 info.MapTo = (string)propSymbol.GetAttributeArgument<MapToAttribute>();
                 info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
-                info.TypeInfo = ExtractTypeInfo(context, classInfo, propSymbol.Type);
+                info.TypeInfo = GetTypeInfo(classInfo, propSymbol);
 
                 if (info.IsPrimaryKey)
                 {
                     if (primaryKeySet)
                     {
-                        context.ReportDiagnostic(Diagnostics.MultiplePrimaryKeys("test", Location.None));
+                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys("test", Location.None));
                     }
 
                     primaryKeySet = true;
                 }
 
-                infoList.Add(info);
+                classInfo.Properties.Add(info);
             }
-
-            classInfo.Properties = infoList;
         }
 
-        private TypeInfo ExtractTypeInfo(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol)
+        private TypeInfo GetTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol)
         {
-            var propertyType = GetPropertyType(context, classInfo, typeSymbol, out var objectTypeSymbol);
-            var typeString = typeSymbol.ToDisplayString(); // This has also the complete namespace
-            // We can use also ToMinimalDisplayString, but it requires the semantic model too;
+            var propertyType = GetPropertyType(classInfo, propertySymbol.Type, false, out var objectTypeSymbol);
+            var typeString = propertySymbol.Type.ToDisplayString(); // This has also the complete namespace
+            // We can use also ToMinimalDisplayString, but it requires the semantic model;
 
             var info = new TypeInfo
             {
@@ -146,7 +160,7 @@ namespace {classInfo.Namespace}
             return info;
         }
 
-        private PropertyType GetPropertyType(GeneratorExecutionContext context, ClassInfo classInfo, ITypeSymbol typeSymbol, out ITypeSymbol objectTypeSymbol)
+        private PropertyType GetPropertyType(ClassInfo classInfo, IPropertySymbol propertySymbol, ITypeSymbol typeSymbol, bool isCollection, out ITypeSymbol objectTypeSymbol)
         {
             objectTypeSymbol = null;
             PropertyType nullabilityModifier = default;
@@ -186,7 +200,12 @@ namespace {classInfo.Namespace}
                     return PropertyType.Object | PropertyType.Nullable;
                 case INamedTypeSymbol when typeSymbol.Name == "IList":
                     var listArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    var listResult = PropertyType.Array | GetPropertyType(context, classInfo, listArgument, out objectTypeSymbol);
+
+                    var argumentType = GetPropertyType(classInfo, propertySymbol, listArgument, true, out objectTypeSymbol);
+
+
+
+                    var listResult = PropertyType.Array | argumentType;
 
                     if (listResult.HasFlag(PropertyType.Object))
                     {
@@ -197,7 +216,7 @@ namespace {classInfo.Namespace}
                     return listResult;
                 case INamedTypeSymbol when typeSymbol.Name == "ISet":
                     var setArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    var setResult = PropertyType.Set | GetPropertyType(context, classInfo, setArgument, out objectTypeSymbol);
+                    var setResult = PropertyType.Set | GetPropertyType(classInfo, propertySymbol, setArgument, true, out objectTypeSymbol);
 
                     if (setResult.HasFlag(PropertyType.Object))
                     {
@@ -213,10 +232,12 @@ namespace {classInfo.Namespace}
 
                     if (keyArgument.SpecialType != SpecialType.System_String)
                     {
-                        throw new Exception(); //TODO This needs to be different...
+                        classInfo.Diagnostics.Add(
+                            Diagnostics.DictionaryWithNonStringKeys(classInfo.Name, propertySymbol.Name, 
+                            keyArgument.ToReadableName(), valueArgument.ToReadableName(), propertySymbol.GetPropertyLocation()));
                     }
 
-                    var dictionaryResult = PropertyType.Dictionary | GetPropertyType(context, classInfo, valueArgument, out objectTypeSymbol);
+                    var dictionaryResult = PropertyType.Dictionary | GetPropertyType(classInfo, propertySymbol, valueArgument, true,out objectTypeSymbol);
 
                     if (dictionaryResult.HasFlag(PropertyType.Object))
                     {
@@ -226,10 +247,9 @@ namespace {classInfo.Namespace}
 
                     return dictionaryResult;
                 default:
-                    break;
+                    classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeSymbol.ToReadableName(), propertySymbol.GetPropertyLocation()));
+                    return PropertyType.Int;
             }
-
-            return PropertyType.Float;
         }
     }
 
@@ -284,6 +304,18 @@ namespace {classInfo.Namespace}
                 Accessibility.Public => "public",
                 _ => throw new ArgumentException("Unrecognised accessibilty")
             };
+        }
+
+        public static string ToReadableName(this ITypeSymbol symbol)
+        {
+            //Better to have it in one place, in case we want to modify how it looks
+            return symbol.ToDisplayString();
+        }
+
+        public static Location GetPropertyLocation(this IPropertySymbol symbol)
+        {
+            var syntax = symbol.DeclaringSyntaxReferences.First();  //TODO Need to test if really we have only one reference for properties. What if part of an interface?
+            return Location.Create(syntax.SyntaxTree, syntax.Span);
         }
     }
 
