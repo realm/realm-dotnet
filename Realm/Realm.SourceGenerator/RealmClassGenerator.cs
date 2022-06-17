@@ -26,6 +26,8 @@ namespace Realm.SourceGenerator
                 return;
             }
 
+            //TODO Need to make an error for using both IRealmObject and IEmbeddedObject (or none)
+
             foreach (var (classSyntax, classSymbol) in scr.RealmClasses)
             {
                 try
@@ -42,14 +44,15 @@ namespace Realm.SourceGenerator
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
 
                     //Properties
-                    var propertiesSymbol = classSymbol.GetMembers()
-                        .OfType<IPropertySymbol>().Where(p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
+                    var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+                    //var propertiesSymbol = classSymbol.GetMembers()
+                    //    .OfType<IPropertySymbol>().Where(p => !p.HasAttribute<IgnoredAttribute>()).ToList(); // TODO ToList is here for debugging purposes
 
-                    FillPropertyInfo(context, classInfo, propertiesSymbol);
+                    FillPropertyInfo(semanticModel, classInfo, propertiesSyntax);
 
                     classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
 
-                    if (classInfo.Diagnostics.Any( d => d.Severity == DiagnosticSeverity.Error))
+                    if (classInfo.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                     {
                         continue;
                     }
@@ -110,16 +113,21 @@ namespace {classInfo.Namespace}
                     throw;
                 }
             }
-
-
         }
 
-        private void FillPropertyInfo(GeneratorExecutionContext context, ClassInfo classInfo, IEnumerable<IPropertySymbol> propertySymbolList)
+        private void FillPropertyInfo(SemanticModel model, ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes)
         {
             bool primaryKeySet = false;
 
-            foreach (var propSymbol in propertySymbolList)
+            foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
+                var propSymbol = model.GetSymbolInfo(propSyntax).Symbol as IPropertySymbol;
+
+                if (propSymbol.HasAttribute<IgnoredAttribute>())
+                {
+                    continue;
+                }
+
                 var info = new PropertyInfo();
 
                 info.Name = propSymbol.Name;
@@ -129,7 +137,7 @@ namespace {classInfo.Namespace}
                 info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
                 info.MapTo = (string)propSymbol.GetAttributeArgument<MapToAttribute>();
                 info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
-                info.TypeInfo = GetTypeInfo(classInfo, propSymbol);
+                info.TypeInfo = GetTypeInfo(classInfo, propSymbol, propSyntax);
 
                 if (info.IsPrimaryKey)
                 {
@@ -145,11 +153,76 @@ namespace {classInfo.Namespace}
             }
         }
 
-        private TypeInfo GetTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol)
+        private TypeInfo GetTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
-            var propertyType = GetPropertyType(classInfo, propertySymbol.Type, false, out var objectTypeSymbol);
-            var typeString = propertySymbol.Type.ToDisplayString(); // This has also the complete namespace
-            // We can use also ToMinimalDisplayString, but it requires the semantic model;
+            var propertyLocation = propertySymbol.GetPropertyLocation();
+            var typeSymbol = propertySymbol.Type;
+            var typeString = typeSymbol.ToReadableName();
+
+
+            var propertyType = GetPropertyTypeNew(typeSymbol);
+
+            if (propertyType.IsUnsupported())
+            {
+                classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
+            }
+
+            if (propertyType.IsCollection(out var collectionType))
+            {
+                PropertyType internalPropertyType = PropertyTypeUtils.Unsupported;
+                ITypeSymbol argument = null;
+                if (propertyType.IsDictionary())
+                {
+                    var dictionaryArguments = (typeSymbol as INamedTypeSymbol).TypeArguments;
+                    var keyArgument = dictionaryArguments[0];
+                    var valueArgument = dictionaryArguments[1];
+
+                    if (keyArgument.SpecialType != SpecialType.System_String)
+                    {
+                        classInfo.Diagnostics.Add(
+                            Diagnostics.DictionaryWithNonStringKeys(classInfo.Name, propertySymbol.Name,
+                            keyArgument.ToReadableName(), valueArgument.ToReadableName(), propertyLocation));
+                    }
+
+                    internalPropertyType = GetPropertyTypeNew(valueArgument);
+                    argument = valueArgument;
+                }
+                else
+                {
+                    //List or Set
+                    argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
+                    internalPropertyType = GetPropertyTypeNew(argument);
+
+                    //TODO Not sure why this is not there for Dictionaries in PropertyTypeEx
+                    if (internalPropertyType.HasFlag(PropertyType.Object))
+                    {
+                        if (propertyType.IsSet() && argument.IsEmbeddedObject())
+                        {
+                            classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
+                        }
+
+                        // List/Set<Object> can't contain nulls
+                        internalPropertyType &= ~PropertyType.Nullable;
+                    }
+                }
+
+                if (argument.IsRealmInteger())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
+                }
+                else if (internalPropertyType.IsUnsupportedCollectionType())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionType, argument.ToReadableName(), propertyLocation));
+                }
+
+                if (propertySyntax.AccessorList.Accessors.Any(SyntaxKind.SetAccessorDeclaration))
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.CollectionWithSetter(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
+                }
+
+                propertyType |= internalPropertyType;
+            }
+
 
             var info = new TypeInfo
             {
@@ -160,9 +233,8 @@ namespace {classInfo.Namespace}
             return info;
         }
 
-        private PropertyType GetPropertyType(ClassInfo classInfo, IPropertySymbol propertySymbol, ITypeSymbol typeSymbol, bool isCollection, out ITypeSymbol objectTypeSymbol)
+        private PropertyType GetPropertyTypeNew(ITypeSymbol typeSymbol)
         {
-            objectTypeSymbol = null;
             PropertyType nullabilityModifier = default;
             if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
             {
@@ -173,7 +245,7 @@ namespace {classInfo.Namespace}
 
             switch (typeSymbol)
             {
-                case INamedTypeSymbol when typeSymbol.IsRealmInteger():
+                case INamedTypeSymbol when typeSymbol.IsIntegerType():
                     return PropertyType.Int | nullabilityModifier;
                 case INamedTypeSymbol when typeSymbol.SpecialType == SpecialType.System_Boolean:
                     return PropertyType.Bool | nullabilityModifier;
@@ -195,65 +267,21 @@ namespace {classInfo.Namespace}
                     return PropertyType.Date | nullabilityModifier;
                 case INamedTypeSymbol when typeSymbol.Name == "RealmValue":
                     return PropertyType.RealmValue | nullabilityModifier;
-                case INamedTypeSymbol when typeSymbol.IsRealmObject():
-                    objectTypeSymbol = typeSymbol;
+                case INamedTypeSymbol when typeSymbol.IsRealmObjectBase():
                     return PropertyType.Object | PropertyType.Nullable;
                 case INamedTypeSymbol when typeSymbol.Name == "IList":
-                    var listArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-
-                    var argumentType = GetPropertyType(classInfo, propertySymbol, listArgument, true, out objectTypeSymbol);
-
-
-
-                    var listResult = PropertyType.Array | argumentType;
-
-                    if (listResult.HasFlag(PropertyType.Object))
-                    {
-                        // List<Object> can't contain nulls
-                        listResult &= ~PropertyType.Nullable;
-                    }
-
-                    return listResult;
+                    return PropertyType.Array;
                 case INamedTypeSymbol when typeSymbol.Name == "ISet":
-                    var setArgument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    var setResult = PropertyType.Set | GetPropertyType(classInfo, propertySymbol, setArgument, true, out objectTypeSymbol);
-
-                    if (setResult.HasFlag(PropertyType.Object))
-                    {
-                        // Set<Object> can't contain nulls
-                        setResult &= ~PropertyType.Nullable;
-                    }
-
-                    return setResult;
+                    return PropertyType.Set;
                 case INamedTypeSymbol when typeSymbol.Name == "IDictionary":
-                    var dictionaryArguments = (typeSymbol as INamedTypeSymbol).TypeArguments;
-                    var keyArgument = dictionaryArguments[0];
-                    var valueArgument = dictionaryArguments[1];
-
-                    if (keyArgument.SpecialType != SpecialType.System_String)
-                    {
-                        classInfo.Diagnostics.Add(
-                            Diagnostics.DictionaryWithNonStringKeys(classInfo.Name, propertySymbol.Name, 
-                            keyArgument.ToReadableName(), valueArgument.ToReadableName(), propertySymbol.GetPropertyLocation()));
-                    }
-
-                    var dictionaryResult = PropertyType.Dictionary | GetPropertyType(classInfo, propertySymbol, valueArgument, true,out objectTypeSymbol);
-
-                    if (dictionaryResult.HasFlag(PropertyType.Object))
-                    {
-                        // Set<Object> can't contain nulls
-                        dictionaryResult &= ~PropertyType.Nullable;
-                    }
-
-                    return dictionaryResult;
+                    return PropertyType.Dictionary;
                 default:
-                    classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeSymbol.ToReadableName(), propertySymbol.GetPropertyLocation()));
-                    return PropertyType.Int;
+                    return PropertyTypeUtils.Unsupported;
             }
         }
     }
 
-    internal static class Utils
+    internal static class SymbolUtils
     {
         public static bool HasAttribute(this ISymbol symbol, string attributeName)
         {
@@ -279,17 +307,31 @@ namespace {classInfo.Namespace}
             return symbol.GetAttributeArgument(attributeName);
         }
 
-        public static bool IsRealmInteger(this ITypeSymbol symbol)
+        public static bool IsIntegerType(this ITypeSymbol symbol)
         {
-            //TODO Need to consider case of RealmIntegers and can save list of special type somewhere
             var enumIntegers = new List<SpecialType> { SpecialType.System_Byte, SpecialType.System_Char, SpecialType.System_Int16, SpecialType.System_Int32, SpecialType.System_Int64 };
 
-            return enumIntegers.Contains(symbol.SpecialType);
+            return enumIntegers.Contains(symbol.SpecialType) || symbol.IsRealmInteger();
+        }
+
+        public static bool IsRealmInteger(this ITypeSymbol symbol)
+        {
+            return true; //TODO Need to complete
+        }
+
+        public static bool IsRealmObjectBase(this ITypeSymbol symbol)
+        {
+            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObjectBase");
         }
 
         public static bool IsRealmObject(this ITypeSymbol symbol)
         {
-            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObjectBase");
+            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObject");
+        }
+
+        public static bool IsEmbeddedObject(this ITypeSymbol symbol)
+        {
+            return symbol.AllInterfaces.Any(i => i.Name == "IEmbeddedObject");
         }
 
         public static string ToDisplayString(this Accessibility acc)
@@ -309,6 +351,9 @@ namespace {classInfo.Namespace}
         public static string ToReadableName(this ITypeSymbol symbol)
         {
             //Better to have it in one place, in case we want to modify how it looks
+
+            // This has also the complete namespace
+            // We can use also ToMinimalDisplayString, but it requires the semantic model;
             return symbol.ToDisplayString();
         }
 
@@ -317,7 +362,52 @@ namespace {classInfo.Namespace}
             var syntax = symbol.DeclaringSyntaxReferences.First();  //TODO Need to test if really we have only one reference for properties. What if part of an interface?
             return Location.Create(syntax.SyntaxTree, syntax.Span);
         }
+
+
     }
+
+    internal static class PropertyTypeUtils
+    {
+        public static PropertyType Unsupported = (PropertyType)5000;
+
+        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+
+        public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
+
+        public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary);
+
+        public static bool IsCollection(this PropertyType propertyType, out string collectionType)
+        {
+            if (propertyType.IsList())
+            {
+                collectionType = "IList";
+                return true;
+            }
+
+            if (propertyType.IsSet())
+            {
+                collectionType = "ISet";
+                return true;
+            }
+
+            if (propertyType.IsDictionary())
+            {
+                collectionType = "IDictionary";
+                return true;
+            }
+
+            collectionType = null;
+            return false;
+        }
+
+        public static bool IsUnsupported(this PropertyType propertyType) => propertyType == Unsupported;
+
+        public static bool IsUnsupportedCollectionType(this PropertyType propertyType)
+        {
+            return propertyType.IsCollection(out _) || propertyType.IsUnsupported();
+        }
+    }
+
 
     internal class SyntaxContextReceiver : ISyntaxContextReceiver
     {
@@ -333,7 +423,7 @@ namespace {classInfo.Namespace}
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(cds) as ITypeSymbol;
 
             //This looks for the interfaces of the base class too (recursively)
-            if (!classSymbol.IsRealmObject())
+            if (!classSymbol.IsRealmObjectBase())
             {
                 return;
             }

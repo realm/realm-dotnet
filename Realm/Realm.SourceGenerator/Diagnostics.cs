@@ -181,20 +181,20 @@ namespace Realm.SourceGenerator
         {
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
-                "Embedded objects cannot be used in sets",
-                $"{className}.{propertyName} is a Set<IEmbeddedObject> which is not supported. Embedded objects are always unique which is why List<IEmbeddedObject> already has Set semantics.",
+                "Dictionary can only have strings as keys",
+                $"{className}.{propertyName}  is a Dictionary<{keyType}, {valueType}> but only string keys are currently supported by Realm.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
             return Diagnostic.Create(descriptor, location);
         }
 
-        public static Diagnostic SetWithEmbedded(string className, string propertyName, string collectionType, Location location)
+        public static Diagnostic SetWithEmbedded(string className, string propertyName, Location location)
         {
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
-                "Sets cannot have setters",
-                $"{className}.{propertyName} has a setter but its type is a {collectionType} which only supports getters.",
+                "Embedded objects cannot be used in sets",
+                $"{className}.{propertyName} is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
