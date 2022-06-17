@@ -27,6 +27,10 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
     public partial class RealmExampleClass: IRealmObject
     {
+        public RealmInteger<int> RealmIntegerValue { get; set; }
+
+        public DateTimeOffset Date { get; set; }
+
         [PrimaryKey]
         public int PrimaryKey { get; set; }
 
@@ -39,7 +43,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         //public IList<int> IntList { get; }
 
-        //public byte[] ByteArray { get; set; }
+        public byte[] ByteArray { get; set; }
 
         //public EmbeddedClass Embedded { get; set; }
 
@@ -47,6 +51,13 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         [PrimaryKey]
         public IDictionary<string, int> DictionaryInt { get; }
+
+        //[Required]
+        //[Indexed]
+        //public ISet<EmbeddedClass> SetsEmbedded { get; }
+
+
+        //public IList<string, EmbeddedClass> ListWithSetter { get; set; }
     }
 
     public partial class EmbeddedClass : IEmbeddedObject

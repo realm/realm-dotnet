@@ -59,7 +59,7 @@ namespace Realm.SourceGenerator
 
                     var builder = new StringBuilder();
 
-                    //TODO Do we need the copyRight...?
+                    //TODO Do we need the copyright...?
                     builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright 2022 Realm Inc.
@@ -121,7 +121,7 @@ namespace {classInfo.Namespace}
 
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
-                var propSymbol = model.GetSymbolInfo(propSyntax).Symbol as IPropertySymbol;
+                var propSymbol = model.GetDeclaredSymbol(propSyntax);
 
                 if (propSymbol.HasAttribute<IgnoredAttribute>())
                 {
@@ -157,20 +157,21 @@ namespace {classInfo.Namespace}
         {
             var propertyLocation = propertySymbol.GetPropertyLocation();
             var typeSymbol = propertySymbol.Type;
-            var typeString = typeSymbol.ToReadableName();
+            var typeString = propertySyntax.Type.ToString();
 
-
-            var propertyType = GetPropertyTypeNew(typeSymbol);
+            var propertyType = GetPropertyType(typeSymbol);
 
             if (propertyType.IsUnsupported())
             {
                 classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
+                return TypeInfo.Unsupported;
             }
 
             if (propertyType.IsCollection(out var collectionType))
             {
-                PropertyType internalPropertyType = PropertyTypeUtils.Unsupported;
-                ITypeSymbol argument = null;
+                PropertyType internalPropertyType;
+                ITypeSymbol argument;
+
                 if (propertyType.IsDictionary())
                 {
                     var dictionaryArguments = (typeSymbol as INamedTypeSymbol).TypeArguments;
@@ -184,14 +185,14 @@ namespace {classInfo.Namespace}
                             keyArgument.ToReadableName(), valueArgument.ToReadableName(), propertyLocation));
                     }
 
-                    internalPropertyType = GetPropertyTypeNew(valueArgument);
+                    internalPropertyType = GetPropertyType(valueArgument);
                     argument = valueArgument;
                 }
                 else
                 {
                     //List or Set
                     argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
-                    internalPropertyType = GetPropertyTypeNew(argument);
+                    internalPropertyType = GetPropertyType(argument);
 
                     //TODO Not sure why this is not there for Dictionaries in PropertyTypeEx
                     if (internalPropertyType.HasFlag(PropertyType.Object))
@@ -206,7 +207,7 @@ namespace {classInfo.Namespace}
                     }
                 }
 
-                if (argument.IsRealmInteger())
+                if (argument.IsValidRealmInteger())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
                 }
@@ -233,7 +234,7 @@ namespace {classInfo.Namespace}
             return info;
         }
 
-        private PropertyType GetPropertyTypeNew(ITypeSymbol typeSymbol)
+        private PropertyType GetPropertyType(ITypeSymbol typeSymbol)
         {
             PropertyType nullabilityModifier = default;
             if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
@@ -283,6 +284,23 @@ namespace {classInfo.Namespace}
 
     internal static class SymbolUtils
     {
+        private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
+        { 
+            SpecialType.System_Byte, 
+            SpecialType.System_Int16, 
+            SpecialType.System_Int32, 
+            SpecialType.System_Int64 
+        };
+
+        private static List<SpecialType> _validIntegerTypes = new()
+        {
+            SpecialType.System_Char,
+            SpecialType.System_Byte,
+            SpecialType.System_Int16,
+            SpecialType.System_Int32,
+            SpecialType.System_Int64
+        };
+
         public static bool HasAttribute(this ISymbol symbol, string attributeName)
         {
             return symbol.GetAttributes().Any(a => a.AttributeClass.Name == attributeName);
@@ -309,14 +327,20 @@ namespace {classInfo.Namespace}
 
         public static bool IsIntegerType(this ITypeSymbol symbol)
         {
-            var enumIntegers = new List<SpecialType> { SpecialType.System_Byte, SpecialType.System_Char, SpecialType.System_Int16, SpecialType.System_Int32, SpecialType.System_Int64 };
-
-            return enumIntegers.Contains(symbol.SpecialType) || symbol.IsRealmInteger();
+            return _validIntegerTypes.Contains(symbol.SpecialType) || symbol.IsValidRealmInteger();
         }
 
-        public static bool IsRealmInteger(this ITypeSymbol symbol)
+        public static bool IsValidRealmInteger(this ITypeSymbol symbol)
         {
-            return true; //TODO Need to complete
+            var namedSymbol = symbol as INamedTypeSymbol;
+
+            if (namedSymbol == null || namedSymbol.IsGenericType == false || namedSymbol.ConstructUnboundGenericType().ToDisplayString() != "Realms.RealmInteger<>")
+            {
+                return false;
+            }
+
+            var argument = namedSymbol.TypeArguments.Single();
+            return _validRealmIntegerArgumentTypes.Contains(argument.SpecialType);
         }
 
         public static bool IsRealmObjectBase(this ITypeSymbol symbol)

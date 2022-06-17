@@ -71,5 +71,7 @@ namespace Realm.SourceGenerator
 
         public ITypeSymbol ObjectTypeSymbol { get; set; }
 
+        public static TypeInfo Unsupported = new TypeInfo { Type = PropertyTypeUtils.Unsupported };
+
     }
 }
