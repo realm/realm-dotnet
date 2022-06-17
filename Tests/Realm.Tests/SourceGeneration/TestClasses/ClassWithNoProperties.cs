@@ -16,25 +16,11 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System.Threading.Tasks;
-using NUnit.Framework;
-using Realm.SourceGenerator;
-
-namespace Realms.Tests.SourceGeneration
+namespace Realms.Tests.SourceGeneration.TestClasses
 {
-    [TestFixture, Preserve(AllMembers = true)]
-    public class ComparisonTests : SourceGenerationTest
+    public class ClassWithNoProperties : IRealmObject
     {
-        [Test]
-        public async Task SimpleTest()
-        {
-            await RunSimpleComparisonTest("RealmExampleClass");
-        }
-
-        [Test]
-        public async Task ErrorTest()
-        {
-            await RunSimpleErrorTest("ClassWithNoProperties");
-        }
+        [Ignored]
+        public int IntValue { get; set; }
     }
 }

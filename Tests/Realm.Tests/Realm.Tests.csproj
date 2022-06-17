@@ -72,6 +72,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="SourceGeneration\TestClasses\ClassWithNoProperties.cs" />
     <Compile Remove="SourceGeneration\TestClasses\RealmExampleClass.cs" />
     <Compile Remove="SourceGeneration\TestClasses\RealmExampleClass_generated.cs" />
   </ItemGroup>
@@ -157,6 +158,7 @@
     <None Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="SourceGeneration\TestClasses\ClassWithNoProperties.cs" />
     <None Include="SourceGeneration\TestClasses\RealmExampleClass.cs" />
     <None Include="SourceGeneration\TestClasses\RealmExampleClass_generated.cs" />
   </ItemGroup>

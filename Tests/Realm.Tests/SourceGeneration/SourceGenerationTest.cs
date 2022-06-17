@@ -38,8 +38,11 @@ namespace Realms.Tests.SourceGeneration
         protected string GetSourceForClass(string className) =>
             File.ReadAllText(Path.Combine(TestClassesPath, $"{className}.cs"));
 
-        protected string GetGeneratedForClass(string className) =>
-            File.ReadAllText(Path.Combine(TestClassesPath, $"{className}_generated.cs"));
+        protected string GetGeneratedForClass(string className)
+        {
+            var fileName = Path.Combine(TestClassesPath, $"{className}_generated.cs");
+            return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
+        }
 
         public async Task RunSimpleComparisonTest(string className)
         {
@@ -58,6 +61,24 @@ namespace Realms.Tests.SourceGeneration
                     GeneratedSources =
                     {
                         (typeof(RealmClassGenerator), generatedFileName, generated),
+                    },
+                },
+            }.RunAsync();
+        }
+
+        //TODO This should be checking only diagnostics (need to find a way to retrieve the diagnostics generated, so I can serialize them to a file and 
+        // automate this
+        public async Task RunSimpleErrorTest(string className)
+        {
+            var source = GetSourceForClass(className);
+
+            await new RealmClassGeneratorVerifier.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        source
                     },
                 },
             }.RunAsync();

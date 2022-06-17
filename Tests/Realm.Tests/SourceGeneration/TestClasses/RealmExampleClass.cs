@@ -27,6 +27,8 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
     public partial class RealmExampleClass: IRealmObject
     {
+        public RealmInteger<char> RealmIntegerValue { get; set; }
+
         public RealmInteger<int> RealmIntegerValue { get; set; }
 
         public DateTimeOffset Date { get; set; }

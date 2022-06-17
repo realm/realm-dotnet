@@ -26,14 +26,19 @@ namespace Realm.SourceGenerator
                 return;
             }
 
-            //TODO Need to make an error for using both IRealmObject and IEmbeddedObject (or none)
-
             foreach (var (classSyntax, classSymbol) in scr.RealmClasses)
             {
                 try
                 {
-                    //TODO Need to check if needed at some point
                     var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
+
+                    var isEmbedded = classSymbol.IsEmbeddedObject();
+
+                    if (isEmbedded && classSymbol.IsRealmObject())
+                    {
+                        context.ReportDiagnostic(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetLocation()));
+                        continue;
+                    }
 
                     var classInfo = new ClassInfo();
 
@@ -42,6 +47,7 @@ namespace Realm.SourceGenerator
                     classInfo.Name = classSymbol.Name;
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument<MapToAttribute>();
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
+                    classInfo.IsEmbedded = isEmbedded;
 
                     //Properties
                     var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
@@ -50,13 +56,22 @@ namespace Realm.SourceGenerator
 
                     FillPropertyInfo(semanticModel, classInfo, propertiesSyntax);
 
+                    if (!classInfo.Properties.Any())
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.ObjectWithNoProperties(classInfo.Name, classSyntax.GetLocation()));
+                    }
+
                     classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
+
+                    // In general we are collecting diagnostics as we go, we don't stop the properties extraction if we find an error
+                    // I think it makes sense to give all possible diagnostics error on the first run (no need to correct and run again)
 
                     if (classInfo.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                     {
                         continue;
                     }
 
+                    //Code generation
                     var builder = new StringBuilder();
 
                     //TODO Do we need the copyright...?
@@ -99,6 +114,8 @@ namespace {classInfo.Namespace}
                     builder.AppendLine(@$"
     }}
 }}");
+                    //TODO For Monday: Need to finish putting all the diagnostics around, and check also if someone answered on github
+
                     // We could use this, but we're adding time to compilation
                     // It's not a full format, but it just normalizes whitespace
                     // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
@@ -155,7 +172,7 @@ namespace {classInfo.Namespace}
 
         private TypeInfo GetTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
-            var propertyLocation = propertySymbol.GetPropertyLocation();
+            var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
             var typeString = propertySyntax.Type.ToString();
 
@@ -164,7 +181,7 @@ namespace {classInfo.Namespace}
             if (propertyType.IsUnsupported())
             {
                 classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
-                return TypeInfo.Unsupported;
+                return TypeInfo.Unsupported;  //We are sure we can't produce more diagnostics
             }
 
             if (propertyType.IsCollection(out var collectionType))
@@ -285,11 +302,11 @@ namespace {classInfo.Namespace}
     internal static class SymbolUtils
     {
         private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
-        { 
-            SpecialType.System_Byte, 
-            SpecialType.System_Int16, 
-            SpecialType.System_Int32, 
-            SpecialType.System_Int64 
+        {
+            SpecialType.System_Byte,
+            SpecialType.System_Int16,
+            SpecialType.System_Int32,
+            SpecialType.System_Int64
         };
 
         private static List<SpecialType> _validIntegerTypes = new()
@@ -381,24 +398,23 @@ namespace {classInfo.Namespace}
             return symbol.ToDisplayString();
         }
 
-        public static Location GetPropertyLocation(this IPropertySymbol symbol)
+        public static Location GetLocation(this SyntaxNode node)
         {
-            var syntax = symbol.DeclaringSyntaxReferences.First();  //TODO Need to test if really we have only one reference for properties. What if part of an interface?
-            return Location.Create(syntax.SyntaxTree, syntax.Span);
+            return Location.Create(node.SyntaxTree, node.Span);
         }
-
-
     }
 
     internal static class PropertyTypeUtils
     {
         public static PropertyType Unsupported = (PropertyType)5000;
 
-        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+        public static bool IsUnsupported(this PropertyType propertyType) => propertyType == Unsupported;
 
-        public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
+        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.IsUnsupported();
 
-        public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary);
+        public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set) && !propertyType.IsUnsupported();
+
+        public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary) && !propertyType.IsUnsupported();
 
         public static bool IsCollection(this PropertyType propertyType, out string collectionType)
         {
@@ -424,8 +440,6 @@ namespace {classInfo.Namespace}
             return false;
         }
 
-        public static bool IsUnsupported(this PropertyType propertyType) => propertyType == Unsupported;
-
         public static bool IsUnsupportedCollectionType(this PropertyType propertyType)
         {
             return propertyType.IsCollection(out _) || propertyType.IsUnsupported();
@@ -447,14 +461,10 @@ namespace {classInfo.Namespace}
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(cds) as ITypeSymbol;
 
             //This looks for the interfaces of the base class too (recursively)
-            if (!classSymbol.IsRealmObjectBase())
+            if (classSymbol.IsRealmObject() || classSymbol.IsEmbeddedObject())
             {
-                return;
+                RealmClasses.Add((cds, classSymbol));
             }
-
-            RealmClasses.Add((cds, classSymbol));
-
-
         }
     }
 }

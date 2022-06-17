@@ -39,6 +39,20 @@ namespace Realm.SourceGenerator
             return Diagnostic.Create(descriptor, Location.None);
         }
 
+        public static Diagnostic ClassUnclearDefinition(string className, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("REALM001",
+                "Realm classes cannot implement both class interfaces",
+                $"{className} is declared as implementing both IRealmObject and IEmbeddedObject",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true
+                );
+
+            return Diagnostic.Create(descriptor, location);
+        }
+
         public static Diagnostic ObjectWithNoProperties(string className, Location location)
         {
             DiagnosticDescriptor descriptor = new
