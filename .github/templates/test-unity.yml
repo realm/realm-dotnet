@@ -25,7 +25,9 @@ jobs:
       matrix:
         include:
           - os: linux
+            testPlatform: Linux64
           - os: windows
+            testPlatform: Windows64
     steps:
       - name: Fetch Unity Package
         uses: #@ actionDownloadArtifact
@@ -41,7 +43,7 @@ jobs:
         run: |
           unity-editor -runTests -batchmode \
             -projectPath Tests/Tests.Unity \
-            -testPlatform StandaloneOSX \
+            -testPlatform Standalone${{ matrix.testPlatform }} \
             -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json \
             -logFile -
       - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.os }}", "Tests/Tests.Unity/Player**/*")
