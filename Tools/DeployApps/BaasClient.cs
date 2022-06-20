@@ -43,6 +43,17 @@ namespace Baas
 
     public class BaasClient : IDisposable
     {
+        public class FunctionReturn
+        {
+            public enum Result
+            {
+                success = 0,
+                failure = 1
+            }
+
+            public Result status { get; set; } = Result.failure;
+        }
+
         private const string ConfirmFuncSource =
             @"exports = ({ token, tokenId, username }) => {
                   // process the confirm token, tokenId and username
@@ -69,13 +80,13 @@ namespace Baas
               console.log('user.id = ' + context.user.id.toString()); 
               let deletionResult;
               try {
-                deletionResult = await mongodb.db('__realm_sync').collection('clientfiles').deleteMany({ ownerId: context.user.id.toString() });
+                deletionResult = await mongodb.db('__realm_sync').collection('clientfiles').deleteMany({ ownerId: context.user.id });
                 console.log('Deleted ' + deletionResult.deletedCount + ' documents');
               } catch(err) {
                 throw 'Deletion failed: ' + err;
               }
               if (deletionResult.deletedCount > 0) {
-                return { status: 'success', deletedDocs: deletionResult.deletedCount };
+                return { status: 'success' };
               }
               return { status: 'failure' };
             };";
@@ -470,6 +481,7 @@ namespace Baas
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/functions", new
             {
                 name = name,
+                run_as_system = true,
                 can_evaluate = new { },
                 @private = false,
                 source = source

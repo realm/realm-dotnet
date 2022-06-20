@@ -144,12 +144,12 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
-            var user = await GetUserAsync(app);
+            user ??= await GetUserAsync(app);
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
