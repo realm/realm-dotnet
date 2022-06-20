@@ -9,7 +9,7 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  build-unity:
+  prepare-unity-packages:
     runs-on: windows-latest
     name: Unity
     timeout-minutes: 30
@@ -69,3 +69,55 @@ jobs:
         name: UnityTests
         path: ${{ github.workspace }}/Tests/Tests.Unity
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  build-unity-tests:
+    runs-on:
+    - linux
+    - unity
+    name: Build Unity Tests
+    timeout-minutes: 30
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Unity Package
+      uses: actions/download-artifact@v2
+      with:
+        name: io.realm.unity-${{ inputs.version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch Unity Tests
+      uses: actions/download-artifact@v2
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: |
+        unity-editor -runTests -batchmode \
+          -projectPath Tests/Tests.Unity \
+          -testPlatform StandaloneOSX \
+          -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json \
+          -logFile -
+    - name: Store artifacts for UnityTestsRunner.Linux
+      uses: actions/upload-artifact@v2
+      with:
+        name: UnityTestsRunner.Linux
+        path: ${{ github.workspace }}/Tests/Tests.Unity/Player**/*
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  run-unity-tests:
+    runs-on: ubuntu-latest
+    name: Run Unity Tests
+    timeout-minutes: 30
+    steps:
+    - name: Download Test Runner
+      uses: actions/download-artifact@v2
+      with:
+        name: UnityTestsRunner.Linux
+        path: TestRunner
+    - name: Run Tests
+      run: |
+        ./PlayerWithTests -logFile -
