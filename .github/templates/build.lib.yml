@@ -102,3 +102,15 @@ build-unity:
   - build-packages
   if: #@ ignoreSkippedJobsCondition
 #@ end
+
+#@ def testUnity():
+test-unity:
+  uses: ./.github/workflows/test-unity.yml
+  name: Test
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+  needs:
+  - build-packages
+  - build-unity
+  if: #@ ignoreSkippedJobsCondition
+#@ end

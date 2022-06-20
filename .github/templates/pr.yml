@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "actionDownloadArtifact", "actionSetupDotnet", "uploadPackagesToSleet", "cleanupWorkspace")
-#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "buildUnity")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "buildUnity", "testUnity")
 ---
 name: PR Build
 "on":
@@ -34,6 +34,7 @@ jobs:
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
   _: #@ template.replace(buildUnity())
+  _: #@ template.replace(testUnity())
   _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))
   _: #@ template.replace(runTests("UWP Managed", runSyncTests = False, additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
   _: #@ template.replace(runNetCoreTests("[\"net6.0\"]"))
