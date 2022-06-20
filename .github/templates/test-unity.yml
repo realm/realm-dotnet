@@ -14,10 +14,18 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  build-unity-tests:
-    runs-on: [linux, unity]
-    name: Build Unity Linux
+  build-tests:
+    runs-on:
+      - unity
+      - ${{ matrix.os }}
+    name: Build Unity ${{ matrix.os }}
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+          - os: windows
     steps:
       - name: Fetch Unity Package
         uses: #@ actionDownloadArtifact
@@ -36,18 +44,35 @@ jobs:
             -testPlatform StandaloneOSX \
             -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json \
             -logFile -
-      - #@ uploadArtifacts("UnityTestsRunner.Linux", "Tests/Tests.Unity/Player**/*")
-  run-unity-tests:
+      - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.os }}", "Tests/Tests.Unity/Player**/*")
+  run-tests-linux:
     runs-on: ubuntu-latest
     name: Unity Linux
     timeout-minutes: 30
+    needs:
+      - build-tests
     steps:
       - name: Download Test Runner
         uses: #@ actionDownloadArtifact
         with:
-          name: UnityTestsRunner.Linux
+          name: UnityTestsRunner.linux
           path: TestRunner
       - name: Run Tests
         run: |
-          ./PlayerWithTests -logFile -
+          ./TestRunner/PlayerWithTests -logFile -
 
+  run-tests-windows:
+    runs-on: windows-latest
+    name: Unity Windows
+    timeout-minutes: 30
+    needs:
+      - build-tests
+    steps:
+      - name: Download Test Runner
+        uses: #@ actionDownloadArtifact
+        with:
+          name: UnityTestsRunner.windows
+          path: TestRunner
+      - name: Run Tests
+        run: |
+          ./TestRunner/PlayerWithTests.exe -logFile -
