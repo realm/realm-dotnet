@@ -26,6 +26,17 @@ jobs:
         settings: ${{ fromJson(inputs.settings) }}
     timeout-minutes: 30
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
     - name: Fetch Unity Package
       uses: actions/download-artifact@v2
       with:
@@ -53,6 +64,15 @@ jobs:
     needs:
     - build-tests
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Download Test Runner
       uses: actions/download-artifact@v2
       with:
