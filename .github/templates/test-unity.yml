@@ -24,8 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: linux
-            testPlatform: Linux64
+          #! - os: linux
+          #!   testPlatform: Linux64
           - os: windows
             testPlatform: Windows64
     steps:
@@ -41,27 +41,27 @@ jobs:
           path: Tests/Tests.Unity
       - name: Build Unity Tests
         run: |
-          unity-editor -runTests -batchmode \
-            -projectPath Tests/Tests.Unity \
-            -testPlatform Standalone${{ matrix.testPlatform }} \
-            -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json \
-            -logFile -
+          unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile ${{ matrix.os == 'windows' && 'build.log' || '-'}}
+      - name: Output build logs
+        if: matrix.os == 'windows'
+        run: cat build.log
       - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.os }}", "Tests/Tests.Unity/Player**/*")
-  run-tests-linux:
-    runs-on: ubuntu-latest
-    name: Unity Linux
-    timeout-minutes: 30
-    needs:
-      - build-tests
-    steps:
-      - name: Download Test Runner
-        uses: #@ actionDownloadArtifact
-        with:
-          name: UnityTestsRunner.linux
-          path: TestRunner
-      - name: Run Tests
-        run: |
-          ./TestRunner/PlayerWithTests -logFile -
+
+  #! run-tests-linux:
+  #!   runs-on: ubuntu-latest
+  #!   name: Unity Linux
+  #!   timeout-minutes: 30
+  #!   needs:
+  #!     - build-tests
+  #!   steps:
+  #!     - name: Download Test Runner
+  #!       uses: #@ actionDownloadArtifact
+  #!       with:
+  #!         name: UnityTestsRunner.linux
+  #!         path: TestRunner
+  #!     - name: Run Tests
+  #!       run: |
+  #!         ./TestRunner/PlayerWithTests -logFile -
 
   run-tests-windows:
     runs-on: windows-latest
