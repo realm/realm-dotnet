@@ -10,9 +10,6 @@ name: test-unity
       version:
         type: string
         required: true
-      os:
-        type: string
-        required: true
       platform:
         type: string
         required: true
@@ -26,8 +23,12 @@ jobs:
   build-tests:
     runs-on:
       - unity
-      - ${{ inputs.os }}
-    name: Build Unity ${{ inputs.os }}
+      - ${{ matrix.platrofm.os }}
+    name: Build Unity ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+        platform: ${{ fromJson(matrix.platrofm.testPlatform) }}
+        settings: ${{ fromJson(matrix.settings) }}
     timeout-minutes: 30
     steps:
       - name: Fetch Unity Package
@@ -42,9 +43,9 @@ jobs:
           path: Tests/Tests.Unity
       - name: Build Unity Tests
         run: |
-          unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ inputs.platform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ inputs.settings }}.json -logFile ${{ inputs.os == 'windows' && 'build.log' || '-'}}
-          ${{ inputs.os == 'windows' && 'cat build.log' || ''}}
-      - #@ uploadArtifacts("UnityTestsRunner.${{ inputs.os }}", "Tests/Tests.Unity/Player_Standalone${{ inputs.platform }}_${{ inputs.settings }}/")
+          unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platrofm.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platrofm.os == 'windows' && 'build.log' || '-'}}
+          ${{ matrix.platrofm.os == 'windows' && 'cat build.log' || ''}}
+      - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.platrofm.os }}", "Tests/Tests.Unity/Player_Standalone${{ matrix.platrofm.testPlatform }}_${{ matrix.settings }}/")
 
   #! run-tests-linux:
   #!   runs-on: ubuntu-latest
