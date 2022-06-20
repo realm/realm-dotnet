@@ -35,9 +35,7 @@ jobs:
     - name: Build Unity Tests
       run: |
         unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile ${{ matrix.os == 'windows' && 'build.log' || '-'}}
-    - name: Output build logs
-      if: matrix.os == 'windows'
-      run: cat build.log
+        ${{ matrix.os == 'windows' && 'cat build.log' || ''}}
     - name: Store artifacts for UnityTestsRunner.${{ matrix.os }}
       uses: actions/upload-artifact@v2
       with:
@@ -58,4 +56,7 @@ jobs:
         path: TestRunner
     - name: Run Tests
       run: |
-        ./TestRunner/PlayerWithTests.exe -logFile -
+        tree
+        ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -logFile test.log
+        cat test.log
+      shell: powershell
