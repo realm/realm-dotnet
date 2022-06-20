@@ -19,6 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+        - os: linux
+          testPlatform: Linux64
         - os: windows
           testPlatform: Windows64
     steps:
@@ -32,6 +34,8 @@ jobs:
       with:
         name: UnityTests
         path: Tests/Tests.Unity
+    - run: echo $PATH
+      if: matrix.os == 'linux'
     - name: Build Unity Tests
       run: |
         unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile ${{ matrix.os == 'windows' && 'build.log' || '-'}}
