@@ -83,6 +83,12 @@ jobs:
         Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
         cat ${{ github.workspace }}\test.log
       shell: powershell
+    - name: Store artifacts for UnityResults.xml
+      uses: actions/upload-artifact@v2
+      with:
+        name: UnityResults.xml
+        path: ${{ github.workspace }}/TestResults.xml
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
