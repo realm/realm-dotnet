@@ -10,6 +10,15 @@ name: test-unity
       version:
         type: string
         required: true
+      os:
+        type: string
+        required: true
+      platform:
+        type: string
+        required: true
+      settings:
+        type: string
+        required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -17,18 +26,9 @@ jobs:
   build-tests:
     runs-on:
       - unity
-      - ${{ matrix.testData.os }}
-    name: Build Unity ${{ matrix.testData.os }}
+      - ${{ inputs.os }}
+    name: Build Unity ${{ inputs.os }}
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        settings: [ Mono-Net4 ]
-        testData:
-          #! - os: linux
-          #!  platform: Linux64
-          - os: windows
-            platform: Windows64
     steps:
       - name: Fetch Unity Package
         uses: #@ actionDownloadArtifact
@@ -40,13 +40,11 @@ jobs:
         with:
           name: UnityTests
           path: Tests/Tests.Unity
-      - run: echo $PATH
-        if: matrix.testData.os == 'linux'
       - name: Build Unity Tests
         run: |
-          unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testData.platform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.testData.os == 'windows' && 'build.log' || '-'}}
-          ${{ matrix.testData.os == 'windows' && 'cat build.log' || ''}}
-      - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.testData.os }}", "Tests/Tests.Unity/Player_Standalone${{ matrix.testData.platform }}_${{ matrix.settings }}/")
+          unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ inputs.platform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ inputs.settings }}.json -logFile ${{ inputs.os == 'windows' && 'build.log' || '-'}}
+          ${{ inputs.os == 'windows' && 'cat build.log' || ''}}
+      - #@ uploadArtifacts("UnityTestsRunner.${{ inputs.os }}", "Tests/Tests.Unity/Player_Standalone${{ inputs.platform }}_${{ inputs.settings }}/")
 
   #! run-tests-linux:
   #!   runs-on: ubuntu-latest

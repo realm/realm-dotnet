@@ -47,10 +47,22 @@ jobs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
   test-unity:
+    strategy:
+      matrix:
+        settings:
+        - Mono-Net4
+        testData:
+        - os: linux
+          platform: Linux64
+        - os: windows
+          platform: Windows64
     uses: ./.github/workflows/test-unity.yml
     name: Test
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
+      settings: ${{ matrix.settings }}
+      os: ${{ matrix.testData.os }}
+      platform: ${{ matrix.testData.platform }}
     needs:
     - build-packages
     - build-unity

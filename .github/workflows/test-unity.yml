@@ -5,6 +5,15 @@ name: test-unity
       version:
         type: string
         required: true
+      os:
+        type: string
+        required: true
+      platform:
+        type: string
+        required: true
+      settings:
+        type: string
+        required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -12,17 +21,9 @@ jobs:
   build-tests:
     runs-on:
     - unity
-    - ${{ matrix.testData.os }}
-    name: Build Unity ${{ matrix.testData.os }}
+    - ${{ inputs.os }}
+    name: Build Unity ${{ inputs.os }}
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        settings:
-        - Mono-Net4
-        testData:
-        - os: windows
-          platform: Windows64
     steps:
     - name: Fetch Unity Package
       uses: actions/download-artifact@v2
@@ -34,17 +35,15 @@ jobs:
       with:
         name: UnityTests
         path: Tests/Tests.Unity
-    - run: echo $PATH
-      if: matrix.testData.os == 'linux'
     - name: Build Unity Tests
       run: |
-        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testData.platform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.testData.os == 'windows' && 'build.log' || '-'}}
-        ${{ matrix.testData.os == 'windows' && 'cat build.log' || ''}}
-    - name: Store artifacts for UnityTestsRunner.${{ matrix.testData.os }}
+        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ inputs.platform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ inputs.settings }}.json -logFile ${{ inputs.os == 'windows' && 'build.log' || '-'}}
+        ${{ inputs.os == 'windows' && 'cat build.log' || ''}}
+    - name: Store artifacts for UnityTestsRunner.${{ inputs.os }}
       uses: actions/upload-artifact@v2
       with:
-        name: UnityTestsRunner.${{ matrix.testData.os }}
-        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.testData.platform }}_${{ matrix.settings }}/
+        name: UnityTestsRunner.${{ inputs.os }}
+        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ inputs.platform }}_${{ inputs.settings }}/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-windows:
     runs-on: windows-latest
