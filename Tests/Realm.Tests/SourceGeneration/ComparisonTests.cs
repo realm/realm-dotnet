@@ -16,7 +16,12 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using Realm.SourceGenerator;
 
@@ -25,6 +30,21 @@ namespace Realms.Tests.SourceGeneration
     [TestFixture, Preserve(AllMembers = true)]
     public class ComparisonTests : SourceGenerationTest
     {
+        [Test]
+        public void SimpleGeneratorTest()
+        {
+            var diagnostics = GetDiagnostics("ClassWithNoProperties");
+
+            var jsonDiag = JsonConvert.SerializeObject(diagnostics);
+
+        }
+
+        private static Compilation CreateCompilation(string source)
+            => CSharpCompilation.Create("compilation",
+                new[] { CSharpSyntaxTree.ParseText(source) },
+                new[] { MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location) },
+                new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
         [Test]
         public async Task SimpleTest()
         {

@@ -17,8 +17,15 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Testing;
+using Newtonsoft.Json;
 using Realm.SourceGenerator;
 using RealmClassGeneratorVerifier = Realms.Tests.SourceGeneration.CSharpSourceGeneratorVerifier<Realm.SourceGenerator.RealmClassGenerator>;
 
@@ -42,6 +49,18 @@ namespace Realms.Tests.SourceGeneration
         {
             var fileName = Path.Combine(TestClassesPath, $"{className}_generated.cs");
             return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
+        }
+
+        protected List<Diagnostic> GetDiagnosticsForClass(string className)
+        {
+            var fileName = Path.Combine(TestClassesPath, $"{className}.diagnostics");
+
+            if (!File.Exists(fileName))
+            {
+                return null;
+            }
+
+            return JsonConvert.DeserializeObject<List<Diagnostic>>(File.ReadAllText(fileName));
         }
 
         public async Task RunSimpleComparisonTest(string className)
@@ -71,6 +90,11 @@ namespace Realms.Tests.SourceGeneration
         public async Task RunSimpleErrorTest(string className)
         {
             var source = GetSourceForClass(className);
+            //var diagnostics = GetDiagnosticsForClass(className);
+
+            //var single = diagnostics.First();
+
+            var d = new DiagnosticResult("REALM001", DiagnosticSeverity.Error).WithSpan(22,5,26,6).WithMessage("TestMessage");
 
             await new RealmClassGeneratorVerifier.Test
             {
@@ -80,8 +104,39 @@ namespace Realms.Tests.SourceGeneration
                     {
                         source
                     },
+                    ExpectedDiagnostics =
+                    {
+                        d
+                    }
                 },
             }.RunAsync();
+        }
+
+        // Utility methods to retrieve only the list of diagnostics generated.
+        public IEnumerable<Diagnostic> GetDiagnostics(string className)
+        {
+            var source = GetSourceForClass(className);
+            var inputCompilation = CSharpCompilation.Create("compilation",
+                new[] { CSharpSyntaxTree.ParseText(source) },
+                new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Realm).Assembly.Location)
+                },
+                new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+            var generator = new RealmClassGenerator();
+
+            GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+
+            driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var _, out var diagnostics);
+
+            var result = driver.GetRunResult();
+            result.Diagnostics[0].
+
+            //TODO We need to create a method that will create a diagnostic result struct from this.
+
+            return diagnostics;
         }
     }
 }

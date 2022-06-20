@@ -15,6 +15,7 @@
 // // limitations under the License.
 // //
 // ////////////////////////////////////////////////////////////////////////////
+using Realms;
 
 namespace Realms.Tests.SourceGeneration.TestClasses
 {

@@ -33,6 +33,7 @@ namespace Realms.Tests.SourceGeneration
             public Test()
             {
                 TestState.AdditionalReferences.Add(typeof(Realm).Assembly.Location);
+                CompilerDiagnostics = Microsoft.CodeAnalysis.Testing.CompilerDiagnostics.None;
             }
 
             protected override CompilationOptions CreateCompilationOptions()
