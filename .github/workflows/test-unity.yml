@@ -18,12 +18,12 @@ jobs:
   build-tests:
     runs-on:
     - unity
-    - ${{ matrix.platrofm.os }}
+    - ${{ matrix.platform.os }}
     name: Build Unity ${{ matrix.platform.os }}
     strategy:
       matrix:
-        platform: ${{ fromJson(matrix.platrofm.testPlatform) }}
-        settings: ${{ fromJson(matrix.settings) }}
+        platform: ${{ fromJson(inputs.platform)) }}
+        settings: ${{ fromJson(inputs.settings) }}
     timeout-minutes: 30
     steps:
     - name: Fetch Unity Package
@@ -38,13 +38,13 @@ jobs:
         path: Tests/Tests.Unity
     - name: Build Unity Tests
       run: |
-        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platrofm.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platrofm.os == 'windows' && 'build.log' || '-'}}
-        ${{ matrix.platrofm.os == 'windows' && 'cat build.log' || ''}}
-    - name: Store artifacts for UnityTestsRunner.${{ matrix.platrofm.os }}
+        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
+        ${{ matrix.platform.os == 'windows' && 'cat build.log' || ''}}
+    - name: Store artifacts for UnityTestsRunner.${{ matrix.platform.os }}
       uses: actions/upload-artifact@v2
       with:
-        name: UnityTestsRunner.${{ matrix.platrofm.os }}
-        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platrofm.testPlatform }}_${{ matrix.settings }}/
+        name: UnityTestsRunner.${{ matrix.platform.os }}
+        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-windows:
     runs-on: windows-latest
