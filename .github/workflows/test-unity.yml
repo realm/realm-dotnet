@@ -12,17 +12,17 @@ jobs:
   build-tests:
     runs-on:
     - unity
-    - ${{ matrix.os }}
-    name: Build Unity ${{ matrix.os }}
+    - ${{ matrix.testData.os }}
+    name: Build Unity ${{ matrix.testData.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        include:
-        - os: linux
-          testPlatform: Linux64
+        settings:
+        - Mono-Net4
+        testData:
         - os: windows
-          testPlatform: Windows64
+          platform: Windows64
     steps:
     - name: Fetch Unity Package
       uses: actions/download-artifact@v2
@@ -35,16 +35,16 @@ jobs:
         name: UnityTests
         path: Tests/Tests.Unity
     - run: echo $PATH
-      if: matrix.os == 'linux'
+      if: matrix.testData.os == 'linux'
     - name: Build Unity Tests
       run: |
-        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/Mono-Net4.json -logFile ${{ matrix.os == 'windows' && 'build.log' || '-'}}
-        ${{ matrix.os == 'windows' && 'cat build.log' || ''}}
-    - name: Store artifacts for UnityTestsRunner.${{ matrix.os }}
+        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.testData.platform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.testData.os == 'windows' && 'build.log' || '-'}}
+        ${{ matrix.testData.os == 'windows' && 'cat build.log' || ''}}
+    - name: Store artifacts for UnityTestsRunner.${{ matrix.testData.os }}
       uses: actions/upload-artifact@v2
       with:
-        name: UnityTestsRunner.${{ matrix.os }}
-        path: ${{ github.workspace }}/Tests/Tests.Unity/Player**/*
+        name: UnityTestsRunner.${{ matrix.testData.os }}
+        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.testData.platform }}_${{ matrix.settings }}/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
   run-tests-windows:
     runs-on: windows-latest
