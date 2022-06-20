@@ -1,4 +1,5 @@
 #@ load("common.lib.yml", "uploadArtifacts", "actionDownloadArtifact")
+#@ load("test.lib.yml", "publishTestsResults")
 
 #@ unityPkgName = "io.realm.unity-${{ inputs.version }}.tgz"
 
@@ -77,5 +78,6 @@ jobs:
           path: TestRunner
       - name: Run Tests
         run: |
-          ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -logFile ${{ github.workspace }}\test.log
+          ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -logFile ${{ github.workspace }}\test.log --result=${{ github.workspace }}\TestResults.xml
           cat ${{ github.workspace }}\test.log
+      - #@ publishTestsResults("TestResults.xml", "Unity Windows Mono_Net4")
