@@ -78,6 +78,7 @@ jobs:
           path: TestRunner
       - name: Run Tests
         run: |
-          ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -logFile ${{ github.workspace }}\test.log --result=${{ github.workspace }}\TestResults.xml
+          Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
           cat ${{ github.workspace }}\test.log
+        shell: powershell
       - #@ publishTestsResults("TestResults.xml", "Unity Windows Mono_Net4")

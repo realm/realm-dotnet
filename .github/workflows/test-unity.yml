@@ -60,8 +60,9 @@ jobs:
         path: TestRunner
     - name: Run Tests
       run: |
-        ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -logFile ${{ github.workspace }}\test.log --result=${{ github.workspace }}\TestResults.xml
+        Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
         cat ${{ github.workspace }}\test.log
+      shell: powershell
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
