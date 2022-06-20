@@ -22,7 +22,7 @@ jobs:
     name: Build Unity ${{ matrix.platform.os }}
     strategy:
       matrix:
-        platform: ${{ fromJson(inputs.platform)) }}
+        platform: ${{ fromJson(inputs.platform) }}
         settings: ${{ fromJson(inputs.settings) }}
     timeout-minutes: 30
     steps:
