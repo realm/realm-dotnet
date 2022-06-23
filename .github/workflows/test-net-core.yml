@@ -83,6 +83,12 @@ jobs:
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}'
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+    - name: Store artifacts for testresults-net-${{ matrix.os.runner }}-${{ matrix.framework }}.xml
+      uses: actions/upload-artifact@v2
+      with:
+        name: testresults-net-${{ matrix.os.runner }}-${{ matrix.framework }}.xml
+        path: ${{ github.workspace }}/TestResults.xml
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()

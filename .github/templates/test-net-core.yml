@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet", "uploadArtifacts")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
 
 ---
@@ -40,4 +40,5 @@ jobs:
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
+      - #@ uploadArtifacts("testresults-net-${{ matrix.os.runner }}-${{ matrix.framework }}.xml", "TestResults.xml")
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")
