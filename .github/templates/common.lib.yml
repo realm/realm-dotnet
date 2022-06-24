@@ -100,12 +100,18 @@ with:
 #@ end
 
 #@ def setupVcpkg(preset):
+  - name: Get vcpkg submodule commit sha
+    id: vcpkg_cache_key
+    working-directory: wrappers/realm-core/tools/vcpkg/ports
+    shell: bash
+    run: echo "::set-output name=commit::$(git rev-parse HEAD)"
   - name: Setup Vcpkg
     uses: friendlyanon/setup-vcpkg@v1
+    #@yaml/text-templated-strings
     with:
       path: wrappers/realm-core/tools/vcpkg/ports
-      cache-key: #@ "vcpkg-" + preset
-      cache-restore-keys: #@ "vcpkg-" + preset
+      cache-key: vcpkg-(@= preset @)-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+      cache-restore-keys: vcpkg-(@= preset @)-
 #@ end
 
 #@ def downloadAllArtifacts(conclusion = "completed"):

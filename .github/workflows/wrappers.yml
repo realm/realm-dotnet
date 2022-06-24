@@ -462,12 +462,17 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+    - name: Get vcpkg submodule commit sha
+      id: vcpkg_cache_key
+      working-directory: wrappers/realm-core/tools/vcpkg/ports
+      shell: bash
+      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg-windows-${{ matrix.arch }}
-        cache-restore-keys: vcpkg-windows-${{ matrix.arch }}
+        cache-key: vcpkg-windows-${{ matrix.arch }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+        cache-restore-keys: vcpkg-windows-${{ matrix.arch }}-
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -503,12 +508,17 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+    - name: Get vcpkg submodule commit sha
+      id: vcpkg_cache_key
+      working-directory: wrappers/realm-core/tools/vcpkg/ports
+      shell: bash
+      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Setup Vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg-uwp-${{ matrix.arch }}
-        cache-restore-keys: vcpkg-uwp-${{ matrix.arch }}
+        cache-key: vcpkg-uwp-${{ matrix.arch }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+        cache-restore-keys: vcpkg-uwp-${{ matrix.arch }}-
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
