@@ -61,7 +61,7 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
         /// <remarks>
-        /// Supported values are instances of <see cref="ManualRecoveryHandler"/>, <see cref="DiscardLocalResetHandler"/>,
+        /// Supported values are instances of <see cref="ManualRecoveryHandler"/>, <see cref="DiscardLocalResetHandler"/> and
         /// <see cref="AutomaticRecoveryHandler"/>.
         /// The default <see cref="AutomaticRecoveryHandler"/> will have no custom actions set for the before and after callbacks.
         /// </remarks>

@@ -156,7 +156,7 @@ namespace Realms.Tests.Sync
                 {
                     onAfterTriggered = true;
                 });
-                var manualCb = GetClientResetHandler( tcs, err =>
+                var manualCb = GetClientResetHandler(tcs, err =>
                 {
                     Assert.That(err, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.False);
