@@ -1,1 +1,14 @@
-﻿[{"Descriptor":{"Id":"REALM001","Title":{},"Description":{},"HelpLinkUri":"","MessageFormat":{},"Category":"RealmClassGeneration","DefaultSeverity":3,"IsEnabledByDefault":true,"CustomTags":[]},"Id":"REALM001","Severity":3,"IsSuppressed":false,"WarningLevel":0,"Location":{"Kind":1,"SourceSpan":{"Start":887,"Length":125},"SourceTree":{"FilePath":"","Encoding":null,"Length":1017,"HasCompilationUnitRoot":true,"Options":{"LanguageVersion":1000,"SpecifiedLanguageVersion":0,"PreprocessorSymbolNames":[],"Language":"C#","Features":{},"Kind":0,"SpecifiedKind":0,"DocumentationMode":1,"Errors":[]},"DiagnosticOptions":{}},"IsInSource":true,"IsInMetadata":false,"MetadataModule":null},"AdditionalLocations":[],"Properties":{},"DefaultSeverity":3,"IsWarningAsError":false}]
+﻿[
+  {
+    "Id": "REALM001",
+    "Severity": 3,
+    "Message": "Class ClassWithNoProperties is a Realm object but has no persisted properties",
+    "Location": {
+      "Path": null,
+      "StartLine": 22,
+      "StartColumn": 5,
+      "EndLine": 26,
+      "EndColumn": 6
+    }
+  }
+]

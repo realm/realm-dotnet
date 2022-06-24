@@ -51,7 +51,7 @@ namespace Realms.Tests.SourceGeneration
             return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
         }
 
-        protected List<Diagnostic> GetDiagnosticsForClass(string className)
+        protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
             var fileName = Path.Combine(TestClassesPath, $"{className}.diagnostics");
 
@@ -60,7 +60,7 @@ namespace Realms.Tests.SourceGeneration
                 return null;
             }
 
-            return JsonConvert.DeserializeObject<List<Diagnostic>>(File.ReadAllText(fileName));
+            return JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName));
         }
 
         public async Task RunSimpleComparisonTest(string className)
@@ -85,18 +85,12 @@ namespace Realms.Tests.SourceGeneration
             }.RunAsync();
         }
 
-        //TODO This should be checking only diagnostics (need to find a way to retrieve the diagnostics generated, so I can serialize them to a file and 
-        // automate this
         public async Task RunSimpleErrorTest(string className)
         {
             var source = GetSourceForClass(className);
-            //var diagnostics = GetDiagnosticsForClass(className);
+            var diagnostics = GetDiagnosticsForClass(className);
 
-            //var single = diagnostics.First();
-
-            var d = new DiagnosticResult("REALM001", DiagnosticSeverity.Error).WithSpan(22,5,26,6).WithMessage("TestMessage");
-
-            await new RealmClassGeneratorVerifier.Test
+            var test = new RealmClassGeneratorVerifier.Test
             {
                 TestState =
                 {
@@ -104,16 +98,17 @@ namespace Realms.Tests.SourceGeneration
                     {
                         source
                     },
-                    ExpectedDiagnostics =
-                    {
-                        d
-                    }
                 },
-            }.RunAsync();
+            };
+
+            //TODO Can we write it better?
+            test.TestState.ExpectedDiagnostics.AddRange(diagnostics.Select(Convert));
+
+            await test.RunAsync();
         }
 
         // Utility methods to retrieve only the list of diagnostics generated.
-        public IEnumerable<Diagnostic> GetDiagnostics(string className)
+        public IEnumerable<DiagnosticInfo> GetDiagnostics(string className)
         {
             var source = GetSourceForClass(className);
             var inputCompilation = CSharpCompilation.Create("compilation",
@@ -131,12 +126,74 @@ namespace Realms.Tests.SourceGeneration
 
             driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var _, out var diagnostics);
 
-            var result = driver.GetRunResult();
-            result.Diagnostics[0].
+            return diagnostics.Select(Convert);
+        }
 
-            //TODO We need to create a method that will create a diagnostic result struct from this.
+        // TODO All of the following works, but feels a little clumsy
+        // We can't simply serialize/deserialize Diagnostics/DiagnosticResults and some other classes (like Location)
+        // Because they either are abstract, or they have get only properties
+        public DiagnosticInfo Convert(Diagnostic diag)
+        {
+            return new DiagnosticInfo
+            {
+                Id = diag.Id,
+                Severity = diag.Severity,
+                Message = diag.GetMessage(),
+                Location = Convert(diag.Location),
+            };
+        }
 
-            return diagnostics;
+        public DiagnosticResult Convert(DiagnosticInfo info)
+        {
+            var dr = new DiagnosticResult(info.Id, info.Severity)
+                .WithMessage(info.Message);
+
+            if (info.Location != null)
+            {
+                dr = dr.WithSpan(info.Location.StartLine,
+                    info.Location.StartColumn,
+                    info.Location.EndLine,
+                    info.Location.EndColumn);
+            }
+
+            return dr;
+        }
+
+        public DiagnosticLocation Convert(Location location)
+        {
+            // The +1 are necessary because line position start counting at 0
+            var mapped = location.GetLineSpan();
+            return new DiagnosticLocation
+            {
+                StartColumn = mapped.StartLinePosition.Character + 1,
+                StartLine = mapped.StartLinePosition.Line + 1,
+                EndColumn = mapped.EndLinePosition.Character + 1,
+                EndLine = mapped.EndLinePosition.Line + 1,
+            };
+        }
+
+        public class DiagnosticInfo
+        {
+            public string Id { get; set; }
+
+            public DiagnosticSeverity Severity { get; set; }
+
+            public string Message { get; set; }
+
+            public DiagnosticLocation Location { get; set; }
+        }
+
+        public class DiagnosticLocation
+        {
+            public string Path { get; set; }
+
+            public int StartLine { get; set; }
+
+            public int StartColumn { get; set; }
+
+            public int EndLine { get; set; }
+
+            public int EndColumn { get; set; }
         }
     }
 }
