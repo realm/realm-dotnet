@@ -53,10 +53,10 @@
       <PackagePath>runtimes\iossimulator\native\realm-wrappers.framework</PackagePath>
       <Link>wrappers\iphonesimulator\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\macosx\$(Configuration)\realm-wrappers.framework\**">
+    <None Include="..\..\wrappers\build\macosx\$(Configuration)\realm-wrappers.framework.zip">
       <Pack>true</Pack>
-      <PackagePath>runtimes\maccatalyst\native\realm-wrappers.framework</PackagePath>
-      <Link>wrappers\macosx\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <PackagePath>runtimes\maccatalyst\native\realm-wrappers.framework.zip</PackagePath>
+      <Link>wrappers\macosx\realm-wrappers.framework.zip</Link>
     </None>
     <!-- macOS -->
     <Content Include="wrappers-props\xamarinmac\wrappers.props" Pack="true" PackagePath="build\xamarinmac\Realm.props" />

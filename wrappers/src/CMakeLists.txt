@@ -45,12 +45,20 @@ endif()
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
-set_target_properties(realm-wrappers PROPERTIES
-  FRAMEWORK ${BUILD_APPLE_FRAMEWORK}
-  MACOSX_FRAMEWORK_IDENTIFIER io.realm.wrappers
-  MACOSX_FRAMEWORK_SHORT_VERSION_STRING "10.0.0"
-  MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
-)
+
+if(BUILD_APPLE_FRAMEWORK)
+    set_target_properties(realm-wrappers PROPERTIES
+        FRAMEWORK TRUE
+        MACOSX_FRAMEWORK_IDENTIFIER io.realm.wrappers
+        MACOSX_FRAMEWORK_SHORT_VERSION_STRING "10.0.0"
+        MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
+    )
+
+    add_custom_command(TARGET realm-wrappers POST_BUILD
+        COMMENT Compress the build products in case they contain symlinks which NuGet can't handle
+        COMMAND cd $CONFIGURATION_BUILD_DIR && find $WRAPPER_NAME | zip -9@ --symlinks $WRAPPER_NAME.zip
+    )
+endif()
 
 if (ANDROID)
     target_link_options(realm-wrappers PRIVATE LINKER:-gc-sections)
