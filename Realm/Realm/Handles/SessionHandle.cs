@@ -287,7 +287,6 @@ namespace Realms.Sync
 
                     if (syncConfig.ClientResetHandler is DiscardLocalResetHandler ||
                         syncConfig.ClientResetHandler is AutomaticRecoveryHandler ||
-                        syncConfig.ClientResetHandler is AutomaticRecoveryOrDiscardLocalHandler ||
                         syncConfig.ClientResetHandler?.ManualClientReset != null)
                     {
                         syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
@@ -338,7 +337,6 @@ namespace Realms.Sync
                 {
                     DiscardLocalResetHandler handler => handler.OnBeforeReset,
                     AutomaticRecoveryHandler handler => handler.OnBeforeReset,
-                    AutomaticRecoveryOrDiscardLocalHandler handler => handler.OnBeforeReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
@@ -370,7 +368,6 @@ namespace Realms.Sync
                 {
                     DiscardLocalResetHandler handler => handler.OnAfterReset,
                     AutomaticRecoveryHandler handler => handler.OnAfterReset,
-                    AutomaticRecoveryOrDiscardLocalHandler handler => handler.OnAfterReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 

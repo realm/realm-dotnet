@@ -22,7 +22,7 @@ namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
     /// The base class for the different client reset handler types. The possible implementations are <see cref="AutomaticRecoveryHandler"/>,
-    /// <see cref="AutomaticRecoveryOrDiscardLocalHandler"/>, <see cref="DiscardLocalResetHandler"/> and <see cref="ManualRecoveryHandler"/>.
+    /// <see cref="DiscardLocalResetHandler"/> and <see cref="ManualRecoveryHandler"/>.
     /// To use either of them, create a new instance and assign it to <see cref="SyncConfigurationBase.ClientResetHandler"/> on the configuration
     /// you use to open the synchronized <see cref="Realm"/> instance.
     /// </summary>
@@ -65,6 +65,8 @@ namespace Realms.Sync.ErrorHandling
         /// state as it was, use <see cref="Realm.WriteCopy(RealmConfigurationBase)"/> to create a backup.
         /// </remarks>
         public delegate void AfterResetCallback(Realm beforeFrozen, Realm after);
+
+        internal abstract ClientResyncMode ClientResetMode { get; }
 
         internal ClientResetCallback ManualClientReset { get; set; }
 

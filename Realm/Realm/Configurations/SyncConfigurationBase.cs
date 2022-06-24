@@ -36,7 +36,7 @@ namespace Realms.Sync
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
-        private ClientResetHandlerBase _clientResetHandler = new AutomaticRecoveryOrDiscardLocalHandler();
+        private ClientResetHandlerBase _clientResetHandler = new AutomaticRecoveryHandler(AutomaticRecoveryHandler.Fallback.DiscardLocal);
 
         /// <summary>
         /// Callback triggered when an error occurs in a session.
@@ -56,13 +56,14 @@ namespace Realms.Sync
         public User User { get; }
 
         /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="AutomaticRecoveryOrDiscardLocalHandler"/>.
+        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm. Default is <see cref="AutomaticRecoveryHandler"/>
+        /// with fallback to discarding local changes.
         /// </summary>
         /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
         /// <remarks>
         /// Supported values are instances of <see cref="ManualRecoveryHandler"/>, <see cref="DiscardLocalResetHandler"/>,
-        /// <see cref="AutomaticRecoveryHandler"/> and <see cref="AutomaticRecoveryOrDiscardLocalHandler"/>.
-        /// The default <see cref="AutomaticRecoveryOrDiscardLocalHandler"/> will have no custom actions set for the before and after callbacks.
+        /// <see cref="AutomaticRecoveryHandler"/>.
+        /// The default <see cref="AutomaticRecoveryHandler"/> will have no custom actions set for the before and after callbacks.
         /// </remarks>
         /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
         public virtual ClientResetHandlerBase ClientResetHandler
@@ -134,26 +135,12 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
-            var clientResyncMode = ClientResyncMode.AutomaticRecoveryOrDiscardLocal;
-
-            if (ClientResetHandler != null)
-            {
-                clientResyncMode = ClientResetHandler switch
-                {
-                    ManualRecoveryHandler => ClientResyncMode.Manual,
-                    DiscardLocalResetHandler => ClientResyncMode.DiscardLocal,
-                    AutomaticRecoveryHandler => ClientResyncMode.AutomaticRecovery,
-                    AutomaticRecoveryOrDiscardLocalHandler => ClientResyncMode.AutomaticRecoveryOrDiscardLocal,
-                    _ => throw new NotSupportedException($"ClientResyncMode {ClientResetHandler} not handled yet"),
-                };
-            }
-
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
-                client_resync_mode = clientResyncMode,
+                client_resync_mode = ClientResetHandler != null ? ClientResetHandler.ClientResetMode : ClientResyncMode.AutomaticRecoveryOrDiscardLocal,
             };
         }
     }

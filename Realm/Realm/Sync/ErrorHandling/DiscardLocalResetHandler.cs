@@ -47,6 +47,8 @@ namespace Realms.Sync.ErrorHandling
         /// <value>Callback invoked right after a Client Reset.</value>
         public AfterResetCallback OnAfterReset { get; set; }
 
+        internal override ClientResyncMode ClientResetMode => ClientResyncMode.DiscardLocal;
+
         /// <summary>
         /// Gets or sets the callback triggered when an error has occurred that makes the operation unable to complete, for example in the case of a destructive schema change.
         /// </summary>

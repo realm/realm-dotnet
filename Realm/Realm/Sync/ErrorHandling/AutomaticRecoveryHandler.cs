@@ -18,26 +18,62 @@
 
 namespace Realms.Sync.ErrorHandling
 {
+    // TODO andrea: ask how this strategy may fail if it isn't for the server not allowing automatic merge
     /// <summary>
     /// A client reset strategy where it is attempted to automatically recover the locally committed data according to some set merge rules.
-    /// You can read more about these rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
+    /// The user can set a fallback strategy to be used in case the automatic recovery fails or it is not permitted by the server.
+    /// This fallback strategy automatically discards all local changes and uses the latest realm that is available on the remote sync server.
+    /// You can read more about the merge rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
     /// </summary>
     /// <remarks>
-    /// The merge internally simulates write transactions, meaning that all the changes that take place
+    /// Both strategies, automatic recovery and discard local, internally simulate write transactions meaning that all the changes that take place
     /// are properly propagated through the standard Realm's change notifications.
     /// This strategy supplies three callbacks: <see cref="OnBeforeReset"/>, <see cref="OnAfterReset"/>, and <see cref="ManualResetFallback"/>.
     /// The first two are invoked just before and after the client reset has happened,
     /// while the last one will be invoked in case an error occurs during the automated process and the system needs to fallback to a manual mode.
     /// The overall recommendation for using this strategy is that using the three available callbacks should only be considered when:
-    /// 1. the user needs to be notified (in <see cref="OnBeforeReset"/>) that incoming potential data loss of unsynced data
-    ///    may happen as a result of the merge that is about to happen
+    /// 1. the user needs to be notified (in <see cref="OnBeforeReset"/>) of an incoming potential data loss of unsynced data as a result of a merge
+    ///    or a complete discard of local changes
     /// 2. the user needs to be notified (in <see cref="OnAfterReset"/>) that the reset process has completed
-    /// 3. advanced use cases for data-sensitive applications where the Realm's chosen merge rules aren't appropriate for the specific use case
+    /// 3. advanced use cases for data-sensitive applications where the developer wants to recover in the most appropriate way the unsynced data
     /// 4. backup the whole realm before the client reset happens (in <see cref="OnBeforeReset"/>). Such backup could, for example, be used to restore the unsynced data (see 3.)
     /// </remarks>
     /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
     public sealed class AutomaticRecoveryHandler : ClientResetHandlerBase
     {
+        /// <summary>
+        /// Fallback strategies for the AutomaticRecoveryHandler.
+        /// </summary>
+        public enum Fallback
+        {
+            /// <summary>
+            /// No fallback.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Fallback strategy that automatically discards all local changes
+            /// and uses the latest realm that is available on the remote sync server.
+            /// </summary>
+            DiscardLocal = 1,
+        }
+
+        internal Fallback FallbackStrategy { get; private set; }
+
+        internal override ClientResyncMode ClientResetMode =>
+            FallbackStrategy == Fallback.DiscardLocal ? ClientResyncMode.AutomaticRecoveryOrDiscardLocal : ClientResyncMode.AutomaticRecovery;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutomaticRecoveryHandler"/> class with the given fallback strategy.
+        /// </summary>
+        /// <param name="fallback">
+        /// The fallback strategy to be used in case the automatic recovery fails or it is not permitted by the server.
+        /// </param>
+        public AutomaticRecoveryHandler(Fallback fallback = Fallback.DiscardLocal)
+        {
+            FallbackStrategy = fallback;
+        }
+
         /// <summary>
         /// Gets or sets the callback that indicates a Client Reset is about to happen.
         /// </summary>
