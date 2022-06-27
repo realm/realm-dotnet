@@ -136,11 +136,7 @@ with:
 #@ end
 
 #@ def uploadPackagesToSleet(versionExpression = "steps.get-version.outputs.version", expectShortPath = False):
-  - name: Configure .NET 6
-    uses: #@ actionSetupDotnet
-    with:
-      dotnet-version: '6.0.x'
-      include-prerelease: true
+  - #@ setupDotnet()
   - name: Install sleet
     run: dotnet tool install -g sleet
   - #@ template.replace(configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY"))
@@ -192,4 +188,14 @@ with:
   name: #@ artifactName
   path: #@ "${{ github.workspace }}/" + relPath
   retention-days: #@ retentionDays
+#@ end
+---
+#@ def setupDotnet(version = "6.0.x", ifCondition = ""):
+name: Configure .NET
+uses: #@ actionSetupDotnet
+#@ if (ifCondition != ""):
+if: #@ ifCondition
+#@ end
+with:
+  dotnet-version: #@ version
 #@ end

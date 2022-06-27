@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
+#@ load("common.lib.yml", "checkoutCode")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 

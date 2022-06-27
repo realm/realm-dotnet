@@ -1,34 +1,40 @@
-﻿using Realms.Tests;
-using NUnitLite;
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2022 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 namespace Tests.Maui;
 
 public static class MauiProgram
 {
-    public static MauiApp CreateMauiApp()
+    public static string[] Args { get; private set; }
+
+    public static MauiApp CreateMauiApp(params string[] args)
     {
-        try
+        if (args.Length > 0)
         {
-            var args = new[] { "--labels=All" };
-            var autorun = new AutoRun(typeof(TestHelpers).Assembly);
-            var arguments = Realms.Tests.Sync.SyncTestHelpers.ExtractBaasSettings(args);
-
-            using var reader = new System.IO.StringReader(string.Empty);
-            using var writer = new NUnit.Common.ColorConsoleWriter(colorEnabled: false);
-            autorun.Execute(arguments, writer, reader);
-
-            var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
-            if (!string.IsNullOrEmpty(resultPath))
-            {
-                TestHelpers.TransformTestResults(resultPath);
-            }
-
-            System.Environment.Exit(0);
+            // First argument is the assembly name and we don't need it
+            args = args.Skip(1).ToArray();
         }
-        catch (System.Exception e)
+        else
         {
-            Console.WriteLine(e.ToString());
+            args = new[] { "--labels=After" };
         }
+
+        Args = args;
 
         var builder = MauiApp.CreateBuilder();
         builder
