@@ -79,12 +79,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XUnit", "Tests\Tests.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Realm.SourceGenerator", "Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj", "{076F3171-C71A-45AA-9A68-46A51BA8DD49}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Realm.SourceGeneratorTestingPlayground", "Tests\Realm.SourceGeneratorTestingPlayground\Realm.SourceGeneratorTestingPlayground.csproj", "{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}"
+EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Realm\Realm.Weaver\Realm.Weaver.projitems*{89fdb2a1-6fc0-4604-9aeb-8b8dd8a88dec}*SharedItemsImports = 13
-		Realm\Realm.Weaver\Realm.Weaver.projitems*{9322b1d0-b3f7-4d6a-9947-2fc11d3161a0}*SharedItemsImports = 5
-		Realm\Realm.Weaver\Realm.Weaver.projitems*{cdab5fee-cc5d-4efa-807f-f1b974047be7}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -1152,6 +1149,54 @@ Global
 		{076F3171-C71A-45AA-9A68-46A51BA8DD49}.RelWithDebInfo|x64.Build.0 = Release|Any CPU
 		{076F3171-C71A-45AA-9A68-46A51BA8DD49}.RelWithDebInfo|x86.ActiveCfg = Release|Any CPU
 		{076F3171-C71A-45AA-9A68-46A51BA8DD49}.RelWithDebInfo|x86.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|ARM.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|x64.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Debug|x86.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|Any CPU.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|ARM.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|ARM.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|iPhone.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|iPhone.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|x64.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|x64.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|x86.ActiveCfg = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.MinSizeRel|x86.Build.0 = Debug|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|ARM.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|iPhone.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|x64.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|x64.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|x86.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.Release|x86.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|Any CPU.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|ARM.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|ARM.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|iPhone.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|iPhone.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|x64.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|x64.Build.0 = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|x86.ActiveCfg = Release|Any CPU
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087}.RelWithDebInfo|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1180,8 +1225,14 @@ Global
 		{938A575D-07FA-4316-BCB9-17DB5555C12B} = {073F6C2D-FECB-41E3-BEA3-1685FAA580DB}
 		{35A36975-26A0-4B6F-AB46-09FBEEDE206F} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
 		{076F3171-C71A-45AA-9A68-46A51BA8DD49} = {50F058DF-2B41-403C-BB73-8B4180D1CF39}
+		{4CFDC2C5-D605-419D-BD95-7BD5F5DF0087} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BE5E0028-B74D-4BE1-B1DA-5FFCC8469C41}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Realm\Realm.Weaver\Realm.Weaver.projitems*{89fdb2a1-6fc0-4604-9aeb-8b8dd8a88dec}*SharedItemsImports = 13
+		Realm\Realm.Weaver\Realm.Weaver.projitems*{9322b1d0-b3f7-4d6a-9947-2fc11d3161a0}*SharedItemsImports = 5
+		Realm\Realm.Weaver\Realm.Weaver.projitems*{cdab5fee-cc5d-4efa-807f-f1b974047be7}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
