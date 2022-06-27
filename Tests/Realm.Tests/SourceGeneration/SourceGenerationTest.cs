@@ -110,6 +110,7 @@ namespace Realms.Tests.SourceGeneration
         // Utility methods to retrieve only the list of diagnostics generated.
         public IEnumerable<DiagnosticInfo> GetDiagnostics(string className)
         {
+            //TODO Need to check how other libraries are working with testing sg, and diagnostics (json for example)
             var source = GetSourceForClass(className);
             var inputCompilation = CSharpCompilation.Create("compilation",
                 new[] { CSharpSyntaxTree.ParseText(source) },
