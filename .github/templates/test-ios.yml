@@ -33,9 +33,9 @@ jobs:
       - #@ setupDotnet()
       - name: Setup workloads
         run: |
-          dotnet workload install maui maui-ios
+          dotnet workload install maui
       - name: Build the tests
-        run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-ios -r iossimulator-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
+        run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests
         uses: #@ actionRuniOSSimulator
         with:
