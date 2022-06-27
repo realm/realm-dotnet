@@ -59,7 +59,7 @@ namespace Realms.DataBinding
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            var managingRealm = (obj as RealmObjectBase)?.Realm;
+            var managingRealm = (obj as IRealmObjectBase)?.Realm;
 
             // If managingRealm is not null and not currently in transaction, wrap setting the property in a realm.Write(...)
             if (managingRealm?.IsInTransaction == false)

@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Helpers;
 
 namespace Realms
@@ -45,7 +46,7 @@ namespace Realms
     {
         internal readonly ThreadSafeReferenceHandle Handle;
 
-        internal readonly RealmObjectBase.Metadata Metadata;
+        internal readonly Metadata Metadata;
 
         internal readonly Type ReferenceType;
 
@@ -92,7 +93,7 @@ namespace Realms
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Object{T})"/> on a different thread.</returns>
         public static Object<T> Create<T>(T value)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             return new Object<T>(value);
         }
@@ -179,10 +180,20 @@ namespace Realms
         [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "A nested class with generic argument is unlikely to be confused with System.Object.")]
         [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is intentional as ThreadSafeReference.Object represents an object.")]
         public class Object<T> : ThreadSafeReference
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
-            internal Object(T value) : base(value, Type.Object)
+            internal Object(T value) : base(GetThreadConfined(value), Type.Object)
             {
+            }
+
+            private static IThreadConfined GetThreadConfined(IRealmObjectBase ro)
+            {
+                if (!ro.IsManaged)
+                {
+                    throw new RealmException("Cannot construct reference to unmanaged object, which can be passed across threads directly.");
+                }
+
+                return (ManagedAccessor)ro.Accessor;
             }
         }
 

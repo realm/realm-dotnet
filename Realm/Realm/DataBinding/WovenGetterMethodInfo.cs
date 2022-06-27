@@ -59,7 +59,7 @@ namespace Realms.DataBinding
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            var ro = obj as RealmObjectBase;
+            var ro = obj as IRealmObjectBase;
             if (ro == null || ro.IsValid)
             {
                 return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);

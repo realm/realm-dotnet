@@ -57,7 +57,7 @@ namespace Realms
             }
         }
 
-        internal RealmSet(Realm realm, SetHandle adoptedSet, RealmObjectBase.Metadata metadata)
+        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata metadata)
             : base(realm, metadata)
         {
             _setHandle = adoptedSet;

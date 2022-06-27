@@ -16,34 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Tests.Maui;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Realms.Native;
+using Realms.Schema;
+using Realms.Weaving;
 
-public static class MauiProgram
+namespace Realms
 {
-    public static string[] Args { get; private set; }
-
-    public static MauiApp CreateMauiApp(params string[] args)
+    internal class Metadata
     {
-        if (args.Length > 0)
+        internal readonly TableKey TableKey;
+
+        internal readonly IRealmObjectHelper Helper;
+
+        internal readonly IReadOnlyDictionary<string, IntPtr> PropertyIndices;
+
+        internal readonly ObjectSchema Schema;
+
+        public Metadata(TableKey tableKey, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
         {
-            // First argument is the assembly name and we don't need it
-            args = args.Skip(1).ToArray();
+            TableKey = tableKey;
+            Helper = helper;
+            PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
+            Schema = schema;
         }
-        else
-        {
-            args = new[] { "--labels=After" };
-        }
-
-        Args = args;
-
-        var builder = MauiApp.CreateBuilder();
-        builder
-            .UseMauiApp<App>()
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-            });
-
-        return builder.Build();
     }
 }

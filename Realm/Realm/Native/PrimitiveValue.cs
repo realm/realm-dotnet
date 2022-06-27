@@ -266,7 +266,7 @@ namespace Realms.Native
             return bytes;
         }
 
-        public RealmObjectBase AsObject(Realm realm)
+        public IRealmObjectBase AsObject(Realm realm)
         {
             var handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
 

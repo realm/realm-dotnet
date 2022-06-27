@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Schema;
 
 namespace Realms.Tests.Database
@@ -476,12 +477,12 @@ namespace Realms.Tests.Database
                 Assert.That(standaloneObject.IsValid, Is.False);
                 Assert.That(standaloneObject.IsManaged);
                 Assert.Throws<RealmClosedException>(() => _ = standaloneObject.Int32Property);
-                Assert.That(standaloneObject.ObjectHandle.IsClosed);
+                Assert.That(standaloneObject.GetObjectHandle().IsClosed);
 
                 Assert.That(embeddedObject.IsValid, Is.False);
                 Assert.That(embeddedObject.IsManaged);
                 Assert.Throws<RealmClosedException>(() => _ = embeddedObject.Int32Property);
-                Assert.That(embeddedObject.ObjectHandle.IsClosed);
+                Assert.That(embeddedObject.GetObjectHandle().IsClosed);
 
                 Assert.That(list.IsValid, Is.False);
                 Assert.Throws<RealmClosedException>(() => _ = list[0]);

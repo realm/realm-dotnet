@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Tests.Maui</RootNamespace>
@@ -32,8 +33,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,9 +53,6 @@
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
-
-    <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
 
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
@@ -56,6 +61,9 @@
   
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
     <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios' AND '$(UseRealmNupkgsWithVersion)' == ''">
+	  <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
@@ -71,9 +79,34 @@
     </NativeReference>
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) AND '$(UseRealmNupkgsWithVersion)' == ''">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android' AND '$(UseRealmNupkgsWithVersion)' == ''">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
+      <Link>lib\x86\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-x86_64\librealm-wrappers.so">
+      <Link>lib\x86_64\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
+      <Link>lib\arm64-v8a\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
+      <Link>lib\armeabi-v7a\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <OutputType>WinExe</OutputType>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
-  
+
 </Project>

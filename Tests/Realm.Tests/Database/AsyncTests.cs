@@ -304,20 +304,20 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                InvalidCastException ex = null;
+                Exception ex = null;
                 try
                 {
                     await _realm.WriteAsync(() =>
                     {
-                        char ch = Convert.ToChar(true);
+                        throw new Exception("User exception");
                     });
                 }
-                catch (InvalidCastException e)
+                catch (Exception e)
                 {
                     ex = e;
                 }
 
-                Assert.That(ex, Is.InstanceOf<InvalidCastException>().And.Message.EqualTo("Invalid cast from 'Boolean' to 'Char'."));
+                Assert.That(ex.Message, Is.EqualTo("User exception"));
             });
         }
 

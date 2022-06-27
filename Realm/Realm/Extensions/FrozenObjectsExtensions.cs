@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Helpers;
 
 namespace Realms
@@ -47,16 +48,23 @@ namespace Realms
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A new frozen instance of the passed in object or the object itself if it was already frozen.</returns>
         public static T Freeze<T>(this T realmObj)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             Argument.NotNull(realmObj, nameof(realmObj));
+
+            if (!realmObj.IsManaged)
+            {
+                throw new RealmException("Unmanaged objects cannot be frozen.");
+            }
 
             if (realmObj.IsFrozen)
             {
                 return realmObj;
             }
 
-            return (T)realmObj.FreezeImpl();
+            var frozenRealm = realmObj.Realm.Freeze();
+            var frozenHandle = realmObj.GetObjectHandle().Freeze(frozenRealm.SharedRealmHandle);
+            return (T)frozenRealm.MakeObject(realmObj.GetObjectMetadata(), frozenHandle);
         }
 
         /// <summary>
@@ -106,7 +114,7 @@ namespace Realms
         /// <typeparam name="T">The type of the elements in the query.</typeparam>
         /// <returns>A frozen copy of this query.</returns>
         public static IQueryable<T> Freeze<T>(this IQueryable<T> query)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             Argument.NotNull(query, nameof(query));
 

@@ -21,7 +21,7 @@ namespace Realms
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    public class RealmObject : RealmObjectBase
+    public class RealmObject : RealmObjectBase, IRealmObject
     {
     }
 }

@@ -1,4 +1,4 @@
-name: test-xamarinios
+name: test-ios
 "on":
   workflow_call:
     inputs:
@@ -21,7 +21,7 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  run-tests:
+  test-xamarin:
     runs-on: macos-latest
     name: Xamarin.iOS
     timeout-minutes: 45
@@ -60,12 +60,64 @@ jobs:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=xamarinios
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=ios
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
         name: Results Xamarin.iOS
+        path: TestResults.iOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
+  test-maui:
+    runs-on: macos-12
+    name: Maui.iOS
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Configure .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Setup workloads
+      run: |
+        dotnet workload install maui-android
+        dotnet workload install maui-ios
+    - name: Build the tests
+      run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -r iossimulator-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+    - name: Run the tests
+      uses: realm/ci-actions/run-ios-simulator@v1
+      with:
+        appPath: Tests/Tests.Maui/bin/Release/net6.0-ios/iossimulator-x64/Tests.Maui.app
+        bundleId: io.realm.mauitests
+        iphoneToSimulate: iPhone-8
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --labels=After
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      if: always()
+      with:
+        name: Results Maui.iOS
         path: TestResults.iOS.xml
         reporter: java-junit
         list-suites: failed

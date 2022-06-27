@@ -23,7 +23,7 @@ jobs:
   deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "xamarinios", "xamarinandroid"]'
+      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "xamarinandroid"]'
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -57,11 +57,10 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Configure .NET 6
+    - name: Configure .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-        include-prerelease: true
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
@@ -138,8 +137,8 @@ jobs:
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
-  test-xamarinios:
-    uses: ./.github/workflows/test-xamarinios.yml
+  test-ios:
+    uses: ./.github/workflows/test-ios.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
@@ -199,7 +198,8 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/setup-dotnet@v1
+    - name: Configure .NET
+      uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
     - uses: actions/cache@v2
@@ -259,7 +259,8 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/setup-dotnet@v1
+    - name: Configure .NET
+      uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
     - uses: actions/cache@v2
@@ -301,7 +302,7 @@ jobs:
     - test-code-coverage
     - test-uwp-managed
     - test-xamarinmacos
-    - test-xamarinios
+    - test-ios
     - test-xamarinandroid
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
