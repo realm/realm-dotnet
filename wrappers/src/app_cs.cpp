@@ -160,7 +160,7 @@ extern "C" {
                 sync_client_config.metadata_mode = app_config.metadata_mode;
             }
             else {
-#if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR
+#if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR && !TARGET_OS_MACCATALYST
                 sync_client_config.metadata_mode = SyncManager::MetadataMode::Encryption;
 #else
                 sync_client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
