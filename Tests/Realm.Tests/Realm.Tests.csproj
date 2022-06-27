@@ -3,11 +3,11 @@
 
   <PropertyGroup>
     <UnityBuild>false</UnityBuild>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
     <PackageId>Realm.Tests</PackageId>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
     <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>

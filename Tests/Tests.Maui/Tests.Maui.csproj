@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Tests.Maui</RootNamespace>
@@ -58,9 +57,6 @@
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
-    <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios' AND '$(UseRealmNupkgsWithVersion)' == ''">
 	  <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
@@ -72,7 +68,7 @@
       <SmartLink>False</SmartLink>
     </NativeReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <NativeReference Include="..\..\wrappers\build\macosx\$(Configuration)\realm-wrappers.framework" Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
