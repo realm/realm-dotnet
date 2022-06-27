@@ -162,5 +162,10 @@ namespace Realms.Tests.Sync
                 _appIds = await client.GetOrCreateApps();
             }
         }
+
+        public static async Task DisallowRecoveryModeOnServer()
+        {
+
+        }
     }
 }

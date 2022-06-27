@@ -274,6 +274,44 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void Session_AutomaticRecoveryFallsbackToDiscardLocal()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                config.ClientResetHandler = new AutomaticRecoveryHandler(AutomaticRecoveryHandler.Fallback.DiscardLocal);
+                var tscAfterClientReset = new TaskCompletionSource<object>();
+
+                config.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
+                var afterCb = GetOnAfterHandler(tscAfterClientReset, (before, after) =>
+                {
+                    Assert.That(after.All<SyncObjectWithRequiredStringList>().Count, Is.EqualTo(0));
+                });
+                config.ClientResetHandler = new AutomaticRecoveryHandler(AutomaticRecoveryHandler.Fallback.DiscardLocal)
+                {
+                    OnAfterReset = afterCb
+                };
+                var realm = await GetRealmAsync(config);
+
+                var session = GetSession(realm);
+                session.Stop();
+
+                realm.Write(() =>
+                {
+                    realm.Add(new SyncObjectWithRequiredStringList());
+                });
+
+                await SyncTestHelpers.DisallowRecoveryModeOnServer();
+                var result = await ((PartitionSyncConfiguration)realm.Config).User.Functions.CallAsync<FunctionReturn>("triggerClientResetOnSyncServer");
+                Assert.That(result.status, Is.EqualTo(FunctionReturn.Result.success));
+
+                session.Start();
+                await tscAfterClientReset.Task;
+            });
+        }
+
         /* If any ArrayDelete or ArrayMove operates on indices not added by the recovery, such operation will be discarded.
          * Hence, the last client to experience a reset will "win" the array state.
          *
