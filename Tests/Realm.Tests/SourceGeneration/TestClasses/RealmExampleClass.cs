@@ -33,6 +33,9 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public DateTimeOffset Date { get; set; }
 
+        [Indexed]
+        public Guid Test { get; set; }
+
         [PrimaryKey]
         public int PrimaryKey { get; set; }
 

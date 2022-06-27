@@ -65,13 +65,12 @@ namespace Realm.SourceGenerator
 
     internal record TypeInfo
     {
+        public static TypeInfo Unsupported = new TypeInfo { Type = PropertyTypeUtils.Unsupported };
+
         public PropertyType Type { get; set; }
 
         public string TypeString { get; set; }
 
         public ITypeSymbol ObjectTypeSymbol { get; set; }
-
-        public static TypeInfo Unsupported = new TypeInfo { Type = PropertyTypeUtils.Unsupported };
-
     }
 }

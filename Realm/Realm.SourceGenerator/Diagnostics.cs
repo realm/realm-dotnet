@@ -84,7 +84,7 @@ namespace Realm.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "Embedded objects cannot have primary keys",
-                $"Class {className} is an EmbeddedObject but has a primary key {propertyName} defined.",
+                $"Class {className} is an EmbeddedObject but has a primary key defined.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
@@ -265,7 +265,6 @@ namespace Realm.SourceGenerator
 
             return Diagnostic.Create(descriptor, location);
         }
-
 
         #endregion
 

@@ -61,6 +61,11 @@ namespace Realm.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.ObjectWithNoProperties(classInfo.Name, classSyntax.GetLocation()));
                     }
 
+                    if (classInfo.Properties.Count( p => p.IsPrimaryKey) > 1)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetLocation()));
+                    }
+
                     classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
 
                     // In general we are collecting diagnostics as we go, we don't stop the properties extraction if we find an error
@@ -134,8 +139,6 @@ namespace {classInfo.Namespace}
 
         private void FillPropertyInfo(SemanticModel model, ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes)
         {
-            bool primaryKeySet = false;
-
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
                 var propSymbol = model.GetDeclaredSymbol(propSyntax);
@@ -156,14 +159,14 @@ namespace {classInfo.Namespace}
                 info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
                 info.TypeInfo = GetTypeInfo(classInfo, propSymbol, propSyntax);
 
-                if (info.IsPrimaryKey)
+                if (classInfo.IsEmbedded && info.IsPrimaryKey)
                 {
-                    if (primaryKeySet)
-                    {
-                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys("test", Location.None));
-                    }
+                    classInfo.Diagnostics.Add(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                }
 
-                    primaryKeySet = true;
+                if (info.IsIndexed && ! propSymbol.Type.IsSupportedIndexType())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                 }
 
                 classInfo.Properties.Add(info);
@@ -224,7 +227,7 @@ namespace {classInfo.Namespace}
                     }
                 }
 
-                if (argument.IsValidRealmInteger())
+                if (argument.IsValidRealmInteger(out _))
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
                 }
@@ -344,11 +347,12 @@ namespace {classInfo.Namespace}
 
         public static bool IsIntegerType(this ITypeSymbol symbol)
         {
-            return _validIntegerTypes.Contains(symbol.SpecialType) || symbol.IsValidRealmInteger();
+            return _validIntegerTypes.Contains(symbol.SpecialType) || symbol.IsValidRealmInteger(out _);
         }
 
-        public static bool IsValidRealmInteger(this ITypeSymbol symbol)
+        public static bool IsValidRealmInteger(this ITypeSymbol symbol, out ITypeSymbol backingType)
         {
+            backingType = null;
             var namedSymbol = symbol as INamedTypeSymbol;
 
             if (namedSymbol == null || namedSymbol.IsGenericType == false || namedSymbol.ConstructUnboundGenericType().ToDisplayString() != "Realms.RealmInteger<>")
@@ -356,8 +360,8 @@ namespace {classInfo.Namespace}
                 return false;
             }
 
-            var argument = namedSymbol.TypeArguments.Single();
-            return _validRealmIntegerArgumentTypes.Contains(argument.SpecialType);
+            backingType = namedSymbol.TypeArguments.Single();
+            return _validRealmIntegerArgumentTypes.Contains(backingType.SpecialType);
         }
 
         public static bool IsRealmObjectBase(this ITypeSymbol symbol)
@@ -398,9 +402,34 @@ namespace {classInfo.Namespace}
             return symbol.ToDisplayString();
         }
 
+        public static string ToFullyQualifiedName(this ITypeSymbol symbol)
+        {
+            var symbolDisplayFormat = new SymbolDisplayFormat(
+                typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
+
+            return symbol.ToDisplayString(symbolDisplayFormat);
+        }
+
         public static Location GetLocation(this SyntaxNode node)
         {
             return Location.Create(node.SyntaxTree, node.Span);
+        }
+
+        public static bool IsSupportedIndexType(this ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.IsValidRealmInteger(out var backingType))
+            {
+                if (backingType.NullableAnnotation == NullableAnnotation.Annotated)
+                {
+                    return false;
+                }
+
+                typeSymbol = backingType;
+            }
+
+            var st = typeSymbol.Name;
+
+            return true;
         }
     }
 
