@@ -188,7 +188,7 @@ internal static class PropertyDefinitionExtensions
 
     internal static bool IsIndexable(this PropertyDefinition property, ImportedReferences references)
     {
-        Debug.Assert(property.DeclaringType.IsValidRealmObjectBaseInheritor(references), "Required properties only make sense on RealmObject/EmbeddedObject classes");
+        Debug.Assert(property.DeclaringType.IsValidRealmObjectBaseInheritor(references), "Indexed properties only make sense on RealmObject/EmbeddedObject classes");
         var propertyType = property.PropertyType;
         if (propertyType.IsRealmInteger(out var isNullable, out var backingType))
         {
