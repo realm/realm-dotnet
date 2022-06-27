@@ -29,7 +29,9 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>SdkOnly</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
-    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway --linkskip=Newtonsoft.Json</MtouchExtraArgs>
+    <MtouchExtraArgs>--nosymbolstrip --linkskip=Realm --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway --linkskip=Newtonsoft.Json</MtouchExtraArgs>
+    <CodesignProvision></CodesignProvision>
+    <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
