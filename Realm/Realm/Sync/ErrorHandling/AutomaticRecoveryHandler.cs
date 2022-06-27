@@ -40,6 +40,7 @@ namespace Realms.Sync.ErrorHandling
     /// 4. backup the whole realm before the client reset happens (in <see cref="OnBeforeReset"/>). Such backup could, for example, be used to restore the unsynced data (see 3.)
     /// </remarks>
     /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
+    [Preserve(AllMembers = true)]
     public sealed class AutomaticRecoveryHandler : ClientResetHandlerBase
     {
         /// <summary>
