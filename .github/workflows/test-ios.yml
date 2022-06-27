@@ -102,8 +102,7 @@ jobs:
         dotnet-version: 6.0.x
     - name: Setup workloads
       run: |
-        dotnet workload install maui-android
-        dotnet workload install maui-ios
+        dotnet workload install maui
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -r iossimulator-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
