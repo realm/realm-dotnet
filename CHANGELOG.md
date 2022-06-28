@@ -3,11 +3,11 @@
 ### Enhancements
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
 * Added a client reset strategy, `AutomaticRecoveryHandler`, that tries to automatically merge the unsynced local changes with the remote ones in the event of a client reset. You can even set a fallback strategy that kicks-in in case the automatic merge can't be performed as per your server's rules. This new stragegy simplifies even more the handling of a client reset event when compared to `DiscardLocalResetHandler`. In fact, it's going to be the default from now on. An example is as follows
+* Added a client reset handler, `AutomaticRecoveryHandler`, that tries to automatically merge the unsynced local changes with the remote ones in the event of a client reset. You can set a fallback strategy that kicks-in in case the automatic merge can't be performed as per your server's rules. This new stragegy simplifies even more the handling of a client reset event when compared to `DiscardLocalResetHandler` and is going to be the default from now on. An example is as follows
   ```cs
   var conf = new PartitionSyncConfiguration(partition, user)
   {
-    // alternatively you can use another fallback stragegy: AutomaticRecoveryHandler.Fallback.None
-    ClientResetHandler = new AutomaticRecoveryHandler(AutomaticRecoveryHandler.Fallback.DiscardLocal)
+    ClientResetHandler = new AutomaticRecoveryHandler
     {
       // As always, the following callbacks are optional
 

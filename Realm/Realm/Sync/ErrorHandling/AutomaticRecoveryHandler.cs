@@ -20,14 +20,14 @@ namespace Realms.Sync.ErrorHandling
 {
     // TODO andrea: ask how this strategy may fail if it isn't for the server not allowing automatic merge
     /// <summary>
-    /// A client reset strategy where it is attempted to automatically recover the locally committed data according to some merge rules.
-    /// The user can set a <see cref="Fallback"/> strategy to be used in case the automatic recovery fails or it is not permitted by the server.
-    /// The supported fallback strategies are either <see cref="Fallback.None"/> or <see cref="Fallback.DiscardLocal"/>. The latter
-    /// automatically discards all local changes and uses the latest realm that is available on the remote sync server.
-    /// You can read more about the merge rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
+    /// A client reset strategy where sync will attempt to automatically recover any unsynchronized changes.
     /// </summary>
     /// <remarks>
-    /// With or without a fallback strategy, the automatic recovery internally simulate write transactions meaning that all the changes that take place
+    /// The user can set a <see cref="Fallback"/> strategy to be used in case the automatic recovery fails or it is not permitted by the server.
+    /// The supported fallback strategies are either <see cref="Fallback.Manual"/> or <see cref="Fallback.DiscardLocal"/>. The latter
+    /// automatically discards all local changes and uses the latest realm that is available on the remote sync server.
+    /// You can read more about the merge rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
+    /// The automatic recovery mechanism will create write transactions meaning that all the changes that take place
     /// are properly propagated through the standard Realm's change notifications.
     /// The <see cref="AutomaticRecoveryHandler"/> strategy supplies three callbacks: <see cref="OnBeforeReset"/>, <see cref="OnAfterReset"/> and <see cref="ManualResetFallback"/>.
     /// The first two are invoked just before and after the client reset has happened,
@@ -48,9 +48,9 @@ namespace Realms.Sync.ErrorHandling
         public enum Fallback
         {
             /// <summary>
-            /// No fallback.
+            /// If the automatic merge fails, manually handle the matter.
             /// </summary>
-            None = 0,
+            Manual = 0,
 
             /// <summary>
             /// If the automatic merge fails, automatically discards all local changes and uses the latest realm that is available on the remote.

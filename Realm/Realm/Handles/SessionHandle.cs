@@ -344,7 +344,7 @@ namespace Realms.Sync
                 {
                     var schema = syncConfig.GetSchema();
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
-                    cb?.Invoke(realmBefore);
+                    cb.Invoke(realmBefore);
                 }
             }
             catch (Exception ex)
@@ -376,7 +376,7 @@ namespace Realms.Sync
                     var schema = syncConfig.GetSchema();
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
                     using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfig, schema);
-                    cb?.Invoke(realmBefore, realmAfter);
+                    cb.Invoke(realmBefore, realmAfter);
                 }
             }
             catch (Exception ex)

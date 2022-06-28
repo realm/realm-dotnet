@@ -267,7 +267,7 @@ namespace Baas
                       return loginPayload[""realmCustomAuthFuncUserId""];
                     };");
 
-            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource);
+            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
             await CreateFunction(app, "documentFunc", @"exports = function(first, second){
                 return {
@@ -474,14 +474,14 @@ namespace Baas
             }
         }
 
-        private async Task<string> CreateFunction(BaasApp app, string name, string source)
+        private async Task<string> CreateFunction(BaasApp app, string name, string source, bool runAsSystem = false)
         {
             _output.WriteLine($"Creating function {name} for {app.Name}...");
 
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/functions", new
             {
                 name = name,
-                run_as_system = true,
+                run_as_system = runAsSystem,
                 can_evaluate = new { },
                 @private = false,
                 source = source

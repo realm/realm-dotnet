@@ -36,7 +36,7 @@ namespace Realms.Sync
     /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
-        private ClientResetHandlerBase _clientResetHandler = new AutomaticRecoveryHandler(AutomaticRecoveryHandler.Fallback.DiscardLocal);
+        private ClientResetHandlerBase _clientResetHandler = new AutomaticRecoveryHandler();
 
         /// <summary>
         /// Callback triggered when an error occurs in a session.
@@ -140,7 +140,7 @@ namespace Realms.Sync
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
-                client_resync_mode = ClientResetHandler != null ? ClientResetHandler.ClientResetMode : ClientResyncMode.AutomaticRecoveryOrDiscardLocal,
+                client_resync_mode = ClientResetHandler.ClientResetMode,
             };
         }
     }
