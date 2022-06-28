@@ -41,7 +41,7 @@ namespace Baas
         public const string FlexibleSync = "flx";
     }
 
-    public class BaasClient : IDisposable
+    public class BaasClient
     {
         public class FunctionReturn
         {
@@ -91,7 +91,7 @@ namespace Baas
               return { status: 'failure' };
             };";
 
-        private readonly HttpClient _client = new HttpClient();
+        private readonly HttpClient _client = new();
 
         private readonly string _clusterName;
 
@@ -228,13 +228,13 @@ namespace Baas
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
         }
 
-        public async Task<IDictionary<string, string>> GetOrCreateApps()
+        public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
         {
             var apps = await GetApps();
 
             _output.WriteLine($"Found {apps.Length} apps.");
 
-            var result = new Dictionary<string, string>();
+            var result = new Dictionary<string, BaasApp>();
             await GetOrCreateApp(result, AppConfigType.Default, apps, CreateDefaultApp);
             await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, CreateFlxApp);
             await GetOrCreateApp(result, AppConfigType.IntPartitionKey, apps, name => CreatePbsApp(name, "long"));
@@ -244,7 +244,7 @@ namespace Baas
             return result;
         }
 
-        private async Task GetOrCreateApp(IDictionary<string, string> result, string name, BaasApp[] apps, Func<string, Task<BaasApp>> creator)
+        private async Task GetOrCreateApp(IDictionary<string, BaasApp> result, string name, BaasApp[] apps, Func<string, Task<BaasApp>> creator)
         {
             var app = apps.SingleOrDefault(a => a.Name.StartsWith(name));
             if (app == null)
@@ -256,7 +256,7 @@ namespace Baas
                 _output.WriteLine($"Found {app.Name} with id {app.ClientAppId}.");
             }
 
-            result[app.Name] = app.ClientAppId;
+            result[app.Name] = app;
         }
 
         private async Task<BaasApp> CreateDefaultApp(string name)
@@ -410,6 +410,18 @@ namespace Baas
             return app;
         }
 
+        public async Task SetAutomaticRecoveryEnabled(BaasApp app, bool enabled)
+        {
+            var services = await GetAsync<BsonArray>($"groups/{_groupId}/apps/{app}/services");
+            var mongoServiceId = services.Single(s => s.AsBsonDocument["name"] == "BackingDB")["_id"].AsString;
+            var config = await GetAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config");
+
+            var syncDoc = config.Contains("flexible_sync") ? config["flexible_sync"] : config["sync"];
+            syncDoc["is_recovery_mode_disabled"] = !enabled;
+
+            await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", config);
+        }
+
         private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
@@ -524,11 +536,6 @@ namespace Baas
             });
 
             return response["_id"].AsString;
-        }
-
-        public void Dispose()
-        {
-            _client.Dispose();
         }
 
         private static HttpContent GetJsonContent(object obj)

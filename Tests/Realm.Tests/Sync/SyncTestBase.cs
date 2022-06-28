@@ -18,10 +18,10 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
+using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -32,6 +32,7 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<Session> _sessions = new();
         private readonly ConcurrentQueue<App> _apps = new();
+        private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
 
         private App _defaultApp;
 
@@ -67,6 +68,14 @@ namespace Realms.Tests.Sync
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
+
+            AsyncContext.Run(async () =>
+            {
+                while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
+                {
+                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true);
+                }
+            });
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -188,6 +197,12 @@ namespace Realms.Tests.Sync
         {
             var config = await GetFLXIntegrationConfigAsync(app);
             return await GetRealmAsync(config);
+        }
+
+        protected async Task DisableClientResetRecoveryOnServer(string appConfigType)
+        {
+            await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, false);
+            _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
         private static T UpdateConfig<T>(T config)

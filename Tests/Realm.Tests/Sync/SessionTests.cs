@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Baas;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
 using Realms.Sync;
@@ -277,20 +278,24 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_AutomaticRecoveryFallsbackToDiscardLocal()
         {
+            //Logging.Logger.Default = Logging.Logger.File("C:\\work\\blah.log");
+            //Logging.Logger.LogLevel = Logging.LogLevel.Trace;
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetIntegrationConfigAsync();
+                var user = await GetUserAsync();
+                var config = await GetIntegrationConfigAsync(user: user);
 
-                var tscAfterClientReset = new TaskCompletionSource<object>();
+                var tcsAfterClientReset = new TaskCompletionSource<object>();
 
                 config.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
-                var afterCb = GetOnAfterHandler(tscAfterClientReset, (before, after) =>
+                var afterCb = GetOnAfterHandler(tcsAfterClientReset, (before, after) =>
                 {
                     Assert.That(after.All<SyncObjectWithRequiredStringList>().Count, Is.EqualTo(0));
                 });
-                config.ClientResetHandler = new AutomaticRecoveryHandler()
+                config.ClientResetHandler = new AutomaticRecoveryHandler
                 {
-                    OnAfterReset = afterCb
+                    OnAfterReset = afterCb,
                 };
                 var realm = await GetRealmAsync(config);
 
@@ -302,12 +307,12 @@ namespace Realms.Tests.Sync
                     realm.Add(new SyncObjectWithRequiredStringList());
                 });
 
-                await SyncTestHelpers.DisallowRecoveryModeOnServer();
-                var result = await ((PartitionSyncConfiguration)realm.Config).User.Functions.CallAsync<FunctionReturn>("triggerClientResetOnSyncServer");
+                await DisableClientResetRecoveryOnServer(AppConfigType.Default);
+                var result = await user.Functions.CallAsync<FunctionReturn>("triggerClientResetOnSyncServer");
                 Assert.That(result.status, Is.EqualTo(FunctionReturn.Result.success));
 
                 session.Start();
-                await tscAfterClientReset.Task;
+                await tcsAfterClientReset.Task;
             });
         }
 
