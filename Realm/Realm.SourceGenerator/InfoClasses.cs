@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Realm.SourceGenerator
@@ -64,19 +63,27 @@ namespace Realm.SourceGenerator
 
     internal abstract record PropertyTypeInfo
     {
-        private static HashSet<ScalarTypeEnum> _indexableTypes = new()
+        private static HashSet<SimpleTypeEnum?> _indexableTypes = new()
         {
-            ScalarTypeEnum.Int,
-            ScalarTypeEnum.Bool,
-            ScalarTypeEnum.String,
-            ScalarTypeEnum.ObjectId,
-            ScalarTypeEnum.Guid,
-            ScalarTypeEnum.Date,
+            SimpleTypeEnum.Int,
+            SimpleTypeEnum.Bool,
+            SimpleTypeEnum.String,
+            SimpleTypeEnum.ObjectId,
+            SimpleTypeEnum.Guid,
+            SimpleTypeEnum.Date,
+        };
+
+        private static HashSet<SimpleTypeEnum?> _primaryKeyTypes = new()
+        {
+            SimpleTypeEnum.Int,
+            SimpleTypeEnum.String,
+            SimpleTypeEnum.ObjectId,
+            SimpleTypeEnum.Guid,
         };
 
         public bool IsCollection => CollectionType != null;
 
-        public bool IsScalar => ScalarType != null;
+        public bool IsSimpleType => SimpleType != null;
 
         public bool IsSet => CollectionType == CollectionTypeEnum.Set;
 
@@ -84,7 +91,9 @@ namespace Realm.SourceGenerator
 
         public bool IsDictionary => CollectionType == CollectionTypeEnum.Dictionary;
 
-        public virtual ScalarTypeEnum? ScalarType { get; set; } = null;
+        public bool IsUnsupported => this is UnsupportedTypeInfo;
+
+        public virtual SimpleTypeEnum? SimpleType { get; set; } = null;
 
         public virtual CollectionTypeEnum? CollectionType { get; set; } = null;
 
@@ -92,11 +101,72 @@ namespace Realm.SourceGenerator
 
         public virtual bool IsNullable { get; set; } = false;
 
-        public virtual string TypeString { get; set; } = null;
+        public virtual string TypeString { get; set; } = null;  //TODO Need to decide what to do with this...
 
         public virtual PropertyTypeInfo InternalType { get; set; } = null;
 
         public ITypeSymbol TypeSymbol { get; set; }
+
+        public static PropertyTypeInfo Unsupported = new UnsupportedTypeInfo();
+
+        public static PropertyTypeInfo List => new ListTypeInfo();
+
+        public static PropertyTypeInfo Set => new SetTypeInfo();
+
+        public static PropertyTypeInfo Dictionary => new DictionaryTypeInfo();
+
+        public static PropertyTypeInfo Int => new SimpleTypeInfo(SimpleTypeEnum.Int);
+
+        public static PropertyTypeInfo Bool => new SimpleTypeInfo(SimpleTypeEnum.Bool);
+
+        public static PropertyTypeInfo String => new SimpleTypeInfo(SimpleTypeEnum.String);
+
+        public static PropertyTypeInfo Data => new SimpleTypeInfo(SimpleTypeEnum.Data);
+
+        public static PropertyTypeInfo Date => new SimpleTypeInfo(SimpleTypeEnum.Date);
+
+        public static PropertyTypeInfo Float => new SimpleTypeInfo(SimpleTypeEnum.Float);
+
+        public static PropertyTypeInfo Double => new SimpleTypeInfo(SimpleTypeEnum.Double);
+
+        public static PropertyTypeInfo Object => new SimpleTypeInfo(SimpleTypeEnum.Object);
+
+        public static PropertyTypeInfo LinkingObjects => new SimpleTypeInfo(SimpleTypeEnum.LinkingObjects);
+
+        public static PropertyTypeInfo RealmValue => new SimpleTypeInfo(SimpleTypeEnum.RealmValue);
+
+        public static PropertyTypeInfo ObjectId => new SimpleTypeInfo(SimpleTypeEnum.ObjectId);
+
+        public static PropertyTypeInfo Decimal => new SimpleTypeInfo(SimpleTypeEnum.Decimal);
+
+        public static PropertyTypeInfo Guid => new SimpleTypeInfo(SimpleTypeEnum.Guid);
+
+        public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
+
+        public bool IsSupportedIndexType()
+        {
+            if (IsNullable)
+            {
+                return false;
+            }
+
+            if (IsRealmInteger)
+            {
+                return InternalType.IsSupportedIndexType();
+            }
+
+            return _indexableTypes.Contains(SimpleType);
+        }
+
+        public bool IsSupportedPrimaryKeyType()
+        {
+            return _primaryKeyTypes.Contains(SimpleType);
+        }
+
+        internal bool IsSupportedRequiredType()
+        {
+            throw new NotImplementedException();
+        }
 
         public sealed override string ToString()
         {
@@ -115,75 +185,17 @@ namespace Realm.SourceGenerator
             {
                 desc = $"RealmInteger{nullabilityString} of {InternalType}";
             }
-            else if(ScalarType == ScalarTypeEnum.Object)
+            else if (SimpleType == SimpleTypeEnum.Object)
             {
                 desc = $"Object of type {TypeSymbol.Name}{nullabilityString} of";
             }
             else
             {
-                desc = $"Scalar of type {ScalarType}{nullabilityString}";
+                desc = $"Scalar of type {SimpleType}{nullabilityString}";
             }
 
             return $"{TypeSymbol.ToReadableName()} ({desc})";
         }
-
-        public static PropertyTypeInfo Unsupported = new UnsupportedTypeInfo();
-
-        public static PropertyTypeInfo List => new ListTypeInfo();
-
-        public static PropertyTypeInfo Set => new SetTypeInfo();
-
-        public static PropertyTypeInfo Dictionary => new DictionaryTypeInfo();
-
-        public static PropertyTypeInfo Int => new ScalarTypeInfo(ScalarTypeEnum.Int);
-
-        public static PropertyTypeInfo Bool => new ScalarTypeInfo(ScalarTypeEnum.Bool);
-
-        public static PropertyTypeInfo String => new ScalarTypeInfo(ScalarTypeEnum.String);
-
-        public static PropertyTypeInfo Data => new ScalarTypeInfo(ScalarTypeEnum.Data);
-
-        public static PropertyTypeInfo Date => new ScalarTypeInfo(ScalarTypeEnum.Date);
-
-        public static PropertyTypeInfo Float => new ScalarTypeInfo(ScalarTypeEnum.Float);
-
-        public static PropertyTypeInfo Double => new ScalarTypeInfo(ScalarTypeEnum.Double);
-
-        public static PropertyTypeInfo Object => new ScalarTypeInfo(ScalarTypeEnum.Object);
-
-        public static PropertyTypeInfo LinkingObjects => new ScalarTypeInfo(ScalarTypeEnum.LinkingObjects);
-
-        public static PropertyTypeInfo RealmValue => new ScalarTypeInfo(ScalarTypeEnum.RealmValue);
-
-        public static PropertyTypeInfo ObjectId => new ScalarTypeInfo(ScalarTypeEnum.ObjectId);
-
-        public static PropertyTypeInfo Decimal => new ScalarTypeInfo(ScalarTypeEnum.Decimal);
-
-        public static PropertyTypeInfo Guid => new ScalarTypeInfo(ScalarTypeEnum.Guid);
-
-        public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
-
-        public bool IsSupportedIndexType()
-        {
-            if (IsNullable)
-            {
-                return false;
-            }
-
-            if (IsRealmInteger)
-            {
-                return InternalType.IsSupportedIndexType();
-            }
-
-            if (!IsScalar)
-            {
-                return false;
-            }
-
-            return _indexableTypes.Contains(ScalarType.Value);
-        }
-
-        public bool IsUnsupported => this is UnsupportedTypeInfo;
     }
 
     internal sealed record UnsupportedTypeInfo : PropertyTypeInfo
@@ -223,11 +235,11 @@ namespace Realm.SourceGenerator
 
     }
 
-    internal record ScalarTypeInfo : PropertyTypeInfo
+    internal record SimpleTypeInfo : PropertyTypeInfo
     {
-        public ScalarTypeInfo(ScalarTypeEnum type)
+        public SimpleTypeInfo(SimpleTypeEnum type)
         {
-            ScalarType = type;
+            SimpleType = type;
         }
     }
 
@@ -238,7 +250,7 @@ namespace Realm.SourceGenerator
         Dictionary
     }
 
-    internal enum ScalarTypeEnum
+    internal enum SimpleTypeEnum
     {
         Int = 0,
         Bool = 1,

@@ -151,14 +151,27 @@ namespace {classInfo.Namespace}
                 info.Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute");
                 info.TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax);
 
-                if (classInfo.IsEmbedded && info.IsPrimaryKey)
+                if (info.IsPrimaryKey)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    if (classInfo.IsEmbedded)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    }
+
+                    if (!info.TypeInfo.IsSupportedPrimaryKeyType())
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.PrimaryKeyWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                    }
                 }
 
-                if (info.IsIndexed && info.TypeInfo.IsSupportedIndexType())
+                if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexType())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                }
+
+                if (info.IsRequired && !info.TypeInfo.IsSupportedRequiredType())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.RequiredWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                 }
 
                 classInfo.Properties.Add(info);
@@ -222,7 +235,7 @@ namespace {classInfo.Namespace}
                     argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
-                    if (propertyType.IsSet && internalPropertyType.ScalarType == ScalarTypeEnum.Object && argument.IsEmbeddedObject())
+                    if (propertyType.IsSet && internalPropertyType.SimpleType == SimpleTypeEnum.Object && argument.IsEmbeddedObject())
                     {
                         classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
                     }

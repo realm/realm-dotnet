@@ -84,7 +84,7 @@ namespace Realm.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "Embedded objects cannot have primary keys",
-                $"Class {className} is an EmbeddedObject but has a primary key defined.",
+                $"Class {className} is an EmbeddedObject but has a primary key defined on property {propertyName}.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
@@ -110,6 +110,18 @@ namespace Realm.SourceGenerator
                 ("REALM001",
                 "[Required] is only allowed on specific types",
                 $"{className}.{propertyName} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {propertyType}.",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true);
+            return Diagnostic.Create(descriptor, location);
+        }
+
+        public static Diagnostic PrimaryKeyWrongType(string className, string propertyName, string propertyType, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("REALM001",
+                "[PrimaryKey] is only allowed on specific types",
+                $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {propertyType}.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
