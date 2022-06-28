@@ -155,6 +155,18 @@ namespace Realm.SourceGenerator
             return Diagnostic.Create(descriptor, location);
         }
 
+        public static Diagnostic RealmIntegerTypeUnsupported(string className, string propertyName, string internalType, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("REALM001",
+                "RealmInteger type is not allowed",
+                $"{className}.{propertyName} is a RealmInteger<{internalType}> which is not supported.",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true);
+            return Diagnostic.Create(descriptor, location);
+        }
+
         public static Diagnostic CollectionRealmInteger(string className, string propertyName, string collectionType, Location location)
         {
             DiagnosticDescriptor descriptor = new

@@ -48,7 +48,7 @@ namespace Realms.Tests.SourceGeneration
         [Test]
         public async Task SimpleTest()
         {
-            await RunSimpleComparisonTest("RealmExampleClass");
+            await RunSimpleComparisonTest("AllTypesClass");
         }
 
         [Test]

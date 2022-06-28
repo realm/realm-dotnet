@@ -9,7 +9,7 @@
 	<CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
 	<DisableFody>true</DisableFody>
 	<NoWarn>1701;1702;NU1701</NoWarn>
-	<LangVersion>9.0</LangVersion>
+	<LangVersion>10.0</LangVersion>
 
   </PropertyGroup>
 
