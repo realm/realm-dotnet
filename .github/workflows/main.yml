@@ -23,7 +23,7 @@ jobs:
   deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "xamarinandroid"]'
+      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "xamarinandroid", "maccatalyst"]'
     secrets:
       AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
       BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
@@ -122,8 +122,8 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       framework: '["netcoreapp3.1", "net5.0", "net6.0"]'
-  test-xamarinmacos:
-    uses: ./.github/workflows/test-xamarinmacos.yml
+  test-macos:
+    uses: ./.github/workflows/test-macos.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
