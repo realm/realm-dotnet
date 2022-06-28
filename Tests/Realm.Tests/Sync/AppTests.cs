@@ -160,7 +160,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-#if !NETFRAMEWORK || NET471_OR_GREATER 
+#if !NETFRAMEWORK || NET471_OR_GREATER
         [Test]
         public void RealmConfiguration_WithCustomHttpClientHandler_UsedWhenMakingCalls()
         {
