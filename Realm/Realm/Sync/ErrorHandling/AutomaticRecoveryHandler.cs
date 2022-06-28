@@ -18,14 +18,14 @@
 
 namespace Realms.Sync.ErrorHandling
 {
-    // TODO andrea: ask how this strategy may fail if it isn't for the server not allowing automatic merge
     /// <summary>
     /// A client reset strategy where sync will attempt to automatically recover any unsynchronized changes.
     /// </summary>
     /// <remarks>
-    /// The user can set a <see cref="Fallback"/> strategy to be used in case the automatic recovery fails or it is not permitted by the server.
-    /// The supported fallback strategies are either <see cref="Fallback.Manual"/> or <see cref="Fallback.DiscardLocal"/>. The latter
-    /// automatically discards all local changes and uses the latest realm that is available on the remote sync server.
+    /// The automatic recovery fails when a client that is configured for recovery is flagged on the server "as not allowed to execute automatic recovery".
+    /// In this situation the user can choose between two <see cref="Fallback"/> strategies: <see cref="Fallback.Manual"/> and <see cref="Fallback.DiscardLocal"/>.
+    /// The latter automatically discards all the local changes and uses the latest realm that is available on the remote sync server.
+    /// While the former simply calls <see cref="ManualResetFallback"/> to let the user manually handle the client reset.
     /// You can read more about the merge rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
     /// The automatic recovery mechanism will create write transactions meaning that all the changes that take place
     /// are properly propagated through the standard Realm's change notifications.
