@@ -156,10 +156,10 @@ namespace {classInfo.Namespace}
                     classInfo.Diagnostics.Add(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
                 }
 
-                //if (info.IsIndexed && ! propSymbol.Type.IsSupportedIndexType())
-                //{
-                //    classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
-                //}
+                if (info.IsIndexed && info.TypeInfo.IsSupportedIndexType())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                }
 
                 classInfo.Properties.Add(info);
             }
@@ -173,7 +173,7 @@ namespace {classInfo.Namespace}
 
             var propertyType = GetSingleLevelPropertyTypeInfo(typeSymbol);
 
-            if (propertyType == PropertyTypeInfo.Unsupported)  //Maybe the diagnostic can be moved out TODO
+            if (propertyType.IsUnsupported)
             {
                 classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
                 return propertyType;  //We are sure we can't produce more diagnostics
@@ -222,14 +222,9 @@ namespace {classInfo.Namespace}
                     argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
-                    //TODO Not sure why this is not there for Dictionaries in PropertyTypeEx
-                    if (internalPropertyType.ScalarType == ScalarTypeEnum.Object)
+                    if (propertyType.IsSet && internalPropertyType.ScalarType == ScalarTypeEnum.Object && argument.IsEmbeddedObject())
                     {
-                        if (propertyType.IsSet && argument.IsEmbeddedObject())
-                        {
-                            classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
-                        }
-
+                        classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
                     }
 
                     propertyType.InternalType = internalPropertyType;
@@ -239,7 +234,7 @@ namespace {classInfo.Namespace}
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
                 }
-                else if (internalPropertyType == PropertyTypeInfo.Unsupported) //I can make another "Is"
+                else if (internalPropertyType.IsUnsupported)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionType, argument.ToReadableName(), propertyLocation));
                 }
@@ -273,18 +268,18 @@ namespace {classInfo.Namespace}
                 INamedTypeSymbol when typeSymbol.SpecialType == SpecialType.System_String => PropertyTypeInfo.String,
                 INamedTypeSymbol when typeSymbol.SpecialType == SpecialType.System_Decimal || typeSymbol.Name == "Decimal128" => PropertyTypeInfo.Decimal,
                 ITypeSymbol when typeSymbol.ToDisplayString() == "byte[]" => PropertyTypeInfo.Data,
-                INamedTypeSymbol when typeSymbol.Name == "ObjectId" =>  PropertyTypeInfo.ObjectId,
+                INamedTypeSymbol when typeSymbol.Name == "ObjectId" => PropertyTypeInfo.ObjectId,
                 INamedTypeSymbol when typeSymbol.Name == "Guid" => PropertyTypeInfo.Guid,
-                INamedTypeSymbol when typeSymbol.Name == "DateTimeOffset" =>PropertyTypeInfo.Date,
+                INamedTypeSymbol when typeSymbol.Name == "DateTimeOffset" => PropertyTypeInfo.Date,
                 INamedTypeSymbol when typeSymbol.Name == "RealmValue" => PropertyTypeInfo.RealmValue,
-                INamedTypeSymbol when typeSymbol.IsRealmObjectBase() =>PropertyTypeInfo.Object,
+                INamedTypeSymbol when typeSymbol.IsRealmObjectBase() => PropertyTypeInfo.Object,
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
-                INamedTypeSymbol when typeSymbol.Name == "ISet" =>  PropertyTypeInfo.Set,
+                INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,
                 _ => PropertyTypeInfo.Unsupported
             };
 
-            if (propInfo != PropertyTypeInfo.Unsupported)
+            if (!propInfo.IsUnsupported)
             {
                 propInfo.TypeSymbol = typeSymbol;
                 propInfo.IsNullable = isNullable;

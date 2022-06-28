@@ -16,7 +16,9 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Realm.SourceGenerator
@@ -62,6 +64,16 @@ namespace Realm.SourceGenerator
 
     internal abstract record PropertyTypeInfo
     {
+        private static HashSet<ScalarTypeEnum> _indexableTypes = new()
+        {
+            ScalarTypeEnum.Int,
+            ScalarTypeEnum.Bool,
+            ScalarTypeEnum.String,
+            ScalarTypeEnum.ObjectId,
+            ScalarTypeEnum.Guid,
+            ScalarTypeEnum.Date,
+        };
+
         public bool IsCollection => CollectionType != null;
 
         public bool IsScalar => ScalarType != null;
@@ -150,9 +162,31 @@ namespace Realm.SourceGenerator
         public static PropertyTypeInfo Guid => new ScalarTypeInfo(ScalarTypeEnum.Guid);
 
         public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
+
+        public bool IsSupportedIndexType()
+        {
+            if (IsNullable)
+            {
+                return false;
+            }
+
+            if (IsRealmInteger)
+            {
+                return InternalType.IsSupportedIndexType();
+            }
+
+            if (!IsScalar)
+            {
+                return false;
+            }
+
+            return _indexableTypes.Contains(ScalarType.Value);
+        }
+
+        public bool IsUnsupported => this is UnsupportedTypeInfo;
     }
 
-    internal record UnsupportedTypeInfo : PropertyTypeInfo
+    internal sealed record UnsupportedTypeInfo : PropertyTypeInfo
     {
     }
 
