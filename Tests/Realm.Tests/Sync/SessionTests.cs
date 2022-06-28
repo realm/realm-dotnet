@@ -335,10 +335,10 @@ namespace Realms.Tests.Sync
                 var partition = Guid.NewGuid().ToString();
 
                 // ===== clientA =====
-                var tscAfterClientResetMergeA = new TaskCompletionSource<object>();
+                var tcsAfterClientResetMergeA = new TaskCompletionSource<object>();
                 var configA = await GetIntegrationConfigAsync(partition, user: user);
                 configA.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
-                var afterCbA = GetOnAfterHandler(tscAfterClientResetMergeA, (before, after) =>
+                var afterCbA = GetOnAfterHandler(tcsAfterClientResetMergeA, (before, after) =>
                 {
                     var list = after.All<SyncObjectWithRequiredStringList>().First().Strings;
                     Assert.That(list.Count, Is.EqualTo(2));
@@ -414,7 +414,7 @@ namespace Realms.Tests.Sync
                 Assert.That(result.status, Is.EqualTo(FunctionReturn.Result.success));
 
                 sessionA.Start();
-                await tscAfterClientResetMergeA.Task;
+                await tcsAfterClientResetMergeA.Task;
 
                 sessionB.Start();
                 await tcsAfterClientResetB.Task;
@@ -515,7 +515,7 @@ namespace Realms.Tests.Sync
                 sessionA.Start();
                 await tcsAfterClientResetA.Task;
 
-                var tscAfterRemoteUpdateA = new TaskCompletionSource<object>();
+                var tcsAfterRemoteUpdateA = new TaskCompletionSource<object>();
                 realmA.All<SyncObjectWithRequiredStringList>().First().PropertyChanged += (sender, eventArgs) =>
                 {
                     if (eventArgs.PropertyName == nameof(SyncObjectWithRequiredStringList.Strings))
@@ -526,7 +526,7 @@ namespace Realms.Tests.Sync
                         // clientA should receive the updated status
                         Assert.That(list, Is.EqualTo(new[] { "0", "1", "3" }));
 
-                        tscAfterRemoteUpdateA.TrySetResult(null);
+                        tcsAfterRemoteUpdateA.TrySetResult(null);
                     }
                 };
 
@@ -534,7 +534,7 @@ namespace Realms.Tests.Sync
                 sessionB.Start();
 
                 await tcsAfterClientResetB.Task;
-                await tscAfterRemoteUpdateA.Task;
+                await tcsAfterRemoteUpdateA.Task;
             });
         }
 
