@@ -16,11 +16,8 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.CodeAnalysis;
-using Realms.Schema;
 
 namespace Realm.SourceGenerator
 {
@@ -61,17 +58,6 @@ namespace Realm.SourceGenerator
         public PropertyTypeInfo TypeInfo { get; set; }
 
         public Accessibility Accessibility { get; set; }  //TODO At the end check if this is needed
-    }
-
-    internal record TypeInfo
-    {
-        public static TypeInfo Unsupported = new TypeInfo { Type = PropertyTypeUtils.Unsupported };
-
-        public PropertyType Type { get; set; }
-
-        public string TypeString { get; set; }
-
-        public ITypeSymbol ObjectTypeSymbol { get; set; }
     }
 
     internal abstract record PropertyTypeInfo

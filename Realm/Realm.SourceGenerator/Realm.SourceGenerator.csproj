@@ -26,10 +26,6 @@
 	<ItemGroup>
 		<AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\Realm\Realm.csproj" />
-	</ItemGroup>
 	<Import Project="..\AssemblyInfo.props" />
 
 	 <!--The following is to support transient dependencies. Check https://turnerj.com/blog/the-pain-points-of-csharp-source-generators and update

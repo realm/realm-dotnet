@@ -6,8 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Realms;
-using Realms.Schema;
 
 namespace Realm.SourceGenerator
 {
@@ -45,7 +43,7 @@ namespace Realm.SourceGenerator
                     //General info
                     classInfo.Namespace = classSymbol.ContainingNamespace.Name;
                     classInfo.Name = classSymbol.Name;
-                    classInfo.MapTo = (string)classSymbol.GetAttributeArgument<MapToAttribute>();
+                    classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
                     classInfo.IsEmbedded = isEmbedded;
 
@@ -54,7 +52,7 @@ namespace Realm.SourceGenerator
 
                     FillPropertyInfo(semanticModel, classInfo, propertiesSyntax);
 
-                    var props = string.Join(Environment.NewLine, classInfo.Properties.Select(t => t.Name + " " + t.TypeInfo.ToString()));
+                    var props = string.Join(Environment.NewLine, classInfo.Properties.Select(t => t.Name + " " + t.TypeInfo.ToString()));  //TODO For testing
 
                     if (!classInfo.Properties.Any())
                     {
@@ -137,7 +135,7 @@ namespace {classInfo.Namespace}
             {
                 var propSymbol = model.GetDeclaredSymbol(propSyntax);
 
-                if (propSymbol.HasAttribute<IgnoredAttribute>())
+                if (propSymbol.HasAttribute("IgnoredAttribute"))
                 {
                     continue;
                 }
@@ -146,11 +144,11 @@ namespace {classInfo.Namespace}
 
                 info.Name = propSymbol.Name;
                 info.Accessibility = propSymbol.DeclaredAccessibility;
-                info.IsIndexed = propSymbol.HasAttribute<IndexedAttribute>();
-                info.IsRequired = propSymbol.HasAttribute<RequiredAttribute>();
-                info.IsPrimaryKey = propSymbol.HasAttribute<PrimaryKeyAttribute>();
-                info.MapTo = (string)propSymbol.GetAttributeArgument<MapToAttribute>();
-                info.Backlink = (string)propSymbol.GetAttributeArgument<BacklinkAttribute>();
+                info.IsIndexed = propSymbol.HasAttribute("IndexedAttribute");
+                info.IsRequired = propSymbol.HasAttribute("RequiredAttribute");
+                info.IsPrimaryKey = propSymbol.HasAttribute("PrimaryKeyAttribute");
+                info.MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute");
+                info.Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute");
                 info.TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax);
 
                 if (classInfo.IsEmbedded && info.IsPrimaryKey)
@@ -333,12 +331,6 @@ namespace {classInfo.Namespace}
             return attribute?.NamedArguments[0].Value.Value;
         }
 
-        public static object GetAttributeArgument<T>(this ISymbol symbol) where T : Attribute
-        {
-            var attributeName = typeof(T).Name;
-            return symbol.GetAttributeArgument(attributeName);
-        }
-
         public static bool IsValidIntegerType(this ITypeSymbol symbol)
         {
             return _validIntegerTypes.Contains(symbol.SpecialType);
@@ -408,49 +400,6 @@ namespace {classInfo.Namespace}
             return Location.Create(node.SyntaxTree, node.Span);
         }
     }
-
-    internal static class PropertyTypeUtils
-    {
-        public static PropertyType Unsupported = (PropertyType)5000;
-
-        public static bool IsUnsupported(this PropertyType propertyType) => propertyType == Unsupported;
-
-        public static bool IsList(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array) && !propertyType.IsUnsupported();
-
-        public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set) && !propertyType.IsUnsupported();
-
-        public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary) && !propertyType.IsUnsupported();
-
-        public static bool IsCollection(this PropertyType propertyType, out string collectionType)
-        {
-            if (propertyType.IsList())
-            {
-                collectionType = "IList";
-                return true;
-            }
-
-            if (propertyType.IsSet())
-            {
-                collectionType = "ISet";
-                return true;
-            }
-
-            if (propertyType.IsDictionary())
-            {
-                collectionType = "IDictionary";
-                return true;
-            }
-
-            collectionType = null;
-            return false;
-        }
-
-        public static bool IsUnsupportedCollectionType(this PropertyType propertyType)
-        {
-            return propertyType.IsCollection(out _) || propertyType.IsUnsupported();
-        }
-    }
-
 
     internal class SyntaxContextReceiver : ISyntaxContextReceiver
     {
