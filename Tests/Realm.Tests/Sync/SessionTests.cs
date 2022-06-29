@@ -278,9 +278,6 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_AutomaticRecoveryFallsbackToDiscardLocal()
         {
-            //Logging.Logger.Default = Logging.Logger.File("C:\\work\\blah.log");
-            //Logging.Logger.LogLevel = Logging.LogLevel.Trace;
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await GetUserAsync();
@@ -297,6 +294,7 @@ namespace Realms.Tests.Sync
                 {
                     OnAfterReset = afterCb,
                 };
+
                 var realm = await GetRealmAsync(config);
 
                 var session = GetSession(realm);
