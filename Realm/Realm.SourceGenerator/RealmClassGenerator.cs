@@ -151,6 +151,32 @@ namespace {classInfo.Namespace}
                 info.Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute");
                 info.TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax);
 
+                if (info.TypeInfo.IsUnsupported)
+                {
+                    continue;
+                }
+
+                if (!propSyntax.IsAutomaticProperty() && info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    continue;
+                }
+
+                if (!propSyntax.HasSetter() && !info.TypeInfo.IsCollection && !info.TypeInfo.IsIQueryable)
+                {
+                    continue;
+                }
+
+                if (info.Backlink != null)
+                {
+                    if (!info.TypeInfo.IsIQueryable)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    }
+
+                    //TODO Need to check that the types are correct
+                }
+
                 if (info.IsPrimaryKey)
                 {
                     if (classInfo.IsEmbedded)
@@ -188,7 +214,21 @@ namespace {classInfo.Namespace}
 
             if (propertyType.IsUnsupported)
             {
-                classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
+                var namedSymbol = propertySymbol as INamedTypeSymbol;
+
+                if (namedSymbol?.SpecialType == SpecialType.System_DateTime)
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
+                }
+                else if (namedSymbol.Name == "List") //TODO Check if correct
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.ListWithoutInterface(classInfo.Name, propertySymbol.Name,  propertyLocation));
+                }
+                else
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
+                }
+
                 return propertyType;  //We are sure we can't produce more diagnostics
             }
 
@@ -198,17 +238,37 @@ namespace {classInfo.Namespace}
 
                 if (!argument.IsValidRealmIntgerType())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.RealmIntegerTypeUnsupported(classInfo.Name, propertySymbol.Name, argument.ToReadableName(), propertyLocation));
-
+                    classInfo.Diagnostics.Add(Diagnostics.IQueryableUnsupportedType(classInfo.Name, propertySymbol.Name, propertyLocation));
                     return PropertyTypeInfo.Unsupported;
                 }
 
                 propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
             }
-            if (propertyType.IsCollection)
+            else if (propertyType.IsIQueryable)
+            {
+                var argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
+
+                var internalType = GetSingleLevelPropertyTypeInfo(argument);
+
+                if (internalType.SimpleType != SimpleTypeEnum.Object)
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.IQueryableUnsupportedType(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    return PropertyTypeInfo.Unsupported;
+                }
+
+                if (propertySyntax.HasSetter())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.BacklinkWithSetter(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    return PropertyTypeInfo.Unsupported;
+                }
+
+                propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
+            }
+            else if (propertyType.IsCollection)
             {
                 PropertyTypeInfo internalPropertyType;
                 ITypeSymbol argument;
+                bool isUnsupported = false;
 
                 var collectionType = propertyType.CollectionType.ToString(); //TODO Need to change
 
@@ -223,6 +283,7 @@ namespace {classInfo.Namespace}
                         classInfo.Diagnostics.Add(
                             Diagnostics.DictionaryWithNonStringKeys(classInfo.Name, propertySymbol.Name,
                             keyArgument.ToReadableName(), valueArgument.ToReadableName(), propertyLocation));
+                        isUnsupported = true;
                     }
 
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(valueArgument);
@@ -238,6 +299,7 @@ namespace {classInfo.Namespace}
                     if (propertyType.IsSet && internalPropertyType.SimpleType == SimpleTypeEnum.Object && argument.IsEmbeddedObject())
                     {
                         classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
+                        isUnsupported = true;
                     }
 
                     propertyType.InternalType = internalPropertyType;
@@ -246,15 +308,23 @@ namespace {classInfo.Namespace}
                 if (argument.IsRealmInteger())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
+                    isUnsupported = true;
                 }
                 else if (internalPropertyType.IsUnsupported)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionType, argument.ToReadableName(), propertyLocation));
+                    isUnsupported = true;
                 }
 
-                if (propertySyntax.AccessorList.Accessors.Any(SyntaxKind.SetAccessorDeclaration))
+                if (propertySyntax.HasSetter())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionWithSetter(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
+                    isUnsupported = true;
+                }
+
+                if (isUnsupported)
+                {
+                    return PropertyTypeInfo.Unsupported;
                 }
             }
 
@@ -289,6 +359,7 @@ namespace {classInfo.Namespace}
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
                 INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,
+                INamedTypeSymbol when typeSymbol.Name == "IQueryable" => PropertyTypeInfo.Dictionary,
                 _ => PropertyTypeInfo.Unsupported
             };
 
@@ -401,6 +472,25 @@ namespace {classInfo.Namespace}
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
             return symbol.ToDisplayString(symbolDisplayFormat);
+        }
+
+        public static bool IsAutomaticProperty(this PropertyDeclarationSyntax propertySyntax)
+        {
+            // This means the property has explicit getter and/or setter
+            if (propertySyntax.AccessorList != null)
+            {
+                // Body is "classic" curly brace body
+                // ExpressionBody is =>
+                return !propertySyntax.AccessorList.Accessors.Any(a => a.Body != null | a.ExpressionBody != null);
+            }
+
+            // This means the body is => (propertySyntax.ExpressionBody != null)
+            return false;
+        }
+
+        public static bool HasSetter(this PropertyDeclarationSyntax propertySyntax)
+        {
+            return propertySyntax.AccessorList.Accessors.Any(SyntaxKind.SetAccessorDeclaration);
         }
 
         public static Location GetLocation(this SyntaxNode node)

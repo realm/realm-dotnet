@@ -81,6 +81,12 @@ namespace Realm.SourceGenerator
             SimpleTypeEnum.Guid,
         };
 
+        private static HashSet<SimpleTypeEnum?> _requiredTypes = new()
+        {
+            SimpleTypeEnum.String,
+            SimpleTypeEnum.Data,
+        };
+
         public bool IsCollection => CollectionType != null;
 
         public bool IsSimpleType => SimpleType != null;
@@ -99,9 +105,11 @@ namespace Realm.SourceGenerator
 
         public virtual bool IsRealmInteger { get; set; } = false;
 
+        public virtual bool IsIQueryable { get; set; } = false;
+
         public virtual bool IsNullable { get; set; } = false;
 
-        public virtual string TypeString { get; set; } = null;  //TODO Need to decide what to do with this...
+        public virtual string TypeString => TypeSymbol.ToDisplayString(); //TODO Check if correct
 
         public virtual PropertyTypeInfo InternalType { get; set; } = null;
 
@@ -131,8 +139,6 @@ namespace Realm.SourceGenerator
 
         public static PropertyTypeInfo Object => new SimpleTypeInfo(SimpleTypeEnum.Object);
 
-        public static PropertyTypeInfo LinkingObjects => new SimpleTypeInfo(SimpleTypeEnum.LinkingObjects);
-
         public static PropertyTypeInfo RealmValue => new SimpleTypeInfo(SimpleTypeEnum.RealmValue);
 
         public static PropertyTypeInfo ObjectId => new SimpleTypeInfo(SimpleTypeEnum.ObjectId);
@@ -142,6 +148,8 @@ namespace Realm.SourceGenerator
         public static PropertyTypeInfo Guid => new SimpleTypeInfo(SimpleTypeEnum.Guid);
 
         public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
+
+        public static PropertyTypeInfo IQueryable => new IQueryableTypeInfo();
 
         public bool IsSupportedIndexType()
         {
@@ -165,7 +173,12 @@ namespace Realm.SourceGenerator
 
         internal bool IsSupportedRequiredType()
         {
-            throw new NotImplementedException();
+            if (IsCollection)
+            {
+                return InternalType.IsSupportedRequiredType();
+            }
+
+            return _requiredTypes.Contains(SimpleType);
         }
 
         public sealed override string ToString()
@@ -209,30 +222,26 @@ namespace Realm.SourceGenerator
     internal record ListTypeInfo : CollectionTypeInfo
     {
         public override CollectionTypeEnum? CollectionType => CollectionTypeEnum.List;
-
-        public override string TypeString => $"IList<{InternalType.TypeString}>";
     }
 
     internal record SetTypeInfo : CollectionTypeInfo
     {
         public override CollectionTypeEnum? CollectionType => CollectionTypeEnum.Set;
-
-        public override string TypeString => $"ISet<{InternalType.TypeString}>";
     }
 
     internal record DictionaryTypeInfo : CollectionTypeInfo
     {
         public override CollectionTypeEnum? CollectionType => CollectionTypeEnum.Dictionary;
-
-        public override string TypeString => $"IDictionary<string,{InternalType.TypeString}>";
     }
 
     internal record RealmIntegerTypeInfo : PropertyTypeInfo
     {
         public override bool IsRealmInteger => true;
+    }
 
-        public override string TypeString => $"RealmInteger<{InternalType.TypeString}>";  //TODO Need to check for nullability
-
+    internal record IQueryableTypeInfo : PropertyTypeInfo
+    {
+        public override bool IsIQueryable => true;
     }
 
     internal record SimpleTypeInfo : PropertyTypeInfo
@@ -260,7 +269,6 @@ namespace Realm.SourceGenerator
         Float = 5,
         Double = 6,
         Object = 7,
-        LinkingObjects = 8,
         RealmValue = 9,
         ObjectId = 10,
         Decimal = 11,

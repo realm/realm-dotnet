@@ -167,6 +167,19 @@ namespace Realm.SourceGenerator
             return Diagnostic.Create(descriptor, location);
         }
 
+        public static Diagnostic IQueryableUnsupportedType(string className, string propertyName, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("REALM001",
+                "IQueryable property is not a realm object",
+                $"{className}.{propertyName} is of type IQueryable, but the argument is not a realm object.",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true);
+
+            return Diagnostic.Create(descriptor, location);
+        }
+
         public static Diagnostic RealmIntegerTypeUnsupported(string className, string propertyName, string internalType, Location location)
         {
             DiagnosticDescriptor descriptor = new
@@ -239,12 +252,12 @@ namespace Realm.SourceGenerator
             return Diagnostic.Create(descriptor, location);
         }
 
-        public static Diagnostic ListWithoutInterface(string className, string propertyName, string genericType, Location location)
+        public static Diagnostic ListWithoutInterface(string className, string propertyName, Location location)
         {
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "List properties must be declared as IList",
-                $"{className}.{propertyName} is declared as List<{genericType}> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<{genericType}>, otherwise annotate the property with the [Ignored] attribute.",
+                $"{className}.{propertyName} is declared as List which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList, otherwise annotate the property with the [Ignored] attribute.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
@@ -257,19 +270,6 @@ namespace Realm.SourceGenerator
                 ("REALM001",
                 "DateTime is not supported",
                 $"{className}.{propertyName} is a DateTime which is not supported - use DateTimeOffset instead.",
-                "RealmClassGeneration",
-                DiagnosticSeverity.Error,
-                true);
-
-            return Diagnostic.Create(descriptor, location);
-        }
-
-        public static Diagnostic NullableDateTimeNotSupported(string className, string propertyName, Location location)
-        {
-            DiagnosticDescriptor descriptor = new
-                ("REALM001",
-                "DateTime? is not supported",
-                $"{className}.{propertyName} is a DateTime? which is not supported - use DateTimeOffset? instead.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
