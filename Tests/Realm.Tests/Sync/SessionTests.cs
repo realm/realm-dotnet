@@ -224,7 +224,7 @@ namespace Realms.Tests.Sync
                     errorTcs.TrySetResult(err);
                 };
 
-                config.ClientResetHandler = GetClientResetHandler(handlerType, fallback, beforeCb: null, afterCb: null, manualCb);
+                config.ClientResetHandler = GetClientResetHandler(handlerType, fallback, manualCb: manualCb);
 
                 using (var realm = await GetRealmAsync(config))
                 {
@@ -1522,13 +1522,6 @@ namespace Realms.Tests.Sync
             _sessionErrorHandlers.DrainQueue(handler => Session.Error -= handler);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        }
-
-        public interface IClientResetHandler
-        {
-            ClientResetHandlerBase BuildHandler(BeforeResetCallback beforeCb = null,
-                                                AfterResetCallback afterCb = null,
-                                                ClientResetCallback manualCb = null);
         }
 
         private static ClientResetHandlerBase GetClientResetHandler(

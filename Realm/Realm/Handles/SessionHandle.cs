@@ -287,7 +287,7 @@ namespace Realms.Sync
 
                     if (syncConfig.ClientResetHandler is DiscardLocalResetHandler ||
                         syncConfig.ClientResetHandler is AutomaticRecoveryHandler ||
-                        syncConfig.ClientResetHandler?.ManualClientReset != null)
+                        syncConfig.ClientResetHandler.ManualClientReset != null)
                     {
                         syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
                     }
