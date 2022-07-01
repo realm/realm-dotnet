@@ -27,7 +27,7 @@ namespace Realm.SourceGenerator
         public static Diagnostic UnexpectedError(string className, string message, string stackTrace)
         {
             DiagnosticDescriptor descriptor = new
-                ("REALM001",
+                ("RLM001",
                 "Unexpcted error during source generation",
                 $"There was an unexpected error during source generation of class {className}",
                 "RealmClassGeneration",
@@ -42,9 +42,37 @@ namespace Realm.SourceGenerator
         public static Diagnostic ClassUnclearDefinition(string className, Location location)
         {
             DiagnosticDescriptor descriptor = new
-                ("REALM001",
+                ("RLM002",
                 "Realm classes cannot implement both class interfaces",
-                $"{className} is declared as implementing both IRealmObject and IEmbeddedObject",
+                $"Class {className} is declared as implementing both IRealmObject and IEmbeddedObject",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true
+                );
+
+            return Diagnostic.Create(descriptor, location);
+        }
+
+        public static Diagnostic ClassNotPartial(string className, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("RLM003",
+                "Realm classes need to be defined as partial",
+                $"Class {className} is a Realm class but it is not declared as partial",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true
+                );
+
+            return Diagnostic.Create(descriptor, location);
+        }
+
+        public static Diagnostic ClassWithBaseType(string className, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("RLM004",
+                "Realm classes cannot derive from other classes",
+                $"{className} derives from another class and this is not yet supported",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true
@@ -56,7 +84,7 @@ namespace Realm.SourceGenerator
         public static Diagnostic ObjectWithNoProperties(string className, Location location)
         {
             DiagnosticDescriptor descriptor = new
-                ("REALM001",
+                ("RLM005",
                 "Realm objects need to have properties",
                 $"Class {className} is a Realm object but has no persisted properties",
                 "RealmClassGeneration",
@@ -69,7 +97,7 @@ namespace Realm.SourceGenerator
         public static Diagnostic MultiplePrimaryKeys(string className, Location location)
         {
             DiagnosticDescriptor descriptor = new
-                ("REALM001",
+                ("RLM006",
                 "Realm classes cannot have multiple primary keys",
                 $"Class {className} has more than one property marked with [PrimaryKey].",
                 "RealmClassGeneration",

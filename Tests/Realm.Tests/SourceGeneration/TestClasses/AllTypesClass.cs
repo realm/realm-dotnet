@@ -27,31 +27,31 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
     public class AllTypesClass : RealmObject
     {
-        public char CharProperty { get; set; }
+        //public char CharProperty { get; set; }
 
-        public byte ByteProperty { get; set; }
+        //public byte ByteProperty { get; set; }
 
-        public short Int16Property { get; set; }
+        //public short Int16Property { get; set; }
 
-        public int Int32Property { get; set; }
+        //public int Int32Property { get; set; }
 
-        public long Int64Property { get; set; }
+        //public long Int64Property { get; set; }
 
-        public float SingleProperty { get; set; }
+        //public float SingleProperty { get; set; }
 
-        public double DoubleProperty { get; set; }
+        //public double DoubleProperty { get; set; }
 
-        public bool BooleanProperty { get; set; }
+        //public bool BooleanProperty { get; set; }
 
-        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+        //public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
-        public decimal DecimalProperty { get; set; }
+        //public decimal DecimalProperty { get; set; }
 
-        public Decimal128 Decimal128Property { get; set; }
+        //public Decimal128 Decimal128Property { get; set; }
 
-        public ObjectId ObjectIdProperty { get; set; }
+        //public ObjectId ObjectIdProperty { get; set; }
 
-        public Guid GuidProperty { get; set; }
+        //public Guid GuidProperty { get; set; }
 
         [Required]
         public string RequiredStringProperty { get; set; }

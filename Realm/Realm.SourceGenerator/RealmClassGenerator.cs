@@ -28,13 +28,31 @@ namespace Realm.SourceGenerator
             {
                 try
                 {
+                    if (classSymbol.HasAttribute("IgnoredAttribute"))
+                    {
+                        continue;
+                    }
+
+                    if (!classSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+                    {
+                        context.ReportDiagnostic(Diagnostics.ClassNotPartial(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        continue;
+                    }
+
+                    if (classSymbol.BaseType.SpecialType != SpecialType.System_Object)
+                    {
+                        // We will expand this later
+                        context.ReportDiagnostic(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        continue;
+                    }
+
                     var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
 
                     var isEmbedded = classSymbol.IsEmbeddedObject();
 
                     if (isEmbedded && classSymbol.IsRealmObject())
                     {
-                        context.ReportDiagnostic(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                         continue;
                     }
 
@@ -49,6 +67,7 @@ namespace Realm.SourceGenerator
 
                     //Properties
                     var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+                    //By using the property syntax, what happens if the class is partial? What happens if it derives from another class?
 
                     FillPropertyInfo(semanticModel, classInfo, propertiesSyntax);
 
@@ -56,12 +75,12 @@ namespace Realm.SourceGenerator
 
                     if (!classInfo.Properties.Any())
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ObjectWithNoProperties(classInfo.Name, classSyntax.GetLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.ObjectWithNoProperties(classInfo.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     if (classInfo.Properties.Count(p => p.IsPrimaryKey) > 1)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
@@ -174,7 +193,19 @@ namespace {classInfo.Namespace}
                         classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
 
-                    //TODO Need to check that the types are correct
+                    var backlinkType = info.TypeInfo.InternalType.TypeSymbol;
+                    var inversePropertyName = info.Backlink;
+                    var inverseProperty = backlinkType.GetMembers(inversePropertyName).FirstOrDefault() as IPropertySymbol;
+                    var inversePropertyTypeInfo = inverseProperty == null ? null : GetSingleLevelPropertyTypeInfo(inverseProperty.Type);
+
+                    var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo.TypeSymbol, info.TypeInfo.TypeSymbol);
+                    var isCollectionOfSameType = inversePropertyTypeInfo.IsListOrSet 
+                        && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo.InternalType.TypeSymbol, info.TypeInfo.TypeSymbol);
+
+                    if (inversePropertyTypeInfo == null || (!isSameType && !isCollectionOfSameType))
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.BacklinkWrongRelationship(classInfo.Name, info.Name, backlinkType.Name, inversePropertyName, propSyntax.GetLocation()));
+                    }
                 }
 
                 if (info.IsPrimaryKey)
@@ -214,7 +245,7 @@ namespace {classInfo.Namespace}
 
             if (propertyType.IsUnsupported)
             {
-                var namedSymbol = propertySymbol as INamedTypeSymbol;
+                var namedSymbol = propertySymbol as INamedTypeSymbol;  //TODO Not sure I need this...
 
                 if (namedSymbol?.SpecialType == SpecialType.System_DateTime)
                 {
@@ -333,6 +364,9 @@ namespace {classInfo.Namespace}
 
         private PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
         {
+            //https://stackoverflow.com/questions/63629923/how-to-check-if-nullable-reference-types-are-on-in-a-net-5-source-generator 
+            //We should add support for nullability context
+            //To test we can use directives
             bool isNullable = false;
             if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
             {
@@ -493,9 +527,11 @@ namespace {classInfo.Namespace}
             return propertySyntax.AccessorList.Accessors.Any(SyntaxKind.SetAccessorDeclaration);
         }
 
-        public static Location GetLocation(this SyntaxNode node)
+        public static Location GetIdentifierLocation(this ClassDeclarationSyntax cds)
         {
-            return Location.Create(node.SyntaxTree, node.Span);
+            // If we return the location on the ClassDeclarationSyntax, then the whole class will be selected.
+            // "Identifier" points only to the class name
+            return cds.Identifier.GetLocation();
         }
     }
 
