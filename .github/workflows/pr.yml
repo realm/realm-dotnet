@@ -88,8 +88,8 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       framework: '["net6.0"]'
-  test-xamarinmacos:
-    uses: ./.github/workflows/test-xamarinmacos.yml
+  test-macos:
+    uses: ./.github/workflows/test-macos.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
