@@ -34,6 +34,8 @@ namespace Realm.SourceGenerator
 
         public Accessibility Accessibility { get; set; }
 
+        public ITypeSymbol TypeSymbol { get; set; }
+
         public List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
 
         public List<Diagnostic> Diagnostics { get; set; } = new List<Diagnostic>();
@@ -152,7 +154,7 @@ namespace Realm.SourceGenerator
 
         public static PropertyTypeInfo IQueryable => new IQueryableTypeInfo();
 
-        public bool IsSupportedIndexType()
+        public bool IsSupportedIndexedType()
         {
             if (IsNullable)
             {
@@ -161,7 +163,7 @@ namespace Realm.SourceGenerator
 
             if (IsRealmInteger)
             {
-                return InternalType.IsSupportedIndexType();
+                return InternalType.IsSupportedIndexedType();
             }
 
             return _indexableTypes.Contains(SimpleType);
@@ -262,17 +264,17 @@ namespace Realm.SourceGenerator
 
     internal enum SimpleTypeEnum
     {
-        Int = 0,
-        Bool = 1,
-        String = 2,
-        Data = 3,
-        Date = 4,
-        Float = 5,
-        Double = 6,
-        Object = 7,
-        RealmValue = 9,
-        ObjectId = 10,
-        Decimal = 11,
-        Guid = 12,
+        Int,
+        Bool,
+        String,
+        Data,
+        Date,
+        Float,
+        Double,
+        Object,
+        RealmValue,
+        ObjectId,
+        Decimal,
+        Guid,
     }
 }

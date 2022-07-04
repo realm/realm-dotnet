@@ -63,6 +63,7 @@ namespace Realm.SourceGenerator
                     classInfo.Name = classSymbol.Name;
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
+                    classInfo.TypeSymbol = classSymbol;
                     classInfo.IsEmbedded = isEmbedded;
 
                     //Properties
@@ -93,51 +94,51 @@ namespace Realm.SourceGenerator
                         continue;
                     }
 
-//                    //Code generation
-//                    var builder = new StringBuilder();
+                    //                    //Code generation
+                    //                    var builder = new StringBuilder();
 
-//                    //TODO Do we need the copyright...?
-//                    builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
-//// //
-//// // Copyright 2022 Realm Inc.
-//// //
-//// // Licensed under the Apache License, Version 2.0 (the ""License"")
-//// // you may not use this file except in compliance with the License.
-//// // You may obtain a copy of the License at
-//// //
-//// // http://www.apache.org/licenses/LICENSE-2.0
-//// //
-//// // Unless required by applicable law or agreed to in writing, software
-//// // distributed under the License is distributed on an ""AS IS"" BASIS,
-//// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//// // See the License for the specific language governing permissions and
-//// // limitations under the License.
-//// //
-//// ////////////////////////////////////////////////////////////////////////////");
+                    //                    //TODO Do we need the copyright...?
+                    //                    builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
+                    //// //
+                    //// // Copyright 2022 Realm Inc.
+                    //// //
+                    //// // Licensed under the Apache License, Version 2.0 (the ""License"")
+                    //// // you may not use this file except in compliance with the License.
+                    //// // You may obtain a copy of the License at
+                    //// //
+                    //// // http://www.apache.org/licenses/LICENSE-2.0
+                    //// //
+                    //// // Unless required by applicable law or agreed to in writing, software
+                    //// // distributed under the License is distributed on an ""AS IS"" BASIS,
+                    //// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+                    //// // See the License for the specific language governing permissions and
+                    //// // limitations under the License.
+                    //// //
+                    //// ////////////////////////////////////////////////////////////////////////////");
 
-//                    //Usings
-//                    builder.AppendLine(@"
-//using System;");
+                    //                    //Usings
+                    //                    builder.AppendLine(@"
+                    //using System;");
 
 
-//                    builder.AppendLine(@$"
-//namespace {classInfo.Namespace}
-//{{
-//    {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
-//    {{
-//");
-//                    // Add properties
+                    //                    builder.AppendLine(@$"
+                    //namespace {classInfo.Namespace}
+                    //{{
+                    //    {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
+                    //    {{
+                    //");
+                    //                    // Add properties
 
-//                    builder.AppendLine(@$"
-//    }}
-//}}");
+                    //                    builder.AppendLine(@$"
+                    //    }}
+                    //}}");
 
-//                    // We could use this, but we're adding time to compilation
-//                    // It's not a full format, but it just normalizes whitespace
-//                    // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-//                    var stringCode = builder.ToString();
-//                    var sourceText = SourceText.From(stringCode, Encoding.UTF8);
-//                    context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
+                    //                    // We could use this, but we're adding time to compilation
+                    //                    // It's not a full format, but it just normalizes whitespace
+                    //                    // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+                    //                    var stringCode = builder.ToString();
+                    //                    var sourceText = SourceText.From(stringCode, Encoding.UTF8);
+                    //                    context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
 
                 }
                 catch (Exception ex)
@@ -198,9 +199,9 @@ namespace Realm.SourceGenerator
                     var inverseProperty = backlinkType.GetMembers(inversePropertyName).FirstOrDefault() as IPropertySymbol;
                     var inversePropertyTypeInfo = inverseProperty == null ? null : GetSingleLevelPropertyTypeInfo(inverseProperty.Type);
 
-                    var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo.TypeSymbol, info.TypeInfo.TypeSymbol);
-                    var isCollectionOfSameType = inversePropertyTypeInfo.IsListOrSet 
-                        && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo.InternalType.TypeSymbol, info.TypeInfo.TypeSymbol);
+                    var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.TypeSymbol, classInfo.TypeSymbol);
+                    var isCollectionOfSameType = inversePropertyTypeInfo?.IsListOrSet == true
+                        && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.InternalType.TypeSymbol, classInfo.TypeSymbol);
 
                     if (inversePropertyTypeInfo == null || (!isSameType && !isCollectionOfSameType))
                     {
@@ -221,7 +222,7 @@ namespace Realm.SourceGenerator
                     }
                 }
 
-                if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexType())
+                if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexedType())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                 }
@@ -245,15 +246,13 @@ namespace Realm.SourceGenerator
 
             if (propertyType.IsUnsupported)
             {
-                var namedSymbol = propertySymbol as INamedTypeSymbol;  //TODO Not sure I need this...
-
-                if (namedSymbol?.SpecialType == SpecialType.System_DateTime)
+                if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
-                else if (namedSymbol.Name == "List") //TODO Check if correct
+                else if (propertySymbol.Type.Name == "List")
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.ListWithoutInterface(classInfo.Name, propertySymbol.Name,  propertyLocation));
+                    classInfo.Diagnostics.Add(Diagnostics.ListWithoutInterface(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
                 else
                 {
@@ -265,11 +264,12 @@ namespace Realm.SourceGenerator
 
             if (propertyType.IsRealmInteger)
             {
-                var argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
+                var argument = (propertyType.TypeSymbol as INamedTypeSymbol).TypeArguments.Single();
 
                 if (!argument.IsValidRealmIntgerType())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.IQueryableUnsupportedType(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    classInfo.Diagnostics.Add(Diagnostics.RealmIntegerTypeUnsupported(classInfo.Name, propertySymbol.Name,
+                        argument.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), propertyLocation));
                     return PropertyTypeInfo.Unsupported;
                 }
 
@@ -393,15 +393,12 @@ namespace Realm.SourceGenerator
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
                 INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,
-                INamedTypeSymbol when typeSymbol.Name == "IQueryable" => PropertyTypeInfo.Dictionary,
+                INamedTypeSymbol when typeSymbol.Name == "IQueryable" => PropertyTypeInfo.IQueryable,
                 _ => PropertyTypeInfo.Unsupported
             };
 
-            if (!propInfo.IsUnsupported)
-            {
-                propInfo.TypeSymbol = typeSymbol;
-                propInfo.IsNullable = isNullable;
-            }
+            propInfo.TypeSymbol = typeSymbol;
+            propInfo.IsNullable = isNullable;
 
             return propInfo;
         }
@@ -431,17 +428,10 @@ namespace Realm.SourceGenerator
             return symbol.GetAttributes().Any(a => a.AttributeClass.Name == attributeName);
         }
 
-        // TODO We could remove this and use directly strings, it would be more efficient probably
-        public static bool HasAttribute<T>(this ISymbol symbol) where T : Attribute
-        {
-            var attributeName = typeof(T).Name;
-            return symbol.HasAttribute(attributeName);
-        }
-
         public static object GetAttributeArgument(this ISymbol symbol, string attributeName)
         {
             var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == attributeName);
-            return attribute?.NamedArguments[0].Value.Value;
+            return attribute?.ConstructorArguments[0].Value;
         }
 
         public static bool IsValidIntegerType(this ITypeSymbol symbol)
