@@ -93,51 +93,51 @@ namespace Realm.SourceGenerator
                         continue;
                     }
 
-                    //Code generation
-                    var builder = new StringBuilder();
+//                    //Code generation
+//                    var builder = new StringBuilder();
 
-                    //TODO Do we need the copyright...?
-                    builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
-// //
-// // Copyright 2022 Realm Inc.
-// //
-// // Licensed under the Apache License, Version 2.0 (the ""License"")
-// // you may not use this file except in compliance with the License.
-// // You may obtain a copy of the License at
-// //
-// // http://www.apache.org/licenses/LICENSE-2.0
-// //
-// // Unless required by applicable law or agreed to in writing, software
-// // distributed under the License is distributed on an ""AS IS"" BASIS,
-// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// // See the License for the specific language governing permissions and
-// // limitations under the License.
-// //
-// ////////////////////////////////////////////////////////////////////////////");
+//                    //TODO Do we need the copyright...?
+//                    builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
+//// //
+//// // Copyright 2022 Realm Inc.
+//// //
+//// // Licensed under the Apache License, Version 2.0 (the ""License"")
+//// // you may not use this file except in compliance with the License.
+//// // You may obtain a copy of the License at
+//// //
+//// // http://www.apache.org/licenses/LICENSE-2.0
+//// //
+//// // Unless required by applicable law or agreed to in writing, software
+//// // distributed under the License is distributed on an ""AS IS"" BASIS,
+//// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//// // See the License for the specific language governing permissions and
+//// // limitations under the License.
+//// //
+//// ////////////////////////////////////////////////////////////////////////////");
 
-                    //Usings
-                    builder.AppendLine(@"
-using System;");
+//                    //Usings
+//                    builder.AppendLine(@"
+//using System;");
 
 
-                    builder.AppendLine(@$"
-namespace {classInfo.Namespace}
-{{
-    {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
-    {{
-");
-                    // Add properties
+//                    builder.AppendLine(@$"
+//namespace {classInfo.Namespace}
+//{{
+//    {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
+//    {{
+//");
+//                    // Add properties
 
-                    builder.AppendLine(@$"
-    }}
-}}");
+//                    builder.AppendLine(@$"
+//    }}
+//}}");
 
-                    // We could use this, but we're adding time to compilation
-                    // It's not a full format, but it just normalizes whitespace
-                    // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-                    var stringCode = builder.ToString();
-                    var sourceText = SourceText.From(stringCode, Encoding.UTF8);
-                    context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
+//                    // We could use this, but we're adding time to compilation
+//                    // It's not a full format, but it just normalizes whitespace
+//                    // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+//                    var stringCode = builder.ToString();
+//                    var sourceText = SourceText.From(stringCode, Encoding.UTF8);
+//                    context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
 
                 }
                 catch (Exception ex)

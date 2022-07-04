@@ -110,7 +110,7 @@ namespace Realm.SourceGenerator
 
         public virtual bool IsNullable { get; set; } = false;
 
-        public virtual string TypeString => TypeSymbol.ToDisplayString(); //TODO Check if correct
+        public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
         public virtual PropertyTypeInfo InternalType { get; set; } = null;
 

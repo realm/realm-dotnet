@@ -16,27 +16,37 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Realms;
 
 namespace Realm.SourceGeneratorTestingPlayground
 {
-    public partial class NoProperties : IRealmObject
+    public partial class MultiplePrimaryKeys : IRealmObject
     {
-        [Ignored]
-        public int IntValue { get; set; }
+        [PrimaryKey]
+        public int PrimaryKey1 { get; set; }
+
+        [PrimaryKey]
+        public int PrimaryKey2 { get; set; }
     }
 
-    [Ignored]
-    public class IgnoredClass : IRealmObject
-    { 
+    public partial class EmbeddedWithPrimaryKey : IEmbeddedObject
+    {
+        [PrimaryKey]
+        public int PrimaryKey1 { get; set; }
     }
 
-    public partial class ClassWithBaseType : IgnoredClass, IRealmObject
+    public partial class WrongTypesPrimaryKey : IEmbeddedObject
     {
-    }
+        [PrimaryKey]
+        public DateTimeOffset DateKey { get; set; }
 
-    public partial class RealmObjectAndEmbeddedObject : IRealmObject, IEmbeddedObject
-    {
+        [PrimaryKey]
+        public MultiplePrimaryKeys ObjectKey { get; set; }
     }
 
 }
