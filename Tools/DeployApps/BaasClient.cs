@@ -45,6 +45,7 @@ namespace Baas
     {
         public class FunctionReturn
         {
+            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification ="The enum is only used internally")]
             public enum Result
             {
                 success = 0,

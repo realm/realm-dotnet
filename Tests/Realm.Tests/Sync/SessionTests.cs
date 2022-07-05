@@ -50,6 +50,24 @@ namespace Realms.Tests.Sync
             new object[] { typeof(AutomaticRecoveryHandler), AutomaticRecoveryHandler.Fallback.Manual },
         };
 
+        [Preserve]
+        static SessionTests()
+        {
+            var preserveAutomaticHandler = new AutomaticRecoveryHandler
+            {
+                OnBeforeReset = (beforeFrozen) => { },
+                OnAfterReset = (beforeFrozen, after) => { },
+                ManualResetFallback = (clientResetException) => { },
+            };
+
+            var preserveDiscardLocalHandler = new DiscardLocalResetHandler
+            {
+                OnBeforeReset = (beforeFrozen) => { },
+                OnAfterReset = (beforeFrozen, after) => { },
+                ManualResetFallback = (clientResetException) => { },
+            };
+        }
+
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
         {
@@ -157,7 +175,7 @@ namespace Realms.Tests.Sync
                 {
                     onAfterTriggered = true;
                 });
-                var manualCb = GetClientResetHandler(tcs, err =>
+                var manualCb = GetManualResetHandler(tcs, err =>
                 {
                     Assert.That(err, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.False);
@@ -666,7 +684,7 @@ namespace Realms.Tests.Sync
                     onAfterResetTriggered = true;
                 });
 
-                var manualCb = GetClientResetHandler(tcs, (ex) =>
+                var manualCb = GetManualResetHandler(tcs, (ex) =>
                 {
                     Assert.That(ex, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.True);
@@ -715,7 +733,7 @@ namespace Realms.Tests.Sync
                     onAfterResetTriggered = true;
                     throw new Exception("Exception thrown in OnAfterReset");
                 };
-                var manualCb = GetClientResetHandler(tcs, (ex) =>
+                var manualCb = GetManualResetHandler(tcs, (ex) =>
                 {
                     Assert.That(ex, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.True);
@@ -1058,15 +1076,15 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(DoubleModeClientResetHandlers))]
-        public void SessionIntegrationTest_ProgressObservable((ProgressMode Mode, ClientResetHandlerBase Handler) tuple)
+        [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
+        [TestCase(ProgressMode.ReportIndefinitely)]
+        public void SessionIntegrationTest_ProgressObservable(ProgressMode mode)
         {
             const int ObjectSize = 1_000_000;
             const int ObjectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                config.ClientResetHandler = tuple.Handler;
                 using var realm = GetRealm(config);
 
                 var completionTCS = new TaskCompletionSource<ulong>();
@@ -1074,7 +1092,7 @@ namespace Realms.Tests.Sync
 
                 var session = GetSession(realm);
 
-                var observable = session.GetProgressObservable(ProgressDirection.Upload, tuple.Mode);
+                var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
 
                 for (var i = 0; i < ObjectsToRecord; i++)
                 {
@@ -1096,7 +1114,7 @@ namespace Realms.Tests.Sync
                             // throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
                         }
 
-                        if (tuple.Mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
                             if (p.TransferableBytes <= ObjectSize ||
                                 p.TransferableBytes >= (ObjectsToRecord + 2) * ObjectSize)
@@ -1123,7 +1141,7 @@ namespace Realms.Tests.Sync
 
                 var totalTransferred = await completionTCS.Task;
 
-                if (tuple.Mode == ProgressMode.ForCurrentlyOutstandingWork)
+                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                 {
                     Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
 
@@ -1599,7 +1617,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private static ClientResetCallback GetClientResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
+        private static ClientResetCallback GetManualResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
         {
             return new ClientResetCallback(clientResetException =>
             {
