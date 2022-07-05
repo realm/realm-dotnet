@@ -106,6 +106,12 @@ namespace Realms.Tests.Sync
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
+        public static async Task TriggerClientResetOnServer(User user, string appId = null)
+        {
+            var result = await user.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", user.Id, appId);
+            Assert.That(result.status, Is.EqualTo(BaasClient.FunctionReturn.Result.success));
+        }
+
         public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
             string[] remainingArgs;

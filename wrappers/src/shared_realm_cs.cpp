@@ -143,8 +143,12 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             }
         };
 
-        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, SharedRealm after, bool did_recover) {
-            if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle())) {
+        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after, bool did_recover) {
+            // TODO andrea: check if this should be resolved here or in the SDK right before calling the user's callback
+            // I need to make sure that this runs on the same thread the user's callback is called on 
+            SharedRealm afterReset = after.resolve<SharedRealm>(nullptr);
+
+            if (!s_notify_after_callback(before_frozen, afterReset, configuration_handle->handle())) {
                 throw ManagedExceptionDuringClientReset();
             }
         };
@@ -262,7 +266,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 std::vector<SchemaProperty> schema_properties;
 
                 for (auto& object : oldRealm->schema()) {
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.is_embedded));
+                    auto is_embedded = object.table_type == ObjectSchema::ObjectType::Embedded;
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, is_embedded));
                 }
 
                 SchemaForMarshaling schema_for_marshaling {
@@ -636,7 +641,8 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
         std::vector<SchemaProperty> schema_properties;
 
         for (auto& object : realm->schema()) {
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.is_embedded));
+            auto is_embedded = object.table_type == ObjectSchema::ObjectType::Embedded;
+            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, is_embedded));
         }
 
         s_get_native_schema(SchemaForMarshaling {

@@ -170,6 +170,12 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
+        protected static PartitionSyncConfiguration GetIntegrationConfig(User user, string partition = null, string optionalPath = null)
+        {
+            partition ??= Guid.NewGuid().ToString();
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
+        }
+
         protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
@@ -186,10 +192,15 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App app = null, string optionalPath = null)
+        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App app = null, string optionalPath = null, User user = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
-            var user = await GetUserAsync(app);
+            user ??= await GetUserAsync(app);
+            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string optionalPath = null)
+        {
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 

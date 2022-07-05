@@ -25,6 +25,7 @@
 #include "transport_cs.hpp"
 #include "debug.hpp"
 #include "app_cs.hpp"
+#include <stdexcept>
 
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/app_credentials.hpp>
@@ -319,8 +320,17 @@ extern "C" {
             user->log_out();
         }
 
-        while (app->sync_manager()->has_existing_sessions()) {
+        // TODO andrea: ask why this is always assumed to always finish.
+        // I took for granted that it's really bad if we can't properly finish the clean up, given that it has an endless loop.
+        // If I'm wrong, this may simply return and not throw.
+        for (int i = 0; i < 200; i++) {
+            if (!app->sync_manager()->has_existing_sessions()) break;
+
             sleep_ms(5);
+        }
+
+        if (app->sync_manager()->has_existing_sessions()) {
+            throw std::exception("The sync_manager failed to cleanup all the exiting sessions.");
         }
 
         bool did_reset = false;

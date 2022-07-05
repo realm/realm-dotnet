@@ -75,20 +75,25 @@ namespace Baas
                 };";
 
         private const string TriggerClientResetOnSyncServerFuncSource =
-            @"exports = async function() {
-              const mongodb = context.services.get('BackingDB');
-              console.log('user.id = ' + context.user.id.toString()); 
-              let deletionResult;
-              try {
-                deletionResult = await mongodb.db('__realm_sync').collection('clientfiles').deleteMany({ ownerId: context.user.id });
-                console.log('Deleted ' + deletionResult.deletedCount + ' documents');
-              } catch(err) {
-                throw 'Deletion failed: ' + err;
-              }
-              if (deletionResult.deletedCount > 0) {
-                return { status: 'success' };
-              }
-              return { status: 'failure' };
+            @"exports = async function(useId, appId = '') {
+                const mongodb = context.services.get('BackingDB');
+                console.log('user.id: ' + context.user.id); 
+                let deletionResult;
+                try {
+                  let dbName = '__realm_sync';
+                  if (appId && appId !== '')
+                  {
+                      [dbName, '_', appId].join('');
+                  }
+                  deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: useId });
+                  console.log('Deleted documents: ' + deletionResult.deletedCount);
+                } catch(err) {
+                  throw 'Deletion failed: ' + err;
+                }
+                if (deletionResult.deletedCount > 0) {
+                  return { status: 'success' };
+                }
+                return { status: 'failure' };
             };";
 
         private readonly HttpClient _client = new();
@@ -236,7 +241,7 @@ namespace Baas
 
             var result = new Dictionary<string, BaasApp>();
             await GetOrCreateApp(result, AppConfigType.Default, apps, CreateDefaultApp);
-            await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, CreateFlxApp);
+            await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, CreateDefaultFlxApp);
             await GetOrCreateApp(result, AppConfigType.IntPartitionKey, apps, name => CreatePbsApp(name, "long"));
             await GetOrCreateApp(result, AppConfigType.UUIDPartitionKey, apps, name => CreatePbsApp(name, "uuid"));
             await GetOrCreateApp(result, AppConfigType.ObjectIdPartitionKey, apps, name => CreatePbsApp(name, "objectId"));
@@ -324,6 +329,16 @@ namespace Baas
                 senderId = "gcm",
                 apiKey = "gcm",
             });
+
+            return app;
+        }
+
+        // TODO andrea: check if also the FLX app should share the same functions as the PBS one
+        private async Task<BaasApp> CreateDefaultFlxApp(string name)
+        {
+            var app = await CreateFlxApp(name);
+
+            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
             return app;
         }

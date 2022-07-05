@@ -30,7 +30,9 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
         
         ObjectSchema o;
         o.name = object.name;
-        o.is_embedded = object.is_embedded;
+        if (object.is_embedded) {
+            o.table_type = ObjectSchema::ObjectType::Embedded;
+        }
         
         for (int n = object.properties_start; n < object.properties_end; n++) {
             SchemaProperty& property = properties[n];
