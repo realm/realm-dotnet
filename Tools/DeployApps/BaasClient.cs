@@ -92,7 +92,7 @@ namespace Baas
               return { status: 'failure' };
             };";
 
-        private readonly HttpClient _client = new();
+        private readonly HttpClient _client = new ();
 
         private readonly string _clusterName;
 
