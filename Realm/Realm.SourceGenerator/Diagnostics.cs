@@ -16,7 +16,12 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
+#if DEBUG
+using Newtonsoft.Json;
+#endif
 
 namespace Realm.SourceGenerator
 {
@@ -349,5 +354,63 @@ namespace Realm.SourceGenerator
         }
 
         #endregion
+
+        public static string GetSerializedDiagnostics(IEnumerable<Diagnostic> diagnostics)
+        {
+#if DEBUG
+            var diagnosticInfos = diagnostics.Select(Convert);
+            return JsonConvert.SerializeObject(diagnosticInfos, Formatting.Indented);
+#else
+            return null;
+#endif
+        }
+
+        public static DiagnosticInfo Convert(Diagnostic diag)
+        {
+            return new DiagnosticInfo
+            {
+                Id = diag.Id,
+                Severity = diag.Severity,
+                Message = diag.GetMessage(),
+                Location = Convert(diag.Location),
+            };
+        }
+
+        public static DiagnosticLocation Convert(this Location location)
+        {
+            // The +1 are necessary because line position start counting at 0
+            var mapped = location.GetLineSpan();
+            return new DiagnosticLocation
+            {
+                StartColumn = mapped.StartLinePosition.Character + 1,
+                StartLine = mapped.StartLinePosition.Line + 1,
+                EndColumn = mapped.EndLinePosition.Character + 1,
+                EndLine = mapped.EndLinePosition.Line + 1,
+            };
+        }
+    }
+
+    internal class DiagnosticInfo
+    {
+        public string Id { get; set; }
+
+        public DiagnosticSeverity Severity { get; set; }
+
+        public string Message { get; set; }
+
+        public DiagnosticLocation Location { get; set; }
+    }
+
+    internal class DiagnosticLocation
+    {
+        public string Path { get; set; }
+
+        public int StartLine { get; set; }
+
+        public int StartColumn { get; set; }
+
+        public int EndLine { get; set; }
+
+        public int EndColumn { get; set; }
     }
 }

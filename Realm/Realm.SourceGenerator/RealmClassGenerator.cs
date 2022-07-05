@@ -84,6 +84,8 @@ namespace Realm.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetIdentifierLocation()));
                     }
 
+                    SerializeDiagnostics(context, classInfo);
+
                     classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
 
                     // In general we are collecting diagnostics as we go, we don't stop the properties extraction if we find an error
@@ -233,6 +235,15 @@ namespace Realm.SourceGenerator
                 }
 
                 classInfo.Properties.Add(info);
+            }
+        }
+
+        private void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)
+        {
+            var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
+            if (!string.IsNullOrEmpty(serializedJson))
+            {
+                context.AddSource($"{classInfo.Name}.diagnostics", SourceText.From(serializedJson, Encoding.UTF8));
             }
         }
 
@@ -401,127 +412,6 @@ namespace Realm.SourceGenerator
             propInfo.IsNullable = isNullable;
 
             return propInfo;
-        }
-    }
-
-    internal static class SymbolUtils
-    {
-        private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
-        {
-            SpecialType.System_Byte,
-            SpecialType.System_Int16,
-            SpecialType.System_Int32,
-            SpecialType.System_Int64
-        };
-
-        private static List<SpecialType> _validIntegerTypes = new()
-        {
-            SpecialType.System_Char,
-            SpecialType.System_Byte,
-            SpecialType.System_Int16,
-            SpecialType.System_Int32,
-            SpecialType.System_Int64
-        };
-
-        public static bool HasAttribute(this ISymbol symbol, string attributeName)
-        {
-            return symbol.GetAttributes().Any(a => a.AttributeClass.Name == attributeName);
-        }
-
-        public static object GetAttributeArgument(this ISymbol symbol, string attributeName)
-        {
-            var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == attributeName);
-            return attribute?.ConstructorArguments[0].Value;
-        }
-
-        public static bool IsValidIntegerType(this ITypeSymbol symbol)
-        {
-            return _validIntegerTypes.Contains(symbol.SpecialType);
-        }
-
-        public static bool IsValidRealmIntgerType(this ITypeSymbol symbol)
-        {
-            return _validRealmIntegerArgumentTypes.Contains(symbol.SpecialType);
-        }
-
-        public static bool IsRealmInteger(this ITypeSymbol symbol)
-        {
-            var namedSymbol = symbol as INamedTypeSymbol;
-
-            return namedSymbol != null && namedSymbol.IsGenericType == true
-                && namedSymbol.ConstructUnboundGenericType().ToDisplayString() == "Realms.RealmInteger<>";
-        }
-
-        public static bool IsRealmObjectBase(this ITypeSymbol symbol)
-        {
-            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObjectBase");
-        }
-
-        public static bool IsRealmObject(this ITypeSymbol symbol)
-        {
-            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObject");
-        }
-
-        public static bool IsEmbeddedObject(this ITypeSymbol symbol)
-        {
-            return symbol.AllInterfaces.Any(i => i.Name == "IEmbeddedObject");
-        }
-
-        public static string ToDisplayString(this Accessibility acc)
-        {
-            return acc switch
-            {
-                Accessibility.Private => "private",
-                Accessibility.ProtectedAndInternal => "private protected",
-                Accessibility.Protected => "protected",
-                Accessibility.Internal => "internal",
-                Accessibility.ProtectedOrInternal => "protected internal",
-                Accessibility.Public => "public",
-                _ => throw new ArgumentException("Unrecognised accessibilty")
-            };
-        }
-
-        public static string ToReadableName(this ITypeSymbol symbol)
-        {
-            //Better to have it in one place, in case we want to modify how it looks
-
-            // This has also the complete namespace
-            // We can use also ToMinimalDisplayString, but it requires the semantic model;
-            return symbol.ToDisplayString();
-        }
-
-        public static string ToFullyQualifiedName(this ITypeSymbol symbol)
-        {
-            var symbolDisplayFormat = new SymbolDisplayFormat(
-                typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
-
-            return symbol.ToDisplayString(symbolDisplayFormat);
-        }
-
-        public static bool IsAutomaticProperty(this PropertyDeclarationSyntax propertySyntax)
-        {
-            // This means the property has explicit getter and/or setter
-            if (propertySyntax.AccessorList != null)
-            {
-                // Body is "classic" curly brace body
-                // ExpressionBody is =>
-                return !propertySyntax.AccessorList.Accessors.Any(a => a.Body != null | a.ExpressionBody != null);
-            }
-
-            // This means the body is => (propertySyntax.ExpressionBody != null)
-            return false;
-        }
-
-        public static bool HasSetter(this PropertyDeclarationSyntax propertySyntax)
-        {
-            return propertySyntax.AccessorList.Accessors.Any(SyntaxKind.SetAccessorDeclaration);
-        }
-
-        public static Location GetIdentifierLocation(this ClassDeclarationSyntax cds)
-        {
-            // If we return the location on the ClassDeclarationSyntax, then the whole class will be selected.
-            // "Identifier" points only to the class name
-            return cds.Identifier.GetLocation();
         }
     }
 

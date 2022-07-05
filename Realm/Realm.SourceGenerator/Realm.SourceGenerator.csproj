@@ -1,20 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-	<AssemblyName>Realm.SourceGenerator</AssemblyName>
-	<PackageId>Realm.SourceGenerator</PackageId>
-	<Title>Realm.SourceGenerator</Title>
-	<ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
-	<CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
-	<DisableFody>true</DisableFody>
-	<NoWarn>1701;1702;NU1701</NoWarn>
-	<LangVersion>10.0</LangVersion>
-	<IsRoslynComponent>true</IsRoslynComponent>
-
-
-  </PropertyGroup>
-
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<AssemblyName>Realm.SourceGenerator</AssemblyName>
+		<PackageId>Realm.SourceGenerator</PackageId>
+		<Title>Realm.SourceGenerator</Title>
+		<ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
+		<CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
+		<DisableFody>true</DisableFody>
+		<NoWarn>1701;1702;NU1701</NoWarn>
+		<LangVersion>10.0</LangVersion>
+		<IsRoslynComponent>true</IsRoslynComponent>
+	</PropertyGroup>
 	<ItemGroup>
 		<!-- Unity does not support the latest version of CodeAnalysis.CSharp. According to the docs it should support version 3.8.0, 
 		but it works also with 3.9.0. We need to verify manually if it works also with some later versions. -->
@@ -24,24 +20,13 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-
+	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" PrivateAssets="all" GeneratePathProperty="true" />
+		<!-- Package the Newtonsoft.Json dependency alongside the generator assembly (taken from cookbook) -->
+		<None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
 	<ItemGroup>
 		<AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
 	</ItemGroup>
 	<Import Project="..\AssemblyInfo.props" />
-
-	 <!--The following is to support transient dependencies. Check https://turnerj.com/blog/the-pain-points-of-csharp-source-generators and update
-		In this case this is necessary to test source generators from the user point of view locally, not sure yet how it behaves with nuget packaging
-		Also, this is not a perfect solution.
-		On a side note, probably we can remove the dependency of this package on Realm, and the problem could go away (if we don't use other external libraries)	
-	<PropertyGroup>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-	</PropertyGroup>
-
-	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
-		<ItemGroup>
-			<TargetPathWithTargetPlatformMoniker Include="@(ResolvedCompileFileDefinitions)" IncludeRuntimeDependency="false" />
-		</ItemGroup>
-	</Target>-->
-
 </Project>
