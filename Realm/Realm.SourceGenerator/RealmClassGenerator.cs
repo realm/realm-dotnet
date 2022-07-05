@@ -243,7 +243,7 @@ namespace Realm.SourceGenerator
             var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
             if (!string.IsNullOrEmpty(serializedJson))
             {
-                context.AddSource($"{classInfo.Name}.diagnostics", SourceText.From(serializedJson, Encoding.UTF8));
+                context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
             }
         }
 
