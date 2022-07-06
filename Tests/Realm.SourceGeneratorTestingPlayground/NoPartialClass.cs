@@ -16,13 +16,16 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Realms;
 
 namespace Realm.SourceGeneratorTestingPlayground
 {
-    public partial class ClassWithBaseType : NoPropertiesClass, IRealmObject
+    public class NoPartialClass : IRealmObject
     {
     }
-
 }
-

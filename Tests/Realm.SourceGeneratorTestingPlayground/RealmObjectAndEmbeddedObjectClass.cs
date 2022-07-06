@@ -20,9 +20,7 @@ using Realms;
 
 namespace Realm.SourceGeneratorTestingPlayground
 {
-    public partial class NoPropertiesClass
-    {
-        public partial class RealmObjectAndEmbeddedObjectClass : IRealmObject, IEmbeddedObject
+    public partial class RealmObjectAndEmbeddedObjectClass : IRealmObject, IEmbeddedObject
     {
     }
 

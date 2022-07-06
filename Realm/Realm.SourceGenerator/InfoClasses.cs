@@ -59,7 +59,7 @@ namespace Realm.SourceGenerator
 
         public PropertyTypeInfo TypeInfo { get; set; }
 
-        public Accessibility Accessibility { get; set; }  //TODO At the end check if this is needed
+        public Accessibility Accessibility { get; set; }
     }
 
     internal abstract record PropertyTypeInfo
@@ -88,6 +88,16 @@ namespace Realm.SourceGenerator
             SimpleTypeEnum.Data,
         };
 
+        public virtual SimpleTypeEnum? SimpleType { get; set; } = null;
+
+        public virtual CollectionTypeEnum? CollectionType { get; set; } = null;
+
+        public virtual bool IsRealmInteger { get; set; } = false;
+
+        public virtual bool IsIQueryable { get; set; } = false;
+
+        public virtual bool IsNullable { get; set; } = false;
+
         public bool IsCollection => CollectionType != null;
 
         public bool IsListOrSet => IsList || IsSet;
@@ -101,16 +111,6 @@ namespace Realm.SourceGenerator
         public bool IsDictionary => CollectionType == CollectionTypeEnum.Dictionary;
 
         public bool IsUnsupported => this is UnsupportedTypeInfo;
-
-        public virtual SimpleTypeEnum? SimpleType { get; set; } = null;
-
-        public virtual CollectionTypeEnum? CollectionType { get; set; } = null;
-
-        public virtual bool IsRealmInteger { get; set; } = false;
-
-        public virtual bool IsIQueryable { get; set; } = false;
-
-        public virtual bool IsNullable { get; set; } = false;
 
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 

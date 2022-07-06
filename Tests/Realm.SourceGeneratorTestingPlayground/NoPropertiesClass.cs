@@ -24,5 +24,5 @@ namespace Realm.SourceGeneratorTestingPlayground
     {
         [Ignored]
         public int IntValue { get; set; }
-
+    }
 }
