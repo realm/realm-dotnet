@@ -149,6 +149,31 @@ namespace Realm.SourceGenerator
             return Diagnostic.Create(descriptor, location);
         }
 
+        public static Diagnostic RequiredWithNullability(string className, string propertyName, string propertyType, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("REALM001",
+                "[Required] cannot be used together with nullability annotations",
+                $"{className}.{propertyName} is marked as [Required], but the type {propertyType} supports nullability annotations. " +
+                $"Please use nullability annotations instead of the attribute.",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true);
+            return Diagnostic.Create(descriptor, location);
+        }
+
+        public static Diagnostic NullabilityNotSupported(string className, string propertyName, string propertyType, Location location)
+        {
+            DiagnosticDescriptor descriptor = new
+                ("REALM001",
+                "Nullability annotation is not valid for this type",
+                $"{className}.{propertyName} is of type {propertyType}, that cannot be non nullable.",
+                "RealmClassGeneration",
+                DiagnosticSeverity.Error,
+                true);
+            return Diagnostic.Create(descriptor, location);
+        }
+
         public static Diagnostic PrimaryKeyWrongType(string className, string propertyName, string propertyType, Location location)
         {
             DiagnosticDescriptor descriptor = new

@@ -3,7 +3,7 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+		<Nullable>disable</Nullable>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 	</PropertyGroup>
 	<Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />

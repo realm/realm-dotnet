@@ -96,7 +96,14 @@ namespace Realm.SourceGenerator
 
         public virtual bool IsIQueryable { get; set; } = false;
 
-        public virtual bool IsNullable { get; set; } = false;
+        // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
+        public virtual NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
+
+        public bool HasNullabilityAnnotation => NullableAnnotation == NullableAnnotation.Annotated;
+
+        public ITypeSymbol TypeSymbol { get; set; }
+
+        public virtual PropertyTypeInfo InternalType { get; set; } = null;
 
         public bool IsCollection => CollectionType != null;
 
@@ -112,11 +119,8 @@ namespace Realm.SourceGenerator
 
         public bool IsUnsupported => this is UnsupportedTypeInfo;
 
+
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-
-        public virtual PropertyTypeInfo InternalType { get; set; } = null;
-
-        public ITypeSymbol TypeSymbol { get; set; }
 
         public static PropertyTypeInfo Unsupported = new UnsupportedTypeInfo();
 
@@ -154,19 +158,29 @@ namespace Realm.SourceGenerator
 
         public static PropertyTypeInfo IQueryable => new IQueryableTypeInfo();
 
-        public bool IsSupportedIndexedType()
+        public bool IsSupportedIndexType()
         {
-            if (IsNullable)
-            {
-                return false;
-            }
-
             if (IsRealmInteger)
             {
-                return InternalType.IsSupportedIndexedType();
+                if (HasNullabilityAnnotation)
+                {
+                    return false;
+                }
+
+                return InternalType.IsSupportedIndexType();
             }
 
-            return _indexableTypes.Contains(SimpleType);
+            if (SimpleType == SimpleTypeEnum.String)
+            {
+                return true;
+            }
+
+            if (_indexableTypes.Contains(SimpleType))
+            {
+                return !HasNullabilityAnnotation;
+            }
+
+            return false;
         }
 
         public bool IsSupportedPrimaryKeyType()
@@ -191,7 +205,7 @@ namespace Realm.SourceGenerator
                 return "Unsupported";
             }
 
-            var nullabilityString = IsNullable ? "?" : "";
+            var nullabilityString = NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
             string desc;
             if (IsCollection)
             {

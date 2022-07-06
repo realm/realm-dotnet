@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Realm.SourceGenerator
 {
     [Generator]
     public class RealmClassGenerator : ISourceGenerator
     {
+        /* General notes:
+         * - We can repurpose the Weaver Tests once we have an initial generation so that we can have a feeling if it works or not
+         * The tests allow us to see if the correct methods are getting called or not
+         * - Given that we need to use the weaver anyways, maybe we can simplify the weaving process by emitting something useful from the SG.
+         * For example the schema, the list of classes to weave and so on. In case we could also add properties on the generated class, as those
+         * can be easily retrieved by the weaver (in that case we can add those to the Content of the nuget package, so it will be included in the compilation
+         * of the final project)
+         * - Check VSCode if it solves the caching issue
+         * 
+         * - The idea about testing is correct, just need to set it up
+         */
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
@@ -224,14 +233,21 @@ namespace Realm.SourceGenerator
                     }
                 }
 
-                if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexedType())
+                if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexType())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                 }
 
-                if (info.IsRequired && !info.TypeInfo.IsSupportedRequiredType())
+                if (info.IsRequired)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.RequiredWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                    if (info.TypeInfo.NullableAnnotation != NullableAnnotation.None)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.RequiredWithNullability(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                    }
+                    else if (!info.TypeInfo.IsSupportedRequiredType())
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.RequiredWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                    }
                 }
 
                 classInfo.Properties.Add(info);
@@ -245,6 +261,12 @@ namespace Realm.SourceGenerator
             var typeString = propertySyntax.Type.ToString();
 
             var propertyType = GetSingleLevelPropertyTypeInfo(typeSymbol);
+
+            // We should also check that the nullability is consistent with the type:
+            // - Objects need to be nullable (or none nullability)
+            // - Collections/IQueryable need to be non-nullable (or none nullability). What about arguments...?
+            // - RealmValue needs to be non-nullable (or none nullability)
+            // - The rest should be ok with both
 
             if (propertyType.IsUnsupported)
             {
@@ -303,7 +325,7 @@ namespace Realm.SourceGenerator
                 ITypeSymbol argument;
                 bool isUnsupported = false;
 
-                var collectionType = propertyType.CollectionType.ToString(); //TODO Need to change
+                var collectionType = propertyType.CollectionType.ToString(); //TODO Need to change?
 
                 if (propertyType.IsDictionary)
                 {
@@ -366,15 +388,18 @@ namespace Realm.SourceGenerator
 
         private PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
         {
-            //https://stackoverflow.com/questions/63629923/how-to-check-if-nullable-reference-types-are-on-in-a-net-5-source-generator 
-            //We should add support for nullability context
-            //To test we can use directives
-            bool isNullable = false;
-            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            var nullableAnnotation = typeSymbol.NullableAnnotation;
+            if (nullableAnnotation == NullableAnnotation.Annotated)
             {
-                // If nullable, we need to get the actual type
-                isNullable = true;
-                typeSymbol = (typeSymbol as INamedTypeSymbol).TypeArguments.First();
+                if (typeSymbol.Name == "Nullable")
+                {
+                    typeSymbol = (typeSymbol as INamedTypeSymbol).TypeArguments.First();
+                }
+                else
+                {
+                    //This happens only when nullability annotations are enabled
+                    typeSymbol = typeSymbol.OriginalDefinition;
+                }
             }
 
             PropertyTypeInfo propInfo = typeSymbol switch
@@ -400,7 +425,7 @@ namespace Realm.SourceGenerator
             };
 
             propInfo.TypeSymbol = typeSymbol;
-            propInfo.IsNullable = isNullable;
+            propInfo.NullableAnnotation = nullableAnnotation;
 
             return propInfo;
         }
@@ -426,7 +451,7 @@ namespace Realm.SourceGenerator
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            if (context.Node is not ClassDeclarationSyntax cds)
+            if (context.Node is not ClassDeclarationSyntax cds)// || cds.Identifier.ToString() != "TestClass")
             {
                 return;
             }
