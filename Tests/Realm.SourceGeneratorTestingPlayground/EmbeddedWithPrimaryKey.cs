@@ -20,23 +20,9 @@ using Realms;
 
 namespace Realm.SourceGeneratorTestingPlayground
 {
-    public partial class NoProperties : IRealmObject
+    public partial class EmbeddedWithPrimaryKey : IEmbeddedObject
     {
-        [Ignored]
-        public int IntValue { get; set; }
+        [PrimaryKey]
+        public int PrimaryKey1 { get; set; }
     }
-
-    [Ignored]
-    public class IgnoredClass : IRealmObject
-    { 
-    }
-
-    public partial class ClassWithBaseType : IgnoredClass, IRealmObject
-    {
-    }
-
-    public partial class RealmObjectAndEmbeddedObject : IRealmObject, IEmbeddedObject
-    {
-    }
-
 }

@@ -238,15 +238,6 @@ namespace Realm.SourceGenerator
             }
         }
 
-        private void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)
-        {
-            var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
-            if (!string.IsNullOrEmpty(serializedJson))
-            {
-                context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
-            }
-        }
-
         private PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
@@ -412,6 +403,20 @@ namespace Realm.SourceGenerator
             propInfo.IsNullable = isNullable;
 
             return propInfo;
+        }
+
+        private void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)
+        {
+            if (!classInfo.Diagnostics.Any())
+            {
+                return;
+            }
+
+            var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
+            if (!string.IsNullOrEmpty(serializedJson))
+            {
+                context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
+            }
         }
     }
 
