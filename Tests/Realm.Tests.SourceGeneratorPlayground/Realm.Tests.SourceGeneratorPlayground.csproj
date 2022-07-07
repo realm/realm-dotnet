@@ -5,10 +5,14 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
+		<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+
 	</PropertyGroup>
 	<Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
 	<ItemGroup>
+		<!-- We remove the generated files from compilation, otherwise they get added twice -->
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+
 		<ProjectReference Include="..\..\Realm\Realm.Fody\Realm.Fody.csproj" />
 		<ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\..\Realm\Realm\Realm.csproj" />

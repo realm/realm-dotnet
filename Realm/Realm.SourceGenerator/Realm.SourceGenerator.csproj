@@ -20,11 +20,22 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" PrivateAssets="all" GeneratePathProperty="true" />
-		<!-- Package the Newtonsoft.Json dependency alongside the generator assembly (taken from cookbook) -->
-		<None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+	<!-- The following are necessary because SGs have a special behaviour for transient dependencies. The solution provided in the cookbook does not work.
+	But this is what they do in their own examples: 
+	https://github.com/dotnet/roslyn-sdk/blob/main/samples/CSharp/SourceGenerators/SourceGeneratorSamples/CSharpSourceGeneratorSamples.csproj-->
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup   Condition=" '$(Configuration)' == 'Debug' ">
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
+		</ItemGroup>
+	</Target>
+	<ItemGroup   Condition=" '$(Configuration)' == 'Debug' ">
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1"  GeneratePathProperty="true" PrivateAssets="all"  />
 	</ItemGroup>
+	
 	<ItemGroup>
 		<AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
 	</ItemGroup>

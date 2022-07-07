@@ -42,17 +42,17 @@ namespace Realm.SourceGenerator
                         continue;
                     }
 
+                    var classInfo = new ClassInfo();
+
                     if (!classSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
                     {
-                        context.ReportDiagnostic(Diagnostics.ClassNotPartial(classSymbol.Name, classSyntax.GetIdentifierLocation()));
-                        continue;
+                        classInfo.Diagnostics.Add(Diagnostics.ClassNotPartial(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     if (classSymbol.BaseType.SpecialType != SpecialType.System_Object)
                     {
                         // We will expand this later
-                        context.ReportDiagnostic(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
-                        continue;
+                        classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
@@ -61,11 +61,8 @@ namespace Realm.SourceGenerator
 
                     if (isEmbedded && classSymbol.IsRealmObject())
                     {
-                        context.ReportDiagnostic(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
-                        continue;
+                        classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
-
-                    var classInfo = new ClassInfo();
 
                     //General info
                     classInfo.Namespace = classSymbol.ContainingNamespace.Name;

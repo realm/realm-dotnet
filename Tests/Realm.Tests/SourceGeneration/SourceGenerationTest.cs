@@ -42,7 +42,8 @@ namespace Realms.Tests.SourceGeneration
             var buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.Tests", StringComparison.InvariantCulture));
             TestClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
-            GeneratedFilesPath = Path.Combine(TestClassesPath, "GeneratedFiles");
+            GeneratedFilesPath = Path.Combine(TestClassesPath, "obj", "Debug", "net6.0",
+                "generated", "Realm.SourceGenerator", "Realm.SourceGenerator.RealmClassGenerator");
         }
 
         protected string GetSourceForClass(string className) =>
@@ -56,7 +57,7 @@ namespace Realms.Tests.SourceGeneration
 
         protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
-            var fileName = Path.Combine(TestClassesPath, $"{className}.diagnostics.cs");
+            var fileName = Path.Combine(GeneratedFilesPath, $"{className}.diagnostics.cs");
 
             if (!File.Exists(fileName))
             {
@@ -64,6 +65,19 @@ namespace Realms.Tests.SourceGeneration
             }
 
             return JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName));
+        }
+
+        //TODO Need to change this
+        protected string GetDiagnosticFile(string className)
+        {
+            var fileName = Path.Combine(GeneratedFilesPath, $"{className}.diagnostics.cs");
+
+            if (!File.Exists(fileName))
+            {
+                return null;
+            }
+
+            return File.ReadAllText(fileName);
         }
 
         public async Task RunSimpleComparisonTest(string className)
@@ -91,6 +105,9 @@ namespace Realms.Tests.SourceGeneration
         public async Task RunSimpleErrorTest(string className)
         {
             var source = GetSourceForClass(className);
+            var diagnosticFile = GetDiagnosticFile(className);
+            var diagnosticFileName = $"{className}.diagnostics.cs";
+
             var diagnostics = GetDiagnosticsForClass(className);
 
             var test = new RealmClassGeneratorVerifier.Test
@@ -100,6 +117,10 @@ namespace Realms.Tests.SourceGeneration
                     Sources =
                     {
                         source
+                    },
+                    GeneratedSources =
+                    {
+                        (typeof(RealmClassGenerator), diagnosticFileName, diagnosticFile),
                     },
                 },
             };
