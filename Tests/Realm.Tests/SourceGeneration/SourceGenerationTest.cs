@@ -20,10 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Newtonsoft.Json;
 using Realm.SourceGenerator;
@@ -42,8 +40,8 @@ namespace Realms.Tests.SourceGeneration
             var buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.Tests", StringComparison.InvariantCulture));
             TestClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
-            GeneratedFilesPath = Path.Combine(TestClassesPath, "obj", "Debug", "net6.0",
-                "generated", "Realm.SourceGenerator", "Realm.SourceGenerator.RealmClassGenerator");
+            GeneratedFilesPath = Path.Combine(TestClassesPath, "Generated",
+                "Realm.SourceGenerator", "Realm.SourceGenerator.RealmClassGenerator");
         }
 
         protected string GetSourceForClass(string className) =>
@@ -105,7 +103,6 @@ namespace Realms.Tests.SourceGeneration
         public async Task RunSimpleErrorTest(string className)
         {
             var source = GetSourceForClass(className);
-            var diagnosticFile = GetDiagnosticFile(className);
             var diagnosticFileName = $"{className}.diagnostics.cs";
 
             var diagnostics = GetDiagnosticsForClass(className);
@@ -117,10 +114,6 @@ namespace Realms.Tests.SourceGeneration
                     Sources =
                     {
                         source
-                    },
-                    GeneratedSources =
-                    {
-                        (typeof(RealmClassGenerator), diagnosticFileName, diagnosticFile),
                     },
                 },
             };
