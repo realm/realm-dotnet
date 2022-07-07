@@ -31,21 +31,6 @@ namespace Realms.Tests.SourceGeneration
     public class ComparisonTests : SourceGenerationTest
     {
         [Test]
-        public void SimpleGeneratorTest()
-        {
-            var diagnostics = GetDiagnostics("ClassWithNoProperties");
-
-            var jsonDiag = JsonConvert.SerializeObject(diagnostics);
-
-        }
-
-        private static Compilation CreateCompilation(string source)
-            => CSharpCompilation.Create("compilation",
-                new[] { CSharpSyntaxTree.ParseText(source) },
-                new[] { MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location) },
-                new CSharpCompilationOptions(OutputKind.ConsoleApplication));
-
-        [Test]
         public async Task SimpleTest()
         {
             await RunSimpleComparisonTest("AllTypesClass");
@@ -54,7 +39,7 @@ namespace Realms.Tests.SourceGeneration
         [Test]
         public async Task ErrorTest()
         {
-            await RunSimpleErrorTest("ClassWithNoProperties");
+            await RunSimpleErrorTest("NoPartialClass");
         }
     }
 }

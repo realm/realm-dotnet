@@ -35,11 +35,14 @@ namespace Realms.Tests.SourceGeneration
     {
         protected string TestClassesPath { get; }
 
+        protected string GeneratedFilesPath { get; }
+
         public SourceGenerationTest()
         {
             var buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-            var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("bin", StringComparison.InvariantCulture));
-            TestClassesPath = Path.Combine(testFolder, "SourceGeneration", "TestClasses");
+            var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.Tests", StringComparison.InvariantCulture));
+            TestClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
+            GeneratedFilesPath = Path.Combine(TestClassesPath, "GeneratedFiles");
         }
 
         protected string GetSourceForClass(string className) =>
@@ -53,7 +56,7 @@ namespace Realms.Tests.SourceGeneration
 
         protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
-            var fileName = Path.Combine(TestClassesPath, $"{className}.diagnostics");
+            var fileName = Path.Combine(TestClassesPath, $"{className}.diagnostics.cs");
 
             if (!File.Exists(fileName))
             {
@@ -107,43 +110,6 @@ namespace Realms.Tests.SourceGeneration
             await test.RunAsync();
         }
 
-        // Utility methods to retrieve only the list of diagnostics generated.
-        public IEnumerable<DiagnosticInfo> GetDiagnostics(string className)
-        {
-            //TODO Need to check how other libraries are working with testing sg, and diagnostics (json for example)
-            var source = GetSourceForClass(className);
-            var inputCompilation = CSharpCompilation.Create("compilation",
-                new[] { CSharpSyntaxTree.ParseText(source) },
-                new[]
-                {
-                    MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Realm).Assembly.Location)
-                },
-                new CSharpCompilationOptions(OutputKind.ConsoleApplication));
-
-            var generator = new RealmClassGenerator();
-
-            GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-
-            driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var _, out var diagnostics);
-
-            return diagnostics.Select(Convert);
-        }
-
-        // TODO All of the following works, but feels a little clumsy
-        // We can't simply serialize/deserialize Diagnostics/DiagnosticResults and some other classes (like Location)
-        // Because they either are abstract, or they have get only properties
-        public DiagnosticInfo Convert(Diagnostic diag)
-        {
-            return new DiagnosticInfo
-            {
-                Id = diag.Id,
-                Severity = diag.Severity,
-                Message = diag.GetMessage(),
-                Location = Convert(diag.Location),
-            };
-        }
-
         public DiagnosticResult Convert(DiagnosticInfo info)
         {
             var dr = new DiagnosticResult(info.Id, info.Severity)
@@ -160,19 +126,7 @@ namespace Realms.Tests.SourceGeneration
             return dr;
         }
 
-        public DiagnosticLocation Convert(Location location)
-        {
-            // The +1 are necessary because line position start counting at 0
-            var mapped = location.GetLineSpan();
-            return new DiagnosticLocation
-            {
-                StartColumn = mapped.StartLinePosition.Character + 1,
-                StartLine = mapped.StartLinePosition.Line + 1,
-                EndColumn = mapped.EndLinePosition.Character + 1,
-                EndLine = mapped.EndLinePosition.Line + 1,
-            };
-        }
-
+        //TODO Can we keep this in one place?
         public class DiagnosticInfo
         {
             public string Id { get; set; }
