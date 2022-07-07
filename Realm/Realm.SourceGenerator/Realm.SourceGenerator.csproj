@@ -28,12 +28,13 @@
 		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
 	</PropertyGroup>
 	<Target Name="GetDependencyTargetPaths">
-		<ItemGroup   Condition=" '$(Configuration)' == 'Debug' ">
-			<TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
+		<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" 
+												 IncludeRuntimeDependency="false" />
 		</ItemGroup>
 	</Target>
-	<ItemGroup   Condition=" '$(Configuration)' == 'Debug' ">
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1"  GeneratePathProperty="true" PrivateAssets="all"  />
+	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>
 	
 	<ItemGroup>
