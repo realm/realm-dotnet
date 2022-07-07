@@ -81,9 +81,9 @@ namespace Baas
                 let deletionResult;
                 try {
                   let dbName = '__realm_sync';
-                  if (appId && appId !== '')
+                  if (appId !== '')
                   {
-                      [dbName, '_', appId].join('');
+                    dbName = [dbName, '_', appId].join('');
                   }
                   deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: useId });
                   console.log('Deleted documents: ' + deletionResult.deletedCount);
@@ -404,7 +404,7 @@ namespace Baas
                 {
                     state = "enabled",
                     database_name = $"FLX_{Differentiator}",
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid" },
                     permissions = new
                     {
                         rules = new { },

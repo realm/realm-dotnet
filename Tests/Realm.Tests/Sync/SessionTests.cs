@@ -33,7 +33,6 @@ using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
-using static Baas.BaasClient;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 
 namespace Realms.Tests.Sync
@@ -325,7 +324,7 @@ namespace Realms.Tests.Sync
                 });
 
                 await DisableClientResetRecoveryOnServer(AppConfigType.Default);
-                await SyncTestHelpers.TriggerClientResetOnServer(user);
+                await SyncTestHelpers.TriggerClientResetOnServer(config);
 
                 session.Start();
                 await tcsAfterClientReset.Task;
@@ -419,7 +418,7 @@ namespace Realms.Tests.Sync
                     originalObjStr.Add("3");
                 });
 
-                await SyncTestHelpers.TriggerClientResetOnServer(user);
+                await SyncTestHelpers.TriggerClientResetOnServer(configA);
 
                 // ===== clientA =====
                 sessionA.Start();
@@ -460,18 +459,19 @@ namespace Realms.Tests.Sync
             {
                 var tcs = new TaskCompletionSource<object>();
                 var onBeforeTriggered = false;
+                var guid = new Random().Next();
 
                 var appConfig = setup.AppConfigBuilder();
                 var app = CreateApp(appConfig);
                 var user = await GetUserAsync(app);
                 var config = setup.SyncConfigBuilder(user);
 
-                if (config is FlexibleSyncConfiguration conf)
+                if (config is FlexibleSyncConfiguration flxConf)
                 {
-                    conf.PopulateInitialSubscriptions = (realm) =>
+                    flxConf.PopulateInitialSubscriptions = (realm) =>
                     {
-                        var myObjs = realm.All<ObjectWithPartitionValue>();
-                        realm.Subscriptions.Add(myObjs);
+                        var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
+                        realm.Subscriptions.Add(query);
                     };
                 }
 
@@ -493,7 +493,8 @@ namespace Realms.Tests.Sync
                     realm.Add(new ObjectWithPartitionValue
                     {
                         Id = Guid.NewGuid().ToString(),
-                        Value = alwaysSynced
+                        Value = alwaysSynced,
+                        Guid = guid
                     });
                 });
 
@@ -507,12 +508,13 @@ namespace Realms.Tests.Sync
                     {
                         Id = Guid.NewGuid().ToString(),
                         Value = maybeSynced,
+                        Guid = guid
                     });
                 });
 
                 AssertOnObjectPair(realm);
 
-                await SyncTestHelpers.TriggerClientResetOnServer(user, appConfig.AppId);
+                await SyncTestHelpers.TriggerClientResetOnServer(config);
                 session.Start();
 
                 await tcs.Task;
@@ -541,84 +543,85 @@ namespace Realms.Tests.Sync
         }
 
         [TestCaseSource(nameof(PbsAndFlexSyncClientResetHandlers))]
-        public void Session_ClientResetHandlers_Access_Realms_OnAfterReset(SyncConfigurationSetup setup)
+        public void Session_ClientResetHandlers_AccessRealms_OnAfterReset(SyncConfigurationSetup setup)
         {
             const string alwaysSynced = "always synced";
             const string maybeSynced = "deleted only on discardLocal";
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-            var tcs = new TaskCompletionSource<object>();
-            var onAfterTriggered = false;
+                var tcs = new TaskCompletionSource<object>();
+                var onAfterTriggered = false;
+                var guid = new Random().Next();
 
-            var appConfig = setup.AppConfigBuilder();
-            var app = CreateApp(appConfig);
-            var user = await GetUserAsync(app);
-            var config = setup.SyncConfigBuilder(user);
+                var appConfig = setup.AppConfigBuilder();
+                var app = CreateApp(appConfig);
+                var user = await GetUserAsync(app);
+                var config = setup.SyncConfigBuilder(user);
 
-            if (config is FlexibleSyncConfiguration conf)
-            {
-                conf.PopulateInitialSubscriptions = (realm) =>
+                if (config is FlexibleSyncConfiguration flxConf)
                 {
-                    var myObjs = realm.All<ObjectWithPartitionValue>();
-                    realm.Subscriptions.Add(myObjs);
-                };
-            }
+                    flxConf.PopulateInitialSubscriptions = (realm) =>
+                    {
+                        var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
+                        realm.Subscriptions.Add(query);
+                    };
+                }
 
-            var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
-            {
-                Assert.That(onAfterTriggered, Is.False);
-                Assert.That(beforeFrozen.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
-                AssertHelper(after);
-                onAfterTriggered = true;
-            });
-            config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback, beforeCb: null, afterCb);
-            config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-
-            using var realm = await GetRealmAsync(config);
-
-            realm.Write(() =>
-            {
-                realm.Add(new ObjectWithPartitionValue
+                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Value = alwaysSynced
+                    Assert.That(onAfterTriggered, Is.False);
+                    Assert.That(beforeFrozen.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
+                    AssertHelper(after);
+                    onAfterTriggered = true;
                 });
-            });
+                config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback, afterCb: afterCb);
+                config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
-            await WaitForUploadAsync(realm);
-            var session = GetSession(realm);
-            session.Stop();
+                using var realm = await GetRealmAsync(config);
 
-            realm.Write(() =>
-            {
-                realm.Add(new ObjectWithPartitionValue
+                realm.Write(() =>
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Value = maybeSynced,
+                    realm.Add(new ObjectWithPartitionValue
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Value = alwaysSynced,
+                        Guid = guid
+                    });
                 });
+
+                await WaitForUploadAsync(realm);
+                var session = GetSession(realm);
+                session.Stop();
+
+                realm.Write(() =>
+                {
+                    realm.Add(new ObjectWithPartitionValue
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Value = maybeSynced,
+                        Guid = guid
+                    });
+                });
+
+                await SyncTestHelpers.TriggerClientResetOnServer(config);
+
+                session.Start();
+
+                await tcs.Task;
+                Assert.That(onAfterTriggered, Is.True);
+
+                realm.Refresh();
+                AssertHelper(realm);
+
+                void AssertHelper(Realm realm)
+                {
+                    var expected = config.ClientResetHandler.ClientResetMode == ClientResyncMode.DiscardLocal ?
+                        new[] { alwaysSynced } : new[] { alwaysSynced, maybeSynced };
+
+                    Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(expected));
+                }
             });
-
-            // TODO andrea: start from here. Need to figure out what id to pass for the db name
-            await SyncTestHelpers.TriggerClientResetOnServer(user, appConfig.AppId);
-
-            session.Start();
-
-            await tcs.Task;
-            Assert.That(onAfterTriggered, Is.True);
-
-            realm.Refresh();
-
-            AssertHelper(realm);
-
-            void AssertHelper(Realm realm)
-            {
-                var expected = config.ClientResetHandler.ClientResetMode == ClientResyncMode.DiscardLocal ?
-                    new[] { alwaysSynced } : new[] { alwaysSynced, maybeSynced };
-
-                Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(expected));
-            }
-            }, 999999999);
         }
 
         [Test]
@@ -660,7 +663,7 @@ namespace Realms.Tests.Sync
                 var tcs = new TaskCompletionSource<NotifyCollectionChangedEventArgs>();
                 objects.CollectionChanged += onCollectionChanged;
 
-                await SyncTestHelpers.TriggerClientResetOnServer(config.User);
+                await SyncTestHelpers.TriggerClientResetOnServer(config);
                 session.Start();
                 await WaitForDownloadAsync(realm);
                 var args = await tcs.Task;
@@ -1785,6 +1788,8 @@ namespace Realms.Tests.Sync
 
             [MapTo("realm_id")]
             public string Partition { get; set; }
+
+            public int Guid { get; set; }
         }
 
         public class SyncObjectWithRequiredStringList : RealmObject

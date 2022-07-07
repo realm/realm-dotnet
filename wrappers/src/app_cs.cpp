@@ -330,7 +330,10 @@ extern "C" {
         }
 
         if (app->sync_manager()->has_existing_sessions()) {
-            throw std::exception("The sync_manager failed to cleanup all the exiting sessions.");
+            //throw std::exception("The sync_manager failed to cleanup all the exiting sessions.");
+            // TODO andrea: this must return because we can't reset_for_testing if there still are session in the 
+            // sync manager
+            return;
         }
 
         bool did_reset = false;
