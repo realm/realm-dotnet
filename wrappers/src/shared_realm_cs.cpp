@@ -144,8 +144,6 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         };
 
         config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after, bool did_recover) {
-            // TODO andrea: check if this should be resolved here or in the SDK right before calling the user's callback
-            // I need to make sure that this runs on the same thread the user's callback is called on 
             SharedRealm after_reset = after.resolve<SharedRealm>(nullptr);
 
             if (!s_notify_after_callback(before_frozen, after_reset, configuration_handle->handle())) {

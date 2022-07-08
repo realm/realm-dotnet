@@ -334,7 +334,6 @@ namespace Baas
             return app;
         }
 
-        // TODO andrea: check if also the FLX app should share the same functions as the PBS one
         private async Task<BaasApp> CreateDefaultFlxApp(string name)
         {
             var app = await CreateFlxApp(name);
