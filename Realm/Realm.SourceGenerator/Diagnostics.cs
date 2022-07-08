@@ -16,6 +16,7 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -382,7 +383,12 @@ namespace Realm.SourceGenerator
 
         public static string GetSerializedDiagnostics(IEnumerable<Diagnostic> diagnostics)
         {
-#if DEBUG && !TEST
+#if DEBUG
+            if (Environment.GetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS") != null)
+            {
+                return null; 
+            }
+
             var diagnosticInfos = diagnostics.Select(Convert);
             return JsonConvert.SerializeObject(diagnosticInfos, Formatting.Indented);
 #else

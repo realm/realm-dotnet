@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Newtonsoft.Json;
+using NUnit.Framework;
 using Realm.SourceGenerator;
 using RealmClassGeneratorVerifier = Realms.Tests.SourceGeneration.CSharpSourceGeneratorVerifier<Realm.SourceGenerator.RealmClassGenerator>;
 
@@ -31,31 +32,33 @@ namespace Realms.Tests.SourceGeneration
 {
     public abstract class SourceGenerationTest
     {
-        protected string TestClassesPath { get; }
+        private string _testClassesPath;
 
-        protected string GeneratedFilesPath { get; }
+        private string _generatedFilesPath;
 
-        public SourceGenerationTest()
+        [OneTimeSetUp]
+        public void Setup()
         {
             var buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.Tests", StringComparison.InvariantCulture));
-            TestClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
-            GeneratedFilesPath = Path.Combine(TestClassesPath, "Generated",
+            _testClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
+            _generatedFilesPath = Path.Combine(_testClassesPath, "Generated",
                 "Realm.SourceGenerator", "Realm.SourceGenerator.RealmClassGenerator");
+            Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
         protected string GetSourceForClass(string className) =>
-            File.ReadAllText(Path.Combine(TestClassesPath, $"{className}.cs"));
+            File.ReadAllText(Path.Combine(_testClassesPath, $"{className}.cs"));
 
         protected string GetGeneratedForClass(string className)
         {
-            var fileName = Path.Combine(TestClassesPath, $"{className}_generated.cs");
+            var fileName = Path.Combine(_testClassesPath, $"{className}_generated.cs");
             return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
         }
 
         protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
-            var fileName = Path.Combine(GeneratedFilesPath, $"{className}.diagnostics.cs");
+            var fileName = Path.Combine(_generatedFilesPath, $"{className}.diagnostics.cs");
 
             if (!File.Exists(fileName))
             {
@@ -65,10 +68,9 @@ namespace Realms.Tests.SourceGeneration
             return JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName));
         }
 
-        //TODO Need to change this
         protected string GetDiagnosticFile(string className)
         {
-            var fileName = Path.Combine(GeneratedFilesPath, $"{className}.diagnostics.cs");
+            var fileName = Path.Combine(_generatedFilesPath, $"{className}.diagnostics.cs");
 
             if (!File.Exists(fileName))
             {
@@ -78,6 +80,7 @@ namespace Realms.Tests.SourceGeneration
             return File.ReadAllText(fileName);
         }
 
+        //TODO Probably it makes sense to make methods that can accept multiple class names (in case there are multiple classes in the same file)
         public async Task RunSimpleComparisonTest(string className)
         {
             var source = GetSourceForClass(className);
@@ -100,6 +103,7 @@ namespace Realms.Tests.SourceGeneration
             }.RunAsync();
         }
 
+        //TODO Probably I can make a generic method and make thise and the previous in relation to that
         public async Task RunSimpleErrorTest(string className)
         {
             var source = GetSourceForClass(className);
@@ -118,13 +122,12 @@ namespace Realms.Tests.SourceGeneration
                 },
             };
 
-            //TODO Can we write it better?
             test.TestState.ExpectedDiagnostics.AddRange(diagnostics.Select(Convert));
 
             await test.RunAsync();
         }
 
-        public DiagnosticResult Convert(DiagnosticInfo info)
+        public static DiagnosticResult Convert(DiagnosticInfo info)
         {
             var dr = new DiagnosticResult(info.Id, info.Severity)
                 .WithMessage(info.Message);
@@ -140,7 +143,7 @@ namespace Realms.Tests.SourceGeneration
             return dr;
         }
 
-        //TODO Can we keep this in one place?
+        //TODO Can we keep this in one place? (it's in the source generators project)
         public class DiagnosticInfo
         {
             public string Id { get; set; }
