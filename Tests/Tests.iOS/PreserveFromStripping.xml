@@ -1,6 +1,0 @@
-<linker>
-	<assembly fullname="Realm">
-		<type fullname="AutomaticRecoveryHandler" preserve="fields"/>
-		<type fullname="DiscardLocalResetHandler" preserve="fields"/>
-	</assembly>
-</linker>

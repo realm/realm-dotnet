@@ -58,7 +58,10 @@ namespace Realms.Sync.ErrorHandling
             DiscardLocal = 1,
         }
 
-        internal Fallback FallbackStrategy { get; private set; }
+        /// <summary>
+        /// Gets the <see cref="Fallback"/> strategy chosen by the <see cref="AutomaticRecoveryHandler"/>.
+        /// </summary>
+        public Fallback FallbackStrategy { get; private set; }
 
         internal override ClientResyncMode ClientResetMode =>
             FallbackStrategy == Fallback.DiscardLocal ? ClientResyncMode.AutomaticRecoveryOrDiscardLocal : ClientResyncMode.AutomaticRecovery;

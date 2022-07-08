@@ -49,6 +49,24 @@ namespace Realms.Tests.Sync
             new object[] { typeof(AutomaticRecoveryHandler), AutomaticRecoveryHandler.Fallback.Manual },
         };
 
+        [Preserve]
+        static SessionTests()
+        {
+            var preserveAutomaticHandler = new AutomaticRecoveryHandler
+            {
+                OnBeforeReset = (beforeFrozen) => { },
+                OnAfterReset = (beforeFrozen, after) => { },
+                ManualResetFallback = (clientResetException) => { },
+            };
+
+            var preserveDiscardLocalHandler = new DiscardLocalResetHandler
+            {
+                OnBeforeReset = (beforeFrozen) => { },
+                OnAfterReset = (beforeFrozen, after) => { },
+                ManualResetFallback = (clientResetException) => { },
+            };
+        }
+
         public static readonly string[] AppTypes = new[]
         {
             AppConfigType.Default,
@@ -166,7 +184,7 @@ namespace Realms.Tests.Sync
                 {
                     onAfterTriggered = true;
                 });
-                var manualCb = GetClientResetHandler(tcs, err =>
+                var manualCb = GetManualResetHandler(tcs, err =>
                 {
                     Assert.That(err, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.False);
@@ -238,7 +256,7 @@ namespace Realms.Tests.Sync
                     errorTcs.TrySetResult(err);
                 };
 
-                config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback, beforeCb: null, afterCb: null, manualCb);
+                config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback, manualCb: manualCb);
 
                 using (var realm = await GetRealmAsync(config))
                 {
@@ -717,7 +735,7 @@ namespace Realms.Tests.Sync
                     onAfterResetTriggered = true;
                 });
 
-                var manualCb = GetClientResetHandler(tcs, (ex) =>
+                var manualCb = GetManualResetHandler(tcs, (ex) =>
                 {
                     Assert.That(ex, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.True);
@@ -770,7 +788,7 @@ namespace Realms.Tests.Sync
                     onAfterResetTriggered = true;
                     throw new Exception("Exception thrown in OnAfterReset");
                 };
-                var manualCb = GetClientResetHandler(tcs, (ex) =>
+                var manualCb = GetManualResetHandler(tcs, (ex) =>
                 {
                     Assert.That(ex, Is.InstanceOf<ClientResetException>());
                     Assert.That(onBeforeTriggered, Is.True);
@@ -943,7 +961,7 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 };
 
-                config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback, beforeCb: null, afterCb: null, manualCb);
+                config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback, manualCb: manualCb);
 
                 using var realm = await GetRealmAsync(config);
 
@@ -1622,13 +1640,6 @@ namespace Realms.Tests.Sync
 
         }
 
-        public interface IClientResetHandler
-        {
-            ClientResetHandlerBase BuildHandler(BeforeResetCallback beforeCb = null,
-                                                AfterResetCallback afterCb = null,
-                                                ClientResetCallback manualCb = null);
-        }
-
         private static ClientResetHandlerBase GetClientResetHandler(
             Type type,
             AutomaticRecoveryHandler.Fallback? fallback,
@@ -1704,7 +1715,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private static ClientResetCallback GetClientResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
+        private static ClientResetCallback GetManualResetHandler(TaskCompletionSource<object> tcs, Action<ClientResetException> assertions)
         {
             return new ClientResetCallback(clientResetException =>
             {
