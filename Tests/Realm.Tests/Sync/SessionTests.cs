@@ -1127,8 +1127,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // TODO andrea: add tests for flx subscription on how data is automatically recovered during a client reset (look into subscription interactions
-
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void SessionIntegrationTest_ProgressObservable(ProgressMode mode)
