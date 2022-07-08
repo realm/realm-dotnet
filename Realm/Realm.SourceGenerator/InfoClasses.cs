@@ -122,7 +122,7 @@ namespace Realm.SourceGenerator
 
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
-        public static PropertyTypeInfo Unsupported = new UnsupportedTypeInfo();
+        public static PropertyTypeInfo Unsupported => new UnsupportedTypeInfo();
 
         public static PropertyTypeInfo List => new ListTypeInfo();
 
@@ -188,7 +188,7 @@ namespace Realm.SourceGenerator
             return _primaryKeyTypes.Contains(SimpleType);
         }
 
-        internal bool IsSupportedRequiredType()
+        public bool IsSupportedRequiredType()
         {
             if (IsListOrSet)
             {
@@ -197,6 +197,24 @@ namespace Realm.SourceGenerator
 
             return _requiredTypes.Contains(SimpleType);
         }
+
+        public bool SupportsNullability()
+        {
+            if (NullableAnnotation == NullableAnnotation.Annotated &&
+                (IsCollection || IsIQueryable || SimpleType == SimpleTypeEnum.RealmValue))
+            {
+                return false;
+            }
+
+            if (NullableAnnotation == NullableAnnotation.NotAnnotated &&
+                (SimpleType == SimpleTypeEnum.Object))
+            {
+                return false;
+            }
+
+            return true;
+        }
+        
 
         public sealed override string ToString()
         {

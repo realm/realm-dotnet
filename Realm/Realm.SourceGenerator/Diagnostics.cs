@@ -167,7 +167,7 @@ namespace Realm.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "Nullability annotation is not valid for this type",
-                $"{className}.{propertyName} is of type {propertyType}, that cannot be non nullable.",
+                $"{className}.{propertyName} has type {propertyType}, that does not support the assigned nullability annotiation.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 true);
@@ -382,7 +382,7 @@ namespace Realm.SourceGenerator
 
         public static string GetSerializedDiagnostics(IEnumerable<Diagnostic> diagnostics)
         {
-#if DEBUG
+#if DEBUG && !TEST
             var diagnosticInfos = diagnostics.Select(Convert);
             return JsonConvert.SerializeObject(diagnosticInfos, Formatting.Indented);
 #else

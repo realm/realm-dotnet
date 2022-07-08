@@ -259,12 +259,6 @@ namespace Realm.SourceGenerator
 
             var propertyType = GetSingleLevelPropertyTypeInfo(typeSymbol);
 
-            // We should also check that the nullability is consistent with the type:
-            // - Objects need to be nullable (or none nullability)
-            // - Collections/IQueryable need to be non-nullable (or none nullability). What about arguments...?
-            // - RealmValue needs to be non-nullable (or none nullability)
-            // - The rest should be ok with both
-
             if (propertyType.IsUnsupported)
             {
                 if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
@@ -281,6 +275,11 @@ namespace Realm.SourceGenerator
                 }
 
                 return propertyType;  //We are sure we can't produce more diagnostics
+            }
+
+            if (!propertyType.SupportsNullability())
+            {
+                classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
             if (propertyType.IsRealmInteger)
