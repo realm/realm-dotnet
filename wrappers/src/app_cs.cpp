@@ -320,7 +320,7 @@ extern "C" {
             user->log_out();
         }
 
-        // TODO andrea: ask why this is always assumed to always finish.
+        // TODO andrea: ask why this is assumed to always finish.
         // I took for granted that it's really bad if we can't properly finish the clean up, given that it has an endless loop.
         // If I'm wrong, this may simply return and not throw.
         for (int i = 0; i < 200; i++) {
@@ -330,7 +330,7 @@ extern "C" {
         }
 
         if (app->sync_manager()->has_existing_sessions()) {
-            // TODO andrea: is a return just fine here?
+            // TODO andrea: is returning just fine here?
             return;
         }
 
