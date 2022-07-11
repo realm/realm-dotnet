@@ -25,7 +25,6 @@
 #include "transport_cs.hpp"
 #include "debug.hpp"
 #include "app_cs.hpp"
-#include <stdexcept>
 
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/app_credentials.hpp>
@@ -321,8 +320,7 @@ extern "C" {
         }
 
         // TODO andrea: ask why this is assumed to always finish.
-        // I took for granted that it's really bad if we can't properly finish the clean up, given that it has an endless loop.
-        // If I'm wrong, this may simply return and not throw.
+        // How bad is it if we can't properly finish the clean up?
         for (int i = 0; i < 200; i++) {
             if (!app->sync_manager()->has_existing_sessions()) break;
 

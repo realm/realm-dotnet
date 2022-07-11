@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added support in flexible sync for all the new client reset handlers (`AutomaticRecoveryHandler` and `DiscardLocalResetHandler`). (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
 * Added a client reset handler, `AutomaticRecoveryHandler`, that tries to automatically merge the unsynced local changes with the remote ones in the event of a client reset. You can set a fallback strategy that kicks-in in case the automatic merge can't be performed as per your server's rules. This new stragegy simplifies even more the handling of a client reset event when compared to `DiscardLocalResetHandler` and is going to be the default from now on. An example is as follows
   ```cs

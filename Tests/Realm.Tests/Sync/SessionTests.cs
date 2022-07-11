@@ -171,10 +171,7 @@ namespace Realms.Tests.Sync
                 var manualResetFallbackHandled = false;
                 var tcs = new TaskCompletionSource<object>();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -245,10 +242,7 @@ namespace Realms.Tests.Sync
                 var manualResetFallbackHandled = false;
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 ClientResetCallback manualCb = (err) =>
                 {
@@ -280,10 +274,7 @@ namespace Realms.Tests.Sync
                 var onAfterTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -477,12 +468,9 @@ namespace Realms.Tests.Sync
             {
                 var tcs = new TaskCompletionSource<object>();
                 var onBeforeTriggered = false;
-                var guid = new Random().Next();
+                var guid = Guid.NewGuid();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 if (config is FlexibleSyncConfiguration flxConf)
                 {
@@ -570,12 +558,9 @@ namespace Realms.Tests.Sync
             {
                 var tcs = new TaskCompletionSource<object>();
                 var onAfterTriggered = false;
-                var guid = new Random().Next();
+                var guid = Guid.NewGuid();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 if (config is FlexibleSyncConfiguration flxConf)
                 {
@@ -708,10 +693,7 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 BeforeResetCallback beforeCb = beforeFrozen =>
                 {
@@ -768,10 +750,7 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -853,10 +832,7 @@ namespace Realms.Tests.Sync
                 var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -906,10 +882,7 @@ namespace Realms.Tests.Sync
             {
                 var obsoleteSessionErrorTriggered = false;
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, setup.Fallback);
                 using var realm = await GetRealmAsync(config);
@@ -944,10 +917,7 @@ namespace Realms.Tests.Sync
                 var errorMsg = "simulated client reset failure";
                 var tcs = new TaskCompletionSource<object>();
 
-                var appConfig = setup.AppConfigBuilder();
-                var app = CreateApp(appConfig);
-                var user = await GetUserAsync(app);
-                var config = setup.SyncConfigBuilder(user);
+                var config = await setup.BuildConfiguration(this);
 
                 ClientResetCallback manualCb = (err) =>
                 {
@@ -1628,6 +1598,19 @@ namespace Realms.Tests.Sync
             public Type HandlerType { get; set; }
 
             public AutomaticRecoveryHandler.Fallback? Fallback { get; set; }
+
+            public async Task<SyncConfigurationBase> BuildConfiguration(SessionTests testInstance)
+            {
+                var appConfig = AppConfigBuilder();
+                var app = (App)typeof(SessionTests).GetMethod(nameof(SessionTests.CreateApp),
+                    BindingFlags.NonPublic | BindingFlags.Instance).Invoke(testInstance, new object[] { appConfig });
+
+                string username = null;
+                string password = null;
+                var user = await (Task<User>)typeof(SessionTests).GetMethod(nameof(SessionTests.GetUserAsync),
+                    BindingFlags.NonPublic | BindingFlags.Instance).Invoke(testInstance, new object[] { app, username, password });
+                return SyncConfigBuilder(user);
+            }
         }
 
         protected override void CustomTearDown()
@@ -1798,7 +1781,7 @@ namespace Realms.Tests.Sync
             [MapTo("realm_id")]
             public string Partition { get; set; }
 
-            public int Guid { get; set; }
+            public Guid Guid { get; set; }
         }
 
         public class SyncObjectWithRequiredStringList : RealmObject
