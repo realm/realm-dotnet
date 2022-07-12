@@ -94,60 +94,13 @@ namespace Realm.SourceGenerator
 
                     classInfo.Diagnostics.ForEach(context.ReportDiagnostic);
 
-                    // In general we are collecting diagnostics as we go, we don't stop the properties extraction if we find an error
-                    // I think it makes sense to give all possible diagnostics error on the first run (no need to correct and run again)
-
                     if (classInfo.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
                     {
                         continue;
                     }
 
-                    //                    //Code generation
-                    //                    var builder = new StringBuilder();
-
-                    //                    //TODO Do we need the copyright...?
-                    //                    builder.Append(@"// ////////////////////////////////////////////////////////////////////////////
-                    //// //
-                    //// // Copyright 2022 Realm Inc.
-                    //// //
-                    //// // Licensed under the Apache License, Version 2.0 (the ""License"")
-                    //// // you may not use this file except in compliance with the License.
-                    //// // You may obtain a copy of the License at
-                    //// //
-                    //// // http://www.apache.org/licenses/LICENSE-2.0
-                    //// //
-                    //// // Unless required by applicable law or agreed to in writing, software
-                    //// // distributed under the License is distributed on an ""AS IS"" BASIS,
-                    //// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-                    //// // See the License for the specific language governing permissions and
-                    //// // limitations under the License.
-                    //// //
-                    //// ////////////////////////////////////////////////////////////////////////////");
-
-                    //                    //Usings
-                    //                    builder.AppendLine(@"
-                    //using System;");
-
-
-                    //                    builder.AppendLine(@$"
-                    //namespace {classInfo.Namespace}
-                    //{{
-                    //    {classInfo.Accessibility.ToDisplayString()} partial class {classInfo.Name} : IRealmObject
-                    //    {{
-                    //");
-                    //                    // Add properties
-
-                    //                    builder.AppendLine(@$"
-                    //    }}
-                    //}}");
-
-                    //                    // We could use this, but we're adding time to compilation
-                    //                    // It's not a full format, but it just normalizes whitespace
-                    //                    // var formattedSourceText = CSharpSyntaxTree.ParseText(builder.ToString(), encoding: Encoding.UTF8).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-                    //                    var stringCode = builder.ToString();
-                    //                    var sourceText = SourceText.From(stringCode, Encoding.UTF8);
-                    //                    context.AddSource($"{classInfo.Name}_generated.cs", sourceText);
-
+                    var generatedFile = Generator.GenerateSource(classInfo);
+                    context.AddSource($"{classInfo.Name}_generated.cs", generatedFile);
                 }
                 catch (Exception ex)
                 {
@@ -437,27 +390,6 @@ namespace Realm.SourceGenerator
             if (!string.IsNullOrEmpty(serializedJson))
             {
                 context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
-            }
-        }
-    }
-
-    internal class SyntaxContextReceiver : ISyntaxContextReceiver
-    {
-        public IList<(ClassDeclarationSyntax, ITypeSymbol)> RealmClasses { get; } = new List<(ClassDeclarationSyntax, ITypeSymbol)>();
-
-        public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-        {
-            if (context.Node is not ClassDeclarationSyntax cds)// || cds.Identifier.ToString() != "TestClass")
-            {
-                return;
-            }
-
-            var classSymbol = context.SemanticModel.GetDeclaredSymbol(cds) as ITypeSymbol;
-
-            //This looks for the interfaces of the base class too (recursively)
-            if (classSymbol.IsRealmObject() || classSymbol.IsEmbeddedObject())
-            {
-                RealmClasses.Add((cds, classSymbol));
             }
         }
     }

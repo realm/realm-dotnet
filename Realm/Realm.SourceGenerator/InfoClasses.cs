@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Realm.SourceGenerator
@@ -39,6 +40,8 @@ namespace Realm.SourceGenerator
         public List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
 
         public List<Diagnostic> Diagnostics { get; set; } = new List<Diagnostic>();
+
+        public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
 
     internal record PropertyInfo

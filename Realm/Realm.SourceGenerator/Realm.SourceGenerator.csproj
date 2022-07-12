@@ -29,8 +29,7 @@
 	</PropertyGroup>
 	<Target Name="GetDependencyTargetPaths">
 		<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-			<TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" 
-												 IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
 		</ItemGroup>
 	</Target>
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
