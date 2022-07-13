@@ -99,7 +99,8 @@ namespace Realm.SourceGenerator
                         continue;
                     }
 
-                    var generatedFile = Generator.GenerateSource(classInfo);
+                    var generator = new Generator(classInfo);
+                    var generatedFile = generator.GenerateSource();
                     context.AddSource($"{classInfo.Name}_generated.cs", generatedFile);
                 }
                 catch (Exception ex)
@@ -389,6 +390,7 @@ namespace Realm.SourceGenerator
             var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
             if (!string.IsNullOrEmpty(serializedJson))
             {
+                //TODO Need to remove the comments later during testing
                 context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
             }
         }
