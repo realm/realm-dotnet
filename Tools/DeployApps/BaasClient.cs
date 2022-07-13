@@ -420,7 +420,10 @@ namespace Baas
             var syncDoc = config.Contains("flexible_sync") ? config["flexible_sync"] : config["sync"];
             syncDoc["is_recovery_mode_disabled"] = !enabled;
 
-            await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", config);
+            var fragment = new BsonDocument();
+            fragment["sync"] = syncDoc;
+
+            await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
 
         private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
