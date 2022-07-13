@@ -26,10 +26,10 @@ namespace Realm.SourceGenerator
     {
         private ClassInfo _classInfo;
 
-        private string helperClassName;
-        private string accessorInterfaceName;
-        private string managedAccessorClassName;
-        private string unmanagedAccessorClassName;
+        private string _helperClassName;
+        private string _accessorInterfaceName;
+        private string _managedAccessorClassName;
+        private string _unmanagedAccessorClassName;
 
         private readonly string _copyrightString = @"// ////////////////////////////////////////////////////////////////////////////
 // //
@@ -47,38 +47,60 @@ namespace Realm.SourceGenerator
 // // See the License for the specific language governing permissions and
 // // limitations under the License.
 // //
-// ////////////////////////////////////////////////////////////////////////////
-";
+// ////////////////////////////////////////////////////////////////////////////";
 
         public Generator(ClassInfo classInfo)
         {
             _classInfo = classInfo;
 
-            helperClassName = $"{_classInfo.Name}ObjectHelper";
-            accessorInterfaceName = $"I{_classInfo.Name}Accessor";
-            managedAccessorClassName = $"{_classInfo.Name}ManagedAccessor";
-            unmanagedAccessorClassName = $"{_classInfo.Name}UnmanagedAccessor";
+            _helperClassName = $"{_classInfo.Name}ObjectHelper";
+            _accessorInterfaceName = $"I{_classInfo.Name}Accessor";
+            _managedAccessorClassName = $"{_classInfo.Name}ManagedAccessor";
+            _unmanagedAccessorClassName = $"{_classInfo.Name}UnmanagedAccessor";
         }
+
+        private const string sourceString = @"
+{0}
+
+{1}
+
+namespace {2}
+{{
+    {3}
+}}
+
+namespace Realm.Generated
+{{
+    {4}
+
+    {5}
+
+    {6}
+
+    {7}
+}}
+";
 
         public string GenerateSource()
         {
-            var usings = @"
-using System.ComponentModel;
-using Realms;
-using Realms.Weaving;
-";
+            var copyright = string.Format(_copyrightString, DateTime.Now.Year);
 
+            var usings = @$"using System.ComponentModel;
+using Realms;
+using Realms.Weaving;";
+
+            var partialClassString = GeneratePartialClass();
             var interfaceString = GenerateInterface();
             var managedAccessorString = GenerateManagedAccessor();
             var unmanagedAccessorString = GeneratedUnmanagedAccessor();
             var objectHelperString = GenerateClassObjectHelper();
 
-
-            return usings + interfaceString + managedAccessorString + unmanagedAccessorString + objectHelperString;
+            return string.Format(sourceString, copyright, usings, _classInfo.Namespace,
+                partialClassString, objectHelperString, interfaceString,
+                managedAccessorString, unmanagedAccessorString);
         }
 
-        private const string _accessorInterfaceString = @"
-    [EditorBrowsable(EditorBrowsableState.Never)]
+        private const string _accessorInterfaceString = @"[EditorBrowsable(EditorBrowsableState.Never)]
     internal interface {0} : IRealmAccessor
     {{
         {1}
@@ -97,19 +119,17 @@ using Realms.Weaving;
 
                 var propertyString = $"{type} {name} {{ get;{setterString}}}";
                 propertiesBuilder.AppendLine(propertyString);
-                propertiesBuilder.AppendLine();
             }
 
-            return string.Format(_accessorInterfaceString, accessorInterfaceName, propertiesBuilder.ToString());
+            return string.Format(_accessorInterfaceString, _accessorInterfaceName, propertiesBuilder.ToString());
         }
 
         private string GeneratePartialClass()
         {
-            return null;
+            return "";
         }
 
-        private const string _objectHelperString = @"
-    [EditorBrowsable(EditorBrowsableState.Never)]
+        private const string _objectHelperString = @"[EditorBrowsable(EditorBrowsableState.Never)]
     internal class {0} : IRealmObjectHelper
     {{
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -137,21 +157,20 @@ using Realms.Weaving;
 
             if (primaryKeyProperty != null)
             {
-                var valueString = $"value = (({accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name};";
+                var valueString = $"value = (({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name};";
                 tryGetPrimaryKeyBody = $@"{valueString}
-                return true;";
+            return true;";
             }
             else
             {
-                tryGetPrimaryKeyBody = "return false";
+                tryGetPrimaryKeyBody = @"value = null;
+            return false;";
             }
 
-            return string.Format(_objectHelperString, helperClassName, managedAccessorClassName, _classInfo.Name, tryGetPrimaryKeyBody);
+            return string.Format(_objectHelperString, _helperClassName, _managedAccessorClassName, _classInfo.Name, tryGetPrimaryKeyBody);
         }
 
-        private const string _unmanagedAccesorString = @"
-    internal class {0}
-        : UnmanagedAccessor, {1}
+        private const string _unmanagedAccesorString = @"internal class {0} : UnmanagedAccessor, {1}
     {{
         {2}
 
@@ -187,8 +206,7 @@ using Realms.Weaving;
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {{
             {8}
-        }}
-";
+    }}";
 
         private string GeneratedUnmanagedAccessor()
         {
@@ -200,8 +218,10 @@ using Realms.Weaving;
             var getSetValueLines = new StringBuilder();
             var getDictionaryValueLines = new StringBuilder();
 
-            foreach (var property in _classInfo.Properties)
+            for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
+                var isNotFirst = i != 0;
+                var property = _classInfo.Properties[i];
                 var name = property.Name;
                 var backingFieldName = "_" + char.ToLowerInvariant(name[0]) + name.Substring(1);
                 var type = property.TypeInfo.TypeString;
@@ -229,23 +249,26 @@ using Realms.Weaving;
                 RaisePropertyChanged(""{stringName}"");
             }}
         }}";
+                    //TODO Need to distinguish between non-collection and collection, because we don't know what's the first
+                    if(isNotFirst)
+                    {
+                        propertiesString.AppendLine();
+                    }
+
                     propertiesString.AppendLine(backingFieldString);
-                    propertiesString.AppendLine(propertyString);
+                    propertiesString.Append(propertyString);
 
                     //GetValue
                     getValueLines.Append(@$"""{stringName}"" => {backingFieldName},");
 
                     //SetValue/SetValueUnique
-                    setValueLines.Append($@"
-                    case ""{stringName}"":");
+                    setValueLines.Append($@"case ""{stringName}"":");
 
                     if (property.IsPrimaryKey)
                     {
-                        setValueLines.AppendLine($@"
-                        throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue.You need to use SetValueUnique"");");
+                        setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue.You need to use SetValueUnique"");");
 
-                        setValueUniqueLines.AppendLine($@"
-                        if (propertyName != ""{stringName}"")
+                        setValueUniqueLines.AppendLine($@"if (propertyName != ""{stringName}"")
                         {{
                             throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");
                         }}
@@ -255,8 +278,7 @@ using Realms.Weaving;
                     }
                     else
                     {
-                        setValueLines.AppendLine($@"
-                        {name} = ({type})val;
+                        setValueLines.AppendLine($@"{name} = ({type})val;
                         return;");
                     }
                 }
@@ -269,39 +291,35 @@ using Realms.Weaving;
 
             //GetValue
 
-            var getValueBody = $@"
-            return propertyName switch
+            var getValueBody = $@"return propertyName switch
             {{
                 {getValueLines}
-                => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}"");
-            }}
-        ";
+                => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
+            }};";
 
             //SetValue
 
-            var setValueBody = $@"
-            switch (propertyName)
+            var setValueBody = $@"switch (propertyName)
             {{
                 {setValueLines}
                 default:
                         throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");
-            }}
-        ";
+            }}";
 
             //SetValueUnique
 
             if (setValueUniqueLines.Length == 0)
             {
-                setValueUniqueLines.AppendLine(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");");
+                setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");");
             }
 
-            var setValueUniqueBody = getDictionaryValueLines.ToString();
+            var setValueUniqueBody = setValueUniqueLines.ToString();
 
             //GetListValue
 
             if (getListValueLines.Length == 0)
             {
-                getListValueLines.AppendLine(@"throw new MissingMemberException($""The object does not have a Realm list property with name { propertyName}"");");
+                getListValueLines.Append(@"throw new MissingMemberException($""The object does not have a Realm list property with name { propertyName}"");");
             }
 
             var getListValueBody = getListValueLines.ToString();
@@ -311,7 +329,7 @@ using Realms.Weaving;
 
             if (getSetValueLines.Length == 0)
             {
-                getSetValueLines.AppendLine(@"throw new MissingMemberException($""The object does not have a Realm set property with name { propertyName}"");");
+                getSetValueLines.Append(@"throw new MissingMemberException($""The object does not have a Realm set property with name { propertyName}"");");
             }
 
             var getSetValueBody = getSetValueLines.ToString();
@@ -321,31 +339,31 @@ using Realms.Weaving;
 
             if (getDictionaryValueLines.Length == 0)
             {
-                getDictionaryValueLines.AppendLine(@"throw new MissingMemberException($""The object does not have a Realm dictionary property with name { propertyName}"");");
+                getDictionaryValueLines.Append(@"throw new MissingMemberException($""The object does not have a Realm dictionary property with name { propertyName}"");");
             }
 
             var getDictionaryBody = getDictionaryValueLines.ToString();
 
-            return string.Format(_unmanagedAccesorString, unmanagedAccessorClassName, accessorInterfaceName,
+            return string.Format(_unmanagedAccesorString, _unmanagedAccessorClassName, _accessorInterfaceName,
                 propertyBody, getValueBody, setValueBody, setValueUniqueBody,
                 getListValueBody, getSetValueBody, getDictionaryBody);
 
         }
 
-        private const string _managedAccessorString = @"
-    [EditorBrowsable(EditorBrowsableState.Never)]
+        private const string _managedAccessorString = @"[EditorBrowsable(EditorBrowsableState.Never)]
     internal class {0} : ManagedAccessor, {1}
     {{
         {2}
-    }}
-";
+    }}";
 
         private string GenerateManagedAccessor()
         {
             var propertiesBuilder = new StringBuilder();
 
-            foreach (var property in _classInfo.Properties)
+            for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
+                var isNotFirst = i != 0;
+                var property = _classInfo.Properties[i];
                 var type = property.TypeInfo.TypeString;
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
@@ -360,20 +378,23 @@ using Realms.Weaving;
                     var getterString = $@"get => ({type})GetValue(""{stringName}"");";
 
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
-                    var setterString = $@"set => {setterMethod}(""{stringName}"", value)";
+                    var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
 
-                    var propertyString = @$"
-        public {type} {name}
+                    var propertyString = @$"public {type} {name}
         {{
             {getterString}
             {setterString}
-        }}
-";
+        }}";
+                    if (isNotFirst)
+                    {
+                        propertiesBuilder.AppendLine();
+                    }
+
                     propertiesBuilder.Append(propertyString);
                 }
             }
 
-            return string.Format(_managedAccessorString,  managedAccessorClassName, accessorInterfaceName, propertiesBuilder.ToString());
+            return string.Format(_managedAccessorString,  _managedAccessorClassName, _accessorInterfaceName, propertiesBuilder.ToString());
         }
     }
 }
