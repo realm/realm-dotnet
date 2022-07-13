@@ -16,19 +16,34 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class RealmIntegerErrors : IRealmObject
+    public partial class UnsupportedIndexableTypes : IRealmObject
     {
-        public RealmInteger<char> RealmIntegerCharProp { get; set; }
+        [Indexed]
+        public RealmInteger<int>? NullableRealmIntegerProp { get; set; }
 
-        public RealmInteger<DateTime> RealmIntegerUnsupportedProp { get; set; }
+        [Indexed]
+        public byte[] ByteArrayProp { get; set; }
+
+        [Indexed]
+        public float FloatProp { get; set; }
+
+        [Indexed]
+        public double DoubleProp { get; set; }
+
+        [Indexed]
+        public MultiplePrimaryKeys ObjectProp { get; set; }
+
+        [Indexed]
+        public RealmValue RealmvalueProp { get; set; }
+
+        [Indexed]
+        public decimal DecimalProp { get; set; }
+
+        [Indexed]
+        public int[] UnsupportedProp { get; set; }
     }
 }

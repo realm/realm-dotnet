@@ -18,19 +18,14 @@
 
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class BacklinkClass : IRealmObject
+    public partial class MultiplePrimaryKeys : IRealmObject
     {
-        public UnsupportedBacklink InverseLink { get; set; }
-    }
+        [PrimaryKey]
+        public int PrimaryKey1 { get; set; }
 
-    public partial class UnsupportedBacklink : IRealmObject
-    {
-        [Backlink("WrongPropertyName")]
-        public IQueryable<BacklinkClass> WrongBacklinkProp { get; }
-
-        [Backlink(nameof(BacklinkClass.InverseLink))]
-        public IQueryable<BacklinkClass> CorrectBacklinkProp { get; }
+        [PrimaryKey]
+        public int PrimaryKey2 { get; set; }
     }
 }

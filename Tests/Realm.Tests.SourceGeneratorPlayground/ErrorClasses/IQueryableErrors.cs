@@ -18,11 +18,16 @@
 
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class RealmObjectAndEmbeddedObjectClass : IRealmObject, IEmbeddedObject
+    public partial class IQueryableErrors : IRealmObject
     {
+        public IQueryable<char> QueryableOfUnsupported { get; }
+
+        public IQueryable<OtherObject> QueryableWithGetters { get; set; }
     }
 
+    public partial class OtherObject : IRealmObject
+    {
+    }
 }
-

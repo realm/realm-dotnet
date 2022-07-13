@@ -16,23 +16,13 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class IQueryableErrors : IRealmObject
+    public partial class NoPropertiesClass : IRealmObject
     {
-        public IQueryable<char> QueryableOfUnsupported { get; }
-
-        public IQueryable<OtherObject> QueryableWithGetters { get; set; }
-    }
-
-    public partial class OtherObject : IRealmObject
-    {
+        [Ignored]
+        public int IntValue { get; set; }
     }
 }

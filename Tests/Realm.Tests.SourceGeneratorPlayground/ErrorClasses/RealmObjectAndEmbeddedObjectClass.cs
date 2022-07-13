@@ -16,30 +16,13 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class TestClass : IRealmObject
+    public partial class RealmObjectAndEmbeddedObjectClass : IRealmObject, IEmbeddedObject
     {
-        //public int IntProp { get; set; }
-
-        //public string StringPropClassic { get; set; }
-
-#nullable enable
-        //public string StringPropNew { get; set; }
-
-        //public byte[]? NullableByte { get; set; }
-
-        //public int? NullableInt { get; set; }
-
-        public string? StringPropNullable { get; set; }
-
-        public IList<string?>? TestDarling;
     }
+
 }
+

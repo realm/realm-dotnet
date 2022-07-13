@@ -23,9 +23,23 @@ using System.Text;
 using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public class NoPartialClass : IRealmObject
+    public partial class TestClass : IRealmObject
     {
+        //public int IntProp { get; set; }
+
+        //public string StringPropClassic { get; set; }
+
+#nullable enable
+        //public string StringPropNew { get; set; }
+
+        //public byte[]? NullableByte { get; set; }
+
+        //public int? NullableInt { get; set; }
+
+        public string? StringPropNullable { get; set; }
+
+        public IList<string?>? TestDarling;
     }
 }

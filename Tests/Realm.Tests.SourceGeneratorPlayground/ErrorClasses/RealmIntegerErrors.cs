@@ -16,13 +16,19 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class NoPropertiesClass : IRealmObject
+    public partial class RealmIntegerErrors : IRealmObject
     {
-        [Ignored]
-        public int IntValue { get; set; }
+        public RealmInteger<char> RealmIntegerCharProp { get; set; }
+
+        public RealmInteger<DateTime> RealmIntegerUnsupportedProp { get; set; }
     }
 }

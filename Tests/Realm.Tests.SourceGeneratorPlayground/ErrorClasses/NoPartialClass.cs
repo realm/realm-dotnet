@@ -16,16 +16,16 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class MultiplePrimaryKeys : IRealmObject
+    public class NoPartialClass : IRealmObject
     {
-        [PrimaryKey]
-        public int PrimaryKey1 { get; set; }
-
-        [PrimaryKey]
-        public int PrimaryKey2 { get; set; }
     }
 }

@@ -19,7 +19,7 @@
 using MongoDB.Bson;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
     public partial class UnsupportedRequiredTypes : IRealmObject
     {

@@ -18,32 +18,19 @@
 
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace Realm.Tests.SourceGeneratorPlayground
 {
-    public partial class UnsupportedIndexableTypes : IRealmObject
+    public partial class BacklinkClass : IRealmObject
     {
-        [Indexed]
-        public RealmInteger<int>? NullableRealmIntegerProp { get; set; }
+        public UnsupportedBacklink InverseLink { get; set; }
+    }
 
-        [Indexed]
-        public byte[] ByteArrayProp { get; set; }
+    public partial class UnsupportedBacklink : IRealmObject
+    {
+        [Backlink("WrongPropertyName")]
+        public IQueryable<BacklinkClass> WrongBacklinkProp { get; }
 
-        [Indexed]
-        public float FloatProp { get; set; }
-
-        [Indexed]
-        public double DoubleProp { get; set; }
-
-        [Indexed]
-        public MultiplePrimaryKeys ObjectProp { get; set; }
-
-        [Indexed]
-        public RealmValue RealmvalueProp { get; set; }
-
-        [Indexed]
-        public decimal DecimalProp { get; set; }
-
-        [Indexed]
-        public int[] UnsupportedProp { get; set; }
+        [Backlink(nameof(BacklinkClass.InverseLink))]
+        public IQueryable<BacklinkClass> CorrectBacklinkProp { get; }
     }
 }
