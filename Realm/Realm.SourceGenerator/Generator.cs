@@ -66,18 +66,18 @@ namespace Realm.SourceGenerator
 
 namespace {2}
 {{
-    {3}
+{3}
 }}
 
 namespace Realm.Generated
 {{
-    {4}
+{4}
 
-    {5}
+{5}
 
-    {6}
+{6}
 
-    {7}
+{7}
 }}
 ";
 
@@ -100,7 +100,7 @@ using Realms.Weaving;";
                 managedAccessorString, unmanagedAccessorString);
         }
 
-        private const string _accessorInterfaceString = @"[EditorBrowsable(EditorBrowsableState.Never)]
+        private const string _accessorInterfaceString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface {0} : IRealmAccessor
     {{
 {1}
@@ -130,7 +130,7 @@ using Realms.Weaving;";
             return string.Format(_accessorInterfaceString, _accessorInterfaceName, propertiesBuilder.ToString());
         }
 
-        private const string _partialClassString = @"public partial class {0} : IRealmObject, INotifyPropertyChanged
+        private const string _partialClassString = @"    public partial class {0} : IRealmObject, INotifyPropertyChanged
     {{
 
 
@@ -141,7 +141,7 @@ using Realms.Weaving;";
             return string.Format(_partialClassString, _classInfo.Name);
         }
 
-        private const string _objectHelperString = @"[EditorBrowsable(EditorBrowsableState.Never)]
+        private const string _objectHelperString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
     internal class {0} : IRealmObjectHelper
     {{
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -182,7 +182,7 @@ using Realms.Weaving;";
             return string.Format(_objectHelperString, _helperClassName, _managedAccessorClassName, _classInfo.Name, tryGetPrimaryKeyBody);
         }
 
-        private const string _unmanagedAccesorString = @"internal class {0} : UnmanagedAccessor, {1}
+        private const string _unmanagedAccesorString = @"    internal class {0} : UnmanagedAccessor, {1}
     {{
 {2}
 
@@ -367,7 +367,7 @@ using Realms.Weaving;";
 
         }
 
-        private const string _managedAccessorString = @"[EditorBrowsable(EditorBrowsableState.Never)]
+        private const string _managedAccessorString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
     internal class {0} : ManagedAccessor, {1}
     {{
 {2}
