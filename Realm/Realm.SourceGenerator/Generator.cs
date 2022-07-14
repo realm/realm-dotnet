@@ -103,30 +103,42 @@ using Realms.Weaving;";
         private const string _accessorInterfaceString = @"[EditorBrowsable(EditorBrowsableState.Never)]
     internal interface {0} : IRealmAccessor
     {{
-        {1}
+{1}
     }}";
 
         private string GenerateInterface()
         {
             var propertiesBuilder = new StringBuilder();
 
-            foreach (var property in _classInfo.Properties)
+            //TODO If I use a for loop instead of this I get an OutOfMemoryException... ???????????
+            for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
+                var property = _classInfo.Properties[i];
                 var type = property.TypeInfo.TypeString;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection && !property.TypeInfo.IsIQueryable;
                 var setterString = hasSetter ? " set; " : "";
 
-                var propertyString = $"{type} {name} {{ get;{setterString}}}";
-                propertiesBuilder.AppendLine(propertyString);
+                var propertyString = @$"        {type} {name} {{ get;{setterString}}}";
+                propertiesBuilder.Append(propertyString);
+                if (i != _classInfo.Properties.Count -1)
+                {
+                    propertiesBuilder.AppendLine();
+                }
             }
 
             return string.Format(_accessorInterfaceString, _accessorInterfaceName, propertiesBuilder.ToString());
         }
 
+        private const string _partialClassString = @"public partial class {0} : IRealmObject, INotifyPropertyChanged
+    {{
+
+
+    }}";
+
         private string GeneratePartialClass()
         {
-            return "";
+            return string.Format(_partialClassString, _classInfo.Name);
         }
 
         private const string _objectHelperString = @"[EditorBrowsable(EditorBrowsableState.Never)]
@@ -172,7 +184,7 @@ using Realms.Weaving;";
 
         private const string _unmanagedAccesorString = @"internal class {0} : UnmanagedAccessor, {1}
     {{
-        {2}
+{2}
 
         public {0}(Type objectType) : base(objectType)
         {{
@@ -206,6 +218,7 @@ using Realms.Weaving;";
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {{
             {8}
+        }}
     }}";
 
         private string GeneratedUnmanagedAccessor()
@@ -218,10 +231,11 @@ using Realms.Weaving;";
             var getSetValueLines = new StringBuilder();
             var getDictionaryValueLines = new StringBuilder();
 
-            for (var i = 0; i < _classInfo.Properties.Count; i++)
+            bool isFirstCollection = true;
+            bool isFirstNonCollection = true;
+
+            foreach (var property in _classInfo.Properties)
             {
-                var isNotFirst = i != 0;
-                var property = _classInfo.Properties[i];
                 var name = property.Name;
                 var backingFieldName = "_" + char.ToLowerInvariant(name[0]) + name.Substring(1);
                 var type = property.TypeInfo.TypeString;
@@ -238,20 +252,24 @@ using Realms.Weaving;";
                 else
                 {
                     // Properties
-                    var backingFieldString = $"private {type} {backingFieldName};";
+                    var backingFieldString = $"        private {type} {backingFieldName};";
 
-                    var propertyString = @$"
-        public string {name}
-        {{get => {backingFieldName};
+                    var propertyString = @$"        public string {name}
+        {{
+            get => {backingFieldName};
             set
             {{
-                stringValue = value;
+                {backingFieldName} = value;
                 RaisePropertyChanged(""{stringName}"");
             }}
         }}";
-                    //TODO Need to distinguish between non-collection and collection, because we don't know what's the first
-                    if(isNotFirst)
+                    if(isFirstNonCollection)
                     {
+                        isFirstNonCollection = false;
+                    }
+                    else
+                    {
+                        propertiesString.AppendLine();
                         propertiesString.AppendLine();
                     }
 
@@ -259,10 +277,10 @@ using Realms.Weaving;";
                     propertiesString.Append(propertyString);
 
                     //GetValue
-                    getValueLines.Append(@$"""{stringName}"" => {backingFieldName},");
+                    getValueLines.AppendLine(@$"""                {stringName}"" => {backingFieldName},");
 
                     //SetValue/SetValueUnique
-                    setValueLines.Append($@"case ""{stringName}"":");
+                    setValueLines.AppendLine($@"                case ""{stringName}"":");
 
                     if (property.IsPrimaryKey)
                     {
@@ -278,11 +296,10 @@ using Realms.Weaving;";
                     }
                     else
                     {
-                        setValueLines.AppendLine($@"{name} = ({type})val;
-                        return;");
+                        setValueLines.AppendLine($@"                    {name} = ({type})val;
+                    return;");
                     }
                 }
-
             }
 
             //Properties
@@ -293,15 +310,15 @@ using Realms.Weaving;";
 
             var getValueBody = $@"return propertyName switch
             {{
-                {getValueLines}
-                => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
+{getValueLines}
+                _ => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
             }};";
 
             //SetValue
 
             var setValueBody = $@"switch (propertyName)
             {{
-                {setValueLines}
+{setValueLines}
                 default:
                         throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");
             }}";
@@ -353,7 +370,7 @@ using Realms.Weaving;";
         private const string _managedAccessorString = @"[EditorBrowsable(EditorBrowsableState.Never)]
     internal class {0} : ManagedAccessor, {1}
     {{
-        {2}
+{2}
     }}";
 
         private string GenerateManagedAccessor()
@@ -362,7 +379,6 @@ using Realms.Weaving;";
 
             for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
-                var isNotFirst = i != 0;
                 var property = _classInfo.Properties[i];
                 var type = property.TypeInfo.TypeString;
                 var name = property.Name;
@@ -380,17 +396,18 @@ using Realms.Weaving;";
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
                     var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
 
-                    var propertyString = @$"public {type} {name}
+                    var propertyString = @$"        public {type} {name}
         {{
             {getterString}
             {setterString}
         }}";
-                    if (isNotFirst)
+                    propertiesBuilder.Append(propertyString);
+
+                    if (i != _classInfo.Properties.Count - 1)
                     {
                         propertiesBuilder.AppendLine();
+                        propertiesBuilder.AppendLine();
                     }
-
-                    propertiesBuilder.Append(propertyString);
                 }
             }
 

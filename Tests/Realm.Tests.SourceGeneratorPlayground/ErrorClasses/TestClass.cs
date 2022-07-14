@@ -27,19 +27,9 @@ namespace Realm.Tests.SourceGeneratorPlayground
 {
     public partial class TestClass : IRealmObject
     {
-        //public int IntProp { get; set; }
+        public int IntProp { get; set; }
 
-        //public string StringPropClassic { get; set; }
-
-#nullable enable
-        //public string StringPropNew { get; set; }
-
-        //public byte[]? NullableByte { get; set; }
-
-        //public int? NullableInt { get; set; }
-
-        public string? StringPropNullable { get; set; }
-
-        public IList<string?>? TestDarling;
+        [MapTo("_stringProp")]
+        public string StringProp { get; set; }
     }
 }
