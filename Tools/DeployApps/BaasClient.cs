@@ -417,11 +417,14 @@ namespace Baas
             var mongoServiceId = services.Single(s => s.AsBsonDocument["name"] == "BackingDB")["_id"].AsString;
             var config = await GetAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config");
 
-            var syncDoc = config.Contains("flexible_sync") ? config["flexible_sync"] : config["sync"];
-            syncDoc["is_recovery_mode_disabled"] = !enabled;
+            var syncType = config.Contains("flexible_sync") ? "flexible_sync" : "sync";
+            config[syncType]["is_recovery_mode_disabled"] = !enabled;
 
+            // An empty fragment with just the sync configuration is necessary,
+            // as the "conf" document that we retrieve has bunch of extra fields that we are supposed
+            // to be use/returne to the server when PATCH-ing
             var fragment = new BsonDocument();
-            fragment["sync"] = syncDoc;
+            fragment[syncType] = config[syncType];
 
             await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
