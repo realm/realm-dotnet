@@ -23,7 +23,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using Realm.SourceGenerator;
+using Realms.SourceGenerator;
 
 namespace Realms.Tests.SourceGeneration
 {

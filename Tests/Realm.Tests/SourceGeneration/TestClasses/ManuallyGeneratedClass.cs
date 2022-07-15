@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Realm.Generated;
+using Realms.Generated;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.SourceGeneration.TestClasses;
@@ -183,7 +183,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 }
 
 // Having a separate namespace allows to hide the implementation details better.
-namespace Realm.Generated
+namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper

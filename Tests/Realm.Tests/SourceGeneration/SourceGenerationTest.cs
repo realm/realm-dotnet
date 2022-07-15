@@ -25,8 +25,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using Realm.SourceGenerator;
-using RealmClassGeneratorVerifier = Realms.Tests.SourceGeneration.CSharpSourceGeneratorVerifier<Realm.SourceGenerator.RealmClassGenerator>;
+using Realms.SourceGenerator;
+using RealmClassGeneratorVerifier = Realms.Tests.SourceGeneration.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmClassGenerator>;
 
 namespace Realms.Tests.SourceGeneration
 {

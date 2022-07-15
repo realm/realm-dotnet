@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Realm.SourceGenerator
+namespace Realms.SourceGenerator
 {
     internal class Generator
     {
@@ -69,7 +69,7 @@ namespace {2}
 {3}
 }}
 
-namespace Realm.Generated
+namespace Realms.Generated
 {{
 {4}
 
@@ -86,8 +86,12 @@ namespace Realm.Generated
             var copyright = string.Format(_copyrightString, DateTime.Now.Year);
 
             var usings = @$"using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Realms;
-using Realms.Weaving;";
+using Realms.Weaving;
+using Realms.Generated;
+using Realms.Schema;
+using {_classInfo.Namespace};";
 
             var partialClassString = GeneratePartialClass();
             var interfaceString = GenerateInterface();
@@ -130,15 +134,143 @@ using Realms.Weaving;";
             return string.Format(_accessorInterfaceString, _accessorInterfaceName, propertiesBuilder.ToString());
         }
 
-        private const string _partialClassString = @"    public partial class {0} : IRealmObject, INotifyPropertyChanged
+        private const string _partialClassString = @"   [Woven(typeof({0}))]
+    public partial class {1} : IRealmObject, INotifyPropertyChanged
     {{
 
+{2}
 
+        #region IRealmObject implementation
+
+        private {5} _accessor;
+
+        public IRealmAccessor Accessor => _accessor;
+
+        public bool IsManaged => _accessor.IsManaged;
+
+        public bool IsValid => _accessor.IsValid;
+
+        public bool IsFrozen => _accessor.IsFrozen;
+
+        public Realm Realm => _accessor.Realm;
+
+        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
+
+        public {1}()
+        {{
+            _accessor = new {3}(typeof({1}));
+        }}
+
+        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        {{
+            var unmanagedAccessor = _accessor;
+            _accessor = ({5})managedAccessor;
+
+            if (helper != null)
+            {{
+{4}
+            }}
+
+            if (_propertyChanged != null)
+            {{
+                SubscribeForNotifications();
+            }}
+
+            OnManaged();
+        }}
+
+        #endregion
+
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {{
+            add
+            {{
+                if (_propertyChanged == null)
+                {{
+                    SubscribeForNotifications();
+                }}
+
+                _propertyChanged += value;
+            }}
+
+            remove
+            {{
+                _propertyChanged -= value;
+
+                if (_propertyChanged == null)
+                {{
+                    UnsubscribeFromNotifications();
+                }}
+            }}
+        }}
+
+        partial void OnPropertyChanged(string propertyName);
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {{
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            OnPropertyChanged(propertyName);
+        }}
+
+        partial void OnManaged();
+
+        private void SubscribeForNotifications()
+        {{
+            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+        }}
+
+        private void UnsubscribeFromNotifications()
+        {{
+            _accessor.UnsubscribeFromNotifications();
+        }}
     }}";
 
         private string GeneratePartialClass()
         {
-            return string.Format(_partialClassString, _classInfo.Name);
+            var schemaProperties = new StringBuilder();
+            var copyToRealm = new StringBuilder();
+
+            //0 helper
+            //1 class name
+            //2 schema
+            //3 unmanagedAccessor
+            //4 setManagedAccessor
+            //5 interface
+
+            foreach (var property in _classInfo.Properties)
+            {
+                if (property.TypeInfo.IsCollection)
+                {
+
+                }
+                else if (property.TypeInfo.IsIQueryable)
+                {
+
+                }
+                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                {
+
+                }
+                else
+                {
+                    var realmValueType = "RealmValueType." + property.TypeInfo.SimpleType.ToString();  //TODO Need to be more complex than this
+                    var primaryKeyString = property.IsPrimaryKey ? ", isPrimaryKey: true" : string.Empty;
+                    schemaProperties.AppendLine(@$"            Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}{primaryKeyString}),");
+
+                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
+                }
+            }
+
+            var isEmbedded = _classInfo.IsEmbedded ? "true" : "false";
+            var schema = @$"        public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {isEmbedded})
+        {{
+{schemaProperties}
+        }}.Build();";
+
+            return string.Format(_partialClassString, _helperClassName, _classInfo.Name, schema,
+                _unmanagedAccessorClassName, copyToRealm, _accessorInterfaceName);
         }
 
         private const string _objectHelperString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
@@ -254,7 +386,7 @@ using Realms.Weaving;";
                     // Properties
                     var backingFieldString = $"        private {type} {backingFieldName};";
 
-                    var propertyString = @$"        public string {name}
+                    var propertyString = @$"        public {type} {name}
         {{
             get => {backingFieldName};
             set
@@ -277,7 +409,7 @@ using Realms.Weaving;";
                     propertiesString.Append(propertyString);
 
                     //GetValue
-                    getValueLines.AppendLine(@$"""                {stringName}"" => {backingFieldName},");
+                    getValueLines.AppendLine(@$"                ""{stringName}"" => {backingFieldName},");
 
                     //SetValue/SetValueUnique
                     setValueLines.AppendLine($@"                case ""{stringName}"":");

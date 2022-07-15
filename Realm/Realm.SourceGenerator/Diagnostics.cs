@@ -24,7 +24,7 @@ using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 #endif
 
-namespace Realm.SourceGenerator
+namespace Realms.SourceGenerator
 {
     internal static class Diagnostics
     {

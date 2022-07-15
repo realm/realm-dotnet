@@ -10,7 +10,7 @@
 	<Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
 	<ItemGroup>
 		<!-- Removing the generated files from compilation -->
-		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.diagnostics.cs" />
 
 		<ProjectReference Include="..\..\Realm\Realm.Fody\Realm.Fody.csproj" />
 		<ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

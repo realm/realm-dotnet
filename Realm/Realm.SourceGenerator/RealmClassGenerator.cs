@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Realm.SourceGenerator
+namespace Realms.SourceGenerator
 {
     [Generator]
     public class RealmClassGenerator : ISourceGenerator
@@ -65,7 +65,7 @@ namespace Realm.SourceGenerator
                     }
 
                     //General info
-                    classInfo.Namespace = classSymbol.ContainingNamespace.Name;
+                    classInfo.Namespace = classSymbol.ContainingNamespace.ToDisplayString();
                     classInfo.Name = classSymbol.Name;
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;

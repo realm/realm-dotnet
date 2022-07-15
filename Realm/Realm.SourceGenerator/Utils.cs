@@ -24,7 +24,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Realm.SourceGenerator
+namespace Realms.SourceGenerator
 {
     internal static class SymbolUtils
     {

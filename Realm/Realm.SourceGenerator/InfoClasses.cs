@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Realm.SourceGenerator
+namespace Realms.SourceGenerator
 {
     internal record ClassInfo
     {
