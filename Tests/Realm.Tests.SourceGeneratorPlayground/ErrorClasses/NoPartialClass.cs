@@ -23,7 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.Tests.SourceGeneratorPlayground
+namespace SourceGeneratorPlayground
 {
     public class NoPartialClass : IRealmObject
     {

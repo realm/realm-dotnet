@@ -18,7 +18,7 @@
 
 using Realms;
 
-namespace Realm.Tests.SourceGeneratorPlayground
+namespace SourceGeneratorPlayground
 {
     public partial class RealmObjectAndEmbeddedObjectClass : IRealmObject, IEmbeddedObject
     {

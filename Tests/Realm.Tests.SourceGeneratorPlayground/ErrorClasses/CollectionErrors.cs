@@ -23,7 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace SourceGeneratorPlayground
 {
     public partial class CollectionErrors : IRealmObject
     {

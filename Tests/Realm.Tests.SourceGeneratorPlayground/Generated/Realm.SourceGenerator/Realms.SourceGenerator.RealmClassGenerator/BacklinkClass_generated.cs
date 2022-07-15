@@ -18,19 +18,113 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Realms;
 using Realms.Weaving;
+using Realms.Generated;
+using Realms.Schema;
+using SourceGeneratorPlayground;
 
 namespace SourceGeneratorPlayground
 {
+   [Woven(typeof(BacklinkClassObjectHelper))]
     public partial class BacklinkClass : IRealmObject, INotifyPropertyChanged
     {
 
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkClass", isEmbedded: false)
+        {
 
+        }.Build();
+
+        #region IRealmObject implementation
+
+        private IBacklinkClassAccessor _accessor;
+
+        public IRealmAccessor Accessor => _accessor;
+
+        public bool IsManaged => _accessor.IsManaged;
+
+        public bool IsValid => _accessor.IsValid;
+
+        public bool IsFrozen => _accessor.IsFrozen;
+
+        public Realm Realm => _accessor.Realm;
+
+        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
+
+        public BacklinkClass()
+        {
+            _accessor = new BacklinkClassUnmanagedAccessor(typeof(BacklinkClass));
+        }
+
+        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        {
+            var unmanagedAccessor = _accessor;
+            _accessor = (IBacklinkClassAccessor)managedAccessor;
+
+            if (helper != null)
+            {
+
+            }
+
+            if (_propertyChanged != null)
+            {
+                SubscribeForNotifications();
+            }
+
+            OnManaged();
+        }
+
+        #endregion
+
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (_propertyChanged == null)
+                {
+                    SubscribeForNotifications();
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (_propertyChanged == null)
+                {
+                    UnsubscribeFromNotifications();
+                }
+            }
+        }
+
+        partial void OnPropertyChanged(string propertyName);
+
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            OnPropertyChanged(propertyName);
+        }
+
+        partial void OnManaged();
+
+        private void SubscribeForNotifications()
+        {
+            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            _accessor.UnsubscribeFromNotifications();
+        }
     }
 }
 
-namespace Realm.Generated
+namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class BacklinkClassObjectHelper : IRealmObjectHelper
@@ -73,7 +167,7 @@ namespace Realm.Generated
     internal class BacklinkClassUnmanagedAccessor : UnmanagedAccessor, IBacklinkClassAccessor
     {
         private UnsupportedBacklink _inverseLink;
-        public string InverseLink
+        public UnsupportedBacklink InverseLink
         {
             get => _inverseLink;
             set
@@ -91,7 +185,7 @@ namespace Realm.Generated
         {
             return propertyName switch
             {
-"                InverseLink" => _inverseLink,
+                "InverseLink" => _inverseLink,
 
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };

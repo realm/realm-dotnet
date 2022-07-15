@@ -18,7 +18,7 @@
 
 using Realms;
 
-namespace Realm.SourceGeneratorTestingPlayground
+namespace SourceGeneratorPlayground
 {
     public partial class ClassWithBaseType : NoPropertiesClass, IRealmObject
     {
