@@ -56,7 +56,7 @@ namespace Realms.Sync
             public delegate bool NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_sync_config_handle);
+            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_sync_config_handle, bool did_recover);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback,
@@ -287,6 +287,7 @@ namespace Realms.Sync
 
                     if (syncConfig.ClientResetHandler is DiscardLocalResetHandler ||
                         syncConfig.ClientResetHandler is AutomaticRecoveryHandler ||
+                        syncConfig.ClientResetHandler is AutomaticOrDiscardRecoveryHandler ||
                         syncConfig.ClientResetHandler.ManualClientReset != null)
                     {
                         syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
@@ -337,6 +338,7 @@ namespace Realms.Sync
                 {
                     DiscardLocalResetHandler handler => handler.OnBeforeReset,
                     AutomaticRecoveryHandler handler => handler.OnBeforeReset,
+                    AutomaticOrDiscardRecoveryHandler handler => handler.OnBeforeReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
@@ -357,7 +359,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
-        private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
+        private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle, bool didRecover)
         {
             try
             {
@@ -368,6 +370,7 @@ namespace Realms.Sync
                 {
                     DiscardLocalResetHandler handler => handler.OnAfterReset,
                     AutomaticRecoveryHandler handler => handler.OnAfterReset,
+                    AutomaticOrDiscardRecoveryHandler handler => didRecover ? handler.OnAfterAutomaticReset : handler.OnAfterDiscardLocalReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
