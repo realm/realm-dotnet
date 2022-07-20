@@ -302,13 +302,23 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_AutomaticRecoveryFallsbackToDiscardLocal()
+        [TestCaseSource(nameof(AppTypes))]
+        public void Session_AutomaticRecoveryFallsbackToDiscardLocal(string neededConfig)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
+                // TODO andrea: finish this with flx sync
                 var user = await GetUserAsync();
-                var config = GetIntegrationConfig(user);
+                SyncConfigurationBase config = await GetIntegrationConfigAsync();//neededConfig == AppConfigType.FlexibleSync ? await GetFLXIntegrationConfigAsync() : await GetIntegrationConfigAsync();
+
+                if (config is FlexibleSyncConfiguration flxConf)
+                {
+                    flxConf.PopulateInitialSubscriptions = (realm) =>
+                    {
+                        var query = realm.All<SyncObjectWithRequiredStringList>();
+                        realm.Subscriptions.Add(query);
+                    };
+                }
 
                 var tcsAfterClientReset = new TaskCompletionSource<object>();
 
