@@ -146,7 +146,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after, bool did_recover) {
             SharedRealm after_reset = after.resolve<SharedRealm>(nullptr);
 
-            if (!s_notify_after_callback(before_frozen, after_reset, configuration_handle->handle())) {
+            if (!s_notify_after_callback(before_frozen, after_reset, configuration_handle->handle(), did_recover)) {
                 throw ManagedExceptionDuringClientReset();
             }
         };

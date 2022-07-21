@@ -18,6 +18,7 @@
 
 namespace Realms.Sync.ErrorHandling
 {
+    // TODO andrea: fix class comment after the removal of fallback strategy
     /// <summary>
     /// A client reset strategy where sync will attempt to automatically recover any unsynchronized changes.
     /// </summary>
@@ -42,37 +43,7 @@ namespace Realms.Sync.ErrorHandling
     /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</seealso>
     public sealed class AutomaticRecoveryHandler : ClientResetHandlerBase
     {
-        /// <summary>
-        /// Fallback strategies for the <see cref="AutomaticRecoveryHandler"/>.
-        /// </summary>
-        public enum Fallback
-        {
-            /// <summary>
-            /// If the automatic merge fails, manually handle the matter.
-            /// </summary>
-            Manual = 0,
-
-            /// <summary>
-            /// If the automatic merge fails, automatically discards all local changes and uses the latest realm that is available on the remote.
-            /// </summary>
-            DiscardLocal = 1,
-        }
-
-        /// <summary>
-        /// Gets the <see cref="Fallback"/> strategy chosen by the <see cref="AutomaticRecoveryHandler"/>.
-        /// </summary>
-        public Fallback FallbackStrategy { get; private set; }
-
-        internal override ClientResyncMode ClientResetMode =>
-            FallbackStrategy == Fallback.DiscardLocal ? ClientResyncMode.AutomaticRecoveryOrDiscardLocal : ClientResyncMode.AutomaticRecovery;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AutomaticRecoveryHandler"/> class with the given fallback strategy.
-        /// </summary>
-        /// <param name="fallback">
-        /// The fallback strategy to be used in case the automatic recovery fails or it is not permitted by the server.
-        /// </param>
-        public AutomaticRecoveryHandler(Fallback fallback = Fallback.DiscardLocal) => FallbackStrategy = fallback;
+        internal override ClientResyncMode ClientResetMode => ClientResyncMode.AutomaticRecovery;
 
         /// <summary>
         /// Gets or sets the callback that indicates a Client Reset is about to happen.
