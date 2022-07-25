@@ -580,7 +580,8 @@ namespace Realms.Tests.Sync
 
                 void AssertOnObjectPair(Realm realm)
                 {
-                    Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
+                    Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value),
+                        Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
                 }
             });
         }
@@ -611,7 +612,8 @@ namespace Realms.Tests.Sync
                 var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
                 {
                     Assert.That(onAfterTriggered, Is.False);
-                    Assert.That(beforeFrozen.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
+                    Assert.That(beforeFrozen.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value),
+                        Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
                     AssertHelper(after);
                     onAfterTriggered = true;
                 });
@@ -631,6 +633,14 @@ namespace Realms.Tests.Sync
                 });
 
                 await WaitForUploadAsync(realm);
+
+                // Introduce a delay because the “always synced” object is just recently added and
+                // does not hit the backend persistence layer by the time the query for it runs.
+                if (config is FlexibleSyncConfiguration)
+                {
+                    await Task.Delay(60000);
+                }
+
                 var session = GetSession(realm);
                 session.Stop();
 
@@ -662,7 +672,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(expected));
                 }
-            });
+            }, 100000);
         }
 
         [Test]
