@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -144,6 +143,14 @@ namespace Realms.SourceGenerator
             // If we return the location on the ClassDeclarationSyntax, then the whole class will be selected.
             // "Identifier" points only to the class name
             return cds.Identifier.GetLocation();
+        }
+    }
+
+    internal static class ExtensionUtils
+    {
+        public static string ToCodeString(this bool boolean)
+        {
+            return boolean.ToString().ToLower();
         }
     }
 

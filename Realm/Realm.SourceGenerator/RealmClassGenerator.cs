@@ -275,7 +275,7 @@ namespace Realms.SourceGenerator
                 ITypeSymbol argument;
                 bool isUnsupported = false;
 
-                var collectionType = propertyType.CollectionType.ToString(); //TODO Need to change?
+                var collectionTypeString = propertyType.CollectionType.ToString();
 
                 if (propertyType.IsDictionary)
                 {
@@ -312,18 +312,18 @@ namespace Realms.SourceGenerator
 
                 if (argument.IsRealmInteger())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
+                    classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
                     isUnsupported = true;
                 }
                 else if (internalPropertyType.IsUnsupported)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionType, argument.ToReadableName(), propertyLocation));
+                    classInfo.Diagnostics.Add(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionTypeString, argument.ToReadableName(), propertyLocation));
                     isUnsupported = true;
                 }
 
                 if (propertySyntax.HasSetter())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.CollectionWithSetter(classInfo.Name, propertySymbol.Name, collectionType, propertyLocation));
+                    classInfo.Diagnostics.Add(Diagnostics.CollectionWithSetter(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
                     isUnsupported = true;
                 }
 

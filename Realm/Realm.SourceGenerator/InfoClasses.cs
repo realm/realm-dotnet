@@ -54,8 +54,6 @@ namespace Realms.SourceGenerator
 
         public bool IsPrimaryKey { get; set; }
 
-        public bool IsNullable { get; set; }
-
         public string MapTo { get; set; }
 
         public string Backlink { get; set; }
@@ -98,6 +96,8 @@ namespace Realms.SourceGenerator
         public virtual bool IsRealmInteger { get; set; } = false;
 
         public virtual bool IsIQueryable { get; set; } = false;
+
+        public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
 
         // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
         public virtual NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;

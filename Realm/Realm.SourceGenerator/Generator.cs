@@ -18,6 +18,7 @@
 
 using System;
 using System.Text;
+using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
@@ -119,7 +120,7 @@ namespace Realms.Generated
                 propertiesBuilder.Append(propertyString);
                 if (i != _classInfo.Properties.Count - 1)
                 {
-                    propertiesBuilder.Append("\n\n");
+                    propertiesBuilder.AppendLine().AppendLine();
                 }
             }
             
@@ -150,7 +151,6 @@ namespace Realms.Generated
 
                     var internalTypeIsObject = internalType.SimpleType == SimpleTypeEnum.Object;
 
-                    //TODO Check if I should move it out
                     var collectionString = property.TypeInfo.CollectionType switch
                     {
                         CollectionTypeEnum.List => "List",
@@ -164,7 +164,9 @@ namespace Realms.Generated
 
                     var internalTypeString = internalTypeIsObject ? internalType.TypeString : GetRealmValueType(internalType);
 
-                    schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}),");
+                    var internalTypeNullable = internalType.IsNullable.ToCodeString();
+
+                    schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
 
 
                     skipDefaultsContent.AppendLine($"                    {property.Name}.Clear();");
@@ -176,18 +178,27 @@ namespace Realms.Generated
                 }
                 else if (property.TypeInfo.IsIQueryable)
                 {
+                    var backlinkProperty = property.Backlink;
+                    var backlinkType = property.TypeInfo.InternalType.TypeString;
+
+                    schemaProperties.AppendLine(@$"            Property.Backlink(""{property.MapTo ?? property.Name}"", {backlinkType}, {backlinkProperty}),");
+
                     // Nothing to do for the copy to realm part
                 }
                 else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
                 {
                     var objectName = property.TypeInfo.TypeString;
                     schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", {objectName}),");
+
+                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
                 }
                 else
                 {
-                    var realmValueType = GetRealmValueType(property.TypeInfo); 
-                    var primaryKeyString = property.IsPrimaryKey ? ", isPrimaryKey: true" : string.Empty;
-                    schemaProperties.AppendLine(@$"            Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}{primaryKeyString}),");
+                    var realmValueType = GetRealmValueType(property.TypeInfo);
+                    var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
+                    var isIndexed = property.IsIndexed.ToCodeString();
+                    var isNullable = property.TypeInfo.IsNullable.ToCodeString();
+                    schemaProperties.AppendLine(@$"            Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
 
                     copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
                 }
@@ -347,6 +358,11 @@ namespace Realms.Generated
     }}";
         }
 
+        private string GetBackingFieldName(string propertyName)
+        {
+            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
+        }
+
         private string GeneratedUnmanagedAccessor()
         {
             var propertiesString = new StringBuilder();
@@ -357,23 +373,42 @@ namespace Realms.Generated
             var getSetValueLines = new StringBuilder();
             var getDictionaryValueLines = new StringBuilder();
 
-            // Probably we can remove some complexity if we don't care about some extra spaces/lines here and there
-            bool isFirstNonCollection = true;
-
             foreach (var property in _classInfo.Properties)
             {
                 var name = property.Name;
-                var backingFieldName = "_" + char.ToLowerInvariant(name[0]) + name.Substring(1);
+                var backingFieldName = GetBackingFieldName(name);
                 var type = property.TypeInfo.TypeString;
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection)
                 {
-                    //GetListValue
+                    var propertyMapToName = property.MapTo ?? property.Name;
+                    var parameterString = property.TypeInfo.InternalType.TypeString;
 
-                    //GetSetValue
+                    string constructorString;
 
-                    //GetDictionaryValue
+                    switch (property.TypeInfo.CollectionType)
+                    {
+                        case CollectionTypeEnum.List:
+                            constructorString = $"new List<{parameterString}>()";
+                            getListValueLines.AppendLine($@"                ""{propertyMapToName}"" => (IList<T>){property.Name},");
+                            break;
+                        case CollectionTypeEnum.Set:
+                            constructorString = $"new HashSet<{parameterString}>(RealmSet<{parameterString}>.Comparer)";
+                            getSetValueLines.AppendLine($@"                ""{propertyMapToName}"" => (ISet<T>){property.Name},");
+                            break;
+                        case CollectionTypeEnum.Dictionary:
+                            constructorString = $"new Dictionary<string, {parameterString}>()";
+                            getDictionaryValueLines.AppendLine($@"                ""{propertyMapToName}"" => (IDictionary<string, T>){property.Name},");
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+
+                    var propertyString = $@"        public {property.TypeInfo.TypeString} {property.Name} {{ get; }} = {constructorString};";
+
+                    propertiesString.AppendLine(propertyString);
+                    propertiesString.AppendLine().AppendLine();
                 }
                 else
                 {
@@ -389,18 +424,10 @@ namespace Realms.Generated
                 RaisePropertyChanged(""{stringName}"");
             }}
         }}";
-                    if(isFirstNonCollection)
-                    {
-                        isFirstNonCollection = false;
-                    }
-                    else
-                    {
-                        propertiesString.AppendLine();
-                        propertiesString.AppendLine();
-                    }
 
                     propertiesString.AppendLine(backingFieldString);
                     propertiesString.Append(propertyString);
+                    propertiesString.AppendLine().AppendLine();
 
                     //GetValue
                     getValueLines.AppendLine(@$"                ""{stringName}"" => {backingFieldName},");
@@ -434,20 +461,38 @@ namespace Realms.Generated
 
             //GetValue
 
-            var getValueBody = $@"return propertyName switch
+            string getValueBody;
+
+            if (getValueLines.Length == 0)
+            {
+                getValueBody = $@"throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}"");";
+            }
+            else
+            {
+                getValueBody = $@"return propertyName switch
             {{
 {getValueLines}
                 _ => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
             }};";
+            }
 
             //SetValue
 
-            var setValueBody = $@"switch (propertyName)
+            string setValueBody;
+
+            if (setValueLines.Length == 0)
+            {
+                setValueBody = $@"throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");";
+            }
+            else
+            {
+                setValueBody = $@"switch (propertyName)
             {{
 {setValueLines}
                 default:
                         throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");
             }}";
+            }
 
             //SetValueUnique
 
@@ -460,32 +505,54 @@ namespace Realms.Generated
 
             //GetListValue
 
+            string getListValueBody;
+
             if (getListValueLines.Length == 0)
             {
-                getListValueLines.Append(@"throw new MissingMemberException($""The object does not have a Realm list property with name { propertyName}"");");
+                getListValueBody = $@"throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}"");";
             }
-
-            var getListValueBody = getListValueLines.ToString();
-
+            else
+            {
+                getListValueBody = $@"return propertyName switch
+            {{
+{getListValueLines}
+                _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}"");
+            }}";
+            }
 
             //GetSetValue
 
+            string getSetValueBody;
+
             if (getSetValueLines.Length == 0)
             {
-                getSetValueLines.Append(@"throw new MissingMemberException($""The object does not have a Realm set property with name { propertyName}"");");
+                getSetValueBody = $@"throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}"");";
             }
-
-            var getSetValueBody = getSetValueLines.ToString();
-
+            else
+            {
+                getSetValueBody = $@"return propertyName switch
+            {{
+{getSetValueLines}
+                _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}"");
+            }}";
+            }
 
             //GetDictionaryValue
 
+            string getDictionaryValueBody;
+
             if (getDictionaryValueLines.Length == 0)
             {
-                getDictionaryValueLines.Append(@"throw new MissingMemberException($""The object does not have a Realm dictionary property with name { propertyName}"");");
+                getDictionaryValueBody = $@"throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}"");";
             }
-
-            var getDictionaryBody = getDictionaryValueLines.ToString();
+            else
+            {
+                getDictionaryValueBody = $@"return propertyName switch
+            {{
+{getDictionaryValueLines}
+                _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}"");
+            }}";
+            }
 
             return $@"    
     internal class {_unmanagedAccessorClassName} : UnmanagedAccessor, {_accessorInterfaceName}
@@ -523,8 +590,12 @@ namespace Realms.Generated
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {{
-            {getDictionaryBody}
+            {getDictionaryValueBody}
         }}
+
+        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
+            => throw new NotSupportedException(""Using the GetBacklinks is only possible for managed(persisted) objects."");
+
     }}";
         }
 
@@ -539,10 +610,45 @@ namespace Realms.Generated
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
 
-                // TODO Where does IQueryable go?
-                if (property.TypeInfo.IsCollection)
+                if (property.TypeInfo.IsCollection || property.TypeInfo.IsIQueryable)
                 {
-                    //TODO
+                    var backingFieldName = GetBackingFieldName(property.Name);
+                    var backingFieldString = $@"private {type} {backingFieldName}";
+                    var internalTypeString = property.TypeInfo.InternalType.TypeString;
+
+                    string getFieldString;
+
+                    if (property.TypeInfo.IsCollection)
+                    {
+                        getFieldString = property.TypeInfo.CollectionType switch
+                        {
+                            CollectionTypeEnum.List => "GetListValue",
+                            CollectionTypeEnum.Set => "GetSetValue",
+                            CollectionTypeEnum.Dictionary => "GetDictionaryValue",
+                            _ => throw new NotImplementedException(),
+                        };
+                    }
+                    else
+                    {
+                        getFieldString = "GetBacklinks";
+                    }
+
+                    var propertyString = @$"        {backingFieldString}
+        public {type} {name}
+        {{
+            get
+            {{
+                if({backingFieldName} == null)
+                {{
+                    {backingFieldName} = {getFieldString}<{internalTypeString}>(""{property.MapTo ?? property.Name}"");
+                }}
+
+                return {backingFieldName};
+            }}
+        }}";
+
+                    propertiesBuilder.AppendLine(propertyString);
+
                 }
                 else
                 {
@@ -556,14 +662,12 @@ namespace Realms.Generated
             {getterString}
             {setterString}
         }}";
-                    propertiesBuilder.Append(propertyString);
 
-                    if (i != _classInfo.Properties.Count - 1)
-                    {
-                        propertiesBuilder.AppendLine();
-                        propertiesBuilder.AppendLine();
-                    }
+                    propertiesBuilder.Append(propertyString);
                 }
+
+                propertiesBuilder.AppendLine();
+                propertiesBuilder.AppendLine();
             }
 
             return $@"    
