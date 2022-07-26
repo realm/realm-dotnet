@@ -301,7 +301,7 @@ jobs:
     - test-net-framework
     - test-code-coverage
     - test-uwp-managed
-    - test-xamarinmacos
+    - test-macos
     - test-ios
     - test-xamarinandroid
     secrets:
