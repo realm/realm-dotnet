@@ -1,5 +1,4 @@
-﻿
-// ////////////////////////////////////////////////////////////////////////////
+﻿// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright 2022 Realm Inc.
 // //
@@ -34,9 +33,9 @@ namespace SourceGeneratorPlayground
 
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("TestClass", isEmbedded: false)
         {
-            Property.Primitive("IntProp", RealmValueType.Int),
-            Property.Primitive("_stringProp", RealmValueType.String),
-            Property.PrimitiveList("ListIntProp", RealmValueType.Int),
+            Property.Primitive("IntProp", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("_stringProp", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.PrimitiveList("ListIntProp", RealmValueType.Int, areElementsNullable: false),
 
         }.Build();
 
@@ -192,6 +191,21 @@ namespace Realms.Generated
             set => SetValue("_stringProp", value);
         }
 
+        private IList<int> _listIntProp
+        public IList<int> ListIntProp
+        {
+            get
+            {
+                if(_listIntProp == null)
+                {
+                    _listIntProp = GetListValue<int>("ListIntProp");
+                }
+
+                return _listIntProp;
+            }
+        }
+
+
 
     }
 
@@ -219,6 +233,11 @@ namespace Realms.Generated
                 RaisePropertyChanged("_stringProp");
             }
         }
+
+        public IList<int> ListIntProp { get; } = new List<int>();
+
+
+
 
         public TestClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
@@ -258,17 +277,26 @@ namespace Realms.Generated
 
         public override IList<T> GetListValue<T>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm list property with name { propertyName}");
+            return propertyName switch
+            {
+                "ListIntProp" => (IList<T>)ListIntProp,
+
+                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
         }
 
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm set property with name { propertyName}");
+            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name { propertyName}");
+            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
+
+        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
+            => throw new NotSupportedException("Using the GetBacklinks is only possible for managed(persisted) objects.");
+
     }
 }

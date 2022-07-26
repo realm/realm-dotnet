@@ -1,5 +1,4 @@
-﻿
-// ////////////////////////////////////////////////////////////////////////////
+﻿// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright 2022 Realm Inc.
 // //
@@ -68,6 +67,7 @@ namespace SourceGeneratorPlayground
             {
 
 
+                InverseLink = unmanagedAccessor.InverseLink;
 
             }
 
@@ -169,6 +169,8 @@ namespace Realms.Generated
             get => (UnsupportedBacklink)GetValue("InverseLink");
             set => SetValue("InverseLink", value);
         }
+
+
     }
 
     
@@ -184,6 +186,8 @@ namespace Realms.Generated
                 RaisePropertyChanged("InverseLink");
             }
         }
+
+
 
         public BacklinkClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
@@ -219,17 +223,21 @@ namespace Realms.Generated
 
         public override IList<T> GetListValue<T>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm list property with name { propertyName}");
+            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
         }
 
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm set property with name { propertyName}");
+            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name { propertyName}");
+            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
+
+        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
+            => throw new NotSupportedException("Using the GetBacklinks is only possible for managed(persisted) objects.");
+
     }
 }
