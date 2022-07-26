@@ -27,7 +27,8 @@ using SourceGeneratorPlayground;
 
 namespace SourceGeneratorPlayground
 {
-   [Woven(typeof(TestClassObjectHelper))]
+   
+    [Woven(typeof(TestClassObjectHelper))]
     public partial class TestClass : IRealmObject, INotifyPropertyChanged
     {
 
@@ -35,6 +36,7 @@ namespace SourceGeneratorPlayground
         {
             Property.Primitive("IntProp", RealmValueType.Int),
             Property.Primitive("_stringProp", RealmValueType.String),
+            Property.PrimitiveList("ListIntProp", RealmValueType.Int),
 
         }.Build();
 
@@ -54,20 +56,30 @@ namespace SourceGeneratorPlayground
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public TestClass()
+        public TestClassObjectHelper()
         {
-            _accessor = new TestClassUnmanagedAccessor(typeof(TestClass));
+            _accessor = new TestClassUnmanagedAccessor(typeof(TestClassObjectHelper));
         }
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var unmanagedAccessor = _accessor;
-            _accessor = (ITestClassAccessor)managedAccessor;
+            _accessor = (TestClassManagedAccessor)managedAccessor;
 
             if (helper != null)
             {
+                if(!skipDefaults)
+                {
+                    ListIntProp.Clear();
+
+                }
+
                 IntProp = unmanagedAccessor.IntProp;
                 StringProp = unmanagedAccessor.StringProp;
+                foreach(var val in unmanagedAccessor.ListIntProp)
+                {
+                    ListIntProp.Add(val);
+                }
 
             }
 
@@ -130,6 +142,7 @@ namespace SourceGeneratorPlayground
 
 namespace Realms.Generated
 {
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class TestClassObjectHelper : IRealmObjectHelper
     {
@@ -152,13 +165,18 @@ namespace Realms.Generated
         }
     }
 
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface ITestClassAccessor : IRealmAccessor
     {
         int IntProp { get; set; }
+
         string StringProp { get; set; }
+
+        IList<int> ListIntProp { get; }
     }
 
+    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class TestClassManagedAccessor : ManagedAccessor, ITestClassAccessor
     {
@@ -173,8 +191,11 @@ namespace Realms.Generated
             get => (string)GetValue("_stringProp");
             set => SetValue("_stringProp", value);
         }
+
+
     }
 
+    
     internal class TestClassUnmanagedAccessor : UnmanagedAccessor, ITestClassAccessor
     {
         private int _intProp;

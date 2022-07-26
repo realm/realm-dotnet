@@ -27,12 +27,14 @@ using SourceGeneratorPlayground;
 
 namespace SourceGeneratorPlayground
 {
-   [Woven(typeof(BacklinkClassObjectHelper))]
+   
+    [Woven(typeof(BacklinkClassObjectHelper))]
     public partial class BacklinkClass : IRealmObject, INotifyPropertyChanged
     {
 
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkClass", isEmbedded: false)
         {
+            Property.Object("InverseLink", UnsupportedBacklink),
 
         }.Build();
 
@@ -52,18 +54,20 @@ namespace SourceGeneratorPlayground
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public BacklinkClass()
+        public BacklinkClassObjectHelper()
         {
-            _accessor = new BacklinkClassUnmanagedAccessor(typeof(BacklinkClass));
+            _accessor = new BacklinkClassUnmanagedAccessor(typeof(BacklinkClassObjectHelper));
         }
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var unmanagedAccessor = _accessor;
-            _accessor = (IBacklinkClassAccessor)managedAccessor;
+            _accessor = (BacklinkClassManagedAccessor)managedAccessor;
 
             if (helper != null)
             {
+
+
 
             }
 
@@ -126,6 +130,7 @@ namespace SourceGeneratorPlayground
 
 namespace Realms.Generated
 {
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class BacklinkClassObjectHelper : IRealmObjectHelper
     {
@@ -148,12 +153,14 @@ namespace Realms.Generated
         }
     }
 
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IBacklinkClassAccessor : IRealmAccessor
     {
         UnsupportedBacklink InverseLink { get; set; }
     }
 
+    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class BacklinkClassManagedAccessor : ManagedAccessor, IBacklinkClassAccessor
     {
@@ -164,6 +171,7 @@ namespace Realms.Generated
         }
     }
 
+    
     internal class BacklinkClassUnmanagedAccessor : UnmanagedAccessor, IBacklinkClassAccessor
     {
         private UnsupportedBacklink _inverseLink;

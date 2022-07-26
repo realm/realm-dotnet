@@ -136,7 +136,7 @@ namespace Realms.SourceGenerator
 
         public static bool HasSetter(this PropertyDeclarationSyntax propertySyntax)
         {
-            return propertySyntax.AccessorList.Accessors.Any(SyntaxKind.SetAccessorDeclaration);
+            return propertySyntax.AccessorList?.Accessors.Any(SyntaxKind.SetAccessorDeclaration) == true;
         }
 
         public static Location GetIdentifierLocation(this ClassDeclarationSyntax cds)

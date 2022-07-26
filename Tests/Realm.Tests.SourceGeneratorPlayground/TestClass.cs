@@ -31,5 +31,7 @@ namespace SourceGeneratorPlayground
 
         [MapTo("_stringProp")]
         public string StringProp { get; set; }
+
+        public IList<int> ListIntProp { get; }
     }
 }

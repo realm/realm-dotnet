@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Realms.Generated;
-using Realms;
 using Realms.Schema;
 using Realms.Tests.SourceGeneration.TestClasses;
 using Realms.Weaving;

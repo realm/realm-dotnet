@@ -390,7 +390,6 @@ namespace Realms.SourceGenerator
             var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
             if (!string.IsNullOrEmpty(serializedJson))
             {
-                //TODO Need to remove the comments later during testing
                 context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
             }
         }

@@ -17,11 +17,19 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Realms.SourceGenerator
 {
+    /* What do do:
+     * - Connect weaver
+     * - Add weaver-tests
+     * - Add IQueryable parts
+     * - Add collections parts
+     * - Add backlinks parts
+     * - Check nullability (later)
+     * - Fix schema creation
+     */
     internal class Generator
     {
         private ClassInfo _classInfo;
@@ -30,24 +38,6 @@ namespace Realms.SourceGenerator
         private string _accessorInterfaceName;
         private string _managedAccessorClassName;
         private string _unmanagedAccessorClassName;
-
-        private readonly string _copyrightString = @"// ////////////////////////////////////////////////////////////////////////////
-// //
-// // Copyright {0} Realm Inc.
-// //
-// // Licensed under the Apache License, Version 2.0 (the ""License"")
-// // you may not use this file except in compliance with the License.
-// // You may obtain a copy of the License at
-// //
-// // http://www.apache.org/licenses/LICENSE-2.0
-// //
-// // Unless required by applicable law or agreed to in writing, software
-// // distributed under the License is distributed on an ""AS IS"" BASIS,
-// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// // See the License for the specific language governing permissions and
-// // limitations under the License.
-// //
-// ////////////////////////////////////////////////////////////////////////////";
 
         public Generator(ClassInfo classInfo)
         {
@@ -59,32 +49,8 @@ namespace Realms.SourceGenerator
             _unmanagedAccessorClassName = $"{_classInfo.Name}UnmanagedAccessor";
         }
 
-        private const string sourceString = @"
-{0}
-
-{1}
-
-namespace {2}
-{{
-{3}
-}}
-
-namespace Realms.Generated
-{{
-{4}
-
-{5}
-
-{6}
-
-{7}
-}}
-";
-
         public string GenerateSource()
         {
-            var copyright = string.Format(_copyrightString, DateTime.Now.Year);
-
             var usings = @$"using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Realms;
@@ -99,50 +65,162 @@ using {_classInfo.Namespace};";
             var unmanagedAccessorString = GeneratedUnmanagedAccessor();
             var objectHelperString = GenerateClassObjectHelper();
 
-            return string.Format(sourceString, copyright, usings, _classInfo.Namespace,
-                partialClassString, objectHelperString, interfaceString,
-                managedAccessorString, unmanagedAccessorString);
-        }
+            return $@"
+// ////////////////////////////////////////////////////////////////////////////
+// //
+// // Copyright {DateTime.Now.Year} Realm Inc.
+// //
+// // Licensed under the Apache License, Version 2.0 (the ""License"")
+// // you may not use this file except in compliance with the License.
+// // You may obtain a copy of the License at
+// //
+// // http://www.apache.org/licenses/LICENSE-2.0
+// //
+// // Unless required by applicable law or agreed to in writing, software
+// // distributed under the License is distributed on an ""AS IS"" BASIS,
+// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// // See the License for the specific language governing permissions and
+// // limitations under the License.
+// //
+// ////////////////////////////////////////////////////////////////////////////
 
-        private const string _accessorInterfaceString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface {0} : IRealmAccessor
-    {{
-{1}
-    }}";
+{usings}
+
+namespace {_classInfo.Namespace}
+{{
+{partialClassString}
+}}
+
+namespace Realms.Generated
+{{
+{objectHelperString}
+
+{interfaceString}
+
+{managedAccessorString}
+
+{unmanagedAccessorString}
+}}
+";
+        }
 
         private string GenerateInterface()
         {
             var propertiesBuilder = new StringBuilder();
 
-            //TODO If I use a for loop instead of this I get an OutOfMemoryException... ???????????
             for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
                 var property = _classInfo.Properties[i];
                 var type = property.TypeInfo.TypeString;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection && !property.TypeInfo.IsIQueryable;
-                var setterString = hasSetter ? " set; " : "";
+                var setterString = hasSetter ? " set; " : " ";
 
                 var propertyString = @$"        {type} {name} {{ get;{setterString}}}";
                 propertiesBuilder.Append(propertyString);
-                if (i != _classInfo.Properties.Count -1)
+                if (i != _classInfo.Properties.Count - 1)
                 {
-                    propertiesBuilder.AppendLine();
+                    propertiesBuilder.Append("\n\n");
+                }
+            }
+            
+            return $@"
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal interface {_accessorInterfaceName} : IRealmAccessor
+    {{
+{propertiesBuilder}
+    }}";
+        }
+
+        private string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
+        {
+            return "RealmValueType." + propertyTypeInfo.SimpleType.ToString(); //TODO Need to be more complex than this
+        }
+
+        private string GeneratePartialClass()
+        {
+            var schemaProperties = new StringBuilder();
+            var copyToRealm = new StringBuilder();
+            var skipDefaultsContent = new StringBuilder();
+
+            foreach (var property in _classInfo.Properties)
+            {
+                if (property.TypeInfo.IsCollection)
+                {
+                    var internalType = property.TypeInfo.InternalType;
+
+                    var internalTypeIsObject = internalType.SimpleType == SimpleTypeEnum.Object;
+
+                    //TODO Check if I should move it out
+                    var collectionString = property.TypeInfo.CollectionType switch
+                    {
+                        CollectionTypeEnum.List => "List",
+                        CollectionTypeEnum.Set => "Set",
+                        CollectionTypeEnum.Dictionary => "Dictionary",
+                        _ => throw new NotImplementedException(),
+                    };
+
+                    var prefix = internalTypeIsObject ? "Object" : "Primitive";
+                    var builderMethodName = $"{prefix}{collectionString}";
+
+                    var internalTypeString = internalTypeIsObject ? internalType.TypeString : GetRealmValueType(internalType);
+
+                    schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}),");
+
+
+                    skipDefaultsContent.AppendLine($"                    {property.Name}.Clear();");
+                    copyToRealm.AppendLine($@"                foreach(var val in unmanagedAccessor.{property.Name})
+                {{
+                    {property.Name}.Add(val);
+                }}");
+
+                }
+                else if (property.TypeInfo.IsIQueryable)
+                {
+                    // Nothing to do for the copy to realm part
+                }
+                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                {
+                    var objectName = property.TypeInfo.TypeString;
+                    schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", {objectName}),");
+                }
+                else
+                {
+                    var realmValueType = GetRealmValueType(property.TypeInfo); 
+                    var primaryKeyString = property.IsPrimaryKey ? ", isPrimaryKey: true" : string.Empty;
+                    schemaProperties.AppendLine(@$"            Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}{primaryKeyString}),");
+
+                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
                 }
             }
 
-            return string.Format(_accessorInterfaceString, _accessorInterfaceName, propertiesBuilder.ToString());
-        }
+            var skipDefaults = string.Empty;
 
-        private const string _partialClassString = @"   [Woven(typeof({0}))]
-    public partial class {1} : IRealmObject, INotifyPropertyChanged
+            if (skipDefaultsContent.Length != 0)
+            {
+                skipDefaults = $@"                if(!skipDefaults)
+                {{
+{skipDefaultsContent}
+                }}";
+
+            }
+
+            var isEmbedded = _classInfo.IsEmbedded ? "true" : "false";
+            var schema = @$"        public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {isEmbedded})
+        {{
+{schemaProperties}
+        }}.Build();";
+
+            return $@"   
+    [Woven(typeof({_helperClassName}))]
+    public partial class {_classInfo.Name} : IRealmObject, INotifyPropertyChanged
     {{
 
-{2}
+{schema}
 
         #region IRealmObject implementation
 
-        private {5} _accessor;
+        private {_accessorInterfaceName} _accessor;
 
         public IRealmAccessor Accessor => _accessor;
 
@@ -156,19 +234,21 @@ using {_classInfo.Namespace};";
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public {1}()
+        public {_helperClassName}()
         {{
-            _accessor = new {3}(typeof({1}));
+            _accessor = new {_unmanagedAccessorClassName}(typeof({_helperClassName}));
         }}
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {{
             var unmanagedAccessor = _accessor;
-            _accessor = ({5})managedAccessor;
+            _accessor = ({_managedAccessorClassName})managedAccessor;
 
             if (helper != null)
             {{
-{4}
+{skipDefaults}
+
+{copyToRealm}
             }}
 
             if (_propertyChanged != null)
@@ -226,73 +306,7 @@ using {_classInfo.Namespace};";
             _accessor.UnsubscribeFromNotifications();
         }}
     }}";
-
-        private string GeneratePartialClass()
-        {
-            var schemaProperties = new StringBuilder();
-            var copyToRealm = new StringBuilder();
-
-            //0 helper
-            //1 class name
-            //2 schema
-            //3 unmanagedAccessor
-            //4 setManagedAccessor
-            //5 interface
-
-            foreach (var property in _classInfo.Properties)
-            {
-                if (property.TypeInfo.IsCollection)
-                {
-
-                }
-                else if (property.TypeInfo.IsIQueryable)
-                {
-
-                }
-                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
-                {
-
-                }
-                else
-                {
-                    var realmValueType = "RealmValueType." + property.TypeInfo.SimpleType.ToString();  //TODO Need to be more complex than this
-                    var primaryKeyString = property.IsPrimaryKey ? ", isPrimaryKey: true" : string.Empty;
-                    schemaProperties.AppendLine(@$"            Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}{primaryKeyString}),");
-
-                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
-                }
-            }
-
-            var isEmbedded = _classInfo.IsEmbedded ? "true" : "false";
-            var schema = @$"        public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {isEmbedded})
-        {{
-{schemaProperties}
-        }}.Build();";
-
-            return string.Format(_partialClassString, _helperClassName, _classInfo.Name, schema,
-                _unmanagedAccessorClassName, copyToRealm, _accessorInterfaceName);
         }
-
-        private const string _objectHelperString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class {0} : IRealmObjectHelper
-    {{
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {{
-            throw new InvalidOperationException(""This method should not be called for source generated classes."");
-        }}
-
-        public ManagedAccessor CreateAccessor() => new {1}();
-
-        public IRealmObjectBase CreateInstance()
-        {{
-            return new {2}();
-        }}
-
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {{
-            {3}
-        }}
-    }}";
 
         private string GenerateClassObjectHelper()
         {
@@ -311,47 +325,28 @@ using {_classInfo.Namespace};";
             return false;";
             }
 
-            return string.Format(_objectHelperString, _helperClassName, _managedAccessorClassName, _classInfo.Name, tryGetPrimaryKeyBody);
-        }
-
-        private const string _unmanagedAccesorString = @"    internal class {0} : UnmanagedAccessor, {1}
+            return $@"
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class {_helperClassName} : IRealmObjectHelper
     {{
-{2}
-
-        public {0}(Type objectType) : base(objectType)
+        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
         {{
+            throw new InvalidOperationException(""This method should not be called for source generated classes."");
         }}
 
-        public override RealmValue GetValue(string propertyName)
+        public ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
+
+        public IRealmObjectBase CreateInstance()
         {{
-            {3}
+            return new {_classInfo.Name}();
         }}
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {{
-            {4}
-        }}
-
-        public override void SetValueUnique(string propertyName, RealmValue val)
-        {{
-            {5}
-        }}
-
-        public override IList<T> GetListValue<T>(string propertyName)
-        {{
-            {6}
-        }}
-
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {{
-            {7}
-        }}
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {{
-            {8}
+            {tryGetPrimaryKeyBody}
         }}
     }}";
+        }
 
         private string GeneratedUnmanagedAccessor()
         {
@@ -363,7 +358,7 @@ using {_classInfo.Namespace};";
             var getSetValueLines = new StringBuilder();
             var getDictionaryValueLines = new StringBuilder();
 
-            bool isFirstCollection = true;
+            // Probably we can remove some complexity if we don't care about some extra spaces/lines here and there
             bool isFirstNonCollection = true;
 
             foreach (var property in _classInfo.Properties)
@@ -493,17 +488,46 @@ using {_classInfo.Namespace};";
 
             var getDictionaryBody = getDictionaryValueLines.ToString();
 
-            return string.Format(_unmanagedAccesorString, _unmanagedAccessorClassName, _accessorInterfaceName,
-                propertyBody, getValueBody, setValueBody, setValueUniqueBody,
-                getListValueBody, getSetValueBody, getDictionaryBody);
-
-        }
-
-        private const string _managedAccessorString = @"    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class {0} : ManagedAccessor, {1}
+            return $@"    
+    internal class {_unmanagedAccessorClassName} : UnmanagedAccessor, {_accessorInterfaceName}
     {{
-{2}
+{propertyBody}
+
+        public {_unmanagedAccessorClassName}(Type objectType) : base(objectType)
+        {{
+        }}
+
+        public override RealmValue GetValue(string propertyName)
+        {{
+            {getValueBody}
+        }}
+
+        public override void SetValue(string propertyName, RealmValue val)
+        {{
+            {setValueBody}
+        }}
+
+        public override void SetValueUnique(string propertyName, RealmValue val)
+        {{
+            {setValueUniqueBody}
+        }}
+
+        public override IList<T> GetListValue<T>(string propertyName)
+        {{
+            {getListValueBody}
+        }}
+
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {{
+            {getSetValueBody}
+        }}
+
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {{
+            {getDictionaryBody}
+        }}
     }}";
+        }
 
         private string GenerateManagedAccessor()
         {
@@ -543,7 +567,12 @@ using {_classInfo.Namespace};";
                 }
             }
 
-            return string.Format(_managedAccessorString,  _managedAccessorClassName, _accessorInterfaceName, propertiesBuilder.ToString());
+            return $@"    
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfaceName}
+    {{
+{propertiesBuilder}
+    }}";
         }
     }
 }
