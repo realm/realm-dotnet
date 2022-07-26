@@ -65,8 +65,7 @@ using {_classInfo.Namespace};";
             var unmanagedAccessorString = GeneratedUnmanagedAccessor();
             var objectHelperString = GenerateClassObjectHelper();
 
-            return $@"
-// ////////////////////////////////////////////////////////////////////////////
+            return $@"// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright {DateTime.Now.Year} Realm Inc.
 // //

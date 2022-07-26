@@ -11,10 +11,12 @@
 	<ItemGroup>
 		<!-- Removing the generated files from compilation -->
 		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-
 		<ProjectReference Include="..\..\Realm\Realm.Fody\Realm.Fody.csproj" />
 		<ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\..\Realm\Realm\Realm.csproj" />
+
+		<None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+
 	</ItemGroup>
 </Project>
 
