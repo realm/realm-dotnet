@@ -27,11 +27,21 @@ namespace SourceGeneratorPlayground
 {
     public partial class TestClass : IRealmObject
     {
+        public RealmInteger<int> RealmValueInt { get; set; }
+
+        public RealmInteger<int>? RealmValueIntNullable { get; set; }
+
+        [Indexed]
         public int IntProp { get; set; }
 
-        [MapTo("_stringProp")]
-        public string StringProp { get; set; }
+        [PrimaryKey]
+        public Guid GuidPrimaryKey { get; set; }
 
         public IList<int> ListIntProp { get; }
+
+        public ISet<int> SetIntProp { get; }
+
+        public IDictionary<string, int> DictIntProp { get; }
+
     }
 }

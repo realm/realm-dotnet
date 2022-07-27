@@ -106,6 +106,9 @@ namespace Realms.SourceGenerator
 
         public ITypeSymbol TypeSymbol { get; set; }
 
+        // This includes the eventual nullability annotation
+        public ITypeSymbol CompleteTypeSymbol { get; set; }
+
         public virtual PropertyTypeInfo InternalType { get; set; } = null;
 
         public bool IsCollection => CollectionType != null;
@@ -124,6 +127,8 @@ namespace Realms.SourceGenerator
 
 
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+        public virtual string CompleteTypeString => CompleteTypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
         public static PropertyTypeInfo Unsupported => new UnsupportedTypeInfo();
 
@@ -218,7 +223,7 @@ namespace Realms.SourceGenerator
             return true;
         }
         
-
+        //TODO This was for testing, could not be updated
         public sealed override string ToString()
         {
             if (this is UnsupportedTypeInfo)

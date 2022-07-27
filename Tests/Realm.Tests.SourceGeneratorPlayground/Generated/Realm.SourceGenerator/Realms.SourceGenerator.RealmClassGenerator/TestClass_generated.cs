@@ -33,9 +33,13 @@ namespace SourceGeneratorPlayground
 
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("TestClass", isEmbedded: false)
         {
-            Property.Primitive("IntProp", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("_stringProp", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("RealmValueInt", RealmValueType., isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("RealmValueIntNullable", RealmValueType., isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("IntProp", RealmValueType.Int, isPrimaryKey: false, isIndexed: true, isNullable: false),
+            Property.Primitive("GuidPrimaryKey", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false),
             Property.PrimitiveList("ListIntProp", RealmValueType.Int, areElementsNullable: false),
+            Property.PrimitiveSet("SetIntProp", RealmValueType.Int, areElementsNullable: false),
+            Property.PrimitiveDictionary("DictIntProp", RealmValueType.Int, areElementsNullable: false),
 
         }.Build();
 
@@ -70,14 +74,26 @@ namespace SourceGeneratorPlayground
                 if(!skipDefaults)
                 {
                     ListIntProp.Clear();
+                    SetIntProp.Clear();
+                    DictIntProp.Clear();
 
                 }
 
+                RealmValueInt = unmanagedAccessor.RealmValueInt;
+                RealmValueIntNullable = unmanagedAccessor.RealmValueIntNullable;
                 IntProp = unmanagedAccessor.IntProp;
-                StringProp = unmanagedAccessor.StringProp;
+                GuidPrimaryKey = unmanagedAccessor.GuidPrimaryKey;
                 foreach(var val in unmanagedAccessor.ListIntProp)
                 {
                     ListIntProp.Add(val);
+                }
+                foreach(var val in unmanagedAccessor.SetIntProp)
+                {
+                    SetIntProp.Add(val);
+                }
+                foreach(var val in unmanagedAccessor.DictIntProp)
+                {
+                    DictIntProp.Add(val);
                 }
 
             }
@@ -159,8 +175,8 @@ namespace Realms.Generated
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
-            value = null;
-            return false;
+            value = ((ITestClassAccessor)instance.Accessor).GuidPrimaryKey;
+            return true;
         }
     }
 
@@ -168,30 +184,50 @@ namespace Realms.Generated
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface ITestClassAccessor : IRealmAccessor
     {
+        RealmInteger<int> RealmValueInt { get; set; }
+
+        RealmInteger<int>? RealmValueIntNullable { get; set; }
+
         int IntProp { get; set; }
 
-        string StringProp { get; set; }
+        Guid GuidPrimaryKey { get; set; }
 
         IList<int> ListIntProp { get; }
+
+        ISet<int> SetIntProp { get; }
+
+        IDictionary<string, int> DictIntProp { get; }
     }
 
     
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class TestClassManagedAccessor : ManagedAccessor, ITestClassAccessor
     {
+        public RealmInteger<int> RealmValueInt
+        {
+            get => (RealmInteger<int>)GetValue("RealmValueInt");
+            set => SetValue("RealmValueInt", value);
+        }
+
+        public RealmInteger<int>? RealmValueIntNullable
+        {
+            get => (RealmInteger<int>?)GetValue("RealmValueIntNullable");
+            set => SetValue("RealmValueIntNullable", value);
+        }
+
         public int IntProp
         {
             get => (int)GetValue("IntProp");
             set => SetValue("IntProp", value);
         }
 
-        public string StringProp
+        public Guid GuidPrimaryKey
         {
-            get => (string)GetValue("_stringProp");
-            set => SetValue("_stringProp", value);
+            get => (Guid)GetValue("GuidPrimaryKey");
+            set => SetValueUnique("GuidPrimaryKey", value);
         }
 
-        private IList<int> _listIntProp
+        private IList<int> _listIntProp;
         public IList<int> ListIntProp
         {
             get
@@ -206,12 +242,64 @@ namespace Realms.Generated
         }
 
 
+        private ISet<int> _setIntProp;
+        public ISet<int> SetIntProp
+        {
+            get
+            {
+                if(_setIntProp == null)
+                {
+                    _setIntProp = GetSetValue<int>("SetIntProp");
+                }
+
+                return _setIntProp;
+            }
+        }
+
+
+        private IDictionary<string, int> _dictIntProp;
+        public IDictionary<string, int> DictIntProp
+        {
+            get
+            {
+                if(_dictIntProp == null)
+                {
+                    _dictIntProp = GetDictionaryValue<int>("DictIntProp");
+                }
+
+                return _dictIntProp;
+            }
+        }
+
+
 
     }
 
     
     internal class TestClassUnmanagedAccessor : UnmanagedAccessor, ITestClassAccessor
     {
+        private RealmInteger<int> _realmValueInt;
+        public RealmInteger<int> RealmValueInt
+        {
+            get => _realmValueInt;
+            set
+            {
+                _realmValueInt = value;
+                RaisePropertyChanged("RealmValueInt");
+            }
+        }
+
+        private RealmInteger<int>? _realmValueIntNullable;
+        public RealmInteger<int>? RealmValueIntNullable
+        {
+            get => _realmValueIntNullable;
+            set
+            {
+                _realmValueIntNullable = value;
+                RaisePropertyChanged("RealmValueIntNullable");
+            }
+        }
+
         private int _intProp;
         public int IntProp
         {
@@ -223,18 +311,24 @@ namespace Realms.Generated
             }
         }
 
-        private string _stringProp;
-        public string StringProp
+        private Guid _guidPrimaryKey;
+        public Guid GuidPrimaryKey
         {
-            get => _stringProp;
+            get => _guidPrimaryKey;
             set
             {
-                _stringProp = value;
-                RaisePropertyChanged("_stringProp");
+                _guidPrimaryKey = value;
+                RaisePropertyChanged("GuidPrimaryKey");
             }
         }
 
         public IList<int> ListIntProp { get; } = new List<int>();
+
+
+        public ISet<int> SetIntProp { get; } = new HashSet<int>(RealmSet<int>.Comparer);
+
+
+        public IDictionary<string, int> DictIntProp { get; } = new Dictionary<string, int>();
 
 
 
@@ -247,8 +341,10 @@ namespace Realms.Generated
         {
             return propertyName switch
             {
+                "RealmValueInt" => _realmValueInt,
+                "RealmValueIntNullable" => _realmValueIntNullable,
                 "IntProp" => _intProp,
-                "_stringProp" => _stringProp,
+                "GuidPrimaryKey" => _guidPrimaryKey,
 
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
@@ -258,12 +354,17 @@ namespace Realms.Generated
         {
             switch (propertyName)
             {
+                case "RealmValueInt":
+                    RealmValueInt = (RealmInteger<int>)val;
+                    return;
+                case "RealmValueIntNullable":
+                    RealmValueIntNullable = (RealmInteger<int>?)val;
+                    return;
                 case "IntProp":
                     IntProp = (int)val;
                     return;
-                case "_stringProp":
-                    StringProp = (string)val;
-                    return;
+                case "GuidPrimaryKey":
+                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
 
                 default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -272,7 +373,12 @@ namespace Realms.Generated
 
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            if (propertyName != "GuidPrimaryKey")
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            GuidPrimaryKey = (Guid)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
@@ -287,12 +393,22 @@ namespace Realms.Generated
 
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            return propertyName switch
+            {
+                "SetIntProp" => (ISet<T>)SetIntProp,
+
+                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
         }
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            return propertyName switch
+            {
+                "DictIntProp" => (IDictionary<string, TValue>)DictIntProp,
+
+                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
 
         public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase

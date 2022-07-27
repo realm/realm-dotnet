@@ -111,7 +111,7 @@ namespace Realms.Generated
             for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
                 var property = _classInfo.Properties[i];
-                var type = property.TypeInfo.TypeString;
+                var type = property.TypeInfo.CompleteTypeString;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection && !property.TypeInfo.IsIQueryable;
                 var setterString = hasSetter ? " set; " : " ";
@@ -162,7 +162,7 @@ namespace Realms.Generated
                     var prefix = internalTypeIsObject ? "Object" : "Primitive";
                     var builderMethodName = $"{prefix}{collectionString}";
 
-                    var internalTypeString = internalTypeIsObject ? internalType.TypeString : GetRealmValueType(internalType);
+                    var internalTypeString = internalTypeIsObject ? internalType.CompleteTypeString : GetRealmValueType(internalType);
 
                     var internalTypeNullable = internalType.IsNullable.ToCodeString();
 
@@ -179,7 +179,7 @@ namespace Realms.Generated
                 else if (property.TypeInfo.IsIQueryable)
                 {
                     var backlinkProperty = property.Backlink;
-                    var backlinkType = property.TypeInfo.InternalType.TypeString;
+                    var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
 
                     schemaProperties.AppendLine(@$"            Property.Backlink(""{property.MapTo ?? property.Name}"", {backlinkType}, {backlinkProperty}),");
 
@@ -187,7 +187,7 @@ namespace Realms.Generated
                 }
                 else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
                 {
-                    var objectName = property.TypeInfo.TypeString;
+                    var objectName = property.TypeInfo.CompleteTypeString;
                     schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", {objectName}),");
 
                     copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
@@ -377,13 +377,13 @@ namespace Realms.Generated
             {
                 var name = property.Name;
                 var backingFieldName = GetBackingFieldName(name);
-                var type = property.TypeInfo.TypeString;
+                var type = property.TypeInfo.CompleteTypeString;
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection)
                 {
                     var propertyMapToName = property.MapTo ?? property.Name;
-                    var parameterString = property.TypeInfo.InternalType.TypeString;
+                    var parameterString = property.TypeInfo.InternalType.CompleteTypeString;
 
                     string constructorString;
 
@@ -399,13 +399,13 @@ namespace Realms.Generated
                             break;
                         case CollectionTypeEnum.Dictionary:
                             constructorString = $"new Dictionary<string, {parameterString}>()";
-                            getDictionaryValueLines.AppendLine($@"                ""{propertyMapToName}"" => (IDictionary<string, T>){property.Name},");
+                            getDictionaryValueLines.AppendLine($@"                ""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
                             break;
                         default:
                             throw new NotImplementedException();
                     }
 
-                    var propertyString = $@"        public {property.TypeInfo.TypeString} {property.Name} {{ get; }} = {constructorString};";
+                    var propertyString = $@"        public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
 
                     propertiesString.AppendLine(propertyString);
                     propertiesString.AppendLine().AppendLine();
@@ -437,15 +437,14 @@ namespace Realms.Generated
 
                     if (property.IsPrimaryKey)
                     {
-                        setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue.You need to use SetValueUnique"");");
+                        setValueLines.AppendLine($@"                    throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");");
 
-                        setValueUniqueLines.AppendLine($@"if (propertyName != ""{stringName}"")
-                        {{
-                            throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");
-                        }}
+                setValueUniqueLines.Append($@"if (propertyName != ""{stringName}"")
+            {{
+                throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");
+            }}
 
-                        {name} = ({type})val;
-                        ");
+            {name} = ({type})val;");
                     }
                     else
                     {
@@ -606,15 +605,15 @@ namespace Realms.Generated
             for (var i = 0; i < _classInfo.Properties.Count; i++)
             {
                 var property = _classInfo.Properties[i];
-                var type = property.TypeInfo.TypeString;
+                var type = property.TypeInfo.CompleteTypeString;
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection || property.TypeInfo.IsIQueryable)
                 {
                     var backingFieldName = GetBackingFieldName(property.Name);
-                    var backingFieldString = $@"private {type} {backingFieldName}";
-                    var internalTypeString = property.TypeInfo.InternalType.TypeString;
+                    var backingFieldString = $@"private {type} {backingFieldName};";
+                    var internalTypeString = property.TypeInfo.InternalType.CompleteTypeString;
 
                     string getFieldString;
 

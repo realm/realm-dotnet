@@ -338,6 +338,7 @@ namespace Realms.SourceGenerator
 
         private PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
         {
+            var completeTypeSymbol = typeSymbol;
             var nullableAnnotation = typeSymbol.NullableAnnotation;
             if (nullableAnnotation == NullableAnnotation.Annotated)
             {
@@ -375,6 +376,7 @@ namespace Realms.SourceGenerator
             };
 
             propInfo.TypeSymbol = typeSymbol;
+            propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
 
             return propInfo;
