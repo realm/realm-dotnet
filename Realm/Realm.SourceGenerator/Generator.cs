@@ -132,11 +132,6 @@ namespace Realms.Generated
     }}";
         }
 
-        private string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
-        {
-            return "RealmValueType." + propertyTypeInfo.SimpleType.ToString(); //TODO Need to be more complex than this
-        }
-
         private string GeneratePartialClass()
         {
             var schemaProperties = new StringBuilder();
@@ -181,14 +176,14 @@ namespace Realms.Generated
                     var backlinkProperty = property.Backlink;
                     var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
 
-                    schemaProperties.AppendLine(@$"            Property.Backlink(""{property.MapTo ?? property.Name}"", {backlinkType}, {backlinkProperty}),");
+                    schemaProperties.AppendLine(@$"            Property.Backlink(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
 
                     // Nothing to do for the copy to realm part
                 }
                 else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
                 {
                     var objectName = property.TypeInfo.CompleteTypeString;
-                    schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", {objectName}),");
+                    schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
 
                     copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
                 }
@@ -410,7 +405,19 @@ namespace Realms.Generated
                     propertiesString.AppendLine(propertyString);
                     propertiesString.AppendLine().AppendLine();
                 }
-                else
+                else if (property.TypeInfo.IsIQueryable)
+                {
+                    // Properties
+
+                    var propertyString = @$"        public {type} {name} => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects."");";
+
+                    propertiesString.AppendLine(propertyString);
+                    propertiesString.AppendLine();
+
+                    //GetValue
+                    getValueLines.AppendLine(@$"                ""{stringName}"" =>  throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
+                }
+                else 
                 {
                     // Properties
                     var backingFieldString = $"        private {type} {backingFieldName};";
@@ -675,6 +682,12 @@ namespace Realms.Generated
     {{
 {propertiesBuilder}
     }}";
+        }
+
+        private string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
+        {
+            var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.SimpleType : propertyTypeInfo.SimpleType;
+            return "RealmValueType." + simpleType.ToString(); // This could be more robust
         }
     }
 }

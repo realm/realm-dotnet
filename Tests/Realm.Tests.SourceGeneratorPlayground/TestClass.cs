@@ -39,9 +39,20 @@ namespace SourceGeneratorPlayground
 
         public IList<int> ListIntProp { get; }
 
-        public ISet<int> SetIntProp { get; }
+        public ISet<int?> SetIntProp { get; }
 
         public IDictionary<string, int> DictIntProp { get; }
 
+
+        public OtherTestClass OtherClass { get; set; }
+    }
+
+    public partial class OtherTestClass : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        [Backlink(nameof(TestClass.OtherClass))]
+        public IQueryable<TestClass> BacklinkProperty { get; }
     }
 }
