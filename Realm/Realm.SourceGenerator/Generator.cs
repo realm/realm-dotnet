@@ -176,7 +176,7 @@ namespace Realms.Generated
                     var backlinkProperty = property.Backlink;
                     var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
 
-                    schemaProperties.AppendLine(@$"            Property.Backlink(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
+                    schemaProperties.AppendLine(@$"            Property.Backlinks(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
 
                     // Nothing to do for the copy to realm part
                 }
@@ -239,7 +239,7 @@ namespace Realms.Generated
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public {_helperClassName}()
+        public {_classInfo.Name}()
         {{
             _accessor = new {_unmanagedAccessorClassName}(typeof({_helperClassName}));
         }}
@@ -310,6 +310,10 @@ namespace Realms.Generated
         {{
             _accessor.UnsubscribeFromNotifications();
         }}
+
+        public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
+
+        public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
     }}";
         }
 
@@ -471,7 +475,7 @@ namespace Realms.Generated
 
             if (getValueLines.Length == 0)
             {
-                getValueBody = $@"throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}"");";
+                getValueBody = $@"throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),";
             }
             else
             {
@@ -488,7 +492,7 @@ namespace Realms.Generated
 
             if (setValueLines.Length == 0)
             {
-                setValueBody = $@"throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");";
+                setValueBody = $@"throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}""),";
             }
             else
             {
@@ -504,7 +508,7 @@ namespace Realms.Generated
 
             if (setValueUniqueLines.Length == 0)
             {
-                setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");");
+                setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique""),");
             }
 
             var setValueUniqueBody = setValueUniqueLines.ToString();
@@ -522,8 +526,8 @@ namespace Realms.Generated
                 getListValueBody = $@"return propertyName switch
             {{
 {getListValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}"");
-            }}";
+                _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
+            }};";
             }
 
             //GetSetValue
@@ -539,8 +543,8 @@ namespace Realms.Generated
                 getSetValueBody = $@"return propertyName switch
             {{
 {getSetValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}"");
-            }}";
+                _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
+            }};";
             }
 
             //GetDictionaryValue
@@ -556,8 +560,8 @@ namespace Realms.Generated
                 getDictionaryValueBody = $@"return propertyName switch
             {{
 {getDictionaryValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}"");
-            }}";
+                _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}""),
+            }};";
             }
 
             return $@"    
